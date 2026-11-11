@@ -3,3 +3,4 @@
 *.lock
 radar/
 __pycache__/
+.wf-*.js
