@@ -30,7 +30,7 @@ expect(config ~= nil and config.ClassName == "ModuleScript", "Shared.Config is a
 
 local server = sss:FindFirstChild("Server")
 expect(server ~= nil and server.ClassName == "Script", "ServerScriptService.Server is a Script")
-for _, name in { "LevelBuilder", "Actors", "Loot", "Mechanisms", "Guard", "Echoes" } do
+for _, name in { "Main", "LevelBuilder", "Actors", "Loot", "Mechanisms", "Guard", "Echoes" } do
 	local m = server and server:FindFirstChild(name)
 	expect(m ~= nil and m.ClassName == "ModuleScript", "Server." .. name .. " is a ModuleScript")
 end
@@ -41,8 +41,9 @@ expect(client ~= nil and client.ClassName == "LocalScript", "StarterPlayerScript
 
 -- Every require(script...:WaitForChild("X")) in the server script must resolve to a child.
 if server then
-	local src = server.Source
-	for name in string.gmatch(src, 'require%(script:WaitForChild%("([%w_]+)"%)%)') do
+	local main = server:FindFirstChild("Main")
+	local src = main and main.Source or ""
+	for name in string.gmatch(src, 'require%(script%.Parent:WaitForChild%("([%w_]+)"%)%)') do
 		expect(server:FindFirstChild(name) ~= nil, "server require resolves: " .. name)
 	end
 end

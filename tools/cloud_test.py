@@ -70,6 +70,10 @@ def main():
                 out = "\n".join(str(x) for x in (t.get("output") or {}).get("results", []))
                 sys.exit(1 if "FAIL" in out else 0)
             print("Task", state, json.dumps(t.get("error"), indent=2))
+            logs = call("GET", f"{BASE}/cloud/v2/{path}/logs", key)
+            for chunk in logs.get("luauExecutionSessionTaskLogs", []):
+                for line in chunk.get("messages", []):
+                    print("[log]", line)
             sys.exit(1)
     sys.exit("Timed out waiting for the Luau task")
 

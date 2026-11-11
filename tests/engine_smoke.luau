@@ -17,7 +17,11 @@ local function check(cond: any, msg: string)
 	end
 end
 
--- 1. The server script booted and built the level.
+-- 0. Boot the game server (Luau Execution sessions don't run place scripts).
+local server = ServerScriptService:WaitForChild("Server")
+require(server:WaitForChild("Main")).start()
+
+-- 1. The server booted and built the level.
 local level = workspace:WaitForChild("Level", 15)
 check(level ~= nil, "Level built")
 check(ReplicatedStorage:WaitForChild("Remotes", 5) ~= nil, "Remotes created")
@@ -26,7 +30,6 @@ task.wait(2)
 check((ReplicatedStorage:GetAttribute("LoopIndex") or 0) >= 1, "First loop started")
 check(ReplicatedStorage:GetAttribute("Target") == 1000, "Heist target is $1000")
 
-local server = ServerScriptService:WaitForChild("Server")
 local Actors = require(server:WaitForChild("Actors"))
 local Mechanisms = require(server:WaitForChild("Mechanisms"))
 local Loot = require(server:WaitForChild("Loot"))
