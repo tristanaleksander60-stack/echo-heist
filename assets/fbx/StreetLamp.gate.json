@@ -1,0 +1,187 @@
+{
+ "asset": "StreetLamp",
+ "objects": [
+  {
+   "name": "StreetLamp",
+   "class": "small",
+   "tris": 468,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.5,
+    1.4,
+    11.05
+   ],
+   "pivot": {
+    "rule": "bottom",
+    "local_min": [
+     -0.75,
+     -0.7,
+     0.0
+    ],
+    "local_max": [
+     0.75,
+     0.7,
+     11.05
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "steel",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 132,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_StreetLamp"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "toy-town lamp post; visual only on the pavement; the light hangs at the lantern (manifest light)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "StreetLamp_Bulb",
+   "class": "tiny",
+   "tris": 80,
+   "budget": [
+    150,
+    300
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.6,
+    0.571,
+    1.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3,
+     -0.2853,
+     8.93
+    ],
+    "local_max": [
+     0.3,
+     0.2853,
+     9.93
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Bulb Warm #F6C0A2 (eh_palette.NEON); PointLight here, same colour, Shadows off",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "the lantern's bulb: Neon Bulb Warm, seen through the four open sides",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 548,
+ "seats": [
+  {
+   "name": "StreetLamp_Bulb",
+   "gap": 0.0,
+   "penetration": 0.0,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "5e680f564f6ff8c6d6b9",
+ "fbx": {
+  "path": "assets/fbx/StreetLamp.fbx",
+  "bytes": 31372,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "StreetLamp",
+   "StreetLamp_Bulb"
+  ],
+  "geometry_extents": [
+   [
+    0.571,
+    0.6,
+    1.0
+   ],
+   [
+    1.4,
+    1.5,
+    11.05
+   ]
+  ]
+ },
+ "spec": "assets/blender/street.py",
+ "notes": "Street lamp 1.56 x 1.56 x 11: ink plinth, slim post, ladder bar, open lantern with a warm Neon bulb.",
+ "turntable": "docs/art/turntables/StreetLamp.png",
+ "seconds": 5.2
+}

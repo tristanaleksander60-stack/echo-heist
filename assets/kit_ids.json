@@ -208,6 +208,18 @@
    "sha256": "48eb69aae9e016fef8bcee158a0e6752a21d2014837f101debbcc51cc36b87fb",
    "uploaded": "2026-11-12T11:22:42Z"
   },
+  "GarageDoor_16x12": {
+   "assetId": 118669971728450,
+   "file": "assets/fbx/GarageDoor_16x12.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "GarageDoor_16x12"
+   ],
+   "revisionId": "1",
+   "sha256": "fecb56ea18f13a10dc7f9042b9b04ace2943ba793d44e93d72fcc9c6c297f9da",
+   "uploaded": "2026-11-12T18:10:31Z"
+  },
   "GiantPresent": {
    "assetId": 71155770348733,
    "file": "assets/fbx/GiantPresent.fbx",
@@ -369,6 +381,18 @@
    "sha256": "59ebfa7e160659732444eb8fc011b841ac477f2d296537d29bfe232d06c005f1",
    "uploaded": "2026-11-12T11:25:06Z"
   },
+  "JobBoard": {
+   "assetId": 112136984753667,
+   "file": "assets/fbx/JobBoard.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "JobBoard"
+   ],
+   "revisionId": "1",
+   "sha256": "b9611c9ddfb91dad75efa014ea4f2255e21415e434255a4170bfe4274e91e673",
+   "uploaded": "2026-11-12T18:10:48Z"
+  },
   "Lamp_Ceiling": {
    "assetId": 75558260382236,
    "file": "assets/fbx/Lamp_Ceiling.fbx",
@@ -475,6 +499,18 @@
    "sha256": "8544f1dba37274d5c2ffe6315db9362b78cd41bfc5043d01e1ff02e512767069",
    "uploaded": "2026-11-12T11:26:49Z"
   },
+  "Rug_8x6": {
+   "assetId": 125310774976762,
+   "file": "assets/fbx/Rug_8x6.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Rug_8x6"
+   ],
+   "revisionId": "1",
+   "sha256": "7b9b9d12ab543a8dedc79144735981701c636789331eece99d14120a23cd0926",
+   "uploaded": "2026-11-12T18:11:12Z"
+  },
   "Safe": {
    "assetId": 79233328477157,
    "file": "assets/fbx/Safe.fbx",
@@ -563,6 +599,19 @@
    "sha256": "6eef754e62580bbf9b980943d375efaa3ace30c3d5e03cfd8446297ee64738d1",
    "uploaded": "2026-11-12T11:28:10Z"
   },
+  "StreetLamp": {
+   "assetId": 114758534176384,
+   "file": "assets/fbx/StreetLamp.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "StreetLamp",
+    "StreetLamp_Bulb"
+   ],
+   "revisionId": "1",
+   "sha256": "f7c73289a84cbe393cb4e78a3a9007a5db88356e366c0a10d146823dbdd78841",
+   "uploaded": "2026-11-12T18:11:29Z"
+  },
   "Switch_Wall": {
    "assetId": 103972170050223,
    "file": "assets/fbx/Switch_Wall.fbx",
@@ -633,11 +682,12 @@
    "moderation": "Approved",
    "pieces": [
     "Van",
+    "Van_Paint",
     "Van_Shelf"
    ],
-   "revisionId": "1",
-   "sha256": "1920f55bcd955f07593c51e6fd309b137cff0569def27705ee0399ba2ba8b72f",
-   "uploaded": "2026-11-12T11:29:18Z"
+   "revisionId": "2",
+   "sha256": "2f1e89def678e066a0964242007a91f14ed499bc2f1d1fb4c9b332e2bf1dea45",
+   "uploaded": "2026-11-12T18:11:40Z"
   },
   "VaultDoor": {
    "assetId": 130751008696945,

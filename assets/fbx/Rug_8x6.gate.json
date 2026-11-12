@@ -1,0 +1,108 @@
+{
+ "asset": "Rug_8x6",
+ "objects": [
+  {
+   "name": "Rug_8x6",
+   "class": "small",
+   "tris": 264,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.64,
+    6.0,
+    0.036
+   ],
+   "pivot": {
+    "rule": "bottom",
+    "local_min": [
+     -4.32,
+     -3.0,
+     0.0
+    ],
+    "local_max": [
+     4.32,
+     3.0,
+     0.036
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 54,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "warm rug for the light pools: visual only, 0.036 thick (the pools at lift 0.06 draw over it)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 264,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "c45d1fb77c0a146611c2",
+ "fbx": {
+  "path": "assets/fbx/Rug_8x6.fbx",
+  "bytes": 22572,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Rug_8x6"
+  ],
+  "geometry_extents": [
+   [
+    0.036,
+    6.0,
+    8.64
+   ]
+  ]
+ },
+ "spec": "assets/blender/street.py",
+ "notes": "Burgundy rug 8.64 x 6 with a cream border, diamond and tassels.",
+ "turntable": "docs/art/turntables/Rug_8x6.png",
+ "seconds": 14.3
+}

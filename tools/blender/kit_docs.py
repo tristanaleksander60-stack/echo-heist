@@ -39,6 +39,8 @@ def idle_colour(name, p):
         return P.NEON[name][0]
     if p["material"] == "Glass":
         return P.GLASS_TINT
+    if name in P.TINT_IDLE:
+        return P.TINT_IDLE[name]
     if name in P.ORNAMENT_IDLE:
         return P.ORNAMENT_TINTS[P.ORNAMENT_IDLE[name]]
     return None

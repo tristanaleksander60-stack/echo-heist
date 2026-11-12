@@ -3,8 +3,10 @@
 Build: python3 tools/blender/build_asset.py assets/blender/van.py
 The van is home: you start at its open side door, you bank loot by reaching it, and in the garage lobby its
 cargo bay shows your trophy shelf and the advent ornaments (MASTERPLAN 4.3, 6.6). Getaway White is reserved for
-the exit, "always with an arrow" (6.2): the body is Getaway White, and a dark band along each side carries white
-chevrons that point at the open door. Original design: a boxy step van, no real make or badge.
+the exit, "always with an arrow" (6.2): the arrows are the exit signal, so the body is NOT white (golden-frame pass,
+2026-11-12: a white van was the brightest thing in G1): the body panels are one runtime-coloured MeshPart
+(Van_Paint, a mid value set by code: Config.Lighting.VAN.paint in a heist, the bay's crew colour in the garage), the
+roof is dark, and a dark band along each side carries Getaway White chevrons that point at the open door. Original design: a boxy step van, no real make or badge.
 Size: 14 long (X, cab at +X) x 6.4 wide x 7.75 tall; the open sliding door is on the -Y side (the "front" for
 the layout: it faces the shop). Origin = bottom centre. LevelSpec: Shop.VAN is the bank zone x -5..5, z 16..24
 (10 x 8): put the van body just behind the zone with its door facing the shop, so the zone is the kerb in front
@@ -21,16 +23,19 @@ T = 0.3                            # shell thickness
 
 def build(k):
     mb = k.MB("Van")
+    mp = k.MB("Van_Paint")   # the body paint: one MeshPart on the tint cell, coloured by MeshPart.Color
     y0, y1 = -W_ / 2, W_ / 2
     # ---- cargo shell (hollow, open side door): floor, roof, walls; interior faces dark
     mb.box((X0, y0, Z0), (XC, y1, Z0 + T), "steel_lo", chamfer=0.1, cham_col="steel", part="Floor")
-    mb.box((X0, y0, H_ - T), (XC, y1, H_), "exit", chamfer=0.25, cham_col="exit", flat=("+x",), part="Roof")
-    mb.box((X0, y1 - T, Z0 + T), (XC, y1, H_ - T), "exit", chamfer=0.2, cham_col="exit", flat=("+x", "-z", "+z"), part="FarSide")
-    mb.box((X0, y0, Z0 + T), (X0 + T, y1 - T, H_ - T), "exit", chamfer=0.2, cham_col="exit", flat=("-z", "+z", "+y"), part="Rear")
+    # the roof is a dark value (Vault Steel shade): from the diorama and classic cameras the van reads as a
+    # mid-value body under a dark lid, never the brightest thing in the frame (GOLDEN_FRAMES G1)
+    mb.box((X0, y0, H_ - T), (XC, y1, H_), "steel_lo", chamfer=0.25, cham_col="steel_lo", flat=("+x",), part="Roof")
+    mp.box((X0, y1 - T, Z0 + T), (XC, y1, H_ - T), "white", chamfer=0.2, cham_col="white", flat=("+x", "-z", "+z"), part="FarSide")
+    mp.box((X0, y0, Z0 + T), (X0 + T, y1 - T, H_ - T), "white", chamfer=0.2, cham_col="white", flat=("-z", "+z", "+y"), part="Rear")
     dx0, dx1, dz0, dz1 = DOOR
-    mb.box((X0 + T, y0, Z0 + T), (dx0, y0 + T, H_ - T), "exit", flat=("-z", "+z", "-x"), part="NearRear")
-    mb.box((dx1, y0, Z0 + T), (XC, y0 + T, H_ - T), "exit", flat=("-z", "+z", "+x"), part="NearFront")
-    mb.box((dx0, y0, dz1), (dx1, y0 + T, H_ - T), "exit", flat=("-x", "+x", "+z"), part="NearHeader")
+    mp.box((X0 + T, y0, Z0 + T), (dx0, y0 + T, H_ - T), "white", flat=("-z", "+z", "-x"), part="NearRear")
+    mp.box((dx1, y0, Z0 + T), (XC, y0 + T, H_ - T), "white", flat=("-z", "+z", "+x"), part="NearFront")
+    mp.box((dx0, y0, dz1), (dx1, y0 + T, H_ - T), "white", flat=("-x", "+x", "+z"), part="NearHeader")
     mb.box((dx0, y0, Z0 + T), (dx1, y0 + T, dz0), "steel", chamfer=0.06, cham_col="steel_hi", part="Step")
     # dark interior lining (ink_hi): what you see through the door
     mb.box((X0 + T, y1 - T - 0.04, Z0 + T), (XC - 0.01, y1 - T, H_ - T), "ink_hi", part="InFar")
@@ -42,13 +47,27 @@ def build(k):
     for lo, hi in (((dx0 - 0.2, y0 - 0.12, dz0), (dx0, y0 + 0.05, dz1 + 0.2)), ((dx1, y0 - 0.12, dz0), (dx1 + 0.2, y0 + 0.05, dz1 + 0.2)),
                    ((dx0, y0 - 0.12, dz1), (dx1, y0 + 0.05, dz1 + 0.2))):
         mb.box(lo, hi, "steel", chamfer=0.05, cham_col="steel_hi", flat=("+y",), part="DoorTrim")
-    mb.box((X0 + 0.25, y0 - 0.4, dz0 + 0.1), (dx0 - 0.25, y0 - 0.12, dz1 - 0.05), "exit", chamfer=0.1, cham_col="exit", part="SlidDoor")
+    mp.box((X0 + 0.25, y0 - 0.4, dz0 + 0.1), (dx0 - 0.25, y0 - 0.12, dz1 - 0.05), "white", chamfer=0.1, cham_col="white", part="SlidDoor")
     mb.box((X0 + 0.4, y0 - 0.48, dz0 + 2.0), (X0 + 0.7, y0 - 0.38, dz0 + 2.8), "steel_lo", part="DoorHandle")
     mb.box((X0 + 0.1, y0 - 0.2, H_ - 0.75), (dx1 + 0.2, y0 + 0.02, H_ - 0.55), "steel_lo", part="Rail")
     # ---- cab: one prism (side profile extruded across the width), windscreen and side windows dark glass
     cab = [(XC, Z0), (X1, Z0), (X1, 3.9), (6.5, 4.35), (5.15, 6.75), (XC, H_ - 0.05)]
-    cols = ["steel_lo", "exit", "exit", "ink_hi", "exit", "exit"]
-    mb.prism(cab, "Y", y0 + 0.15, y1 - 0.15, cols, "exit", chamfer=0.22, cham_col="exit", cham_edges=[1, 2, 3, 4, 5], part="Cab")
+    mp.prism(cab, "Y", y0 + 0.15, y1 - 0.15, ["white"] * 6, "white", chamfer=0.22, cham_col="white",
+             cham_edges=[1, 2, 3, 4, 5], part="Cab")
+    # the windscreen: a dark glass plate on the cab's slope (the paint is one colour), 0.01 off the slope
+    ex, ez = 5.15 - 6.5, 6.75 - 4.35
+    el = math.hypot(ex, ez)
+    tx, tz = ex / el, ez / el
+    nx, nz = tz, -tx                      # outward normal of the slope (toward +x, +z)
+    if nx < 0:
+        nx, nz = -nx, -nz
+    a = (6.5 + tx * 0.25, 4.35 + tz * 0.25)
+    b = (5.15 - tx * 0.25, 6.75 - tz * 0.25)
+    ws = [(a[0] + nx * 0.01, a[1] + nz * 0.01), (a[0] + nx * 0.07, a[1] + nz * 0.07),
+          (b[0] + nx * 0.07, b[1] + nz * 0.07), (b[0] + nx * 0.01, b[1] + nz * 0.01)]
+    if (ws[1][0] - ws[0][0]) * (ws[2][1] - ws[0][1]) - (ws[1][1] - ws[0][1]) * (ws[2][0] - ws[0][0]) < 0:
+        ws.reverse()
+    mb.prism(ws, "Y", y0 + 0.45, y1 - 0.45, "ink_hi", "ink_hi", part="Windscreen")
     for sy, ya, yb in ((-1, y0 + 0.08, y0 + 0.2), (1, y1 - 0.2, y1 - 0.08)):
         win = [(XC + 0.35, 4.55), (5.85, 4.55), (5.05, 6.35), (XC + 0.35, 6.35)]
         mb.prism(win, "Y", ya, yb, "ink_hi", "ink_hi", part="SideWindow")
@@ -98,6 +117,7 @@ def build(k):
     for x in (X0 + 1.0, -3.0, -0.5, XC - 0.8):
         mb.box((x - 0.12, -2.4, H_ + 0.2), (x + 0.12, 2.4, H_ + 0.4), "steel_lo", part="RackBar")
     ob = k.finalize(mb, pivot=(0, 0, 0))
+    paint = k.finalize(mp, pivot=(0, 0, 0))
 
     # ---- the shelf inside (its own part, so the garage can show trophies on it and the heist can hide it)
     ms = k.MB("Van_Shelf")
@@ -107,10 +127,20 @@ def build(k):
         ms.box((x - 0.1, y1 - T - 0.25, Z0 + T + 0.04), (x + 0.1, y1 - T - 0.02, Z0 + 4.4), "steel", part="Upright")
     sh = k.finalize(ms, pivot=(0, 0, 0))
     return k.Asset("Van", [
+        # free_shells: the trims, band, grille, lamps and glass sit on the paint panels (another object); the asset
+        # seat checks below hold the two together instead of the per-object floating-shell check
         k.Obj(ob, "medium", role="exit", pivot="point", collision="PreciseConvexDecomposition", tags=["EH_Van"],
+              free_shells=True,
               sim="solid body; the bank zone is the kerb in front of the open door (LevelSpec van box)",
-              notes="Getaway White body; hollow cargo bay with the sliding door open on -Y; chevrons point at the door"),
+              notes="frame, dark roof, cargo bay, glass, bumpers, wheels and the exit band whose Getaway White "
+                    "chevrons point at the open door (-Y)"),
+        k.Obj(paint, "small", role="exit", pivot="point", collision="Box", can_collide=False, atlas=False,
+              free_shells=True, extra={"tintable": True},
+              tint="van paint: a mid value by MeshPart.Color (Config.Lighting.VAN.paint in a heist, the bay's crew "
+                   "colour in the garage); never Getaway White",
+              notes="the body panels, sliding door and cab as one runtime-coloured part (no atlas)"),
         k.Obj(sh, "small", role="env", pivot="point", collision="Box", can_collide=False, tags=["EH_TrophyShelf"],
               notes="trophy / ornament shelf inside the cargo bay: two dark boards (loot display rule)"),
-    ], seats=[("Van_Shelf", "Van")],
-        notes="Getaway step van 14x6.4x7.75: hollow cargo bay, open sliding door (-Y), exit band with chevrons, roof rack.")
+    ], seats=[("Van_Shelf", "Van"), ("Van_Paint", "Van"), ("Van", "Van_Paint")],
+        notes="Getaway step van 14x6.4x7.75: mid-value runtime paint, dark roof, hollow cargo bay, open sliding door "
+              "(-Y), exit band with white chevrons, roof rack.")

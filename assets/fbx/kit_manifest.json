@@ -451,6 +451,41 @@
    ],
    "sim": "floor (walking surface y = 0)"
   },
+  "GarageDoor_16x12": {
+   "model": "GarageDoor_16x12",
+   "size": [
+    16.0,
+    12.0,
+    2.36
+   ],
+   "tris": 364,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.0,
+    0.0,
+    -1.18
+   ],
+   "boundsMax": [
+    8.0,
+    12.0,
+    1.18
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
   "GiantPresent": {
    "model": "GiantPresent",
    "size": [
@@ -1656,6 +1691,55 @@
     ]
    }
   },
+  "JobBoard": {
+   "model": "JobBoard",
+   "size": [
+    5.4,
+    7.32,
+    1.0
+   ],
+   "tris": 844,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.7,
+    0.0,
+    -0.5
+   ],
+   "boundsMax": [
+    2.7,
+    7.32,
+    0.5
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_JobBoard"
+   ],
+   "sim": "none",
+   "card": {
+    "centre": [
+     -1.3,
+     4.5,
+     -0.26
+    ],
+    "size": [
+     1.9,
+     1.5
+    ]
+   }
+  },
   "Lamp_Ceiling": {
    "model": "Lamp_Ceiling",
    "size": [
@@ -2333,6 +2417,41 @@
    ],
    "sim": "loot point (LevelSpec loot x, y, z)"
   },
+  "Rug_8x6": {
+   "model": "Rug_8x6",
+   "size": [
+    8.64,
+    0.036,
+    6.0
+   ],
+   "tris": 264,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -4.32,
+    0.0,
+    -3.0
+   ],
+   "boundsMax": [
+    4.32,
+    0.036,
+    3.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
   "Safe": {
    "model": "Safe",
    "size": [
@@ -2744,6 +2863,84 @@
    "transparency": 0.6,
    "tint": "Vault Steel light #A9B2CC"
   },
+  "StreetLamp": {
+   "model": "StreetLamp",
+   "size": [
+    1.5,
+    11.05,
+    1.4
+   ],
+   "tris": 468,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.75,
+    0.0,
+    -0.7
+   ],
+   "boundsMax": [
+    0.75,
+    11.05,
+    0.7
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_StreetLamp"
+   ],
+   "sim": "none",
+   "light": [
+    0,
+    9.43,
+    0
+   ]
+  },
+  "StreetLamp_Bulb": {
+   "model": "StreetLamp",
+   "size": [
+    0.6,
+    1.0,
+    0.571
+   ],
+   "tris": 80,
+   "class": "tiny",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.3,
+    8.93,
+    -0.285
+   ],
+   "boundsMax": [
+    0.3,
+    9.93,
+    0.285
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tint": "Bulb Warm #F6C0A2 (eh_palette.NEON); PointLight here, same colour, Shadows off"
+  },
   "Switch_Wall": {
    "model": "Switch_Wall",
    "size": [
@@ -3042,7 +3239,7 @@
     7.689,
     7.08
    ],
-   "tris": 1856,
+   "tris": 1704,
    "class": "medium",
    "collision": "PreciseConvexDecomposition",
    "material": "SmoothPlastic",
@@ -3072,6 +3269,42 @@
     "EH_Van"
    ],
    "sim": "solid body; the bank zone is the kerb in front of the open door (LevelSpec van box)"
+  },
+  "Van_Paint": {
+   "model": "Van",
+   "size": [
+    14.0,
+    5.7,
+    6.8
+   ],
+   "tris": 164,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.0,
+    1.55,
+    -3.6
+   ],
+   "boundsMax": [
+    7.0,
+    7.25,
+    3.2
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tint": "van paint: a mid value by MeshPart.Color (Config.Lighting.VAN.paint in a heist, the bay's crew colour in the garage); never Getaway White",
+   "tintable": true
   },
   "Van_Shelf": {
    "model": "Van",
@@ -4125,6 +4358,10 @@
   "Lamp_Ceiling_Bulb": {
    "idle": "#F6C0A2",
    "runtime": "fixed (PointLight in the same colour, Shadows off)"
+  },
+  "StreetLamp_Bulb": {
+   "idle": "#F6C0A2",
+   "runtime": "fixed (the street lamp's warm PointLight at the lantern, Shadows off)"
   },
   "Xmas_Lights_8_Bulbs": {
    "idle": "#F6C0A2",

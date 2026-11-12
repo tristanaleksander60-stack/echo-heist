@@ -113,6 +113,7 @@ NEON = {
     "LaserEmitter_Lens":   ("#FF3838", "Alarm Red while armed; Vault Steel shade #4E5675 when off", ("#4E5675",)),
     "Gus_FlashlightLens":  ("#4E5675", "Torch Amber #FFD27A while Gus patrols", ("#FFD27A",)),
     "Lamp_Ceiling_Bulb":   (WARM_BULB, "fixed (PointLight in the same colour, Shadows off)", ()),
+    "StreetLamp_Bulb":     (WARM_BULB, "fixed (the street lamp's warm PointLight at the lantern, Shadows off)", ()),
     "Xmas_Lights_8_Bulbs": (WARM_BULB, "fixed", ()),
     "Xmas_Tree_Lights":    (WARM_BULB, "fixed (bulbs and the star)", ()),
     "Skyline_Near_Windows": (WARM_BULB, "fixed (lit windows of the backdrop skyline, PLAN 3.1 exception)", ()),
@@ -143,6 +144,11 @@ ORNAMENT_DAYS = [  # (day of December, mesh, tint key or None for fixed-colour m
     (21, "Ornament_Star", "steel"), (22, "Ornament_Bell", "ribbon"), (23, "Ornament_Bauble", "marble_hi"),
     (24, "Ornament_Van", None),
 ]
+# Runtime-coloured (non-atlas, tintable) SmoothPlastic pieces and the colour the prepare script gives them. The van
+# paint is a mid value (golden-frame pass: a Getaway White body was the brightest thing in G1); code sets the real
+# colour (Config.Lighting.VAN.paint in a heist, the bay's crew colour in the garage).
+TINT_IDLE = {"Van_Paint": "#8C6448"}
+
 ORNAMENT_IDLE = {"Ornament_Bauble": "ribbon", "Ornament_Bell": "holly", "Ornament_Star": "marble_hi"}
 
 
@@ -163,6 +169,8 @@ ROLE_RULES = {
     "present": {"loot", "xmas", "env", "tint"},   # Giant Present: heavy loot wrapped for Christmas
     "toy":    {"env", "xmas", "tint"},    # a location's signature toy (ToySoldier): a toy's own paint may use the
                                           # Christmas reds and greens; never loot gold or a signal colour
+    "story":  {"env", "xmas", "tint"},    # comfort and storytelling props (the warm Rug_8x6, the garage JobBoard's
+                                          # red string): may use the Ribbon reds; never loot gold or a signal colour
 }
 
 INDEX = {k: i for i, (k, *_r) in enumerate(SWATCHES)}
