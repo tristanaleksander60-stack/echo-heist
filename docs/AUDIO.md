@@ -53,8 +53,12 @@ cue voices (3D) -> AudioEmitter (EH_<bus>) ... AudioListener EH_<bus> on the cam
 clone voices -> CloneIn -> AudioFilter Lowpass12dB 5 kHz -> AudioEcho 90 ms, fb 0.15, wet -12 dB          |
              -> Clone fader (-4 dB) -> SFX fader                                                          |
 music set mixes -> mix faders -> set fader -> MusicDuck -> Music fader (stingers skip the duck)            |
+SFX + Ambience faders -> WorldMuffle (AudioFilter Lowpass12dB, 20 kHz open, 800 Hz muffled) -> Master   |
                                         Master -> AudioCompressor (-18 dB, 3:1) -> AudioLimiter (-1 dB) -> AudioDeviceOutput
 ```
+
+- **World muffle** (premium §6.2): `AudioDirector.muffle(on)` sweeps the `WorldMuffle` low-pass to 800 Hz in
+  0.1 s and back open in 0.25 s (`Config.Audio.MUFFLE_*`). The rewind uses it from the start to the snap.
 
 - **Buses** (`Config.Audio.BUS_DB`, dB at a full slider): Music -6, SFX 0, Clone -4 (under SFX), UI -6,
   Ambience -10, Warnings +2. Starting points from feel.md D5; re-level after the loudness pass.
@@ -103,8 +107,9 @@ CueCheck rejects a set whose mixes differ by more than 2 s.
 |---|---|---|
 | input | `play("RewindClack")` in the END RUN action | tape-deck clack, locally, before any server reply |
 | 0.00 | `AudioDirector.rewind()` when the transition starts | music `PlaybackSpeed` 1.0 -> 0.25 over 0.3 s and out (plain fade under reduced motion), TapeStop cue, Ambience + Clone duck 9 dB |
+| 0.00 | `AudioDirector.muffle(true)` (Heist/RewindDirector, `Config.Moments.REWIND.MUFFLE`) | the world muffled: SFX (with the Clone bus) and Ambience through the `WorldMuffle` low-pass, 20 kHz -> 800 Hz in 0.1 s (`Config.Audio.MUFFLE_*`); UI, Warnings and music stay clear |
 | 0.10 | `play("RewindWhirr")` (+ `play("RewindStinger")` once uploaded) at scrub start | fast film rewind whirr |
-| 1.35 | `play("RewindClunk")`, `AudioDirector.arpeggio(clones)` | clunk on the bar line, then one chime per clone, 60 ms apart, C D E G A c d e (squeezed to 0.4 s) |
+| 1.35 | `AudioDirector.muffle(false)`, `play("RewindClunk")`, `AudioDirector.arpeggio(clones)` | the world opens again over 0.25 s; clunk on the bar line, then one chime per clone, 60 ms apart, C D E G A c d e (squeezed to 0.4 s) |
 | 1.55 | `play("RunStamp")` | the "RUN n" stamp |
 | 1.80 | `AudioDirector.go(clones)` when control returns | music restarts from the top on the downbeat at the new tier; ducks release |
 
@@ -189,6 +194,20 @@ for already had a cue (PlatePress, DoorOpen, LaserFlicker, Grab, DropThud, BankK
 | LaserWhine | a 0.5 s rising whine as a laser starts its flicker, before it re-arms (Warnings bus) | 1-2 |
 | LootTinkle | a tiny bell tinkle with a loot glint, when you are within 8 studs | 3 |
 | VanToot | a cheerful double toot as loot is banked (not the VanHorn "van leaves" warning) | 2 |
+
+#### Missing (signature moments)
+
+Signature moments track, 2026-11-12 (PLAN_STEAM_PLUS §4.4 F1-F5, §5): `Heist/MomentDirector` and
+`Heist/LineupDirector` call these cues; they are in `Cues.luau` with empty `ids` and play nothing until the owner
+pastes licensed ids. The 8 OF ME roll call plays one `CloneChime` per copy (stepped C D E G A c d e, exactly 60 ms
+apart, in time with each clone's pose beat) and lands on `ChoirHit`; the busted view uses the existing Caught
+cues and `RunStamp`; heist complete adds `VaultSlam` to the existing fanfare; the trophy lands on `CountDone`.
+
+| Cue | What | Takes wanted |
+|---|---|---|
+| ChoirHit | one bright choir stab (< 1 s), Music bus: the top of the 8 OF ME roll call | 1 |
+| SnareRoll | a 0.6 s snare roll whose last hit lands on the Line-up pose | 1-2 |
+| VaultSlam | a heavy metal door slam / vault clang as every door slams shut at heist complete | 2 |
 
 ### Loot and bank
 
@@ -299,6 +318,7 @@ AudioDirector.rewind() ; AudioDirector.go(cloneCount)    -- the rewind window
 AudioDirector.arpeggio(cloneCount)                       -- the sound logo
 AudioDirector.event(e, resolver)                         -- every sound of a replicated sim event
 AudioDirector.duck("Diamond")                            -- 4 dB for 0.6 s
+AudioDirector.muffle(true)                               -- SFX + Ambience through the 800 Hz WorldMuffle low-pass (false: open)
 AudioDirector.setBusVolume("Music", 0.6) ; AudioDirector.setMuted(false)
 AudioDirector.setReducedMotion(true) ; AudioDirector.setChristmas(nil)
 AudioDirector.setCaptionHandler(function(text, position) hud.toast(text) end)

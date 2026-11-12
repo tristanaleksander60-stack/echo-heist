@@ -29,7 +29,10 @@
 -- Hand-over: other directors call suspend(who) before they take the camera and resume(who)
 -- when they give it back (LineupDirector: "lineup"); while anything holds it, this module
 -- writes nothing (no CFrame, FOV or CameraType) and its fades are restored. RewindDirector
--- never takes the camera: its FOV dip arrives through setFovKick (one FOV owner).
+-- never takes the camera: its FOV dip arrives through setFovKick (one FOV owner). Short
+-- signature moments (Heist/MomentDirector: the 8 OF ME pull-back, the busted view) do not take
+-- it either: setMomentShot blends their shot over the frame by a weight, so they ease in and out
+-- of play (premium H1) while you keep control.
 
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
@@ -76,6 +79,10 @@ function CameraDirector.new(state: any): any
 	local kick = 0
 	local beat: any = nil -- { t0, hold, ease, objective: Vector3 }
 	local shotFn: (() -> (CFrame?, number?))? = nil -- golden-frame staging
+	-- A signature moment's shot (Heist/MomentDirector): CFrame, FOV and a weight 0..1 blended over
+	-- whatever the camera would show (gameplay or the golden shot), so it eases in and out (H1).
+	local momentFn: (() -> (CFrame?, number?, number))? = nil
+	local classicHold: CFrame? = nil -- classic mode: where the default camera stood when a moment began
 	local customReady = false -- classic: Custom + subject + zoom limits applied
 	local listeners: { (string) -> () } = {}
 
@@ -322,6 +329,18 @@ function CameraDirector.new(state: any): any
 		customReady = false
 	end
 
+	-- A signature moment (Heist/MomentDirector: 8 OF ME pull-back, the busted view): fn returns the
+	-- moment's CFrame, FOV and weight (0 = the camera as it would be, 1 = the moment's shot) every
+	-- frame; nil fn (or a nil CFrame) ends it. The golden shot, if any, stays underneath. Movement
+	-- stays camera-relative; the moment never rolls (its CFrame is the caller's lookAt).
+	function director.setMomentShot(fn: (() -> (CFrame?, number?, number))?)
+		momentFn = fn -- step() hands the classic camera back to Custom once the moment is over
+	end
+
+	function director.momentActive(): boolean
+		return momentFn ~= nil
+	end
+
 	---------------------------------------------------------------------------
 	-- Input (diorama): touch drag / pinch, right mouse, wheel, I / O, right stick
 	---------------------------------------------------------------------------
@@ -513,13 +532,29 @@ function CameraDirector.new(state: any): any
 		end
 		stepFades(dt)
 
+		-- A moment's shot blended over the frame below (weight 0..1).
+		local mCf: CFrame?, mFov, mW = nil, D.FOV, 0
+		if momentFn then
+			local cf, fov, w = momentFn()
+			if cf then
+				mCf, mFov, mW = cf, fov or D.FOV, math.clamp(w, 0, 1)
+			end
+		end
+		local function write(cf: CFrame, fov: number)
+			if mCf then
+				cf = cf:Lerp(mCf, mW)
+				fov += (mFov - fov) * mW
+			end
+			cam.CFrame = cf
+			cam.FieldOfView = fov
+		end
+
 		if shotFn then
 			local cf, fov = shotFn()
 			if cf then
 				cam.CameraType = Enum.CameraType.Scriptable
-				cam.CFrame = cf
+				write(cf, fov or D.FOV)
 				cam.Focus = cf
-				cam.FieldOfView = fov or D.FOV
 				return
 			end
 		end
@@ -527,6 +562,17 @@ function CameraDirector.new(state: any): any
 		keysAndPad(dt)
 		local f = followFocus(dt)
 		local classic = mode == "classic"
+		if classic and mCf then
+			-- The default camera is paused under the moment: blend from where it stood.
+			local hold = classicHold or cam.CFrame
+			classicHold = hold
+			cam.CameraType = Enum.CameraType.Scriptable
+			write(hold, CL.FOV + kick)
+			return
+		elseif classicHold then
+			classicHold = nil
+			toCustom(cam) -- the moment is over: the default camera carries on from here
+		end
 		if classic and not beat then
 			if not customReady then
 				customReady = true
@@ -564,9 +610,8 @@ function CameraDirector.new(state: any): any
 		end
 		local pos, lookAt = CameraMath.orbit(CameraMath.ahead(t3(target), yaw, lead), yaw, p, dist)
 		local cf = CFrame.lookAt(v3(pos), v3(lookAt))
-		cam.CFrame = cf
+		write(cf, fov + kick)
 		cam.Focus = CFrame.new(target)
-		cam.FieldOfView = fov + kick
 	end
 
 	RunService:BindToRenderStep(RENDER_NAME, Enum.RenderPriority.Camera.Value + 1, function(dt: number)

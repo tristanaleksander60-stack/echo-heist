@@ -52,6 +52,7 @@ local Ui = require(script.Parent:WaitForChild("Ui"))
 
 local H = Config.Heist
 local C = Config.Clone
+local MS = Config.Moments.SWARM
 local TAU = 2 * math.pi
 local RIBBON_IMAGE = "EH_FX_Ribbon"
 -- Clone state -> its custom pose clip (Shared/Heist/CloneClips).
@@ -509,6 +510,7 @@ function EchoView.new(state: any): any
 		entry.hue = hue
 		local seatHue = if a.orphan then Palette.tapeGrey else Palette.hueFor(a.seat)
 		entry.pill.BackgroundColor3 = seatHue
+		entry.seatHue = seatHue
 		entry.number.Text = Strings.cloneNumber(a.slot)
 		entry.pillIconName = Icons.seat(a.seat)
 		Icons.set(entry.pillIcon, entry.pillIconName)
@@ -532,6 +534,9 @@ function EchoView.new(state: any): any
 		entry.stateSince = 0
 		entry.outName = nil
 		entry.burstAt = nil
+		entry.beatAt = nil
+		entry.beatLit = false
+		entry.hop = 0
 		entry.carrying = false
 		entry.glowY = nil
 		entry.frame.loco = "idle"
@@ -884,9 +889,27 @@ function EchoView.new(state: any): any
 			if pose.glitchX ~= 0 and not state.reduced then
 				feet *= CFrame.new(pose.glitchX, 0, 0)
 			end
+			-- A roll-call beat (Heist/MomentDirector, 8 OF ME): one hop and a white pill flash.
+			local hop = 0
+			local beatAt = entry.beatAt
+			if beatAt and now >= beatAt then
+				local pe = now - beatAt
+				if pe < MS.BEAT_SECONDS then
+					hop = if state.reduced then 0 else MS.BEAT_HOP * math.sin(pe / MS.BEAT_SECONDS * math.pi)
+					if not entry.beatLit then
+						entry.beatLit = true
+						entry.pill.BackgroundColor3 = Palette.white
+					end
+				else
+					entry.beatAt = nil
+					entry.beatLit = false
+					entry.pill.BackgroundColor3 = entry.seatHue or Palette.white
+				end
+			end
+			entry.hop = hop
 			Rigs.pose(
 				rig,
-				feet,
+				if hop ~= 0 then feet * CFrame.new(0, hop, 0) else feet,
 				entry.phase,
 				math.clamp(f.speed / 10, 0, 1),
 				parts,
@@ -1130,6 +1153,38 @@ function EchoView.new(state: any): any
 			end
 		end
 		return out
+	end
+
+	-- Every clone of this run in record order (the tape-print order) with its recording and hue,
+	-- drawn or not yet: the rewind's path trails and the 8 OF ME roll call (Heist/MomentDirector).
+	function view.paths(): { { actor: any, rec: any, hue: Color3 } }
+		local out = {}
+		for _, entry in order do
+			table.insert(out, { actor = entry.actor, rec = entry.rec, hue = entry.hue })
+		end
+		return out
+	end
+
+	-- A roll-call beat for one clone at os.clock() time `at`: it hops once and its pill flashes white
+	-- (Config.Moments.SWARM BEAT_*; no hop under reduced motion).
+	function view.beat(actorId: number, at: number)
+		local entry = active[actorId]
+		if entry then
+			entry.beatAt = at
+			entry.beatLit = false
+		end
+	end
+
+	-- The roll-call hop a clone shows this frame (studs; tests).
+	function view.hopOf(actorId: number): number
+		local entry = active[actorId]
+		return if entry then entry.hop or 0 else 0
+	end
+
+	-- The owner group's Highlight (one per owner; the 8 OF ME outline flash), or nil.
+	function view.highlightOf(ownerId: number): Highlight?
+		local pool = pools[ownerId]
+		return if pool then pool.highlight else nil
 	end
 
 	-- The local player's newest clone this run (actor id, 0 = none).

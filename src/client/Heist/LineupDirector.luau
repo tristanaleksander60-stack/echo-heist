@@ -11,7 +11,11 @@
 --           burned caption "RUN 6 · 8 OF ME · $1,000" pops in; "ME, 20 SEC AGO" sits
 --           on your newest clone for 1.5 s (always the true number, CLIPS §1.2)
 --   arrive  each figure turns to the camera; after the last arrival they pose (cheer
---           clip on avatars, arms up on mannequins, one hop) rippling 60 ms apart
+--           clip on avatars, arms up on mannequins, one hop) rippling 60 ms apart; a 0.6 s
+--           snare roll (SnareRoll) lands on the pose. Clones the final run busted or zapped
+--           are never hidden: they stand apart on a Tape Grey busted podium past the crew's
+--           end (Shared/Heist/MomentPlan.podium) and slump, with one sheepish shrug on the beat
+--           (premium §6.7; Config.Moments.LINEUP)
 --   +2.4 s  done: the results card shows over the held shot. A SKIP chip skips from 1 s;
 --           a tap anywhere (or a key) skips once the crew has posed (the first cut of a
 --           session; later cuts from 1 s), so a kid still mashing GRAB keeps the payoff.
@@ -40,6 +44,7 @@ local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local Strings = require(Shared:WaitForChild("Heist"):WaitForChild("Strings"))
+local MomentPlan = require(Shared:WaitForChild("Heist"):WaitForChild("MomentPlan"))
 
 local LineupPlan = require(script.Parent:WaitForChild("LineupPlan"))
 local Motion = require(script.Parent:WaitForChild("Motion"))
@@ -49,6 +54,7 @@ local Ui = require(script.Parent:WaitForChild("Ui"))
 
 local H = Config.Heist
 local CAM = H.CAMERA
+local ML = Config.Moments.LINEUP
 local FONT = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Heavy)
 
 local LineupDirector = {}
@@ -552,6 +558,49 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 	-- card should show (after the cut, or at once when there is nothing to line up).
 	-- `ageOf(entry)` gives a clone's true age in seconds at the start of the walk (the
 	-- "ME, N SEC AGO" label), or nil when it is not known (no label then).
+	-- Which Line-up clones the final run busted or zapped (state.actorFx of the run's clone actors,
+	-- matched by owner and deck slot). Returns the flags in entry order and whether any is set.
+	local function bustedOf(entries: { any }): ({ boolean }, boolean)
+		local flags: { boolean } = {}
+		local any = false
+		local run = state.run
+		local byKey: { [string]: number } = {}
+		for _, a in (run and run.actors) or {} do
+			if a.kind == "clone" then
+				byKey[tostring(a.owner) .. ":" .. tostring(a.slot)] = a.id
+			end
+		end
+		for i, e in entries do
+			local id = if e.kind == "clone" then byKey[tostring(e.ownerId) .. ":" .. tostring(e.slot)] else nil
+			local fx = id and state.actorFx and state.actorFx[id]
+			flags[i] = fx ~= nil and (fx.gone == "Busted" or fx.gone == "Zapped")
+			any = any or flags[i]
+		end
+		return flags, any
+	end
+
+	-- The row's spots (level space) with the busted clones moved onto their podium past the crew's end
+	-- (Shared/Heist/MomentPlan.podium), in the server row's frame (centre, across, back).
+	local function podiumSpots(entries: { any }, flags: { boolean }, floorY: number): { Vector3 }
+		local S = Config.Sim
+		local n = math.min(#entries, S.LINEUP_ROW)
+		local cx, cz = 0, 0
+		for i = 1, n do
+			cx += entries[i].x
+			cz += entries[i].z
+		end
+		cx /= n
+		cz /= n
+		local yaw = entries[1].yaw or math.pi
+		local fx, fz = -math.sin(yaw), -math.cos(yaw)
+		local dx, dz = fz, -fx
+		local out: { Vector3 } = {}
+		for i, s in MomentPlan.podium(flags, S.LINEUP_ROW, S.LINEUP_SPACING, ML.PODIUM_GAP) do
+			out[i] = Vector3.new(cx + dx * s.across - fx * s.back, floorY, cz + dz * s.across - fz * s.back)
+		end
+		return out
+	end
+
 	function director.play(over: any, done: () -> (), ageOf: ((entry: any) -> number?)?)
 		director.stop()
 		local entries = over.lineup
@@ -571,6 +620,11 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 		local raw: { Vector3 } = {}
 		for i, e in entries do
 			raw[i] = Vector3.new(e.x, floorY, e.z)
+		end
+		-- Busted clones stand apart on the busted podium (premium §6.7), never hidden.
+		local bustedFlags, anyBusted = bustedOf(entries)
+		if anyBusted then
+			raw = podiumSpots(entries, bustedFlags, floorY)
 		end
 		local spots, rowYaw = arrange(raw, entries[1].yaw or math.pi)
 		local fwd = look(rowYaw)
@@ -617,7 +671,9 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 					hue = Palette.tapeGrey
 				end
 			end
-			local target = CFrame.new(origin + spots[i]) * CFrame.Angles(0, rowYaw, 0)
+			local onPodium = anyBusted and bustedFlags[i] == true
+			local target = CFrame.new(origin + spots[i] + Vector3.new(0, if onPodium then ML.PODIUM_HEIGHT else 0, 0))
+				* CFrame.Angles(0, rowYaw, 0)
 			local from: CFrame = target
 			if e.kind == "clone" then
 				from = clonePos[tostring(e.ownerId) .. ":" .. tostring(e.slot)] or target
@@ -650,9 +706,40 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 				endYaw = rowYaw,
 				posed = false,
 				phase = 0,
+				busted = onPodium, -- slumps on the busted podium instead of cheering
 			}
 			table.insert(figures, fig)
 			fig.age = if fig.mine and ageOf then ageOf(e) else nil
+		end
+		-- The busted podium: a low Tape Grey block under the busted clones, beside the crew.
+		if anyBusted then
+			local sum, n = Vector3.zero, 0
+			local lo, hi = math.huge, -math.huge
+			for i, s in spots do
+				if bustedFlags[i] then
+					sum += s
+					n += 1
+					local a = s:Dot(across)
+					lo = math.min(lo, a)
+					hi = math.max(hi, a)
+				end
+			end
+			if n > 0 then
+				local c = sum / n
+				local podium = Instance.new("Part")
+				podium.Name = "BustedPodium"
+				podium.Anchored = true
+				podium.CanCollide = false
+				podium.CanQuery = false
+				podium.CanTouch = false
+				podium.CastShadow = false
+				podium.Material = Enum.Material.SmoothPlastic
+				podium.Color = Palette.tapeGrey
+				podium.Size = Vector3.new(hi - lo + Config.Sim.LINEUP_SPACING, ML.PODIUM_HEIGHT, ML.PODIUM_DEPTH)
+				podium.CFrame = CFrame.new(origin + Vector3.new(c.X, floorY + ML.PODIUM_HEIGHT / 2, c.Z))
+					* CFrame.Angles(0, rowYaw, 0)
+				podium.Parent = f
+			end
 		end
 
 		-- One figure's rig (hidden until every figure exists; then they swap in together).
@@ -787,6 +874,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 		local startCf = cam.CFrame
 		local startFov = cam.FieldOfView
 		local hopSeen = false
+		local snareSeen = false
 		RunService:BindToRenderStep(renderName, Enum.RenderPriority.Camera.Value + 1, function(dt: number)
 			debug.profilebegin("EH.Lineup")
 			local now = os.clock()
@@ -821,6 +909,11 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 			end
 			buildSome()
 			skipChip.Visible = now >= chipAt
+			-- The snare roll: SNARE_SECONDS long, its last hit lands on the pose (premium §6.7).
+			if not snareSeen and e >= tPose - ML.SNARE_SECONDS then
+				snareSeen = true
+				Sound.play("SnareRoll")
+			end
 			-- Caption: pops in with the walk-off.
 			if e >= H.LINEUP_START_DELAY and not caption.Visible and not finished then
 				caption.Visible = true
@@ -869,7 +962,22 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 				end
 				fig.phase += speed * 0.35 * dt * 2 * math.pi
 				local myPose = tPose + fig.delay
-				if e >= myPose then
+				if e >= myPose and fig.busted then
+					-- busted podium: slumped forward, one sheepish shrug on the beat
+					if not fig.posed then
+						fig.posed = true
+						Rigs.setSpeed(rig, 0)
+					end
+					local pe = e - myPose
+					local slump = smooth(pe / 0.25)
+					local shrug = if reduced
+						then 0
+						else ML.SHRUG_HOP * math.max(0, math.sin(math.clamp(pe / 0.45, 0, 1) * math.pi))
+					local lean = cf
+						* CFrame.new(0, -ML.SLUMP_SINK * slump, 0)
+						* CFrame.Angles(-math.rad(ML.SLUMP_TILT) * slump, 0, 0)
+					Rigs.poseCheer(rig, lean, 0, shrug, parts, cfs)
+				elseif e >= myPose then
 					if not fig.posed then
 						fig.posed = true
 						Rigs.setSpeed(rig, 0)

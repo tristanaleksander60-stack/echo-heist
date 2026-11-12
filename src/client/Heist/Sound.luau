@@ -104,6 +104,11 @@ function Sound.duck(reason: string, seconds: number?)
 	call("duck", reason, seconds)
 end
 
+-- The world through the 800 Hz low-pass (on) or open again (Config.Audio.MUFFLE_*).
+function Sound.muffle(on: boolean, seconds: number?)
+	call("muffle", on, seconds)
+end
+
 function Sound.preload(sets: { string }?)
 	call("preload", sets)
 end

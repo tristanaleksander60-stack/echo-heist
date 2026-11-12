@@ -47,6 +47,7 @@ for _, name in
 		"GusRig",
 		"GusView",
 		"WorldView",
+		"MomentDirector",
 		"RewindDirector",
 		"LineupDirector",
 		"Hud",
@@ -648,6 +649,224 @@ if okL5 and b5c then
 else
 	check(false, "L5 builds with the kit for the Line-up shot")
 end
+
+-- H. Signature moments (PLAN_STEAM_PLUS §4.4 F2, §5 "8 OF ME"): the G2 staging's seven Clone Party
+-- tapes (src/server/Heist/StagingTapes.luau) drawn by EchoView + you (a mannequin stand-in on the
+-- spawn) = 8 rigs. MomentDirector's 8 OF ME moment runs on hand-stepped frames (Luau Execution
+-- servers do not simulate or render): the roll call hops each clone 60 ms apart in record order and
+-- lights 8 numbered pills, the world dims 15 %, and the camera shot it hands to CameraDirector keeps
+-- every one of the 8 rigs (their real parts) inside the central 32 % of a 16:9 frame. Then the
+-- hit-stop rule and the blooper cut's replay window on the same run.
+local okMoment, momentInfo = pcall(function()
+	local Config = require(shared:WaitForChild("Config")) :: any
+	local MS = Config.Moments.SWARM
+	local SHARE = Config.Heist.CAMERA.LINEUP.CENTRAL_SHARE
+	local Codec = require(shared:WaitForChild("Rec"):WaitForChild("Codec"))
+	local EV = require(shared:WaitForChild("Sim"):WaitForChild("EventLog")).EV
+	local EchoView = require(clientHeist:WaitForChild("EchoView"))
+	local MomentDirector = require(clientHeist:WaitForChild("MomentDirector"))
+	local StagingTapes = require(heistServer:WaitForChild("StagingTapes"))
+	local partyIndex = Protocol.catalogIndex(StagingTapes.LEVEL) :: number
+	local party = HeistInstance.levelData(partyIndex)
+	local OWNER = -4242
+	local originM = Vector3.new(-9000, 0, -6000)
+	local recs, actors, byId = {}, {}, {}
+	for k, buf in StagingTapes.buffers() do
+		local rec = Codec.decode(buf)
+		assert(rec, "tape " .. k .. " decodes")
+		recs[k] = rec
+		local a = { id = k, kind = "clone", owner = OWNER, seat = 1, slot = k, run = k, key = k }
+		actors[k] = a
+		byId[k] = a
+	end
+	assert(#actors == 7, "seven staging tapes")
+	local msg = { run = 8, actors = actors, actorById = byId, transition = 0 }
+	local vstate: any = {
+		origin = originM,
+		level = party,
+		levelIndex = partyIndex,
+		crew = { { userId = OWNER, seat = 1 } },
+		mySeat = 1,
+		actorFx = {},
+		run = msg,
+		phase = "Run",
+		viewerId = OWNER,
+		reduced = false,
+		particleScale = 1,
+	}
+	local echo = EchoView.new(vstate)
+	echo.setRun(msg, recs, os.clock() - 5)
+	-- you: a mannequin on the spawn with a HumanoidRootPart, the 8th rig
+	local spawn = party.spawns[1]
+	local youRig = Rigs.buildMannequin()
+	youRig.model.Parent = scratch
+	local youModel = Instance.new("Model")
+	youModel.Name = "You"
+	local hrp = Instance.new("Part")
+	hrp.Name = "HumanoidRootPart"
+	hrp.Anchored = true
+	hrp.Transparency = 1
+	hrp.Size = Vector3.new(2, 2, 1)
+	hrp.Position = originM + Vector3.new(spawn.x, spawn.y, spawn.z)
+	hrp.Parent = youModel
+	youModel.Parent = scratch
+	local partsY, cfsY = {}, {}
+	Rigs.pose(youRig, CFrame.new(originM + Vector3.new(spawn.x, party.floorY, spawn.z)), 0, 0, partsY, cfsY)
+	workspace:BulkMoveTo(partsY, cfsY, Enum.BulkMoveMode.FireCFrameChanged)
+
+	local shotFn: any = nil
+	local fakeCamera = {
+		setMomentShot = function(fn: any)
+			shotFn = fn
+		end,
+		isSuspended = function(): boolean
+			return false
+		end,
+	}
+	local gui = Instance.new("ScreenGui")
+	gui.Parent = scratch
+	local moments = MomentDirector.new(vstate, {
+		gui = gui,
+		hud = { setCutscene = function(_on: boolean) end },
+		echo = echo,
+		camera = fakeCamera,
+		myId = OWNER,
+		character = function(): Model?
+			return youModel
+		end,
+		aspect = function(): number
+			return 16 / 9
+		end,
+	})
+	local tView, dt = 3.0, 1 / 60
+	local clock = os.clock()
+	for _ = 1, 3 do
+		clock += dt
+		echo.update(tView, clock, dt, nil)
+	end
+	local t0 = clock
+	moments.swarm({ kind = EV.Swarm, a = 1, b = 8, c = 8 }, t0)
+	local plan = moments.swarmPlan()
+	assert(plan and #plan.members == 8, "8 copies in the roll call (" .. tostring(plan and #plan.members) .. ")")
+	for i = 1, 7 do
+		assert(plan.members[i].id == i, "record order: member " .. i .. " is clone " .. tostring(plan.members[i].id))
+	end
+	assert(plan.members[8].id == nil, "you are the last copy")
+	assert(shotFn ~= nil, "the pull-back took the camera")
+	-- hand-stepped frames: when each clone's hop starts, the dim's deepest tint, the pills
+	local hopAt: { [number]: number } = {}
+	local minTint = 1
+	local dimFx: any = nil
+	local framed: any = nil
+	local hold = t0 + MS.CAM_IN + 0.05
+	while clock < t0 + 1.4 do
+		clock += dt
+		echo.update(tView, clock, dt, nil)
+		moments.step(clock, dt)
+		for i = 1, 7 do
+			if not hopAt[i] and echo.hopOf(i) > 0 then
+				hopAt[i] = clock
+			end
+		end
+		local cam = workspace.CurrentCamera
+		dimFx = dimFx or (cam and cam:FindFirstChild("EH_MomentDim"))
+		if dimFx and dimFx.Enabled then
+			minTint = math.min(minTint, dimFx.TintColor.R)
+		end
+		if not framed and clock >= hold then
+			local cf, fov, w, fits = moments.swarmShot(clock)
+			framed = { cf = cf, fov = fov, w = w, fits = fits }
+		end
+	end
+	for i = 1, 7 do
+		assert(hopAt[i], "clone " .. i .. " took its pose beat")
+		if i > 1 then
+			local gap = hopAt[i] - hopAt[i - 1]
+			assert(
+				math.abs(gap - MS.ROLL_STAGGER) <= dt + 1e-6,
+				string.format("beat %d is %.3f s after %d", i, gap, i - 1)
+			)
+		end
+	end
+	assert(math.abs(minTint - (1 - MS.DIM)) < 0.02, string.format("the world dims 15 %% (tint %.3f)", minTint))
+	local ink = require(shared:WaitForChild("Heist"):WaitForChild("Palette")).ink
+	local row = gui:FindFirstChild("RollCall", true)
+	local lit = 0
+	for _, p in (row and row:GetChildren()) or {} do
+		if p:IsA("Frame") and p.Visible and p.BackgroundColor3 ~= ink then
+			lit += 1
+		end
+	end
+	assert(lit == 8, "8 numbered pills lit (" .. lit .. ")")
+	-- the framing: every rig's real parts inside the central 32 % of a 16:9 frame
+	assert(framed and framed.cf and framed.fits and framed.w > 0.99, "the pull-back is in and fits")
+	local tv = math.tan(math.rad(framed.fov) / 2)
+	local worst = 0
+	local function check8(model: Model)
+		local cf, size = model:GetBoundingBox()
+		for _, dy in { size.Y / 2, -size.Y / 2 } do
+			local p = (cf * CFrame.new(0, dy, 0)).Position
+			local lp = framed.cf:PointToObjectSpace(p)
+			local depth = -lp.Z
+			assert(depth > 0.1, "in front of the camera")
+			worst = math.max(worst, math.abs(lp.X) / (depth * tv * 16 / 9))
+		end
+	end
+	for i = 1, 7 do
+		local rig = echo.rigOf(i)
+		assert(rig, "clone " .. i .. " has a rig")
+		check8(rig.model)
+	end
+	check8(youRig.model)
+	assert(worst <= SHARE + 0.02, string.format("all 8 inside the central 32 %% (widest %.3f)", worst))
+
+	-- hit-stop: only the four heavy beats; the filter holds the view time through it
+	assert(not moments.hitStop("plate", clock), "no hit-stop on a routine beat")
+	moments.filter(5, clock, dt) -- the last frame before the beat
+	assert(moments.hitStop("busted", clock), "hit-stop on your catch")
+	local held, heldDt = moments.filter(5.5, clock + 0.03, dt)
+	assert(held == 5 and heldDt == 0, "the view holds for 66 ms")
+	local free = moments.filter(5.6, clock + 0.1, dt)
+	assert(free == 5.6, "and moves on after")
+
+	-- the blooper cut: clone 3 busted at 12 s replays from 9 s, at most 4 s, then the Line-up
+	moments.onEvent({ kind = EV.Busted, a = 1, b = 3, c = 0, tick = 12 * Config.Rec.HZ + 1 }, false)
+	local after = false
+	assert(
+		moments.blooper({}, function()
+			after = true
+		end, clock),
+		"a blooper plays"
+	)
+	local first, last = nil, nil
+	local c2 = clock
+	while not after and c2 < clock + 8 do
+		c2 += dt
+		moments.step(c2, dt)
+		if vstate.replayT then
+			first = first or vstate.replayT
+			last = vstate.replayT
+		end
+	end
+	assert(after, "the Line-up follows")
+	assert(first and math.abs(first - 9) < 0.05, "replay starts 3 s before the bust (" .. tostring(first) .. ")")
+	assert(last and last - first <= Config.Moments.BLOOPER.MAX + 1e-6, "<= 4 s")
+	assert(vstate.replayT == nil and vstate.actorFx ~= nil, "view time and fx restored")
+	moments.stop()
+	echo.clear()
+	return string.format(
+		"hops %.3f s apart, widest %.3f of the width, tint %.2f",
+		(hopAt[7] - hopAt[1]) / 6,
+		worst,
+		minTint
+	)
+end)
+check(
+	okMoment,
+	"8 OF ME on the G2 tapes: roll call, dim, pills, framing in the central 32 %; hit-stop; blooper ("
+		.. tostring(momentInfo)
+		.. ")"
+)
 
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))
