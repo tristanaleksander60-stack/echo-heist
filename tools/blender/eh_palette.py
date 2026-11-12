@@ -132,7 +132,9 @@ RUNTIME = {"floor": "#3A365C"}
 # >= MIN_VALUE_STEP above every ground colour of every location, and outside the reserved clone hues.
 # boot_print: Gus's boot prints (his next 2 s of patrol, PLAN_STEAM_PLUS A5), drawn with an Ink rim so they
 # also read on lit floor pools.
-RUNTIME_SIGNALS = {"boot_print": "#9098C0"}
+# ghost_chalk: the "Show me?" chalk-outline ghost and its dashed trail (Hud/Hints, PLAN_STEAM_PLUS §5 "Stuck"):
+# not white, not gold, not a clone hue (Chalk Lime, Oklab >= 0.15 from all of them and from Gold / Gold Hi).
+RUNTIME_SIGNALS = {"boot_print": "#9098C0", "ghost_chalk": "#98F060"}
 
 # Advent ornaments (Christmas layer trophies, Config.Data.Trophies Orn_Advent<year>_<day>): which mesh and which
 # MeshPart.Color each advent day gets. Ornament_Bauble / _Bell / _Star are drawn on the tint cell (one colour family,

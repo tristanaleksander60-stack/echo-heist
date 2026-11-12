@@ -13,6 +13,11 @@
 -- Value-seeking variant (opts.greedy): loot catches the eye in proportion to its value
 -- (the till over a candy bar), and with opts.topFirst the kid's first act of run 1 is
 -- to go for the top loot (the till / gold) and try to grab it.
+-- PLAN_STEAM_PLUS §8.4 adds two more kids (opts.kind):
+--   "greedy"    goes straight for the most valuable loot left, every decision, and tries the
+--               next one when a shut door stops it; never stands on a plate on purpose.
+--   "confused"  ignores plates, spams REWIND (a few seconds into every run) and walks into Gus.
+-- tests/sim/HelpBots.spec.luau plays all three against the help rules (Shared/Heist/Help).
 -- These are synthetic stand-ins; real "naive" recordings from kid wave 1 replace
 -- them (levels/<id>.naive/*.bin, §8.4).
 
@@ -135,11 +140,95 @@ function NaiveKid.brain(level: any, seed: number, run: number, opts: any?): any
 	return { decide = decide }
 end
 
+-- Loot still worth going for (at home or dropped), most valuable first.
+local function lootByValue(level: any, sim: any): { any }
+	local out = {}
+	for i, d in level.loot do
+		local item = sim.loot.items[i]
+		if item and (item.state == "Home" or item.state == "Dropped") then
+			table.insert(out, { def = d, x = item.x, z = item.z })
+		end
+	end
+	table.sort(out, function(a: any, b: any): boolean
+		return a.def.value > b.def.value
+	end)
+	return out
+end
+
+-- The greedy kid (opts.kind = "greedy"): the most valuable loot first, the next one when a door
+-- stops it, the van when carrying; plates only by accident.
+function NaiveKid.greedyBrain(level: any, seed: number, run: number): any
+	local rnd = lcg(seed * 7349 + run * 50021 + 3)
+	local tried: { [string]: boolean } = {}
+	local area = NaiveKid.AREAS[level.spec.location] or NaiveKid.AREAS.CornerShop
+	local decide
+	decide = function(bot: any, sim: any, _view: any, t: number): { any }
+		local a = HeistSim.liveActor(sim, bot.id)
+		if a and a.carrying ~= 0 then
+			return { { goVan = true, timeout = 10 }, { decide = decide } }
+		end
+		if t > 2 and rnd(0, 1) < END_TAP then
+			return { { endRun = true } }
+		end
+		for _, l in lootByValue(level, sim) do
+			if not tried[l.def.id] then
+				tried[l.def.id] = true
+				return {
+					{ go = { l.x, l.z }, timeout = 7, giveUp = 1.5 },
+					{ grab = l.def.id },
+					{ wait = 0.3 },
+					{ decide = decide },
+				}
+			end
+		end
+		table.clear(tried) -- everything tried once: wander a bit, then try again
+		return {
+			{ go = { rnd(area[1], area[2]), rnd(area[3], area[4]) }, timeout = rnd(2, 4), giveUp = 1 },
+			{ decide = decide },
+		}
+	end
+	return { decide = decide }
+end
+
+-- The confused kid (opts.kind = "confused"): ignores plates, spams REWIND, walks into Gus.
+-- `after` (s, default 0): the REWIND spam starts this much later (a kid who first walked in).
+function NaiveKid.confusedBrain(level: any, seed: number, run: number, after: number?): any
+	local rnd = lcg(seed * 6151 + run * 7919 + 11)
+	local area = NaiveKid.AREAS[level.spec.location] or NaiveKid.AREAS.CornerShop
+	local rewindAt = (after or 0) + rnd(2, 6)
+	local decide
+	decide = function(_bot: any, sim: any, _view: any, t: number): { any }
+		if t >= rewindAt then
+			return { { endRun = true }, { decide = decide } }
+		end
+		local g = sim.guards[1]
+		if g and rnd(0, 1) < 0.7 then
+			return { { go = { g.x, g.z }, timeout = 1, giveUp = 0.5 }, { decide = decide } }
+		end
+		return {
+			{ go = { rnd(area[1], area[2]), rnd(area[3], area[4]) }, timeout = rnd(1, 2.5), giveUp = 0.5 },
+			{ decide = decide },
+		}
+	end
+	return { decide = decide }
+end
+
+-- One run's brain for any kid (opts.kind: nil = naive, "greedy", "confused").
+function NaiveKid.brainFor(level: any, seed: number, run: number, opts: any?): any
+	local kind = opts and opts.kind
+	if kind == "greedy" then
+		return NaiveKid.greedyBrain(level, seed, run)
+	elseif kind == "confused" then
+		return NaiveKid.confusedBrain(level, seed, run)
+	end
+	return NaiveKid.brain(level, seed, run, opts)
+end
+
 -- A Harness plan of `runs` naive runs for player 1 (opts: see NaiveKid.brain).
 function NaiveKid.plan(level: any, seed: number, runs: number, opts: any?): any
 	local plan = { runs = {} }
 	for r = 1, runs do
-		table.insert(plan.runs, { [1] = { NaiveKid.brain(level, seed, r, opts) } })
+		table.insert(plan.runs, { [1] = { NaiveKid.brainFor(level, seed, r, opts) } })
 	end
 	return plan
 end

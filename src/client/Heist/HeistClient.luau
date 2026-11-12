@@ -55,6 +55,7 @@ local LightDirector = require(Heist:WaitForChild("LightDirector"))
 local JobBoard = require(Heist:WaitForChild("JobBoard"))
 local Hud = require(Heist:WaitForChild("Hud"))
 local Settings = require(Heist:WaitForChild("Settings"))
+local FirstTime = require(Heist:WaitForChild("FirstTime"))
 local Sound = require(Heist:WaitForChild("Sound"))
 local Telemetry = require(Heist:WaitForChild("Telemetry"))
 local Ui = require(Heist:WaitForChild("Ui"))
@@ -127,11 +128,12 @@ function HeistClient.start()
 
 	-- Compiled levels: Catalog indices (play order) and daily vaults by UTC day.
 	local levelCache: { [string]: any } = {}
-	local function levelFor(index: number, day: number?): any
-		local key = if index == Protocol.DAILY_INDEX then "d" .. tostring(day) else tostring(index)
+	local function levelFor(index: number, day: number?, relaxed: boolean?): any
+		local key = (if index == Protocol.DAILY_INDEX then "d" .. tostring(day) else tostring(index))
+			.. (if relaxed then "r" else "")
 		local cached = levelCache[key]
 		if not cached then
-			local spec = Protocol.levelSpec(index, day)
+			local spec = Protocol.levelSpec(index, day, relaxed)
 			if spec then
 				cached = LevelSpec.compile(spec)
 				levelCache[key] = cached
@@ -171,8 +173,13 @@ function HeistClient.start()
 				Net.Send(R.FastForward, on)
 			end
 		end,
-		selectLevel = function(index: number)
-			Net.Send(R.SelectLevel, index)
+		-- relaxed = true: the "Try Relaxed?" card (the server checks the offer, Protocol).
+		selectLevel = function(index: number, relaxed: boolean?)
+			if relaxed then
+				Net.Send(R.SelectLevel, index, true)
+			else
+				Net.Send(R.SelectLevel, index)
+			end
 		end,
 		selectDaily = function(day: number?)
 			Net.Send(R.SelectDaily, day)
@@ -197,6 +204,7 @@ function HeistClient.start()
 			camera.onModeChanged(fn)
 		end,
 	}
+	FirstTime.init() -- first-time beats, seeded from the profile (Heist/FirstTime)
 	local hud = Hud.new(state, actions)
 	-- Camera shake off: the rewind's FOV kick stays at 0 (Settings "shake").
 	local director = RewindDirector.new(hud.fxGui, function(deg: number)
@@ -474,7 +482,8 @@ function HeistClient.start()
 		state.levelInfo = if type(p.level) == "table" then p.level else nil
 		state.dressing = p.dressing == true
 		state.kit = p.kit == true
-		state.level = levelFor(p.levelIndex, daily and daily.day)
+		state.relaxed = p.relaxed == true
+		state.level = levelFor(p.levelIndex, daily and daily.day, state.relaxed)
 		if not state.levelInfo and state.level then
 			state.levelInfo = { id = state.level.id, name = state.level.name, kind = state.level.kind }
 		end

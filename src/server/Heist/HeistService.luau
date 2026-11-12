@@ -41,6 +41,9 @@ local Calendar = require(DataShared:WaitForChild("Calendar"))
 local DailyVault = require(DataShared:WaitForChild("DailyVault"))
 local Codec = require(Shared:WaitForChild("Rec"):WaitForChild("Codec"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
+local Help = require(Shared:WaitForChild("Heist"):WaitForChild("Help"))
+local Strings = require(Shared:WaitForChild("Heist"):WaitForChild("Strings"))
+local HeistSim = require(Shared:WaitForChild("Sim"):WaitForChild("HeistSim"))
 local Scenario = require(Shared:WaitForChild("Heist"):WaitForChild("Scenario"))
 local LihFolk = ReplicatedStorage:WaitForChild("LihFolk")
 local Net = require(LihFolk:WaitForChild("Net"))
@@ -63,20 +66,8 @@ HeistService.FtueStep = Signal.new()
 
 -- Funnel order (§7.5 onb_v2) for DataService.setFtueStep; client-only steps are listed
 -- so the indices stay stable when the client reports them later.
-HeistService.FTUE_STEPS = table.freeze({
-	"Joined",
-	"FirstMove",
-	"FirstPlate",
-	"FirstRewind",
-	"FirstCloneSeen",
-	"FirstBank",
-	"L1Complete",
-	"ReelShown",
-	"L2Started",
-	"FirstCloneBusted",
-	"SwarmSeen",
-	"Minute10",
-})
+-- (Heist/Protocol.FTUE_STEPS: the client's Heist/FirstTime reads the saved index too.)
+HeistService.FTUE_STEPS = Protocol.FTUE_STEPS
 
 type Crew = {
 	id: number,
@@ -90,6 +81,7 @@ type Crew = {
 export type CreateOpts = {
 	daily: HeistInstance.Daily?, -- a daily vault (levelIndex = Protocol.DAILY_INDEX)
 	tuning: HeistInstance.Tuning?, -- default: read from LiveFlags now
+	relaxed: boolean?, -- the Relaxed version of a story level (Levels/Relaxed)
 }
 
 local started = false
@@ -388,13 +380,19 @@ local function isNewAccount(player: Player): boolean
 	return not (rec and (rec.clears or 0) > 0)
 end
 
--- The daily vault is offered once the FTUE level is cleared. Studio without data
--- (offline) keeps it open so play tests are never blocked.
+-- The daily vault is offered once Night Clerk is cleared (PLAN D4, WALKTHROUGH P1-7: it can hold
+-- Gus, lasers and need-all plates; Config.Onboarding.DAILY_UNLOCK_LEVEL, Help.dailyOpen). Studio
+-- without data (offline) keeps it open so play tests are never blocked.
 local function dailyOpenFor(player: Player): boolean
 	if DataService == nil or DataService.status() == "offline" then
 		return true
 	end
-	return dataReady(player) and not isNewAccount(player)
+	if not dataReady(player) then
+		return false
+	end
+	local snap = snapshotOf(player)
+	local open = Help.dailyOpen(snap and snap.heist and snap.heist.levels)
+	return open
 end
 
 local function dailyState(player: Player): any
@@ -416,8 +414,9 @@ local function dailyState(player: Player): any
 	end
 	return {
 		enabled = LiveFlags.isOn("dailyVault"),
-		-- The daily vault opens after the first tape (§7.5: no skipping the FTUE).
+		-- The daily vault opens after Night Clerk (PLAN D4); the garage names the level to clear.
 		locked = not dailyOpenFor(player),
+		needsClear = select(2, Help.dailyOpen(nil)),
 		day = today,
 		slot = slot,
 		modifier = modifier,
@@ -687,6 +686,7 @@ function HeistService.createInstance(
 		leader = leaderId,
 		heistId = string.gsub(HttpService:GenerateGUID(false), "[{}]", ""),
 		firstHeist = firstHeist,
+		relaxed = o.relaxed == true and levelIndex ~= Protocol.DAILY_INDEX,
 		tuning = o.tuning or HeistService.tuning(),
 		build = buildOpts(),
 		push = push,
@@ -743,7 +743,7 @@ local function returnToGarage(crew: Crew)
 	pushGarage(crew)
 end
 
-local function startHeist(crew: Crew, levelIndex: number, daily: HeistInstance.Daily?): boolean
+local function startHeist(crew: Crew, levelIndex: number, daily: HeistInstance.Daily?, relaxed: boolean?): boolean
 	if crew.instance then
 		return false
 	end
@@ -758,17 +758,26 @@ local function startHeist(crew: Crew, levelIndex: number, daily: HeistInstance.D
 	end
 	local members = {}
 	local firstHeist = false
+	-- The free first catch (detection x2) goes to the first heists that HAVE a guard (WALKTHROUGH
+	-- P1-6: it used to be spent on L1, which has none): Help.graceFor.
+	local levelSpec = Protocol.levelSpec(levelIndex, daily and daily.day)
 	for _, p in crew.members do
 		table.insert(members, { userId = p.UserId, player = p, name = p.DisplayName, friends = friendsIn(crew, p) })
 		local snap = snapshotOf(p)
-		if snap and snap.heist and snap.heist.firstHeistDone == false then
+		if snap and snap.heist and Help.graceFor(levelSpec, snap.heist.levels) then
 			firstHeist = true
 		end
 	end
 	if #members == 0 then
 		return false
 	end
-	local inst = HeistService.createInstance(levelIndex, members, crew.leader.UserId, firstHeist, { daily = daily })
+	local inst = HeistService.createInstance(
+		levelIndex,
+		members,
+		crew.leader.UserId,
+		firstHeist,
+		{ daily = daily, relaxed = relaxed }
+	)
 	if not inst then
 		for _, p in crew.members do
 			push(p, "Toast", { text = "All the vans are out. Try again in a minute." })
@@ -891,6 +900,38 @@ local function leaderCrew(player: Player): Crew?
 	return crew
 end
 
+-- "Try Relaxed?" (PLAN §6.1 item 5): Heist.SelectLevel(index, true). The server decides: only the
+-- crew leader, only mid-heist on the level being played, and only when the sim offers it to them
+-- (HeistSim.offerRelaxed: 3 catches this heist, a story level not already relaxed). The heist
+-- restarts in place as Levels/Relaxed: no garage in between, the kid keeps playing.
+local function selectRelaxed(player: Player, index: number)
+	local crew = crewOf[player]
+	local inst = crew and crew.instance
+	if not (crew and inst and crew.leader == player and inst.overAt == nil) then
+		return
+	end
+	if inst.levelIndex ~= index or inst.daily ~= nil or not HeistSim.offerRelaxed(inst.sim, player.UserId) then
+		return
+	end
+	local last = lastStartBy[player]
+	if last and os.clock() - last < H.INSTANCE_COOLDOWN_SECONDS then
+		return
+	end
+	local level = inst.trackLevel
+	HeistService.destroyInstance(inst)
+	crew.instance = nil
+	for _, p in crew.pending do
+		table.insert(crew.members, p)
+	end
+	table.clear(crew.pending)
+	if startHeist(crew, index, nil, true) then
+		lastStartBy[player] = os.clock()
+		track("relaxedChosen", player, level)
+	else
+		returnToGarage(crew)
+	end
+end
+
 local function declareRemotes()
 	local R = Protocol.REMOTE
 	local RATE = H.RATE
@@ -948,8 +989,12 @@ local function declareRemotes()
 	})
 	Net.Listen(R.SelectLevel, {
 		rate = RATE.SelectLevel,
-		args = { T.integer(1, #Catalog) },
-		handler = function(player: Player, index: number)
+		args = { T.integer(1, #Catalog), T.optional(T.boolean) },
+		handler = function(player: Player, index: number, relaxed: boolean?)
+			if relaxed == true then
+				selectRelaxed(player, index)
+				return
+			end
 			if not isUnlocked(player, index) then
 				push(player, "Toast", { text = lockedText(player, index) })
 				return
@@ -969,7 +1014,8 @@ local function declareRemotes()
 				return
 			end
 			if not dailyOpenFor(player) then
-				push(player, "Toast", { text = "Finish your first heist to open the daily vault." })
+				local _, name = Help.dailyOpen(nil)
+				push(player, "Toast", { text = Strings.dailyLockedToast(name) })
 				return
 			end
 			local today = todayDay()

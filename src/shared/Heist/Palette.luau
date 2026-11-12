@@ -37,6 +37,10 @@ Palette.ok = hex("#2FBF71") -- Holly Green, used only as a UI "done" state with 
 -- with an Ink rim for lit pools; never Torch Amber (the cone's). Audited in tools/blender/eh_palette.py
 -- (RUNTIME_SIGNALS: Oklab >= 0.15 from every clone hue, Torch Amber and Alarm Red).
 Palette.bootPrint = hex("#9098C0")
+-- Chalk Lime: the "Show me?" chalk-outline ghost and its dashed trail (Hud/Hints, PLAN_STEAM_PLUS §5
+-- "Stuck"). Not white, not gold, not a clone hue: Oklab >= 0.15 from every clone hue, white, Gold,
+-- Gold Hi, Torch Amber, Alarm Red and Boot Chalk (tools/blender/eh_palette.py RUNTIME_SIGNALS).
+Palette.ghostChalk = hex("#98F060")
 -- Christmas layer (STYLE_BIBLE: Santa hats and berries are Ribbon Burgundy, never Alarm Red)
 Palette.ribbon = hex("#8C2F4B")
 Palette.snow = hex("#C0C3D5")

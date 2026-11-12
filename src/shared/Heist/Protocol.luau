@@ -12,11 +12,16 @@
 --                                      L1 and party levels: every party clone stays for "8 OF ME")
 --   Heist.Ready(reduced?)              "▶ RUN n" between runs (reduced = reduced motion)
 --   Heist.FastForward(on)              hold-to-skip pill
---   Heist.SelectLevel(index)           crew leader picks a tape (garage or results card);
---                                      index = Levels/Catalog index (PLAY order, not design n)
+--   Heist.SelectLevel(index, relaxed?) crew leader picks a tape (garage or results card);
+--                                      index = Levels/Catalog index (PLAY order, not design n).
+--                                      relaxed = true: the "Try Relaxed?" card. Accepted only
+--                                      mid-heist on the level being played, from the leader the
+--                                      server offers it to (HeistSim.offerRelaxed: 3 catches);
+--                                      the heist restarts as Levels/Relaxed (story levels only)
 --   Heist.SelectDaily(day?)            crew leader starts the daily vault: nil = today, else an
 --                                      advent day to catch up (UTC day number from the garage);
---                                      refused until the FTUE level is cleared (§7.5)
+--                                      refused until Night Clerk is cleared (PLAN D4,
+--                                      Config.Onboarding.DAILY_UNLOCK_LEVEL)
 --   (SelectLevel / SelectDaily: one new heist per player pick per INSTANCE_COOLDOWN_SECONDS)
 --   Heist.JoinFriend(userId)           join a friend's crew in this server
 --   Heist.Leave()                      back to the garage (or out of a crew); mid-heist from the
@@ -28,7 +33,8 @@
 --            dressing (Christmas layer on), kit (built from the art kit). where = "preparing"
 --            (a new account while the server starts its first heist: show the van door, not
 --            the garage). Garage sync: levels[i] adds needsClear (data key) / starsNeeded for
---            a locked tape; daily.locked until the FTUE level is cleared
+--            a locked tape; daily.locked until Night Clerk is cleared (daily.needsClear = its
+--            name); heist sync adds relaxed (the level is Levels/Relaxed)
 --   Rec      { key, owner, buf }       one new recording, sent once per client
 --   Run      { run, clock, actors, transition, kind, cap, keys }   a run starts (each actor:
 --            id, kind, owner, seat, slot, key, run, orphan, helper, capacity = bag size)
@@ -39,7 +45,9 @@
 --   RunEnd   { run, summary }          the run is over; the deck follows. summary adds
 --            alarm = AlarmInfo? (who tripped it, when, hint), tierMet, swarm (most copies
 --            of one player this run), escaped (the crew banked after the alarm and got away)
---   Deck     { cap, slots, redo, canUndo, locked, party, hint? }   this player's Clone Deck;
+--   Deck     { cap, slots, redo, canUndo, locked, party, hint?, relaxedOffer, relaxed }   this
+--            player's Clone Deck; relaxedOffer = the server offers this player Relaxed (the
+--            "Try Relaxed?" card: HeistSim.offerRelaxed, and they lead the crew);
 --            hint = { kind = "RedoAlarm", slot, t } when one of YOUR clones set the alarm
 --            off in its first ALARM_HINT_SECONDS ("Clone #N sets off the alarm: Redo #N?")
 --   Over     { result, award, daily? } heist over: results card. result adds kind
@@ -55,7 +63,7 @@
 --   Phase, RunIndex, Banked, Goal, LevelIndex, LevelId, Kind, Origin, HeistId, CanFF,
 --   Ready, Crew, Leader, Daily (UTC day, daily vaults only), Dressing, Kit, Tuning,
 --   AutoEndArmed (L1: the tutorial auto-end applies this run), AutoStartAt (server time the
---   next run starts by itself, between runs)
+--   next run starts by itself, between runs), Relaxed (the level is Levels/Relaxed)
 --   D<i>Open, D<i>Solid, D<i>SolidAt         doors (SolidAt -1 = none)
 --   L<i>On, L<i>OnAt                         lasers (OnAt -1 = none)
 --   P<i>Held, P<i>By                         plates (By = first actor id)
@@ -74,6 +82,7 @@
 
 local Catalog = require("../Levels/Catalog")
 local DailyVaults = require("../Levels/DailyVaults")
+local Relaxed = require("../Levels/Relaxed")
 
 local Protocol = {}
 
@@ -97,6 +106,24 @@ Protocol.REMOTE = table.freeze({
 })
 
 Protocol.DECK_OPS = table.freeze({ "Redo", "RedoFrom", "Delete", "DeleteBusted", "Undo" })
+
+-- FTUE funnel order (§7.5 onb_v2): DataService.setFtueStep saves the highest index reached
+-- (profile heist.ftueStep). Server: HeistService.FTUE_STEPS; client: Heist/FirstTime seeds the
+-- first-time beats from it. Append only (saved indices must keep their meaning).
+Protocol.FTUE_STEPS = table.freeze({
+	"Joined",
+	"FirstMove",
+	"FirstPlate",
+	"FirstRewind",
+	"FirstCloneSeen",
+	"FirstBank",
+	"L1Complete",
+	"ReelShown",
+	"L2Started",
+	"FirstCloneBusted",
+	"SwarmSeen",
+	"Minute10",
+})
 
 -- Run kinds for the transition the client plays (§7.1).
 Protocol.TRANSITION = table.freeze({ Intro = "Intro", Standard = "Standard", Quick = "Quick", Reduced = "Reduced" })
@@ -147,16 +174,21 @@ end
 
 -- The LevelSpec an instance plays: a Catalog index, or the daily vault of a UTC day
 -- (levelIndex = DAILY_INDEX). Client and server compile the same spec with
--- Sim/LevelSpec.compile, so the daily modifier (DailyVaults.forDay) is never sent.
-function Protocol.levelSpec(levelIndex: number, dailyDay: number?): any
+-- Sim/LevelSpec.compile, so the daily modifier (DailyVaults.forDay) is never sent. relaxed =
+-- the Relaxed modifier (Levels/Relaxed; story levels of the Catalog only, else nil).
+function Protocol.levelSpec(levelIndex: number, dailyDay: number?, relaxed: boolean?): any
 	if levelIndex == Protocol.DAILY_INDEX then
-		if type(dailyDay) ~= "number" or dailyDay ~= dailyDay then
+		if relaxed or type(dailyDay) ~= "number" or dailyDay ~= dailyDay then
 			return nil
 		end
 		local spec = DailyVaults.forDay(math.floor(dailyDay))
 		return spec
 	end
-	return Catalog[levelIndex]
+	local spec = Catalog[levelIndex]
+	if relaxed and spec then
+		return if Relaxed.canApply(spec) then Relaxed.apply(spec) else nil
+	end
+	return spec
 end
 
 -- Catalog index of a LevelSpec id (nil if it is not a launch level). Never hard-code

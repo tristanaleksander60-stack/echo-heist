@@ -8,7 +8,8 @@
 --   story level  cleared = haul >= haulTarget and beforeDawn
 --                Haul = cleared; Crew = cleared and clones <= par;
 --                Clean = cleared, no catches and no busted clones in the final run;
---                Diamond = cleared and clones < devClones (only when devClones is set).
+--                Diamond = cleared and clones < devClones (only when devClones is set;
+--                never on a Relaxed run, Levels/Relaxed).
 --   party level  Haul1..3 = haul >= haulTiers[i]; cleared = Haul1.
 --   Every medal except Diamond is one Star. Medals are kept forever (union of runs).
 --   Tainted runs (Validator, §8.8) earn Cash but no medals, bests, clears or trophies.
@@ -161,7 +162,7 @@ function Progress.evaluate(rules: LevelRules, result: HeistResult): Evaluation
 			if result.catches == 0 and result.busted == 0 then
 				medals.Clean = true
 			end
-			if rules.devClones ~= nil and result.clones < rules.devClones then
+			if rules.devClones ~= nil and result.clones < rules.devClones and not result.relaxed then
 				medals[DIAMOND] = true
 			end
 		end

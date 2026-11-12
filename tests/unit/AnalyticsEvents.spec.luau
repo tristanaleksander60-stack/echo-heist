@@ -77,25 +77,19 @@ return function(test)
 		Assert.eq(f.fields[1], "source", "step-1 field 1 is the JoinSource")
 	end)
 
-	test("onb_v2 matches HeistService.FTUE_STEPS (the saved ftueStep index)", function()
-		local path = "src/server/Heist/HeistService.luau"
-		if not fs.isFile(path) then
-			return -- the heist server is not in this checkout
-		end
-		local text = fs.readFile(path)
-		local block = string.match(text, "FTUE_STEPS%s*=%s*table%.freeze%(%s*(%b{})")
-		if not block then
-			return -- HeistService no longer keeps its own list (it may use Events.FUNNELS.onb_v2)
-		end
-		local steps = {}
-		for name in string.gmatch(block, '"([%w_]+)"') do
-			table.insert(steps, name)
-		end
+	test("onb_v2 matches Protocol.FTUE_STEPS (HeistService's saved ftueStep index)", function()
+		local Protocol = require("../../src/shared/Heist/Protocol")
+		local steps = Protocol.FTUE_STEPS
 		local f = Events.FUNNELS.onb_v2
-		Assert.eq(#steps, #f.steps, "HeistService step count")
+		Assert.eq(#steps, #f.steps, "step count")
 		for i, s in steps do
-			Assert.eq(f.steps[i], s, "HeistService step " .. i)
+			Assert.eq(f.steps[i], s, "step " .. i)
 		end
+		local text = fs.readFile("src/server/Heist/HeistService.luau")
+		Assert.truthy(
+			string.find(text, "HeistService.FTUE_STEPS = Protocol.FTUE_STEPS", 1, true) ~= nil,
+			"server uses it"
+		)
 	end)
 
 	test("domains: unknown values map to other, numbers bucket on the §9.7 bars", function()
