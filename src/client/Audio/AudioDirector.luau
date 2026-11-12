@@ -26,6 +26,7 @@
 --   AudioDirector.go(clones?)                     the run starts: music restarts on the downbeat
 --   AudioDirector.arpeggio(n)                     the clone arpeggio (sound logo), n clones
 --   AudioDirector.duck(reason, seconds?)          music ducks Config.Audio.DUCK_DB (cues with duck do it)
+--   AudioDirector.muffle(on, seconds?)            SFX + Ambience through the 800 Hz WorldMuffle low-pass (rewind)
 --   AudioDirector.event(e, resolve)               the cues of one replicated sim event (Audio/EventCues)
 --   AudioDirector.preload(sets?)                  first-impression cues (+ music sets) at boot
 --   settings: setBusVolume(bus, 0..1), setMuted(bool), setReducedMotion(bool), setChristmas(bool?),
@@ -112,6 +113,8 @@ local busInput: { [string]: Instance } = {} -- where a 2D voice of each bus is w
 local listeners: { AudioListener } = {}
 local musicDuck: AudioFader
 local cloneOut: AudioFader
+local worldMuffle: AudioFilter? = nil
+local MUFFLED_BUSES = { SFX = true, Ambience = true } -- the world (the Clone bus feeds SFX)
 
 local rng = Random.new()
 local state: Voices.State = Voices.new(A.MAX_VOICES, A.CLONE_MAX_PER_SECOND, A.CLONE_VOICED_NEAREST)
@@ -252,9 +255,19 @@ local function build()
 	local master = fader("Master", 1)
 	wire(master, compressor, root)
 
+	-- The world muffle (Config.Audio.MUFFLE_*): SFX (with the Clone bus) and Ambience reach the master
+	-- through one low-pass that stays open at 20 kHz until muffle(true).
+	local muffle = Instance.new("AudioFilter")
+	muffle.Name = "WorldMuffle"
+	muffle.FilterType = Enum.AudioFilterType.Lowpass12dB
+	muffle.Frequency = A.MUFFLE_OPEN_HZ
+	muffle.Parent = root
+	wire(muffle, master, root)
+	worldMuffle = muffle
+
 	for _, bus in BUSES do
 		local f = fader(bus, 1)
-		wire(f, master, root)
+		wire(f, if MUFFLED_BUSES[bus] then muffle else master, root)
 		busFader[bus] = f
 		busInput[bus] = f
 	end
@@ -832,6 +845,18 @@ end
 function AudioDirector.duck(reason: string, seconds: number?)
 	build()
 	Mix.addDuck(ducks, reason, os.clock(), seconds or A.DUCK_SECONDS)
+end
+
+-- The world muffled (the rewind, premium §6.2): the SFX + Ambience low-pass sweeps to MUFFLE_HZ, or back
+-- open to MUFFLE_OPEN_HZ. UI, Warnings and music stay clear.
+function AudioDirector.muffle(on: boolean, seconds: number?)
+	build()
+	local f = worldMuffle
+	if not f then
+		return
+	end
+	local hz = if on then A.MUFFLE_HZ else A.MUFFLE_OPEN_HZ
+	tween(f, seconds or (if on then A.MUFFLE_IN else A.MUFFLE_OUT), { Frequency = hz }, Enum.EasingStyle.Quad)
 end
 
 -------------------------------------------------------------------------------------------------------------

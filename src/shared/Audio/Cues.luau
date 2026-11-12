@@ -646,6 +646,42 @@ Cues.cues = {
 	},
 
 	-------------------------------------------------------------------------------------------------------
+	-- Signature moments (Heist/MomentDirector, Heist/LineupDirector; docs/AUDIO.md "Missing (signature
+	-- moments)"): empty until the owner's audio pass.
+	-------------------------------------------------------------------------------------------------------
+	ChoirHit = {
+		ids = {},
+		search = "choir hit stab short bright",
+		bus = "Music",
+		volume = 0.7,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		choke = true,
+		priority = 4,
+		note = "8 OF ME: the clone arpeggio's roll call lands on it (one bright choir stab, < 1 s)",
+	},
+	SnareRoll = {
+		ids = {},
+		search = "snare drum roll short build",
+		bus = "SFX",
+		volume = 0.55,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		choke = true,
+		priority = 3,
+		note = "Line-up: a 0.6 s snare roll whose last hit lands on the crew's pose",
+	},
+	VaultSlam = {
+		ids = {},
+		search = "heavy metal door slam vault clang",
+		bus = "SFX",
+		volume = 0.8,
+		maxVoices = 1,
+		priority = 4,
+		note = "Heist complete: the vault door (L6) or the shop door slams shut",
+	},
+
+	-------------------------------------------------------------------------------------------------------
 	-- UI: one family, a pitch ladder (higher positive, lower negative).
 	-------------------------------------------------------------------------------------------------------
 	UIClick = {
