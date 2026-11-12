@@ -21,6 +21,7 @@ return {
 	version = 1,
 	id = "cs4_night_clerk",
 	num = 104,
+	dataId = "NightClerk",
 	name = "Night Clerk",
 	location = "CornerShop",
 	runSeconds = 30,

@@ -1,0 +1,109 @@
+{
+ "asset": "Hide_Plant",
+ "objects": [
+  {
+   "name": "Hide_Plant",
+   "class": "small",
+   "tris": 568,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    6.071,
+    7.188,
+    7.821
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.0105,
+     -3.6794,
+     0.0
+    ],
+    "local_max": [
+     3.06,
+     3.5089,
+     7.8214
+    ]
+   },
+   "swatches": [
+    "ink",
+    "leaf",
+    "leaf_hi",
+    "leaf_lo",
+    "marble",
+    "marble_hi",
+    "marble_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 740,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Hide"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "origin = pot centre on the floor; walk-in: CanCollide off; stand among the leaves",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 568,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Hide_Plant.fbx",
+  "bytes": 36364,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Hide_Plant"
+  ],
+  "geometry_extents": [
+   [
+    6.071,
+    7.188,
+    7.821
+   ]
+  ]
+ },
+ "spec": "assets/blender/hides.py",
+ "notes": "Hide spot: big leafy potted plant (cream pot, 10 blade leaves in three greens), 7.8 tall.",
+ "turntable": "docs/art/turntables/Hide_Plant.png",
+ "seconds": 3.2
+}

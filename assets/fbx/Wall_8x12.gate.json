@@ -1,0 +1,151 @@
+{
+ "asset": "Wall_8x12",
+ "objects": [
+  {
+   "name": "Wall_8x12",
+   "class": "module",
+   "tris": 284,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.0,
+    2.0,
+    12.0
+   ],
+   "pivot": {
+    "rule": "corner",
+    "local_min": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "local_max": [
+     8.0,
+     2.0,
+     12.0
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "plum",
+    "plum_deep",
+    "plum_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 32,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Wall"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "kit wall; Anchored",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 284,
+ "grid": {
+  "footprint": [
+   8.0,
+   2.0,
+   12.0
+  ],
+  "step": 2.0,
+  "on_grid": true,
+  "inside": true,
+  "touches_floor": true,
+  "bbox": [
+   [
+    0.0,
+    0.0,
+    0.0
+   ],
+   [
+    8.0,
+    2.0,
+    12.0
+   ]
+  ],
+  "ok": true,
+  "on_kit_grid": true
+ },
+ "tile_x": {
+  "axis": "X",
+  "period": 8.0,
+  "with": "Wall_8x12",
+  "other_axis": "X",
+  "mode": "equal",
+  "a_cells": 7224,
+  "b_cells": 7224,
+  "iou": 1.0,
+  "cover": 1.0,
+  "inside": true,
+  "ok": true
+ },
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Wall_8x12.fbx",
+  "bytes": 23884,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Wall_8x12"
+  ],
+  "geometry_extents": [
+   [
+    2.0,
+    8.0,
+    12.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/wall.py",
+ "notes": "Kit wall 8x2x12 on the 4-stud grid; origin = front-bottom-left grid corner; tiles along X.",
+ "turntable": "docs/art/turntables/Wall_8x12.png",
+ "seconds": 3.0
+}

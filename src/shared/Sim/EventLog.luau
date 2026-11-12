@@ -51,6 +51,8 @@ local EV = table.freeze({
 	GoalMet = 39, -- a = banked total
 	Chase = 40, -- a = guard, b = target actor (0 = last-seen point)
 	AutoEnd = 41, -- a = actor (tutorial forced END RUN on the plate)
+	Tier = 42, -- a = haul tier reached (party levels: Haul1..3), b = banked total
+	Swarm = 43, -- a = seat, b = copies of that player this run (own clones + the live run)
 })
 
 local NAMES: { [number]: string } = {}

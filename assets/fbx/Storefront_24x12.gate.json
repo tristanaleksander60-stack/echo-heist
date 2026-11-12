@@ -1,0 +1,206 @@
+{
+ "asset": "Storefront_24x12",
+ "objects": [
+  {
+   "name": "Storefront_24x12",
+   "class": "medium",
+   "tris": 1980,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    24.0,
+    4.75,
+    12.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.0,
+     -2.45,
+     0.0
+    ],
+    "local_max": [
+     24.0,
+     2.3,
+     12.0
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "plum",
+    "plum_deep",
+    "plum_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 1220,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "PreciseConvexDecomposition",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Wall"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "street front; PreciseConvexDecomposition keeps the entrance walkable; sign SurfaceGui on the -Z face of the board",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Storefront_24x12_Glass",
+   "class": "small",
+   "tris": 24,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    22.4,
+    0.06,
+    6.08
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.8,
+     0.97,
+     2.32
+    ],
+    "local_max": [
+     23.2,
+     1.03,
+     8.4
+    ]
+   },
+   "swatches": [
+    "steel_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Glass",
+    "Color": "Vault Steel light #A9B2CC",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.6,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "Glass, Transparency 0.6, TextureID cleared",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 2004,
+ "tile_x": {
+  "axis": "X",
+  "period": 24.0,
+  "with": "Storefront_24x12",
+  "other_axis": "X",
+  "mode": "equal",
+  "a_cells": 7224,
+  "b_cells": 7224,
+  "iou": 1.0,
+  "cover": 1.0,
+  "inside": true,
+  "ok": true
+ },
+ "seats": [
+  {
+   "name": "Storefront_24x12_Glass",
+   "gap": 0.0,
+   "penetration": 0.0,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Storefront_24x12.fbx",
+  "bytes": 53756,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Storefront_24x12",
+   "Storefront_24x12_Glass"
+  ],
+  "geometry_extents": [
+   [
+    0.06,
+    6.08,
+    22.4
+   ],
+   [
+    4.75,
+    12.0,
+    24.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/storefront.py",
+ "notes": "Storefront 24x12: 8x10 entrance (LevelSpec gap -4..4), 2 display windows with striped awnings, sign board.",
+ "turntable": "docs/art/turntables/Storefront_24x12.png",
+ "seconds": 1.9
+}

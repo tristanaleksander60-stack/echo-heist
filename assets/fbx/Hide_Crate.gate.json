@@ -1,0 +1,108 @@
+{
+ "asset": "Hide_Crate",
+ "objects": [
+  {
+   "name": "Hide_Crate",
+   "class": "small",
+   "tris": 552,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    5.692,
+    3.24,
+    5.85
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.5716,
+     -1.62,
+     0.0
+    ],
+    "local_max": [
+     2.12,
+     1.62,
+     5.85
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "wood",
+    "wood_hi",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 517,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Hide"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "origin = crate footprint centre on the floor; walk-in: CanCollide off; open side faces -Y",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 552,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Hide_Crate.fbx",
+  "bytes": 28844,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Hide_Crate"
+  ],
+  "geometry_extents": [
+   [
+    3.24,
+    5.692,
+    5.85
+   ]
+  ]
+ },
+ "spec": "assets/blender/hides.py",
+ "notes": "Hide spot: open wardrobe crate (4x3x5.85), plank sides, dark interior, lid leaned on its left side.",
+ "turntable": "docs/art/turntables/Hide_Crate.png",
+ "seconds": 2.0
+}

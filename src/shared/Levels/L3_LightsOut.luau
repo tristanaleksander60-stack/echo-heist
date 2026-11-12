@@ -20,6 +20,7 @@ return {
 	version = 1,
 	id = "cs3_lights_out",
 	num = 103,
+	dataId = "LightsOut",
 	name = "Lights Out",
 	location = "CornerShop",
 	runSeconds = 30,

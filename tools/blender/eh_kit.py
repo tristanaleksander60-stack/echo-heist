@@ -87,6 +87,26 @@ class MB:
         hi = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
         return lo, hi
 
+    def xform(self, verts, mat):
+        """Applies a 4x4 Matrix to verts (rotate / place a primitive after building it at the origin)."""
+        bmesh.ops.transform(self.bm, matrix=mat, verts=[v for v in verts if v.is_valid])
+        return verts
+
+    def rotate(self, verts, deg, axis="Z", centre=(0, 0, 0)):
+        c = Vector(centre)
+        m = Matrix.Translation(c) @ Matrix.Rotation(math.radians(deg), 4, axis) @ Matrix.Translation(-c)
+        return self.xform(verts, m)
+
+    def move(self, verts, d):
+        return self.xform(verts, Matrix.Translation(Vector(d)))
+
+    def recolour(self, verts, col):
+        """Sets the swatch of every face whose verts are all in `verts`."""
+        vs = set(v for v in verts if v.is_valid)
+        for fc in {f for v in vs for f in v.link_faces}:
+            if all(x in vs for x in fc.verts):
+                fc[self.col] = P.INDEX[col]
+
     def _colour_chamfers(self, faces, base, cham):
         for fc in faces:
             fc.normal_update()
@@ -108,6 +128,8 @@ class MB:
         idx = {"-z": (0, 3, 2, 1), "+z": (4, 5, 6, 7), "-y": (0, 1, 5, 4), "+x": (1, 2, 6, 5),
                "+y": (2, 3, 7, 6), "-x": (3, 0, 4, 7)}
         faces = {k: self.f([vs[i] for i in t], fc.get(k, col)) for k, t in idx.items()}
+        # a chamfer wider than ~half the thinnest side collapses faces (A5 degenerate): clamp it
+        chamfer = min(chamfer, 0.45 * min(x1 - x0, y1 - y0, z1 - z0)) if chamfer > 0 else 0.0
         if chamfer > 0:
             keep = set()
             for k in flat:
@@ -246,10 +268,31 @@ def atlas_material():
     return m
 
 
-def finalize(mb, shading="angle", angle=30.0, pivot=(0, 0, 0)):
+def hero_material(name, image_path):
+    """One material with its own colour map (hero SurfaceAppearance sets, STYLE_BIBLE 4: <= 3 per level)."""
+    m = bpy.data.materials.get(name)
+    if m:
+        return m
+    m = bpy.data.materials.new(name)
+    try:
+        m.use_nodes = True
+    except Exception:
+        pass
+    nt = m.node_tree
+    bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = bpy.data.images.load(image_path, check_existing=True)
+    nt.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+    bsdf.inputs["Roughness"].default_value = 0.5
+    return m
+
+
+def finalize(mb, shading="angle", angle=30.0, pivot=(0, 0, 0), planar=None, material=None):
     """Triangulates n-gons, recalculates normals, sets shading, writes atlas UVs and returns the object.
     The mesh is authored in assembly coordinates; the object origin is moved to `pivot` (same coordinates),
-    so the object stays where it was authored and its Roblox pivot is the pivot point."""
+    so the object stays where it was authored and its Roblox pivot is the pivot point.
+    planar=(axis_u, axis_v, lo_u, hi_u, lo_v, hi_v): instead of atlas cells, project UVs onto a plane (hero
+    texture sets, e.g. the vault dial face); material=(name, image path) replaces the kit atlas material."""
     bm = mb.bm
     ngons = [f for f in bm.faces if len(f.verts) > 4]
     if ngons:
@@ -262,12 +305,21 @@ def finalize(mb, shading="angle", angle=30.0, pivot=(0, 0, 0)):
         e.smooth = shading != "flat" and len(e.link_faces) == 2 and e.calc_face_angle(math.pi) < lim
     uvl = bm.loops.layers.uv.new("UVMap")
     keys = [k for k, *_r in P.SWATCHES]
-    for fc in bm.faces:
-        u, v, hs = P.cell_uv(keys[fc[mb.col]])
-        n = len(fc.loops)
-        for i, lp in enumerate(fc.loops):
-            t = 2 * math.pi * i / n + math.pi / 4
-            lp[uvl].uv = (u + hs * math.cos(t), v + hs * math.sin(t))
+    if planar:
+        au, av, u0, u1, v0, v1 = planar
+        iu, iv = "XYZ".index(au.lstrip("-")), "XYZ".index(av.lstrip("-"))
+        su, sv = (-1 if au.startswith("-") else 1), (-1 if av.startswith("-") else 1)
+        for fc in bm.faces:
+            for lp in fc.loops:
+                x, y = su * lp.vert.co[iu], sv * lp.vert.co[iv]
+                lp[uvl].uv = (min(1, max(0, (x - u0) / (u1 - u0))), min(1, max(0, (y - v0) / (v1 - v0))))
+    else:
+        for fc in bm.faces:
+            u, v, hs = P.cell_uv(keys[fc[mb.col]])
+            n = len(fc.loops)
+            for i, lp in enumerate(fc.loops):
+                t = 2 * math.pi * i / n + math.pi / 4
+                lp[uvl].uv = (u + hs * math.cos(t), v + hs * math.sin(t))
     pv = Vector(pivot)
     bmesh.ops.translate(bm, verts=list(bm.verts), vec=-pv)
     me = bpy.data.meshes.new(mb.name)
@@ -276,7 +328,7 @@ def finalize(mb, shading="angle", angle=30.0, pivot=(0, 0, 0)):
     ob = bpy.data.objects.new(mb.name, me)
     bpy.context.scene.collection.objects.link(ob)
     ob.location = pv
-    me.materials.append(atlas_material())
+    me.materials.append(hero_material(*material) if material else atlas_material())
     ob["eh_parts"] = {k: [*mb.part_bbox(k)[0], *mb.part_bbox(k)[1]] for k in mb.parts}   # local lo + hi
     return ob
 
@@ -293,10 +345,22 @@ class Obj:
     """One exported object (one MeshPart in Studio)."""
 
     def __init__(self, ob, cls, role="env", symmetric=None, pivot="corner", collision="Box", material="SmoothPlastic",
-                 can_collide=True, cast_shadow=True, expect_dims=None, tint=None, notes=""):
+                 can_collide=True, cast_shadow=True, expect_dims=None, tint=None, notes="", layer="base", tags=(),
+                 joint=None, atlas=None, transparency=0.0, texture=None, sim=None, free_shells=False):
         self.ob, self.cls, self.role, self.symmetric, self.pivot = ob, cls, role, symmetric, pivot
         self.collision, self.material, self.can_collide, self.cast_shadow = collision, material, can_collide, cast_shadow
         self.expect_dims, self.tint, self.notes = expect_dims, tint, notes
+        # Kit metadata for the layout pipeline (MASTERPLAN 8.5) and the import check:
+        #   layer "base" | "xmas" (the removable Christmas dressing layer), tags = CollectionService tags the level
+        #   layout gives the piece (EH_Plate, EH_Door, EH_Hide...), joint = {"parent", "name"} for rigid rigs (Gus),
+        #   atlas = uses the kit atlas TextureID (default: SmoothPlastic pieces), transparency (glass),
+        #   texture = hero SurfaceAppearance set name, sim = "solid" | "low" (Gus sees over) | "none" | "door" ...
+        self.layer, self.tags, self.joint = layer, list(tags), joint
+        self.atlas = (material == "SmoothPlastic" and texture is None) if atlas is None else atlas
+        self.transparency, self.texture, self.sim = transparency, texture, sim
+        # free_shells: an object made of separate pieces held by ANOTHER object (glass panes in a frame, bulbs on
+        # a wire). Its A16 floating-shell check is replaced by an asset seat check against the holder.
+        self.free_shells = free_shells
 
 
 class Asset:
@@ -403,20 +467,27 @@ def gate_asset(asset):
         bad = [k for k in used if P.ROLE[k] not in allowed]
         if bad:
             fails.append(f"P2 role '{o.role}' may not use reserved swatches {bad}")
-        fl = floating_shells(ob, floor_z=0.0 if o.pivot in ("bottom", "corner") else None)
+        if o.role in P.FIXED_ROLES:
+            loc = [k for k in used if k in P.LOCATION_CELLS]
+            if loc:
+                fails.append(f"P3 role '{o.role}' may not use location cells {loc} (they change per atlas swap)")
+        fl = [] if o.free_shells else floating_shells(ob, floor_z=0.0 if o.pivot in ("bottom", "corner") else None)
         if fl:
             fails.append(f"A16 {len(fl)} floating shell(s): {fl}")
         tgt, ceil_ = lf.BUDGETS[o.cls]
         rep["objects"].append({
             "name": ob.name, "class": o.cls, "tris": r["tris"], "budget": [tgt, ceil_], "budget_note": r["budget_note"],
             "dims": [round(x, 3) for x in ob.dimensions], "pivot": pr, "swatches": used,
+            "location": [round(x, 4) for x in ob.location],
             "symmetry_error": r.get("symmetry_error"), "self_intersections": r.get("self_intersections"),
             "cross_shell_overlaps": r.get("cross_shell_overlaps"), "cap_overlaps": r.get("cap_overlaps"),
             "flipped_faces": r.get("flipped_faces"), "boundary_edges": r["boundary_edges"],
             "non_manifold_edges": r["non_manifold_edges"], "ngons": r["ngons"], "materials": r["materials"],
             "uv_layers": r["uv_layers"], "uv_out_of_0_1": r.get("uv_out_of_0_1"),
             "studio": {"Material": o.material, "Color": "white (255,255,255)" if not o.tint else o.tint,
-                       "CollisionFidelity": o.collision, "CanCollide": o.can_collide, "CastShadow": o.cast_shadow},
+                       "CollisionFidelity": o.collision, "CanCollide": o.can_collide, "CastShadow": o.cast_shadow,
+                       "Transparency": o.transparency, "atlas": o.atlas, "texture": o.texture},
+            "layer": o.layer, "tags": o.tags, "joint": o.joint, "role": o.role,
             "notes": o.notes, "fails": fails, "passed": not fails})
     rep["tris_total"] = total
     if asset.budget_cls:

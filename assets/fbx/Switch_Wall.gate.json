@@ -1,0 +1,270 @@
+{
+ "asset": "Switch_Wall",
+ "objects": [
+  {
+   "name": "Switch_Wall",
+   "class": "small",
+   "tris": 224,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.6,
+    0.84,
+    2.52
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.8,
+     -0.84,
+     3.0
+    ],
+    "local_max": [
+     0.8,
+     0.0,
+     5.52
+    ]
+   },
+   "swatches": [
+    "ink",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 44,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Switch"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "origin = floor level on the wall face; mounted 3.0-5.4 high, front faces into the room",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Switch_Wall_Lever",
+   "class": "small",
+   "tris": 172,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.52,
+    1.156,
+    1.472
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.26,
+     -0.9956,
+     -0.1522
+    ],
+    "local_max": [
+     0.26,
+     0.16,
+     1.3203
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "steel",
+    "steel_hi"
+   ],
+   "location": [
+    0.0,
+    -0.8,
+    4.2
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 30,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "origin = hinge axis; rotate about Roblox X: -35 deg off (up), +35 deg on (down)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Switch_Wall_Lamp",
+   "class": "tiny",
+   "tris": 58,
+   "budget": [
+    150,
+    300
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.4,
+    0.38,
+    0.2
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.2,
+     -0.1902,
+     0.0
+    ],
+    "local_max": [
+     0.2,
+     0.1902,
+     0.2
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    -0.25,
+    5.52
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Vault Steel shade #4E5675 off; the presser's clone hue on",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "Neon state lamp, Color by code",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 454,
+ "seats": [
+  {
+   "name": "Switch_Wall_Lever",
+   "gap": 0.0,
+   "penetration": 0.02944,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Switch_Wall_Lamp",
+   "gap": 0.0,
+   "penetration": 0.0,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Switch_Wall.fbx",
+  "bytes": 32780,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Switch_Wall",
+   "Switch_Wall_Lamp",
+   "Switch_Wall_Lever"
+  ],
+  "geometry_extents": [
+   [
+    0.2,
+    0.38,
+    0.4
+   ],
+   [
+    0.52,
+    1.156,
+    1.472
+   ],
+   [
+    0.84,
+    1.6,
+    2.52
+   ]
+  ]
+ },
+ "spec": "assets/blender/mechanisms.py",
+ "notes": "Wall switch: steel housing with a lever (own pivot) and a Neon state lamp; mounted at hand height.",
+ "turntable": "docs/art/turntables/Switch_Wall.png",
+ "seconds": 3.3
+}

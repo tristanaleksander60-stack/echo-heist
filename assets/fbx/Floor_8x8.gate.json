@@ -1,0 +1,121 @@
+{
+ "asset": "Floor_8x8",
+ "objects": [
+  {
+   "name": "Floor_8x8",
+   "class": "module",
+   "tris": 144,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.0,
+    8.0,
+    0.5
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.0,
+     0.0,
+     -0.5
+    ],
+    "local_max": [
+     8.0,
+     8.0,
+     0.0
+    ]
+   },
+   "swatches": [
+    "floor_a",
+    "floor_b",
+    "ink"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Floor"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "origin = TOP front-left corner; the 4-stud checker is the planning grid",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 144,
+ "tile_x": {
+  "axis": "X",
+  "period": 8.0,
+  "with": "Floor_8x8",
+  "other_axis": "X",
+  "mode": "equal",
+  "a_cells": 1404,
+  "b_cells": 1404,
+  "iou": 1.0,
+  "cover": 1.0,
+  "inside": true,
+  "ok": true
+ },
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Floor_8x8.fbx",
+  "bytes": 21788,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Floor_8x8"
+  ],
+  "geometry_extents": [
+   [
+    0.5,
+    8.0,
+    8.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/furniture.py",
+ "notes": "Floor 8x8: four 4x4 tiles (checker floor_a / floor_b), grout chamfers in Ink; top at y = 0.",
+ "turntable": "docs/art/turntables/Floor_8x8.png",
+ "seconds": 1.8
+}

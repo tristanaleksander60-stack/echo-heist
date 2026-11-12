@@ -1,0 +1,192 @@
+{
+ "asset": "Lamp_Ceiling",
+ "objects": [
+  {
+   "name": "Lamp_Ceiling",
+   "class": "small",
+   "tris": 568,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    3.2,
+    3.2,
+    3.38
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.6,
+     -1.6,
+     -3.38
+    ],
+    "local_max": [
+     1.6,
+     1.6,
+     0.0
+    ]
+   },
+   "swatches": [
+    "ink",
+    "marble",
+    "marble_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    12.0
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 190,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Lamp"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "origin = top centre at the ceiling plane (y 12); hangs to y 8.62",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Lamp_Ceiling_Bulb",
+   "class": "tiny",
+   "tris": 120,
+   "budget": [
+    150,
+    300
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.84,
+    0.84,
+    0.84
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.42,
+     -0.42,
+     -3.47
+    ],
+    "local_max": [
+     0.42,
+     0.42,
+     -2.63
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    12.0
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Lamp warm #FFE2B8 (code); PointLight here, Shadows off",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "Neon bulb; the light pool is a floor decal or disc (STYLE_BIBLE 3), not more lights",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 688,
+ "seats": [
+  {
+   "name": "Lamp_Ceiling_Bulb",
+   "gap": 0.0,
+   "penetration": 0.0,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Lamp_Ceiling.fbx",
+  "bytes": 35084,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Lamp_Ceiling",
+   "Lamp_Ceiling_Bulb"
+  ],
+  "geometry_extents": [
+   [
+    0.84,
+    0.84,
+    0.84
+   ],
+   [
+    3.2,
+    3.2,
+    3.38
+   ]
+  ]
+ },
+ "spec": "assets/blender/furniture.py",
+ "notes": "Pendant lamp: canopy on the cut-away ceiling plane, cord, enamel shade (light inside), Neon bulb part.",
+ "turntable": "docs/art/turntables/Lamp_Ceiling.png",
+ "seconds": 7.5
+}

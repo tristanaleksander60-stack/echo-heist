@@ -43,7 +43,49 @@ SWATCHES = [
     ("exit",      "#F4F7FF", "Getaway White",     "exit"),     # 20 van, chevrons with arrows
     ("holly",     "#2FBF71", "Holly Green",       "xmas"),     # 21 Christmas dressing layer only
     ("ribbon",    "#8C2F4B", "Ribbon Burgundy",   "xmas"),     # 22 Christmas dressing layer only
+    # --- launch kit additions (2026-11-12). Location cells (LOCATION_CELLS) change per atlas swap ---
+    ("floor_a",   "#262942", "Floor A",           "env"),      # 23 floor checker, dark (a ground colour)
+    ("floor_b",   "#36314D", "Floor B",           "env"),      # 24 floor checker, dark (a ground colour)
+    ("wood_lo",   "#41261C", "Wood shade",        "env"),      # 25 counter tops, shelf boards (loot displays)
+    ("wood",      "#59392E", "Wood",              "env"),      # 26 furniture bodies, crates, door leaves
+    ("wood_hi",   "#704F42", "Wood light",        "env"),      # 27 chamfers on wood
+    # --- characters (Gus). Never location cells, so Gus looks the same in every location ---
+    ("skin_lo",   "#A87158", "Gus skin shade",    "char"),     # 28 ears, chin underside, hands' sides
+    ("skin",      "#D09673", "Gus skin",          "char"),     # 29 face, nose, hands
+    ("hair",      "#5A493E", "Gus moustache",     "char"),     # 30 moustache, brows: dark shape on a light face
+    ("shirt_lo",  "#516F8E", "Guard shirt shade", "char"),     # 31 cuffs, collar, shirt chamfers facing down
+    ("shirt",     "#6E90AF", "Guard shirt",       "char"),     # 32 the shirt: Gus's main value (luma 0.55 vs ground 0.2)
+    # --- Christmas dressing extras ---
+    ("holly_lo",  "#1C7C48", "Holly Green shade", "xmas"),     # 33 garland and tree bodies
+    ("ribbon_hi", "#AD536A", "Ribbon light",      "xmas"),     # 34 chamfers on ribbon
+    ("snow",      "#C0C3D5", "Snow",              "xmas"),     # 35 snow piles and caps (small areas only)
+    # --- plants (hide spots); calmer and darker than Holly Green so the Christmas layer still pops ---
+    ("leaf_lo",   "#1F4127", "Leaf shade",        "env"),      # 36
+    ("leaf",      "#345B35", "Leaf",              "env"),      # 37
+    ("leaf_hi",   "#52774A", "Leaf light",        "env"),      # 38
 ]
+
+# Cells that a location atlas swap may recolour (walls, floors, furniture wood). Characters, loot, signals and
+# metal never change between locations, so roles in FIXED_ROLES may not use these cells (rule P3).
+LOCATION_CELLS = ("plum_deep", "plum", "plum_hi", "floor_a", "floor_b", "wood_lo", "wood", "wood_hi")
+FIXED_ROLES = ("char",)
+
+# Location atlases: same cells, new colours (MASTERPLAN 6.7 "atlas swaps"). Bank is the base atlas the kit is
+# exported with (assets/textures/EH_Palette_Bank.png); the others are uploaded once and swapped in by code
+# (MeshPart.TextureID per location). Each one passes the same audit as the base.
+LOCATIONS = {
+    "Bank": {},
+    "CornerShop": {   # warm brick walls, pine furniture, a cool/warm dark checker floor [decision, owner review]
+        "plum_deep": "#44281F", "plum": "#573429", "plum_hi": "#704B3E",
+        "floor_a": "#2D2C3A", "floor_b": "#4D372E",
+        "wood_lo": "#503721", "wood": "#6B4F34", "wood_hi": "#85684C",
+    },
+    "ToyShop": {      # sage walls, light pine, green-grey floor (Drop 1, Dec 11) [decision, owner review]
+        "plum_deep": "#213625", "plum": "#284029", "plum_hi": "#465F4B",
+        "floor_a": "#1C332E", "floor_b": "#2E3D2B",
+        "wood_lo": "#5E492E", "wood": "#7C6445", "wood_hi": "#967F5E",
+    },
+}
 
 # Clone colours never appear in kit meshes; they are listed for the audit only (MASTERPLAN 6.2).
 CLONES = [
@@ -62,6 +104,8 @@ ROLE_RULES = {
     "danger": {"env", "danger", "tint"},  # laser emitters, alarm lamps
     "exit":   {"env", "exit", "tint"},
     "xmas":   {"env", "xmas", "tint"},
+    "char":   {"env", "char", "tint"},            # Gus (rule P3: no location cells)
+    "present": {"loot", "xmas", "env", "tint"},   # Giant Present: heavy loot wrapped for Christmas
 }
 
 INDEX = {k: i for i, (k, *_r) in enumerate(SWATCHES)}
@@ -157,65 +201,108 @@ MIN_DIST_DANGER = 0.20    # alarm red vs every clone hue (plus a shape)
 MIN_VALUE_STEP = 0.15     # greyscale: loot / danger / clones vs the ground
 
 
-def audit(verbose=True):
-    """Returns (ok, lines). Checks every swatch against the reserved clone hues, signal distances and the
-    greyscale value test. Ghost White (P4) is near-neutral, so its hue test is skipped (chroma < 0.02)."""
+def _audit_cols(cols, tag):
+    """The colour rules for one atlas (cols: key -> hex). Returns (ok, lines)."""
     lines, ok = [], True
-    env = [(k, h) for k, h, _n, r in SWATCHES if r == "env"]
-    ground = ["ink", "plum_deep", "plum"]          # floors and walls
+    env = [(k, cols[k]) for k, _h, _n, r in SWATCHES if r == "env"]
+    ground = ["ink", "plum_deep", "plum", "floor_a", "floor_b"]   # floors and walls
     metal = ["steel_lo", "steel"]                  # frames and doors: warning only (laser cores carry value)
     for ck, chex, cname, _g in CLONES:
         L, C, H = oklch(chex)
-        for k, h, _n, r in SWATCHES:
+        for k, _h, _n, r in SWATCHES:
             if r in ("tint", "exit"):
                 continue
-            l2, c2, h2 = oklch(h)
+            l2, c2, h2 = oklch(cols[k])
             dh = abs((h2 - H + 180) % 360 - 180)
             rel = c2 / C if C > 1e-6 else 0
             if C >= 0.02 and dh <= RESERVED_HUE_DEG and rel > RESERVED_REL_CHROMA:
-                ok = False; lines.append(f"FAIL reserved hue: {k} {h} is {dh:.0f} deg from {cname} at {rel:.0%} of its chroma")
+                ok = False; lines.append(f"FAIL [{tag}] reserved hue: {k} {cols[k]} is {dh:.0f} deg from {cname} at {rel:.0%} of its chroma")
         for k in ground:
-            d = ok_dist(chex, HEX[k])
+            d = ok_dist(chex, cols[k])
             if d < MIN_DIST_SIGNAL:
-                ok = False; lines.append(f"FAIL {cname} vs {k}: Oklab {d:.3f} < {MIN_DIST_SIGNAL}")
-        d = ok_dist(HEX["alarm"], chex)
+                ok = False; lines.append(f"FAIL [{tag}] {cname} vs {k}: Oklab {d:.3f} < {MIN_DIST_SIGNAL}")
+        d = ok_dist(cols["alarm"], chex)
         if d < MIN_DIST_DANGER:
-            ok = False; lines.append(f"FAIL Alarm Red vs {cname}: Oklab {d:.3f} < {MIN_DIST_DANGER}")
-    for k in ("gold", "ice", "alarm", "amber", "exit"):
+            ok = False; lines.append(f"FAIL [{tag}] Alarm Red vs {cname}: Oklab {d:.3f} < {MIN_DIST_DANGER}")
+        for k in ("snow", "shirt", "skin"):          # characters and big light dressing vs clone glows
+            d = ok_dist(cols[k], chex)
+            if d < MIN_DIST_SIGNAL:
+                lines.append(f"WARN [{tag}] {k} vs {cname}: Oklab {d:.3f} < {MIN_DIST_SIGNAL} (small areas only, never a floor field)")
+    for k in ("gold", "ice", "alarm", "amber", "exit", "shirt", "skin"):   # loot, danger, signals, Gus vs the ground
         for g in ground:
-            dv = abs(luma(HEX[k]) - luma(HEX[g]))
+            dv = abs(luma(cols[k]) - luma(cols[g]))
             if dv < MIN_VALUE_STEP:
-                ok = False; lines.append(f"FAIL value step {k} vs {g}: {dv:.2f} < {MIN_VALUE_STEP}")
+                ok = False; lines.append(f"FAIL [{tag}] value step {k} vs {g}: {dv:.2f} < {MIN_VALUE_STEP}")
     for k in ("gold", "ice", "alarm"):
         for g in metal:
-            dv = abs(luma(HEX[k]) - luma(HEX[g]))
+            dv = abs(luma(cols[k]) - luma(cols[g]))
             if dv < MIN_VALUE_STEP:
-                lines.append(f"WARN value step {k} vs {g}: {dv:.2f} < {MIN_VALUE_STEP} (needs a shape / white core)")
+                lines.append(f"WARN [{tag}] value step {k} vs {g}: {dv:.2f} < {MIN_VALUE_STEP} (needs a shape / white core)")
+    for k in ("skin", "shirt", "skin_lo"):           # Gus must never read as loot
+        d = ok_dist(cols[k], cols["gold"])
+        if d < MIN_DIST_SIGNAL:
+            ok = False; lines.append(f"FAIL [{tag}] {k} vs Heist Gold: Oklab {d:.3f} < {MIN_DIST_SIGNAL}")
     for lk in ("gold", "gold_hi", "ice", "ice_hi"):      # display rule: what loot may never sit on / against
-        bad = [e for e, eh in env if ok_dist(HEX[lk], eh) < MIN_DIST_SIGNAL or abs(luma(HEX[lk]) - luma(eh)) < MIN_VALUE_STEP]
+        bad = [e for e, eh in env if ok_dist(cols[lk], eh) < MIN_DIST_SIGNAL or abs(luma(cols[lk]) - luma(eh)) < MIN_VALUE_STEP]
         if bad:
-            lines.append(f"WARN display rule: never put {lk} loot on or against {', '.join(bad)} (Oklab < {MIN_DIST_SIGNAL} or value < {MIN_VALUE_STEP})")
+            lines.append(f"WARN [{tag}] display rule: never put {lk} loot on or against {', '.join(bad)} (Oklab < {MIN_DIST_SIGNAL} or value < {MIN_VALUE_STEP})")
     for g in ground:
-        if luma(HEX[g]) < luma(HEX["ink"]) - 1e-6:
-            ok = False; lines.append(f"FAIL {g} darker than Ink Indigo")
+        if luma(cols[g]) < luma(cols["ink"]) - 1e-6:
+            ok = False; lines.append(f"FAIL [{tag}] {g} darker than Ink Indigo")
+    for k in LOCATION_CELLS:                         # a location may recolour walls, not turn them into signals
+        if cols[k] != HEX[k]:
+            L, C, H = oklch(cols[k])
+            if C > 0.093:
+                ok = False; lines.append(f"FAIL [{tag}] location cell {k} {cols[k]} chroma {C:.3f} > 0.093 (walls stay calm)")
+    return ok, lines
+
+
+def location_cols(loc):
+    cols = dict(HEX); cols.update(LOCATIONS[loc])
+    return cols
+
+
+def audit(verbose=True):
+    """Returns (ok, lines). Checks every swatch of every location atlas against the reserved clone hues, signal
+    distances and the greyscale value test. Ghost White (P4) is near-neutral, so its hue test is skipped
+    (chroma < 0.02)."""
+    lines, ok = [], True
+    for loc in LOCATIONS:
+        o, ls = _audit_cols(location_cols(loc), loc)
+        ok &= o
+        lines += ls
     if verbose:
         lines.append("swatch       hex      L     C      h     value")
         for k, h, _n, r in SWATCHES:
             L, C, H = oklch(h)
-            lines.append(f"{k:<12} {h}  {L:.3f} {C:.3f} {H:6.1f}  {luma(h):.2f}  [{r}]")
+            lines.append(f"{k:<12} {h}  {L:.3f} {C:.3f} {H:6.1f}  {luma(h):.2f}  [{r}]" + ("  (location cell)" if k in LOCATION_CELLS else ""))
         for ck, h, n, g in CLONES:
             L, C, H = oklch(h)
             lines.append(f"{ck:<12} {h}  {L:.3f} {C:.3f} {H:6.1f}  {luma(h):.2f}  [clone {g}]")
+        for loc, ov in LOCATIONS.items():
+            if ov:
+                lines.append(f"{loc}: " + ", ".join(f"{k} {v} (L {oklch(v)[0]:.2f} C {oklch(v)[1]:.3f} h {oklch(v)[2]:.0f})" for k, v in ov.items()))
         lines.append(f"gold vs amber Oklab {ok_dist(HEX['gold'], HEX['amber']):.3f} (shape carries it: sparkle vs cone)")
     lines.insert(0, "palette audit: " + ("PASS" if ok else "FAIL"))
     return ok, lines
 
 
+def atlas_path(loc="Bank"):
+    return os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets", "textures",
+                                         f"EH_Palette_{loc}.png"))
+
+
+def write_atlases():
+    """Writes one atlas per location (assets/textures/EH_Palette_<Location>.png). Returns the paths."""
+    return [write_atlas(atlas_path(loc), LOCATIONS[loc]) for loc in LOCATIONS]
+
+
 ATLAS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets", "textures", "EH_Palette_Bank.png")
 
 if __name__ == "__main__":
-    p = write_atlas(os.path.normpath(ATLAS_PATH))
+    ps = write_atlases()
     ok, lines = audit()
     print("\n".join(lines))
-    print("atlas:", os.path.normpath(p))
+    for p in ps:
+        print("atlas:", p)
     sys.exit(0 if ok else 1)

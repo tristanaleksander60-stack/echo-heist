@@ -30,7 +30,9 @@ export type Actor = {
 	px: number,
 	py: number,
 	pz: number,
-	carrying: number, -- loot index, 0 = none
+	carrying: number, -- loot index, 0 = none (the first item carried)
+	bag: { number }, -- extra items carried (bag levels, Loot), in grab order
+	capacity: number, -- items this actor can carry (1 + bag level in a `bags` level)
 	hidden: boolean,
 	cursor: number, -- clone event cursor (Sampler.eventsDue)
 	nextInteractT: number,
@@ -63,6 +65,8 @@ local function base(id: number, kind: string, player: any, slot: number, rec: an
 		py = 0,
 		pz = 0,
 		carrying = 0,
+		bag = {},
+		capacity = 1,
 		hidden = false,
 		cursor = 0,
 		nextInteractT = 0,

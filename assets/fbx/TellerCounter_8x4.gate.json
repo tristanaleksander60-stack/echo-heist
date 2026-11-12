@@ -1,0 +1,193 @@
+{
+ "asset": "TellerCounter_8x4",
+ "objects": [
+  {
+   "name": "TellerCounter_8x4",
+   "class": "module",
+   "tris": 412,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.3,
+    4.35,
+    8.25
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.15,
+     -0.2,
+     0.0
+    ],
+    "local_max": [
+     8.15,
+     4.15,
+     8.25
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo",
+    "wood",
+    "wood_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 108,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Counter"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "bank teller counter: marble top, steel screen posts; glass separate",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "TellerCounter_8x4_Glass",
+   "class": "small",
+   "tris": 24,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    7.1,
+    0.06,
+    3.2
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.45,
+     1.87,
+     4.7
+    ],
+    "local_max": [
+     7.55,
+     1.93,
+     7.9
+    ]
+   },
+   "swatches": [
+    "steel_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Glass",
+    "Color": "Vault Steel light #A9B2CC",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.6,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "Glass, Transparency 0.6, TextureID cleared",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 436,
+ "seats": [
+  {
+   "name": "TellerCounter_8x4_Glass",
+   "gap": 0.0,
+   "penetration": 0.0,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/TellerCounter_8x4.fbx",
+  "bytes": 28860,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "TellerCounter_8x4",
+   "TellerCounter_8x4_Glass"
+  ],
+  "geometry_extents": [
+   [
+    0.06,
+    3.2,
+    7.1
+   ],
+   [
+    4.35,
+    8.25,
+    8.3
+   ]
+  ]
+ },
+ "spec": "assets/blender/furniture.py",
+ "notes": "Bank teller counter 8x4x8.25: counter to 4, marble top, screen with deal-tray gaps (glass part).",
+ "turntable": "docs/art/turntables/TellerCounter_8x4.png",
+ "seconds": 9.0
+}

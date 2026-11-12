@@ -1,0 +1,112 @@
+{
+ "asset": "Shelf_8x2",
+ "objects": [
+  {
+   "name": "Shelf_8x2",
+   "class": "module",
+   "tris": 776,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.1,
+    2.08,
+    7.85
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.05,
+     -0.08,
+     0.0
+    ],
+    "local_max": [
+     8.05,
+     2.0,
+     7.85
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "plum_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo",
+    "wood_hi",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 256,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Shelf"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "against a wall, back at y = 2; dark boards are loot displays (Clone Party)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 776,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Shelf_8x2.fbx",
+  "bytes": 30012,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Shelf_8x2"
+  ],
+  "geometry_extents": [
+   [
+    2.08,
+    7.85,
+    8.1
+   ]
+  ]
+ },
+ "spec": "assets/blender/furniture.py",
+ "notes": "Wall shelving 8x2x7.85: steel sides, dark boards with marble price strips, fixed-seed products.",
+ "turntable": "docs/art/turntables/Shelf_8x2.png",
+ "seconds": 6.2
+}

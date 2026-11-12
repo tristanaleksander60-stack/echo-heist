@@ -1,0 +1,189 @@
+{
+ "asset": "LaserEmitter",
+ "objects": [
+  {
+   "name": "LaserEmitter",
+   "class": "small",
+   "tris": 428,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.4,
+    1.15,
+    10.45
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.7,
+     -1.15,
+     0.0
+    ],
+    "local_max": [
+     0.7,
+     0.0,
+     10.45
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 107,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Laser"
+   ],
+   "joint": null,
+   "role": "danger",
+   "notes": "origin = floor level on the wall face (back of the post); lenses face -Y (across the room)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "LaserEmitter_Lens",
+   "class": "small",
+   "tris": 200,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.4,
+    0.16,
+    8.38
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.2,
+     -1.16,
+     0.8098
+    ],
+    "local_max": [
+     0.2,
+     -1.0,
+     9.1902
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Alarm Red #FF3838 on; Vault Steel shade #4E5675 off; 3 flickers before re-enabling (MASTERPLAN 6.5)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "danger",
+   "notes": "5 Neon lenses; shared by LaserEmitter_CandyCane",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 628,
+ "seats": [
+  {
+   "name": "LaserEmitter_Lens",
+   "gap": 0.0,
+   "penetration": 0.0,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/LaserEmitter.fbx",
+  "bytes": 31084,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "LaserEmitter",
+   "LaserEmitter_Lens"
+  ],
+  "geometry_extents": [
+   [
+    0.16,
+    0.4,
+    8.38
+   ],
+   [
+    1.15,
+    1.4,
+    10.45
+   ]
+  ]
+ },
+ "spec": "assets/blender/mechanisms.py",
+ "notes": "Laser emitter post (10.45 tall): ink plinth and cap, steel bands, 5 lens housings at y 1-9; Neon lens part.",
+ "turntable": "docs/art/turntables/LaserEmitter.png",
+ "seconds": 4.6
+}

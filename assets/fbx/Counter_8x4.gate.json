@@ -1,0 +1,110 @@
+{
+ "asset": "Counter_8x4",
+ "objects": [
+  {
+   "name": "Counter_8x4",
+   "class": "module",
+   "tris": 316,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.3,
+    4.3,
+    3.5
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.15,
+     -0.15,
+     0.0
+    ],
+    "local_max": [
+     8.15,
+     4.15,
+     3.5
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "steel_hi",
+    "wood",
+    "wood_hi",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 64,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Counter"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "front (-Y) = customer side; the dark top is a loot display",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 316,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Counter_8x4.fbx",
+  "bytes": 24780,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Counter_8x4"
+  ],
+  "geometry_extents": [
+   [
+    3.5,
+    4.3,
+    8.3
+   ]
+  ]
+ },
+ "spec": "assets/blender/furniture.py",
+ "notes": "Shop counter 8x4x3.5: raised front panels, dark display top, clerk-side recess and pulls.",
+ "turntable": "docs/art/turntables/Counter_8x4.png",
+ "seconds": 4.7
+}

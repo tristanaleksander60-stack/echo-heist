@@ -1,0 +1,189 @@
+{
+ "asset": "Plate_4x4",
+ "objects": [
+  {
+   "name": "Plate_4x4",
+   "class": "small",
+   "tris": 484,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    4.0,
+    4.0,
+    0.36
+   ],
+   "pivot": {
+    "rule": "bottom",
+    "local_min": [
+     -2.0,
+     -2.0,
+     0.0
+    ],
+    "local_max": [
+     2.0,
+     2.0,
+     0.36
+    ]
+   },
+   "swatches": [
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 184,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Plate"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "steel plate; the centre disc carries the presser's glyph (Decal / SurfaceGui by code); sinks 0.1 when held",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Plate_4x4_Ring",
+   "class": "small",
+   "tris": 288,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    3.3,
+    3.3,
+    0.14
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.65,
+     -1.65,
+     0.28
+    ],
+    "local_max": [
+     1.65,
+     1.65,
+     0.42
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Getaway White #F4F7FF idle; the presser's clone hue when held",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "Neon ring, TextureID cleared, Color by code",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 772,
+ "seats": [
+  {
+   "name": "Plate_4x4_Ring",
+   "gap": 0.0,
+   "penetration": 0.0,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Plate_4x4.fbx",
+  "bytes": 34540,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Plate_4x4",
+   "Plate_4x4_Ring"
+  ],
+  "geometry_extents": [
+   [
+    0.14,
+    3.3,
+    3.3
+   ],
+   [
+    0.36,
+    4.0,
+    4.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/mechanisms.py",
+ "notes": "Pressure plate 4x4x0.36: chamfered steel slab (walk-on), dark ring seat, glyph disc; Neon ring part.",
+ "turntable": "docs/art/turntables/Plate_4x4.png",
+ "seconds": 1.8
+}

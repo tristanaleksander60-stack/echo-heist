@@ -7,6 +7,12 @@
 -- position), Dropped (where the carrier was taken out or let go), Banked (gone for
 -- the rest of the heist, or until `respawn` seconds pass for Clone Party shelves).
 -- Heavy loot (grips) is in the format; the sim rejects grips until it ships.
+--
+-- Bag levels (§4.2 Clone Party, §5.1): in a level with `bags`, an actor carries up
+-- to 1 + its owner's bag level small items. `actor.carrying` is the first item (0 =
+-- hands free) and `actor.bag` the extra ones in grab order, so a one-item actor is
+-- exactly the pre-bag format. Dropping or banking always moves everything carried,
+-- first item first (one event per item).
 
 local EventLog = require("./EventLog")
 
@@ -73,25 +79,60 @@ function Loot.available(state: State, i: number): boolean
 	return item ~= nil and (item.state == "Home" or item.state == "Dropped")
 end
 
+-- Number of items an actor carries.
+function Loot.count(actor: any): number
+	if actor.carrying == 0 then
+		return 0
+	end
+	local bag = actor.bag
+	return 1 + (if bag then #bag else 0)
+end
+
+-- The items an actor carries, first item first (a new array).
+function Loot.carried(actor: any): { number }
+	local out = {}
+	if actor.carrying ~= 0 then
+		table.insert(out, actor.carrying)
+		for _, i in actor.bag or {} do
+			table.insert(out, i)
+		end
+	end
+	return out
+end
+
 function Loot.take(state: State, i: number, actor: any)
 	local item = state.items[i]
 	item.state = "Carried"
 	item.carrier = actor.id
-	actor.carrying = i
+	if actor.carrying == 0 then
+		actor.carrying = i
+	else
+		actor.bag = actor.bag or {}
+		table.insert(actor.bag, i)
+	end
 end
 
--- Puts a carried item down at the carrier's position.
+local function clearCarry(actor: any)
+	actor.carrying = 0
+	if actor.bag then
+		table.clear(actor.bag)
+	end
+end
+
+-- Puts everything the actor carries down at its position (one event per item).
 function Loot.drop(state: State, actor: any, log: EventLog.Log, tick: number, kind: number?)
-	local i = actor.carrying
-	if i == 0 then
+	if actor.carrying == 0 then
 		return
 	end
-	local item = state.items[i]
-	item.state = "Dropped"
-	item.carrier = 0
-	item.x, item.y, item.z = actor.x, actor.y, actor.z
-	actor.carrying = 0
-	EventLog.append(log, tick, kind or EV.Drop, actor.id, i)
+	local items = Loot.carried(actor)
+	clearCarry(actor)
+	for _, i in items do
+		local item = state.items[i]
+		item.state = "Dropped"
+		item.carrier = 0
+		item.x, item.y, item.z = actor.x, actor.y, actor.z
+		EventLog.append(log, tick, kind or EV.Drop, actor.id, i)
+	end
 end
 
 -- Carried loot follows its carrier.
@@ -101,16 +142,18 @@ function Loot.follow(state: State, actors: { any })
 		if i ~= 0 then
 			local item = state.items[i]
 			item.x, item.y, item.z = a.x, a.y, a.z
+			for _, j in a.bag or {} do
+				local extra = state.items[j]
+				extra.x, extra.y, extra.z = a.x, a.y, a.z
+			end
 		end
 	end
 end
 
--- Banks the actor's item. Returns its value.
-function Loot.bank(state: State, actor: any, t: number): number
-	local i = actor.carrying
+-- Banks one item (the caller has taken it off its carrier). Returns its value.
+function Loot.bankItem(state: State, i: number, t: number): number
 	local def = state.level.loot[i]
 	local item = state.items[i]
-	actor.carrying = 0
 	item.carrier = 0
 	item.state = "Banked"
 	if def.respawn then
@@ -119,6 +162,22 @@ function Loot.bank(state: State, actor: any, t: number): number
 		state.gone[i] = true
 	end
 	return def.value
+end
+
+-- Takes everything off the actor for banking: returns the item indices, first first.
+function Loot.unload(actor: any): { number }
+	local items = Loot.carried(actor)
+	clearCarry(actor)
+	return items
+end
+
+-- Banks everything the actor carries. Returns the total value.
+function Loot.bank(state: State, actor: any, t: number): number
+	local total = 0
+	for _, i in Loot.unload(actor) do
+		total += Loot.bankItem(state, i, t)
+	end
+	return total
 end
 
 -- Respawning items come back on their shelf (Clone Party).

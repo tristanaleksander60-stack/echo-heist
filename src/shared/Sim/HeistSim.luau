@@ -18,6 +18,15 @@
 -- Tick order (fixed): move clones and live players -> intents (clones, then live,
 -- in actor order) -> hidden flags -> mechanisms -> carried loot and banking ->
 -- lasers -> guards -> alarm -> tutorial auto-end, squeeze, run end.
+--
+-- Level kinds: "story" levels complete when the goal is banked (Haul / Crew / Clean
+-- stars). "party" levels (Clone Party, §4.2) never complete: the crew steals until
+-- Dawn and the banked haul is scored against the level's tiers (Haul1..3, `Tier`
+-- events as they are reached). Daily vaults are story levels with a fixed 5-clone
+-- loadout and Dawn at run 6; result().daily is DailyVault.DailyResult's shape.
+-- Hooks for the view: a `Swarm` event at run start for each player with at least
+-- SWARM_SEEN_CLONES clones in the run ("8 OF ME"), HeistSim.ofMe, and
+-- HeistSim.lineup for the scripted Crew Line-up (§3.2 rule 8, never simulated).
 
 local Codec = require("../Rec/Codec")
 local Config = require("../Config")
@@ -76,6 +85,7 @@ local function newPlayer(id: number, seat: number): any
 		latency = 0,
 		orphan = false,
 		helper = false,
+		bag = 0, -- bag level (Cash upgrade, §5.1); only counts in levels with `bags`
 		input = { x = 0, y = 0, z = 0, yaw = 0, flags = Codec.FLAG.GROUNDED },
 		queue = {},
 		endRequested = false,
@@ -107,6 +117,7 @@ function HeistSim.new(level: any, opts: Opts?): any
 		tick = -1,
 		nextTick = 0,
 		t = 0,
+		tierMet = 0, -- party levels: highest haul tier banked so far
 		runLength = LoopClock.lengthFor(level.runSeconds, o.relaxed == true),
 		clock = nil :: LoopClock.Clock?,
 		rate = 1,
@@ -149,11 +160,11 @@ function HeistSim.new(level: any, opts: Opts?): any
 		catchT = S.GUARD_CATCH_SECONDS * mult,
 		vision = nil :: any,
 		coneVision = {
-			range = S.GUARD_VISION_RANGE,
+			range = S.GUARD_VISION_RANGE * (level.visionMult or 1),
 			cosHalf = math.cos(math.rad(S.GUARD_VISION_HALF_ANGLE)),
 			allRound = false,
 		},
-		chaseVision = { range = S.GUARD_VISION_RANGE, cosHalf = -1, allRound = true },
+		chaseVision = { range = S.GUARD_VISION_RANGE * (level.visionMult or 1), cosHalf = -1, allRound = true },
 		chase = false,
 		chaseSpeed = S.GUARD_CHASE_SPEED_MULT * sim.walkSpeed,
 		onCatch = nil :: any,
@@ -168,12 +179,18 @@ function HeistSim.new(level: any, opts: Opts?): any
 end
 
 -- Seats a crew member. Only before the heist starts (late joiners seat at the next heist).
-function HeistSim.addPlayer(sim: any, id: number, opts: { helper: boolean? }?): boolean
+-- `bag` = the player's bag level (DataService.getBagLevel), fixed for the heist: in a
+-- level with `bags`, that player and their clones carry 1 + bag x EXTRA_CARRY items.
+function HeistSim.addPlayer(sim: any, id: number, opts: { helper: boolean?, bag: number? }?): boolean
 	if sim.phase ~= "Lobby" or sim.playerById[id] or #sim.players >= Config.Sim.MAX_CREW then
 		return false
 	end
 	local p = newPlayer(id, #sim.players + 1)
 	p.helper = opts ~= nil and opts.helper == true
+	local bag = opts and opts.bag
+	if type(bag) == "number" and bag == bag then
+		p.bag = math.clamp(math.floor(bag), 0, Config.Data.Bag.MAX_LEVEL)
+	end
 	table.insert(sim.players, p)
 	sim.playerById[id] = p
 	return true
@@ -199,6 +216,14 @@ function HeistSim.capFor(levelCap: number, crewSize: number): number
 	return math.min(levelCap, math.floor(Config.Sim.CREW_CLONE_BUDGET / math.max(crewSize, 1)))
 end
 
+-- Items one actor of this player can carry in this level (bag levels, §5.1).
+function HeistSim.carryFor(level: any, bag: number): number
+	if not level.bags then
+		return 1
+	end
+	return 1 + math.max(0, bag) * Config.Data.Bag.EXTRA_CARRY_PER_LEVEL
+end
+
 local function lockCrew(sim: any)
 	sim.crewSize = #sim.players
 	sim.cap = HeistSim.capFor(sim.level.cap, sim.crewSize)
@@ -209,7 +234,9 @@ local function lockCrew(sim: any)
 		end
 	end
 	local S = Config.Sim
-	sim.ctx.coneVision.range = S.GUARD_VISION_RANGE * (1 + S.CREW_VISION_BONUS * (sim.crewSize - 1))
+	sim.ctx.coneVision.range = S.GUARD_VISION_RANGE
+		* (sim.level.visionMult or 1)
+		* (1 + S.CREW_VISION_BONUS * (sim.crewSize - 1))
 	sim.ctx.chaseVision.range = sim.ctx.coneVision.range
 end
 
@@ -269,6 +296,7 @@ function HeistSim.startRun(sim: any, serverNow: number?): number?
 		for slot, s in p.deck.slots do
 			if Deck.replays(p.deck, slot) then
 				local a = Actors.newClone(#actors + 1, p, slot, s.rec)
+				a.capacity = HeistSim.carryFor(level, p.bag)
 				table.insert(actors, a)
 				clones += 1
 				if not p.helper then
@@ -286,6 +314,7 @@ function HeistSim.startRun(sim: any, serverNow: number?): number?
 			local spawn = spawnFor(sim, p.seat)
 			local rec = Sampler.new(level.num, sim.runIndex, sim.hz)
 			local a = Actors.newLive(#actors + 1, p, spawn, rec)
+			a.capacity = HeistSim.carryFor(level, p.bag)
 			a.validator = Validator.new(rec, {
 				walkSpeed = sim.walkSpeed,
 				ping = 2 * p.latency,
@@ -312,6 +341,18 @@ function HeistSim.startRun(sim: any, serverNow: number?): number?
 	end
 	sim.liveCount = live
 	EventLog.append(sim.log, 0, EV.RunStart, sim.runIndex, clones, live)
+	-- The swarm moment (§4.2 "8 OF ME", funnel SwarmSeen = 6+ own clones on screen).
+	for _, p in sim.players do
+		local own = 0
+		for _, a in actors do
+			if a.kind == "clone" and a.player == p and a.present then
+				own += 1
+			end
+		end
+		if own >= Config.Sim.SWARM_SEEN_CLONES then
+			EventLog.append(sim.log, 0, EV.Swarm, p.seat, own + (if p.live then 1 else 0))
+		end
+	end
 	return sim.runIndex
 end
 
@@ -541,21 +582,32 @@ local function updateHidden(sim: any, a: any)
 end
 
 local function bankAll(sim: any)
-	local van = sim.level.van
+	local level = sim.level
+	local van = level.van
+	local party = level.kind == "party"
 	for _, a in sim.actors do
 		if a.present and a.carrying ~= 0 and Geom.contains(van, a.x, a.y, a.z) then
-			local item = a.carrying
-			sim.banked += Loot.bank(sim.loot, a, sim.t)
-			sim.clonesUsed = math.max(sim.clonesUsed, sim.run.clones)
-			EventLog.append(sim.log, sim.tick, EV.Bank, a.id, item, sim.banked)
-			local level = sim.level
-			if sim.banked >= level.haul - EPS then
-				sim.completeNow = true
-			elseif not sim.goalMet and sim.banked >= level.goal - EPS then
-				EventLog.append(sim.log, sim.tick, EV.GoalMet, sim.banked)
-			end
-			if sim.banked >= level.goal - EPS then
-				sim.goalMet = true
+			for _, item in Loot.unload(a) do
+				sim.banked += Loot.bankItem(sim.loot, item, sim.t)
+				sim.clonesUsed = math.max(sim.clonesUsed, sim.run.clones)
+				EventLog.append(sim.log, sim.tick, EV.Bank, a.id, item, sim.banked)
+				if party then
+					-- Party levels never complete: tiers are scored at Dawn.
+					local tiers = level.tiers
+					while sim.tierMet < #tiers and sim.banked >= tiers[sim.tierMet + 1] - EPS do
+						sim.tierMet += 1
+						EventLog.append(sim.log, sim.tick, EV.Tier, sim.tierMet, sim.banked)
+					end
+				else
+					if sim.banked >= level.haul - EPS then
+						sim.completeNow = true
+					elseif not sim.goalMet and sim.banked >= level.goal - EPS then
+						EventLog.append(sim.log, sim.tick, EV.GoalMet, sim.banked)
+					end
+					if sim.banked >= level.goal - EPS then
+						sim.goalMet = true
+					end
+				end
 			end
 		end
 	end
@@ -589,7 +641,7 @@ local function finishRun(sim: any, reason: number)
 	end
 	EventLog.append(sim.log, sim.tick, EV.RunEnd, reason, sim.tick)
 	sim.totalTime += sim.t
-	local over = sim.completeNow or sim.goalMet
+	local over = level.kind ~= "party" and (sim.completeNow or sim.goalMet)
 	if over then
 		sim.phase = "Over"
 		sim.overReason = "Complete"
@@ -600,6 +652,10 @@ local function finishRun(sim: any, reason: number)
 		sim.phase = "Over"
 		sim.overReason = "Dawn"
 		sim.finalRunTime = sim.t
+		if level.kind == "party" then
+			-- The swarm that ran until Dawn (a story level's count only grows with banks).
+			sim.clonesUsed = math.max(sim.clonesUsed, sim.run.clones)
+		end
 		EventLog.append(sim.log, sim.tick, EV.Dawn, sim.banked, sim.runIndex)
 	else
 		sim.phase = "Between"
@@ -891,13 +947,24 @@ function HeistSim.eventsSince(sim: any, cursor: number): (number, number)
 end
 
 -- Heist result and medal inputs (§5.2). Medals only count once phase is "Over".
+-- Story levels: Haul / Crew / Clean. Party levels: complete = Haul1 banked by Dawn,
+-- stars = tiers met. `data` is shared/Data Progress.HeistResult's shape, `daily`
+-- DailyVault.DailyResult's (the server picks the one its level needs).
 function HeistSim.result(sim: any): any
 	local level = sim.level
-	local complete = sim.phase == "Over" and sim.overReason == "Complete"
+	local party = level.kind == "party"
+	local over = sim.phase == "Over"
+	local complete = if party
+		then over and sim.banked >= level.tiers[1] - EPS
+		else over and sim.overReason == "Complete"
 	local clonesNow = 0
+	local bag = 0
 	for _, p in sim.players do
 		if not p.helper then
 			clonesNow += #p.deck.slots
+		end
+		if level.bags then
+			bag = math.max(bag, p.bag)
 		end
 	end
 	local last = sim.lastRun
@@ -911,26 +978,31 @@ function HeistSim.result(sim: any): any
 		bustedFinal = if last then last.busted else 0,
 		tainted = if last then last.tainted else false,
 	}
+	local stars = if party then Scoring.partyStars(sim.banked, level.tiers, inputs.tainted) else Scoring.stars(inputs)
 	return {
 		phase = sim.phase,
 		reason = sim.overReason,
+		kind = level.kind,
 		complete = complete,
 		runs = sim.runIndex,
 		banked = sim.banked,
 		goal = level.goal,
 		haul = level.haul,
+		tiers = level.tiers,
+		tierMet = sim.tierMet,
 		clonesUsed = sim.clonesUsed,
 		clonesNow = clonesNow,
 		par = level.par,
+		bag = bag, -- highest bag level that counted (bag runs are excluded from Diamond, §4.2)
 		finalRunTime = sim.finalRunTime,
 		totalTime = sim.totalTime,
 		catchesFinal = inputs.catchesFinal,
 		bustedFinal = inputs.bustedFinal,
 		tainted = inputs.tainted,
-		stars = Scoring.stars(inputs),
+		stars = stars,
 		heistHash = sim.heistHash,
 		-- The same facts in shared/Data Progress.HeistResult's shape (the server adds
-		-- friends and heistId): DataService.awardHeistResult(player, level.id, data).
+		-- friends and heistId): DataService.awardHeistResult(player, level.dataId, data).
 		data = {
 			haul = sim.banked,
 			clones = sim.clonesUsed,
@@ -942,7 +1014,74 @@ function HeistSim.result(sim: any): any
 			relaxed = sim.relaxed,
 			recHash = string.format("%08x", sim.heistHash),
 		},
+		-- Daily vaults: DataService.awardDailyVault(player, vaultDay, daily).
+		daily = {
+			cleared = complete,
+			haul = sim.banked,
+			clones = sim.clonesUsed,
+			tainted = inputs.tainted,
+			relaxed = sim.relaxed,
+		},
 	}
+end
+
+-- Copies of one player in the current run: their clones in the world plus their
+-- live run (the "8 OF ME" count; 0 between runs).
+function HeistSim.ofMe(sim: any, id: number): number
+	local p = sim.playerById[id]
+	if not p or sim.phase ~= "Run" then
+		return 0
+	end
+	local n = 0
+	for _, a in sim.actors do
+		if a.player == p and a.present then
+			n += 1
+		end
+	end
+	return n
+end
+
+-- The Crew Line-up (§3.2 rule 8): scripted at heist end, never simulated, so it can
+-- never desync. Every clone of every crew member in record order (the run that
+-- recorded it, then seat, then slot; orphan tapes included), then the players still
+-- in the crew by seat. Each entry: kind ("clone" | "player"), ownerId, seat, slot
+-- (0 = player), run, delay (seconds: LINEUP_STAGGER per figure) and a spot (x, z,
+-- yaw) in rows of LINEUP_ROW in front of the van (level.lineup overrides the row).
+function HeistSim.lineup(sim: any): { any }
+	local S = Config.Sim
+	local level = sim.level
+	local out = {}
+	for _, p in sim.players do
+		for slot, s in p.deck.slots do
+			table.insert(out, { kind = "clone", ownerId = p.id, seat = p.seat, slot = slot, run = s.run })
+		end
+	end
+	table.sort(out, function(a: any, b: any): boolean
+		if a.run ~= b.run then
+			return a.run < b.run
+		end
+		if a.seat ~= b.seat then
+			return a.seat < b.seat
+		end
+		return a.slot < b.slot
+	end)
+	for _, p in sim.players do
+		if not p.orphan then
+			table.insert(out, { kind = "player", ownerId = p.id, seat = p.seat, slot = 0, run = sim.runIndex })
+		end
+	end
+	local row = level.lineup
+	for i, e in out do
+		local k = i - 1
+		local col, line = k % S.LINEUP_ROW, math.floor(k / S.LINEUP_ROW)
+		local across = (col - (math.min(#out - line * S.LINEUP_ROW, S.LINEUP_ROW) - 1) / 2) * S.LINEUP_SPACING
+		local back = line * S.LINEUP_SPACING
+		e.delay = k * S.LINEUP_STAGGER
+		e.x = row.x + row.dx * across - row.fx * back
+		e.z = row.z + row.dz * across - row.fz * back
+		e.yaw = row.yaw
+	end
+	return out
 end
 
 -- Plain-data view for clients and debugging (doors/lasers carry the timestamps the
@@ -978,6 +1117,7 @@ function HeistSim.snapshot(sim: any): any
 			z = a.z,
 			yaw = a.yaw,
 			carrying = a.carrying,
+			bag = table.clone(a.bag),
 			hidden = a.hidden,
 		}
 	end
@@ -987,6 +1127,7 @@ function HeistSim.snapshot(sim: any): any
 		t = sim.t,
 		runLength = sim.runLength,
 		banked = sim.banked,
+		tierMet = sim.tierMet,
 		alarm = { active = sim.alarm.active, vanAt = sim.alarm.vanAt, lockAt = sim.alarm.lockAt },
 		doors = doors,
 		lasers = lasersOut,

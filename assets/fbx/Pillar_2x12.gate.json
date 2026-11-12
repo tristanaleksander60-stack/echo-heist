@@ -1,0 +1,111 @@
+{
+ "asset": "Pillar_2x12",
+ "objects": [
+  {
+   "name": "Pillar_2x12",
+   "class": "module",
+   "tris": 324,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.3,
+    2.3,
+    12.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.15,
+     -0.15,
+     0.0
+    ],
+    "local_max": [
+     2.15,
+     2.15,
+     12.0
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "plum",
+    "plum_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 67,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Wall"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "corner / end cap: outside corners of the shell; the band and capital overhang 0.1-0.15 to cap the trims",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 324,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Pillar_2x12.fbx",
+  "bytes": 25196,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Pillar_2x12"
+  ],
+  "geometry_extents": [
+   [
+    2.3,
+    2.3,
+    12.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/wall.py",
+ "notes": "Pillar 2x2x12: fills the outside corner where two shell walls meet; continues baseboard, dado and crown lines.",
+ "turntable": "docs/art/turntables/Pillar_2x12.png",
+ "seconds": 7.3
+}

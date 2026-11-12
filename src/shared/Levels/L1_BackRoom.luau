@@ -20,6 +20,7 @@ return {
 	version = 1,
 	id = "cs1_back_room",
 	num = 101,
+	dataId = "BackRoom",
 	name = "Back Room",
 	location = "CornerShop",
 	runSeconds = 30,

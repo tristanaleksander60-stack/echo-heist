@@ -1,0 +1,204 @@
+{
+ "asset": "Wall_Door_8x12",
+ "objects": [
+  {
+   "name": "Wall_Door_8x12",
+   "class": "module",
+   "tris": 664,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.0,
+    2.06,
+    12.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.0,
+     -0.03,
+     0.0
+    ],
+    "local_max": [
+     8.0,
+     2.03,
+     12.0
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "plum",
+    "plum_deep",
+    "plum_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 319,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "PreciseConvexDecomposition",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Wall"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "door frame; PreciseConvexDecomposition so the 6 x 10 opening stays walkable",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Wall_Door_8x12_Leaf",
+   "class": "small",
+   "tris": 508,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    6.0,
+    1.34,
+    9.96
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.0,
+     -0.67,
+     0.02
+    ],
+    "local_max": [
+     6.0,
+     0.67,
+     9.98
+    ]
+   },
+   "swatches": [
+    "steel",
+    "steel_hi",
+    "wood",
+    "wood_hi"
+   ],
+   "location": [
+    1.0,
+    1.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 184,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Door"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "pocket leaf: origin = bottom of the hinge-side edge on the wall centre plane; open = slide 6 studs along -X",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 1172,
+ "tile_x": {
+  "axis": "X",
+  "period": 8.0,
+  "with": "Wall_Door_8x12",
+  "other_axis": "X",
+  "mode": "equal",
+  "a_cells": 7224,
+  "b_cells": 7224,
+  "iou": 1.0,
+  "cover": 1.0,
+  "inside": true,
+  "ok": true
+ },
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Wall_Door_8x12.fbx",
+  "bytes": 40732,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Wall_Door_8x12",
+   "Wall_Door_8x12_Leaf"
+  ],
+  "geometry_extents": [
+   [
+    1.34,
+    6.0,
+    9.96
+   ],
+   [
+    2.06,
+    8.0,
+    12.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/wall.py",
+ "notes": "Door wall 8x12: 6x10 opening (LevelSpec door box), marble casing, plinth blocks on the baseboard line, pocket leaf.",
+ "turntable": "docs/art/turntables/Wall_Door_8x12.png",
+ "seconds": 6.1
+}

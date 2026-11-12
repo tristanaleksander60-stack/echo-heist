@@ -21,6 +21,7 @@ return {
 	version = 1,
 	id = "cs2_two_doors",
 	num = 102,
+	dataId = "TwoDoors",
 	name = "Two Doors",
 	location = "CornerShop",
 	runSeconds = 30,

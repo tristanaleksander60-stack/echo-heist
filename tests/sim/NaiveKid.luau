@@ -17,6 +17,12 @@ local HeistSim = require("../../src/shared/Sim/HeistSim")
 
 local NaiveKid = {}
 
+-- Where a kid's random "let's look over there" spots fall, per location (x0, x1, z0, z1).
+NaiveKid.AREAS = {
+	CornerShop = { -15, 15, -40, 12 },
+	Bank = { -19, 19, -58, 12 },
+}
+
 local HINT_AT = 16 -- seconds (the second stuck hint)
 local END_TAP = 0.015 -- chance per decision of tapping END RUN for no reason
 
@@ -53,6 +59,7 @@ function NaiveKid.brain(level: any, seed: number, run: number): any
 		total += s.w
 	end
 	local hinted = false
+	local area = NaiveKid.AREAS[level.spec.location] or NaiveKid.AREAS.CornerShop
 	local decide
 	decide = function(bot: any, sim: any, _view: any, t: number): { any }
 		local a = HeistSim.liveActor(sim, bot.id)
@@ -78,7 +85,7 @@ function NaiveKid.brain(level: any, seed: number, run: number): any
 		-- Pick something interesting (or a random spot near the shop).
 		local tx, tz, lootId
 		if rnd(0, 1) < 0.2 then
-			tx, tz = rnd(-15, 15), rnd(-40, 12)
+			tx, tz = rnd(area[1], area[2]), rnd(area[3], area[4])
 		else
 			local pick = rnd(0, total)
 			for _, s in spots do

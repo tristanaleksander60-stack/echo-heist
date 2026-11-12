@@ -1,0 +1,199 @@
+{
+ "asset": "Wall_Window_8x12",
+ "objects": [
+  {
+   "name": "Wall_Window_8x12",
+   "class": "module",
+   "tris": 768,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.0,
+    2.5,
+    12.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.0,
+     -0.25,
+     0.0
+    ],
+    "local_max": [
+     8.0,
+     2.25,
+     12.0
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "plum",
+    "plum_deep",
+    "plum_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 399,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Wall"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "window wall: blocks movement; glass is see-through for Gus (LevelSpec: no occluder there)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Wall_Window_8x12_Glass",
+   "class": "small",
+   "tris": 12,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    5.0,
+    0.06,
+    5.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     1.5,
+     0.97,
+     4.85
+    ],
+    "local_max": [
+     6.5,
+     1.03,
+     9.85
+    ]
+   },
+   "swatches": [
+    "steel_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Glass",
+    "Color": "Vault Steel light #A9B2CC",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.6,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "Glass, Transparency 0.6, TextureID cleared",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 780,
+ "tile_x": {
+  "axis": "X",
+  "period": 8.0,
+  "with": "Wall_Window_8x12",
+  "other_axis": "X",
+  "mode": "equal",
+  "a_cells": 7224,
+  "b_cells": 7224,
+  "iou": 1.0,
+  "cover": 1.0,
+  "inside": true,
+  "ok": true
+ },
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Wall_Window_8x12.fbx",
+  "bytes": 34028,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Wall_Window_8x12",
+   "Wall_Window_8x12_Glass"
+  ],
+  "geometry_extents": [
+   [
+    0.06,
+    5.0,
+    5.0
+   ],
+   [
+    2.5,
+    8.0,
+    12.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/wall.py",
+ "notes": "Window wall 8x12: 5x5 opening on the dado line, marble sill and casing, glass as its own part.",
+ "turntable": "docs/art/turntables/Wall_Window_8x12.png",
+ "seconds": 4.5
+}

@@ -17,8 +17,21 @@
 --                                  indices change: recorded event args use them)
 --   id = "cs1_back_room"           string id;  num = 101  u16 id in recordings
 --   name, location                 display strings
+--   dataId = "BackRoom"            optional key of this level in Config.Data.Levels
+--                                  (medals, unlocks, trophies; DataService)
+--   kind = "story"|"party"         default "story". A party level (Clone Party) never
+--                                  completes: the crew steals until Dawn and the haul
+--                                  is scored against `tiers` (Haul1..3); it needs a
+--                                  Dawn (dawnRuns) and has no `haul`
+--   tiers = {1000, 2500, 5000}     party only: ascending $ thresholds; goal defaults
+--                                  to tiers[1]
 --   runSeconds = 30                run length (<= Config.Rec.LOOP_MAX_SECONDS)
---   par = 1, cap = 3               par clones; level clone cap (teaching: par + 2)
+--   par = 1, cap = 3               par clones; level clone cap (teaching: par + 2;
+--                                  party 0 / 8; daily vaults a fixed 5)
+--   bags = true                    bag levels count here: an actor carries 1 + its
+--                                  owner's bag level small items (Clone Party)
+--   guardVision = 1                multiplier on every guard's vision range (the
+--                                  daily "lights off" modifier), in (0, 2]
 --   goal = 100                     banked value that completes the heist (Haul star)
 --   haul = nil                     optional higher target; the heist then completes
 --                                  at the end of the run that met `goal`, or at once
@@ -53,6 +66,9 @@
 --   nav = {{x, z}}                 chase waypoints (A* graph built here)
 --   alarm = {trigger = lootId, vanSeconds?, lockSeconds?, onCatch?}
 --   tutorial = {autoEnd = {runs = {1}, plate = id, seconds?}}   L1 forced quick rewind
+--   lineup = {x, z, yaw?}          Crew Line-up row centre (default: in front of the van)
+--   hooks = {...}                  free-form presentation data for the view (swarm
+--                                  stamp, boards); never read by the sim
 --   solution = "PLACEHOLDER..."    note about where the golden solution comes from
 --
 -- Recorded event args are 1-based indices in spec order (loot index for Grab,
@@ -113,6 +129,13 @@ export type LevelData = {
 	guards: { { id: string, index: number, route: Route, speed: number } },
 	nav: { nodes: { { x: number, z: number } }, edges: { { { to: number, cost: number, doors: { number } } } } },
 	alarm: { trigger: number, vanSeconds: number, lockSeconds: number, onCatch: boolean }?,
+	kind: string,
+	tiers: { number }?,
+	bags: boolean,
+	visionMult: number,
+	dataId: string?,
+	lineup: { x: number, z: number, yaw: number, dx: number, dz: number, fx: number, fz: number },
+	hooks: any,
 	tutorial: { autoEnd: { runs: { [number]: boolean }, plate: number, seconds: number }? }?,
 	index: { [string]: { [string]: number } },
 }
@@ -132,6 +155,11 @@ end
 
 local function isInt(v: any): boolean
 	return isNum(v) and v == math.floor(v)
+end
+
+-- Dawn run count for a story level with this par (§3.1: par + 4, minimum 6).
+function LevelSpec.dawnRunsFor(par: number): number
+	return math.max(Config.Sim.DAWN_MIN_RUNS, par + Config.Sim.DAWN_RUNS_OVER_PAR)
 end
 
 -- Compiles a guard route into timed legs (pure; also used by unit tests).
@@ -296,11 +324,61 @@ function LevelSpec.validate(spec: any): (boolean, { string })
 	if not isInt(spec.seed) then
 		err("seed must be an integer")
 	end
-	if not isNum(spec.goal) or spec.goal <= 0 then
+	local kind = spec.kind or "story"
+	local party = kind == "party"
+	if kind ~= "story" and kind ~= "party" then
+		err("kind must be story or party")
+	end
+	local goal = spec.goal
+	if party then
+		local tiers = spec.tiers
+		if type(tiers) ~= "table" or #tiers == 0 then
+			err("a party level needs tiers (ascending $ thresholds)")
+		else
+			local last = 0
+			for i, v in tiers do
+				if not isNum(v) or v <= last then
+					err("tiers[%d] must be a number above the previous tier", i)
+					break
+				end
+				last = v
+			end
+			if goal == nil then
+				goal = tiers[1]
+			end
+		end
+		if spec.haul ~= nil then
+			err("a party level has tiers, not haul")
+		end
+		if spec.dawnRuns == nil then
+			err("a party level needs dawnRuns (it only ends at Dawn)")
+		end
+	elseif spec.tiers ~= nil then
+		err("tiers are only for party levels")
+	end
+	if not isNum(goal) or goal <= 0 then
 		err("goal must be a positive number")
 	end
-	if spec.haul ~= nil and (not isNum(spec.haul) or (isNum(spec.goal) and spec.haul < spec.goal)) then
+	if spec.haul ~= nil and (not isNum(spec.haul) or (isNum(goal) and spec.haul < goal)) then
 		err("haul must be a number >= goal")
+	end
+	if spec.bags ~= nil and type(spec.bags) ~= "boolean" then
+		err("bags must be a boolean")
+	end
+	if spec.guardVision ~= nil and (not isNum(spec.guardVision) or spec.guardVision <= 0 or spec.guardVision > 2) then
+		err("guardVision must be a multiplier in (0, 2]")
+	end
+	if spec.dataId ~= nil and (type(spec.dataId) ~= "string" or spec.dataId == "") then
+		err("dataId must be a non-empty string")
+	end
+	if spec.lineup ~= nil then
+		local l = spec.lineup
+		if type(l) ~= "table" or not isNum(l.x) or not isNum(l.z) or (l.yaw ~= nil and not isNum(l.yaw)) then
+			err("lineup must be {x, z, yaw?}")
+		end
+	end
+	if spec.hooks ~= nil and type(spec.hooks) ~= "table" then
+		err("hooks must be a table")
 	end
 
 	-- Deadline
@@ -493,13 +571,13 @@ function LevelSpec.validate(spec: any): (boolean, { string })
 			end
 		end
 	end
-	if isNum(spec.goal) and total > 0 and total < spec.goal then
+	if isNum(goal) and total > 0 and total < goal then
 		local respawns = false
 		for _, item in list("loot") do
 			respawns = respawns or item.respawn ~= nil
 		end
 		if not respawns then
-			err("goal %s is more than all the loot (%s)", tostring(spec.goal), tostring(total))
+			err("goal %s is more than all the loot (%s)", tostring(goal), tostring(total))
 		end
 	end
 	if #list("loot") == 0 then
@@ -746,8 +824,25 @@ function LevelSpec.compile(spec: any): LevelData
 
 	local dawnRuns: number? = spec.dawnRuns
 	if spec.deadline == "Dawn" and dawnRuns == nil then
-		dawnRuns = math.max(S.DAWN_MIN_RUNS, spec.par + S.DAWN_RUNS_OVER_PAR)
+		dawnRuns = LevelSpec.dawnRunsFor(spec.par)
 	end
+	local kind = spec.kind or "story"
+	local tiers = nil
+	if kind == "party" then
+		tiers = table.clone(spec.tiers)
+	end
+	local goal = spec.goal or (tiers and tiers[1])
+
+	-- Crew Line-up row: centre, facing (yaw), across (dx, dz) and forward (fx, fz).
+	local lx, _, _ = Geom.center(spec.van)
+	local lz = spec.van.minZ - 2 - S.LINEUP_SPACING
+	local lyaw = 0
+	if spec.lineup then
+		lx, lz = spec.lineup.x, spec.lineup.z
+		lyaw = ((spec.lineup.yaw or 0) * DEG) % (2 * math.pi)
+	end
+	local fx, fz = Geom.forward(lyaw)
+	local lineup = { x = lx, z = lz, yaw = lyaw, dx = -fz, dz = fx, fx = fx, fz = fz }
 
 	local alarm = nil
 	if spec.alarm then
@@ -779,8 +874,8 @@ function LevelSpec.compile(spec: any): LevelData
 		runSeconds = spec.runSeconds,
 		par = spec.par,
 		cap = spec.cap,
-		goal = spec.goal,
-		haul = spec.haul or spec.goal,
+		goal = goal,
+		haul = spec.haul or goal,
 		deadline = spec.deadline,
 		dawnRuns = dawnRuns,
 		seed = spec.seed,
@@ -803,6 +898,13 @@ function LevelSpec.compile(spec: any): LevelData
 		alarm = alarm,
 		tutorial = tutorial,
 		index = index,
+		kind = kind,
+		tiers = tiers,
+		bags = spec.bags == true,
+		visionMult = spec.guardVision or 1,
+		dataId = spec.dataId,
+		lineup = lineup,
+		hooks = spec.hooks or {},
 	}
 end
 

@@ -1,0 +1,111 @@
+{
+ "asset": "Hide_Curtain",
+ "objects": [
+  {
+   "name": "Hide_Curtain",
+   "class": "small",
+   "tris": 468,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    6.38,
+    1.84,
+    10.78
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.19,
+     -1.84,
+     0.12
+    ],
+    "local_max": [
+     3.19,
+     0.0,
+     10.9
+    ]
+   },
+   "swatches": [
+    "leaf",
+    "leaf_lo",
+    "marble",
+    "marble_lo",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 306,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Hide"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "origin = bottom centre on the wall face; the drape hangs 1.45 off the wall",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 468,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Hide_Curtain.fbx",
+  "bytes": 28412,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Hide_Curtain"
+  ],
+  "geometry_extents": [
+   [
+    1.84,
+    6.38,
+    10.78
+   ]
+  ]
+ },
+ "spec": "assets/blender/hides.py",
+ "notes": "Hide spot: deep-pleated green velvet drape on a steel rod, cream hem, 1.9 deep off the wall.",
+ "turntable": "docs/art/turntables/Hide_Curtain.png",
+ "seconds": 4.5
+}
