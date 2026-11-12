@@ -4,7 +4,7 @@
   {
    "name": "Van",
    "class": "medium",
-   "tris": 1856,
+   "tris": 1704,
    "budget": [
     2000,
     4000
@@ -44,7 +44,7 @@
    ],
    "symmetry_error": null,
    "self_intersections": 0,
-   "cross_shell_overlaps": 1039,
+   "cross_shell_overlaps": 654,
    "cap_overlaps": 0,
    "flipped_faces": 0,
    "boundary_edges": 0,
@@ -69,7 +69,71 @@
    ],
    "joint": null,
    "role": "exit",
-   "notes": "Getaway White body; hollow cargo bay with the sliding door open on -Y; chevrons point at the door",
+   "notes": "frame, dark roof, cargo bay, glass, bumpers, wheels and the exit band whose Getaway White chevrons point at the open door (-Y)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Van_Paint",
+   "class": "small",
+   "tris": 164,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    14.0,
+    6.8,
+    5.7
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -7.0,
+     -3.6,
+     1.55
+    ],
+    "local_max": [
+     7.0,
+     3.2,
+     7.25
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 4,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "van paint: a mid value by MeshPart.Color (Config.Lighting.VAN.paint in a heist, the bay's crew colour in the garage); never Getaway White",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "exit",
+   "notes": "the body panels, sliding door and cab as one runtime-coloured part (no atlas)",
    "fails": [],
    "passed": true
   },
@@ -144,12 +208,26 @@
  ],
  "asset_fails": [],
  "lihfolk_bpy": "LihFolk plugin",
- "tris_total": 1980,
+ "tris_total": 1992,
  "seats": [
   {
    "name": "Van_Shelf",
    "gap": 0.0,
    "penetration": 0.1,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Van_Paint",
+   "gap": 0.0,
+   "penetration": 0.1,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Van",
+   "gap": 0.0,
+   "penetration": 0.74616,
    "gap_frac": 0.0,
    "seated": true
   }
@@ -161,15 +239,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "a25e1316c18f9e11fed1",
+ "contentHash": "f6e3b53bf228aaa07645",
  "fbx": {
   "path": "assets/fbx/Van.fbx",
-  "bytes": 52844,
+  "bytes": 55532,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
   "models": [
    "Van",
+   "Van_Paint",
    "Van_Shelf"
   ],
   "geometry_extents": [
@@ -179,6 +258,11 @@
     6.0
    ],
    [
+    5.7,
+    6.8,
+    14.0
+   ],
+   [
     7.08,
     7.689,
     14.9
@@ -186,7 +270,7 @@
   ]
  },
  "spec": "assets/blender/van.py",
- "notes": "Getaway step van 14x6.4x7.75: hollow cargo bay, open sliding door (-Y), exit band with chevrons, roof rack.",
+ "notes": "Getaway step van 14x6.4x7.75: mid-value runtime paint, dark roof, hollow cargo bay, open sliding door (-Y), exit band with white chevrons, roof rack.",
  "turntable": "docs/art/turntables/Van.png",
- "seconds": 7.0
+ "seconds": 5.8
 }

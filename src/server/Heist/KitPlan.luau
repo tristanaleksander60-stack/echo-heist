@@ -42,7 +42,7 @@ export type PartSpec = {
 }
 export type Item = {
 	role: string, -- wall | counter | shelf | pillar | floor | frame | front | vaultFrame | vaultSkin | signature |
-	-- door | plate | loot | till | display | post | hide | switch | van | lamp | xmas
+	-- door | plate | loot | till | display | post | hide | switch | van | lamp | rug | xmas
 	mode: string, -- "visual" (static, no collision) | "swap" (replaces a tagged greybox part) |
 	-- "dress" (inside a tagged Model: laser posts, hide props) | "skin" (vault door, client-drawn)
 	pieces: { string },
@@ -426,7 +426,7 @@ end
 -- did not dress is lit and signposted the same way). LEVELS.md §4 P0-1..P0-3, PLAN_STEAM_PLUS §4.1 W2.
 ---------------------------------------------------------------------------
 
-export type Lamp = { x: number, z: number, kind: string, index: number? } -- kind: plate | hero | room
+export type Lamp = { x: number, z: number, kind: string, index: number? } -- kind: plate | hero | room | street
 
 local function insideTall(level: any, x: number, z: number): boolean
 	for _, s in level.spec.solids or {} do
@@ -495,7 +495,8 @@ local function autoRooms(level: any, cfg: any): { { number } }
 end
 
 -- Every lamp of a level: one over each plate, the hero over the goal (the only shadowed light), then the
--- room centres (LevelDress `rooms`, else automatic), skipping any within cfg.MIN_LAMP_GAP of a lamp.
+-- room centres (LevelDress `rooms`, else automatic), skipping any within cfg.MIN_LAMP_GAP of a lamp, then the
+-- street lamps on the pavement (LevelDress `street`: warm pools outside, PLAN_STEAM_PLUS §3.1, GOLDEN G1).
 function KitPlan.lamps(level: any, dress: any?, cfg: any): { Lamp }
 	local out: { Lamp } = {}
 	for i, p in level.plates do
@@ -526,6 +527,11 @@ function KitPlan.lamps(level: any, dress: any?, cfg: any): { Lamp }
 			table.insert(out, { x = r[1], z = r[2], kind = "room" })
 		end
 	end
+	if cfg.LAMP.street then
+		for _, st in (dress and dress.street) or {} do
+			table.insert(out, { x = st[1], z = st[2], kind = "street" })
+		end
+	end
 	return out
 end
 
@@ -542,15 +548,16 @@ end
 
 -- Each lamp's light and floor-pool colour (PLAN_STEAM_PLUS §3.1: one dominant light colour per location).
 -- Room lamps take the location's colour (in turn when it has several: the Toy Shop's pink and gold); plate
--- lamps (signals) and the hero (the focal pool) keep cfg.LAMP's warm white. Returns {color, pool} per lamp,
--- in the order of `lamps`. Pure data: never adds or removes a light.
+-- lamps (signals) and the hero (the focal pool) keep cfg.LAMP's warm white; street lamps keep their own warm
+-- colour and pool (cfg.LAMP.street.poolColor). Returns {color, pool} per lamp, in the order of `lamps`. Pure
+-- data: never adds or removes a light.
 function KitPlan.lampLooks(lamps: { Lamp }, location: string?, cfg: any): { { color: { number }, pool: { number } } }
 	local loc = cfg.LOCATION and location and cfg.LOCATION[location]
 	local out = {}
 	local rooms = 0
 	for k, l in lamps do
 		local spec = cfg.LAMP[l.kind] or cfg.LAMP.room
-		local color, pool = spec.color, cfg.POOL.color
+		local color, pool = spec.color, spec.poolColor or cfg.POOL.color
 		if l.kind == "room" and loc then
 			rooms += 1
 			color = loc.room[(rooms - 1) % #loc.room + 1]
@@ -1225,15 +1232,44 @@ function KitPlan.plan(level: any, specs: { [string]: PartSpec }, opts: Options?)
 	end
 
 	---------------------------------------------------------------- lamps
-	-- Lamp_Ceiling over every lamp (the light and its floor pool are LevelBuilder's, on the greybox).
+	-- Lamp_Ceiling over every indoor lamp, a StreetLamp post under every street lamp (the light and its floor
+	-- pool are LevelBuilder's, on the greybox).
 	local lampNames = groups.Lamp_Ceiling
-	if o.lighting and lampNames and hasAll(lampNames) then
+	local streetNames = groups.StreetLamp
+	if o.lighting then
 		local hang = o.lighting.LAMP_HANG_Y - 12 -- the pieces' pivot is 12 studs up (manifest origin)
 		for k, l in KitPlan.lamps(level, o.dress, o.lighting) do
-			local it = item("lamp", "visual", lampNames, { x = l.x, y = floorY + hang, z = l.z, yaw = 0 }, { 1, 1, 1 })
-			it.ref = "lamp"
-			it.index = k
-			add(it)
+			local it: Item? = nil
+			if l.kind == "street" then
+				if streetNames and hasAll(streetNames) then
+					it = item("lamp", "visual", streetNames, { x = l.x, y = floorY, z = l.z, yaw = 0 }, { 1, 1, 1 })
+				end
+			elseif lampNames and hasAll(lampNames) then
+				it = item("lamp", "visual", lampNames, { x = l.x, y = floorY + hang, z = l.z, yaw = 0 }, { 1, 1, 1 })
+			end
+			if it then
+				it.ref = "lamp"
+				it.index = k
+				add(it)
+			end
+		end
+	end
+
+	---------------------------------------------------------------- rugs
+	-- Warm rugs inside the light pools (LevelDress `rugs`, PLAN_STEAM_PLUS §3.1 W3): flat, visual only, a hair
+	-- above the floor tiles and under the lamp pools (cfg.RUG_LIFT); scale stretches the rug (a doormat).
+	local rugs = o.dress and o.dress.rugs
+	if o.lighting and rugs and has("Rug_8x6") then
+		for _, r in rugs do
+			add(
+				item(
+					"rug",
+					"visual",
+					{ "Rug_8x6" },
+					{ x = r.x, y = floorY + o.lighting.RUG_LIFT, z = r.z, yaw = r.yaw or 0 },
+					{ r.sx or 1, 1, r.sz or 1 }
+				)
+			)
 		end
 	end
 

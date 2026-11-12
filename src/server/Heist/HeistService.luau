@@ -1236,7 +1236,8 @@ function HeistService.start(opts: StartOpts?)
 		Staging.prepare(staging)
 	end
 	if o.lobby ~= false then
-		Lobby.build()
+		-- greybox at once; dressed with the art kit in the background once it is ready (garage v1)
+		Lobby.build(if H.KIT_LEVELS then KitService else nil)
 	end
 	declareRemotes()
 	-- The store kill switch applies at once (prompts are re-checked on every change).

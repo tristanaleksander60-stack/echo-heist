@@ -20,6 +20,7 @@ local Guards = require("../../src/shared/Sim/Guards")
 local KitData = require("../../src/server/Kit/KitData")
 local KitPlan = require("../../src/server/Heist/KitPlan")
 local LevelSpec = require("../../src/shared/Sim/LevelSpec")
+local LobbyPlan = require("../../src/server/Heist/LobbyPlan")
 
 type Box = { minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number }
 
@@ -76,7 +77,9 @@ local function lamps(level: any, location: string): { any }
 			color = looks[k].color,
 			poolColor = looks[k].pool,
 			shadows = spec.shadows == true,
-			pool = if l.kind == "hero" then L.POOL.heroDiameter else L.POOL.diameter,
+			pool = spec.pool or (if l.kind == "hero" then L.POOL.heroDiameter else L.POOL.diameter),
+			rings = spec.poolRings or L.POOL.rings,
+			lightY = spec.lightY or L.LIGHT_Y,
 		})
 	end
 	return out
@@ -207,12 +210,69 @@ local function dump(spec: any): any
 		backdrop = BackdropPlan.plan(BackdropPlan.levelSite(level)), -- W4: what the client Backdrop builds
 		backdropConfig = Config.Backdrop,
 		lighting = Config.Lighting,
+		camera = Config.Heist.CAMERA, -- the golden frames use the game's own diorama / golden numbers
 		kit = kit,
 		warnings = plan.warnings,
 	}
 end
 
-local out = { dressing = dressing, levels = {} }
+-- The garage v1 (server Heist/Lobby from Heist/LobbyPlan, Config.Lobby): kit items with their part frames, the
+-- lamps, the greybox floor and walls, bay lines and numbers, the NEXT card, and the backdrop round the garage site.
+local function garage(): any
+	local plan = LobbyPlan.plan(Config.Lobby, Config.Lighting, specs, KitPlan)
+	local items = {}
+	for _, item in plan.items do
+		local pieces = {}
+		for _, name in item.pieces do
+			local c, size = KitPlan.partFrame(specs[name], item.pivot, item.scale)
+			table.insert(pieces, { name = name, model = specs[name].model, c = c, size = size })
+		end
+		table.insert(items, {
+			role = item.role,
+			index = item.index,
+			color = item.color,
+			pivot = { item.pivot.x, item.pivot.y, item.pivot.z, item.pivot.yaw },
+			scale = item.scale,
+			pieces = pieces,
+		})
+	end
+	local walls = {}
+	for _, w in plan.walls do
+		table.insert(walls, box(w))
+	end
+	local lines = {}
+	for _, l in plan.lines do
+		table.insert(lines, box(l))
+	end
+	local bays = {}
+	for _, b in plan.bays do
+		table.insert(
+			bays,
+			{ index = b.index, x = b.x, z = b.z, yaw = b.yaw, collider = box(b.collider), yours = b.yours }
+		)
+	end
+	return {
+		id = "garage",
+		location = Config.Lobby.LOCATION,
+		floorY = 0,
+		floor = box(plan.floor),
+		walls = walls,
+		lines = lines,
+		numbers = plan.numbers,
+		bays = bays,
+		lamps = plan.lamps,
+		card = plan.card,
+		spawn = plan.spawn,
+		kit = items,
+		backdrop = BackdropPlan.plan(BackdropPlan.garageSite()),
+		backdropConfig = Config.Backdrop,
+		lighting = Config.Lighting,
+		lobby = Config.Lobby,
+		camera = Config.Heist.CAMERA,
+	}
+end
+
+local out = { dressing = dressing, levels = {}, garage = garage() }
 for _, spec in Catalog do
 	table.insert(out.levels, dump(spec))
 end

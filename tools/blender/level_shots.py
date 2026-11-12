@@ -245,6 +245,8 @@ def build(level, solved, lib):
                 tint(o, PAL["steelLo"])
             elif n == "VaultDoor_DialRing":
                 tint(o, CYAN if doors.get(idx) else "#A8987A", emit=3.0)
+            elif n == "Van_Paint":                       # KitDresser: Config.Lighting.VAN.paint (a mid value)
+                tint(o, "#%02X%02X%02X" % tuple(level["lighting"]["VAN"]["paint"]), rough=0.5)
     # cables (KitPlan.cables: near jamb, 0.5 wide, idle Vault Steel)
     cw = level["lighting"]["CABLE_WIDTH"]
     for cb in level["cables"]:
@@ -367,7 +369,7 @@ def lamp_light(level, lp):
     fy = level["floorY"]
     LG = level["lighting"]
     col = "#%02X%02X%02X" % tuple(lp["color"])
-    pos = rb(lp["x"], fy + LG["LIGHT_Y"], lp["z"])
+    pos = rb(lp["x"], fy + lp.get("lightY", LG["LIGHT_Y"]), lp["z"])
     if lp["kind"] == "hero":
         o = MR.light("SPOT", tuple(pos), tuple(rb(lp["x"], fy, lp["z"])), col, lp["brightness"] * LAMP_W,
                      size=0.3, spot=lp["angle"] * 1.6, blend=0.7, shadow=lp["shadows"])
@@ -376,8 +378,10 @@ def lamp_light(level, lp):
     o.data.use_custom_distance = True
     o.data.cutoff_distance = lp["range"]
     P = LG["POOL"]
+    if not lp.get("pool"):
+        return
     pc = "#%02X%02X%02X" % tuple(lp.get("poolColor") or P["color"])
-    for k, rg in enumerate(P["rings"]):
+    for k, rg in enumerate(lp.get("rings") or P["rings"]):
         r = lp["pool"] * rg["size"] / 2
         d = MR.cyl("pool", r, r, 0.01, MR.mat(pc, 0.9, emit=P["brightness"] * 0.6, alpha=1 - rg["alpha"]), None,
                    tuple(rb(lp["x"], fy + P["lift"] + 0.005 * k, lp["z"])), seg=40)
@@ -720,14 +724,16 @@ def shoot(level, W, Hh, samples, only=None):
 GOLDEN = os.path.join(REPO, "docs", "audit", "levels", "golden")
 
 
-def golden(level, W, Hh, samples):
+def golden(level, W, Hh, samples, out_dir=None):
     """docs/GOLDEN_FRAMES.md approximations with the W4 backdrop, the Heist City sky, snow and haze
     (tools/blender/backdrop_shots.py). L1 -> G1a (diorama: pitch 50, distance 28, FOV 42) and G1b (classic follow:
     16 studs, FOV 70, Poppercam); L5 -> G2 (the 8 OF ME wide shot: 7 clones + you bunched at the entrance, pitch
     about 45, every clone inside the central 32 % of the width)."""
     import backdrop_shots as BS
+    import frame_grade as FG
     from PIL import Image, ImageDraw
-    os.makedirs(GOLDEN, exist_ok=True)
+    gdir = out_dir or GOLDEN
+    os.makedirs(gdir, exist_ok=True)
     os.makedirs(TMP, exist_ok=True)
     s = MR.reset(samples)
     s.view_settings.exposure = 0.3
@@ -773,9 +779,17 @@ def golden(level, W, Hh, samples):
         J = player(level)
         move(J, level, sp["x"], sp["z"], sp["yaw"])
         focus = (sp["x"], fy + 4.5, sp["z"])
-        p = math.radians(50)
-        dio = (focus[0], focus[1] + 28 * math.sin(p), focus[2] + 28 * math.cos(p))
-        shots.append(("G1a_diorama", rb(*dio), rb(*focus), 42.0, focus))
+        # the game's diorama camera (Config.Heist.CAMERA.DIORAMA, Heist/CameraDirector + CameraMath): the focus
+        # leads you by CameraMath.lead so you sit in the lower third, then the orbit at PITCH / DISTANCE / FOV
+        D = level["camera"]["DIORAMA"]
+        p = math.radians(D["PITCH"])
+        t = -D["SUBJECT_SCREEN_Y"] * math.tan(math.radians(D["FOV"]) / 2)
+        lead = t * D["DISTANCE"] / (math.sin(p) + t * math.cos(p))
+        yaw = sp["yaw"]
+        ahead = (focus[0] - math.sin(yaw) * lead, focus[1], focus[2] - math.cos(yaw) * lead)
+        dio = (ahead[0] + math.sin(yaw) * math.cos(p) * D["DISTANCE"], ahead[1] + math.sin(p) * D["DISTANCE"],
+               ahead[2] + math.cos(yaw) * math.cos(p) * D["DISTANCE"])
+        shots.append(("G1a_diorama", rb(*dio), rb(*ahead), float(D["FOV"]), focus))
         # classic follow: 16 studs back at 15 degrees (GOLDEN_FRAMES G1b; no Poppercam pull-in: the camera track
         # moves the van collider out of the way, C0)
         # 30 degrees right of the spawn's axis so the van sits at frame left instead of under the lens
@@ -801,7 +815,7 @@ def golden(level, W, Hh, samples):
         hazed = os.path.join(TMP, f"golden_{name}_haze.png")
         BS.haze(raw, depth, hazed)
         notes = notes_for(s, cam, figs, gl, level)
-        out = os.path.join(GOLDEN, f"{name}.png")
+        out = os.path.join(gdir, f"{name}.png")
         img = MR.finish(hazed, out, notes, tag=False, vignette=0.12, truecolor=True)
         if stamp:
             img = img.convert("RGBA")
@@ -814,8 +828,162 @@ def golden(level, W, Hh, samples):
                    stroke_width=max(3, int(Hh * 0.008)), stroke_fill=(28, 31, 59, 255))
             img.convert("RGB").save(out, optimize=True)
         small = Image.open(out).convert("RGB").resize((160, 90), Image.LANCZOS)
-        small.save(os.path.join(GOLDEN, f"{name}_160x90.png"))
+        small.save(os.path.join(gdir, f"{name}_160x90.png"))
+        ids = os.path.join(TMP, f"golden_{name}_ids.png")
+        id_mask(s, cam, ids)
+        record_grade(gdir, FG.grade(out, ids))
         print("wrote", os.path.relpath(out, REPO))
+
+
+def garage(g, W, Hh, samples, out_dir=None):
+    """docs/GOLDEN_FRAMES.md G3: the garage v1 (server Heist/Lobby from Heist/LobbyPlan, dumped by level_plan.luau) with
+    the kit in the Corner Shop atlas, each van's paint, the work lamps (your bay's shadowed key), the trophies, the job
+    board's glowing NEXT card, the roll-up door half open onto the snowy street and the W4 backdrop round the garage
+    site; the camera is Config.Heist.CAMERA.GOLDEN.G3 on the part named "Van" (bay 1's collider centre), as
+    client Heist/GoldenShots places it. No falling snow: the camera focus is indoors (the client turns it off)."""
+    import backdrop_shots as BS
+    import frame_grade as FG
+    from PIL import Image
+    gdir = out_dir or GOLDEN
+    os.makedirs(gdir, exist_ok=True)
+    os.makedirs(TMP, exist_ok=True)
+    s = MR.reset(samples)
+    s.view_settings.exposure = 0.3
+    lib = Lib(g["location"])
+    LG = g["lighting"]
+    gbox("Floor", g["floor"], PAL["floor"])
+    for it in g["kit"]:
+        for piece in it["pieces"]:
+            o = put(lib, piece, it["pivot"], it["scale"])
+            if o is None:
+                continue
+            if piece["name"] == "Van_Paint" and it.get("color"):
+                tint(o, "#%02X%02X%02X" % tuple(it["color"]), rough=0.5)
+    L = g["lobby"]
+    for b in g["lines"]:
+        gbox("BayLine", b, "#%02X%02X%02X" % tuple(L["BAY_LINE"]["color"]), shadow=False)
+    for n in g["numbers"]:
+        text3(n["text"], L["BAY_NUMBER"]["size"] * 0.8, "#%02X%02X%02X" % tuple(L["BAY_NUMBER"]["color"]), 0.0,
+              rb(n["x"], 0.05, n["z"]), (0, 0, math.radians(n["yaw"]) + math.pi))
+    rings = {"street": LG["LAMP"]["street"]["poolRings"]}
+    for lp in g["lamps"]:
+        d = dict(lp)
+        d["kind"] = "hero" if lp.get("angle") else "room"
+        d["lightY"] = lp["y"]
+        d["rings"] = rings.get(lp["kind"], LG["LAMP"]["room"]["poolRings"])
+        lamp_light({"floorY": 0, "lighting": LG}, d)
+    # the NEXT card: a dark plate, the glowing words (SurfaceGui LightInfluence 0, Brightness 1.6)
+    c = g["card"]
+    B = L["BOARD"]
+    yaw = math.radians(c["yaw"])
+    cpos = rb(*c["centre"])
+    MR.box("JobCard", (c["size"][0], B["cardDepth"], c["size"][1]), MR.mat("#%02X%02X%02X" % tuple(B["cardColor"]), 0.6),
+           None, tuple(cpos), (0, 0, c["yaw"]), bevel=0)
+    face = Vector((math.sin(yaw), -math.cos(yaw), 0)) * (B["cardDepth"] / 2 + 0.01)
+    tc = "#%02X%02X%02X" % tuple(B["textColor"])
+    for txt, dy, size in (("NEXT JOB", 0.42, 0.3), (g["firstJob"], -0.12, 0.5)):
+        t = text3(txt, size, tc, 2.2, cpos + face + Vector((0, 0, dy)), (math.pi / 2, 0, yaw))
+        t.name = "JobCardText"
+        bpy.context.view_layer.update()
+        wide = c["size"][0] * 0.88                       # TextScaled: the words fit the card
+        if t.dimensions.x > wide:
+            k = wide / t.dimensions.x
+            t.scale = (k, k, k)
+    BS.backdrop({"backdrop": g["backdrop"], "backdropConfig": g["backdropConfig"], "kit": [], "location": g["location"],
+                 "lighting": LG}, lib, put)
+    lighting(s)
+    BS.world_sky(s, TMP)
+    cd = bpy.data.cameras.new("cam")
+    cam = bpy.data.objects.new("cam", cd)
+    s.collection.objects.link(cam)
+    cd.sensor_fit = "VERTICAL"
+    cd.clip_start = 0.1
+    cd.clip_end = 5000
+    s.render.resolution_x, s.render.resolution_y = W, Hh
+    s.render.resolution_percentage = 100
+    G3 = g["camera"]["GOLDEN"]["G3"]
+    v = g["bays"][0]["collider"]
+    focus = ((v[0] + v[3]) / 2, (v[1] + v[4]) / 2, (v[2] + v[5]) / 2)
+    yw, p = math.radians(G3["YAW"]), math.radians(G3["PITCH"])
+    look = (-math.sin(yw) * math.cos(p), -math.sin(p), -math.cos(yw) * math.cos(p))   # CameraMath.look
+    pos = tuple(focus[k] - look[k] * G3["DISTANCE"] for k in range(3))
+    cam.location = rb(*pos)
+    cam.rotation_euler = (rb(*focus) - rb(*pos)).to_track_quat("-Z", "Y").to_euler()
+    cd.angle_y = math.radians(G3["FOV"])
+    name = "G3_garage"
+    raw = os.path.join(TMP, f"golden_{name}_raw.png")
+    render(s, cam, raw)
+    depth = os.path.join(TMP, f"golden_{name}_depth.png")
+    BS.depth_pass(s, cam, depth)
+    hazed = os.path.join(TMP, f"golden_{name}_haze.png")
+    BS.haze(raw, depth, hazed)
+    out = os.path.join(gdir, f"{name}.png")
+    MR.finish(hazed, out, [], tag=False, vignette=0.12, truecolor=True)
+    Image.open(out).convert("RGB").resize((160, 90), Image.LANCZOS).save(os.path.join(gdir, f"{name}_160x90.png"))
+    ids = os.path.join(TMP, f"golden_{name}_ids.png")
+    id_mask(s, cam, ids)
+    record_grade(gdir, FG.grade(out, ids))
+    print("wrote", os.path.relpath(out, REPO))
+
+
+# ------------------------------------------------------------------ grading (tools/blender/frame_grade.py)
+ID_GROUPS = (   # (group, object-name prefixes), first match wins: frame_grade.ID_COLOURS gives the mask colours
+    ("zone", ("VanZone", "ArrowShaft", "ArrowHead")),
+    ("van", ("Van",)),
+    ("cash", ("CashBag", "CashRegister", "GoldBar", "GoldStack", "Diamond", "Safe", "Stand", "sparkle")),
+    ("plate", ("Plate_4x4",)),
+    ("lamp", ("Lamp_Ceiling_Bulb", "StreetLamp_Bulb")),
+    ("board", ("JobBoard", "JobCard")),
+    ("rug", ("Rug_",)),
+)
+
+
+def id_mask(s, cam, path):
+    """A Workbench pass with every mesh in flat black except the ID groups in their mask colours (occlusion
+    included, no anti-aliasing), so frame_grade can say which element owns the brightest pixels."""
+    import frame_grade as FG
+    keep = (s.render.engine, s.render.film_transparent, s.view_settings.view_transform, s.view_settings.exposure)
+    colours = {}
+    hidden = []
+    for o in bpy.data.objects:
+        if o.type not in ("MESH", "FONT", "CURVE"):
+            continue
+        colours[o.name] = tuple(o.color)
+        if o.name.startswith(("Snowfall", "pool", "WindowSpill", "cone")) and not o.hide_render:
+            o.hide_render = True
+            hidden.append(o)
+            continue
+        col = (0.0, 0.0, 0.0)
+        for g, prefixes in ID_GROUPS:
+            if o.name.startswith(prefixes):
+                col = tuple(c / 255 for c in FG.ID_COLOURS[g])
+                break
+        o.color = (*col, 1.0)
+    s.render.engine = "BLENDER_WORKBENCH"
+    sh = s.display.shading
+    sh.light = "FLAT"
+    sh.color_type = "OBJECT"
+    s.display.render_aa = "OFF"
+    s.render.film_transparent = True
+    s.view_settings.view_transform = "Standard"
+    s.view_settings.exposure = 0.0
+    s.camera = cam
+    s.render.filepath = path
+    bpy.ops.render.render(write_still=True)
+    for o in bpy.data.objects:
+        if o.name in colours:
+            o.color = colours[o.name]
+    for o in hidden:
+        o.hide_render = False
+    s.render.engine, s.render.film_transparent, s.view_settings.view_transform, s.view_settings.exposure = keep
+
+
+def record_grade(gdir, g):
+    path = os.path.join(gdir, "grades.json")
+    allg = json.load(open(path)) if os.path.isfile(path) else {}
+    allg[os.path.splitext(g["frame"])[0]] = g
+    json.dump(allg, open(path, "w"), indent=1, sort_keys=True)
+    print("grade", json.dumps(g))
 
 
 def contact_sheet(levels):
@@ -861,6 +1029,8 @@ def main(argv):
     ap.add_argument("--golden", action="store_true",
                     help="GOLDEN_FRAMES G1 (L1) and G2 (L5) with the backdrop, sky, snow and haze into "
                          "docs/audit/levels/golden/ (one process per level; --only L1 or L5)")
+    ap.add_argument("--garage", action="store_true",
+                    help="GOLDEN_FRAMES G3 (the garage v1, Heist/LobbyPlan) into docs/audit/levels/golden/")
     a = ap.parse_args(argv)
     global OUT
     if a.out:
@@ -868,15 +1038,21 @@ def main(argv):
     plan = load_plan(not a.plain, a.daily)
     levels = plan["levels"]
     W, Hh = a.size, a.size * 9 // 16
+    if a.garage:
+        g = plan["garage"]
+        g["firstJob"] = levels[0]["name"].upper()        # Heist/JobCard.first(Catalog)
+        garage(g, W, Hh, a.samples, os.path.abspath(a.out) if a.out else None)
+        return
     if a.golden and not a.only:
         for tag in ("L1", "L5"):
             subprocess.run([sys.executable, os.path.abspath(__file__), "--golden", "--only", tag, "--size",
-                            str(a.size), "--samples", str(a.samples)], check=True)
+                            str(a.size), "--samples", str(a.samples)] + (["--out", a.out] if a.out else []),
+                           check=True)
         return
     if a.only:
         lv = next(lv for lv in levels if short(lv).upper() == a.only.upper() or lv["id"] == a.only)
         if a.golden:
-            golden(lv, W, Hh, a.samples)
+            golden(lv, W, Hh, a.samples, os.path.abspath(a.out) if a.out else None)
             return
         shoot(lv, W, Hh, a.samples, a.shots.split(",") if a.shots else None)
         return

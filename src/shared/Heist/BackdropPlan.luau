@@ -73,14 +73,18 @@ function BackdropPlan.levelSite(level: any): Site
 	}
 end
 
--- The garage (server Heist/Lobby: a 120 x 80 roofless room at LOBBY_ORIGIN) as a site. Its walls are 16 tall,
--- so the snow stays on above them (the volume follows the camera, and the room is open to the sky).
+-- The garage (server Heist/Lobby, Config.Lobby: a roofless brick garage at LOBBY_ORIGIN, the street apron behind its
+-- back wall's roll-up door) as a site. The lot is the garage plus the apron (the facades stand round it, the row
+-- behind the apron across the street from the door); the footprint is the interior, so no snow falls inside the
+-- garage, only on the street seen under the door.
 function BackdropPlan.garageSite(): Site
 	local o = Config.Heist.LOBBY_ORIGIN
+	local L = Config.Lobby
+	local hx, hz, t = L.HALF_X, L.HALF_Z, L.WALL_T
 	return {
 		kind = "garage",
-		bounds = rect(o[1] - 60, o[1] + 60, o[3] - 40, o[3] + 40),
-		footprint = nil,
+		bounds = rect(o[1] - hx - t, o[1] + hx + t, o[3] - hz - t - L.STREET_DEPTH, o[3] + hz + t),
+		footprint = rect(o[1] - hx, o[1] + hx, o[3] - hz, o[3] + hz),
 		floorY = o[2],
 		front = nil,
 		spawnYaw = 0,
@@ -96,7 +100,9 @@ end
 
 -- A facade row: buildings along `dir` (+1 / -1 on the row axis) from `start`, fronts on the line `line` of
 -- `axis` ("X": the row runs along X, fronts at z = line; "Z": along Z, fronts at x = line) facing `face` (+1/-1).
-type Row = { axis: string, line: number, start: number, dir: number, face: number, count: number }
+-- stop: the row axis coordinate no facade may pass (the garage rows stay within the lot's sides, so the rows on
+-- the X lines, outside the lot's Z range, and the rows on the Z lines, inside it, never meet at the corners).
+type Row = { axis: string, line: number, start: number, dir: number, face: number, count: number, stop: number? }
 
 local function rowsFor(site: Site): { Row }
 	local b = site.bounds
@@ -118,12 +124,11 @@ local function rowsFor(site: Site): { Row }
 		}
 	end
 	local per = math.floor(n / 4)
-	local cx, cz = (b.minX + b.maxX) / 2, (b.minZ + b.maxZ) / 2
 	return {
-		{ axis = "X", line = b.maxZ + gap, start = cx - per * 13, dir = 1, face = -1, count = per },
-		{ axis = "X", line = b.minZ - gap, start = cx - per * 13, dir = 1, face = 1, count = per },
-		{ axis = "Z", line = b.maxX + gap, start = cz - per * 13, dir = 1, face = -1, count = per },
-		{ axis = "Z", line = b.minX - gap, start = cz - per * 13, dir = 1, face = 1, count = per },
+		{ axis = "X", line = b.maxZ + gap, start = b.minX, dir = 1, face = -1, count = per, stop = b.maxX },
+		{ axis = "X", line = b.minZ - gap, start = b.minX, dir = 1, face = 1, count = per, stop = b.maxX },
+		{ axis = "Z", line = b.maxX + gap, start = b.minZ, dir = 1, face = -1, count = per, stop = b.maxZ },
+		{ axis = "Z", line = b.minX - gap, start = b.minZ, dir = 1, face = 1, count = per, stop = b.maxZ },
 	}
 end
 
@@ -165,6 +170,10 @@ function BackdropPlan.plan(site: Site): Plan
 	for _, row in rowsFor(site) do
 		local s = row.start
 		for _ = 1, row.count do
+			local stop = row.stop
+			if stop and (s + row.dir * F.widths[count % #F.widths + 1] - stop) * row.dir > 1e-6 then
+				break
+			end
 			count += 1
 			local bw = F.widths[(count - 1) % #F.widths + 1]
 			local bh = F.heights[(count - 1) % #F.heights + 1]

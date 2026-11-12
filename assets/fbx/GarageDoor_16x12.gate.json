@@ -1,0 +1,112 @@
+{
+ "asset": "GarageDoor_16x12",
+ "objects": [
+  {
+   "name": "GarageDoor_16x12",
+   "class": "module",
+   "tris": 364,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    16.0,
+    2.36,
+    12.0
+   ],
+   "pivot": {
+    "rule": "bottom",
+    "local_min": [
+     -8.0,
+     -1.18,
+     0.0
+    ],
+    "local_max": [
+     8.0,
+     1.18,
+     12.0
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "plum",
+    "plum_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 276,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "garage roll-up door module: brick jambs + lintel (location cells), steel curtain half open (bottom bar at 4.75); visual only, the garage keeps its own colliders",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 364,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "f0cf7066e53c774468ce",
+ "fbx": {
+  "path": "assets/fbx/GarageDoor_16x12.fbx",
+  "bytes": 25068,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "GarageDoor_16x12"
+  ],
+  "geometry_extents": [
+   [
+    2.36,
+    12.0,
+    16.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/garage.py",
+ "notes": "Roll-up garage door 16 x 2 x 12: brick jambs, marble lintel trim, steel slats half open, roll housing.",
+ "turntable": "docs/art/turntables/GarageDoor_16x12.png",
+ "seconds": 5.6
+}
