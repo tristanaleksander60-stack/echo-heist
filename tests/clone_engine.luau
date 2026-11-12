@@ -846,6 +846,11 @@ pcall(echo.setTier, 1)
 
 -- Studio diagnostic chip text (built only in Studio; its text and stats work anywhere).
 if echo.stats then
+	-- stats() reports the last periodic CloneHealth count (every CLONE_HEALTH_INTERVAL s) next to
+	-- the live drawn count; refresh it first so a clone that printed in since then is counted.
+	if echo.checkHealth then
+		pcall(echo.checkHealth)
+	end
 	local okS, drawn, healthy, kind = pcall(echo.stats)
 	local chip = if okS then DebugChip.text(drawn, healthy, 1, kind) else tostring(drawn)
 	note("chip: " .. chip)
