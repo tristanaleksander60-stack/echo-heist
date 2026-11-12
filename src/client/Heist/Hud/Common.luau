@@ -14,7 +14,6 @@ local Strings = require(HeistShared:WaitForChild("Strings"))
 local Common = {}
 
 Common.OBJECTIVE_SECONDS = 6 -- an objective line shows this long after it changes (§7.4)
-Common.LEVEL_LINE_STUCK_RUNS = 2 -- runs without a bank before the level line comes back
 
 -- Clone statuses that are flagged red (deck cards, strip, DELETE BUSTED).
 Common.RED = table.freeze({ Busted = true, Caught = true, Zapped = true, Stuck = true })

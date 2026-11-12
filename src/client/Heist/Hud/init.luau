@@ -12,7 +12,9 @@
 --   Deck      the Clone Deck between runs, the RUN button and its auto-start countdown
 --   Results   the results card
 --   Garage    tapes, daily vault, advent catch-up, crew, join friend
---   Hints     the objective line's text, the L1 FTUE lines and the L1 stuck hints
+--   Hints     the objective line's text, the L1 FTUE lines and the L1 stuck hints, the help
+--             after L1 (world-state lines, SHOW ME? and the chalk ghost, TRY RELAXED?), the
+--             finger pointer, failure counterplay and the first-time beats
 --   Run       run state, events and the per-frame update
 --   Common    shared helpers
 -- Every player-facing string is in Shared/Heist/Strings and every run-HUD box in
@@ -50,7 +52,7 @@ export type Actions = {
 	deck: (op: string, n: number?) -> (),
 	ready: () -> (),
 	fastForward: (on: boolean) -> (),
-	selectLevel: (index: number) -> (),
+	selectLevel: (index: number, relaxed: boolean?) -> (),
 	selectDaily: (day: number?) -> (),
 	joinFriend: (userId: number) -> (),
 	leave: () -> (),
@@ -113,7 +115,6 @@ function Hud.new(state: any, actions: Actions): any
 		waiting = false, -- RUN tapped, waiting for the crew
 		lastGrabTap = -math.huge, -- os.clock() of the last GRAB tap (END RUN guard)
 		stopsLineUntil = 0, -- L1: "Your clone stops where you stop." from the clone's press
-		noBankRuns = 0, -- runs in a row without a bank (the level line comes back)
 	}
 	-- In a heist the player list is off (LineupDirector turns all CoreGui back on after its
 	-- cut, then calls setCutscene(false), which applies this again).
@@ -137,6 +138,12 @@ function Hud.new(state: any, actions: Actions): any
 	ctx.hints = Hints.build(ctx)
 	Run.build(ctx)
 	Controls.bind(ctx)
+	-- The stuck tracker counts a run once its deck is in (Hud/Hints).
+	local deckOnDeck = hud.onDeck
+	hud.onDeck = function(...)
+		deckOnDeck(...)
+		ctx.hints.onDeck()
+	end
 
 	-- Set by HeistClient (RewindDirector): (text, colour, hold seconds?).
 	hud.bigStamp = function(_text: string, _color: Color3, _hold: number?) end
@@ -152,6 +159,7 @@ function Hud.new(state: any, actions: Actions): any
 		ctx.msg.setHidden(false)
 		ctx.msg.setSpectate("")
 		ctx.hints.clear()
+		ctx.hints.hideHelp()
 		ctx.top.resetCount()
 		ctx.setInHeist(false)
 	end
@@ -161,6 +169,7 @@ function Hud.new(state: any, actions: Actions): any
 		gui.Enabled = not on
 		if on then
 			ctx.hints.clear()
+			ctx.hints.hideHelp()
 			ctx.msg.menuSheet.Visible = false
 			ctx.msg.setHidden(false)
 		else

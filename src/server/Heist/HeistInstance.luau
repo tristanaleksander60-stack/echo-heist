@@ -98,6 +98,7 @@ export type Opts = {
 	leader: number,
 	heistId: string,
 	firstHeist: boolean?,
+	relaxed: boolean?, -- the Relaxed modifier (Levels/Relaxed; story Catalog levels only)
 	tuning: Tuning?,
 	build: LevelBuilder.BuildOpts?, -- art kit and Christmas dressing
 	push: ((player: Player, kind: string, payload: any) -> ())?,
@@ -112,14 +113,18 @@ export type Opts = {
 local levelCache: { [string]: any } = {}
 
 -- Compiled LevelData for a Catalog index, or (index = Protocol.DAILY_INDEX) for the daily
--- vault of `dailyDay`. Compiled once per server (per day for the daily vaults).
-function HeistInstance.levelData(index: number, dailyDay: number?): any
+-- vault of `dailyDay`; `relaxed` = its Relaxed version (Levels/Relaxed). Compiled once per
+-- server (per day for the daily vaults).
+function HeistInstance.levelData(index: number, dailyDay: number?, relaxed: boolean?): any
 	local key = if index == Protocol.DAILY_INDEX then "d" .. tostring(dailyDay) else tostring(index)
+	if relaxed then
+		key ..= "r"
+	end
 	local cached = levelCache[key]
 	if cached then
 		return cached
 	end
-	local spec = Protocol.levelSpec(index, dailyDay)
+	local spec = Protocol.levelSpec(index, dailyDay, relaxed)
 	assert(spec, "HeistInstance: no level " .. key)
 	local level = LevelSpec.compile(spec)
 	levelCache[key] = level
@@ -234,7 +239,8 @@ end
 
 function HeistInstance.new(o: Opts): any
 	local daily = o.daily
-	local base = HeistInstance.levelData(o.levelIndex, if daily then daily.day else nil)
+	local base =
+		HeistInstance.levelData(o.levelIndex, if daily then daily.day else nil, o.relaxed == true and not daily)
 	local tuning = HeistInstance.resolveTuning(o.tuning)
 	local level = tunedLevel(base, tuning)
 	local folder = Instance.new("Folder")
@@ -250,7 +256,9 @@ function HeistInstance.new(o: Opts): any
 		walkSpeed = Config.Rec.WALK_SPEED,
 	})
 	if tuning.alarmChaseSpeedMult ~= S.GUARD_CHASE_SPEED_MULT then
-		sim.ctx.chaseSpeed = tuning.alarmChaseSpeedMult * sim.walkSpeed
+		sim.ctx.chaseSpeed = tuning.alarmChaseSpeedMult
+			* sim.walkSpeed
+			* (if level.relaxed then Config.Onboarding.RELAXED_GUARD_SPEED_MULT else 1)
 	end
 	local inst = {
 		id = o.id,
@@ -321,6 +329,7 @@ function HeistInstance.new(o: Opts): any
 	folder:SetAttribute("Tuning", tuningText(tuning))
 	folder:SetAttribute("Kit", built.kit == true)
 	folder:SetAttribute("Dressing", built.dressing == true)
+	folder:SetAttribute("Relaxed", level.relaxed == true)
 	if daily then
 		folder:SetAttribute("Daily", daily.day)
 	end
@@ -424,6 +433,10 @@ local function deckFor(inst: any, member: Member): any
 		locked = deckLocked(inst.level), -- L1 (taught from L2, §3.4) and party levels
 		party = inst.level.kind == "party",
 		hint = hint,
+		-- "Try Relaxed?" (PLAN §6.1 item 5): the server offers it after 3 catches in this heist, to
+		-- the crew leader (Heist.SelectLevel(index, true) restarts the heist relaxed).
+		relaxedOffer = inst.leader == member.userId and HeistSim.offerRelaxed(inst.sim, member.userId),
+		relaxed = inst.level.relaxed == true,
 	}
 end
 
@@ -1327,6 +1340,7 @@ function HeistInstance.syncFor(inst: any, userId: number): any
 		deck = deck,
 		over = inst.overMsg,
 		firstHeist = sim.firstHeist,
+		relaxed = inst.level.relaxed == true,
 		evFrom = 1,
 		ev = if sim.log.n > 0 then EventLog.encode(sim.log, 1, sim.log.n) else nil,
 	}

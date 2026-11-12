@@ -51,12 +51,40 @@ HudLayout.DECK = box(0.5, 1, 0.5, -12, 1, -8, 520, 212) -- a little left of cent
 HudLayout.RAIL_SLOTS = table.freeze({ toast = 44, caption = 24, spectate = 26, pad = 2 })
 HudLayout.RAIL = box(0.5, 1, 0.5, 0, 1, -96, 336, 98)
 HudLayout.RAIL_DECK = box(0.5, 1, 0.5, 0, 1, -(8 + 212 + 8), 336, 98)
+-- Top right (nothing else lives there in a heist): the help chip, "SHOW ME?" after 2 stuck runs
+-- or the "TRY RELAXED?" card (Hud/Hints, WALKTHROUGH P0-2). Not with the locked deck (L1 and the
+-- party have no ghost and no Relaxed).
+HudLayout.HELP_CHIP = box(1, 0, 1, -8, 0, 6, 168, TAP)
 
 -- What shows together (tests/hud_layout.luau checks each scene for overlaps).
 HudLayout.SCENES = table.freeze({
-	run = { "LOOT", "TOP", "STRIP", "MENU", "FAST_FORWARD", "OBJECTIVE", "HIDDEN", "END_RUN", "INTERACT", "RAIL" },
-	runAlarm = { "LOOT", "TOP", "STRIP", "MENU", "FAST_FORWARD", "ALARM", "HIDDEN", "END_RUN", "INTERACT", "RAIL" },
-	betweenDeck = { "LOOT", "MENU", "DECK", "RAIL_DECK" },
+	run = {
+		"LOOT",
+		"TOP",
+		"STRIP",
+		"MENU",
+		"FAST_FORWARD",
+		"OBJECTIVE",
+		"HIDDEN",
+		"END_RUN",
+		"INTERACT",
+		"RAIL",
+		"HELP_CHIP",
+	},
+	runAlarm = {
+		"LOOT",
+		"TOP",
+		"STRIP",
+		"MENU",
+		"FAST_FORWARD",
+		"ALARM",
+		"HIDDEN",
+		"END_RUN",
+		"INTERACT",
+		"RAIL",
+		"HELP_CHIP",
+	},
+	betweenDeck = { "LOOT", "MENU", "DECK", "RAIL_DECK", "HELP_CHIP" },
 	betweenLocked = { "LOOT", "TOP", "STRIP", "MENU", "OBJECTIVE", "READY_WAIT", "RAIL" },
 } :: { [string]: { string } })
 

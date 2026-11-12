@@ -16,6 +16,7 @@ local Sim = Shared:WaitForChild("Sim")
 local EventLog = require(Sim:WaitForChild("EventLog"))
 local Interact = require(Sim:WaitForChild("Interact"))
 local HeistShared = Shared:WaitForChild("Heist")
+local Help = require(HeistShared:WaitForChild("Help"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local RunMarkers = require(HeistShared:WaitForChild("RunMarkers"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
@@ -61,6 +62,7 @@ function Run.build(ctx: any)
 	local lastLockToast = -math.huge
 	local alarmSeenHeist = false -- party levels: the first till alarm is the GETAWAY stamp
 	local alarmToastRun = -1 -- the run whose alarm already had its in-run toast
+	local l1Counted = false -- this run's armed L1 auto-end is counted (ctx.l1ArmedRuns)
 	local function isParty(): boolean
 		return Common.isParty(state)
 	end
@@ -88,9 +90,10 @@ function Run.build(ctx: any)
 		local n = tonumber(m.run) or 1
 		if n <= 1 then
 			alarmSeenHeist = false
-			ctx.noBankRuns = 0
 			ctx.stopsLineUntil = 0
+			ctx.l1ArmedRuns = 0
 		end
+		l1Counted = false
 		-- A redo run says so (§7.4): "REDO 3" in the run label colour.
 		local deck = state.deck
 		local redo = if deck and not deck.locked then tonumber(deck.redo) or 0 else 0
@@ -136,6 +139,7 @@ function Run.build(ctx: any)
 				end
 			end
 		end
+		hints.onRun(m, n)
 		GuiService.SelectedObject = nil
 	end
 
@@ -169,7 +173,6 @@ function Run.build(ctx: any)
 		if type(summary) ~= "table" then
 			return
 		end
-		ctx.noBankRuns = if (tonumber(summary.banked) or 0) > 0 then 0 else ctx.noBankRuns + 1
 		if summary.escaped and not isParty() then
 			hud.bigStamp(Strings.STAMP_ESCAPED, Palette.gold)
 		end
@@ -217,6 +220,7 @@ function Run.build(ctx: any)
 		local a = run.actorById[e.a]
 		local hz = Config.Rec.HZ
 		local length = if state.clock then state.clock.length else 30
+		hints.onEvent(e, live)
 		if e.kind == EV.EndRun or e.kind == EV.Timeout or e.kind == EV.Left then
 			endedCount += 1
 			if Common.myActor(a) then
@@ -225,6 +229,9 @@ function Run.build(ctx: any)
 				local othersRunning = (state.liveCount or 1) > endedCount
 				if e.kind == EV.Timeout then
 					msg.setReason(Strings.TIME_UP)
+					if live then
+						hints.fail(Help.CAUSE.Timeout)
+					end
 				elseif othersRunning and not isTutorial() then
 					msg.setSpectate(Strings.WAIT_FOR_CREW)
 				end
@@ -238,6 +245,7 @@ function Run.build(ctx: any)
 				if live then
 					hud.flashRed()
 					hud.bigStamp(Strings.STAMP_BUSTED, Palette.alarm)
+					hints.fail(Help.CAUSE.Caught)
 				end
 			end
 		elseif e.kind == EV.Zap then
@@ -249,6 +257,7 @@ function Run.build(ctx: any)
 					if live then
 						hud.flashRed()
 						hud.bigStamp(Strings.STAMP_ZAPPED, Palette.alarm)
+						hints.fail(Help.CAUSE.Zapped)
 					end
 				end
 			elseif a and a.owner == localPlayer.UserId then
@@ -318,8 +327,10 @@ function Run.build(ctx: any)
 			end
 		elseif e.kind == EV.VanLeft and live then
 			hud.bigStamp(Strings.STAMP_VAN_LEFT, Palette.alarm)
+			hints.fail(Help.CAUSE.Alarm)
 		elseif e.kind == EV.Dawn and live then
-			hud.bigStamp(Strings.STAMP_DAWN, Palette.amber)
+			-- A party's sunrise is the celebration; a story level's is OUT OF TIME + a tip (PLAN §5).
+			hints.onDawn()
 		elseif e.kind == EV.HeistComplete and live then
 			hud.bigStamp(Strings.STAMP_HEIST_COMPLETE, Palette.gold)
 		elseif e.kind == EV.Rejected and live then
@@ -405,7 +416,7 @@ function Run.build(ctx: any)
 		ctx.rewindRightMove = on
 	end
 
-	function hud.update(tView: number, now: number, _dt: number, world: any)
+	function hud.update(tView: number, now: number, dt: number, world: any)
 		if state.where ~= "heist" then
 			return
 		end
@@ -413,6 +424,7 @@ function Run.build(ctx: any)
 			-- between runs and after: the meter still lands
 			top.updateLoot(now)
 			ctx.deck.updateBetween()
+			hints.update(now, dt)
 			return
 		end
 		lastTView = tView
@@ -484,13 +496,21 @@ function Run.build(ctx: any)
 		-- (a steady glow under reduced motion) and is dimmed off it; stuck hints run in any
 		-- such run, so a kid who ended run 1 off the plate is led back (§7.5).
 		local hue = Palette.hueFor(state.mySeat or 1)
-		if isTutorial() and hints.autoEndArmed() then
+		local armed = isTutorial() and hints.autoEndArmed()
+		ctx.l1PulseEnd = armed and pulseEnd
+		if armed and not l1Counted then
+			l1Counted = true
+			ctx.l1ArmedRuns = (ctx.l1ArmedRuns or 0) + 1
+		end
+		if armed then
 			-- REWIND breathes with the plate pulse (hud.setPlatePulse; a steady glow under reduced motion).
 			endBtn.BackgroundColor3 = if pulseEnd then hue:Lerp(Palette.white, 0.6 * breath(now)) else hue
 			endBtn.BackgroundTransparency = if pulseEnd then 0 else 0.55
 			if not pulseEnd and not myEnded then
-				local hs = H.HINT_SECONDS
-				if hintStage < #hs and tView >= hs[hintStage + 1] then
+				-- The stage carries across runs: a kid who ended earlier armed runs off the plate
+				-- starts this one further along (Help.tutorialHintStage; the bots check it).
+				local stage = Help.tutorialHintStage(tView, math.max(0, (ctx.l1ArmedRuns or 1) - 1))
+				while hintStage < stage do
 					hintStage += 1
 					actions.hint(Common.HINTS[hintStage] or "other")
 				end
@@ -531,6 +551,7 @@ function Run.build(ctx: any)
 		end
 		interactBtn.Visible = nearLoot ~= nil
 		controls.ffPill.Visible = folder ~= nil and folder:GetAttribute("CanFF") == true and not myEnded
+		hints.update(now, dt)
 	end
 
 	function hud.setLiveCount(n: number)
