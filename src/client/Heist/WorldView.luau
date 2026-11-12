@@ -3,7 +3,9 @@
 -- (MASTERPLAN §7.3, §8.2, §8.10 rule 2). The server built the parts once and never
 -- touches them again; this view moves and colours them locally from the replicated
 -- state attributes:
---   * Doors: Mechanisms.doorViewOf on the loop clock. Slide up in 0.35 s when open,
+--   * Doors: Mechanisms.doorViewOf on the loop clock. Leaves pocket-slide sideways into the wall
+--     (hidden once fully in, so nothing pokes above the cut-away walls) and street shutters roll up
+--     into their header (Size.Y to Config.Lighting.SHUTTER_ROLLED, top pinned) in 0.35 s when open,
 --     amber lamp blink (and DoorBeep) while closing; solid in this client's own physics
 --     from VISUAL_LEAD before the server makes it solid (what you see is never more
 --     generous than the server). A kit vault door (Protocol "doorSkin") hides its
@@ -11,11 +13,14 @@
 --     turning as it opens; the leaf keeps the collision.
 --   * Lasers: Mechanisms.laserViewOf: on, off, or the 3-flicker telegraph; a LaserHum
 --     loop per laser near the camera, sparks when it retracts.
---   * Plates: sink 0.15 studs, the rim and cable take the presser's hue and the plate
---     shows the presser's glyph (colour is never the only signal, §0 C5); the cable
---     drains over the 0.4 s grace.
+--   * Plates: idle, the rim glows Bulb Warm and breathes slowly and the plate shows its letter
+--     (LEVELS P0-1); held, it sinks 0.15 studs, the rim and cable take the presser's hue and the
+--     plate shows the presser's glyph (colour is never the only signal, §0 C5); the cable drains
+--     over the 0.4 s grace back to idle Vault Steel.
 --   * Loot: at home, in its carrier's hands, dropped, or gone (banked). A time-locked
---     item (the Clone Party till, attribute K<i>OpensAt) shows "LOCKED 0:07".
+--     item (the Clone Party till, attribute K<i>OpensAt) shows "LOCKED 0:07". The goal and
+--     every item worth Config.Lighting.SPARKLE_MIN_VALUE sparkle while at home (LEVELS P0-4).
+--   * Van zone: dim until you carry loot, then lit, its arrows pulsing toward the van (P0-6).
 --   * Alarm Run: rotating red beacons (emissive parts, no lights) on the van roof and
 --     over the alarm's loot while AlarmOn; door lamps blink red.
 -- Every blink is at most Config.Heist.BLINK_HZ_MAX flashes a second (§7.3) and holds
@@ -36,6 +41,7 @@ local Sound = require(script.Parent:WaitForChild("Sound"))
 
 local H = Config.Heist
 local A = Config.Audio
+local LIGHT = Config.Lighting
 local FONT = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
 
 local WorldView = {}
@@ -116,6 +122,8 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 	local beacons: { any } = {}
 	local fxFolder: Folder? = nil
 	local vanBody: BasePart? = nil
+	local vanZone: BasePart? = nil
+	local vanLit: boolean? = nil
 	local addedConn: RBXScriptConnection? = nil
 	local timeLockList: { { index: number, opensAt: number } } = {}
 	local doorIn = { open = false, solid = true, solidAt = nil :: number? }
@@ -148,6 +156,8 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 		table.clear(tagged)
 		table.clear(beacons)
 		vanBody = nil
+		vanZone = nil
+		vanLit = nil
 		if fxFolder then
 			fxFolder:Destroy()
 			fxFolder = nil
@@ -191,10 +201,23 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 		do
 			if kind == "door" and d:IsA("BasePart") then
 				local k = "D" .. tostring(index)
+				local size = d.Size
+				local piece = d:GetAttribute("KitPiece")
+				local shutter = piece == "Shutter_8x10" or (piece == nil and math.max(size.X, size.Z) >= 7.9)
+				-- Pocket door: slides its own width along its run (the kit leaf's local -X, STYLE_BIBLE §5.2).
+				local alongX = size.X >= size.Z
+				local slide = if alongX then -d.CFrame.RightVector else -d.CFrame.LookVector
 				doors[index] = {
 					part = d,
 					base = d.CFrame,
-					height = d.Size.Y,
+					size = size,
+					height = size.Y,
+					shutter = shutter,
+					slide = slide,
+					travel = if shutter
+						then math.max(size.Y - LIGHT.SHUTTER_ROLLED, 0.01)
+						else (if alongX then size.X else size.Z),
+					hiddenOpen = false,
 					lift = 0,
 					shownLift = -1,
 					view = "shut",
@@ -246,11 +269,13 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 					kOnAt = k .. "OnAt",
 				}
 			elseif kind == "plate" and d:IsA("BasePart") then
-				local rim, cables = nil, {}
+				local rim, letter, cables = nil, nil, {}
 				for _, c in d:GetDescendants() do
 					local k = c:GetAttribute("EH_Kind")
 					if k == "rim" and c:IsA("BasePart") then
 						rim = c
+					elseif k == "plateLetter" and c:IsA("BasePart") then
+						letter = c
 					elseif k == "cable" and c:IsA("BasePart") then
 						table.insert(cables, c)
 					end
@@ -264,10 +289,13 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 					base = d.CFrame,
 					rim = rim,
 					rimBase = if rim then rim.CFrame else nil,
+					letter = letter,
+					letterBase = if letter then letter.CFrame else nil,
 					cables = cables,
 					sink = 0,
 					shownSink = -1,
-					hue = Palette.steelLo,
+					shownAlpha = -1,
+					hue = Palette.bulbWarm,
 					drain = 0,
 					held = false,
 					glyphGui = glyphGui,
@@ -297,6 +325,30 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 					entry.lockLabel.TextColor3 = Palette.amber
 					table.insert(timeLockList, { index = index, opensAt = opensAt })
 				end
+				-- Goal sparkle: Heist Gold glints (<= BLINK_HZ_MAX a second) while the item is at home.
+				local level = state.level
+				local def = level and level.loot and level.loot[index]
+				local value = num(d:GetAttribute("EH_Value"), 0)
+				if value >= LIGHT.SPARKLE_MIN_VALUE or (def and def.top) then
+					local e = Instance.new("ParticleEmitter")
+					e.Name = "EH_Sparkle"
+					e.Rate = LIGHT.SPARKLE_RATE
+					e.Lifetime = NumberRange.new(0.35, 0.5)
+					e.Speed = NumberRange.new(0)
+					e.Rotation = NumberRange.new(0, 90)
+					e.Size = NumberSequence.new({
+						NumberSequenceKeypoint.new(0, 0),
+						NumberSequenceKeypoint.new(0.4, 0.55),
+						NumberSequenceKeypoint.new(1, 0),
+					})
+					e.Color = ColorSequence.new(
+						Color3.fromRGB(LIGHT.SPARKLE_COLOR[1], LIGHT.SPARKLE_COLOR[2], LIGHT.SPARKLE_COLOR[3])
+					)
+					e.LightEmission = 1
+					e.LightInfluence = 0
+					e.Parent = d
+					entry.sparkle = e
+				end
 				loot[index] = entry
 				tag("loot", index, d)
 			elseif kind == "chevron" and d:IsA("BasePart") then
@@ -305,6 +357,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 				tag("switch", index, d)
 			elseif kind == "van" and d:IsA("BasePart") then
 				tag("van", 1, d)
+				vanZone = d
 			elseif kind == "vanBody" and d:IsA("BasePart") then
 				vanBody = d
 			elseif kind == "doorSkin" and d:IsA("Model") then
@@ -427,8 +480,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 
 	local function updateSkin(d: any)
 		local skin = d.skin
-		local span = math.max(d.height - 0.4, 0.01)
-		local u = math.clamp(d.lift / span, 0, 1)
+		local u = math.clamp(d.lift / d.travel, 0, 1)
 		if math.abs(u - skin.u) < 1e-4 then
 			return
 		end
@@ -467,8 +519,8 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 			doorIn.solidAt = if solidAt >= 0 then solidAt else nil
 			local v = Mechanisms.doorViewOf(doorIn, tView)
 			d.view = v
-			local target = if v == "open" then d.height - 0.4 else 0
-			local rate = d.height / H.DOOR_SLIDE_SECONDS
+			local target = if v == "open" then d.travel else 0
+			local rate = d.travel / H.DOOR_SLIDE_SECONDS
 			if d.lift < target then
 				d.lift = math.min(target, d.lift + rate * dt)
 			elseif d.lift > target then
@@ -480,8 +532,23 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 			end
 			if d.lift ~= d.shownLift then
 				d.shownLift = d.lift
-				table.insert(parts, d.part)
-				table.insert(cfs, d.base + Vector3.new(0, d.lift, 0))
+				-- a skinned (vault) leaf stays put and hidden; its skin swings (updateSkin)
+				if d.skin == nil and d.shutter then
+					-- roll up into the header: the top stays pinned, the size shrinks
+					local h = d.size.Y - d.lift
+					d.part.Size = Vector3.new(d.size.X, h, d.size.Z)
+					table.insert(parts, d.part)
+					table.insert(cfs, d.base * CFrame.new(0, (d.size.Y - h) / 2, 0))
+				elseif d.skin == nil then
+					table.insert(parts, d.part)
+					table.insert(cfs, d.base + d.slide * d.lift)
+					-- fully in the pocket: hidden, so it never shows through the wall it slid into
+					local inside = d.lift >= d.travel - 1e-3
+					if inside ~= d.hiddenOpen then
+						d.hiddenOpen = inside
+						d.part.LocalTransparencyModifier = if inside then 1 else 0
+					end
+				end
 			end
 			if d.skin then
 				updateSkin(d)
@@ -535,6 +602,9 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 			updateHum(l, v ~= "off" and state.phase == "Run", camPos)
 		end
 
+		local breathe = if reduced
+			then 0
+			else LIGHT.PLATE_BREATHE * math.sin(now * 2 * math.pi * LIGHT.PLATE_BREATHE_HZ)
 		for _, p in plates do
 			local held = folder:GetAttribute(p.kHeld) == true
 			local by = num(folder:GetAttribute(p.kBy), 0)
@@ -560,16 +630,26 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 				p.shownSink = p.sink
 				table.insert(parts, p.part)
 				table.insert(cfs, p.base - Vector3.new(0, p.sink, 0))
+				if p.letter then
+					table.insert(parts, p.letter)
+					table.insert(cfs, (p.letterBase :: CFrame) - Vector3.new(0, p.sink, 0))
+				end
 			end
+			-- Idle: rim in Bulb Warm (breathing), cable in Vault Steel; lit: the presser's hue, draining back.
 			local lit = p.drain > 0
-			local colour = if lit then p.hue:Lerp(Palette.steelLo, 1 - p.drain) else Palette.steelLo
-			local recolour = colour ~= p.shownColour or lit ~= p.shownLit
-			p.shownColour, p.shownLit = colour, lit
-			local material = if lit then Enum.Material.Neon else Enum.Material.SmoothPlastic
+			local rimColour = if lit then p.hue:Lerp(Palette.bulbWarm, 1 - p.drain) else Palette.bulbWarm
+			local cableColour = if lit then p.hue:Lerp(Palette.steel, 1 - p.drain) else Palette.steel
+			local recolour = rimColour ~= p.shownColour or lit ~= p.shownLit
+			p.shownColour, p.shownLit = rimColour, lit
 			if p.rim then
 				if recolour then
-					p.rim.Color = colour
-					p.rim.Material = material
+					p.rim.Color = rimColour
+					p.rim.Material = Enum.Material.Neon
+				end
+				local alpha = if held then 0 else (LIGHT.PLATE_IDLE_ALPHA + breathe) * (1 - p.drain)
+				if math.abs(alpha - p.shownAlpha) > 0.01 then
+					p.shownAlpha = alpha
+					p.rim.Transparency = alpha
 				end
 				if moved then
 					table.insert(parts, p.rim)
@@ -577,8 +657,9 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 				end
 			end
 			if recolour then
+				local material = if lit then Enum.Material.Neon else Enum.Material.SmoothPlastic
 				for _, c in p.cables do
-					c.Color = colour
+					c.Color = cableColour
 					c.Material = material
 				end
 			end
@@ -622,6 +703,16 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 			if k.part.Transparency ~= want then
 				k.part.Transparency = want
 			end
+			if k.sparkle then
+				local on = st == "Home"
+				if k.sparkle.Enabled ~= on then
+					k.sparkle.Enabled = on
+				end
+				local rate = LIGHT.SPARKLE_RATE * (state.particleScale or 1)
+				if k.sparkle.Rate ~= rate then
+					k.sparkle.Rate = rate
+				end
+			end
 			if cf then
 				table.insert(parts, k.part)
 				table.insert(cfs, cf)
@@ -640,10 +731,21 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 		state.carrying = carryingMine
 		state.carryCount = carryCount
 
-		-- Van chevrons pulse while you carry loot (the way to bank it).
+		-- The van zone is dim until you carry loot; then it lights up and its arrows pulse toward the van.
+		if vanLit ~= carryingMine then
+			vanLit = carryingMine
+			local material = if carryingMine then Enum.Material.Neon else Enum.Material.SmoothPlastic
+			if vanZone then
+				vanZone.Transparency = if carryingMine then LIGHT.VAN_CARRY_ALPHA else LIGHT.VAN_IDLE_ALPHA
+				vanZone.Material = material
+			end
+			for _, c in chevrons do
+				c.Material = material
+			end
+		end
 		for _, c in chevrons do
 			local want = if not carryingMine
-				then 0.6
+				then LIGHT.ARROW_IDLE_ALPHA
 				elseif reduced then 0.25
 				else 0.1 + 0.5 * (0.5 + 0.5 * math.sin(now * 6))
 			if c.Transparency ~= want then
