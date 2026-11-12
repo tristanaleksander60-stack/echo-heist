@@ -7,6 +7,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")) :: any
 local HeistShared = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Heist")
 local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
@@ -88,6 +89,62 @@ function Common.runName(state: any, n: number): string
 		return Strings.runOfDawn(n, dawn)
 	end
 	return Strings.run(n)
+end
+
+-- Avatar headshots (crew cards, PLAN_STEAM_PLUS §3.2): Players:GetUserThumbnailAsync HeadShot, fetched
+-- once per user and cached; fn(uri) runs when it is known (at once if cached). A failed fetch calls
+-- nothing (the card keeps its plain crew-colour backdrop) and the next ask tries again.
+local headshots: { [number]: string } = {}
+local headshotWaiting: { [number]: { (string) -> () } } = {}
+function Common.headshot(userId: number, fn: (uri: string) -> ())
+	local known = headshots[userId]
+	if known then
+		fn(known)
+		return
+	end
+	local list = headshotWaiting[userId]
+	if list then
+		table.insert(list, fn)
+		return
+	end
+	headshotWaiting[userId] = { fn }
+	task.spawn(function()
+		local size = (Enum.ThumbnailSize :: any)[Config.Ui.CARD.HEADSHOT_SIZE] or Enum.ThumbnailSize.Size100x100
+		local ok, uri = pcall(function()
+			return Players:GetUserThumbnailAsync(userId, Enum.ThumbnailType.HeadShot, size)
+		end)
+		local waiting = headshotWaiting[userId] or {}
+		headshotWaiting[userId] = nil
+		if ok and type(uri) == "string" and uri ~= "" then
+			headshots[userId] = uri
+			for _, cb in waiting do
+				task.spawn(cb, uri)
+			end
+		end
+	end)
+end
+
+-- Sheets that cover the screen (results, MENU, settings) switch Roblox's touch controls off while
+-- they are up, so the thumbstick and jump button never sit on top of their buttons (tests/hud_layout:
+-- HudLayout.SHEETS). Each sheet is one blocker; the controls come back when none is left.
+local touchBlockers: { [string]: boolean } = {}
+function Common.blockTouch(who: string, on: boolean)
+	touchBlockers[who] = if on then true else nil
+	local enabled = next(touchBlockers) == nil
+	pcall(function()
+		if GuiService.TouchControlsEnabled ~= enabled then
+			GuiService.TouchControlsEnabled = enabled
+		end
+	end)
+end
+
+-- A sheet blocks touch controls while it is shown (Ui.show / Ui.hide, or a bare Visible = false).
+function Common.sheetBlocksTouch(who: string, sheet: GuiObject)
+	local function sync()
+		Common.blockTouch(who, sheet.Visible and sheet:GetAttribute("UiShown") ~= false)
+	end
+	sheet:GetAttributeChangedSignal("UiShown"):Connect(sync)
+	sheet:GetPropertyChangedSignal("Visible"):Connect(sync)
 end
 
 function Common.myActor(a: any): boolean

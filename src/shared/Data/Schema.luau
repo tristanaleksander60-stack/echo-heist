@@ -63,10 +63,21 @@ export type Heist = {
 		haulTimeMs: number, -- tie-break 2: less time
 	},
 	settings: {
-		reducedMotion: boolean,
+		reducedMotion: boolean, -- true = reduced motion on (the client also follows the device setting)
 		relaxed: boolean,
-		colourBlindGlyphs: boolean,
+		colourBlindGlyphs: boolean, -- seat shapes beside clone numbers (crew cards, results)
 		classicCamera: boolean, -- Heist/CameraDirector: true = the classic follow cam (default: diorama)
+		-- U7 settings (client Heist/Hud/Settings, additive: no migration; sanitize fills them in):
+		musicVolume: number, -- 0..1 (Config.Data.SETTING_NUMBERS)
+		sfxVolume: number, -- 0..1
+		shake: boolean, -- camera kicks (the rewind FOV dip) on
+		captions: boolean, -- sound captions on the message rail
+		guardPath: boolean, -- Gus's boot prints (his next steps) on the floor
+		-- The job sheet explains each star the first time it is earned ("HAUL: $1,000 stolen"), then
+		-- just stamps it (WALKTHROUGH S7). Stored here so the reasons stop on every device.
+		seenStarHaul: boolean,
+		seenStarCrew: boolean,
+		seenStarClean: boolean,
 	},
 	ftueStep: number,
 	firstHeistDone: boolean,
@@ -75,6 +86,44 @@ export type Heist = {
 
 local function defaultEquipped(): { [string]: string }
 	return table.clone(Config.Data.DEFAULT_EQUIPPED)
+end
+
+-- A NEW default settings table every call. Booleans, plus the numbers in Config.Data.SETTING_NUMBERS.
+function Schema.defaultSettings(): any
+	return {
+		reducedMotion = false,
+		relaxed = false,
+		colourBlindGlyphs = false,
+		classicCamera = false,
+		musicVolume = 1,
+		sfxVolume = 1,
+		shake = true,
+		captions = true,
+		guardPath = true,
+		seenStarHaul = false,
+		seenStarCrew = false,
+		seenStarClean = false,
+	}
+end
+
+-- Is `value` a valid value for settings key `key`? (Data.SetSetting and sanitize use the same rule.)
+-- A number setting takes a finite number inside its Config.Data.SETTING_NUMBERS range; any other known
+-- key takes a boolean. Unknown keys are never valid.
+function Schema.validSetting(key: any, value: any): boolean
+	if type(key) ~= "string" then
+		return false
+	end
+	local range = Config.Data.SETTING_NUMBERS[key]
+	if range then
+		return type(value) == "number" and value == value and value >= range[1] and value <= range[2]
+	end
+	local default = Schema.defaultSettings()[key]
+	return default ~= nil and type(value) == "boolean"
+end
+
+-- The player attribute DataService publishes a setting as ("classicCamera" -> "Setting_ClassicCamera").
+function Schema.settingAttribute(key: string): string
+	return "Setting_" .. string.upper(string.sub(key, 1, 1)) .. string.sub(key, 2)
 end
 
 -- A NEW default slice every call (PlayerData.RegisterSlice asserts this).
@@ -97,7 +146,7 @@ function Schema.defaultHeist(): Heist
 			haulClones = 0,
 			haulTimeMs = 0,
 		},
-		settings = { reducedMotion = false, relaxed = false, colourBlindGlyphs = false, classicCamera = false },
+		settings = Schema.defaultSettings(),
 		ftueStep = 0,
 		firstHeistDone = false,
 		stats = { heists = 0, clears = 0 },
@@ -272,7 +321,7 @@ function Schema.sanitize(heist: Heist): { string }
 		end
 	end
 	for key, default in defaults.settings do
-		if type(h.settings[key]) ~= "boolean" then
+		if not Schema.validSetting(key, h.settings[key]) then
 			h.settings[key] = default
 			table.insert(repairs, "settings." .. key)
 		end

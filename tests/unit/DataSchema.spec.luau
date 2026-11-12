@@ -246,4 +246,36 @@ return function(test)
 		Assert.truthy(Calendar.onOrBefore(dec3, nil), "no end date")
 		Assert.falsy(Calendar.onOrBefore(dec3 + 1, { 2025, 12, 3 }), "after the last day")
 	end)
+	test("settings: U7 numbers and booleans, validated like Data.SetSetting does (additive, repaired)", function()
+		local d = Schema.defaultSettings()
+		Assert.eq(d.musicVolume, 1, "music full")
+		Assert.eq(d.sfxVolume, 1, "sfx full")
+		Assert.truthy(d.shake and d.captions and d.guardPath, "comfort defaults on")
+		Assert.falsy(d.seenStarHaul or d.seenStarCrew or d.seenStarClean, "no star reason seen yet")
+		Assert.truthy(Schema.validSetting("musicVolume", 0.4), "volume in range")
+		Assert.falsy(Schema.validSetting("musicVolume", 1.5), "volume over 1")
+		Assert.falsy(Schema.validSetting("sfxVolume", 0 / 0), "NaN volume")
+		Assert.falsy(Schema.validSetting("musicVolume", true), "boolean for a number setting")
+		Assert.truthy(Schema.validSetting("captions", false), "boolean setting")
+		Assert.falsy(Schema.validSetting("captions", 1), "number for a boolean setting")
+		Assert.falsy(Schema.validSetting("adminMode", true), "unknown key")
+		for key in DATA.SETTING_NUMBERS do
+			Assert.eq(type(d[key]), "number", key .. " has a number default")
+		end
+		Assert.eq(Schema.settingAttribute("classicCamera"), "Setting_ClassicCamera", "attribute name")
+		Assert.eq(Schema.settingAttribute("guardPath"), "Setting_GuardPath", "attribute name")
+		-- An old profile (only the four v1 booleans) and junk values are repaired to the defaults.
+		local h = Schema.defaultHeist() :: any
+		h.settings = { reducedMotion = true, relaxed = false, colourBlindGlyphs = false, classicCamera = true }
+		h.settings.musicVolume = 7
+		local repairs = Schema.sanitize(h)
+		Assert.truthy(#repairs >= 8, "new keys filled in")
+		Assert.eq(h.settings.musicVolume, 1, "out-of-range volume reset")
+		Assert.eq(h.settings.sfxVolume, 1, "missing volume filled")
+		Assert.truthy(h.settings.reducedMotion and h.settings.classicCamera, "old picks kept")
+		Assert.truthy(h.settings.guardPath, "missing boolean filled")
+		h.settings.sfxVolume = 0.25
+		Assert.eq(#Schema.sanitize(h), 0, "a valid number stays")
+		Assert.eq(h.settings.sfxVolume, 0.25, "kept")
+	end)
 end

@@ -656,6 +656,13 @@ Config.Data = {
 		LAST = { 2027, 1, 4 }, -- Candy Canes are earned and spent until this day; items stay owned
 	},
 
+	-- Number settings (Schema settings, Data.SetSetting): key -> { min, max }. Every other setting is a boolean.
+	-- A stored value outside its range (or of the wrong type) is repaired to the default (Schema.sanitize).
+	SETTING_NUMBERS = {
+		musicVolume = { 0, 1 }, -- U7 settings: the Music bus slider
+		sfxVolume = { 0, 1 }, -- ... and the SFX slider (SFX, UI and Ambience buses)
+	},
+
 	-- Cosmetics (§5.1, §5.4). slot -> the default item every player owns.
 	DEFAULT_EQUIPPED = {
 		cloneStyle = "Style_Default",
@@ -1235,6 +1242,88 @@ Config.Ui = {
 	MARKER_SAMPLE_HZ = 10, -- clone recordings are sampled this often to forecast the lasers
 	GUS_TURN_DEG = 35, -- a route corner counts as a turn above this
 	MAX_GUS_TICKS = 24,
+
+	-- D10 number count-up (POLISH §4.1): BASE s + PER_DIGIT s per digit of the change, capped at MAX,
+	-- Quad Out, then a 1.0 -> END_POP -> 1.0 pop (Shared/Heist/CrewBoard.countSeconds / countValue).
+	COUNT_UP = { BASE = 0.35, PER_DIGIT = 0.08, MAX = 1.0, END_POP = 1.15, TICK = 0.08 },
+	BREATH_SECONDS = 0.8, -- breathing outline half period (Sine InOut; NEXT job, the card to delete)
+	BREATH_TRANSPARENCY = { 0.35, 0.85 }, -- ... the outline's transparency swings between these
+
+	-- U4 crew cards: the Clone Deck as polaroids of your own avatar (PLAN_STEAM_PLUS §3.2, WALKTHROUGH P0-3).
+	CARD = {
+		W = 96, -- px: a card (the paper); 4 cards fit the deck without scrolling
+		H = 88,
+		PAD = 5, -- paper border round the photo
+		PHOTO_H = 56, -- the photo (your headshot on a crew-colour backdrop)
+		CAPTION_H = 22, -- the caption strip under it: the last action's word
+		BADGE = 22, -- the last action's icon, a round badge on the photo's corner
+		PILL = { 28, 22 }, -- the stamped number pill (wider with the seat shape: + PILL_GLYPH)
+		PILL_GLYPH = 16,
+		GAP = 8,
+		TILT = 2, -- degrees, alternating per card (pinned, not ruled); 0 under reduced motion
+		BACKDROP_DIM = 0.55, -- the photo backdrop is the crew hue at this value
+		PILL_TILT = -8, -- the stamped number
+		STAMP_TILT = -12, -- the BUSTED / REDO stamp across the photo
+		TAPE = { 26, 9, 0.35 }, -- the tape strip at the top (w, h, transparency): dressing only
+		HEADSHOT_SIZE = "Size100x100", -- Enum.ThumbnailSize name (GetUserThumbnailAsync HeadShot)
+	},
+	START_OVER_RUNS = 2, -- full deck: after this many runs with no progress, offer START OVER (P0-3)
+	DECK_FULL_TOAST_SECONDS = 3,
+
+	-- U5 the job sheet (results). Seconds from the sheet's enter (POLISH §4.2 "Results v2 timeline", premium F5:
+	-- anticipation, reveal, payoff, settle; the buttons last, with a 0.3 s guard).
+	SHEET = {
+		SLIDE = 40, -- px: the sheet slides up this far as it enters
+		HAUL_AT = 0.25, -- the haul starts counting up
+		LINE_AT = 0.7, -- first goal line struck (pencil), then one per LINE_GAP
+		LINE_GAP = 0.25,
+		STRIKE_SECONDS = 0.18, -- a pencil stroke across a line
+		STAMP_AT = 0.9, -- stamps land (Config.Audio.MEDAL_STAMP_GAP apart)
+		STAMP_FROM = 1.6, -- stamp land: UIScale from this ...
+		STAMP_ROTATION = -5, -- ... settling at this tilt (from -8)
+		RING_FROM = 0.8, -- the ink ring behind a stamp grows RING_FROM -> RING_TO, fading over RING_SECONDS
+		RING_TO = 1.6,
+		RING_SECONDS = 0.3,
+		LINE_AT_SUMMARY = 1.6, -- "3 clones · 4 runs · 1:52"
+		TROPHY_AT = 1.9, -- the trophy flies to the van icon
+		TROPHY_SECONDS = 0.45,
+		BUTTONS_AT = 2.1, -- buttons slide up and fade in ...
+		BUTTON_GUARD = 0.3, -- ... and take input this much later
+		PENCIL = { 0.2, 0.2, 0.25 }, -- pencil graphite (RGB 0..1)
+	},
+
+	-- U6 the job board (level select in the garage): pinned job photos on cork, string between the pins in
+	-- play order, medal stickers, the NEXT job glowing like the 3D board's NEXT card (Config.Lobby.BOARD).
+	BOARD = {
+		CORK = { 154, 119, 85 }, -- Corner Shop pine (POLISH §4.2 "label band" colours)
+		CELL = { 142, 88 }, -- 3 columns fill the board's 462 px: GAP + 3 x (CELL + GAP)
+		GAP = { 8, 12 },
+		COLUMNS = 3,
+		PIN = 10, -- px pushpin
+		TILT = { -2.5, 1.5, -1, 2.5, -1.5, 1 }, -- degrees per card, by position (0 under reduced motion)
+		STRING = { 140, 34, 52 }, -- the red string
+		STRING_W = 2,
+		LOCATION = { cs = { 154, 119, 85 }, bk = { 77, 71, 120 }, party = { 31, 63, 95 } }, -- photo bands
+		STICKER = 18, -- px medal sticker
+	},
+
+	-- U7 settings (Hud/Settings). Rows in order; `key` is the Schema settings key, `kind` "toggle" | "slider" |
+	-- "camera". Volume sliders step by SLIDER_STEP and save when released.
+	SETTINGS_ROWS = {
+		{ key = "musicVolume", kind = "slider" },
+		{ key = "sfxVolume", kind = "slider" },
+		{ key = "shake", kind = "toggle" },
+		{ key = "reducedMotion", kind = "toggle" },
+		{ key = "captions", kind = "toggle" },
+		{ key = "colourBlindGlyphs", kind = "toggle" },
+		{ key = "classicCamera", kind = "camera" },
+		{ key = "guardPath", kind = "toggle" },
+	},
+	SLIDER_STEP = 0.05,
+	SFX_BUSES = { "SFX", "UI", "Ambience" }, -- the SFX slider drives these AudioDirector buses (Warnings keep their floor)
+
+	-- Bank moment, HUD half (PLAN §5 "First bank"): "+$100" flies from the van to the loot meter.
+	BANK_FLY = { SECONDS = 0.55, ARC = 90, MAX = 12, MAX_LOW_TIER = 6 }, -- arc px above the straight line; F7 caps
 }
 
 -- World backdrop (PLAN_STEAM_PLUS §4.1 W4, roblox_quality §2): the town around the active heist instance and

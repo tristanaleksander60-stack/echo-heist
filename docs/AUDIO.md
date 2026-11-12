@@ -381,10 +381,11 @@ Line numbers are from 2026-11-12.
 
 ## 10. Settings and data
 
-`DataService` settings are booleans only (`reducedMotion`, `relaxed`, `colourBlindGlyphs`). Volume sliders
-need numbers: the data owner adds `musicVolume`, `sfxVolume`, `uiVolume`, `alertsVolume` (0..1, default 1)
-and `muteAll` (boolean) to Schema v2 with a migration, and `Data.SetSetting` validates the range. Until then
-the director keeps the sliders per session at 1.
+Settings now hold `musicVolume` and `sfxVolume` (0..1, default 1; additive, `Data.SetSetting` validates the
+range, docs/DATA.md). The settings panel (`Hud/SettingsPanel`, PLAN_STEAM_PLUS U7) drives
+`setBusVolume("Music", v)` and the SFX slider drives `SFX`, `UI` and `Ambience` (`Config.Ui.SFX_BUSES`;
+Warnings keep their floor); `HeistClient` applies the saved values at boot. `captions` (default on) gates the
+caption handler. `uiVolume`, `alertsVolume` and `muteAll` are not built.
 
 ## 11. Live load check
 

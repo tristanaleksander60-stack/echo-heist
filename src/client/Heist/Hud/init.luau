@@ -9,9 +9,12 @@
 --             LOCKED 0:07), the hold-to-skip FAST pill, keys and gamepad
 --   Messages  the bottom message rail (toast, sound caption, spectate line), the menu
 --             sheet, the HIDDEN pill, the "preparing" card, the red vignette, diamond dim
---   Deck      the Clone Deck between runs, the RUN button and its auto-start countdown
---   Results   the results card
---   Garage    tapes, daily vault, advent catch-up, crew, join friend
+--   Deck      the Clone Deck between runs as crew cards (polaroids of your avatar, last action,
+--             full deck and START OVER), the RUN button and its auto-start countdown
+--   Results   the job sheet (haul count-up, goal lines, stamps with their reasons, trophy)
+--   Garage    the job board, daily vault, advent catch-up, crew, join friend, SETTINGS
+--   SettingsPanel  settings and comfort (from MENU and the garage; Heist/Settings holds the values)
+--   BankFly   the bank moment's HUD half: "+$100!" flies from the van to the loot meter
 --   Hints     the objective line's text, the L1 FTUE lines and the L1 stuck hints
 --   Run       run state, events and the per-frame update
 --   Common    shared helpers
@@ -31,6 +34,7 @@ local HudLayout = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild(
 
 local Ui = require(script.Parent:WaitForChild("Ui"))
 local TypeSpecimen = require(script.Parent:WaitForChild("TypeSpecimen"))
+local BankFly = require(script:WaitForChild("BankFly"))
 local Controls = require(script:WaitForChild("Controls"))
 local Deck = require(script:WaitForChild("Deck"))
 local Garage = require(script:WaitForChild("Garage"))
@@ -38,6 +42,7 @@ local Hints = require(script:WaitForChild("Hints"))
 local Messages = require(script:WaitForChild("Messages"))
 local Results = require(script:WaitForChild("Results"))
 local Run = require(script:WaitForChild("Run"))
+local SettingsPanel = require(script:WaitForChild("SettingsPanel"))
 local TopBar = require(script:WaitForChild("TopBar"))
 
 local localPlayer = Players.LocalPlayer
@@ -135,8 +140,17 @@ function Hud.new(state: any, actions: Actions): any
 	ctx.results = Results.build(ctx)
 	ctx.garage = Garage.build(ctx)
 	ctx.hints = Hints.build(ctx)
+	ctx.settings = SettingsPanel.build(ctx)
+	BankFly.build(ctx)
 	Run.build(ctx)
 	Controls.bind(ctx)
+	-- The deck learns how each run ended (the clone a full deck replaced, START OVER) before the
+	-- run's own end handling.
+	local runEnd = hud.onRunEnd
+	hud.onRunEnd = function(p: any)
+		ctx.deck.noteRunEnd(p)
+		runEnd(p)
+	end
 
 	-- Set by HeistClient (RewindDirector): (text, colour, hold seconds?).
 	hud.bigStamp = function(_text: string, _color: Color3, _hold: number?) end
@@ -149,6 +163,7 @@ function Hud.new(state: any, actions: Actions): any
 		ctx.top.alarmPill.Visible = false
 		ctx.msg.pauseChip.Visible = false
 		ctx.msg.menuSheet.Visible = false
+		ctx.settings.panel.Visible = false
 		ctx.msg.setHidden(false)
 		ctx.msg.setSpectate("")
 		ctx.hints.clear()
@@ -162,6 +177,7 @@ function Hud.new(state: any, actions: Actions): any
 		if on then
 			ctx.hints.clear()
 			ctx.msg.menuSheet.Visible = false
+			ctx.settings.panel.Visible = false
 			ctx.msg.setHidden(false)
 		else
 			applyPlayerList()

@@ -89,9 +89,7 @@ local function heistOf(profile: PlayerData.Profile): Schema.Heist
 	return profile.Data[Schema.SLICE] :: Schema.Heist
 end
 
-local function settingAttribute(key: string): string
-	return "Setting_" .. string.upper(string.sub(key, 1, 1)) .. string.sub(key, 2)
-end
+local settingAttribute = Schema.settingAttribute
 
 local function publishAttributes(player: Player, heist: Schema.Heist)
 	for key, value in heist.settings do
@@ -249,7 +247,7 @@ function DataService.getBagLevel(player: Player): number
 	return if profile then heistOf(profile).bagLevel else 0
 end
 
-function DataService.getSettings(player: Player): { [string]: boolean }
+function DataService.getSettings(player: Player): { [string]: boolean | number }
 	local profile = PlayerData.Get(player)
 	local settings = if profile then heistOf(profile).settings else Schema.defaultHeist().settings
 	return table.clone(settings :: any)
@@ -416,7 +414,15 @@ local function withProfile(player: Player, fn: (PlayerData.Profile, Schema.Heist
 end
 
 local function declareRemotes()
-	local settingKeys = Schema.defaultHeist().settings :: any
+	local settingKeys = Schema.defaultSettings()
+	local lo, hi = 0, 0
+	for _, range in DATA.SETTING_NUMBERS do
+		lo, hi = math.min(lo, range[1]), math.max(hi, range[2])
+	end
+	local numberValue = T.number(lo, hi)
+	local function settingValue(v: any): boolean
+		return T.boolean(v) or numberValue(v)
+	end
 	local buyable = Store.buyable()
 	changedPush = Net.Push("Data.Changed")
 
@@ -430,8 +436,13 @@ local function declareRemotes()
 	})
 	Net.Handle("Data.SetSetting", {
 		rate = { burst = 6, perSecond = 2 },
-		args = { T.key(settingKeys), T.boolean },
-		handler = function(player: Player, key: string, value: boolean): Net.Result
+		-- A known key, then a boolean or a finite number in 0..1 (the widest SETTING_NUMBERS range);
+		-- the handler checks the value against that key's own type and range (Schema.validSetting).
+		args = { T.key(settingKeys), settingValue },
+		handler = function(player: Player, key: string, value: boolean | number): Net.Result
+			if not Schema.validSetting(key, value) then
+				return Net.fail("BadValue")
+			end
 			return withProfile(player, function(profile, heist)
 				local settings = heist.settings :: any
 				settings[key] = value

@@ -1,22 +1,41 @@
 --!strict
--- Hud/Garage: heists in play order (the party break tagged, why a heist is locked), the
--- daily vault card with streak and modifier once the first heist is cleared, advent
--- catch-up, the crew and JOIN for friends in the server (§3.3, §5.3, §7.4). Roblox's
--- player list comes back here (it is hidden during heists, PLAN S8).
+-- Hud/Garage: the job board (PLAN_STEAM_PLUS §3.2, §4.3 U6): heists in play order as job photos
+-- pinned to cork, a red string from pin to pin, medal stickers, the NEXT job glowing like the 3D
+-- board's NEXT card in the garage (Heist/JobBoard, Config.Lobby.BOARD; the same rule:
+-- Shared/Heist/CrewBoard.nextJob = Heist/JobCard.title), locked jobs veiled with what unlocks them.
+-- Then the daily vault card with streak and modifier once the first heist is cleared, advent
+-- catch-up, the crew and JOIN for friends in the server (§3.3, §5.3, §7.4), and SETTINGS (U7).
+-- Roblox's player list comes back here (it is hidden during heists, PLAN S8).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Config = require(Shared:WaitForChild("Config")) :: any
 local HeistShared = Shared:WaitForChild("Heist")
+local CrewBoard = require(HeistShared:WaitForChild("CrewBoard"))
+local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
-local Sound = require(script.Parent.Parent:WaitForChild("Sound"))
-local Ui = require(script.Parent.Parent:WaitForChild("Ui"))
+local Heist = script.Parent.Parent
+local Icons = require(Heist:WaitForChild("Icons"))
+local Motion = require(Heist:WaitForChild("Motion"))
+local Sound = require(Heist:WaitForChild("Sound"))
+local Theme = require(Heist:WaitForChild("Theme"))
+local Ui = require(Heist:WaitForChild("Ui"))
 local Common = require(script.Parent:WaitForChild("Common"))
 
+local U = Config.Ui
+local B = U.BOARD
+local LB = Config.Lobby.BOARD
 local TAP = Ui.TAP
+
+local function rgb(t: { number }): Color3
+	return Color3.fromRGB(t[1], t[2], t[3])
+end
+local NEXT_CARD = rgb(LB.cardColor) -- the 3D NEXT card's plate and its glowing text
+local NEXT_TEXT = rgb(LB.textColor)
 local localPlayer = Players.LocalPlayer
 
 local Garage = {}
@@ -28,37 +47,32 @@ function Garage.build(ctx: any): any
 	local root = ctx.root
 	local garageUi = {}
 
-	local garage = Ui.panel(root, {
-		Name = "Garage",
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.fromOffset(700, 326),
-		Visible = false,
-	})
+	local garage = Ui.panel(root, { Name = "Garage", Visible = false })
+	Common.place(garage, HudLayout.GARAGE)
 	garageUi.frame = garage
 	local garageTitle = Ui.label(garage, {
 		Position = UDim2.fromOffset(16, 6),
 		Size = UDim2.fromOffset(440, 34),
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextSize = 26,
-		Text = Strings.PICK_A_HEIST,
+		Text = Strings.JOB_BOARD,
 	})
+	-- The cork board: job photos placed by CrewBoard.boardSlot (no grid layout: the string needs
+	-- each pin's position).
 	local tapes = Instance.new("ScrollingFrame")
-	tapes.Name = "Tapes"
+	tapes.Name = "JobBoard"
 	tapes.Position = UDim2.fromOffset(14, 44)
 	tapes.Size = UDim2.fromOffset(462, 156)
-	tapes.BackgroundTransparency = 1
+	tapes.BackgroundColor3 = rgb(B.CORK)
+	tapes.BackgroundTransparency = 0
 	tapes.BorderSizePixel = 0
 	tapes.ScrollingDirection = Enum.ScrollingDirection.Y
-	tapes.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	tapes.AutomaticCanvasSize = Enum.AutomaticSize.None
 	tapes.CanvasSize = UDim2.fromScale(0, 0)
 	tapes.ScrollBarThickness = 4
 	tapes.Parent = garage
-	local tapeGrid = Instance.new("UIGridLayout")
-	tapeGrid.CellSize = UDim2.fromOffset(146, 88)
-	tapeGrid.CellPadding = UDim2.fromOffset(8, 8)
-	tapeGrid.SortOrder = Enum.SortOrder.LayoutOrder
-	tapeGrid.Parent = tapes
+	Ui.corner(tapes)
+	Ui.stroke(tapes, Palette.ink, Theme.STROKE)
 
 	local daily = Ui.frame(garage, {
 		Name = "Daily",
@@ -127,8 +141,8 @@ function Garage.build(ctx: any): any
 	end, "UIConfirm")
 
 	local crewBox = Ui.frame(garage, {
-		Position = UDim2.fromOffset(486, 44),
-		Size = UDim2.fromOffset(200, 270),
+		Position = UDim2.fromOffset(486, 44 + TAP + 8),
+		Size = UDim2.fromOffset(200, 270 - TAP - 8),
 		BackgroundColor3 = Palette.inkHi,
 		BackgroundTransparency = 0,
 	})
@@ -146,6 +160,19 @@ function Garage.build(ctx: any): any
 	crewLayout.Padding = UDim.new(0, 6)
 	crewLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	crewLayout.Parent = crewList
+	-- U7: settings from the garage too (in a heist they open from MENU).
+	local settingsBtn = Ui.button(garage, {
+		Name = "Settings",
+		Position = UDim2.fromOffset(486, 44), -- HudLayout.GARAGE_SETTINGS: clear of the touch jump button
+		Size = UDim2.fromOffset(200, TAP),
+		TextSize = 20,
+		Text = Strings.SETTINGS,
+	}, function()
+		if hud.openSettings then
+			hud.openSettings(false)
+		end
+	end, "UIToggle")
+	Ui.iconWord(settingsBtn, "settings", "left", U.ICON_SMALL)
 
 	local friendCache: { [number]: boolean } = {}
 	local function isFriend(userId: number): boolean
@@ -168,12 +195,64 @@ function Garage.build(ctx: any): any
 
 	local garageOpen = false
 
+	local breath: Tween? = nil
 	local function clearTapes()
+		if breath then
+			breath:Cancel()
+			breath = nil
+		end
 		for _, c in tapes:GetChildren() do
-			if c:IsA("TextButton") then
+			if c:IsA("GuiObject") then
 				c:Destroy()
 			end
 		end
+	end
+
+	-- A pinned card's frame at board position k (and the board's canvas for n cards).
+	local function pinAt(card: GuiObject, k: number)
+		local x, y = CrewBoard.boardSlot(k)
+		card.Position = UDim2.fromOffset(x, y)
+		card.Size = UDim2.fromOffset(B.CELL[1], B.CELL[2])
+		card.Rotation = if Ui.reducedMotion() then 0 else B.TILT[(k - 1) % #B.TILT + 1]
+	end
+	local function pinPoint(k: number): (number, number)
+		local x, y = CrewBoard.boardSlot(k)
+		return x + B.CELL[1] / 2, y + B.PIN / 2 + 1
+	end
+	local function pin(k: number)
+		local px, py = pinPoint(k)
+		local p = Ui.frame(tapes, {
+			Name = "Pin" .. k,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromOffset(px, py),
+			Size = UDim2.fromOffset(B.PIN, B.PIN),
+			BackgroundColor3 = Palette.alarm,
+			BackgroundTransparency = 0,
+			ZIndex = 6,
+			Active = false,
+		})
+		Ui.pill(p)
+		Ui.stroke(p, Palette.ink, 1.5)
+	end
+	-- The red string from pin k to pin k + 1 (play order).
+	local function redString(k: number)
+		local x0, y0 = pinPoint(k)
+		local x1, y1 = pinPoint(k + 1)
+		local cx, cy, len, rot = CrewBoard.segment(x0, y0, x1, y1)
+		Ui.frame(tapes, {
+			Name = "String" .. k,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromOffset(cx, cy),
+			Size = UDim2.fromOffset(len, B.STRING_W),
+			Rotation = rot,
+			BackgroundColor3 = rgb(B.STRING),
+			BackgroundTransparency = 0,
+			ZIndex = 5,
+			Active = false,
+		})
+	end
+	local function setCanvas(n: number)
+		tapes.CanvasSize = UDim2.fromOffset(0, CrewBoard.boardHeight(n))
 	end
 
 	-- A tape's name from its data key (the garage list carries both).
@@ -187,10 +266,25 @@ function Garage.build(ctx: any): any
 		return dataKey
 	end
 
+	-- Medal stickers: earned ones gold (story: Haul / Crew / Clean; party: its haul tiers).
+	local STORY_MEDALS = { "Haul", "Crew", "Clean" }
+	local function earned(lv: any, i: number): boolean
+		local want = if lv.kind == "party" then "Haul" .. i else STORY_MEDALS[i]
+		for _, m in lv.medals or {} do
+			if m == want then
+				return true
+			end
+		end
+		return false
+	end
+
 	local function renderTapes(leader: boolean): TextButton?
 		local g = state.garage
+		local levels = g.levels or {}
+		local nextIndex = CrewBoard.nextJob(levels)
 		local first: TextButton? = nil
-		for _, lv in g.levels or {} do
+		local nextCard: TextButton? = nil
+		for k, lv in levels do
 			local party = lv.kind == "party"
 			local tag = if party
 				then Strings.partyTag(tonumber(lv.cap) or 8)
@@ -200,18 +294,14 @@ function Garage.build(ctx: any): any
 				then Strings.lockClear(tapeName(lv.needsClear))
 				elseif stars > 0 then Strings.lockStars(stars)
 				else Strings.LOCKED
-			-- A party level's medals are its haul tiers; a story level's are Haul / Crew / Clean.
-			local status = if lv.unlocked then Strings.heistStars(#(lv.medals or {})) else lockText
+			local isNext = lv.unlocked and lv.index == nextIndex
+			-- The job photo: paper, a colour band by location with the job's number and name.
 			local b = Ui.button(tapes, {
-				BackgroundColor3 = if not lv.unlocked
-					then Palette.plumHi
-					elseif party then Palette.goldHi
-					else Palette.steelHi,
-				TextColor3 = Palette.ink,
-				TextSize = 16,
-				TextWrapped = true,
-				Text = Strings.heistCard(lv.index, tostring(lv.name), tag, status),
+				Name = "Job" .. tostring(lv.index),
+				BackgroundColor3 = Palette.exit,
+				Text = "",
 				LayoutOrder = lv.index,
+				ZIndex = 2,
 			}, function()
 				if not leader then
 					hud.toast(Strings.LEADER_PICKS_HEIST)
@@ -227,9 +317,124 @@ function Garage.build(ctx: any): any
 					actions.selectLevel(lv.index)
 				end
 			end)
+			pinAt(b, k)
+			local band = Ui.frame(b, {
+				Name = "Photo",
+				Position = UDim2.fromOffset(4, 4),
+				Size = UDim2.new(1, -8, 0, 30),
+				BackgroundColor3 = rgb(B.LOCATION[CrewBoard.location(lv)]),
+				BackgroundTransparency = 0,
+				ZIndex = 3,
+				Active = false,
+			})
+			if party then
+				Ui.stroke(band, Palette.gold, Theme.STROKE)
+			end
+			local title = Ui.label(band, {
+				Position = UDim2.fromOffset(6, 0),
+				Size = UDim2.new(1, -12, 1, 0),
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextSize = U.TYPE_SCALE[1],
+				TextTruncate = Enum.TextTruncate.AtEnd,
+				Text = Strings.jobPhoto(lv.index, tostring(lv.name)),
+				ZIndex = 4,
+			})
+			title.Active = false
+			Ui.label(b, {
+				Position = UDim2.fromOffset(8, 36),
+				Size = UDim2.new(1, -16, 0, 20),
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextSize = U.TYPE_SCALE[1],
+				TextColor3 = Palette.ink,
+				TextTruncate = Enum.TextTruncate.AtEnd,
+				Text = tag,
+				ZIndex = 3,
+				Active = false,
+			})
+			if lv.unlocked then
+				-- Three medal stickers, a little crooked.
+				for i = 1, 3 do
+					local on = earned(lv, i)
+					local sticker = Ui.frame(b, {
+						Name = "Sticker" .. i,
+						Position = UDim2.fromOffset(8 + (i - 1) * (B.STICKER + 6), 60),
+						Size = UDim2.fromOffset(B.STICKER, B.STICKER),
+						BackgroundColor3 = if on then Palette.gold else Palette.steelHi,
+						BackgroundTransparency = 0,
+						Rotation = if Ui.reducedMotion() then 0 else (i - 2) * 6,
+						ZIndex = 3,
+						Active = false,
+					})
+					Ui.pill(sticker)
+					Ui.stroke(sticker, Palette.ink, 1.5)
+					Icons.attach(sticker, if on then "star" else "star_empty", {
+						AnchorPoint = Vector2.new(0.5, 0.5),
+						Position = UDim2.fromScale(0.5, 0.5),
+						Size = UDim2.fromOffset(B.STICKER - 4, B.STICKER - 4),
+						ImageColor3 = Palette.ink,
+						ZIndex = 4,
+					})
+				end
+			else
+				-- Locked: an ink veil, a lock and what opens it.
+				local veil = Ui.frame(b, {
+					Name = "Locked",
+					Size = UDim2.fromScale(1, 1),
+					BackgroundColor3 = Palette.ink,
+					BackgroundTransparency = 0.35,
+					ZIndex = 5,
+					Active = false,
+				})
+				Ui.corner(veil)
+				local why = Ui.label(veil, {
+					Position = UDim2.fromOffset(8, 56),
+					Size = UDim2.new(1, -16, 0, 24),
+					TextXAlignment = Enum.TextXAlignment.Left,
+					TextSize = U.TYPE_SCALE[1],
+					TextColor3 = Palette.steelHi,
+					TextTruncate = Enum.TextTruncate.AtEnd,
+					Text = lockText,
+					ZIndex = 6,
+					Active = false,
+				})
+				Ui.iconWord(why, "lock", "left", U.ICON_SMALL - 4)
+			end
+			if isNext then
+				-- NEXT: the 3D board's NEXT card in 2D (its ink plate and warm glowing text), a gold
+				-- outline that breathes.
+				local chip = Ui.label(b, {
+					Name = "Next",
+					AnchorPoint = Vector2.new(1, 0),
+					Position = UDim2.new(1, -6, 0, 56),
+					Size = UDim2.fromOffset(74, 24),
+					TextSize = U.TYPE_SCALE[1],
+					TextColor3 = NEXT_TEXT,
+					Text = Strings.JOB_BOARD_NEXT,
+					ZIndex = 4,
+					Active = false,
+				})
+				chip.BackgroundColor3 = NEXT_CARD
+				chip.BackgroundTransparency = 0
+				Ui.pill(chip)
+				local outline = b:FindFirstChild("Outline")
+				if outline and outline:IsA("UIStroke") then
+					outline.Color = Palette.gold
+					outline.Thickness = 3
+					outline.Transparency = U.BREATH_TRANSPARENCY[1]
+					if not Ui.reducedMotion() then
+						breath = Motion.breathe(outline, { Transparency = U.BREATH_TRANSPARENCY[2] })
+					end
+				end
+				nextCard = b
+			end
+			pin(k)
+			if k < #levels then
+				redString(k)
+			end
 			first = first or b
 		end
-		return first
+		setCanvas(#levels)
+		return nextCard or first
 	end
 
 	local function renderCatchUp(leader: boolean): TextButton?
@@ -244,8 +449,11 @@ function Garage.build(ctx: any): any
 			catchUpMode = false
 			hud.showGarage()
 		end, "UIBack")
-		for i, c in d.catchUp or {} do
-			Ui.button(tapes, {
+		pinAt(back, 1)
+		local catchUps = d.catchUp or {}
+		setCanvas(#catchUps + 1)
+		for i, c in catchUps do
+			local card = Ui.button(tapes, {
 				BackgroundColor3 = Palette.goldHi,
 				TextColor3 = Palette.ink,
 				TextSize = 16,
@@ -262,6 +470,8 @@ function Garage.build(ctx: any): any
 					actions.selectDaily(c.day)
 				end
 			end, "UIConfirm")
+			pinAt(card, i + 1)
+			pin(i + 1)
 		end
 		return back
 	end
@@ -384,7 +594,7 @@ function Garage.build(ctx: any): any
 		if catchUpMode and catchUps == 0 then
 			catchUpMode = false
 		end
-		garageTitle.Text = if catchUpMode then Strings.ADVENT_CATCH_UP else Strings.PICK_A_HEIST
+		garageTitle.Text = if catchUpMode then Strings.ADVENT_CATCH_UP else Strings.JOB_BOARD
 		local first = if catchUpMode then renderCatchUp(leader) else renderTapes(leader)
 		renderDaily()
 		renderCrew(g)

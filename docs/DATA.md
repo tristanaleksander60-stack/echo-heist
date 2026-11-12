@@ -49,7 +49,7 @@ Never rename `STORE_NAME` or `KEY_PREFIX` after launch. `Keys.isWritable` makes 
 | `bagLevel` | 0-3 | Clone Party carry upgrades (Cash) |
 | `cosmetics.owned[id]`, `cosmetics.equipped[slot]` | `true`, id | Slots: `cloneStyle`, `cloneHat`, `vanPaint`, `trail`. Defaults are owned implicitly |
 | `daily` | `{ lastClearDay, streak, bestStreak, stars, haulDay, haulBest, haulClones, haulTimeMs }` | Daily vault (UTC day numbers) and the "biggest haul today" entry with its tie-breaks (clones, then time) |
-| `settings` | `{ reducedMotion, relaxed, colourBlindGlyphs, classicCamera }` | Booleans (`classicCamera`: the camera A/B pick, off = diorama; additive, no migration) |
+| `settings` | `{ reducedMotion, relaxed, colourBlindGlyphs, classicCamera, musicVolume, sfxVolume, shake, captions, guardPath, seenStarHaul, seenStarCrew, seenStarClean }` | Booleans, plus the numbers in `Config.Data.SETTING_NUMBERS` (`musicVolume`, `sfxVolume`: 0..1, default 1). `classicCamera`: the camera A/B pick (off = diorama). `shake`, `captions`, `guardPath` default on. `seenStar*`: the job sheet has shown that star's reason and the star was earned (WALKTHROUGH S7). All additive, no migration: `sanitize` fills a missing key and repairs a wrong type or an out-of-range number to its default (`Schema.validSetting`). `Data.SetSetting(key, value)` accepts a known key and a boolean or a finite number, then checks the value against that key's own type and range (`BadValue` otherwise). Each is published as the player attribute `Setting_<Key>` (`Schema.settingAttribute`) |
 | `ftueStep`, `firstHeistDone`, `stats = { heists, clears }` | numbers, boolean | Onboarding and counters |
 
 Stars are stored as a `Currency` balance so the UI gets a `Stars` attribute. The balance is a mirror: it is recomputed from the medals plus `daily.stars` after every award and on load, and it is never spent. Cash and Candy Canes are normal balances. None of them can be bought with Robux (`paid = false`).
@@ -168,5 +168,5 @@ No paid randomness, no Robux-to-Cash, no paid skips or hints: unit tests assert 
 - Clone emotes and rewind styles (Jan).
 - Trophy stands.
 - The free Gift-Wrap style (use `grantCosmetic` after adding it to the catalog).
-- The store and settings UI.
+- The store UI. (The settings UI is built: client `Heist/Settings` + `Hud/SettingsPanel`, from MENU and the garage.)
 - Wiring the awards into v0.1 (unchanged for the fun gate). The sim path (`GAME_MODE = "sim"`) calls `awardHeistResult` and `awardDailyVault` from `Heist/HeistService` since 2026-11-12 (engine smoke checks both).

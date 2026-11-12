@@ -191,36 +191,26 @@ function Messages.build(ctx: any): any
 	Common.place(pauseChip, HudLayout.MENU)
 	Ui.iconWord(pauseChip, "menu", "top", U.ICON_SMALL)
 	msg.pauseChip = pauseChip
-	local menuSheet = Ui.panel(root, {
-		Name = "MenuSheet",
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.fromOffset(420, 200 + TAP),
-		Visible = false,
-		ZIndex = 30,
-	})
+	local menuSheet = Ui.panel(root, { Name = "MenuSheet", Visible = false, ZIndex = 30 })
+	Common.place(menuSheet, HudLayout.MENU_SHEET)
 	msg.menuSheet = menuSheet
-	-- Camera A/B (PLAN_STEAM_PLUS §4.2 C0, decision D5): one tap flips DIORAMA / CLASSIC and
-	-- saves it (Heist/CameraDirector); the label always shows the mode in use.
-	local cameraBtn: TextButton
-	cameraBtn = Ui.button(menuSheet, {
-		Name = "CameraMode",
+	Common.sheetBlocksTouch("menu", menuSheet)
+	-- SETTINGS (U7, Hud/SettingsPanel): volume, comfort and the camera A/B (DIORAMA / CLASSIC, decision
+	-- D5) that used to be its own button here. DONE comes back to this sheet.
+	local settingsBtn = Ui.button(menuSheet, {
+		Name = "Settings",
 		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.fromOffset(210, 62),
+		Position = UDim2.new(0.5, 0, 0, 62),
 		Size = UDim2.fromOffset(300, TAP),
 		TextSize = 20,
-		Text = Strings.cameraMode(if actions.cameraMode then actions.cameraMode() else nil),
+		Text = Strings.SETTINGS,
 		ZIndex = 32,
 	}, function()
-		if actions.toggleCamera then
-			cameraBtn.Text = Strings.cameraMode(actions.toggleCamera())
+		if hud.openSettings then
+			hud.openSettings(true)
 		end
 	end, "UIToggle")
-	if actions.onCameraMode then
-		actions.onCameraMode(function(mode: string)
-			cameraBtn.Text = Strings.cameraMode(mode)
-		end)
-	end
+	Ui.iconWord(settingsBtn, "settings", "left", U.ICON_SMALL)
 	Ui.label(menuSheet, {
 		Position = UDim2.fromOffset(0, 14),
 		Size = UDim2.new(1, 0, 0, 40),

@@ -98,6 +98,29 @@ function Strings.cameraMode(mode: string?): string
 	return Strings.CAMERA_MODE[mode or "diorama"] or Strings.CAMERA_MODE.diorama
 end
 Strings.PREPARING = "The van door opens..."
+-- Settings (U7): the panel from MENU and the garage. Labels by Schema settings key.
+Strings.SETTINGS_TITLE = "SETTINGS"
+Strings.DONE = "DONE"
+Strings.ON = "ON"
+Strings.OFF = "OFF"
+Strings.SETTING_LABEL = table.freeze({
+	musicVolume = "Music",
+	sfxVolume = "Sound effects",
+	shake = "Camera shake",
+	reducedMotion = "Reduced motion",
+	captions = "Captions",
+	colourBlindGlyphs = "Colour-blind shapes",
+	classicCamera = "Camera",
+	guardPath = "Show guard path",
+} :: { [string]: string })
+Strings.SETTING_CAMERA = table.freeze({ diorama = "DIORAMA", classic = "CLASSIC" } :: { [string]: string })
+function Strings.percent(v: number): string
+	return string.format("%d%%", math.floor(v * 100 + 0.5))
+end
+-- The bank moment: "+$100!" flies from the van to the loot meter.
+function Strings.bankFly(money: string): string
+	return "+" .. money .. "!"
+end
 
 ---------------------------------------------------------------------------
 -- Clone Deck (between runs)
@@ -182,6 +205,25 @@ function Strings.partyKeepsAll(clones: number): string
 	return string.format("Party! All %d clones come back.", clones)
 end
 
+-- Crew cards (U4, PLAN_STEAM_PLUS §3.2; WALKTHROUGH P0-3): a full deck says so, names the clone a new
+-- run replaced, and offers a one-tap start over after runs that got nowhere.
+Strings.DECK_FULL = "DECK FULL: tap a clone, then DELETE"
+function Strings.deckFullReplaced(slot: number): string
+	return string.format("Deck full: your new clone replaced clone %d", slot)
+end
+Strings.START_OVER = "START OVER"
+-- A card's caption: what that clone did last (Shared/Heist/CrewBoard.lastAction).
+function Strings.cardPlate(letter: string): string
+	return "PLATE " .. letter
+end
+Strings.CARD_ACTION = table.freeze({
+	cash = "CASH",
+	busted = "BUSTED",
+	zapped = "ZAPPED",
+	stuck = "STUCK",
+	walk = "WALKS",
+})
+
 ---------------------------------------------------------------------------
 -- Results card
 ---------------------------------------------------------------------------
@@ -232,6 +274,30 @@ Strings.STUDIO_NOT_SAVED = "Studio test: progress not saved"
 function Strings.starsOpenNext(n: number): string
 	return string.format("%d more star%s open%s the next heist", n, s(n), if n == 1 then "s" else "")
 end
+-- The job sheet (U5): one line per goal (struck through in pencil when met), and the first time a star
+-- can be earned its stamp says why (WALKTHROUGH S7), with the level's real numbers.
+Strings.JOB_SHEET = "JOB SHEET"
+function Strings.jobSheet(name: string): string
+	return "JOB SHEET · " .. string.upper(name)
+end
+function Strings.lineHaul(have: string, goal: string): string
+	return string.format("%s of %s stolen", have, goal)
+end
+function Strings.lineCrew(clones: number): string
+	return plural(clones, "clone") .. " used"
+end
+Strings.LINE_CLEAN = "Never caught"
+Strings.LINE_CAUGHT = "Got caught"
+function Strings.lineTier(tier: number, money: string): string
+	return string.format("STAR %d: bank %s", tier, money)
+end
+function Strings.reasonHaul(goal: string): string
+	return "HAUL: " .. goal .. " stolen"
+end
+function Strings.reasonCrew(par: number): string
+	return string.format("CREW: %s or fewer", plural(par, "clone"))
+end
+Strings.REASON_CLEAN = "CLEAN: never caught"
 Strings.WIN_TO_OPEN_NEXT = "Win this to open the next one"
 Strings.LEADER_PICKS_NEXT = "Your crew leader picks what's next"
 Strings.REPLAY = "REPLAY"
@@ -246,6 +312,12 @@ Strings.PICK_A_HEIST = "PICK A HEIST"
 -- The 3D job board at your van (garage v1, Heist/Lobby + client Heist/JobBoard): the NEXT card.
 Strings.JOB_BOARD_NEXT = "NEXT JOB"
 Strings.JOB_BOARD_ALL_DONE = "ANY JOB!"
+-- The job board (U6, level select): pinned job photos; the NEXT one glows (Strings.JOB_BOARD_NEXT).
+Strings.JOB_BOARD = "JOB BOARD"
+function Strings.jobPhoto(index: number, name: string): string
+	return string.format("%d  %s", index, string.upper(name))
+end
+Strings.SETTINGS = "SETTINGS"
 Strings.ADVENT_CATCH_UP = "ADVENT CATCH-UP"
 Strings.DAILY_VAULT = "DAILY VAULT"
 function Strings.dailyVaultOn(when: string): string

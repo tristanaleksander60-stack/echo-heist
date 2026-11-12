@@ -52,12 +52,30 @@ HudLayout.RAIL_SLOTS = table.freeze({ toast = 44, caption = 24, spectate = 26, p
 HudLayout.RAIL = box(0.5, 1, 0.5, 0, 1, -96, 336, 98)
 HudLayout.RAIL_DECK = box(0.5, 1, 0.5, 0, 1, -(8 + 212 + 8), 336, 98)
 
+-- Centred sheets (they cover the run HUD, so each is a scene of its own): the job sheet (results),
+-- the garage with its job board, the MENU sheet and the settings panel (PLAN_STEAM_PLUS §4.3 U5-U7).
+-- The results, MENU and settings sheets turn Roblox's touch controls off while they are up
+-- (Hud/Common.blockTouch), so the jump button is no reserved box for them (SHEETS).
+HudLayout.RESULTS = box(0.5, 0.5, 0.5, 0, 0.5, 0, 480, 326)
+HudLayout.GARAGE = box(0.5, 0.5, 0.5, 0, 0.5, 0, 700, 326)
+HudLayout.MENU_SHEET = box(0.5, 0.5, 0.5, 0, 0.5, 0, 420, 200 + TAP)
+HudLayout.SETTINGS = box(0.5, 0.5, 0.5, 0, 0.5, 0, 700, 12 + TAP + 3 * TAP + 2 * 6 + 12)
+-- The garage keeps touch controls (you walk in the garage): its SETTINGS button sits at the top of the
+-- right column (garage-local (486, 44)), clear of the jump button on every phone.
+HudLayout.GARAGE_SETTINGS = box(0, 0, 0.5, -350 + 486, 0.5, -163 + 44, 200, TAP)
+HudLayout.SHEETS = table.freeze({ results = true, garage = true, menu = true, settings = true })
+
 -- What shows together (tests/hud_layout.luau checks each scene for overlaps).
 HudLayout.SCENES = table.freeze({
 	run = { "LOOT", "TOP", "STRIP", "MENU", "FAST_FORWARD", "OBJECTIVE", "HIDDEN", "END_RUN", "INTERACT", "RAIL" },
 	runAlarm = { "LOOT", "TOP", "STRIP", "MENU", "FAST_FORWARD", "ALARM", "HIDDEN", "END_RUN", "INTERACT", "RAIL" },
 	betweenDeck = { "LOOT", "MENU", "DECK", "RAIL_DECK" },
 	betweenLocked = { "LOOT", "TOP", "STRIP", "MENU", "OBJECTIVE", "READY_WAIT", "RAIL" },
+	results = { "RESULTS" },
+	garage = { "GARAGE" },
+	menu = { "MENU_SHEET" },
+	settings = { "SETTINGS" },
+	garageButtons = { "GARAGE_SETTINGS" },
 } :: { [string]: { string } })
 
 -- The HUD's device scale for a safe area of w x h px (one UIScale on the HUD root).

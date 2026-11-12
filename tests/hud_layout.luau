@@ -6,6 +6,8 @@
 -- the screen's short side is <= 500 px, else 120 px at (W-170, H-210), below the top bar).
 -- Viewports are screen px with their safe-area insets (the Roblox top bar is 58 px);
 -- the HUD canvas is the safe area divided by HudLayout.scale (design px at 720 x 330).
+-- Centred sheets (results, garage, MENU, settings: HudLayout.SHEETS) must stay on the canvas; the
+-- garage's own buttons that sit near the jump button are boxes of their own (GARAGE_SETTINGS).
 -- Run from the repo root: lune run tests/hud_layout.luau
 
 local process = require("@lune/process")
@@ -125,7 +127,8 @@ for _, vp in VIEWPORTS do
 				)
 			end
 		end
-		if vp.touch then
+		-- Sheets that switch touch controls off while up have no jump button to clear.
+		if vp.touch and not HudLayout.SHEETS[scene] then
 			table.insert(rects, jumpRect(vp, s))
 		end
 		for i = 1, #rects do
