@@ -184,5 +184,315 @@ if inTestUniverse then
 	check(okDs, "DataStore round trip" .. (if okDs then "" else ": " .. tostring(dsErr)))
 end
 
+-- 7. Sim path (Config.GAME_MODE = "sim", src/server/Heist). Main.start() above runs the
+-- v0.1 path, so the sim path boots through its own entry with no lobby and no player
+-- wiring, then drives one L1 heist with a fake crew member on synthetic server times:
+-- run 1 auto-ends on the plate (FTUE), run 2's clone holds the door while the fake
+-- grabs the cash and banks it, and the heist completes. No real player is involved.
+do
+	local Players = game:GetService("Players")
+	local heistServer = server:WaitForChild("Heist")
+	local HeistService = require(heistServer:WaitForChild("HeistService"))
+	local HeistInstance = require(heistServer:WaitForChild("HeistInstance"))
+	local Avatars = require(heistServer:WaitForChild("Avatars"))
+	local Sim = sharedFolder:WaitForChild("Sim")
+	local HeistSim = require(Sim:WaitForChild("HeistSim"))
+	local EventLog = require(Sim:WaitForChild("EventLog"))
+	local Codec = require(sharedFolder:WaitForChild("Rec"):WaitForChild("Codec"))
+	local EV = EventLog.EV
+	local clientHeist = game:GetService("StarterPlayer")
+		:WaitForChild("StarterPlayerScripts")
+		:WaitForChild("Client")
+		:WaitForChild("Heist")
+
+	local okHs, hsErr = pcall(HeistService.start, { lobby = false, players = false })
+	check(okHs, "sim: HeistService starts" .. (if okHs then "" else ": " .. tostring(hsErr)))
+	local lf = ReplicatedStorage:FindFirstChild("LihFolkRemotes")
+	local missing = {}
+	for _, name in { "Heist.EndRun", "Heist.Interact", "Heist.Deck", "Heist.Ready", "Heist.Sync", "Heist.Msg" } do
+		if not (lf and lf:FindFirstChild(name)) then
+			table.insert(missing, name)
+		end
+	end
+	check(
+		#missing == 0,
+		"sim: Heist remotes created"
+			.. (if #missing > 0 then " (missing " .. table.concat(missing, ", ") .. ")" else "")
+	)
+
+	local FAKE = -101
+	local inst = HeistService.createInstance(1, {
+		{ userId = FAKE, name = "Fake", fake = { x = 0, y = 3, z = 14, yaw = 0 } },
+	}, FAKE, false)
+	check(inst ~= nil, "sim: L1 instance created")
+	if inst then
+		local built = inst.built
+		local origin = inst.origin
+		check(
+			workspace:FindFirstChild("Heists") ~= nil and inst.folder.Parent == workspace.Heists,
+			"sim: instance folder in workspace.Heists"
+		)
+		check(
+			#built.plates == 1 and #built.doors == 1 and #built.loot == 1 and #built.solids >= 7,
+			string.format(
+				"sim: L1 greybox from LevelSpec (%d solids, %d plate, %d door, %d loot)",
+				#built.solids,
+				#built.plates,
+				#built.doors,
+				#built.loot
+			)
+		)
+		local platePos = built.plates[1].Position - origin
+		check(
+			math.abs(platePos.X - 10) < 0.01 and math.abs(platePos.Z + 8) < 0.01 and origin.X >= 3000,
+			"sim: plate A at its level-space spot, instance offset 3000+ studs"
+		)
+		check(built.doors[1].CanCollide == true, "sim: door leaf built shut")
+
+		-- Synthetic server time; a waypoint walker at 14 studs/s for the fake member.
+		local simNow = 50000
+		local fakeIn = inst.byId[FAKE].fake
+		local function step(dt: number)
+			simNow += dt
+			HeistInstance.update(inst, simNow)
+		end
+		local function waitFor(seconds: number)
+			for _ = 1, math.ceil(seconds / 0.05) do
+				step(0.05)
+			end
+		end
+		local function walkTo(x: number, z: number)
+			local steps = 0
+			while steps < 400 do
+				steps += 1
+				local dx, dz = x - fakeIn.x, z - fakeIn.z
+				local d = math.sqrt(dx * dx + dz * dz)
+				if d < 0.05 then
+					break
+				end
+				local s = math.min(d, 14 * 0.05)
+				HeistInstance.setFakeInput(
+					inst,
+					FAKE,
+					fakeIn.x + dx / d * s,
+					3,
+					fakeIn.z + dz / d * s,
+					math.atan2(-dx, -dz)
+				)
+				step(0.05)
+			end
+		end
+
+		-- Run 1 (FTUE): stand on the plate; the run auto-ends after 2 s there.
+		step(0.05)
+		check(inst.sim.phase == "Run" and inst.sim.runIndex == 1, "sim: run 1 started")
+		waitFor(1.1) -- intro transition
+		walkTo(0, 4)
+		walkTo(10, -8)
+		check(inst.folder:GetAttribute("P1Held") == true, "sim: plate A held (attribute)")
+		check(inst.folder:GetAttribute("D1Open") == true, "sim: plate A opens the back-room door (attribute)")
+		local waited = 0
+		while inst.sim.phase == "Run" and waited < 3 do
+			step(0.05)
+			waited += 0.05
+		end
+		local deck = HeistSim.deckOf(inst.sim, FAKE)
+		check(
+			inst.sim.phase == "Between" and deck ~= nil and #deck.slots == 1,
+			string.format("sim: L1 run 1 auto-ended on the plate after %.2f s; one clone in the deck", waited)
+		)
+		local key = deck and inst.recKeys[deck.slots[1].rec]
+		local buf = key and inst.recBufs[key]
+		local decoded = buf and Codec.decode(buf)
+		check(decoded ~= nil and decoded.n > 20, "sim: the new recording encodes and decodes (Codec buffer)")
+
+		-- Run 2: the clone walks to the plate and holds the door; grab the cash, bank it.
+		waitFor(0.5) -- L1 starts the next run by itself
+		check(inst.sim.phase == "Run" and inst.sim.runIndex == 2, "sim: run 2 started by itself (L1)")
+		waitFor(1.1) -- quick rewind
+		walkTo(0, 4)
+		waitFor(1.0)
+		check(
+			inst.sim.actors[1] ~= nil
+				and inst.sim.actors[1].kind == "clone"
+				and inst.folder:GetAttribute("D1Open") == true,
+			"sim: run 2 clone holds plate A, door open"
+		)
+		-- Client views on the real engine (they normally run on clients): the clone rig
+		-- posed from its decoded recording, the door drawn from the state attributes.
+		local okView, clonePos, doorCollides = pcall(function()
+			local EchoView = require(clientHeist:WaitForChild("EchoView"))
+			local WorldView = require(clientHeist:WaitForChild("WorldView"))
+			local msg = table.clone(inst.runMsg)
+			msg.actorById = {}
+			for _, a in msg.actors do
+				msg.actorById[a.id] = a
+			end
+			local recs = {}
+			for _, k in msg.keys do
+				recs[k] = Codec.decode(inst.recBufs[k])
+			end
+			local vstate = {
+				origin = inst.origin,
+				folder = inst.folder,
+				level = inst.level,
+				levelIndex = 1,
+				crew = { { userId = FAKE, seat = 1 } },
+				actorFx = {},
+				run = msg,
+			}
+			local echo = EchoView.new(vstate)
+			echo.setRun(msg, recs, os.clock() - 1)
+			echo.update(inst.sim.t, os.clock(), 1 / 60, nil)
+			local p = echo.positionOf(1)
+			local view = WorldView.new(vstate, echo.positionOf)
+			view.bind(inst.built.model)
+			for _ = 1, 30 do
+				view.update(inst.sim.t, os.clock(), 1 / 30)
+			end
+			echo.clear()
+			local clones = workspace:FindFirstChild("HeistClones")
+			if clones then
+				clones:Destroy()
+			end
+			return p, inst.built.doors[1].CanCollide
+		end)
+		local want = origin + Vector3.new(10, 3, -8)
+		check(
+			okView and typeof(clonePos) == "Vector3" and (clonePos - want).Magnitude < 2,
+			"sim: EchoView poses the clone on plate A ("
+				.. (if okView then tostring(clonePos) else tostring(clonePos))
+				.. ")"
+		)
+		check(okView and doorCollides == false, "sim: WorldView opens the door locally (no collision)")
+		walkTo(0, -16)
+		walkTo(0, -26)
+		HeistInstance.interact(inst, FAKE, Codec.EVENT.Grab, 1)
+		step(0.05)
+		step(0.05)
+		check(inst.folder:GetAttribute("K1State") == "Carried", "sim: cash grabbed through Interact (attribute)")
+		walkTo(0, -16)
+		walkTo(0, 4)
+		walkTo(0, 19)
+		waitFor(0.2)
+		local result = HeistSim.result(inst.sim)
+		check(
+			inst.sim.phase == "Over" and result.complete == true and result.banked == 100,
+			string.format("sim: L1 complete, $%d banked in %d runs", result.banked, result.runs)
+		)
+		check(
+			inst.folder:GetAttribute("Banked") == 100 and inst.overMsg ~= nil and inst.overMsg.complete == true,
+			"sim: results ready (Banked attribute, results card payload)"
+		)
+		check(
+			result.data.tainted == false and EventLog.count(inst.sim.log, EV.Bank) == 1,
+			"sim: untainted run, one Bank event"
+		)
+		if failures > 0 then
+			for _, line in EventLog.lines(inst.sim.log) do
+				table.insert(results, "      log " .. line)
+			end
+		end
+		local sync = HeistInstance.syncFor(inst, FAKE)
+		check(sync.where == "heist" and sync.levelIndex == 1 and sync.over ~= nil, "sim: late-join sync payload")
+		local folder = inst.folder
+		HeistService.destroyInstance(inst)
+		check(folder.Parent == nil, "sim: instance destroyed")
+	end
+
+	-- L4 builds too (guard level) and its sim steps with a fake member standing still.
+	local inst4 = HeistService.createInstance(
+		4,
+		{ { userId = -104, name = "Fake4", fake = { x = 0, y = 3, z = 14, yaw = 0 } } },
+		-104,
+		false
+	)
+	if inst4 then
+		local now4 = 70000
+		for _ = 1, 60 do
+			now4 += 0.05
+			HeistInstance.update(inst4, now4)
+		end
+		check(
+			inst4.sim.phase == "Run" and inst4.sim.tick > 0 and inst4.folder:GetAttribute("G1Mode") ~= nil,
+			"sim: L4 builds, Gus patrols (guard attributes)"
+		)
+		local okGus, gusDist = pcall(function()
+			local GusView = require(clientHeist:WaitForChild("GusView"))
+			local gstate = {
+				origin = inst4.origin,
+				folder = inst4.folder,
+				level = inst4.level,
+				crew = { { userId = -104, seat = 1 } },
+			}
+			local gus = GusView.new(gstate)
+			gus.setLevel(inst4.level)
+			for _ = 1, 3 do
+				gus.update(inst4.sim.t, os.clock(), 1 / 30)
+			end
+			local gx, gz = gus.poseOf(1)
+			local g = inst4.sim.guards[1]
+			gus.clear()
+			local f = workspace:FindFirstChild("HeistGus")
+			if f then
+				f:Destroy()
+			end
+			return math.sqrt((gx - g.x) ^ 2 + (gz - g.z) ^ 2)
+		end)
+		check(
+			okGus and type(gusDist) == "number" and gusDist < 0.5,
+			"sim: GusView draws Gus where the sim has him, cone built (" .. tostring(gusDist) .. ")"
+		)
+		HeistService.destroyInstance(inst4)
+	else
+		check(false, "sim: L4 instance created")
+	end
+
+	-- Clone template stripping on a real engine rig (§6.5 #2).
+	local okRig, rig = pcall(function()
+		return Players:CreateHumanoidModelFromDescriptionAsync(
+			Instance.new("HumanoidDescription"),
+			Enum.HumanoidRigType.R15
+		)
+	end)
+	if okRig and rig then
+		Avatars.strip(rig)
+		local bad = 0
+		for _, d in rig:GetDescendants() do
+			local leftover = d:IsA("Decal") or d:IsA("SurfaceAppearance") or d:IsA("Shirt") or d:IsA("Pants")
+			if leftover or (d:IsA("BasePart") and (d.CanCollide or d.CastShadow)) then
+				bad += 1
+			end
+		end
+		local hum = rig:FindFirstChildOfClass("Humanoid")
+		local rootPart = rig:FindFirstChild("HumanoidRootPart")
+		check(
+			bad == 0
+				and hum ~= nil
+				and hum.EvaluateStateMachine == false
+				and hum:FindFirstChildOfClass("Animator") ~= nil
+				and rootPart ~= nil
+				and (rootPart :: BasePart).Anchored,
+			"sim: clone template stripped (" .. bad .. " leftovers)"
+		)
+		rig:Destroy()
+	else
+		check(false, "sim: CreateHumanoidModelFromDescriptionAsync: " .. tostring(rig))
+	end
+
+	-- The client view modules load in the engine (they run only on clients in play).
+	local loadErrors = {}
+	for _, name in { "Ui", "Rigs", "EchoView", "GusView", "WorldView", "RewindDirector", "Hud", "HeistClient" } do
+		local ok, err = pcall(require, clientHeist:WaitForChild(name))
+		if not ok then
+			table.insert(loadErrors, name .. ": " .. tostring(err))
+		end
+	end
+	check(
+		#loadErrors == 0,
+		"sim: client modules load" .. (if #loadErrors > 0 then " (" .. table.concat(loadErrors, "; ") .. ")" else "")
+	)
+end
+
 table.insert(results, string.format("%d failure(s)", failures))
 return table.concat(results, "\n")

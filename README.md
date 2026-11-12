@@ -28,6 +28,25 @@ In Studio, open an empty Baseplate, then Plugins → Rojo → **Connect**. Code 
 ### 3. Test multiplayer
 In Studio, go to the **Test** tab → Clients and Servers → choose **2 players** → **Start**.
 
+## Try the new sim path (`GAME_MODE = "sim"`)
+
+The default game is still the v0.1 prototype (for the fun gate). The new path runs the
+deterministic `HeistSim` on the server, one heist instance per party, with clones, Gus,
+doors and lasers drawn on each client (MASTERPLAN §8.2).
+
+1. In `src/shared/Config.luau` change `Config.GAME_MODE = "v01"` to `Config.GAME_MODE = "sim"`.
+2. `rojo build -o EchoHeist.rbxlx` (or `rojo serve` + Connect), open it in Studio, press **Play**.
+3. You spawn in the garage. A new account (and Studio without data) goes straight into
+   **L1 Back Room**; after the results card you land on the tape shelf (level select, L1-L4).
+4. Put it back to `"v01"` before publishing for the fun gate.
+
+Controls: move/jump as usual, **E** / tap GRAB = grab loot, **R** / the right-edge
+button = END RUN (locked for the first 1.5 s; between runs R starts the next run),
+**Q** = Clone Deck (from L2), hold **F** / the ⏩ pill = fast-forward when everyone stands
+still. Gamepad: X, Y, LB, B. Co-op: 2-player Studio test; the second player taps
+**JOIN <name>** in the garage (or arrives in the same Roblox party) and seats at the
+next heist. Code: `src/server/Heist/`, `src/client/Heist/`, `src/shared/Heist/`.
+
 ## Clone phone bench (spike S1)
 
 A separate small place that measures how many avatar clones a real phone can draw, and which clone look (MASTERPLAN §6.5) to ship. It uses the same "Heist Night" Lighting as the game. Code: `src/bench/` (tuning in `src/bench/shared/BenchConfig.luau`), project: `bench.project.json`.
@@ -163,6 +182,9 @@ Banked loot survives loops. Each player can have up to 4 echoes; when you rewind
 | `src/spikes/capture/`, `src/spikes/stems/` | Spikes S3 (video capture) and S4 (stems), separate places in `spikes/*.project.json` |
 | `src/shared/Sim/` | Deterministic heist sim (HeistSim, LevelSpec, Guards, Mechanisms...; §8.2-8.5), not wired into v0.1 yet; holds the second Selene config for the pure layers (see its README) |
 | `src/shared/Levels/` | Level specs: L1-L4 Corner Shop teaching levels (`Catalog`) |
+| `src/server/Heist/` | Sim path server (`GAME_MODE = "sim"`): HeistService (garage, crews, remotes), HeistInstance (one sim per party, replication, results), LevelBuilder (greybox from LevelSpec), Lobby, Avatars (stripped clone templates) |
+| `src/client/Heist/` | Sim path client: HeistClient, EchoView (pooled clone rigs), GusView (guard + vision cone), WorldView (doors/lasers/plates/loot), RewindDirector, Hud (HUD v1, Clone Deck, results, garage) |
+| `src/shared/Heist/` | Protocol (remote names, messages, attributes) and Palette (STYLE_BIBLE colours, clone hue + glyph) |
 | `tests/sim/` | L2 headless sim specs (`lune run tests/run_sim.luau`), bots, PLACEHOLDER scripted solutions |
 | `selene.toml`, `stylua.toml` | L0 lint configs (see "Lint (L0)") |
 | `tools/` | Trend radars (Steam and Roblox) and Roblox search |

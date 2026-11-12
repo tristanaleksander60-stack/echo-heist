@@ -2,6 +2,11 @@
 
 local Config = {}
 
+-- Which game runs: "v01" = the v0.1 prototype (default, the Nov 16 fun gate),
+-- "sim" = the HeistSim path (src/server/Heist, src/client/Heist; Config.Heist below).
+-- Both entry scripts (src/server/init.server.luau, src/client/init.client.luau) read it.
+Config.GAME_MODE = "v01"
+
 -- Loop
 Config.LOOP_SECONDS = 60
 Config.RECORD_HZ = 15
@@ -131,6 +136,124 @@ Config.Sim = {
 	REACH_GRID = 1, -- studs per cell of the LevelSpec reachability flood fill
 	ACTOR_RADIUS = 1, -- studs: solids are grown by this for the reachability check
 	REACH_MAX_CELLS = 250000,
+
+	-- Swarm moment and Crew Line-up hooks (§3.2 rule 8, §4.2 "8 OF ME", §7.5 funnel)
+	SWARM_SEEN_CLONES = 6, -- own clones in a run that log a Swarm event (funnel SwarmSeen)
+	SWARM_OF_ME = 8, -- copies of you (clones + you) that earn the "8 OF ME" stamp
+	LINEUP_STAGGER = 0.06, -- seconds between figures of the victory pose, in record order
+	LINEUP_ROW = 8, -- figures per Line-up row
+	LINEUP_SPACING = 2.5, -- studs between figures and between rows
+}
+
+-- Level content rules shared by the authored levels (src/shared/Levels), MASTERPLAN
+-- §3.1, §4.2, §4.3, §5.3. Per-level numbers (par, cap, goal, geometry) live in each
+-- level's spec; these are the numbers every level of a kind shares.
+Config.Levels = {
+	-- Clone Party (L5, §4.2): 8 slots, Dawn at run 8, Haul tiers = Config.Data.Levels.CloneParty
+	PARTY_CAP = 8,
+	PARTY_DAWN_RUNS = 8,
+	PARTY_RESPAWN_SECONDS = 3, -- a banked shelf item is back on its shelf this long after
+	PARTY_REGISTER_RESPAWN = 600, -- the register (alarm) is robbed once per run (back next loop)
+
+	-- Big Scores (L6, §4.2): 8 slots granted, Alarm Run, Dawn at par + DAWN_RUNS_OVER_PAR
+	BIG_SCORE_CAP = 8,
+	BANK_RUN_SECONDS = 45,
+
+	-- Daily vaults (§5.3): one 30 s mini-vault per UTC day, fixed 5-clone loadout, Dawn at run 6
+	DAILY_RUN_SECONDS = 30,
+	DAILY_CAP = 5,
+	DAILY_DAWN_RUNS = 6,
+	DAILY_FIRST_DAY = { 2026, 12, 3 }, -- design 1 is the launch-day vault (advent order from here)
+
+	-- Daily date-seeded modifiers (§5.3 "vetted set"); each vault lists the ones CI proves
+	MOD_GUARD_FAST = 1.1, -- guard speed +10%
+	MOD_GUARD_SLOW = 0.9, -- guard speed -10%
+	MOD_LIGHTS_OFF_VISION = 0.75, -- lights off: guards see this much of their range
+}
+
+-- Sim game path (Config.GAME_MODE = "sim"): heist instances, replication, client view.
+-- MASTERPLAN §3.3, §6.5, §7.1-7.5, §8.2, §8.6. Sim rules themselves stay in Config.Sim.
+Config.Heist = {
+	-- Instances (§3.3): one per party, each a copy of the level at its own offset.
+	INSTANCE_SPACING = 3000, -- studs between instance origins along +X (lobby at the world origin)
+	INSTANCE_Y = 0, -- floor height of every instance
+	MAX_INSTANCES = 8, -- plan says 4 per 8-player server; 8 keeps solo always playable (owner decision)
+	LOBBY_ORIGIN = { 0, 0, 0 },
+
+	-- Run flow (§3.1, §7.1): { standard, quick, reduced motion } seconds; the server waits
+	-- the chosen length before the run clock starts (control returns at its end).
+	REWIND_TRANSITION = { 1.8, 1.0, 0.8 },
+	QUICK_REWIND_FROM_RUN = 4, -- quick rewinds automatically from the 4th rewind (run 5 starts)
+	FIRST_RUN_INTRO = 1.0, -- run 1: "RUN 1" stamp, teleport settles
+	TUTORIAL_BETWEEN_SECONDS = 0.4, -- L1 (deck locked): the next run starts by itself
+	BETWEEN_MAX_SECONDS = 25, -- between runs: the next run starts when all are ready, or after this
+	RESULTS_SECONDS = 45, -- results card; then the crew goes back to the garage
+	OFF_MAP_DROP = 25, -- studs below the floor: a fallen character is put back at its sim position
+
+	-- Replication (§8.2, §8.6): state lives in attributes on the instance folder; events
+	-- and recordings go over one reliable push. Guard pose attributes only while he is off
+	-- his patrol (clients run Guards.patrol themselves otherwise).
+	GUARD_POSE_HZ = 10,
+	METER_STEP = 0.1, -- detection meter attribute resolution (seconds)
+
+	-- FTUE (§7.5): a new account starts L1 straight away (no level select).
+	FTUE_AUTOSTART = true,
+	DATA_WAIT_SECONDS = 4, -- how long the garage waits for the profile before deciding
+
+	-- Remote rate limits (roblox-secure-remotes: 1.5-2x the fastest legitimate use)
+	RATE = {
+		EndRun = { burst = 3, perSecond = 2 },
+		Interact = { burst = 6, perSecond = 6 },
+		Deck = { burst = 4, perSecond = 3 },
+		Ready = { burst = 3, perSecond = 2 },
+		FastForward = { burst = 6, perSecond = 4 },
+		SelectLevel = { burst = 3, perSecond = 1 },
+		JoinFriend = { burst = 2, perSecond = 0.5 },
+		Leave = { burst = 2, perSecond = 1 },
+		Sync = { burst = 3, perSecond = 1 },
+	},
+
+	-- Data keys (Config.Data.Levels) of the sim levels, by LevelSpec id.
+	LEVEL_DATA_KEYS = {
+		cs1_back_room = "BackRoom",
+		cs2_two_doors = "TwoDoors",
+		cs3_lights_out = "LightsOut",
+		cs4_night_clerk = "NightClerk",
+		cs5_clone_party = "CloneParty",
+		bk1_big_score = "BigScoreBank",
+	},
+
+	-- Client view (§6.5, §7.3, §7.4)
+	CLONE_AGE_DIM = 0.12, -- each older run of yours is this much dimmer
+	OTHER_CLONE_BRIGHTNESS = 0.7, -- other players' clones on your screen
+	CLONE_BADGE_DISTANCE = 40, -- the glyph badge hides beyond this many studs
+	CLONE_SPAWN_STAGGER = 0.06, -- "tape print": clones form 60 ms apart in record order
+	CLONE_LABEL_SECONDS = 1.0, -- "◀ YOU, 10 SEC AGO" on the newest clone
+	CLONE_NEAR_FADE = 6, -- clones this close to the camera fade
+	MAX_CLONE_ACCESSORIES = 2,
+	WALK_ANIM_BASE_SPEED = 16, -- studs/s at which the walk clip plays at speed 1
+	EVENT_BLEND = 0.15, -- server-decided clone changes blend in over this long
+	DOOR_SLIDE_SECONDS = 0.35,
+	PLATE_SINK = 0.15,
+	CONE_RAYS = 12, -- Gus's vision cone fan
+	CONE_HZ = 10,
+	END_RUN_BUTTON = 72, -- px
+	INTERACT_BUTTON = 72, -- px (>= 64)
+	HINT_SECONDS = { 8, 16, 24 }, -- L1 stuck hints (§7.5)
+	TIMER_PULSE_SECONDS = 10,
+	TIMER_RED_SECONDS = 5,
+
+	-- Sound placeholders (§7.1, §7.2): empty ids are skipped; paste licensed ids here.
+	SOUNDS = {
+		Clack = "",
+		Stinger = "",
+		Clunk = "",
+		Arpeggio = "",
+		KaChing = "",
+		Busted = "",
+		Zap = "",
+		Heartbeat = "",
+	},
 }
 
 -- Data layer (src/server/Data, src/shared/Data), MASTERPLAN §5 and §8.7; docs/DATA.md.

@@ -1,5 +1,12 @@
 -- Echo Heist HUD: loop timer, loot progress, echo count, rewind button,
 -- objective hints and big centre messages (REWIND, CAUGHT, HEIST COMPLETE).
+-- Config.GAME_MODE = "sim" runs the HeistSim client (Heist/HeistClient) instead.
+
+local GameConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Config"))
+if GameConfig.GAME_MODE == "sim" then
+	require(script:WaitForChild("Heist"):WaitForChild("HeistClient")).start()
+	return
+end
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

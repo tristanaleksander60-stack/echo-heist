@@ -61,3 +61,10 @@ _Last updated: 2026-11-12_
 - `Loot.park` errors if a loot part is destroyed in an unhandled way.
 - Echo movement is set on the server every Heartbeat; replication can look choppy. Fix if needed by replaying on clients.
 - The walk animation id is the default R15 walk; verify it loads.
+
+## Sim game path behind a flag (2026-11-12)
+- `Config.GAME_MODE = "v01"` (default, fun gate) | `"sim"`. Both entry scripts pick the path; v0.1 code untouched. README "Try the new sim path".
+- Server `src/server/Heist/`: HeistService (garage lobby, crews via PartyId + Join friend, up to `Config.Heist.MAX_INSTANCES` instances 3,000 studs apart, LihFolk Net remotes `Heist.*`, FTUE autostart of L1, `FtueStep` signal, DataService medal resolver + `awardHeistResult` with friends/heistId), HeistInstance (HeistSim per party, input sampling + latency, 20 Hz via `HeistSim.update`, attributes for state, one reliable `Heist.Msg` push for Run/Ev/Clock/RunEnd/Deck/Over, recordings once per client as Codec buffers), LevelBuilder (greybox from LevelSpec, STYLE_BIBLE palette), Lobby, Avatars (stripped templates).
+- Client `src/client/Heist/`: EchoView (pooled rigs, hue + glyph, age ramp, tape print, outcomes), GusView (patrol(t) + pose attributes, 12-ray cone, ?/!/huh?), WorldView (doors/lasers/plates/loot locally), RewindDirector (1.8/1.0/0.8 s), Hud (HUD v1, Clone Deck, results, garage), mobile-first.
+- Engine smoke section 7 (2026-11-12, place v13): 57/57 pass (31 existing + 26 sim: L1 built at an offset, fake member runs the full FTUE heist to completion, views posed in-engine, L4 Gus, template strip).
+- Not yet human-tested in Studio. Gaps: StreamingEnabled off; placeholder sounds; no Crew Line-up/Heist Reel, ping wheel, Quick Crew, planning camera, Comfort settings UI; Input Action System not used (ContextActionService).

@@ -206,6 +206,32 @@ for _, name in { "Main", "LevelBuilder", "Actors", "Loot", "Mechanisms", "Guard"
 	expect(m ~= nil and m.ClassName == "ModuleScript", "Server." .. name .. " is a ModuleScript")
 end
 
+-- Sim game path (Config.GAME_MODE = "sim"): server, client and shared Heist modules
+local heistServer = server and server:FindFirstChild("Heist")
+expect(heistServer ~= nil and heistServer.ClassName == "Folder", "Server.Heist is a Folder")
+for _, name in { "HeistService", "HeistInstance", "LevelBuilder", "Lobby", "Avatars" } do
+	local m = heistServer and heistServer:FindFirstChild(name)
+	expect(m ~= nil and m.ClassName == "ModuleScript", "Server.Heist." .. name .. " is a ModuleScript")
+end
+local heistShared = shared and shared:FindFirstChild("Heist")
+for _, name in { "Protocol", "Palette" } do
+	local m = heistShared and heistShared:FindFirstChild(name)
+	expect(m ~= nil and m.ClassName == "ModuleScript", "Shared.Heist." .. name .. " is a ModuleScript")
+end
+do
+	local clientScript = sps and sps:FindFirstChild("Client")
+	local heistClient = clientScript and clientScript:FindFirstChild("Heist")
+	for _, name in { "HeistClient", "EchoView", "GusView", "WorldView", "RewindDirector", "Hud", "Rigs", "Ui" } do
+		local m = heistClient and heistClient:FindFirstChild(name)
+		expect(m ~= nil and m.ClassName == "ModuleScript", "Client.Heist." .. name .. " is a ModuleScript")
+	end
+end
+-- The default game is the v0.1 prototype until the owner switches (fun gate, Nov 16).
+expect(
+	config ~= nil and string.find(config.Source, 'Config.GAME_MODE = "v01"', 1, true) ~= nil,
+	'Config.GAME_MODE defaults to "v01"'
+)
+
 -- Data layer (docs/DATA.md): lihfolk-systems modules where the library expects them
 local lihfolk = rs:FindFirstChild("LihFolk")
 expect(lihfolk ~= nil and lihfolk.ClassName == "Folder", "ReplicatedStorage.LihFolk is a Folder")
