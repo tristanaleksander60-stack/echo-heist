@@ -73,6 +73,7 @@ export type Heist = {
 		shake: boolean, -- camera kicks (the rewind FOV dip) on
 		captions: boolean, -- sound captions on the message rail
 		guardPath: boolean, -- Gus's boot prints (his next steps) on the floor
+		haptics: boolean, -- phone vibration on plate, grab and bank (WorldView, Config.WorldFx)
 		-- The job sheet explains each star the first time it is earned ("HAUL: $1,000 stolen"), then
 		-- just stamps it (WALKTHROUGH S7). Stored here so the reasons stop on every device.
 		seenStarHaul: boolean,
@@ -100,6 +101,7 @@ function Schema.defaultSettings(): any
 		shake = true,
 		captions = true,
 		guardPath = true,
+		haptics = true,
 		seenStarHaul = false,
 		seenStarCrew = false,
 		seenStarClean = false,

@@ -1126,7 +1126,7 @@ Config.WorldFx = {
 	BANK_POP_RISE = 3.5, -- studs
 	BANK_POP_SIZE = { 170, 56 }, -- px
 	-- Haptics on the three key verbs (plate, grab, bank): phones only, off under reduced motion and when the
-	-- player turned them off (player attribute Setting_Haptics == false, once the settings track adds the key).
+	-- player turned them off (player attribute Setting_Haptics == false; the Settings panel's Vibration toggle).
 	HAPTICS = true,
 	HAPTIC_TYPES = { plate = "GameplayCollision", grab = "UIClick", bank = "UINotification" },
 	HAPTIC_MIN_GAP = 0.12, -- s between two pulses (<= 8 a second, vault "Haptics")
@@ -1410,6 +1410,7 @@ Config.Ui = {
 		{ key = "colourBlindGlyphs", kind = "toggle" },
 		{ key = "classicCamera", kind = "camera" },
 		{ key = "guardPath", kind = "toggle" },
+		{ key = "haptics", kind = "toggle" },
 	},
 	SLIDER_STEP = 0.05,
 	SFX_BUSES = { "SFX", "UI", "Ambience" }, -- the SFX slider drives these AudioDirector buses (Warnings keep their floor)

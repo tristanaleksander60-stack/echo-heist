@@ -112,6 +112,7 @@ Strings.SETTING_LABEL = table.freeze({
 	colourBlindGlyphs = "Colour-blind shapes",
 	classicCamera = "Camera",
 	guardPath = "Show guard path",
+	haptics = "Vibration",
 } :: { [string]: string })
 Strings.SETTING_CAMERA = table.freeze({ diorama = "DIORAMA", classic = "CLASSIC" } :: { [string]: string })
 function Strings.percent(v: number): string
