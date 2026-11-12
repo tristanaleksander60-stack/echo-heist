@@ -161,6 +161,11 @@ function Hud.new(state: any, actions: Actions): any
 
 	-- Set by HeistClient (RewindDirector): (text, colour, hold seconds?).
 	hud.bigStamp = function(_text: string, _color: Color3, _hold: number?) end
+	-- Set by HeistClient (MomentDirector.catchView): when you are caught, the BUSTED stamp and the advice
+	-- line wait for the busted view's camera ease (PLAN C3). Default: at once.
+	hud.catchView = function(fn: () -> ())
+		fn()
+	end
 
 	function hud.hideAll()
 		runHud.Visible = false

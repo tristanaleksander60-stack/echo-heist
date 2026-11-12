@@ -20,8 +20,10 @@
 -- FOV kick), reduced motion (the device setting OR the player's), colour-blind shapes and the guard
 -- path (state flags the views read).
 -- The bank moment: a live Bank event calls hud.onBank(amount, vanPos) (the HUD half: "+$100!" flies
--- to the loot meter) and world.onBank(amount, vanPos) when WorldView has it (the world half, owned by
--- the world track: the van glows and bounces). Until WorldView defines onBank that call is skipped.
+-- to the loot meter); WorldView plays the world half itself (coins, the van bounce).
+-- Signature moments (Heist/MomentDirector): every applied event and run goes to it (8 OF ME, the
+-- busted view, heist complete, the blooper log), the views draw with its filtered view time
+-- (hit-stop, the blooper replay), and at Over the blooper cut plays before the Line-up.
 -- The client never decides an outcome: it only sends intents (Heist.* remotes).
 
 local GuiService = game:GetService("GuiService")
@@ -51,6 +53,7 @@ local GusView = require(Heist:WaitForChild("GusView"))
 local WorldView = require(Heist:WaitForChild("WorldView"))
 local RewindDirector = require(Heist:WaitForChild("RewindDirector"))
 local LineupDirector = require(Heist:WaitForChild("LineupDirector"))
+local MomentDirector = require(Heist:WaitForChild("MomentDirector"))
 local LightDirector = require(Heist:WaitForChild("LightDirector"))
 local JobBoard = require(Heist:WaitForChild("JobBoard"))
 local Hud = require(Heist:WaitForChild("Hud"))
@@ -207,13 +210,28 @@ function HeistClient.start()
 	FirstTime.init() -- first-time beats, seeded from the profile (Heist/FirstTime)
 	local hud = Hud.new(state, actions)
 	-- Camera shake off: the rewind's FOV kick stays at 0 (Settings "shake").
-	local director = RewindDirector.new(hud.fxGui, function(deg: number)
+	local function fovKick(deg: number)
 		camera.setFovKick(if Settings.get("shake") == false then 0 else deg)
+	end
+	-- The rewind's path trails: the coming run's clones over the last run (EchoView.paths).
+	local director = RewindDirector.new(hud.fxGui, fovKick, function()
+		return state.origin, if state.level then state.level.floorY or 0 else 0, state.lastRunT, echo.paths()
 	end)
 	hud.bigStamp = function(text: string, color: Color3, hold: number?)
 		director.stamp(text, color, hold or 1.2, not state.reduced)
 	end
 	local lineup = LineupDirector.new(state, hud.fxGui, echo, world, hud)
+	-- 8 OF ME, the busted view, heist complete, the blooper cut, hit-stop (Heist/MomentDirector).
+	local moments = MomentDirector.new(state, {
+		gui = hud.fxGui,
+		hud = hud,
+		echo = echo,
+		gus = gus,
+		world = world,
+		camera = camera,
+		fovKick = fovKick,
+	})
+	hud.catchView = moments.catchView
 
 	-- Settings (U7): volumes now and on every change; reduced motion; the flags the views read.
 	local function applySetting(key: string, value: any)
@@ -251,6 +269,8 @@ function HeistClient.start()
 	local shadowsWere = Lighting.GlobalShadows
 	Telemetry.onTier(function(tier: number)
 		director.setBlurAllowed(tier < 2)
+		director.setTier(tier)
+		moments.setTier(tier)
 		echo.setTier(tier)
 		lineup.setTier(tier)
 		lights.setTier(tier)
@@ -330,13 +350,9 @@ function HeistClient.start()
 			pos = van:GetPivot().Position
 		end
 		hud.onBank(amount, pos)
-		local onBank = (world :: any).onBank
-		if type(onBank) == "function" then
-			local ok, err = pcall(onBank, amount, pos)
-			if not ok then
-				warn("[HeistClient] world.onBank: " .. tostring(err))
-			end
-		end
+		-- The world half (coins, van bounce, "+$100!" pop) is WorldView's own: it fires from the loot
+		-- attributes. world.onBank registers a listener (fn(amount, pos)); it is not called here, since
+		-- calling it with an amount added a number as a listener and broke every later bank.
 	end
 
 	local function applyEvent(e: Protocol.Entry, live: boolean)
@@ -379,6 +395,7 @@ function HeistClient.start()
 		elseif e.kind == EV.Bank and live then
 			bankMoment(e)
 		end
+		moments.onEvent(e, live)
 		hud.onEvent(e, live)
 	end
 
@@ -430,6 +447,7 @@ function HeistClient.start()
 		local transition = if live then (msg.transition or 0) else 0
 		local reelEnd = state.lastRunT
 		echo.setRun(msg, state.recs, os.clock() + transition * 0.75)
+		moments.onRun(msg, live) -- the rewind's 66 ms freeze; a fresh blooper log
 		hud.onRun(msg)
 		Telemetry.ready() -- first control (JoinToControl)
 		Sound.music("Heist", { set = musicSet() })
@@ -511,6 +529,7 @@ function HeistClient.start()
 	end
 
 	local function toGarage(p: any)
+		moments.stop()
 		lineup.stop()
 		state.where = "garage"
 		state.garage = p
@@ -566,6 +585,7 @@ function HeistClient.start()
 			if p.where ~= "heist" then
 				return
 			end
+			moments.stop()
 			lineup.stop()
 			hud.hideGarage()
 			hud.hidePreparing()
@@ -656,9 +676,16 @@ function HeistClient.start()
 				return over0 - endedAt + H.LINEUP_START_DELAY
 			end
 			if type(over) == "table" then
-				lineup.play(over, function()
-					hud.onOver(p)
-				end, ageOf)
+				-- The blooper cut first when a clone failed in the final run (MASTERPLAN §9.2 #2).
+				moments.blooper(over, function()
+					if state.phase ~= "Over" or state.where ~= "heist" then
+						return -- left for the garage (or a new heist) meanwhile
+					end
+					over0 = os.clock() -- the label's age at the walk-off stays true after the blooper
+					lineup.play(over, function()
+						hud.onOver(p)
+					end, ageOf)
+				end)
 			else
 				hud.onOver(p)
 			end
@@ -725,6 +752,7 @@ function HeistClient.start()
 		end
 		local now = os.clock()
 		local tView = viewTime()
+		tView, dt = moments.filter(tView, now, dt) -- hit-stop holds it; the blooper replays its window
 		-- MicroProfiler labels (MASTERPLAN §8.6 budgets): constant names, one per view.
 		debug.profilebegin("EH.EchoSample")
 		echo.update(tView, now, dt, state.reelT)

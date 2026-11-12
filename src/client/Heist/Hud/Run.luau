@@ -244,8 +244,11 @@ function Run.build(ctx: any)
 				msg.setReason(Strings.CAUGHT_BY_GUS, Strings.CAPTION_CAUGHT)
 				if live then
 					hud.flashRed()
-					hud.bigStamp(Strings.STAMP_BUSTED, Palette.alarm)
-					hints.fail(Help.CAUSE.Caught)
+					-- the stamp, then the cause's advice line, after the busted view's ease to Gus
+					hud.catchView(function()
+						hud.bigStamp(Strings.STAMP_BUSTED, Palette.alarm)
+						hints.fail(Help.CAUSE.Caught)
+					end)
 				end
 			end
 		elseif e.kind == EV.Zap then
