@@ -1282,7 +1282,7 @@ function KitPlan.plan(level: any, specs: { [string]: PartSpec }, opts: Options?)
 					then KitPlan.box(t[1], b.minY, b.minZ, t[2], b.maxY, b.maxZ)
 					else KitPlan.box(b.minX, b.minY, t[1], b.maxX, b.maxY, t[2])
 				local pivot, scale = KitPlan.fit(bmin, bmax, box, dir.yaw)
-				add(item("counter", "visual", { name }, pivot, scale, "solid", i))
+				add(item("counter", "visual", groups[name] or { name }, pivot, scale, "solid", i))
 			end
 		elseif h >= SHELF_MIN_H - EPS and short <= 3 + EPS then
 			local name = if party then "Shelf_Gondola_8x2" else "Shelf_8x2"

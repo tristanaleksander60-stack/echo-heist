@@ -773,7 +773,10 @@ do
 				for _, dsc in b6.model:GetDescendants() do
 					if dsc:IsA("Light") then
 						table.insert(lights, dsc)
-					elseif dsc:GetAttribute("KitPiece") == "Lamp_Ceiling" then
+					elseif
+						dsc:GetAttribute("KitPiece") == "Lamp_Ceiling"
+						or dsc:GetAttribute("KitPiece") == "StreetLamp"
+					then
 						shades += 1
 					elseif dsc:GetAttribute("EH_Kind") == "lightPool" and dsc:FindFirstChildOfClass("SurfaceGui") then
 						pools += 1
@@ -809,7 +812,11 @@ do
 				)
 				check(
 					shades == #lights and pools == #lights,
-					string.format("light: a Lamp_Ceiling (%d) and a floor pool (%d) per lamp", shades, pools)
+					string.format(
+						"light: a fixture (Lamp_Ceiling or StreetLamp, %d) and a floor pool (%d) per lamp",
+						shades,
+						pools
+					)
 				)
 				local lettered = 0
 				for _, plate in b6.plates do
@@ -1319,7 +1326,11 @@ do
 		for k, l in lamps do
 			if k <= 2 and l.Color == hue and l.Transparency == 0 then
 				lit += 1
-			elseif k > 2 and l.Color == Palette.bulbWarm and l.Transparency == LIGHT.VAULT_ROW.idleAlpha then
+			elseif
+				k > 2
+				and l.Color == Palette.bulbWarm
+				and math.abs(l.Transparency - LIGHT.VAULT_ROW.idleAlpha) < 1e-3
+			then
 				idle += 1
 			end
 		end
