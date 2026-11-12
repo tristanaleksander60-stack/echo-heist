@@ -2,7 +2,7 @@
 
 _Performance track, 2026-11-12. PLAN_STEAM_PLUS §4.7 / §12 / §8.1 R1, MASTERPLAN §3.3 / §6.8 / §8.6, roblox_quality §1.4 / §2.2 / §6.4._
 
-**In one paragraph:** with 8 heist instances live, every phone used to receive about 5,000 instances and about 450k triangles of level art, while it only plays in one level. **StreamingEnabled is now ON.** A phone in a Big Score now holds about 1,550 replicated instances (69% fewer), and other crews' level builds no longer reach it. The per-tier budgets are in `Config.Perf` and the pure `Shared/Heist/Budget`, and the views enforce them. At tier 3 and up, the LightDirector switches to recipe C "Soft Toybox" by itself and switches back as the governor steps up. Measured in the engine, every hard-counted budget holds at every tier: lights, shadowed lights, floor glows, Highlights, snow, the worst particle moment and live instances. Two numbers are **estimates over the low-phone budget**: triangles (~210k against 150k) and draw calls (~275 against 250) at tiers 3-4. The 16 avatar bodies drive both. Only a real phone can say how big the problem is. If it is real, the fix is the §6.4 clone LOD (mannequins beyond 15 studs at tier 3).
+**In one paragraph:** with 8 heist instances live, every phone used to receive about 5,000 instances and about 450k triangles of level art, while it only plays in one level. **StreamingEnabled is now ON.** A phone in a Big Score now holds about 1,550 replicated instances (69% fewer), and other crews' level builds no longer reach it. The per-tier budgets are in `Config.Perf` and the pure `Shared/Heist/Budget`, and the views enforce them. At tier 3 and up, the LightDirector switches to recipe C "Soft Toybox" by itself and switches back as the governor steps up. Measured in the engine, every hard-counted budget holds at every tier: lights, shadowed lights, floor glows, Highlights, snow, the worst particle moment and live instances. Two numbers were **estimates over the low-phone budget**: triangles (~210k against 150k) and draw calls (~275 against 250) at tiers 3-4, driven by the 16 avatar bodies. The §6.4 **clone LOD is now built** (tech polish track): from tier 3 a clone beyond 18 studs draws as the 216-triangle mannequin in its crew hue, which brings tier 3 to ~129k triangles and ~210 draws by estimate (tier 4 stays a little over: ~128k / 120k, ~206 / 200). Clients also **start at the tier their device suggests** (§4), every particle effect shares **one live budget**, and the `LightingStyle = Soft` at boot has a cause and a one-line fix (§4).
 
 ## 1. How this was measured
 
@@ -84,7 +84,9 @@ The numbers below come from Saved place version 43, which also passes engine_smo
 
 ## 4. Tier behaviour (Config.Perf, Shared/Heist/Budget)
 
-The PerfSample governor (Heist/Telemetry) starts every client at tier 1. It steps down when p95 > 36 ms for 20 s (then a 30 s cooldown). It steps back up after 60 good seconds, and each step up doubles the next wait. A low phone therefore reaches recipe C after about 70 s of slow frames (see §7).
+**Start tier** (Heist/Telemetry, pure rules in `Budget.startTier` / `Budget.probeTier`, numbers in `Config.Perf.START`): a client picks its tier at boot from what a script can read: the device class (touch-only phone or tablet: tier 2; PC, console, VR: tier 1), the player's manual graphics level (`UserGameSettings.SavedQualityLevel` 1-3: at least tier 3, 4-6: at least tier 2, 8-10: tier 1; Automatic says nothing, then `RenderSettings.QualityLevel` if readable), and a small, old phone screen (short side under 340 px: one tier lower when the quality level says nothing). A 2.5 s frame probe (after 0.5 s of boot hitches) while the loading card / title beat is up lowers it once more if the card's median frame is slower than 30 fps (two tiers under 20 fps), never past tier 3. A low phone is therefore at recipe C before its first run.
+
+The PerfSample governor then steps down when p95 > 36 ms for 20 s (then a 30 s cooldown). It steps back up after 60 good seconds, and each step up doubles the next wait. The start counts as step-downs already taken (`PerfSample.seed`), so a pessimistic start climbs back to tier 1 with the same hysteresis. The governor now runs whether or not the analytics remotes arrive.
 
 | | Tier 1 quality (high phone / PC) | Tier 2 balanced (mid Android) | Tier 3 performance (low Android, 30 fps) | Tier 4 minimum |
 |---|---|---|---|---|
@@ -92,16 +94,18 @@ The PerfSample governor (Heist/Telemetry) starts every client at tier 1. It step
 | Level lights | all | street lamps off | street + accent off; every Range ≤ 24; no shadows | + room lamps off; pools off |
 | Your halo light | on | on | off | off |
 | Clone floor glows | 12 | 12 | **6** (yours first, then nearest; rechecked every 0.5 s) | 3 |
+| Clone LOD (`Config.Perf.CLONE_LOD`) | textured | textured | **crew-hue mannequin beyond 18 studs, textured again inside 15** (same pill, glow, Highlight; never your newest clone in the L1 tutorial); Line-up past the front row too | as tier 3 |
 | Clone pill distance | 40 | 40 | 28 | 20 |
 | Trails | on | off | off | off |
 | Others' clone Highlights | on | on | on | off (yours stay) |
 | Bursts (ribbons, sparks, zap, coins, dust, laser sparks, gold rain 40) | ×1 | ×1 | ×0.5 | ×0.35 (min 2) |
+| One live particle budget (`Heist/Particles`, `Budget.particleCap`): snow + sparkles report in, every burst asks | 360 touch / 900 | 360 / 900 | 150 / 375 | 100 / 250 |
 | Snow alive | 240 | 240 | **60** | 40 |
 | Backdrop | all | all | far ring off | + facade windows off |
 | Rewind blur | on | off | off | off |
 
 - Recipe C restores recipe A exactly as it was read (every property, LightingStyle included). Tests: unit `HeistBudget` (8 specs) and perf_engine section C (tier 3 → C, tier 4 → Bloom off, back to tier 1 → A).
-- In the engine, a script's write to `Lighting.LightingStyle` is accepted without an error. However, the server read `LightingStyle = Soft` at boot even though the place file holds `Realistic` (place_check reads Realistic). **Owner/Studio check:** in Play mode, does the client read Realistic at tier 1, and does switching to Soft at runtime change the look? If the switch does nothing at runtime, recipe C still applies all its scriptable values.
+- In the engine, a script's write to `Lighting.LightingStyle` is accepted without an error. The server read `LightingStyle = Soft` at boot even though the place file holds `Realistic`. **Cause (tech polish track):** Rojo writes only the properties a project lists, so the built Lighting has no `Technology`; the service then loads with its class default, `Voxel` (rbx-dom's default Lighting is Technology Voxel + LightingStyle Soft), and the engine still maps `Technology` onto the new pair when it loads a place (Voxel = Soft + off, ShadowMap = Soft + on, Future = Realistic + on). A Studio-saved place always carries `Technology`. **Fix:** `"Technology": "Future"` next to `LightingStyle` in the project's Lighting `$properties` (done for bench and the spikes; `default.project.json` is the World 2.0 track's, the integrator adds it). `place_check` fails a place whose Technology disagrees with the pair and warns while it is missing (`REQUIRE_TECHNOLOGY` makes that a failure); `perf_engine` asserts Realistic + PrioritizeLightingQuality on at boot. **Studio check left:** does switching to Soft at runtime (recipe C) change the look?
 - **Line-up:** it draws 1 BillboardGui (the "◀ ME" label) and 4 Highlights (one per owner). It never draws together with the clones (`hideAll`). `Budget.lineupLabels` (1 at every tier) is the number LineupDirector (MOMENTS track) must keep to if it adds labels.
 - **Gold rain:** it does not exist yet. MomentDirector should emit `Budget.burst(tier, Config.Perf.GOLD_RAIN)`.
 
@@ -128,7 +132,7 @@ The PerfSample governor (Heist/Telemetry) starts every client at tier 1. It step
   - Backdrop: 128 instances, 1 snow emitter.
   - WorldView adds 24 instances to the level on the client.
 
-**Over budget, by estimate only:** at tiers 3-4, triangles and draw calls exceed budget, and the avatar bodies are most of the cost. The planned fix is roblox_quality §6.4's clone LOD at tier 3: the textured look within 15 studs, the 216-triangle mannequin beyond. That would remove about 60-80k triangles and about 50 draws. It is **not built**, because EchoView's pools are per owner and not per distance. Build it only if the phone bench (§8) shows tier 3 over 33 ms at N=12.
+**Over budget, by estimate only (before the LOD):** at tiers 3-4, triangles and draw calls exceeded budget, and the avatar bodies are most of the cost. **The clone LOD is built** (roblox_quality §6.4): from tier 3 each pooled avatar entry also holds a crew-hue mannequin (built once, when the tier first asks), and a clone beyond `CLONE_LOD.FAR` (18 studs) from the camera draws as it, back to the textured avatar inside `NEAR` (15; `Budget.cloneFar` hysteresis, no per-frame allocation). The hidden avatar's root still carries the pill, bubble and emitters, and its clips stop. With all 12 clones light the estimate is ~129k triangles / ~210 draws at tier 3 (budget 150k / 250) and ~128k / ~206 at tier 4 (120k / 200: still a little over, ±50%). Line-up figures past the front row and beyond FAR from the shot's camera are built light (never you or your newest clone). `perf_engine` measures the light count per tier and folds it into the estimate; `clone_engine` asserts the swap, the L1 tutorial exemption and the way back.
 
 ## 6. Memory figure per client (for the record)
 
@@ -149,7 +153,7 @@ Real client memory adds GPU meshes and textures: the kit meshes are shared by ev
 4. **Draw calls and triangles** (the bench's readout, or the MicroProfiler) to replace the §5 estimates.
 5. **Recipe C on screen:** does it read at quality 1-3, and does the runtime switch look right (LightingStyle)?
 6. **Streaming:** no fall-through or pop at the run start and the garage return, and no "Gameplay paused" notice.
-7. **Governor start:** every client starts at tier 1, so a low phone needs about 70 s of slow frames to reach tier 3. If the bench shows that, start low-memory phones at tier 2 or 3 (Telemetry `deviceClass` / memory). Not built.
+7. **Start tier:** built (§4): phones start at tier 2, a low quality level or a slow loading card starts them at tier 3. Check on the bench that a low Android lands on tier 3 (the Studio debug chip shows the tier) and a mid one on tier 2.
 
 ## 8. Owner bench: 10 minutes, one low Android (and a mid one if you have it)
 

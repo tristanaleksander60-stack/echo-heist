@@ -7,10 +7,13 @@
 --   * Analytics.Perf(...)       PerfSample.pack every perfIntervalSeconds (LiveFlag) while
 --                               the perfSampling kill switch is on
 --   * Analytics.Ui(kind, arg)   UI facts only the client sees: stuck hints, PerfStepDown
--- The PerfSample governor steps the runtime performance tier down (quality -> balanced ->
--- performance -> minimum) when frames stay slow, and back up one step after a sustained good
--- stretch (PerfSample.stepUp, with hysteresis); `onTier` listeners apply it. Works in
--- both GAME_MODEs. Never in the way: if the remotes do not arrive, every call is a no-op.
+-- The runtime performance tier starts where the device suggests (Budget.startTier: device class,
+-- the saved / render quality level, screen size), a 2.5 s frame probe while the loading card is
+-- up may lower it once (Budget.probeTier), then the PerfSample governor steps it down (quality ->
+-- balanced -> performance -> minimum) when frames stay slow, and back up one step after a
+-- sustained good stretch (PerfSample.stepUp, with hysteresis, seeded with the start tier);
+-- `onTier` listeners apply it. Works in both GAME_MODEs. Never in the way: if the remotes do
+-- not arrive, every analytics call is a no-op (the tier governor still runs).
 
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
@@ -23,6 +26,7 @@ local VRService = game:GetService("VRService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local PerfSample = require(Shared:WaitForChild("Analytics"):WaitForChild("PerfSample"))
+local Budget = require(Shared:WaitForChild("Heist"):WaitForChild("Budget"))
 
 local H = Config.Heist
 local P = Config.Analytics.Perf
@@ -145,11 +149,57 @@ function Telemetry.ui(kind: string, arg: string?)
 	send("Analytics.Ui", kind, arg)
 end
 
+-- The render quality as a number (RenderSettings.QualityLevel: 0 Automatic / unreadable, else 1..21).
+local function renderQuality(): number
+	local ok, q = pcall(function()
+		return (settings() :: any).Rendering.QualityLevel.Value
+	end)
+	return if ok and type(q) == "number" then q else 0
+end
+
+-- The tier this client starts at, from what it can read at boot (Budget.startTier, Config.Perf.START).
+local function bootTier(): number
+	local ok, t = pcall(Budget.startTier, {
+		device = device,
+		savedQuality = quality(),
+		renderQuality = renderQuality(),
+		viewportMin = viewportMin(),
+	})
+	return if ok and type(t) == "number" then t else 1
+end
+
+-- The frame loop: first the loading-card probe (START.PROBE_*: it may lower the start tier once), then the
+-- governor, seeded with the start tier so it can still step back up (PerfSample.seed), and the samples
+-- (sent only once the remotes are there; `send` checks).
 local function startPerf()
+	local S = Config.Perf.START
 	local window = PerfSample.new()
+	local probe: PerfSample.Window? = PerfSample.new()
 	local gov = PerfSample.governor()
+	local clock = 0
 	local since = 0
 	RunService.RenderStepped:Connect(function(dt: number)
+		local pw = probe
+		if pw then
+			clock += dt
+			if clock > S.PROBE_SKIP_SECONDS then
+				PerfSample.add(pw, dt)
+			end
+			if clock < S.PROBE_SKIP_SECONDS + S.PROBE_SECONDS then
+				return
+			end
+			probe = nil
+			local ok, t = pcall(Budget.probeTier, tier, {
+				frames = pw.frames,
+				medianMs = PerfSample.percentile(pw, 0.5),
+				p95Ms = PerfSample.percentile(pw, 0.95),
+			})
+			if ok and type(t) == "number" then
+				setTier(t)
+			end
+			PerfSample.seed(gov, tier)
+			return
+		end
 		PerfSample.add(window, dt)
 		if PerfSample.govern(gov, dt) and tier < #H.PERF_TIERS then
 			setTier(tier + 1)
@@ -168,7 +218,7 @@ local function startPerf()
 		since = 0
 		local summary = PerfSample.summary(window)
 		PerfSample.reset(window)
-		if not summary or flag("perfSampling") == false or flag("perfSampleRate") == 0 then
+		if not summary or not remotesOk or flag("perfSampling") == false or flag("perfSampleRate") == 0 then
 			return
 		end
 		local okClones, clones = pcall(clonesOnScreen)
@@ -193,6 +243,10 @@ function Telemetry.start()
 	end
 	started = true
 	device = deviceClass()
+	-- The start tier first (before any view hooks onTier), then the frame loop: the governor runs whether or not
+	-- the analytics remotes ever arrive (only the samples need them).
+	tier = math.clamp(bootTier(), 1, #H.PERF_TIERS)
+	startPerf()
 	local okNet, mod = pcall(function()
 		return require(ReplicatedStorage:WaitForChild("LihFolk"):WaitForChild("Net")) :: any
 	end)
@@ -215,7 +269,6 @@ function Telemetry.start()
 		if readyWanted then
 			Telemetry.ready()
 		end
-		startPerf()
 	end)
 	-- v0.1 path and garage: the first character counts as first control unless the sim
 	-- client calls ready() sooner.

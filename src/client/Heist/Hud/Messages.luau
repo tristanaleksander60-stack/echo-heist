@@ -13,6 +13,7 @@ local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
+local FlashLimit = require(script.Parent.Parent:WaitForChild("FlashLimit"))
 local Loading = require(script.Parent.Parent:WaitForChild("Loading"))
 local Motion = require(script.Parent.Parent:WaitForChild("Motion"))
 local Sound = require(script.Parent.Parent:WaitForChild("Sound"))
@@ -334,8 +335,10 @@ function Messages.build(ctx: any): any
 	---------------------------------------------------------------------------
 	-- Screen flashes
 	---------------------------------------------------------------------------
+	-- Both red vignettes are full-screen flashes: they ask the client-wide limiter (Heist/FlashLimit, <= 3 a
+	-- second with the rewind and slam flashes); a refused one does not play (its sound and words still do).
 	function hud.flashRed()
-		if state.reduced then
+		if state.reduced or not FlashLimit.allow() then
 			return
 		end
 		vignette.BackgroundTransparency = 0.7
@@ -344,6 +347,9 @@ function Messages.build(ctx: any): any
 
 	-- The alarm's red pulse (once per ALARM_PULSE_SECONDS, ≤ 3 flashes/s).
 	function msg.alarmPulse()
+		if not FlashLimit.allow() then
+			return
+		end
 		vignette.BackgroundTransparency = 0.82
 		Motion.timed(vignette, H.ALARM_PULSE_SECONDS * 0.6, { BackgroundTransparency = 1 })
 	end

@@ -274,6 +274,14 @@ function PerfSample.stepUp(g: Governor): boolean
 	return true
 end
 
+-- A client that starts below tier 1 (Heist/Budget.startTier, from its boot facts and the loading-card probe)
+-- counts those tiers as step-downs already taken, so the same hysteresis can step it back up to tier 1 after
+-- sustained good stretches. Call once, before the first govern.
+function PerfSample.seed(g: Governor, startTier: number)
+	g.steps = math.max(0, math.floor(startTier) - 1)
+	g.ups = 0
+end
+
 ---------------------------------------------------------------------------
 -- Device class (Events.DOMAINS.device)
 ---------------------------------------------------------------------------

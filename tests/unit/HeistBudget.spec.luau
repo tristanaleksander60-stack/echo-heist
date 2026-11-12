@@ -11,6 +11,7 @@ local DailyVaults = require("../../src/shared/Levels/DailyVaults")
 local KitPlan = require("../../src/server/Heist/KitPlan")
 local LevelDress = require("../../src/server/Heist/LevelDress")
 local LevelSpec = require("../../src/shared/Sim/LevelSpec")
+local MomentPlan = require("../../src/shared/Heist/MomentPlan")
 local Assert = require("./Assert")
 
 local P = Config.Perf
@@ -198,4 +199,144 @@ return function(test)
 		Assert.eq(#o, 2, "two lines")
 		Assert.truthy(string.find(o[1], "drawCalls", 1, true) ~= nil, "draw calls named")
 	end)
+	test("start tier: device class, quality level and screen pick it; never below START.MAX", function()
+		local ST = P.START
+		local function facts(o: { [string]: any }): any
+			local f: { [string]: any } = { device = "desktop", savedQuality = 0, renderQuality = 0, viewportMin = 1080 }
+			for k, v in o do
+				f[k] = v
+			end
+			return f
+		end
+		Assert.eq(Budget.startTier(facts({})), 1, "PC on Automatic: quality")
+		Assert.eq(Budget.startTier(facts({ device = "console" })), 1, "console: quality")
+		Assert.eq(Budget.startTier(facts({ device = "phone", viewportMin = 390 })), 2, "phone on Automatic: balanced")
+		Assert.eq(Budget.startTier(facts({ device = "tablet", viewportMin = 768 })), 2, "tablet: balanced")
+		Assert.eq(Budget.startTier(facts({ device = "phone", savedQuality = 2 })), 3, "phone, quality 2: performance")
+		Assert.eq(Budget.startTier(facts({ savedQuality = 1 })), 3, "a PC set to quality 1 by hand: performance")
+		Assert.eq(Budget.startTier(facts({ device = "phone", savedQuality = 5 })), 2, "phone, quality 5: balanced")
+		Assert.eq(Budget.startTier(facts({ savedQuality = 5 })), 2, "PC, quality 5: balanced")
+		Assert.eq(Budget.startTier(facts({ device = "phone", savedQuality = 9 })), 1, "phone set high by hand: quality")
+		Assert.eq(Budget.startTier(facts({ device = "phone", savedQuality = 7 })), 2, "phone, quality 7: as the device")
+		Assert.eq(
+			Budget.startTier(facts({ device = "phone", renderQuality = 4 })),
+			3,
+			"Automatic saved level: the render level (4 of 21) decides"
+		)
+		Assert.eq(Budget.qualityLevel(facts({ renderQuality = ST.RENDER_LEVELS })), 10, "render level 21 -> 10")
+		Assert.eq(Budget.qualityLevel(facts({ savedQuality = 0, renderQuality = 0 })), nil, "Automatic says nothing")
+		Assert.eq(Budget.startTier(facts({ device = "phone", viewportMin = 320 })), 3, "a small, old phone screen")
+		Assert.eq(
+			Budget.startTier(facts({ device = "phone", viewportMin = 320, savedQuality = 9 })),
+			1,
+			"a manual quality level beats the screen size"
+		)
+		Assert.eq(Budget.startTier(facts({ device = "phone", viewportMin = 0 })), 2, "no viewport yet: no screen rule")
+		Assert.eq(Budget.startTier(facts({ device = "fridge" })), ST.DEVICE.other, "unknown device: other")
+		for _, d in { "phone", "tablet", "desktop", "console", "vr", "other" } do
+			for q = 0, 10 do
+				local t = Budget.startTier(facts({ device = d, savedQuality = q, viewportMin = 300 }))
+				Assert.truthy(t >= 1 and t <= ST.MAX, d .. " q" .. q .. " within 1..START.MAX")
+			end
+		end
+	end)
+
+	test("start tier: the loading-card probe only lowers quality, never past START.MAX", function()
+		local ST = P.START
+		local fast = { frames = 150, medianMs = 16.7, p95Ms = 18 }
+		local capped = { frames = 75, medianMs = 33.4, p95Ms = 34 } -- an OS 30 fps cap: not slow
+		local slow = { frames = 60, medianMs = 40, p95Ms = 45 }
+		local hitchy = { frames = 120, medianMs = 17, p95Ms = 90 } -- boot hitches: a few long frames
+		local crawl = { frames = 40, medianMs = 60, p95Ms = 80 }
+		Assert.eq(Budget.probeTier(1, fast), 1, "fast card: unchanged")
+		Assert.eq(Budget.probeTier(2, fast), 2, "a fast card never raises quality")
+		Assert.eq(Budget.probeTier(1, capped), 1, "a 30 fps cap is not slow")
+		Assert.eq(Budget.probeTier(1, hitchy), 1, "load hitches do not move the median")
+		Assert.eq(Budget.probeTier(1, slow), 2, "slow card: one lower")
+		Assert.eq(Budget.probeTier(2, slow), 3, "slow card on a phone: recipe C")
+		Assert.eq(Budget.probeTier(1, crawl), 3, "crawling card: two lower")
+		Assert.eq(Budget.probeTier(2, crawl), ST.MAX, "never past START.MAX")
+		Assert.eq(Budget.probeTier(2, nil), 2, "no probe: unchanged")
+		Assert.eq(
+			Budget.probeTier(1, { frames = ST.PROBE_MIN_FRAMES - 1, medianMs = 90, p95Ms = 99 }),
+			1,
+			"too few frames"
+		)
+		Assert.truthy(Budget.softToybox(Budget.probeTier(2, slow)), "a low phone reaches recipe C at boot")
+	end)
+	test(
+		"clone LOD: from tier 3 the light rig beyond FAR, textured again inside NEAR; never the tutorial clone",
+		function()
+			local L = P.CLONE_LOD
+			Assert.truthy(L.NEAR < L.FAR, "a hysteresis band")
+			Assert.falsy(Budget.cloneLod(L.TIER - 1), "off below the LOD tier")
+			Assert.truthy(Budget.cloneLod(L.TIER) and Budget.cloneLod(4), "on from the LOD tier")
+			Assert.falsy(Budget.cloneFar(2, 200, false, false), "tier 2: always textured")
+			Assert.falsy(Budget.cloneFar(2, 200, true, false), "tier 2: a far clone comes back")
+			Assert.falsy(Budget.cloneFar(3, L.NEAR - 1, false, false), "near: textured")
+			Assert.truthy(Budget.cloneFar(3, L.FAR + 1, false, false), "beyond FAR: light")
+			Assert.falsy(Budget.cloneFar(3, (L.NEAR + L.FAR) / 2, false, false), "in the band: keeps textured")
+			Assert.truthy(Budget.cloneFar(3, (L.NEAR + L.FAR) / 2, true, false), "in the band: keeps light")
+			Assert.falsy(Budget.cloneFar(3, L.NEAR - 0.01, true, false), "inside NEAR: textured again")
+			Assert.falsy(Budget.cloneFar(4, 500, false, true), "the L1 tutorial's newest own clone: never")
+			-- a clone pacing across the edge swaps at most once per crossing of the whole band
+			local far, swaps = false, 0
+			for i = 0, 400 do
+				local d = L.FAR + 1.2 * math.sin(i / 7) -- wobbles +-1.2 studs round FAR
+				local nf = Budget.cloneFar(3, d, far, false)
+				if nf ~= far then
+					swaps += 1
+					far = nf
+				end
+			end
+			Assert.le(swaps, 1, "jitter round FAR does not flicker")
+		end
+	)
+
+	test("Line-up LOD: past the front row, beyond FAR, from tier 3; never you or your newest clone", function()
+		local L = P.CLONE_LOD
+		Assert.falsy(Budget.lineupLight(3, 0, 100, false), "the front row stays textured")
+		Assert.truthy(Budget.lineupLight(3, 1, L.FAR + 1, false), "back row, far: light")
+		Assert.falsy(Budget.lineupLight(3, 1, L.FAR - 1, false), "back row, near: textured")
+		Assert.falsy(Budget.lineupLight(2, 1, 100, false), "tier 2: textured")
+		Assert.falsy(Budget.lineupLight(4, 1, 100, true), "you / your newest clone: textured")
+	end)
+	test(
+		"one particle budget: snow + every burst of the worst moment through one ledger stays under the cap",
+		function()
+			local M = Config.Moments
+			Assert.eq(Budget.particleCap(1, true), M.PARTICLE_CAP_TOUCH, "tier 1 touch: the moments' old touch cap")
+			Assert.eq(Budget.particleCap(1, false), M.PARTICLE_CAP, "tier 1 keyboard: the moments' old cap")
+			local bases = Budget.burstBases()
+			for tier = 1, #P.TIERS do
+				for _, touch in { true, false } do
+					local cap = Budget.particleCap(tier, touch)
+					Assert.le(cap, if touch then Budget.forTier(tier).liveParticles else M.PARTICLE_CAP, "cap")
+					local steady = Budget.forTier(tier).snowAlive -- the snow at its tier maximum
+					local ledger = {}
+					local got, total = 0, steady
+					-- the worst moment twice over in the same second (two crews' clones busted at once, say)
+					for _ = 1, 2 do
+						for _, name in P.WORST_MOMENT do
+							local want = Budget.burst(tier, bases[name])
+							local n = MomentPlan.grantParticles(ledger, 10, want, math.max(0, cap - steady), 1.5)
+							got += n
+							total += n
+						end
+					end
+					Assert.le(
+						total,
+						cap,
+						string.format("tier %d touch %s: live %d <= cap %d", tier, tostring(touch), total, cap)
+					)
+					if touch then
+						Assert.truthy(
+							got >= Budget.worstParticles(tier) - steady,
+							"tier " .. tier .. ": the worst moment itself is granted in full"
+						)
+					end
+				end
+			end
+		end
+	)
 end

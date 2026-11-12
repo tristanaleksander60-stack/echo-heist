@@ -844,6 +844,51 @@ local otherHl = other and other.rig and other.rig.Parent and other.rig.Parent:Fi
 check(otherHl ~= nil and not otherHl.Enabled, "other players' clones: Highlight drops at tier 4")
 pcall(echo.setTier, 1)
 
+-- Clone LOD (Config.Perf.CLONE_LOD, tier 3+): far clones draw as the crew-hue mannequin with their pill, the
+-- textured avatar again inside NEAR; your newest clone in the L1 tutorial ("YOU, 10 SEC AGO") never goes light.
+if echo.lodCount and echo.drawnRigOf and own and #cases > 1 then
+	local at = echo.positionOf(own.actorId)
+	local camWas = cam.CFrame
+	if at then
+		pcall(echo.setTier, 3)
+		cam.CFrame = CFrame.lookAt(at + Vector3.new(0, 12, 38), at)
+		for _ = 1, 2 do
+			pcall(echo.update, VIEW_START + SECONDS, os.clock(), 1 / 60, nil)
+		end
+		local light = echo.lodCount()
+		local ownDrawn = echo.drawnRigOf(own.actorId)
+		local otherDrawn = echo.drawnRigOf(cases[2].actorId)
+		local fx = echo.fxOf(cases[2].actorId)
+		check(
+			light == #cases - 1
+				and ownDrawn ~= nil
+				and ownDrawn.kind == "avatar"
+				and otherDrawn ~= nil
+				and otherDrawn.kind == "mannequin"
+				and fx ~= nil
+				and fx.pill.Enabled,
+			string.format(
+				"tier 3, camera ~40 studs away: %d of %d clones light, the tutorial's newest own clone textured (%s), others %s with their pill",
+				light,
+				#cases,
+				tostring(ownDrawn and ownDrawn.kind),
+				tostring(otherDrawn and otherDrawn.kind)
+			)
+		)
+		cam.CFrame = CFrame.lookAt(at + Vector3.new(0, 4, Config.Perf.CLONE_LOD.NEAR - 4), at)
+		for _ = 1, 2 do
+			pcall(echo.update, VIEW_START + SECONDS, os.clock(), 1 / 60, nil)
+		end
+		check(echo.lodCount() == 0, "inside CLONE_LOD.NEAR every clone is its textured avatar again")
+		pcall(echo.setTier, 1)
+		cam.CFrame = camWas
+		for _ = 1, 2 do
+			pcall(echo.update, VIEW_START + SECONDS, os.clock(), 1 / 60, nil)
+		end
+		check(echo.lodCount() == 0, "back at tier 1: no light rigs")
+	end
+end
+
 -- Studio diagnostic chip text (built only in Studio; its text and stats work anywhere).
 if echo.stats then
 	-- stats() reports the last periodic CloneHealth count (every CLONE_HEALTH_INTERVAL s) next to

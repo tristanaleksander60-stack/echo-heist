@@ -6,6 +6,7 @@
       "$properties": {
         "LightingStyle": "Realistic",
         "PrioritizeLightingQuality": true,
+        "Technology": "Future",
         "GlobalShadows": true,
         "ClockTime": 15,
         "GeographicLatitude": 20,

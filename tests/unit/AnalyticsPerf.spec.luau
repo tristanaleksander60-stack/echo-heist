@@ -166,6 +166,32 @@ return function(test)
 		Assert.eq(g.ups, 2, "count kept")
 	end)
 
+	test("governor: a client that starts at tier 3 can step back up to tier 1, with the same backoff", function()
+		local g = PerfSample.governor()
+		PerfSample.seed(g, 3)
+		local ups = 0
+		local function goodSeconds(n: number)
+			for _ = 1, n do
+				for _ = 1, 61 do
+					if PerfSample.govern(g, 1 / 60) then
+						error("a good second stepped down")
+					elseif PerfSample.stepUp(g) then
+						ups += 1
+					end
+				end
+			end
+		end
+		goodSeconds(P.STEP_UP_SECONDS + 2)
+		Assert.eq(ups, 1, "tier 3 -> 2 after STEP_UP_SECONDS good seconds")
+		goodSeconds(P.STEP_UP_SECONDS * P.STEP_UP_BACKOFF + 2)
+		Assert.eq(ups, 2, "tier 2 -> 1 after the doubled wait")
+		goodSeconds(P.STEP_UP_SECONDS * P.STEP_UP_BACKOFF ^ 2 * 2)
+		Assert.eq(ups, 2, "never past tier 1")
+		local g1 = PerfSample.governor()
+		PerfSample.seed(g1, 1)
+		Assert.eq(g1.steps, 0, "tier 1 start: nothing to undo")
+	end)
+
 	test("governor: a 30 fps cap (OS, battery saver) or a missed vsync never steps down", function()
 		local function run(seconds: number, dtOf: (i: number) -> number): number
 			local g = PerfSample.governor()

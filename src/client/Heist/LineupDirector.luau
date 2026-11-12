@@ -41,6 +41,7 @@ local UserInputService = game:GetService("UserInputService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
+local Budget = require(Shared:WaitForChild("Heist"):WaitForChild("Budget"))
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local Strings = require(Shared:WaitForChild("Heist"):WaitForChild("Strings"))
@@ -313,9 +314,15 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 	end
 
 	-- A figure's rig: the player's own character copy (their look), else the owner's
-	-- stripped template, else a mannequin (orphan tapes: Tape Grey).
-	local function rigFor(e: any, hue: Color3): any
+	-- stripped template, else a mannequin (orphan tapes: Tape Grey). `light` (Budget.lineupLight, the clone
+	-- LOD past the front row from tier 3): the mannequin in the figure's crew hue.
+	local function rigFor(e: any, hue: Color3, light: boolean?): any
 		local rig: any = nil
+		if light then
+			rig = Rigs.buildMannequin()
+			Rigs.tint(rig, hue)
+			return rig
+		end
 		if e.kind == "player" then
 			local p = Players:GetPlayerByUserId(e.ownerId)
 			local char = p and p.Character
@@ -707,6 +714,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 				posed = false,
 				phase = 0,
 				busted = onPodium, -- slumps on the busted podium instead of cheering
+				row = math.floor((i - 1) / Config.Sim.LINEUP_ROW), -- 0 = the front row (HeistSim.lineup)
 			}
 			table.insert(figures, fig)
 			fig.age = if fig.mine and ageOf then ageOf(e) else nil
@@ -743,9 +751,16 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 		end
 
 		-- One figure's rig (hidden until every figure exists; then they swap in together).
+		local lp = Players.LocalPlayer
 		local function buildFigure(fig: any)
 			local e = fig.entry
-			local rig = rigFor(e, fig.hue)
+			-- Clone LOD (tier 3+): past the front row and beyond CLONE_LOD.FAR from the shot's camera, the light
+			-- rig; never you or your newest clone (the "ME" label).
+			local you = fig.mine or (e.kind == "player" and lp ~= nil and e.ownerId == lp.UserId)
+			local camAt = if shot then shot.final.Position else fig.target.Position
+			local light = Budget.lineupLight(tierNow, fig.row, (fig.target.Position - camAt).Magnitude, you)
+			fig.light = light
+			local rig = rigFor(e, fig.hue, light)
 			if e.kind == "clone" then
 				rig.model.Parent = groupFor(e.ownerId, Palette.hueFor(e.seat), f)
 			else
