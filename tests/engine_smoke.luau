@@ -56,12 +56,12 @@ local now = workspace:GetServerTimeNow()
 -- 2. Plate A opens the vault door, and it closes again after release.
 Mechanisms.reset()
 root.CFrame = plateA.CFrame + Vector3.new(0, 3, 0)
+-- Check right after the tick: the game's own 10 Hz loop runs in parallel and
+-- does not know this fake actor, so it closes the door again ~0.4 s later.
 Mechanisms.tick({ fake }, now)
-task.wait(0.5)
 check(Mechanisms.isDoorOpen() and door.CanCollide == false, "Plate A opens vault door")
 root.CFrame = CFrame.new(0, 3, 6)
 Mechanisms.tick({ fake }, now + 1)
-task.wait(0.5)
 check(not Mechanisms.isDoorOpen() and door.CanCollide == true, "Door closes after plate A is released")
 
 -- 3. Lasers zap an actor in the grid, but not while plate B is held.

@@ -212,7 +212,7 @@ Every verb is taught **Show → Try → Test → Combine**; a new verb combines 
 
 - **Session length** [estimate]: L1-L4 ≈ 12-18 min, Clone Party 5-8 min, Big Score 8-12 min: **≈ 30-40 min** of first-clear content. Sessions 2-5 (Dec 3-10) come from: the daily vault + advent ornament, Clone Party personal-best haul and bag level, missing medals (Haul/Crew/Clean), Diamond medals on L4 and L6, and co-op with friends.
 - **Clone Party is the repeatable loop** (replaces Free Roam): "how much can 8 of you steal before Dawn?" Personal best and a server board in the garage (biggest haul today). Each bag level (Cash) lets an actor carry one more small item; bag runs are excluded from Diamond.
-- **Gates:** L6 needs 6 Stars (of 12 from L1-L4 + 3 Haul tiers in Clone Party).
+- **Gates:** L6 needs 6 Stars (of 15: 3 per teaching level L1-L4, plus 3 Haul tiers in Clone Party).
 
 ### 4.3 "Steal Back Christmas" (Dec 3 - Jan 4, one kit + a dressing layer)
 
@@ -235,5 +235,154 @@ Every verb is taught **Show → Try → Test → Combine**; a new verb combines 
 | ~Mar 5 | **Sky Lounge** (60 s): Lobby Floor, Count Room, Elevator Bank, The Big Score: Jewel Suite | Twin switches within 1.0 s, safe cracking under patrol, elevators |
 | later | **Moon Base** (75 s), only if the Museum's D7 justifies it | Long jumps, airlock timers |
 | Daily / weekly | 14+ daily vaults in rotation with date-seeded modifiers; a Contract weekly; module-generated vaults only after a constraint checker exists | — |
+
+---
+## 5. Progression, retention and monetization
+
+### 5.1 Economy (one job per currency)
+
+- **Cash:** soft currency from banked loot. Spent on **bag levels** (Clone Party carry capacity, 3 levels), van paints, clone trail colours, trophy stands for the van. A big, growing number on the van screen.
+- **Stars:** from medals, never sold. Gate the Big Score and later locations.
+- **Trophies:** one named collectable per level (first clear) and one ornament per daily vault, shown in your van and visible to everyone in the garage lobby. This is the launch collection and show-off layer; the hideout (Feb 12) inherits it.
+- **Candy Canes:** event-only, earned only.
+- No Robux-to-Cash, ever. That keeps every reward outside the paid-random-items rules (docs updated 2026-10-15, [Roblox Docs](https://create.roblox.com/docs/production/monetization/paid-random-items)).
+
+### 5.2 Medals and gates
+
+- Per story level, 3 Stars: **Haul** (bank the target value before Dawn), **Crew** (finish with at most par clones), **Clean** (no catches and no busted clones in the final run; "Delete busted" makes this a one-tap clean-up).
+- Clone Party: 3 **Haul tiers** ($ thresholds).
+- A shown-but-optional **Diamond** medal from Jan 8 (L4 and L6 at launch): beat the developer's clone count ("DEV: 4 CLONES. ME: 3"). This is where the optimisers live; kids never need it.
+- **Gates:** Big Score: Bank 6 Stars; Museum 14; Sky Lounge 26; Moon Base 40. The next-goal card always shows the number.
+
+### 5.3 Retention hooks
+
+| Horizon | Hook |
+|---|---|
+| Session | Next-goal card on every exit ("2 more Stars opens the Bank"); Heist Reel + Crew Line-up; Clone Party personal best; the trophy shelf |
+| **D1** | **Daily vault** (= advent calendar in December): one of **12 hand-authored 30 s mini-vaults** at launch (14 from Dec 11), each with a human-recorded solution in CI, chosen by UTC date, with a **date-seeded modifier from a vetted set** (guard speed ±10%, loot position A/B/C, lights on/off). Fixed 5-clone loadout, Dawn at run 6. First clear: an ornament/trophy, 1 Star, fixed Cash. Board for kids: **biggest haul today** (server board at launch, global from Dec 11); "fewest clones" is the Diamond tier. Daily streak with one grace day |
+| D7 | Advent tree filling up (24 slots); Dec 11 drop and Dec 18 finale; Clone Party bag levels; friends (co-op +Cash) |
+| D28 | Jan 8 Contracts, Jan 22 Museum, Feb 12 Season 1 with a free cosmetic ladder; "Legend" frame for 3-starring a location; hideout trophies others can visit |
+
+Dig to Escape simplicity check: one goal, a visible threat (Gus), a number that grows (Cash, haul), a shop, a chase. **Never more than 3 meters during a run** (timer, haul, clones).
+
+### 5.4 Monetization (ethical and 2026-compliant)
+
+**Hard rules:** no paid randomness; no Robux-to-Cash; no pay-to-skip, paid hints, redo or extra runs; no prompt during a heist or on a bust; at most one unprompted offer in a non-payer's first session, after Level 1, on the van screen. All prices from `GetProductInfoAsync`; exactly one idempotent `ProcessReceipt` (lihfolk-systems `Receipts`).
+
+| Product | Price (R$) | Timing |
+|---|---|---|
+| **Clone styles** (Gold Ghost, Noir, Neon Outline): code-only material/colour presets on the clone rig | 79-149 each | Launch |
+| **Christmas Crew bundle** (Santa clone style + sleigh van paint + snow trail), fixed contents shown upfront | 199, once | Launch, until Jan 4 |
+| Van paints | 49-99 | Launch |
+| Clone emotes (your clones perform an emote you own at a recorded moment) | — | Jan 8, from Roblox catalog emotes the player owns, or post-launch authored ones |
+| Rewind styles | 79-149 | Jan 22 |
+| Private servers | **Free** | Launch |
+| **Rewarded video** "double this heist's Cash", 5/day, 13+ only | — | When eligible (~2,000 monthly visitors and an ID-verified owner per [docs](https://create.roblox.com/docs/production/promotion/rewarded-video-ads)) |
+
+Revenue is not the launch goal; D1, D7 and co-play are. The draft's "+1 clone slot pass" is dropped with owned slots.
+
+---
+
+## 6. Art direction and style bible
+
+### 6.1 The look: "Neon-Noir Diorama"
+
+Chunky, bevelled low-poly sets built like a model kit, lit at night in deep indigo (never black) with warm pools of light, and one glowing colour family reserved for clones. References: Hitman GO's miniature board ([Game Developer](https://www.gamedeveloper.com/design/for-square-enix-designing-i-hitman-i-as-a-board-game-just-made-sense)), Monaco 2's readable 3D, Teardown's simple shapes under rich light. It scored 8.5/10 against realistic PBR (4/10) and full toon (6.5/10) (visuals D1). On Roblox "premium" means coherent and readable (vault *Teardown - Pressure*). **Most of "premium" is code and cheap:** the palette, the lighting recipe, the clone glow, the rewind and the reel.
+
+**Shape rules:** props 1.5-2x real scale, buildings ~1.2x; one-segment bevels only (0.06-0.08 studs small, 0.12-0.2 medium, 0.2-0.3 building corners); one focal feature per prop at ≥ 1.5x any secondary; one storytelling prop per room (Gus's donut box). Each level is a cut-away model on a dark, hazy "table". **The art must read with shadows off** (phones at low quality draw none).
+
+### 6.2 Palette and colour language
+
+| Role | Name | Hex | Rule |
+|---|---|---|---|
+| Base shadow | Ink Indigo | `#1C1F3B` | Never darker |
+| Base mid | Plum Slate | `#3A3560` | Most walls, 30-55% value |
+| Lit interior | Warm Marble | `#D8C8A8` | Inside light pools |
+| Metal | Vault Steel | `#7C86A6` | Doors, safes, rails, **plates** |
+| **Danger** | Alarm Red | `#FF3348` | Lasers, alarms, "seen!" only; always with a shape (beam, zigzag, ring) |
+| Guard light | Torch Amber | `#FFD27A` | Flashlight cones only; shape = cone |
+| **Loot** | Heist Gold | `#FFC21F` | Loot only; shape = sparkle (Gold vs Amber fails colour-blind at 0.051, so shape carries it) |
+| Exit | Getaway White | `#F4F7FF` | Van and chevrons, always with an arrow |
+| **Clone P1 / solo** | Clone Cyan | `#3DE8FF` | Reserved |
+| Clone P2 | Clone Magenta | `#FF4FD8` | Reserved |
+| Clone P3 | Clone Indigo | `#6A5CFF` | Reserved |
+| Clone P4 | Ghost White | `#F4F7FF` | Reserved for clones as a glow; exit uses white only as solid chevrons with arrows |
+| Orphan tape | Tape Grey | `#8A8FA8` | Clones of a player who left |
+| Christmas accent | Holly Green `#2FBF71` / Ribbon Red = Alarm Red is **not** reused: ribbons use Burgundy `#8C2F4B` | — | Fairy lights warm white only, never clone hues |
+
+- **Reserved-hue rule:** no environment asset within ±20° of a clone hue at saturation above 40%. The v0.1 blue plate becomes a steel plate with a white icon that takes the presser's hue and glyph.
+- **Identity = glyph + number + hue.** ●1 ■2 ▲3 ◆4 badges are mandatory, not a setting.
+- **CI audit (Lune):** Oklab distance ≥ 0.15 for small signals and ≥ 0.20 plus a shape for danger, on every palette change (vault *Colour-Blind Safe Design*). Greyscale test: characters, loot and danger differ from the ground by 15% value or more.
+
+### 6.3 Lighting: "Heist Night" recipe v1 (in the project file, chosen once)
+
+- **Where it lives:** `default.project.json` gets a `Lighting` node with `$properties` and the effect children, so `rojo build` produces the real look and the live place never depends on hand edits (§8.5). Spike S6 (W1) checks that Rojo/rbx-dom writes `LightingStyle` and `PrioritizeLightingQuality` [UNVERIFIED]; if it can't, those two are set in the one-time Kit/base file and a CI check compares the built place with `docs/STYLE_BIBLE.md`.
+- **Style choice (once, Wed Nov 18):** from the W1 golden-room screenshots at PC Quality 10, phone Automatic and phone quality 1-3. Default **Realistic + PrioritizeLightingQuality on** if the phone shots read; otherwise **Soft**. There is **no runtime kill switch**: both properties are Studio-only ([Lighting reference](https://create.roblox.com/docs/reference/engine/classes/Lighting), [Unified Lighting](https://devforum.roblox.com/t/let-there-be-unified-light-unified-lighting-is-fully-live/3401512)).
+- `Lighting`: GlobalShadows on, ClockTime 0, Brightness 0.5, Ambient (55,55,95), OutdoorAmbient (75,80,130), ColorShift_Top (255,210,160), EnvironmentDiffuseScale 0.25, EnvironmentSpecularScale 0.35, ExposureCompensation 0.2.
+- `Atmosphere` (streets only): Density 0.3, Color (70,60,120), Decay (35,30,75), Haze 0.8.
+- `BloomEffect`: Intensity 0.8, Size 28, **Threshold 1.0**. `ColorCorrection`: Contrast 0.12, Saturation 0.1, Tint (235,230,255). No SunRays. DepthOfField and Blur only in menus, the planning camera and the reel.
+- **Local lights:** shadows off by default; ≤ 4 shadow-casting hero lights per view; fake other pools with floor decals or transparent Warm Marble discs; sleep lights beyond 120 studs.
+- **Runtime performance tier** (scriptable controls only, picked by measured frame time, §8.6): `GlobalShadows`, per-light `Shadows`, Bloom/ColorCorrection `Enabled`, Atmosphere `Density`, particle rate caps, Highlight count, clone LOD distances.
+- Per-location recipes as data: Christmas Eve (warmer, Ambient +10%), Museum (cold moonlight), Sky Lounge (gold on plum), Moon (grey and white).
+
+### 6.4 Materials and textures
+
+- **SmoothPlastic + `MeshPart.Color`, or one 256×256 palette atlas per kit** with UVs snapped to cells, so kit pieces instance.
+- ≤ 3 hero SurfaceAppearances per level (vault door, diamond, event centrepiece): Color + Roughness at 1024 plus an **emissive mask** ([DevForum](https://devforum.roblox.com/t/emissive-masks-are-now-live-for-published-experiences/4357705)). Emissive masks also drive signage, dials and Christmas lights.
+- Neon ≤ ~1/6 of an object's pixels. No EditableMesh or EditableImage in the core.
+
+### 6.5 The clone look (the hero visual), decided by the W1 bench
+
+Goal: "that's me, but a ghost from 20 seconds ago", readable at 64 px, **recognisably my own avatar** up close (our main marketing difference).
+
+1. **Rig source:** the server builds **one stripped template per owner** from `Players:CreateHumanoidModelFromDescriptionAsync` into ReplicatedStorage (v0.1's `Echoes.luau` already does this); clients clone and **pool** it, showing a mannequin placeholder until it arrives. Joint code accepts both `AnimationConstraint` and `Motor6D` (Avatar Joint Upgrade, vault *AnimationConstraint and Physically Simulated Characters*).
+2. **Stripped silhouette:** no SurfaceAppearance, textures, decals, face or layered clothing; ≤ 2 accessories (hair or hat); SmoothPlastic in the owner hue; `CastShadow = false`. SLIM does not apply to NPC rigs ([SLIM docs](https://create.roblox.com/docs/workspace/streaming/slim)).
+3. **Three candidates, A/B'd on the owner's phone in W1 (spike S1):**
+   - **A. Translucent rig:** Transparency 0.45 + one Highlight per owner group (OutlineTransparency 0, FillTransparency 0.85, DepthMode Occluded).
+   - **B. Opaque glow rig (expected default near the camera):** opaque, saturated owner hue with a Highlight outline only (FillTransparency 1); avoids transparency sorting and overdraw on mobile.
+   - **C. Hologram mannequin:** one shared mesh, owner hue + the owner's hair/hat accessory; expected beyond **25 studs**, or everywhere if A and B fail the budget.
+   - Highlights are persistent and animated, never created per loop (the first costs up to ~1 ms GPU on mobile and cost grows with screen coverage, vault *Highlights and Selection Effects*, [docs](https://create.roblox.com/docs/en-us/effects/highlighting)). One extra **x-ray** group for your clones on plates behind walls.
+4. **Age ramp:** each older run is 12% dimmer; in solo, older runs drift up to 25° toward violet (the "8 copies" gradient).
+5. **Badge, label and trail:** a 28 px glyph badge ("●3"), hidden beyond 40 studs; in L1 and in every reel, a burned-in **"◀ YOU, 20 SEC AGO"** label on the newest clone for its first second; a 0.5 s owner-hue Trail only above walk speed.
+6. **"Tape print" spawn:** clones form in record order 60 ms apart (≤ 0.4 s), with a scanline sweep, a floor ring and the clone arpeggio (§7.2). Busted: glitch slices, then a tape-ribbon burst (≤ 30 particles).
+7. **Readability guards:** 3+ clones within 2 studs show the newest fully and the rest outline-only with "×3"; clones within 6 studs of the camera fade; a clone-opacity slider (50-100%). Players stay opaque and shadow-casting; other players' clones render at 70% brightness on your screen; orphan tapes in Tape Grey.
+
+**Gus and threats:** Gus is a **rigid-part rig with R15 proportions** (separate Blender pieces, no skinning), drawn on clients like clones. A flat floor cone in Torch Amber (Transparency 0.75, Neon edge, clipped by a 12-ray fan at 10 Hz), drawn from the same `Guards` module as the server; the cone fills amber, shows "?" at 0.6 s and "!" at 1.2 s. Lasers: dark-ink core, red body, thin white-hot core, red floor dot, 3 flickers before re-enabling (timed to the server window, §8.10).
+
+### 6.6 Presentation
+
+- **Rewind:** §7.1.
+- **End-of-heist cut (12-15 s, skippable after 1 s):** a 6 s **blooper + win** combo by default: the funniest auto-tagged failure from the blooper log (Bonk/Zap/Busted, weighted by "repeat at the same spot"), then the **Crew Line-up** (§3.2 #8) at the van; then the final run's 3 auto-picked shots (wide diorama, tracking the loot carrier, a hero moment at 0.35x). Burned-in caption ("RUN 6 · 8 OF ME · $1,000"), the "◀ ME, 20 SEC AGO" label, subject inside the central 32% of frame width (9:16-safe), HUD, chat and nameplates hidden.
+- **Garage lobby:** your van shows your trophy shelf and, on first join, a looping Crew Line-up of 8 copies of **your own avatar** (from Mentor-tape paths) as the promise of what's coming.
+- **Live slow-mo (cosmetic):** last loot banked with < 3 s left slows local animations to 0.5x for 0.6 s.
+
+### 6.7 Asset and animation pipeline
+
+- **Model:** Claude's Blender scripts through the `roblox-blender-modeling` gates (A1-A18, visual rubric ≥ 14/18). `bpy` is not installed (`import bpy` fails); W1 installs it (pip `bpy`, version matched to the Python here) and every asset gets a **turntable PNG** that Claude reviews itself before the owner sees it. Budgets: small 600/1,500 tris, module 800/2k, hero 10k/20k; Gus ≤ 5k tris in rigid pieces.
+- **Launch kit: ~12 modules + 3 hero props** (vault door, cash register/diamond, Giant Present), reused across Corner Shop, Toy Shop and Bank through atlas swaps and the Christmas dressing layer.
+- **Golden assets (W1-W2):** the vault door (8-10k tris, emissive dial), a wall module + counter, gold bars + diamond, Gus, the clone look. **Recommended:** commission these 5 from a freelance Roblox environment artist ($300-600, original work, rights assigned in writing) as the style reference; Claude builds the rest of the kit to match.
+- **Owner review:** a fixed **15-minute daily screenshot slot** (golden room, phone and PC, same 4 camera bookmarks).
+- **Kit into the game:** the owner imports the kit once per revision in Studio (Import 3D, correct `InitialSize` and collision) and saves **`assets/Kit.rbxm`**, which Rojo maps into `ServerStorage/Kit`; Lune and the server only **clone** kit pieces, never create MeshParts. Fallback if spike S2 fails: the server builds each kit mesh once at boot with `AssetService:CreateMeshPartAsync(meshId, {CollisionFidelity = Box})` and caches it (a DevForum report puts the cost near 22 ms + 0.27 ms per 1k triangles each [UNVERIFIED], so at boot, never per heist). Mesh ids must be owned by the experience owner.
+- **Animation:** avatar clones use Roblox's default R15 walk/run/jump clips (verify they load, v0.1 risk). Gus and all fail states are **procedural** (CFrame/scale tweens, a client-side cosmetic flop, particles) plus **3 authored clips** (Gus double-take, shrug, heavy carry) written in code as data and played by a small client **pose player** on the joints (no Studio-only `RegisterKeyframeSequence` in shipped code, vault *Publishing Animations*). Owner reviews each clip by screen recording in the daily slot. Animation Graph use is limited to Clip and Blend1D nodes ([full release](https://devforum.roblox.com/t/full-release-animation-graphs-create-complex-character-motion-visually/4739840)).
+- **Buy / generate:** nothing from the Toolbox; licensed SFX only; AI images for moodboards only.
+- **Audit and bible:** `budgetReport(root, "mobile")` (`LihFolkWorld.luau`) via Open Cloud against the test place, diffed per pass; `docs/STYLE_BIBLE.md`, 6 pages of numbers.
+
+### 6.8 Mobile budgets (busiest view: a Big Score with 4 players, 12 clones and 2 guards)
+
+| Budget | Target | Ceiling |
+|---|---|---|
+| Frame time | ≤ 16.6 ms on a mid Android (~4 GB) | 33 ms on a low Android (2-3 GB) |
+| Draw calls | ≤ 350, of which clones ≤ 120 | 600 ([Roblox docs](https://create.roblox.com/docs/performance-optimization/design)) |
+| Triangles in view | ≤ 300k | 600k |
+| Level art instances (per heist instance) | ≤ 6k | 10k |
+| All live client instances | ≤ 25k | 40k |
+| Clone system client memory (16 pooled rigs + reel) | ≤ 40 MB [estimate] | 60 MB |
+| Live particles (touch) | ≤ 360 | — |
+| Highlights | ≤ 4 clone groups + 1 x-ray + 5 others | — |
+| Textures per level | 1 atlas (256) + 1 trim sheet (1024) + ≤ 3 hero sets × 2 maps | — |
+| Shadow-casting local lights | ≤ 4 per view | — |
+| Client memory | ≤ 60% of device memory | 75% |
+
+Presets Auto / Performance / Balanced / Quality; clones, cones and lasers are **exempt from culling**.
 
 ---

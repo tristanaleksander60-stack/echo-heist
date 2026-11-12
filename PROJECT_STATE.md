@@ -11,8 +11,11 @@ _Last updated: 2026-11-11_
 - HUD: loop and timer, loot progress, echo count, rewind button, objective list, big messages, rewind screen effect.
 - LihFolk checker: 0 findings. Independent code review done: 8 bugs fixed (loot lost when an echo or player left or fell off the map, which locked the loop; guard reset per loop so echo replays stay in sync; partition wall so the guard can't see plate A; death records a vanish event; votes recounted when a player leaves; template leak).
 
-## Not tested yet (needs Roblox Studio)
-- Nothing has run in Studio yet. First test: solo flow (plate → rewind → echo holds plate → vault → red plate → loot → van), then 2-player test.
+## Testing
+- Local: `lune run tests/compile_check.luau`, `rojo build -o build/EchoHeist.rbxlx`, `lune run tests/place_check.luau` (all pass).
+- Real Roblox engine: `ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960 --place 70772627070328` publishes a Saved version and runs tests/engine_smoke.luau via Open Cloud Luau Execution. 2026-11-12: version 7, 20/20 pass (level boot, loop start, plates/door, lasers, loot grab/bank rules, guard vision).
+- Publishing fails with HTTP 409 while Collaborative Editing is on or Studio holds the place: turn it off and close Studio.
+- Still needs a human playtest in Studio: feel, echo smoothness, animations, 2-player flow.
 
 ## Next
 1. Studio test and fix (user runs `rojo build`, or `rojo serve` + Connect).
