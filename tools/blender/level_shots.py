@@ -474,9 +474,16 @@ def notes_for(s, cam, figs, gus_list):
     W, Hh = s.render.resolution_x, s.render.resolution_y
     out = []
     cpos = cam.matrix_world.translation
+    dg = bpy.context.evaluated_depsgraph_get()
     for J, k, hue in figs:
         top = MR.head_top(J, 0.6)
         if (top - cpos).length > BADGE_MAX:
+            continue
+        # BillboardGui with AlwaysOnTop false (EchoView): hidden when a wall is in front of the head
+        head = J["head"].matrix_world.translation
+        d = head - cpos
+        hit, _loc, _n, _i, obj, _m = s.ray_cast(dg, cpos, d.normalized(), distance=d.length - 0.8)
+        if hit and obj not in J["parts"]:
             continue
         v = world_to_camera_view(s, cam, top)
         out.append({"kind": "badge", "x": v.x * W, "y": (1 - v.y) * Hh, "depth": v.z, "glyph": "●%d" % k, "hue": hue,
