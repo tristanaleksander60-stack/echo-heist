@@ -399,12 +399,13 @@ function Rigs.setSpeed(rig: Rig, speed: number)
 	end
 end
 
--- Mannequin limbs that take a custom pose's joint angles (ClonePose keys by R15 part name).
-local MANNEQUIN_JOINT = { LeftArm = "LeftUpperArm", RightArm = "RightUpperArm", Head = "Head" }
+-- Mannequin limbs that take a custom pose's joint angles (ClonePose keys by R15 part name). Arms
+-- only: the visor is its own part, so a turned head would leave it behind.
+local MANNEQUIN_JOINT = { LeftArm = "LeftUpperArm", RightArm = "RightUpperArm" }
 
 -- Appends this rig's parts and target CFrames for one BulkMoveTo call.
 -- `feet` is the floor point under the rig facing its yaw; `phase` drives the limb swing.
--- `custom` (optional, ClonePose joints): rigid rigs pose their arms and head with it; avatar rigs
+-- `custom` (optional, ClonePose joints): rigid rigs pose their arms with it; avatar rigs
 -- get it through Rigs.writePose instead.
 function Rigs.pose(
 	rig: Rig,

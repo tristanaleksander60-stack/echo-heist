@@ -525,6 +525,7 @@ function EchoView.new(state: any): any
 		entry.stateSince = 0
 		entry.outName = nil
 		entry.burstAt = nil
+		entry.carrying = false
 		entry.glowY = nil
 		entry.frame.loco = "idle"
 		entry.printing = false
@@ -663,13 +664,14 @@ function EchoView.new(state: any): any
 	end
 
 	-- Where a clone's carried loot hangs, minus Config.Clone.CARRY_LIFT (WorldView adds the lift to
-	-- every carrier point): between its hands, bobbing, while it carries; positionOf otherwise.
+	-- every carrier point): between its hands, bobbing, while it carries (also while it is stuck or in
+	-- the air); positionOf otherwise.
 	function view.carryPointOf(actorId: number): Vector3?
 		local entry = active[actorId]
 		if not entry or not entry.lastFeet then
 			return view.positionOf(actorId)
 		end
-		if entry.frame.state ~= CloneState.CARRY then
+		if not entry.carrying then
 			return entry.lastPos
 		end
 		local s = entry.rig.scale or 1
@@ -766,6 +768,7 @@ function EchoView.new(state: any): any
 			ctx.gone = if fx and not reelT then fx.gone else nil
 			ctx.stuck = fx ~= nil and fx.stuckT ~= nil and not reelT
 			ctx.carrying = carriedBy[a.id] == true and not reelT
+			entry.carrying = ctx.carrying
 			ctx.prevLoco = entry.frame.loco
 			local f = CloneState.derive(rec, t, ctx, entry.frame)
 			if not f then
