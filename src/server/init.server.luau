@@ -53,6 +53,8 @@ if Config.GAME_MODE == "sim" then
 		HeistService.configureKit(KitService)
 		if Config.Heist.KIT_LEVELS then
 			KitService.start() -- background load (~2.5 s); levels stay greybox until it is ready
+			-- Gus's mesh for the client rig (box Gus until it arrives)
+			require(script:WaitForChild("Heist"):WaitForChild("GusTemplate")).publish(KitService)
 		end
 	end)
 	if not okKit then
