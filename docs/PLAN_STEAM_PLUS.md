@@ -2,7 +2,7 @@
 
 Written 2026-11-12, after the owner played version 23 and said: "it looks like an MVP, 10 % done; I can't see my previous selves".
 
-**Status: v2, revised after two independent critiques (`docs/audit/PLAN_CRITIQUE_A.md`, art and game direction; `docs/audit/PLAN_CRITIQUE_B.md`, engineering, kids and production). Awaiting owner approval. No code changes until it is approved.**
+**Status: v2, revised after two independent critiques (`docs/audit/PLAN_CRITIQUE_A.md`, art and game direction; `docs/audit/PLAN_CRITIQUE_B.md`, engineering, kids and production). **APPROVED by the owner on 2026-11-12: the whole plan and all eleven decisions D1-D11 in §10 (D5 camera and D7 plate/button are settled by the A/B and kid tests as written).**
 
 This plan does not replace MASTERPLAN.md: concept, pillars, levels, economy and architecture stay. It replaces the parts of MASTERPLAN §6-7 and §10 that turned out too thin, and adds a quality system so "done" means "premium", not "wired".
 
