@@ -25,7 +25,8 @@
 --   Hit-stop (premium F3): only the four heavy beats (rewind start, your catch, the diamond, heist
 --       complete), HIT_STOP_SECONDS each: filter() holds the view time and the local character's
 --       animation tracks pause (AdjustSpeed 0, restored). None under reduced motion.
---   Juice governor: MomentDirector.allowFlash (<= 3 full-screen flashes a second, RewindDirector too),
+--   Juice governor: MomentDirector.allowFlash (Heist/FlashLimit: <= 3 full-screen flashes a second, shared
+--       with RewindDirector and the HUD's red vignette),
 --       MomentDirector.particles (Heist/Particles: the one live particle budget every effect shares, the
 --       tier's cap, 360 on touch at tiers 1-2), a low-tier substitute for every
 --       effect from Config.Moments.LOW_TIER (fewer rain particles, no outline flash, a coarse rewind
@@ -48,6 +49,7 @@ local Strings = require(HeistShared:WaitForChild("Strings"))
 local EventLog = require(Shared:WaitForChild("Sim"):WaitForChild("EventLog"))
 
 local Icons = require(script.Parent:WaitForChild("Icons"))
+local FlashLimit = require(script.Parent:WaitForChild("FlashLimit"))
 local Motion = require(script.Parent:WaitForChild("Motion"))
 local Particles = require(script.Parent:WaitForChild("Particles"))
 local Sound = require(script.Parent:WaitForChild("Sound"))
@@ -63,11 +65,11 @@ local MomentDirector = {}
 ---------------------------------------------------------------------------
 -- The juice governor (module-wide: every director shares one flash limit and one particle budget)
 ---------------------------------------------------------------------------
-local flashLog: { number } = {}
 
--- May a full-screen flash play now? (<= Config.Moments.FLASH_MAX per FLASH_WINDOW s; logs it if so.)
+-- May a full-screen flash play now? (<= Config.Moments.FLASH_MAX per FLASH_WINDOW s; logs it if so.) The one
+-- client-wide limiter (Heist/FlashLimit): the HUD's red vignette counts against the same limit.
 function MomentDirector.allowFlash(now: number?): boolean
-	return MomentPlan.flashAllowed(flashLog, now or os.clock(), M.FLASH_MAX, M.FLASH_WINDOW)
+	return FlashLimit.allow(now)
 end
 
 -- Particles granted for a burst of `want` living `lifetime` s, under the one shared live budget (Heist/Particles:

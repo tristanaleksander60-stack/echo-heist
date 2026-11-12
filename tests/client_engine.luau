@@ -48,6 +48,8 @@ for _, name in
 		"GusView",
 		"WorldView",
 		"MomentDirector",
+		"Particles",
+		"FlashLimit",
 		"RewindDirector",
 		"LineupDirector",
 		"Hud",
@@ -70,6 +72,29 @@ if not okAd then
 	table.insert(loadErr, "AudioDirector: " .. tostring(adErr))
 end
 check(#loadErr == 0, "client modules load (" .. table.concat(loadErr, "; ") .. ")")
+
+-- One flash limit for the whole client (Heist/FlashLimit): the moments' flashes and the HUD's red vignette share
+-- Config.Moments.FLASH_MAX per FLASH_WINDOW.
+do
+	local okF, fErr = pcall(function()
+		local M = (require(shared:WaitForChild("Config")) :: any).Moments
+		local FlashLimit = require(clientHeist:WaitForChild("FlashLimit"))
+		local Moments = require(clientHeist:WaitForChild("MomentDirector"))
+		FlashLimit.reset()
+		local t = 1000
+		local granted = 0
+		for i = 1, 5 do
+			local ok = if i % 2 == 0 then Moments.allowFlash(t + i * 0.01) else FlashLimit.allow(t + i * 0.01)
+			if ok then
+				granted += 1
+			end
+		end
+		assert(granted == M.FLASH_MAX, "granted " .. granted)
+		assert(FlashLimit.allow(t + M.FLASH_WINDOW + 0.02), "the window moves on")
+		FlashLimit.reset()
+	end)
+	check(okF, "one flash limit shared by the moments and the HUD" .. (if okF then "" else ": " .. tostring(fErr)))
+end
 
 local Protocol = require(shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local HeistInstance = require(heistServer:WaitForChild("HeistInstance"))
