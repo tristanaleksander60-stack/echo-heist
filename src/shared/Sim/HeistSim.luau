@@ -158,6 +158,8 @@ function HeistSim.new(level: any, opts: Opts?): any
 	for i, def in level.guards do
 		sim.guards[i] = Guards.new(def, level.rootY)
 	end
+	-- Relaxed levels: Gus chases at the same reduced share as his patrol (Levels/Relaxed).
+	local chaseMult = if level.relaxed == true then Config.Onboarding.RELAXED_GUARD_SPEED_MULT else 1
 	local mult = (if sim.firstHeist then S.FIRST_HEIST_GRACE_MULT else 1)
 		* (if sim.relaxed then S.RELAXED_DETECT_MULT else 1)
 	sim.ctx = {
@@ -179,10 +181,7 @@ function HeistSim.new(level: any, opts: Opts?): any
 		},
 		chaseVision = { range = S.GUARD_VISION_RANGE * (level.visionMult or 1), cosHalf = -1, allRound = true },
 		chase = false,
-		-- Relaxed levels: Gus chases at the same reduced share as his patrol (Levels/Relaxed).
-		chaseSpeed = S.GUARD_CHASE_SPEED_MULT
-			* sim.walkSpeed
-			* (if level.relaxed == true then Config.Onboarding.RELAXED_GUARD_SPEED_MULT else 1),
+		chaseSpeed = S.GUARD_CHASE_SPEED_MULT * sim.walkSpeed * chaseMult,
 		onCatch = nil :: any,
 	}
 	sim.ctx.onCatch = function(g: any, a: any)

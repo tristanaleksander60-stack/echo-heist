@@ -383,7 +383,7 @@ end
 Strings.OBJ_STAY_ON_PLATE = "Stay on it. Tap REWIND."
 Strings.OBJ_STEP_ON_PLATE = "Step on the plate"
 Strings.OBJ_CLONE_STOPS = "Your clone stops where you stop."
-Strings.OBJ_WAIT_FOR_CLONE = "Wait for your clone to open the door"
+Strings.OBJ_WAIT_FOR_CLONE = "Watch your clone open the door." -- P2-1: the L1 intro fits 30 words
 Strings.OBJ_BANK_IT = "Bank it at the van"
 Strings.OBJ_GRAB_CASH = "Grab the cash"
 Strings.OBJ_GRAB_LOOT = "Grab the loot"
@@ -394,7 +394,74 @@ Strings.LEVEL_LINES = table.freeze({
 	cs3_lights_out = "Plate B turns the lasers off.",
 	cs4_night_clerk = "Hide from Gus. Cross while he looks away.",
 	bk1_big_score = "The vault. Every clone counts.",
+	-- Daily vaults (open after Night Clerk; WALKTHROUGH P1-7: each has its own goal line)
+	dv01_stocking_stuffer = "One plate holds the door. Make a clone.",
+	dv02_twin_chimneys = "Both plates at once open the door.",
+	dv03_candy_cane_lasers = "Hold the plate. The lasers switch off.",
+	dv04_mistletoe_patrol = "Hold the door. Sneak past Gus.",
+	dv05_tinsel_corridor = "Two doors. Plate A first, then plate B.",
+	dv06_snow_day_switch = "A clone rings the bell. You run in.",
+	dv07_ornament_scale = "Three plates at once open the vault.",
+	dv08_frosty_window = "Lasers off first, then the pantry door.",
+	dv09_sleigh_bell_alarm = "Grab the bell, then run to the van!",
+	dv10_gingerbread_lobby = "Hold two plates. Cross while Gus looks away.",
+	dv11_jingle_vault = "The vault needs both plates at once.",
+	dv12_night_before = "Every plate does two jobs. Watch Gus.",
 } :: { [string]: string })
+
+---------------------------------------------------------------------------
+-- Onboarding and help (Hud/Hints, Shared/Heist/Help; PLAN_STEAM_PLUS §5, §6, premium G2/G4)
+---------------------------------------------------------------------------
+-- World-state lines from L2 on (WALKTHROUGH P0-4), picked by Help.worldLine.
+Strings.OBJ_STAY_TAP_REWIND = "Stay here. Tap REWIND."
+Strings.OBJ_NEXT_PLATE = "Find the next plate. Make a clone."
+Strings.OBJ_CLONES_OPEN_WAY = "Your clones open the way. Grab it!"
+-- Stuck help (P0-2): the chip, the chalk ghost's line, the Relaxed card.
+Strings.SHOW_ME = "SHOW ME?"
+Strings.OBJ_WATCH_GHOST = "Watch, then copy."
+function Strings.ghostRedo(slot: number): string
+	return string.format("Redo clone %d like this.", slot)
+end
+Strings.DECK_FULL_HELP = "Deck full. DELETE a clone you don't need."
+Strings.TRY_RELAXED = "TRY RELAXED?"
+Strings.RELAXED_SUB = "Slower Gus, longer runs"
+-- First-time beats (premium G2): the bigger first version of each moment.
+Strings.FIRST_PLATE = "Stay on it."
+Strings.FIRST_CLONE = "That's you. It copies you."
+function Strings.firstBank(money: string): string
+	return "+" .. money .. "!"
+end
+-- The Party's first entry: Gus dozes in the back office (PLAN §5, §6.1 item 2).
+Strings.GUS_INTRO = "That's Gus. Don't wake him."
+-- Endings by Dawn: the party's is a celebration, a story level's is a failure with a tip.
+Strings.STAMP_SUNRISE = "SUNRISE!"
+Strings.SUNRISE_COUNT = "SUNRISE! Count the loot."
+Strings.STAMP_OUT_OF_TIME = "OUT OF TIME"
+Strings.STAMP_DOORS_LOCKED = "TOO LATE"
+-- Every failure says why and what to try (premium G4): one line of counterplay per cause
+-- (Shared/Heist/Help.CAUSE), a level's own line where it has one (Help.advice).
+Strings.FAIL_ADVICE = table.freeze({
+	Caught = "Wait till Gus looks away.",
+	Zapped = "A clone on a plate stops the lasers.",
+	Timeout = "Tap REWIND when you're done.",
+	Alarm = "When it rings, run to the van!",
+	Dawn = "Try: make every clone count.",
+} :: { [string]: string })
+Strings.FAIL_ADVICE_LEVEL = table.freeze({
+	cs3_lights_out = table.freeze({ Zapped = "Hold plate B. The lasers switch off." }),
+	cs4_night_clerk = table.freeze({
+		Caught = "Hide under the coat rack. Then cross.",
+		Dawn = "Try: hide under the coat rack.",
+	}),
+	bk1_big_score = table.freeze({ Caught = "Cross the hall while Gus looks away." }),
+} :: { [string]: { [string]: string } })
+-- The garage's daily vault card before Night Clerk is cleared (PLAN D4).
+function Strings.dailyLockedClear(name: string): string
+	return Strings.DAILY_VAULT .. Strings.SEP .. "Clear " .. name
+end
+function Strings.dailyLockedToast(name: string): string
+	return "Clear " .. name .. " to open the daily vault."
+end
 
 ---------------------------------------------------------------------------
 -- Rewind, Line-up, Gus, clone labels
