@@ -978,7 +978,7 @@ return function(test)
 		Assert.truthy(b1.minX < -16 and b1.maxX > 16 and b1.maxZ > 10, "L1 building: the whole shop")
 	end)
 
-	test("soft pools: a smooth falloff that keeps each kind's brightness", function()
+	test("soft pools: a smooth falloff with each kind's old brightness (x gain)", function()
 		local soft = LIGHT.POOL_SOFT
 		for kind, spec in LIGHT.LAMP do
 			local stepped = spec.poolRings or LIGHT.POOL.rings
@@ -1015,7 +1015,12 @@ return function(test)
 				return m
 			end
 			if peak < soft.peakMax - 1e-6 then
-				Assert.near(mean(rings), mean(stepped), 0.03, kind .. ": same mean brightness")
+				Assert.near(
+					mean(rings),
+					mean(stepped) * (soft.gain or 1),
+					0.03,
+					kind .. ": the old mean brightness x gain"
+				)
 			end
 		end
 	end)

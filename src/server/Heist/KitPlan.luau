@@ -759,7 +759,7 @@ function KitPlan.poolPeak(stepped: { { size: number, alpha: number } }, soft: an
 		local inner = if sorted[k + 1] then sorted[k + 1].size else 0
 		mean += (1 - through) * (outer * outer - inner * inner)
 	end
-	return math.min(mean * (soft.exponent + 1), soft.peakMax)
+	return math.min(mean * (soft.exponent + 1) * (soft.gain or 1), soft.peakMax)
 end
 
 -- The floor a lamp's pool may cover (level space): its square, cut at the wall lines between the lamp and the

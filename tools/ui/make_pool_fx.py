@@ -20,7 +20,7 @@ from PIL import Image
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 OUT = ROOT / "assets/ui/EH_FX_Pool.png"
 SIZE = 256
-EXPONENT = 1.5
+EXPONENT = 1.0
 
 # 4 x 4 Bayer matrix, in [0, 1)
 BAYER = np.array([[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]], dtype=np.float64) / 16.0

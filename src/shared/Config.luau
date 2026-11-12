@@ -919,7 +919,7 @@ Config.Lighting = {
 			brightness = 1.6,
 			color = { 255, 205, 150 },
 			shadows = false,
-			pool = 18,
+			pool = 20,
 			poolRings = {
 				{ size = 1, alpha = 0.88 },
 				{ size = 0.8, alpha = 0.84 },
@@ -950,7 +950,7 @@ Config.Lighting = {
 			shadows = false,
 			lightY = 9.43,
 			bulbY = 9.43,
-			pool = 20,
+			pool = 24,
 			poolColor = { 246, 186, 120 },
 			poolRings = { -- five soft steps (three read as a bullseye at this size)
 				{ size = 1, alpha = 0.86 },
@@ -1047,13 +1047,16 @@ Config.Lighting = {
 	-- smooth radial falloff: opacity(r) = peak * (1 - (r / R)^2)^exponent. In the engine an uploaded radial
 	-- gradient image (assets/ui/EH_FX_Pool.png, alpha = (1 - u^2)^exponent; resolved at boot by Heist/UiImages)
 	-- draws it in one ImageLabel; until the image resolves, `rings` thin discs approximate the same curve
-	-- (KitPlan.poolRings). The peak keeps each kind's old area-weighted brightness (warm share unchanged):
-	-- peak = old mean opacity x (exponent + 1), capped at peakMax.
+	-- (KitPlan.poolRings). The peak is each kind's old area-weighted brightness x `gain`: peak = old mean opacity x
+	-- (exponent + 1) x gain, capped at peakMax. A smooth edge alone lost warm share (G1a 47 -> 36 % with 1.5 and no
+	-- gain), so the curve is gentler (exponent 1), a bit brighter (gain 1.2) and the room / street pools wider
+	-- (LAMP.room / street `pool` 20 / 24): G1a 45 % with no stepped rings and no light through the shop front.
 	POOL_SOFT = {
-		image = "EH_FX_Pool", -- UiAssets stem
-		exponent = 1.5,
+		image = "EH_FX_Pool", -- UiAssets stem; tools/ui/make_pool_fx.py EXPONENT must match `exponent`
+		exponent = 1.0,
+		gain = 1.2,
 		rings = 10, -- fallback discs per pool
-		peakMax = 0.82,
+		peakMax = 0.85,
 	},
 
 	-- Hide spots (FEEDBACK_TABLE "Hide spot", LEVELS P1-2): a soft Warm Marble outline of the hide's footprint
