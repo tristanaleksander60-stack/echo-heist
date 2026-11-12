@@ -108,5 +108,81 @@ seen = Guard.scan({ fake }, {})
 check(#seen == 0, "Guard cannot see the hideout spawn")
 
 dummyModel:Destroy()
+
+-- 6. Data layer (docs/DATA.md). Luau Execution does not run place scripts, so boot it the
+-- way init.server.luau does. DataStore calls here are REAL: the round trip runs only in
+-- the test experience (Config.Data.TEST_UNIVERSE_IDS), only on a "_TEST_" key, and
+-- removes the key again. No player profile is ever read or written.
+local DataStoreService = game:GetService("DataStoreService")
+local HttpService = game:GetService("HttpService")
+local dataFolder = server:WaitForChild("Data")
+local DataService = require(dataFolder:WaitForChild("DataService"))
+local PlayerData = require(dataFolder:WaitForChild("PlayerData"))
+local sharedFolder = ReplicatedStorage:WaitForChild("Shared")
+local GameConfig = require(sharedFolder:WaitForChild("Config"))
+local dataShared = sharedFolder:WaitForChild("Data")
+local Keys = require(dataShared:WaitForChild("Keys"))
+local Schema = require(dataShared:WaitForChild("Schema"))
+
+local inTestUniverse = Keys.isTestEnvironment(false, game.GameId)
+local okStart, startErr = pcall(DataService.start)
+check(okStart, "DataService starts" .. (if okStart then "" else ": " .. tostring(startErr)))
+local env = DataService.environment()
+check(env.isTest and env.keyPrefix == "_TEST_U_", "data uses _TEST_ keys here (prefix " .. env.keyPrefix .. ")")
+check(inTestUniverse, "running in the test universe (GameId " .. tostring(game.GameId) .. ")")
+local startDeadline = os.clock() + 10
+while DataService.status() == "starting" and os.clock() < startDeadline do
+	task.wait(0.1)
+end
+check(DataService.status() == "online", "data layer online (" .. DataService.status() .. ")")
+local lfRemotes = ReplicatedStorage:FindFirstChild("LihFolkRemotes")
+check(
+	lfRemotes ~= nil
+		and lfRemotes:FindFirstChild("Data.Snapshot") ~= nil
+		and lfRemotes:FindFirstChild("Data.Buy") ~= nil
+		and lfRemotes:FindFirstChild("Shop.PromptProduct") ~= nil,
+	"data remotes created"
+)
+
+-- Library load rules in the real engine (pure; no DataStore).
+local function makeData(): { [string]: any }
+	return { Heist = Schema.defaultHeist() }
+end
+local fresh = PlayerData.prepare(nil, Schema.VERSION, Schema.MIGRATIONS, makeData)
+check(
+	fresh ~= nil
+		and fresh.Data.Heist.unlocked[GameConfig.Data.LEVEL_ORDER[1]] == true
+		and PlayerData.findUnsavable(fresh.Data) == nil,
+	"new profile: v1 defaults, savable"
+)
+local _, newerReason = PlayerData.prepare({ Schema = Schema.VERSION + 1, Data = {} }, Schema.VERSION, {}, makeData)
+check(newerReason == "newer", "a newer schema is refused")
+local _, corruptReason = PlayerData.prepare("junk", Schema.VERSION, {}, makeData)
+check(corruptReason == "corrupt", "a corrupt document is refused")
+local old = PlayerData.prepare({ Schema = 1, Data = { Heist = { bagLevel = 2 } } }, Schema.VERSION, {}, makeData)
+check(
+	old ~= nil and old.Data.Heist.bagLevel == 2 and old.Data.Heist.settings.relaxed == false,
+	"an older document is reconciled additively"
+)
+
+-- Real DataStore round trip on a throwaway _TEST_ key (test universe only).
+if inTestUniverse then
+	local key = GameConfig.Data.TEST_PREFIX .. "smoke_" .. HttpService:GenerateGUID(false)
+	local okDs, dsErr = pcall(function()
+		assert(Keys.isWritable(key, true), "refusing a non-test key")
+		local store = DataStoreService:GetDataStore(GameConfig.Data.STORE_NAME)
+		local token = HttpService:GenerateGUID(false)
+		store:UpdateAsync(key, function()
+			return { Schema = Schema.VERSION, Data = makeData(), Token = token }
+		end)
+		local options = Instance.new("DataStoreGetOptions")
+		options.UseCache = false
+		local value = store:GetAsync(key, options)
+		check(type(value) == "table" and value.Token == token, "DataStore write + uncached read on a _TEST_ key")
+		store:RemoveAsync(key)
+	end)
+	check(okDs, "DataStore round trip" .. (if okDs then "" else ": " .. tostring(dsErr)))
+end
+
 table.insert(results, string.format("%d failure(s)", failures))
 return table.concat(results, "\n")

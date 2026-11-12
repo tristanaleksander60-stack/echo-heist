@@ -52,6 +52,9 @@
     "ReplicatedStorage": {
       "Shared": {
         "$path": "src/shared"
+      },
+      "LihFolk": {
+        "$path": "src/lihfolk"
       }
     },
     "ServerScriptService": {

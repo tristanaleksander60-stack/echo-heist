@@ -22,7 +22,7 @@ _Last updated: 2026-11-12_
 ## Testing
 - Local: `lune run tests/compile_check.luau`, `rojo build -o build/EchoHeist.rbxlx`, `lune run tests/place_check.luau` (all pass).
 - Lint: `stylua --check src tests`, `selene src tests`, `selene --config src/shared/Sim/selene.toml src/shared/Sim src/shared/Rec`, `lune run tests/pure_check.luau` (all clean; README "Lint (L0)" has the Selene std workaround for TLS-intercepting proxies).
-- L1 unit specs (Lune): `lune run tests/run_unit.luau` runs every `tests/unit/*.spec.luau` (59 pass, 2026-11-12).
+- L1 unit specs (Lune): `lune run tests/run_unit.luau` runs every `tests/unit/*.spec.luau` (96 pass, 2026-11-12, incl. 37 data specs).
 - Real Roblox engine: `ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960 --place 70772627070328` publishes a Saved version and runs tests/engine_smoke.luau via Open Cloud Luau Execution. 2026-11-12: version 7, 20/20 pass (level boot, loop start, plates/door, lasers, loot grab/bank rules, guard vision).
 - Publishing fails with HTTP 409 while Collaborative Editing is on or Studio holds the place: turn it off and close Studio.
 - Still needs a human playtest in Studio: feel, echo smoothness, animations, 2-player flow.
@@ -42,11 +42,13 @@ _Last updated: 2026-11-12_
 - Remaining W1 for Claude: bpy + turntable pipeline, mesh pipeline (S2).
 - Owner: key scopes asset:write + DataStore (Nov 13), handles, ID/2SV, fun gate Mon Nov 16, bench results.
 
+- Data layer installed (docs/DATA.md), not wired into gameplay yet: lihfolk-systems PlayerData (session lease, fenced saves, autosave, BindToClose), Policy, Currency (Cash, Stars mirror, CandyCanes), Receipts (the only ProcessReceipt), Shop (Robux prompts) as-is in `src/server/Data/` and `src/lihfolk/` (= ReplicatedStorage/LihFolk). `DataService` = server API for the heist server (`awardHeistResult`, `awardDailyVault`, `grantTrophy`, Cash earn/spend...) + validated client remotes (`Data.*`). Pure rules in `src/shared/Data/` (Schema v1, Progress medals/stars/unlocks/Cash, DailyVault advent + streak, Store, Keys `_TEST_` isolation, Calendar). Studio without API access runs "offline" (nobody kicked, nothing saved). Engine smoke section 6 added (data boot + `_TEST_` DataStore round trip): not run yet. Owner: Studio API access, Open Cloud DataStore scopes, create the 6 dev products and paste ids (DATA.md "Owner actions").
+
 ## Next (see MASTERPLAN §10.2 for the full W1 list)
 1. Fun gate: owner plays v0.1 in Studio with 2-3 people by Mon Nov 16 (`rojo build -o EchoHeist.rbxlx`), solo and 2-client, once with 30 s loops via Config.
 2. Feel pass: echo smoothness (consider client-side replay), guard readability (vision cone visual), sounds.
 3. Second level and level select; time medals (fewest echoes / fastest) = replay value and a TikTok format.
-4. Data: save best medals and unlocks (lihfolk-systems PlayerData).
+4. Data: call `DataService.awardHeistResult` / `awardDailyVault` from the heist server; store + settings UI; ghost keys on `newBest`; daily board (Leaderboard) Dec 11.
 5. Christmas event level: "Steal Back Christmas".
 6. Thumbnail and icon, then soft launch.
 

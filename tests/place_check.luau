@@ -206,6 +206,43 @@ for _, name in { "Main", "LevelBuilder", "Actors", "Loot", "Mechanisms", "Guard"
 	expect(m ~= nil and m.ClassName == "ModuleScript", "Server." .. name .. " is a ModuleScript")
 end
 
+-- Data layer (docs/DATA.md): lihfolk-systems modules where the library expects them
+local lihfolk = rs:FindFirstChild("LihFolk")
+expect(lihfolk ~= nil and lihfolk.ClassName == "Folder", "ReplicatedStorage.LihFolk is a Folder")
+for _, name in { "Signal", "Net", "RateLimit", "Janitor", "Feedback" } do
+	local m = lihfolk and lihfolk:FindFirstChild(name)
+	expect(m ~= nil and m.ClassName == "ModuleScript", "LihFolk." .. name .. " is a ModuleScript")
+end
+local dataServer = server and server:FindFirstChild("Data")
+expect(dataServer ~= nil and dataServer.ClassName == "Folder", "Server.Data is a Folder")
+for _, name in { "DataService", "PlayerData", "Policy", "Currency", "Inventory", "Rewards", "Receipts", "Shop" } do
+	local m = dataServer and dataServer:FindFirstChild(name)
+	expect(m ~= nil and m.ClassName == "ModuleScript", "Server.Data." .. name .. " is a ModuleScript")
+end
+local dataShared = shared and shared:FindFirstChild("Data")
+for _, name in { "Schema", "Progress", "DailyVault", "Store", "Keys", "Calendar", "ProductPrices" } do
+	local m = dataShared and dataShared:FindFirstChild(name)
+	expect(m ~= nil and m.ClassName == "ModuleScript", "Shared.Data." .. name .. " is a ModuleScript")
+end
+-- Exactly one ProcessReceipt assignment in the whole place (lihfolk-systems Receipts)
+local receiptAssignments = {}
+for _, d in game:GetDescendants() do
+	if d:IsA("LuaSourceContainer") then
+		local src = d.Source
+		for _ in string.gmatch(src, "%.ProcessReceipt%s*=[^=]") do
+			table.insert(receiptAssignments, d:GetFullName())
+		end
+	end
+end
+expect(
+	#receiptAssignments == 1,
+	"exactly one ProcessReceipt assignment (found "
+		.. #receiptAssignments
+		.. ": "
+		.. table.concat(receiptAssignments, ", ")
+		.. ")"
+)
+
 local client = sps and sps:FindFirstChild("Client")
 expect(client ~= nil and client.ClassName == "LocalScript", "StarterPlayerScripts.Client is a LocalScript")
 
