@@ -1,8 +1,18 @@
 --!strict
--- Hud/Results: the results card (§7.3 "heist complete", §6.6): title, haul, three
--- stamps landing 0.25 s apart, the run line, what was saved (in a Studio play test
--- without DataStores a neutral "not saved" chip, PLAN S6), and the leader's
--- REPLAY / NEXT / GARAGE.
+-- Hud/Results: the job sheet (PLAN_STEAM_PLUS §3.2, §4.3 U5, §5 "Results"; POLISH §4.2 "Results v2
+-- timeline"; premium F5: anticipation, reveal, payoff, settle). Timings are Config.Ui.SHEET:
+--   0.00  the sheet slides in (Ui.show + a short slide; reduced motion: it appears)
+--   0.25  the haul counts up (Quad Out, 0.35-1.0 s, Shared/Heist/CrewBoard.countValue) and pops
+--   0.70  one line per goal, each struck through with a pencil line when it was met
+--   0.90  three rubber stamps land with ink rings, MEDAL_STAMP_GAP apart (the pitch ladder); the first
+--         time a star can be earned its stamp says why, with the level's real numbers ("HAUL: $1,000
+--         stolen", "CREW: 2 clones or fewer", "CLEAN: never caught"; WALKTHROUGH S7). A star earned with
+--         its reason showing is remembered (settings seenStar*, saved through Data.SetSetting)
+--   1.60  "3 clones · 4 runs · 1:52"
+--   1.90  the trophy flies to the van (heist complete)
+--   2.10  the buttons slide up last and take input BUTTON_GUARD (0.3 s) later
+-- What was saved stays under it (in a Studio play test without DataStores a neutral "not saved" chip,
+-- PLAN S6), and the leader gets REPLAY / NEXT / GARAGE.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -11,17 +21,35 @@ local RunService = game:GetService("RunService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local HeistShared = Shared:WaitForChild("Heist")
+local CrewBoard = require(HeistShared:WaitForChild("CrewBoard"))
+local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
-local Sound = require(script.Parent.Parent:WaitForChild("Sound"))
-local Ui = require(script.Parent.Parent:WaitForChild("Ui"))
+local Heist = script.Parent.Parent
+local Icons = require(Heist:WaitForChild("Icons"))
+local Motion = require(Heist:WaitForChild("Motion"))
+local Settings = require(Heist:WaitForChild("Settings"))
+local Sound = require(Heist:WaitForChild("Sound"))
+local Theme = require(Heist:WaitForChild("Theme"))
+local Ui = require(Heist:WaitForChild("Ui"))
 local Common = require(script.Parent:WaitForChild("Common"))
 
 local AU = Config.Audio
+local U = Config.Ui
+local S = U.SHEET
+local CU = U.COUNT_UP
 local TAP = Ui.TAP
 local localPlayer = Players.LocalPlayer
 local IS_STUDIO = RunService:IsStudio()
+
+local SHEET_W = HudLayout.RESULTS.w
+local ROW_Y, ROW_H, ROW_GAP = 70, 26, 2
+local LINE_X, LINE_W = 18, 270
+local STAMP_X, STAMP_W = 296, 170
+local PAPER = Palette.marbleHi
+local INK = Palette.ink
+local PENCIL = Color3.new(S.PENCIL[1], S.PENCIL[2], S.PENCIL[3])
 
 local Results = {}
 
@@ -34,78 +62,138 @@ function Results.build(ctx: any): any
 
 	local results = Ui.panel(root, {
 		Name = "Results",
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.fromOffset(480, 326),
+		BackgroundColor3 = PAPER,
 		Visible = false,
 		ZIndex = 10,
-	})
+	}, INK)
+	Common.place(results, HudLayout.RESULTS)
+	Common.sheetBlocksTouch("results", results)
 	res.card = results
-	local resTitle = Ui.label(results, {
-		Position = UDim2.fromOffset(0, 10),
-		Size = UDim2.new(1, 0, 0, 44),
-		TextSize = 34,
-		FontFace = Ui.FONT_DISPLAY,
+	local restPosition = results.Position
+
+	-- Header: the job's name, and the van the trophy flies to.
+	local kicker = Ui.label(results, {
+		Position = UDim2.fromOffset(16, 4),
+		Size = UDim2.new(1, -72, 0, 22),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextSize = U.TYPE_SCALE[1],
+		TextColor3 = Palette.steelLo,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+		Text = Strings.JOB_SHEET,
+		ZIndex = 11,
+	})
+	local van = Ui.frame(results, {
+		Name = "Van",
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -14, 0, 4),
+		Size = UDim2.fromOffset(U.ICON_SIZE, U.ICON_SIZE),
+		BackgroundTransparency = 1,
+		ZIndex = 11,
+	})
+	Icons.attach(van, "van", { Size = UDim2.fromScale(1, 1), ImageColor3 = INK, ZIndex = 12 })
+
+	local resTitle = Ui.display(results, {
+		Position = UDim2.fromOffset(14, 24),
+		Size = UDim2.fromOffset(280, 42),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextSize = U.TYPE_SCALE[4],
 		Text = Strings.HEIST_COMPLETE,
 		ZIndex = 11,
 	})
+	Ui.fit(resTitle, U.TYPE_SCALE[4], U.TYPE_SCALE[2])
 	local resHaul = Ui.label(results, {
-		Position = UDim2.fromOffset(0, 54),
-		Size = UDim2.new(1, 0, 0, 34),
-		TextSize = 28,
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -16, 0, 24),
+		Size = UDim2.fromOffset(160, 42),
+		TextXAlignment = Enum.TextXAlignment.Right,
+		TextSize = U.TYPE_SCALE[4],
 		TextColor3 = Palette.gold,
 		Text = Ui.money(0),
 		ZIndex = 11,
 	})
-	local stampRow = Ui.frame(results, {
-		Position = UDim2.fromOffset(16, 94),
-		Size = UDim2.new(1, -32, 0, 50),
-		BackgroundTransparency = 1,
-		ZIndex = 11,
-	})
-	local stampLayout = Instance.new("UIListLayout")
-	stampLayout.FillDirection = Enum.FillDirection.Horizontal
-	stampLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	stampLayout.Padding = UDim.new(0, 10)
-	stampLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	stampLayout.Parent = stampRow
-	local stamps: { TextLabel } = {}
+
+	-- One row per goal: the line (struck in pencil when met) and its stamp.
+	type Row = { line: TextLabel, strike: Frame, stamp: TextLabel, ring: Frame }
+	local rows: { Row } = {}
 	for i = 1, 3 do
-		local s = Ui.label(stampRow, {
-			Size = UDim2.fromOffset(136, 46),
-			TextSize = 20,
+		local y = ROW_Y + (i - 1) * (ROW_H + ROW_GAP)
+		local line = Ui.label(results, {
+			Name = "Goal" .. i,
+			Position = UDim2.fromOffset(LINE_X, y),
+			Size = UDim2.fromOffset(LINE_W, ROW_H),
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextSize = U.TYPE_SCALE[2],
+			TextColor3 = INK,
+			TextTruncate = Enum.TextTruncate.AtEnd,
+			Text = "",
+			ZIndex = 11,
+		})
+		local strike = Ui.frame(line, {
+			Name = "Pencil",
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, -2, 0.5, 1),
+			Size = UDim2.fromOffset(0, 2),
+			BackgroundColor3 = PENCIL,
+			BackgroundTransparency = 0.1,
+			Rotation = -1,
+			ZIndex = 12,
+			Active = false,
+		})
+		local ring = Ui.frame(results, {
+			Name = "Ring" .. i,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromOffset(STAMP_X + STAMP_W / 2, y + ROW_H / 2),
+			Size = UDim2.fromOffset(STAMP_W * 0.6, STAMP_W * 0.6),
+			BackgroundTransparency = 1,
+			Visible = false,
+			ZIndex = 11,
+			Active = false,
+		})
+		Ui.pill(ring)
+		Ui.stroke(ring, Palette.gold, Theme.STROKE * 2)
+		local stamp = Ui.label(results, {
+			Name = "Stamp" .. i,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromOffset(STAMP_X + STAMP_W / 2, y + ROW_H / 2),
+			Size = UDim2.fromOffset(STAMP_W, ROW_H),
 			FontFace = Ui.FONT_DISPLAY,
+			TextSize = U.TYPE_SCALE[2],
 			RichText = true,
 			Text = "",
-			LayoutOrder = i,
-			ZIndex = 12,
+			Visible = false,
+			ZIndex = 13,
 		})
-		s.BackgroundColor3 = Palette.inkHi
-		s.BackgroundTransparency = 0
-		Ui.corner(s)
-		stamps[i] = s
+		Ui.fit(stamp, U.TYPE_SCALE[2], U.TYPE_SCALE[1])
+		stamp.BackgroundColor3 = PAPER
+		stamp.BackgroundTransparency = 0
+		Ui.corner(stamp)
+		Ui.stroke(stamp, Palette.gold, Theme.STROKE)
+		rows[i] = { line = line, strike = strike, stamp = stamp, ring = ring }
 	end
+
 	local resLine = Ui.label(results, {
-		Position = UDim2.fromOffset(0, 146),
-		Size = UDim2.new(1, 0, 0, 28),
-		TextSize = 20,
+		Position = UDim2.fromOffset(0, 160),
+		Size = UDim2.new(1, 0, 0, 24),
+		TextSize = U.TYPE_SCALE[2],
+		TextColor3 = INK,
 		Text = "",
 		ZIndex = 11,
 	})
 	local resAward = Ui.label(results, {
-		Position = UDim2.fromOffset(10, 174),
-		Size = UDim2.new(1, -20, 0, 40),
-		TextSize = 18,
+		Position = UDim2.fromOffset(12, 186),
+		Size = UDim2.new(1, -24, 0, 30),
+		TextSize = U.TYPE_SCALE[1],
 		TextWrapped = true,
-		TextColor3 = Palette.goldHi,
+		TextColor3 = Palette.goldLo,
 		Text = "",
 		ZIndex = 11,
 	})
+	Ui.fit(resAward, U.TYPE_SCALE[1], U.TYPE_SCALE[1])
 	-- Studio play tests have no DataStores (DataService goes offline): a small neutral chip
 	-- instead of "Couldn't save this one." Live servers never take this path.
 	local studioChip = Ui.frame(results, {
 		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 180),
+		Position = UDim2.new(0.5, 0, 0, 188),
 		Size = UDim2.fromOffset(300, 28),
 		BackgroundColor3 = Palette.inkHi,
 		BackgroundTransparency = 0,
@@ -121,6 +209,8 @@ function Results.build(ctx: any): any
 		Text = Strings.STUDIO_NOT_SAVED,
 		ZIndex = 12,
 	})
+
+	-- Buttons last (F5): hidden until BUTTONS_AT, then live BUTTON_GUARD later.
 	local resButtons = Ui.frame(results, {
 		AnchorPoint = Vector2.new(0.5, 1),
 		Position = UDim2.new(0.5, 0, 1, -12),
@@ -128,6 +218,11 @@ function Results.build(ctx: any): any
 		BackgroundTransparency = 1,
 		ZIndex = 11,
 	})
+	local buttonsAt = resButtons.Position
+	local buttonsLiveAt = math.huge
+	local function live(): boolean
+		return os.clock() >= buttonsLiveAt
+	end
 	local resLayout = Instance.new("UIListLayout")
 	resLayout.FillDirection = Enum.FillDirection.Horizontal
 	resLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
@@ -139,7 +234,7 @@ function Results.build(ctx: any): any
 		{ Size = UDim2.fromOffset(136, TAP), Text = Strings.REPLAY, LayoutOrder = 1 },
 		function()
 			local over = state.over
-			if not over then
+			if not over or not live() then
 				return
 			end
 			if over.kind == "daily" then
@@ -159,7 +254,7 @@ function Results.build(ctx: any): any
 	}, function()
 		local over = state.over
 		local nextIndex = over and tonumber(over.nextIndex) or 0
-		if nextIndex > 0 then
+		if nextIndex > 0 and live() then
 			actions.selectLevel(nextIndex)
 		end
 	end, "UIConfirm")
@@ -167,7 +262,9 @@ function Results.build(ctx: any): any
 		resButtons,
 		{ Size = UDim2.fromOffset(136, TAP), Text = Strings.GARAGE, LayoutOrder = 3 },
 		function()
-			actions.leave()
+			if live() then
+				actions.leave()
+			end
 		end,
 		"UIBack"
 	)
@@ -178,16 +275,10 @@ function Results.build(ctx: any): any
 		Position = UDim2.new(0.5, 0, 1, -(TAP + 14)),
 		Size = UDim2.new(1, 0, 0, 22),
 		TextSize = 16,
+		TextColor3 = INK,
 		Text = "",
 		ZIndex = 11,
 	})
-
-	local function setStamp(i: number, text: string, on: boolean)
-		local s = stamps[i]
-		s.Text = Strings.stamp(text, on)
-		s.TextColor3 = if on then Palette.gold else Palette.tapeGrey
-		s.Visible = false
-	end
 
 	-- What the save says: medals, stars, unlocks, cash; or that it failed.
 	local function awardText(kind: string, award: any): string
@@ -237,6 +328,140 @@ function Results.build(ctx: any): any
 		return type(award) == "table" and award.ok == false and award.code == "NotReady"
 	end
 
+	---------------------------------------------------------------------------
+	-- The timeline
+	---------------------------------------------------------------------------
+	local sheetToken = 0
+	local function at(seconds: number, fn: () -> ())
+		local token = sheetToken
+		task.delay(seconds, function()
+			if token == sheetToken and Ui.isShown(results) then
+				fn()
+			end
+		end)
+	end
+
+	-- The haul counts up from $0, ticking, and pops when it lands (premium D10).
+	local function countHaul(to: number)
+		local seconds = CrewBoard.countSeconds(0, to)
+		local t0 = os.clock()
+		local token = sheetToken
+		local ticks = 0
+		local conn: RBXScriptConnection? = nil
+		conn = RunService.Heartbeat:Connect(function()
+			local elapsed = os.clock() - t0
+			if token ~= sheetToken then
+				if conn then
+					conn:Disconnect()
+				end
+				return
+			end
+			resHaul.Text = Ui.money(CrewBoard.countValue(0, to, elapsed, seconds))
+			local want = math.floor(elapsed / CU.TICK)
+			if want > ticks and elapsed < seconds then
+				ticks = want
+				Sound.play("CountTick", { step = math.min(ticks - 1, #AU.COUNT_UP_STEPS - 1) })
+			end
+			if elapsed >= seconds then
+				if conn then
+					conn:Disconnect()
+				end
+				Sound.play("CountDone")
+				Ui.pop(resHaul, CU.END_POP)
+			end
+		end)
+	end
+
+	local function strikeLine(row: Row)
+		local w = math.min(LINE_W, row.line.TextBounds.X + 4)
+		if Ui.reducedMotion() then
+			row.strike.Size = UDim2.fromOffset(w, 2)
+		else
+			Motion.timed(row.strike, S.STRIKE_SECONDS, { Size = UDim2.fromOffset(w, 2) }, "feedback")
+		end
+	end
+
+	-- Stamp land (POLISH §4.1): UIScale STAMP_FROM -> 0.92 -> 1, the tilt settles, an ink ring grows
+	-- and fades behind it. Reduced motion: it appears.
+	local function landStamp(row: Row, color: Color3, pitchStep: number)
+		local stamp = row.stamp
+		stamp.Visible = true
+		Sound.play("RunStamp", { pitch = 1 + pitchStep * AU.MEDAL_PITCH_STEP })
+		if Ui.reducedMotion() then
+			stamp.Rotation = 0
+			return
+		end
+		local scale = Ui.scaleOf(stamp)
+		scale.Scale = S.STAMP_FROM
+		stamp.Rotation = S.STAMP_ROTATION - 3
+		local down = Motion.timed(scale, Motion.seconds("feedback"), { Scale = U.PRESS_SCALE }, "exit")
+		down.Completed:Once(function()
+			Motion.tween(scale, "pop", { Scale = 1 })
+		end)
+		Motion.tween(stamp, "emphasis", { Rotation = S.STAMP_ROTATION })
+		local ring = row.ring
+		local rim = ring:FindFirstChild("Rim")
+		if rim and rim:IsA("UIStroke") then
+			rim.Color = color
+			rim.Transparency = 0
+			Motion.timed(rim, S.RING_SECONDS, { Transparency = 1 }, "feedback")
+		end
+		local rs = Ui.scaleOf(ring)
+		rs.Scale = S.RING_FROM
+		ring.Visible = true
+		local grow = Motion.timed(rs, S.RING_SECONDS, { Scale = S.RING_TO }, "feedback")
+		grow.Completed:Once(function()
+			ring.Visible = false
+		end)
+	end
+
+	-- The trophy (a crown) flies from the title to the van icon on an arc, then the van pops.
+	local function flyTrophy()
+		local icon = Icons.make(results, "crown", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Size = UDim2.fromOffset(U.ICON_SIZE + 8, U.ICON_SIZE + 8),
+			ImageColor3 = Palette.gold,
+			ZIndex = 20,
+		})
+		if not icon then
+			Ui.pop(van)
+			return
+		end
+		local ax, ay = 14 + resTitle.TextBounds.X / 2, 45
+		local bx, by = SHEET_W - 14 - U.ICON_SIZE / 2, 4 + U.ICON_SIZE / 2
+		icon.Position = UDim2.fromOffset(ax, ay)
+		if Ui.reducedMotion() then
+			icon:Destroy()
+			Ui.pop(van)
+			return
+		end
+		local u = Instance.new("NumberValue")
+		u.Value = 0
+		u.Changed:Connect(function(v: number)
+			local x, y = CrewBoard.arc(ax, ay, bx, by, 40, v)
+			icon.Position = UDim2.fromOffset(x, y)
+		end)
+		local tw = Motion.timed(u, S.TROPHY_SECONDS, { Value = 1 }, "exit")
+		tw.Completed:Once(function()
+			icon:Destroy()
+			u:Destroy()
+			Ui.pop(van, CU.END_POP)
+			Sound.play("CountDone")
+		end)
+	end
+
+	local function showButtons()
+		resButtons.Visible = true
+		if Ui.reducedMotion() then
+			resButtons.Position = buttonsAt
+		else
+			resButtons.Position = buttonsAt + UDim2.fromOffset(0, 12)
+			Motion.tween(resButtons, "enter", { Position = buttonsAt })
+		end
+		buttonsLiveAt = os.clock() + S.BUTTON_GUARD
+		hud.refreshResults()
+	end
+
 	function hud.onOver(payload: any)
 		local over = payload.result
 		if type(over) ~= "table" then
@@ -246,7 +471,17 @@ function Results.build(ctx: any): any
 		state.overNext = payload.next
 		ctx.setInHeist(true)
 		ctx.msg.setSpectate("")
+		sheetToken += 1
+		buttonsLiveAt = math.huge
+		resButtons.Visible = false
 		Ui.show(results)
+		-- The sheet slides in (on top of the kit's enter scale).
+		if Ui.reducedMotion() then
+			results.Position = restPosition
+		else
+			results.Position = restPosition + UDim2.fromOffset(0, S.SLIDE)
+			Motion.tween(results, "enter", { Position = restPosition })
+		end
 		Ui.hide(ctx.deck.panel)
 		Ui.hide(ctx.deck.readyWait)
 		ctx.runHud.Visible = false
@@ -255,16 +490,24 @@ function Results.build(ctx: any): any
 		ctx.msg.setHidden(false)
 		local kind = over.kind or "story"
 		local st = over.stars or {}
+		kicker.Text = if over.name then Strings.jobSheet(tostring(over.name)) else Strings.JOB_SHEET
+		resTitle.Rotation = if Ui.reducedMotion() then 0 else -3
+
+		-- Title and stamps per kind (the haul is the big number; its goal is on the first line).
+		local stampText: { string } = {}
+		local stampOn: { boolean } = {}
+		local stampColor: { Color3 } = {}
+		local shown: { [string]: boolean } = {}
 		if kind == "party" then
 			-- A party cannot fail: Dawn is just its end (never a plain amber "DAWN").
 			local tiersMet = tonumber(over.tierMet) or 0
 			resTitle.Text = Strings.partyOver(tiersMet)
 			resTitle.TextColor3 = if tiersMet > 0 then Palette.ok else Palette.gold
-			resHaul.Text = Ui.money(over.banked)
 			local tiers = over.tiers or {}
 			local met = st.tiers or {}
 			for i = 1, 3 do
-				setStamp(i, Ui.money(tonumber(tiers[i]) or 0), met[i] == true)
+				stampText[i] = Strings.stamp(Ui.money(tonumber(tiers[i]) or 0), met[i] == true)
+				stampOn[i] = met[i] == true and tiers[i] ~= nil
 			end
 		else
 			if kind == "daily" then
@@ -279,22 +522,38 @@ function Results.build(ctx: any): any
 					else Strings.HEIST_OVER
 			end
 			resTitle.TextColor3 = if over.complete then Palette.ok else Palette.amber
-			resHaul.Text = Strings.lootOfGoal(Ui.money(over.banked), Ui.money(over.goal))
-			setStamp(1, Strings.MEDAL_HAUL, st.haul == true)
-			setStamp(2, Strings.MEDAL_CREW, st.crew == true)
-			setStamp(3, Strings.MEDAL_CLEAN, st.clean == true)
+			local seen = {}
+			for _, key in CrewBoard.SEEN_KEY do
+				seen[key] = Settings.get(key)
+			end
+			shown = CrewBoard.reasonsToShow(over, seen)
+			local medal = { haul = Strings.MEDAL_HAUL, crew = Strings.MEDAL_CREW, clean = Strings.MEDAL_CLEAN }
+			for i, star in CrewBoard.STARS do
+				local on = st[star] == true
+				stampOn[i] = on
+				stampText[i] = if shown[star] then CrewBoard.stampReason(star, over) else Strings.stamp(medal[star], on)
+			end
 		end
-		-- Stamps land 0.25 s apart, each a little higher (docs/AUDIO.md §9 item 21).
-		for i, s in stamps do
-			local show = kind ~= "party" or (over.tiers and over.tiers[i] ~= nil)
-			task.delay(AU.MEDAL_STAMP_GAP * i, function()
-				if results.Visible and show then
-					s.Visible = true
-					Ui.pop(s)
-					Sound.play("RunStamp", { pitch = 1 + i * AU.MEDAL_PITCH_STEP })
-				end
-			end)
+		resHaul.Text = Ui.money(0)
+
+		-- Goal lines and stamps, all hidden until their beat.
+		local lines = CrewBoard.goalLines(over)
+		for i, row in rows do
+			local goalLine = lines[i]
+			row.line.Text = if goalLine then goalLine.text else ""
+			row.line.TextColor3 = if goalLine and goalLine.met then INK else Palette.steelLo
+			row.strike.Size = UDim2.fromOffset(0, 2)
+			row.stamp.Visible = false
+			row.ring.Visible = false
+			row.stamp.Text = stampText[i] or ""
+			stampColor[i] = if stampOn[i] then Palette.goldLo else Palette.tapeGrey
+			row.stamp.TextColor3 = stampColor[i]
+			local rim = row.stamp:FindFirstChild("Rim")
+			if rim and rim:IsA("UIStroke") then
+				rim.Color = stampColor[i]
+			end
 		end
+
 		local clones = over.clonesUsed or 0
 		local bits = {}
 		local ofMe = tonumber(over.ofMe) or 0
@@ -304,11 +563,40 @@ function Results.build(ctx: any): any
 		table.insert(bits, Strings.clones(clones))
 		table.insert(bits, Strings.runs(over.runs or 0))
 		table.insert(bits, Ui.clock(over.totalTime or 0))
-		resLine.Text = table.concat(bits, Strings.SEP)
+		resLine.Text = ""
+		local summary = table.concat(bits, Strings.SEP)
 		local unsaved = studioUnsaved(payload.award)
 		studioChip.Visible = unsaved
 		resAward.Text = if unsaved then "" else awardText(kind, payload.award)
-		hud.refreshResults()
+
+		-- Beats.
+		at(S.HAUL_AT, function()
+			countHaul(tonumber(over.banked) or 0)
+		end)
+		for i, row in rows do
+			local goalLine = lines[i]
+			if goalLine and goalLine.met then
+				at(S.LINE_AT + (i - 1) * S.LINE_GAP, function()
+					strikeLine(row)
+				end)
+			end
+			if stampText[i] and stampText[i] ~= "" then
+				at(S.STAMP_AT + (i - 1) * AU.MEDAL_STAMP_GAP, function()
+					landStamp(row, stampColor[i], i)
+				end)
+			end
+		end
+		at(S.LINE_AT_SUMMARY, function()
+			resLine.Text = summary
+		end)
+		if over.complete then
+			at(S.TROPHY_AT, flyTrophy)
+		end
+		at(S.BUTTONS_AT, showButtons)
+		-- Stars earned with their reason showing are learnt: next time they just stamp.
+		for _, key in CrewBoard.newlySeen(over, shown) do
+			Settings.set(key, true)
+		end
 	end
 
 	-- Leader buttons on the results card (also when the leader changes while it is up).
@@ -334,8 +622,11 @@ function Results.build(ctx: any): any
 		else
 			resWait.Text = ""
 		end
+		resWait.Visible = resButtons.Visible
 		garageBtn.Text = if leader then Strings.GARAGE else Strings.LEAVE
-		Common.selectFor(if nextBtn.Visible then nextBtn else garageBtn)
+		if resButtons.Visible then
+			Common.selectFor(if nextBtn.Visible then nextBtn else garageBtn)
+		end
 	end
 
 	return res

@@ -65,6 +65,16 @@ function Motion.timed(obj: Instance, seconds: number, goals: { [string]: any }, 
 	return tw
 end
 
+-- The breathing outline (POLISH §4.1 "breathing", the NEXT job, the card to delete): a Sine InOut tween
+-- to `goals` and back, forever, Config.Ui.BREATH_SECONDS each way. The caller cancels it (or destroys
+-- the object) and never starts it under reduced motion (a static colour instead).
+function Motion.breathe(obj: Instance, goals: { [string]: any }): Tween
+	local ti = TweenInfo.new(Config.Ui.BREATH_SECONDS, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
+	local tw = TweenService:Create(obj, ti, goals)
+	tw:Play()
+	return tw
+end
+
 -- D3 button press on a UIScale: down to PRESS_SCALE at once.
 function Motion.pressDown(scale: UIScale)
 	Motion.tween(scale, "pressDown", { Scale = Config.Ui.PRESS_SCALE })

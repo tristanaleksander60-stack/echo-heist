@@ -1251,15 +1251,18 @@ Config.Ui = {
 
 	-- U4 crew cards: the Clone Deck as polaroids of your own avatar (PLAN_STEAM_PLUS §3.2, WALKTHROUGH P0-3).
 	CARD = {
-		W = 84, -- px: a card (the paper)
+		W = 96, -- px: a card (the paper); 4 cards fit the deck without scrolling
 		H = 88,
 		PAD = 5, -- paper border round the photo
 		PHOTO_H = 56, -- the photo (your headshot on a crew-colour backdrop)
-		CAPTION_H = 22, -- the caption strip under it: last action icon + word
+		CAPTION_H = 22, -- the caption strip under it: the last action's word
+		BADGE = 22, -- the last action's icon, a round badge on the photo's corner
+		PILL = { 28, 22 }, -- the stamped number pill (wider with the seat shape: + PILL_GLYPH)
+		PILL_GLYPH = 16,
 		GAP = 8,
 		TILT = 2, -- degrees, alternating per card (pinned, not ruled); 0 under reduced motion
 		BACKDROP_DIM = 0.55, -- the photo backdrop is the crew hue at this value
-		SELECT_SCALE = 1.06, -- the picked card lifts
+		PILL_TILT = -8, -- the stamped number
 		STAMP_TILT = -12, -- the BUSTED / REDO stamp across the photo
 		TAPE = { 26, 9, 0.35 }, -- the tape strip at the top (w, h, transparency): dressing only
 		HEADSHOT_SIZE = "Size100x100", -- Enum.ThumbnailSize name (GetUserThumbnailAsync HeadShot)
@@ -1293,8 +1296,8 @@ Config.Ui = {
 	-- play order, medal stickers, the NEXT job glowing like the 3D board's NEXT card (Config.Lobby.BOARD).
 	BOARD = {
 		CORK = { 154, 119, 85 }, -- Corner Shop pine (POLISH §4.2 "label band" colours)
-		CELL = { 146, 88 },
-		GAP = { 10, 12 },
+		CELL = { 142, 88 }, -- 3 columns fill the board's 462 px: GAP + 3 x (CELL + GAP)
+		GAP = { 8, 12 },
 		COLUMNS = 3,
 		PIN = 10, -- px pushpin
 		TILT = { -2.5, 1.5, -1, 2.5, -1.5, 1 }, -- degrees per card, by position (0 under reduced motion)
