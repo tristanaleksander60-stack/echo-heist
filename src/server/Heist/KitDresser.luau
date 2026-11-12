@@ -143,6 +143,9 @@ function KitDresser.dress(level: any, built: any, origin: Vector3, kit: any, opt
 	})
 	result.items = #plan.items
 	local atlas = o.location
+	-- the van's runtime paint (Van_Paint is a tintable, atlas-free piece): a mid value, never Getaway White
+	local vp = Config.Lighting.VAN.paint
+	local vanPaint = Color3.fromRGB(vp[1], vp[2], vp[3])
 
 	local container = Instance.new("Model")
 	container.Name = "Kit"
@@ -155,7 +158,7 @@ function KitDresser.dress(level: any, built: any, origin: Vector3, kit: any, opt
 			local parts: { Instance } = {}
 			local good = true
 			for _, name in item.pieces do
-				local part = kit.clone(name, { atlas = atlas })
+				local part = kit.clone(name, { atlas = atlas, color = if name == "Van_Paint" then vanPaint else nil })
 				if part == nil then
 					good = false
 					break

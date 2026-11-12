@@ -589,13 +589,107 @@ return function(test)
 						Assert.eq(looks[k].pool, look.pool, level.id .. " room pool")
 					else
 						Assert.eq(looks[k].color, LIGHT.LAMP[l.kind].color, level.id .. " " .. l.kind .. " keeps warm")
-						Assert.eq(looks[k].pool, LIGHT.POOL.color, level.id .. " " .. l.kind .. " pool")
+						Assert.eq(
+							looks[k].pool,
+							LIGHT.LAMP[l.kind].poolColor or LIGHT.POOL.color,
+							level.id .. " " .. l.kind .. " pool"
+						)
 					end
 				end
 			end
 		end
 		Assert.eq(KitPlan.location(LevelSpec.compile(Catalog[3]), true), "ToyShop", "Clone Party dressed = Toy Shop")
 		Assert.eq(KitPlan.location(LevelSpec.compile(Catalog[3]), false), "CornerShop", "plain = Corner Shop")
+	end)
+
+	test("warm pass: street lamps on the pavement and rugs in the pools, clear of every gameplay box", function()
+		local streets, rugCount = 0, 0
+		for _, level in levels() do
+			local dress = LevelDress[level.id]
+			local plan = KitPlan.plan(level, specs, { dress = dress, lighting = LIGHT, dressing = true })
+			local lamps = KitPlan.lamps(level, dress, LIGHT)
+			local wantStreet = if dress and dress.street then #dress.street else 0
+			local n = 0
+			for k, l in lamps do
+				if l.kind == "street" then
+					n += 1
+					local fp = (KitPlan.lampLooks(lamps, "CornerShop", LIGHT))[k]
+					Assert.eq(fp.color, LIGHT.LAMP.street.color, level.id .. ": street lamps keep their warm colour")
+				end
+			end
+			Assert.eq(n, wantStreet, level.id .. ": one street lamp per LevelDress entry")
+			streets += n
+			local footprint = nil
+			for _, s in level.spec.solids or {} do
+				if s.box.maxY - s.box.minY >= 8 then
+					footprint = footprint
+						or { minX = math.huge, maxX = -math.huge, minZ = math.huge, maxZ = -math.huge }
+					footprint.minX = math.min(footprint.minX, s.box.minX)
+					footprint.maxX = math.max(footprint.maxX, s.box.maxX)
+					footprint.minZ = math.min(footprint.minZ, s.box.minZ)
+					footprint.maxZ = math.max(footprint.maxZ, s.box.maxZ)
+				end
+			end
+			for _, item in plan.items do
+				local what = level.id .. " " .. item.role .. " " .. item.pieces[1]
+				if item.role == "lamp" and item.pieces[1] == "StreetLamp" then
+					Assert.eq(item.mode, "visual", what .. ": visual only")
+					local b = KitPlan.itemBox(item, specs)
+					local cx, cz = (b.minX + b.maxX) / 2, (b.minZ + b.maxZ) / 2
+					Assert.truthy(
+						footprint == nil or cz > footprint.maxZ,
+						what .. ": on the pavement, outside the building"
+					)
+					for _, sp in level.spawns do
+						local dx, dz = sp.x - cx, sp.z - cz
+						Assert.truthy(dx * dx + dz * dz >= 9, what .. ": 3+ studs from every crew seat")
+					end
+				end
+				if item.role == "rug" or (item.role == "lamp" and item.pieces[1] == "StreetLamp") then
+					if item.role == "rug" then
+						rugCount += 1
+						Assert.eq(item.mode, "visual", what .. ": visual only")
+					end
+					local b = KitPlan.itemBox(item, specs)
+					local flat = KitPlan.box(b.minX, -1e3, b.minZ, b.maxX, 1e3, b.maxZ)
+					local where = what .. " at " .. boxText(b)
+					for i, p in level.plates do
+						Assert.falsy(overlap(flat, p.box, 0.05), where .. " overlaps plate " .. i)
+					end
+					for i, d in level.doors do
+						Assert.falsy(overlap(flat, d.box, 0.05), where .. " overlaps door " .. i)
+					end
+					for i, l in level.lasers or {} do
+						Assert.falsy(overlap(flat, l.box, 0.05), where .. " overlaps laser " .. i)
+					end
+					for i, h in level.hides or {} do
+						Assert.falsy(overlap(flat, h.box, 0.05), where .. " overlaps hide " .. i)
+					end
+					Assert.falsy(overlap(flat, level.van, 0.05), where .. " overlaps the van zone")
+					for _, s in level.spec.solids or {} do
+						Assert.falsy(overlap(flat, s.box, 0.05), where .. " overlaps a solid " .. boxText(s.box))
+					end
+					if item.role == "rug" then
+						-- under the lamp pools (pool lift) and over the kit floor tiles
+						Assert.truthy(
+							b.minY > level.floorY + Config.Heist.KIT_FLOOR_LIFT
+								and b.maxY < level.floorY + LIGHT.POOL.lift,
+							where .. ": between the floor tiles and the pools"
+						)
+					end
+				end
+			end
+		end
+		Assert.eq(streets, 6, "street lamps on L1, L2 and Clone Party (two each)")
+		Assert.truthy(rugCount >= 10, "rugs on L1, L2 and Clone Party (" .. rugCount .. ")")
+	end)
+
+	test("van paint: a mid value, never Getaway White", function()
+		local c = LIGHT.VAN.paint
+		local luma = (0.2126 * c[1] + 0.7152 * c[2] + 0.0722 * c[3]) / 255
+		Assert.truthy(luma > 0.25 and luma < 0.55, "van paint luma " .. luma .. " is a mid value")
+		Assert.truthy(specs.Van_Paint ~= nil and specs.Van_Paint.atlas == false, "Van_Paint is the runtime paint part")
+		Assert.eq(specs.Van_Paint.model, "Van", "Van_Paint is planned with the van")
 	end)
 
 	test("missing or avoided pieces fall back (nothing planned for them)", function()

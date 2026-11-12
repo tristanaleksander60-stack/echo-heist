@@ -193,11 +193,14 @@ local function ceilingLamp(
 	look: any
 ): (BasePart, BasePart)
 	local spec = LIGHT.LAMP[l.kind] or LIGHT.LAMP.room
+	-- street lamps hang their light at the StreetLamp lantern (spec.bulbY / lightY), ceiling lamps under the shade
+	local bulbY = spec.bulbY or LIGHT.BULB_Y
+	local lightY = spec.lightY or LIGHT.LIGHT_Y
 	local bulb = part({
-		Name = "CeilingLamp",
+		Name = if l.kind == "street" then "StreetLamp" else "CeilingLamp",
 		Shape = Enum.PartType.Ball,
 		Size = Vector3.one * LIGHT.BULB_SIZE,
-		CFrame = CFrame.new(origin + Vector3.new(l.x, floorY + LIGHT.BULB_Y, l.z)),
+		CFrame = CFrame.new(origin + Vector3.new(l.x, floorY + bulbY, l.z)),
 		Color = rgb(LIGHT.BULB_COLOR),
 		Material = Enum.Material.Neon,
 		CanCollide = false,
@@ -208,9 +211,21 @@ local function ceilingLamp(
 	bulb:SetAttribute("EH_Kind", "ceilingLamp")
 	bulb:SetAttribute("EH_Index", index)
 	bulb:SetAttribute("EH_LampKind", l.kind)
+	if l.kind == "street" then
+		-- greybox post under the bulb (the kit StreetLamp replaces both; KitDresser hides the greybox)
+		part({
+			Name = "Post",
+			Size = Vector3.new(0.35, bulbY, 0.35),
+			CFrame = CFrame.new(origin + Vector3.new(l.x, floorY + bulbY / 2 - LIGHT.BULB_SIZE / 2, l.z)),
+			Color = Palette.steelLo,
+			CanCollide = false,
+			CanQuery = false,
+			CanTouch = false,
+		}, bulb)
+	end
 	local at = Instance.new("Attachment")
 	at.Name = "LightAt"
-	at.Position = Vector3.new(0, LIGHT.LIGHT_Y - LIGHT.BULB_Y, 0)
+	at.Position = Vector3.new(0, lightY - bulbY, 0)
 	at.Parent = bulb
 	local light: Light
 	if l.kind == "hero" then
@@ -231,7 +246,7 @@ local function ceilingLamp(
 	light.Parent = at
 
 	local pc = LIGHT.POOL
-	local d = if l.kind == "hero" then pc.heroDiameter else pc.diameter
+	local d = spec.pool or (if l.kind == "hero" then pc.heroDiameter else pc.diameter)
 	local pool = part({
 		Name = "LightPool",
 		Size = Vector3.new(d, 0.05, d),
@@ -252,7 +267,7 @@ local function ceilingLamp(
 	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
 	gui.PixelsPerStud = pc.pixelsPerStud
 	gui.MaxDistance = 250
-	for _, ring in pc.rings do
+	for _, ring in spec.poolRings or pc.rings do
 		local f = Instance.new("Frame")
 		f.AnchorPoint = Vector2.new(0.5, 0.5)
 		f.Position = UDim2.fromScale(0.5, 0.5)

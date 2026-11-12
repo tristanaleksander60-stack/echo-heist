@@ -76,7 +76,9 @@ local function lamps(level: any, location: string): { any }
 			color = looks[k].color,
 			poolColor = looks[k].pool,
 			shadows = spec.shadows == true,
-			pool = if l.kind == "hero" then L.POOL.heroDiameter else L.POOL.diameter,
+			pool = spec.pool or (if l.kind == "hero" then L.POOL.heroDiameter else L.POOL.diameter),
+			rings = spec.poolRings or L.POOL.rings,
+			lightY = spec.lightY or L.LIGHT_Y,
 		})
 	end
 	return out
@@ -207,6 +209,7 @@ local function dump(spec: any): any
 		backdrop = BackdropPlan.plan(BackdropPlan.levelSite(level)), -- W4: what the client Backdrop builds
 		backdropConfig = Config.Backdrop,
 		lighting = Config.Lighting,
+		camera = Config.Heist.CAMERA, -- the golden frames use the game's own diorama / golden numbers
 		kit = kit,
 		warnings = plan.warnings,
 	}

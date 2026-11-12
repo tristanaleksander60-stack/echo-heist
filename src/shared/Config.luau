@@ -832,10 +832,44 @@ Config.LiveFlags = {
 Config.Lighting = {
 	-- Per lamp kind: PointLight (room, plate) or a downward SpotLight (hero, the only shadowed one).
 	LAMP = {
-		room = { range = 20, brightness = 1.2, color = { 255, 205, 150 }, shadows = false },
+		-- room: the warm interior flood (golden-frame pass: brighter, wider, a bigger softer pool than the signals')
+		room = {
+			range = 24,
+			brightness = 1.6,
+			color = { 255, 205, 150 },
+			shadows = false,
+			pool = 18,
+			poolRings = {
+				{ size = 1, alpha = 0.88 },
+				{ size = 0.8, alpha = 0.84 },
+				{ size = 0.6, alpha = 0.8 },
+				{ size = 0.4, alpha = 0.76 },
+			},
+		},
 		plate = { range = 18, brightness = 1.3, color = { 255, 205, 150 }, shadows = false },
 		hero = { range = 36, brightness = 3, angle = 60, color = { 255, 214, 160 }, shadows = true },
+		-- Golden-frame warm pass (GOLDEN_FRAMES G1, PLAN_STEAM_PLUS §3.1): street lamps (LevelDress `street`) on the
+		-- pavement: a warm PointLight at the StreetLamp lantern (lightY / bulbY: the manifest light point) that
+		-- washes the shop front and the snow, and a bigger, denser warm pool (pool / poolRings / poolColor).
+		street = {
+			range = 22,
+			brightness = 1.6,
+			color = { 255, 182, 110 },
+			shadows = false,
+			lightY = 9.43,
+			bulbY = 9.43,
+			pool = 20,
+			poolColor = { 246, 186, 120 },
+			poolRings = { -- five soft steps (three read as a bullseye at this size)
+				{ size = 1, alpha = 0.86 },
+				{ size = 0.84, alpha = 0.84 },
+				{ size = 0.68, alpha = 0.82 },
+				{ size = 0.52, alpha = 0.8 },
+				{ size = 0.36, alpha = 0.8 },
+			},
+		},
 	},
+	RUG_LIFT = 0.021, -- studs: rugs (0.036 thick) sit over the kit floor tiles (+0.02) and under the lamp pools (+0.06)
 	LAMP_HANG_Y = 12, -- studs above the floor: Lamp_Ceiling hangs from the wall tops (its pivot)
 	LIGHT_Y = 8.2, -- the light's attachment, under the shade (a shadowed light inside its lamp is shadowed by it)
 	BULB_Y = 8.95, -- the greybox bulb (Lamp_Ceiling_Bulb's centre)
@@ -902,8 +936,14 @@ Config.Lighting = {
 	SPARKLE_RATE = 2.5, -- particles a second (<= BLINK_HZ_MAX flashes)
 	SPARKLE_COLOR = { 255, 230, 156 }, -- Heist Gold light
 
+	-- The van (golden-frame pass: a Getaway White van was the brightest thing in G1 and filled the bottom of the
+	-- classic frame): the kit body's Van_Paint takes this mid value (caramel, warm, far from loot gold and Alarm
+	-- Red); the roof is the kit's dark Vault Steel shade; the Getaway White chevrons on its band stay the signal.
+	VAN = {
+		paint = { 140, 100, 72 }, -- #8C6448 (eh_palette.TINT_IDLE Van_Paint)
+	},
 	-- Van zone (LEVELS P0-6): dim until you carry loot, then lit with arrows that point at the van.
-	VAN_IDLE_ALPHA = 0.85,
+	VAN_IDLE_ALPHA = 0.92, -- golden-frame pass: dimmer than 0.85 (the zone was the frame bottom's brightest slab in G1a)
 	VAN_CARRY_ALPHA = 0.6,
 	ARROW_IDLE_ALPHA = 0.75,
 	ARROW_COUNT = 3,
