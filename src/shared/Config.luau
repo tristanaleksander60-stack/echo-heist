@@ -1426,28 +1426,130 @@ Config.Ui = {
 -- Budget for the whole backdrop (§2.2): about 30 draw calls and 25k triangles (BackdropPlan.budget).
 Config.Backdrop = {
 	ENABLED = true,
-	-- L0, the table: one ground Part under everything, a value step above Ink so it reads as snowy street,
-	-- dropped below the level floor so the playable lot reads as a raised diorama (a kerb, not a cliff).
+	-- WORLD 2.0 (owner, Nov 2026: "all maps must look better and must NOT be black in the background"; LEVELS.md
+	-- §10): every lot sits in a bright snowy neighbourhood that fills the frame to its edges in both cameras. Snow
+	-- is a high-value surface (it reads bright even at night: hue says night, not darkness); warmth comes from the
+	-- windows, the unlit lamp pools and the warm house bodies; cool only in shadow (PLAN_STEAM_PLUS §3.1).
+	-- L0, the snowfield: one ground Part under the whole town (its far edge is lost in the light haze).
 	GROUND_SIZE = 2048, -- studs (the Part size limit)
-	GROUND_DROP = 1.2, -- studs below the level floor
-	GROUND_COLOR = { 74, 72, 112 }, -- trodden snow under a night sky
-	KERB = { width = 0.8, color = { 92, 92, 132 } }, -- the lot's edge band, drawn just outside the bounds
-	-- L1, the near ring: facade cards (body, cornice, snow on the cornice, warm windows) round the lot.
-	FACADE = {
-		gapToLot = 1.5, -- studs between the lot's bounds and a facade
-		acrossStreet = 18, -- studs past the lot's street edge for the row facing the shop
-		widths = { 18, 24, 30 }, -- picked in turn (deterministic: BackdropPlan never uses math.random)
-		heights = { 16, 22, 19, 26, 14 },
-		depth = 10,
-		gap = 2, -- studs between neighbouring facades (alleys)
-		count = 16, -- facades in the whole near ring (a heist; the garage gets the same)
-		cornice = 0.8, -- studs: the marble lip on top
-		snow = 0.35, -- studs: the snow on the cornice
-		window = { w = 2.2, h = 2.8, floorH = 6, colPitch = 5, sill = 4 }, -- the first row's bottom above the ground
-		litEvery = 3, -- every 3rd window slot is lit (warm-white Neon), the rest stay dark glass
-		bodyColors = { { 60, 44, 54 }, { 46, 44, 74 }, { 66, 50, 46 }, { 52, 56, 82 } }, -- brick and slate, dark
-		corniceColor = { 168, 152, 122 }, -- Warm Marble shade
-		darkWindowColor = { 34, 36, 62 },
+	GROUND_DROP = 0.3, -- studs: its top under the level floor (the town's streets sit at the lot's own height)
+	GROUND_COLOR = { 176, 182, 214 }, -- open snow (V 84 %): the brightest big field, never a dark table
+	-- L1, the town (Shared/Heist/TownPlan): the street the lot stands on (pavements, kerbs, a snowy road with tyre
+	-- tracks), the neighbours on both sides, behind and across the street (lit windows, snow on every roof,
+	-- garlands and wreaths), lamp posts with unlit warm pools (no Light objects), parked cars with snow on the
+	-- roof, decorated trees, snowmen; and the client's snow over the lot's outdoor floor. Each map has its own
+	-- street (THEMES, PLAN_STEAM_PLUS §3.1 signature silhouettes) and each level its own arrangement (seed).
+	TOWN = {
+		SPAN = 150, -- studs: the street runs this far either side of the lot's centre
+		PAVEMENT = 5, -- studs: each pavement's depth
+		ROAD = 22, -- studs: the road's depth (the lot's own street part is the near side of it)
+		ROAD_PAST_LOT = 4.5, -- studs: the far kerb is at least this far past the lot's street edge
+		KERB = { width = 0.6, height = 0.22 },
+		ALLEY = 3, -- studs between the lot's side and its first neighbour
+		BACK_GAP = 4, -- studs between the lot's back and the row behind it
+		LIFT = 0.015, -- studs: the top of the lot snow and the town's streets above the level floor (under the kit
+		-- floor tiles' +0.02, the cables' +0.03 and the pools' +0.06)
+		TRACK_LIFT = 0.03,
+		TRACKS = { width = 0.9, gauge = 4.2, lanes = { -5, 5 } }, -- tyre tracks: across the road's centre line
+		COLORS = {
+			roofSnow = { 196, 200, 226 }, -- fresh snow on roofs and cornices (the diorama sees roofs from above)
+			yard = { 140, 142, 180 }, -- packed snow on the lot's outdoor floor (V 71 %)
+			pave = { 128, 126, 162 }, -- swept pavement under a dusting (V 64 %)
+			road = { 152, 154, 190 }, -- packed snow on the road (V 75 %)
+			track = { 96, 92, 124 }, -- slushy tyre tracks (V 49 %)
+			kerb = { 172, 164, 152 }, -- warm kerb stone
+			plaza = { 170, 164, 176 }, -- the Bank plaza's snow-dusted paving
+			trim = { 226, 214, 190 }, -- cornices and sills (Warm Marble light)
+			door = { { 140, 47, 75 }, { 36, 112, 74 }, { 44, 58, 104 }, { 120, 78, 52 } },
+		},
+		WINDOW = { w = 2.2, h = 2.8, floorH = 5, colPitch = 4.5, sill = 3.4, lit = 0.75, depth = 0.2, out = 0.06 },
+		SHOP = { paneH = 4.2, paneSill = 1.3, awningY = 6.4, awningDepth = 2.6, doorW = 2.8, doorH = 5.2 },
+		HOUSE = { doorW = 2.4, doorH = 4.6 },
+		ROOF = { rise = 0.42, overhang = 0.6 }, -- gable height per stud of depth; eaves past the walls
+		-- The street lamps: kit StreetLamp + bulb, and an unlit warm pool (SurfaceGui, LightInfluence 0) on the snow.
+		LAMP = { spacing = 28, pool = 20, poolColor = { 255, 196, 140 }, poolAlpha = 0.6, poolLift = 0.05 },
+		CAR = { spacing = 30, colors = { { 150, 52, 64 }, { 46, 92, 140 }, { 214, 188, 120 }, { 60, 112, 84 } } },
+		-- Per map: the kinds of building along each row (picked in turn, shuffled by the level's seed), their
+		-- body colours, awnings, heights, and the signature piece (PLAN_STEAM_PLUS §3.1).
+		THEMES = {
+			CornerShop = { -- "Corner Shop street": brick terraces, corner shops and gabled houses
+				near = { "shop", "house", "townhouse", "house" },
+				across = { "house", "house", "shop", "house", "townhouse" },
+				back = { "house", "townhouse", "house" },
+				bodies = {
+					{ 156, 78, 62 },
+					{ 182, 102, 72 },
+					{ 198, 156, 92 },
+					{ 214, 196, 160 },
+					{ 132, 70, 82 },
+					{ 168, 118, 96 },
+				},
+				awnings = { { 140, 47, 75 }, { 36, 112, 74 }, { 44, 58, 104 } },
+				heights = { shop = { 13, 15 }, house = { 10, 12 }, townhouse = { 16, 19 }, civic = { 18, 20 } },
+				widths = { 16, 20, 18, 24 },
+				signature = "tree", -- a decorated tree on the far pavement
+			},
+			ToyShop = { -- "Toy Shop high street": candy-coloured shops under strings of fairy lights
+				near = { "shop", "shop", "townhouse", "shop" },
+				across = { "shop", "shop", "shop", "townhouse", "shop" },
+				back = { "townhouse", "house", "townhouse" },
+				bodies = {
+					{ 222, 130, 160 },
+					{ 132, 198, 172 },
+					{ 232, 200, 112 },
+					{ 172, 142, 212 },
+					{ 236, 162, 122 },
+					{ 124, 172, 220 },
+				},
+				awnings = { { 236, 96, 140 }, { 64, 170, 140 }, { 236, 190, 70 }, { 130, 100, 200 } },
+				heights = { shop = { 13, 16 }, house = { 10, 12 }, townhouse = { 17, 21 }, civic = { 18, 20 } },
+				widths = { 16, 18, 20, 16 },
+				signature = "lights", -- fairy-light strings on every front, two trees
+			},
+			Bank = { -- "Bank plaza": stone fronts and a plaza with a big Christmas tree across the street
+				near = { "townhouse", "civic", "townhouse" },
+				across = { "civic", "townhouse", "civic" },
+				back = { "townhouse", "civic", "townhouse" },
+				bodies = {
+					{ 210, 190, 152 },
+					{ 198, 194, 180 },
+					{ 160, 98, 84 },
+					{ 186, 168, 140 },
+					{ 222, 206, 172 },
+				},
+				awnings = { { 36, 112, 74 }, { 140, 47, 75 } },
+				heights = { shop = { 14, 16 }, house = { 11, 12 }, townhouse = { 18, 22 }, civic = { 20, 24 } },
+				widths = { 22, 26, 20 },
+				signature = "plaza", -- PLAZA: the paving, the big tree, its lamps
+				PLAZA = { width = 64, depth = 40, treeScale = 4.4, lamps = 4 },
+			},
+			Garage = { -- "garage yard": workshops and warehouses round the yard behind the roll-up door
+				near = { "warehouse", "house", "warehouse" },
+				across = { "house", "warehouse", "house", "house" },
+				back = { "warehouse", "house", "warehouse" },
+				bodies = {
+					{ 148, 76, 60 },
+					{ 112, 122, 146 },
+					{ 96, 124, 100 },
+					{ 160, 100, 70 },
+					{ 206, 186, 146 },
+				},
+				awnings = { { 44, 58, 104 }, { 140, 47, 75 } },
+				heights = { shop = { 12, 14 }, house = { 10, 12 }, townhouse = { 15, 17 }, warehouse = { 11, 13 } },
+				widths = { 22, 18, 26 },
+				signature = "yard", -- cars and a tree round the yard
+			},
+		},
+		-- The Christmas pieces of the town (garlands, wreaths, tree lights, light strings): "always" (the town is
+		-- on Christmas Eve, PLAN_STEAM_PLUS §3.1) or "dressing" (only with the levels' Christmas layer).
+		XMAS_DECOR = "always",
+		PROPS_OFF_TIER = 3, -- cars, snowmen, snow piles, garlands, wreaths, light strings
+		POOLS_OFF_TIER = 3, -- the unlit lamp pools (SurfaceGuis: one draw each)
+		-- The lot's edge: a client-only invisible collider (CanQuery off) so nobody walks off the lot into the town
+		-- (the town never collides).
+		LOT_FENCE = { height = 24, thickness = 2 },
+		-- The whole backdrop at tier 1 (unit spec on every site; engine_smoke / perf_engine count the real build).
+		BUDGET = { instances = 600, draws = 45, tris = 70000, lights = 0 },
 	},
 	WINDOW_COLOR = { 246, 192, 162 }, -- Bulb Warm #F6C0A2 (eh_palette.NEON, rule N1): the only glow allowed
 	SNOW_COLOR = { 192, 195, 213 }, -- Snow #C0C3D5 (small areas only, STYLE_BIBLE §1.3)
@@ -1457,15 +1559,33 @@ Config.Backdrop = {
 	SPILL_DEPTH = 5,
 	-- L2 / L3, the skyline rings: four copies of one quarter-arc kit mesh each (body + Neon windows; kit pieces
 	-- built by assets/blender/backdrop.py, published to ReplicatedStorage by server Heist/BackdropKit).
+	-- `color`: the body is drawn flat in this colour (TextureID cleared on the client): a light haze silhouette, not
+	-- the atlas's dark Ink faces (WORLD 2.0: the rings read black under the old recipe).
 	RINGS = {
-		{ name = "near", piece = "Skyline_Near", windows = "Skyline_Near_Windows", yaw0 = 0 },
-		{ name = "far", piece = "Skyline_Far", windows = "Skyline_Far_Windows", yaw0 = 45 },
+		{ name = "near", piece = "Skyline_Near", windows = "Skyline_Near_Windows", yaw0 = 0, color = { 112, 114, 166 } },
+		{ name = "far", piece = "Skyline_Far", windows = "Skyline_Far_Windows", yaw0 = 45, color = { 134, 136, 186 } },
 	},
-	KIT_FOLDER = "BackdropKit", -- ReplicatedStorage/<KIT_FOLDER>: the ring and snow templates
-	KIT_WAIT_SECONDS = 60, -- the client builds the rest at once and adds the rings when they arrive
-	-- Performance tiers (Config.Heist.PERF_TIERS): roblox_quality §6.4, low phones keep L0, L1, L2 and the sky.
+	KIT_FOLDER = "BackdropKit", -- ReplicatedStorage/<KIT_FOLDER>: the ring and town kit templates
+	KIT_WAIT_SECONDS = 60, -- the client builds the rest at once and adds the kit pieces when they arrive
+	-- The town's kit pieces Heist/BackdropKit publishes besides the rings (KitService templates, Bank atlas).
+	KIT_PIECES = {
+		"StreetLamp",
+		"StreetLamp_Bulb",
+		"Roof_Gable",
+		"Car_Parked",
+		"Car_Parked_Paint",
+		"Snowman",
+		"Xmas_Tree",
+		"Xmas_Tree_Lights",
+		"Xmas_Garland_8",
+		"Xmas_Wreath",
+		"Xmas_Lights_8",
+		"Xmas_Lights_8_Bulbs",
+		"Xmas_SnowPile",
+	},
+	-- Performance tiers (Config.Heist.PERF_TIERS): roblox_quality §6.4. Low phones keep the snowfield, the
+	-- streets, every building and its lit windows, the near ring and the sky: the frame is never black.
 	FAR_RING_OFF_TIER = 3,
-	FACADE_WINDOWS_OFF_TIER = 4,
 	-- The sky: the Heist City cubemap (tools/blender/sky_city.py) has Hoardsworth's tower at this yaw (degrees,
 	-- Roblox -Z = 0, turning toward -X). The client turns Lighting.Sky so the tower stands behind the building
 	-- the spawn faces (Sky.SkyboxOrientation), so every level and the garage get it in the first view.
