@@ -952,6 +952,102 @@ Config.Lighting = {
 	ARROW_SHAFT = { 0.7, 1.0 }, -- studs: shaft width, length
 }
 
+-- Garage v1 (PLAN_STEAM_PLUS §4.1 W6, docs/GOLDEN_FRAMES.md G3): the shared lobby every crew starts in, built from
+-- the kit by server Heist/Lobby from the pure plan Heist/LobbyPlan (Lune-tested). Local space at
+-- Config.Heist.LOBBY_ORIGIN, floor y = 0, -Z = the back wall with the roll-up door onto the snowy street. Visual
+-- only: the garage's colliders are its own greybox walls, floor and van boxes (the kit pieces never collide).
+Config.Lobby = {
+	HALF_X = 44, -- interior half width (studs): 11 floor tiles of 8
+	HALF_Z = 28, -- interior half depth: 7 floor tiles
+	WALL_H = 12,
+	WALL_T = 2, -- the wall band outside the interior (the kit wall body is 2 deep)
+	STREET_DEPTH = 26, -- the street apron behind the back wall, under the half-open roll-up door
+	DOOR_X = 0, -- the GarageDoor_16x12 in the back wall
+	DOOR_W = 16,
+	-- 8 van bays, bay 1 first (GoldenShots G3 frames the part named "Van": bay 1's collider). Back row against the
+	-- back wall (doors face +Z, the aisle), front row against the front wall (doors face -Z). x of each van. Your bay
+	-- (1) stands right of the roll-up door with the trophy shelf and the job board between them, so the G3 camera
+	-- (yaw 35: it looks left past your van) frames van, board, trophies and the door; the back right corner is free.
+	BAYS = {
+		{ row = "back", x = 26 },
+		{ row = "front", x = 17.6 },
+		{ row = "back", x = -17 },
+		{ row = "back", x = -34 },
+		{ row = "front", x = -17.6 },
+		{ row = "front", x = 35.2 },
+		{ row = "front", x = 0 },
+		{ row = "front", x = -35.2 },
+	},
+	VAN_GAP = 1.5, -- studs between a van's back and its wall
+	-- Each bay's van paint (Van_Paint): mid values. Bays 1-4 are the crew seats' families (P1 Cyan, P2 Magenta,
+	-- P3 Indigo, P4 Ghost White, toned to a mid value: a van is never a glowing clone hue), 5 the heist van's caramel.
+	BAY_PAINTS = {
+		{ 62, 138, 150 },
+		{ 168, 84, 140 },
+		{ 100, 92, 176 },
+		{ 128, 128, 150 },
+		{ 140, 100, 72 },
+		{ 104, 120, 70 },
+		{ 120, 76, 110 },
+		{ 84, 110, 140 },
+	},
+	-- Work lamps: one Lamp_Ceiling over each bay's door side; bay 1 (yours) is the shadowed key and the brightest,
+	-- the neighbouring bays dimmer (GOLDEN G3). Pools: unlit SurfaceGui discs like the heist lamps.
+	-- the work lamp hangs off the van's cab end toward the aisle: it lights the open door and the bay without hanging
+	-- in front of the door from the aisle (studs, in the van's frame: along its length toward the cab, toward the aisle)
+	LAMP_OFFSET = 4.5,
+	LAMP_ALONG = 5,
+	WORK_LAMP = { range = 20, brightness = 1.0, color = { 255, 196, 132 }, pool = 15, poolColor = { 236, 190, 140 } },
+	YOUR_LAMP = {
+		range = 30,
+		brightness = 1.7,
+		angle = 80,
+		color = { 255, 200, 140 },
+		shadows = true,
+		pool = 17,
+		poolColor = { 226, 168, 112 },
+	},
+	-- the shelf lamp: over your first trophy, reaching the job board in front of the shelf (they share the light)
+	TROPHY_LIGHT = { range = 13, brightness = 1.4, color = { 255, 210, 150 } },
+	-- warm floods down the aisle between the rows (Lamp_Ceiling + pool): the garage reads lit from inside
+	AISLE_LAMPS = { { -22, -6 }, { 0, -6 }, { 22, -6 } },
+	AISLE_LAMP = { range = 28, brightness = 1.1, color = { 255, 190, 125 }, pool = 20, poolColor = { 232, 176, 116 } },
+	-- Outside the door: a StreetLamp on the street apron (its warm pool on the snow, seen under the curtain).
+	STREET_LAMP = { x = 6, z = -38 },
+	-- The job board beside your van (bay 1), turned toward the aisle; the NEXT card on its slot. card = the JobBoard
+	-- manifest `card` (centre in the board's local Roblox axes, size; the unit spec checks it against the manifest).
+	BOARD = {
+		x = 13.5,
+		z = -19,
+		yaw = -116,
+		card = { centre = { -1.175, 4.525, -0.26 }, size = { 2.35, 1.95 } },
+		cardDepth = 0.06,
+		cardColor = { 30, 33, 62 },
+		textColor = { 255, 226, 150 },
+		glowBrightness = 1.6, -- SurfaceGui Brightness (LightInfluence 0): the board's one glowing thing
+	},
+	-- The trophy shelf: a Counter_8x2 against the back wall between the roll-up door and your van, with ornament
+	-- stands on top (Ornament_Stand; the ornament hangs from the arm tip, TROPHY_HANG in the stand's local axes). The
+	-- first trophy is lit (TROPHY_LIGHT over it); an empty stand waits for the next one.
+	TROPHY_SHELF = { x = 13, z = -26.8, yaw = 180 },
+	TROPHY_HANG = { -0.45, 1.98, 0 },
+	TROPHIES = {
+		{ x = 10.6, ornament = "Ornament_VaultDoor" },
+		{ x = 13, ornament = "Ornament_Star" },
+		{ x = 15.4 },
+	},
+	TROPHY_LIGHT_AT = { 15, 8.5, -16 }, -- in front of the board, reaching the shelf behind it
+	-- Snow drifting in at the door, and on the street (Xmas_SnowPile: x, z, yaw).
+	SNOW_PILES = { { -5, -25.2, 160 }, { 5.5, -25.6, 20 }, { -14, -36, 0 }, { 20, -47, 90 } },
+	BAY_LINE = { width = 0.3, color = { 168, 152, 122 } }, -- painted bay lines (Warm Marble shade)
+	BAY_NUMBER = { size = 3, color = { 216, 200, 168 } }, -- the bay number painted on the floor at the aisle
+	FLOOR_COLOR = { 58, 54, 92 }, -- greybox floor (Heist/Palette.floor)
+	WALL_COLOR = { 87, 52, 41 }, -- greybox walls: the Corner Shop brick (#573429), never default grey
+	LOCATION = "CornerShop", -- kit atlas: warm brick walls, pine, the warm checker floor
+	SPAWN = { 0, 10 }, -- the GarageSpawn centre (Lobby.spawnFor spreads crews round it)
+	KIT_WAIT_SECONDS = 90, -- the garage waits this long for the kit in the background (greybox until then)
+}
+
 -- Art kit (spike S2, automated path: docs/art/KIT_IMPORT.md "Automated path"). The asset ids and the
 -- manifest live in the generated src/server/Kit/KitData.luau (python3 tools/kit_upload.py); these are
 -- the boot knobs of src/server/Kit/KitService.luau.

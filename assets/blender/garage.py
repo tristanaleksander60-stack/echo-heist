@@ -19,7 +19,7 @@ import _kitlib as L
 # JobBoard: board face plane and the NEXT card slot (Blender axes: x, y = depth (-y is the front), z up)
 BOARD = (-2.6, 2.6, 3.3, 7.0)        # x0, x1, z0, z1 of the frame
 CORK_Y = (-0.22, -0.14)
-SLOT = (0.35, 2.25, 3.75, 5.25)      # x0, x1, z0, z1 of the dark card slot (lower right)
+SLOT = (0.0, 2.35, 3.55, 5.5)        # x0, x1, z0, z1 of the dark card slot (lower right): the NEXT card reads at 48 px
 SLOT_Y = -0.26                       # slot front face
 
 
@@ -76,7 +76,7 @@ def job_board(k):
     # pinned photos: (centre x, centre z, w, h, tilt degrees, picture colour)
     photos = [(-1.75, 6.05, 1.05, 0.8, -6, "steel"), (-0.45, 6.2, 0.95, 0.75, 4, "plum_hi"),
               (0.95, 6.0, 1.1, 0.82, -3, "leaf"), (-1.55, 4.55, 1.1, 0.85, 5, "wood_hi"),
-              (-0.2, 4.35, 0.8, 1.0, -4, "steel_lo")]
+              (-0.62, 4.35, 0.8, 1.0, -4, "steel_lo")]
     pins = []
     for i, (cx, cz, w, h, tilt, pic) in enumerate(photos):
         y_back = CORK_Y[0] + 0.01

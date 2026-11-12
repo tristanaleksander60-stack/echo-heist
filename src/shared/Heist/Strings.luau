@@ -243,6 +243,9 @@ Strings.LEAVE = "LEAVE"
 -- Garage
 ---------------------------------------------------------------------------
 Strings.PICK_A_HEIST = "PICK A HEIST"
+-- The 3D job board at your van (garage v1, Heist/Lobby + client Heist/JobBoard): the NEXT card.
+Strings.JOB_BOARD_NEXT = "NEXT JOB"
+Strings.JOB_BOARD_ALL_DONE = "ANY JOB!"
 Strings.ADVENT_CATCH_UP = "ADVENT CATCH-UP"
 Strings.DAILY_VAULT = "DAILY VAULT"
 function Strings.dailyVaultOn(when: string): string

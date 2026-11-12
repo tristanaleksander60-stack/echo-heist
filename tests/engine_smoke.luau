@@ -988,5 +988,203 @@ do
 	)
 end
 
+-- 8. Garage v1 (PLAN_STEAM_PLUS §4.1 W6, docs/GOLDEN_FRAMES.md G3): server Heist/Lobby builds the garage from the
+-- pure Heist/LobbyPlan: greybox at once (brick walls with the roll-up door gap, 8 van colliders in their bay paints,
+-- warm work lamps and pools, the glowing NEXT card, the GarageSpawn), then dressed with the kit (walls, door, floor,
+-- 8 kit vans with Van_Paint in the bay colours, the job board, trophies) while the greybox stays the collision.
+do
+	local Config = GameConfig :: any
+	local C, LIGHT = Config.Lobby, Config.Lighting
+	local heistServer = server:WaitForChild("Heist")
+	local okLobby, Lobby = pcall(require, heistServer:WaitForChild("Lobby"))
+	check(okLobby, "garage: Lobby loads" .. (if okLobby then "" else ": " .. tostring(Lobby)))
+	local okKit, KitService = pcall(require, server:WaitForChild("Kit"):WaitForChild("KitService"))
+	if okLobby then
+		local okBuild, garage = pcall(Lobby.build, if okKit then KitService else nil)
+		check(okBuild and garage ~= nil, "garage: Lobby.build" .. (if okBuild then "" else ": " .. tostring(garage)))
+		if okBuild and garage then
+			check(garage.Parent == workspace and garage.Name == "Garage", "garage: workspace.Garage")
+			local spawn = garage:FindFirstChild("GarageSpawn")
+			check(spawn ~= nil and spawn:IsA("SpawnLocation") and spawn.CanCollide, "garage: GarageSpawn collides")
+			local van1 = garage:FindFirstChild("Van")
+			check(
+				van1 ~= nil and van1:IsA("BasePart") and van1:GetAttribute("EH_Bay") == 1,
+				"garage: bay 1's van collider is the part named Van (GoldenShots G3 frames it)"
+			)
+			-- 8 bays, each a colliding van box in its paint
+			local bays = {}
+			for _, d in garage:GetChildren() do
+				if d:IsA("BasePart") and d:GetAttribute("EH_Kind") == "garageVan" then
+					bays[d:GetAttribute("EH_Bay")] = d
+				end
+			end
+			local baysOk = 0
+			for i = 1, 8 do
+				local v = bays[i]
+				local p = C.BAY_PAINTS[i]
+				if v and v.CanCollide and v.Color == Color3.fromRGB(p[1], p[2], p[3]) then
+					baysOk += 1
+				end
+			end
+			check(baysOk == 8, string.format("garage: 8 van bays in their paints (%d)", baysOk))
+			-- spawn spread: inside the garage, never inside a van
+			local origin = Vector3.new(table.unpack(Config.Heist.LOBBY_ORIGIN))
+			local spawnsOk = 0
+			for i = 1, 8 do
+				local p = Lobby.spawnFor(i).Position - origin
+				local inside = math.abs(p.X) < C.HALF_X and math.abs(p.Z) < C.HALF_Z
+				for _, v in bays do
+					local l = v.CFrame:PointToObjectSpace(Lobby.spawnFor(i).Position)
+					if math.abs(l.X) < v.Size.X / 2 + 1 and math.abs(l.Z) < v.Size.Z / 2 + 1 then
+						inside = false
+					end
+				end
+				spawnsOk += if inside then 1 else 0
+			end
+			check(
+				spawnsOk == 8,
+				string.format("garage: spawnFor 1-8 inside the garage, clear of the vans (%d)", spawnsOk)
+			)
+			-- lights inside the per-view budget; your bay is the one shadowed key
+			local lights: { Light } = {}
+			for _, d in garage:GetDescendants() do
+				if d:IsA("Light") then
+					table.insert(lights, d)
+				end
+			end
+			local worstLit, worstShadow, shadowedTotal = 0, 0, 0
+			for _, a in lights do
+				local lit, sh = 0, 0
+				local pa = (a.Parent :: Attachment).WorldPosition
+				for _, l in lights do
+					local pb = (l.Parent :: Attachment).WorldPosition
+					if Vector3.new(pa.X - pb.X, 0, pa.Z - pb.Z).Magnitude <= LIGHT.VIEW_RADIUS then
+						lit += 1
+						sh += if l.Shadows then 1 else 0
+					end
+				end
+				worstLit, worstShadow = math.max(worstLit, lit), math.max(worstShadow, sh)
+				shadowedTotal += if a.Shadows then 1 else 0
+			end
+			check(
+				#lights >= 10
+					and worstLit <= LIGHT.MAX_LIGHTS_PER_VIEW
+					and worstShadow <= LIGHT.MAX_SHADOWED_PER_VIEW
+					and shadowedTotal == 1,
+				string.format(
+					"garage: %d warm lights, worst view %d lit / %d shadowed, %d shadowed in all",
+					#lights,
+					worstLit,
+					worstShadow,
+					shadowedTotal
+				)
+			)
+			-- the NEXT card glows (unlit SurfaceGui) and says a job; the client rewrites it with yours
+			local card = garage:FindFirstChild("JobCard", true)
+			local gui = card and card:FindFirstChild("Card")
+			local title = gui and gui:FindFirstChild("Title")
+			check(
+				card ~= nil
+					and card:GetAttribute("EH_Kind") == "jobCard"
+					and gui ~= nil
+					and (gui :: SurfaceGui).LightInfluence == 0
+					and title ~= nil
+					and (title :: TextLabel).Text ~= "",
+				"garage: the job board's NEXT card glows with a job"
+			)
+			local okJb, JobBoard = pcall(function()
+				return require(
+					game:GetService("StarterPlayer")
+						:WaitForChild("StarterPlayerScripts")
+						:WaitForChild("Client")
+						:WaitForChild("Heist")
+						:WaitForChild("JobBoard")
+				)
+			end)
+			if okJb and title then
+				JobBoard.show({
+					levels = {
+						{ name = "Back Room", unlocked = true, medals = { "Clear" } },
+						{ name = "Two Doors", unlocked = true, medals = {} },
+					},
+				})
+				check((title :: TextLabel).Text == "TWO DOORS", "garage: JobBoard writes your next job on the card")
+			else
+				check(false, "garage: client JobBoard loads" .. (if okJb then "" else ": " .. tostring(JobBoard)))
+			end
+			-- no default Roblox grey or white blocks anywhere (visible plain parts carry a palette colour)
+			local grey = Color3.fromRGB(163, 162, 165)
+			local bad = {}
+			for _, d in garage:GetDescendants() do
+				if d:IsA("Part") and d.Transparency < 1 and (d.Color == grey or d.Color == Color3.new(1, 1, 1)) then
+					table.insert(bad, d.Name)
+				end
+			end
+			check(#bad == 0, "garage: no default grey or white blocks (" .. table.concat(bad, ", ") .. ")")
+			-- the kit dressing (visual only; the greybox walls and vans stay the colliders)
+			if okKit and KitService.ready(45) and KitService.report().ok then
+				local n = Lobby.dress(KitService)
+				local deadline = os.clock() + 10
+				while not Lobby.isDressed() and os.clock() < deadline do
+					task.wait(0.2)
+				end
+				local kit = garage:FindFirstChild("Kit")
+				local meshes, colliding, paints, doors, boards = 0, 0, 0, 0, 0
+				for _, d in (kit and kit:GetDescendants()) or {} do
+					if d:IsA("MeshPart") then
+						meshes += 1
+						colliding += if d.CanCollide then 1 else 0
+						local piece = d:GetAttribute("KitPiece")
+						if piece == "Van_Paint" then
+							local bay = d:GetAttribute("EH_Bay")
+							local p = bay and C.BAY_PAINTS[bay]
+							paints += if p and d.Color == Color3.fromRGB(p[1], p[2], p[3]) then 1 else 0
+						elseif piece == "GarageDoor_16x12" then
+							doors += 1
+						elseif piece == "JobBoard" then
+							boards += 1
+						end
+					end
+				end
+				check(
+					Lobby.isDressed() and garage:GetAttribute("Kit") == true and meshes >= 150 and colliding == 0,
+					string.format(
+						"garage: dressed with %d kit parts (%d colliding; placed now %d)",
+						meshes,
+						colliding,
+						n
+					)
+				)
+				check(
+					paints == 8 and doors == 1 and boards == 1,
+					string.format(
+						"garage: 8 kit vans in bay paints (%d), roll-up door %d, job board %d",
+						paints,
+						doors,
+						boards
+					)
+				)
+				local wallsCollide = 0
+				for _, d in garage:GetChildren() do
+					if
+						d:IsA("BasePart")
+						and string.match(d.Name, "^Wall%d")
+						and d.CanCollide
+						and d.Transparency == 1
+					then
+						wallsCollide += 1
+					end
+				end
+				check(
+					wallsCollide == 5,
+					string.format("garage: greybox walls hidden but colliding (%d/5)", wallsCollide)
+				)
+			else
+				check(false, "garage: kit ready for the dressing")
+			end
+		end
+	end
+end
+
 table.insert(results, string.format("%d failure(s)", failures))
 return table.concat(results, "\n")

@@ -378,6 +378,8 @@ def lamp_light(level, lp):
     o.data.use_custom_distance = True
     o.data.cutoff_distance = lp["range"]
     P = LG["POOL"]
+    if not lp.get("pool"):
+        return
     pc = "#%02X%02X%02X" % tuple(lp.get("poolColor") or P["color"])
     for k, rg in enumerate(lp.get("rings") or P["rings"]):
         r = lp["pool"] * rg["size"] / 2
@@ -833,6 +835,97 @@ def golden(level, W, Hh, samples, out_dir=None):
         print("wrote", os.path.relpath(out, REPO))
 
 
+def garage(g, W, Hh, samples, out_dir=None):
+    """docs/GOLDEN_FRAMES.md G3: the garage v1 (server Heist/Lobby from Heist/LobbyPlan, dumped by level_plan.luau) with
+    the kit in the Corner Shop atlas, each van's paint, the work lamps (your bay's shadowed key), the trophies, the job
+    board's glowing NEXT card, the roll-up door half open onto the snowy street and the W4 backdrop round the garage
+    site; the camera is Config.Heist.CAMERA.GOLDEN.G3 on the part named "Van" (bay 1's collider centre), as
+    client Heist/GoldenShots places it. No falling snow: the camera focus is indoors (the client turns it off)."""
+    import backdrop_shots as BS
+    import frame_grade as FG
+    from PIL import Image
+    gdir = out_dir or GOLDEN
+    os.makedirs(gdir, exist_ok=True)
+    os.makedirs(TMP, exist_ok=True)
+    s = MR.reset(samples)
+    s.view_settings.exposure = 0.3
+    lib = Lib(g["location"])
+    LG = g["lighting"]
+    gbox("Floor", g["floor"], PAL["floor"])
+    for it in g["kit"]:
+        for piece in it["pieces"]:
+            o = put(lib, piece, it["pivot"], it["scale"])
+            if o is None:
+                continue
+            if piece["name"] == "Van_Paint" and it.get("color"):
+                tint(o, "#%02X%02X%02X" % tuple(it["color"]), rough=0.5)
+    L = g["lobby"]
+    for b in g["lines"]:
+        gbox("BayLine", b, "#%02X%02X%02X" % tuple(L["BAY_LINE"]["color"]), shadow=False)
+    for n in g["numbers"]:
+        text3(n["text"], L["BAY_NUMBER"]["size"] * 0.8, "#%02X%02X%02X" % tuple(L["BAY_NUMBER"]["color"]), 0.0,
+              rb(n["x"], 0.05, n["z"]), (0, 0, math.radians(n["yaw"]) + math.pi))
+    rings = {"street": LG["LAMP"]["street"]["poolRings"]}
+    for lp in g["lamps"]:
+        d = dict(lp)
+        d["kind"] = "hero" if lp.get("angle") else "room"
+        d["lightY"] = lp["y"]
+        d["rings"] = rings.get(lp["kind"], LG["LAMP"]["room"]["poolRings"])
+        lamp_light({"floorY": 0, "lighting": LG}, d)
+    # the NEXT card: a dark plate, the glowing words (SurfaceGui LightInfluence 0, Brightness 1.6)
+    c = g["card"]
+    B = L["BOARD"]
+    yaw = math.radians(c["yaw"])
+    cpos = rb(*c["centre"])
+    MR.box("JobCard", (c["size"][0], B["cardDepth"], c["size"][1]), MR.mat("#%02X%02X%02X" % tuple(B["cardColor"]), 0.6),
+           None, tuple(cpos), (0, 0, c["yaw"]), bevel=0)
+    face = Vector((math.sin(yaw), -math.cos(yaw), 0)) * (B["cardDepth"] / 2 + 0.01)
+    tc = "#%02X%02X%02X" % tuple(B["textColor"])
+    for txt, dy, size in (("NEXT JOB", 0.42, 0.3), (g["firstJob"], -0.12, 0.5)):
+        t = text3(txt, size, tc, 2.2, cpos + face + Vector((0, 0, dy)), (math.pi / 2, 0, yaw))
+        t.name = "JobCardText"
+        bpy.context.view_layer.update()
+        wide = c["size"][0] * 0.88                       # TextScaled: the words fit the card
+        if t.dimensions.x > wide:
+            k = wide / t.dimensions.x
+            t.scale = (k, k, k)
+    BS.backdrop({"backdrop": g["backdrop"], "backdropConfig": g["backdropConfig"], "kit": [], "location": g["location"],
+                 "lighting": LG}, lib, put)
+    lighting(s)
+    BS.world_sky(s, TMP)
+    cd = bpy.data.cameras.new("cam")
+    cam = bpy.data.objects.new("cam", cd)
+    s.collection.objects.link(cam)
+    cd.sensor_fit = "VERTICAL"
+    cd.clip_start = 0.1
+    cd.clip_end = 5000
+    s.render.resolution_x, s.render.resolution_y = W, Hh
+    s.render.resolution_percentage = 100
+    G3 = g["camera"]["GOLDEN"]["G3"]
+    v = g["bays"][0]["collider"]
+    focus = ((v[0] + v[3]) / 2, (v[1] + v[4]) / 2, (v[2] + v[5]) / 2)
+    yw, p = math.radians(G3["YAW"]), math.radians(G3["PITCH"])
+    look = (-math.sin(yw) * math.cos(p), -math.sin(p), -math.cos(yw) * math.cos(p))   # CameraMath.look
+    pos = tuple(focus[k] - look[k] * G3["DISTANCE"] for k in range(3))
+    cam.location = rb(*pos)
+    cam.rotation_euler = (rb(*focus) - rb(*pos)).to_track_quat("-Z", "Y").to_euler()
+    cd.angle_y = math.radians(G3["FOV"])
+    name = "G3_garage"
+    raw = os.path.join(TMP, f"golden_{name}_raw.png")
+    render(s, cam, raw)
+    depth = os.path.join(TMP, f"golden_{name}_depth.png")
+    BS.depth_pass(s, cam, depth)
+    hazed = os.path.join(TMP, f"golden_{name}_haze.png")
+    BS.haze(raw, depth, hazed)
+    out = os.path.join(gdir, f"{name}.png")
+    MR.finish(hazed, out, [], tag=False, vignette=0.12, truecolor=True)
+    Image.open(out).convert("RGB").resize((160, 90), Image.LANCZOS).save(os.path.join(gdir, f"{name}_160x90.png"))
+    ids = os.path.join(TMP, f"golden_{name}_ids.png")
+    id_mask(s, cam, ids)
+    record_grade(gdir, FG.grade(out, ids))
+    print("wrote", os.path.relpath(out, REPO))
+
+
 # ------------------------------------------------------------------ grading (tools/blender/frame_grade.py)
 ID_GROUPS = (   # (group, object-name prefixes), first match wins: frame_grade.ID_COLOURS gives the mask colours
     ("zone", ("VanZone", "ArrowShaft", "ArrowHead")),
@@ -840,7 +933,7 @@ ID_GROUPS = (   # (group, object-name prefixes), first match wins: frame_grade.I
     ("cash", ("CashBag", "CashRegister", "GoldBar", "GoldStack", "Diamond", "Safe", "Stand", "sparkle")),
     ("plate", ("Plate_4x4",)),
     ("lamp", ("Lamp_Ceiling_Bulb", "StreetLamp_Bulb")),
-    ("board", ("JobBoard",)),
+    ("board", ("JobBoard", "JobCard")),
     ("rug", ("Rug_",)),
 )
 
@@ -936,6 +1029,8 @@ def main(argv):
     ap.add_argument("--golden", action="store_true",
                     help="GOLDEN_FRAMES G1 (L1) and G2 (L5) with the backdrop, sky, snow and haze into "
                          "docs/audit/levels/golden/ (one process per level; --only L1 or L5)")
+    ap.add_argument("--garage", action="store_true",
+                    help="GOLDEN_FRAMES G3 (the garage v1, Heist/LobbyPlan) into docs/audit/levels/golden/")
     a = ap.parse_args(argv)
     global OUT
     if a.out:
@@ -943,6 +1038,11 @@ def main(argv):
     plan = load_plan(not a.plain, a.daily)
     levels = plan["levels"]
     W, Hh = a.size, a.size * 9 // 16
+    if a.garage:
+        g = plan["garage"]
+        g["firstJob"] = levels[0]["name"].upper()        # Heist/JobCard.first(Catalog)
+        garage(g, W, Hh, a.samples, os.path.abspath(a.out) if a.out else None)
+        return
     if a.golden and not a.only:
         for tag in ("L1", "L5"):
             subprocess.run([sys.executable, os.path.abspath(__file__), "--golden", "--only", tag, "--size",

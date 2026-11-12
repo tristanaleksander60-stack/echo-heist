@@ -51,7 +51,7 @@
    ],
    "symmetry_error": null,
    "self_intersections": 0,
-   "cross_shell_overlaps": 602,
+   "cross_shell_overlaps": 635,
    "cap_overlaps": 0,
    "flipped_faces": 0,
    "boundary_edges": 0,
@@ -92,10 +92,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "151f7e51c61a381652d0",
+ "contentHash": "513b11db6fc559d87821",
  "fbx": {
   "path": "assets/fbx/JobBoard.fbx",
-  "bytes": 36060,
+  "bytes": 36076,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -113,5 +113,5 @@
  "spec": "assets/blender/garage.py",
  "notes": "Job board 5.4 x 1 x 7.3 on legs: wood frame, cork, pinned photos, red string, NEXT card slot.",
  "turntable": "docs/art/turntables/JobBoard.png",
- "seconds": 14.4
+ "seconds": 4.8
 }
