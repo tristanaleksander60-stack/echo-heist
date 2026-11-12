@@ -1,6 +1,7 @@
 -- Opens a Rojo-built place file and checks that every script landed where it
--- is expected and that the "Heist Night" Lighting recipe v1 (MASTERPLAN §6.3,
--- spike S6) came out of the project file. Run after the builds:
+-- is expected and that lighting recipe A "Moonlit Diorama" (docs/research/roblox_quality.md
+-- §1.2, PLAN_STEAM_PLUS §4.1 W1; it replaced spike S6's "Heist Night") came out of the
+-- project file. Run after the builds:
 --   rojo build -o build/EchoHeist.rbxlx
 --   lune run tests/place_check.luau build/EchoHeist.rbxlx
 --   rojo build bench.project.json -o build/CloneBench.rbxlx
@@ -25,7 +26,7 @@ local function expect(cond: boolean, msg: string)
 	end
 end
 
--- Lighting ("Heist Night" recipe v1) ----------------------------------------------
+-- Lighting (recipe A "Moonlit Diorama": a ClockTime 15 sun recoloured as moonlight) ----
 
 local function near(a: number, b: number): boolean
 	return math.abs(a - b) < 1e-3
@@ -79,25 +80,46 @@ expectProps(lighting, "Lighting", {
 	LightingStyle = "Realistic", -- not scriptable: only the project file can set it
 	PrioritizeLightingQuality = true, -- not scriptable either
 	GlobalShadows = true,
-	ClockTime = 0,
-	Brightness = 0.5,
-	Ambient = { 55, 55, 95 },
-	OutdoorAmbient = { 75, 80, 130 },
-	ColorShift_Top = { 255, 210, 160 },
-	EnvironmentDiffuseScale = 0.25,
-	EnvironmentSpecularScale = 0.35,
-	ExposureCompensation = 0.2,
+	ClockTime = 15,
+	GeographicLatitude = 20,
+	Brightness = 1.4,
+	ColorShift_Top = { 150, 175, 255 },
+	ColorShift_Bottom = { 40, 30, 70 },
+	Ambient = { 95, 90, 140 },
+	OutdoorAmbient = { 115, 110, 165 },
+	EnvironmentDiffuseScale = 0.3,
+	EnvironmentSpecularScale = 0.4,
+	ExposureCompensation = 0.3,
+	ShadowSoftness = 0.3,
 })
+-- Ambient <= OutdoorAmbient in every channel, or Ambient leaks outdoors (roblox_quality §1.2)
+do
+	local a, o = lighting.Ambient, lighting.OutdoorAmbient
+	expect(a.R <= o.R and a.G <= o.G and a.B <= o.B, "Lighting.Ambient <= OutdoorAmbient in every channel")
+end
 
 local LIGHTING_CHILDREN: { [string]: { class: string, props: { [string]: any } } } = {
+	Sky = {
+		-- Plain night setup until the night faces are uploaded (Config.Lighting note; city cubemap: phase 2):
+		-- the "sun" is the key light, drawn as a small moon.
+		class = "Sky",
+		props = { CelestialBodiesShown = true, SunAngularSize = 9, MoonAngularSize = 0, StarCount = 0 },
+	},
 	Atmosphere = {
 		class = "Atmosphere",
-		props = { Density = 0.3, Color = { 70, 60, 120 }, Decay = { 35, 30, 75 }, Haze = 0.8 },
+		props = {
+			Density = 0.28,
+			Offset = 0.12,
+			Color = { 90, 80, 150 },
+			Decay = { 55, 45, 105 },
+			Glare = 0,
+			Haze = 1.3,
+		},
 	},
-	Bloom = { class = "BloomEffect", props = { Intensity = 0.8, Size = 28, Threshold = 1.0 } },
+	Bloom = { class = "BloomEffect", props = { Intensity = 0.6, Size = 24, Threshold = 1.15 } },
 	ColorCorrection = {
 		class = "ColorCorrectionEffect",
-		props = { Contrast = 0.12, Saturation = 0.1, TintColor = { 235, 230, 255 } },
+		props = { Brightness = 0, Contrast = 0.12, Saturation = 0.08, TintColor = { 240, 240, 255 } },
 	},
 	ColorGrading = { class = "ColorGradingEffect", props = { TonemapperPreset = "Default" } },
 }
@@ -107,6 +129,16 @@ for name, spec in LIGHTING_CHILDREN do
 	if child then
 		expectProps(child, "Lighting." .. name, spec.props)
 	end
+end
+do
+	local sky = lighting:FindFirstChild("Sky")
+	local ok, tex = pcall(function()
+		return (sky :: any).SunTextureContent
+	end)
+	expect(
+		ok and string.find(tostring(tex), "rbxasset://sky/moon.jpg", 1, true) ~= nil,
+		"Lighting.Sky draws the key light as the moon"
+	)
 end
 -- No SunRays; DepthOfField and Blur only in menus / plan camera / reel (added at runtime)
 local banned = {}
