@@ -22,7 +22,13 @@ local EV = EventLog.EV
 local EPS = 1e-7
 local INF = math.huge
 
-export type PlateState = { pressed: boolean, count: number, releasedAt: number, firstActor: number }
+export type PlateState = {
+	pressed: boolean,
+	held: boolean, -- pressed or inside the grace
+	count: number,
+	releasedAt: number,
+	firstActor: number,
+}
 export type SwitchState = { on: boolean, offAt: number? }
 export type DoorState = {
 	open: boolean, -- logically open (sources satisfied, not alarm-locked)
@@ -51,7 +57,7 @@ local Mechanisms = {}
 function Mechanisms.new(level: any): State
 	local state: State = { level = level, plates = {}, switches = {}, doors = {}, lasers = {}, lockAt = nil }
 	for i = 1, #level.plates do
-		state.plates[i] = { pressed = false, count = 0, releasedAt = -INF, firstActor = 0 }
+		state.plates[i] = { pressed = false, held = false, count = 0, releasedAt = -INF, firstActor = 0 }
 	end
 	for i = 1, #level.switches do
 		state.switches[i] = { on = false, offAt = nil }
@@ -68,7 +74,7 @@ end
 -- Back to the loop-start state (everything resets every loop, §3.1).
 function Mechanisms.reset(state: State)
 	for _, p in state.plates do
-		p.pressed, p.count, p.releasedAt, p.firstActor = false, 0, -INF, 0
+		p.pressed, p.held, p.count, p.releasedAt, p.firstActor = false, false, 0, -INF, 0
 	end
 	for _, s in state.switches do
 		s.on, s.offAt = false, nil
@@ -202,21 +208,21 @@ function Mechanisms.update(state: State, tick: number, t: number, actors: { any 
 				end
 			end
 		end
-		local wasHeld = plateHeld(p, t)
 		if count > 0 and not p.pressed then
 			p.pressed = true
 			p.firstActor = first
-			if not wasHeld then
-				EventLog.append(log, tick, EV.PlateDown, i, first)
-			end
 		elseif count == 0 and p.pressed then
 			p.pressed = false
 			p.releasedAt = t
 		end
 		p.count = count
-		if wasHeld and not plateHeld(p, t) then
+		local held = plateHeld(p, t)
+		if held and not p.held then
+			EventLog.append(log, tick, EV.PlateDown, i, first)
+		elseif p.held and not held then
 			EventLog.append(log, tick, EV.PlateUp, i)
 		end
+		p.held = held
 	end
 	for i, s in state.switches do
 		if s.on and s.offAt and t >= s.offAt - EPS then
@@ -330,11 +336,10 @@ function Mechanisms.plateHeld(state: State, i: number, t: number): boolean
 end
 
 -- Client view (§8.10 rule 2): a door looks shut, and is solid in the client's own
--- physics, from VISUAL_LEAD before the server makes it solid. `tView` is the
--- viewer's loop time; the state is what the viewer has received.
--- Returns "open", "closing" or "shut".
-function Mechanisms.doorView(state: State, i: number, tView: number): string
-	local d = state.doors[i]
+-- physics, from VISUAL_LEAD before the server makes it solid. `d` is the door state
+-- as the viewer has received it ({open, solid, solidAt}); `tView` is the viewer's
+-- loop time. Returns "open", "closing" or "shut".
+function Mechanisms.doorViewOf(d: any, tView: number): string
 	if d.solid then
 		return "shut"
 	end
@@ -348,9 +353,13 @@ function Mechanisms.doorView(state: State, i: number, tView: number): string
 	return "open"
 end
 
--- Returns "off", "flicker" (the 3-flicker telegraph) or "on" for the viewer.
-function Mechanisms.laserView(state: State, i: number, tView: number): string
-	local l = state.lasers[i]
+function Mechanisms.doorView(state: State, i: number, tView: number): string
+	return Mechanisms.doorViewOf(state.doors[i], tView)
+end
+
+-- Laser as the viewer sees it ({on, onAt}): "off", "flicker" (the 3-flicker
+-- telegraph, ending VISUAL_LEAD before the server turns it on) or "on".
+function Mechanisms.laserViewOf(l: any, tView: number): string
 	if l.on then
 		return "on"
 	end
@@ -364,6 +373,10 @@ function Mechanisms.laserView(state: State, i: number, tView: number): string
 		end
 	end
 	return "off"
+end
+
+function Mechanisms.laserView(state: State, i: number, tView: number): string
+	return Mechanisms.laserViewOf(state.lasers[i], tView)
 end
 
 return table.freeze(Mechanisms)

@@ -140,7 +140,8 @@ function Guards.canSee(
 	if hidden and d2 > S.HIDE_REVEAL_RADIUS * S.HIDE_REVEAL_RADIUS then
 		return false
 	end
-	if not vision.allRound and d2 > 0.25 then
+	local pb = S.GUARD_POINT_BLANK
+	if not vision.allRound and d2 > pb * pb then
 		local fx, fz = Geom.forward(gyaw)
 		if (fx * dx + fz * dz) / math.sqrt(d2) < vision.cosHalf - EPS then
 			return false
@@ -222,7 +223,15 @@ function Guards.poseAt(g: GuardState, tick: number): (number, number, number)
 end
 
 -- Is the straight move clear of static solids and doors shut at T?
-local function clear(level: any, mech: Mechanisms.State, T: number, x0: number, z0: number, x1: number, z1: number): boolean
+local function clear(
+	level: any,
+	mech: Mechanisms.State,
+	T: number,
+	x0: number,
+	z0: number,
+	x1: number,
+	z1: number
+): boolean
 	local y = level.rootY
 	for _, b in level.solids do
 		if Geom.moveBlocked(b, x0, y, z0, x1, y, z1) then
@@ -309,13 +318,8 @@ function Guards.steer(
 ): (number, number)
 	local wx, wz = tx, tz
 	if not clear(level, mech, T, x, z, tx, tz) then
-		local path = Guards.astar(
-			level,
-			mech,
-			T,
-			nearestNode(level, mech, T, x, z),
-			nearestNode(level, mech, T, tx, tz)
-		)
+		local path =
+			Guards.astar(level, mech, T, nearestNode(level, mech, T, x, z), nearestNode(level, mech, T, tx, tz))
 		if path then
 			-- String pulling: the furthest path node in plain sight.
 			wx, wz = level.nav.nodes[path[1]].x, level.nav.nodes[path[1]].z
@@ -390,7 +394,7 @@ local function patrolStep(g: GuardState, ctx: Ctx)
 		local a = ctx.actors[g.focus]
 		g.offset += dt
 		if a then
-			g.yaw = Geom.turnToward(g.yaw, Geom.yawTo(g.x, g.z, a.x, a.z, g.yaw), TAU * dt)
+			g.yaw = Geom.turnToward(g.yaw, Geom.yawTo(g.x, g.z, a.x, a.z, g.yaw), Config.Sim.GUARD_SUSPECT_TURN * dt)
 		end
 		return
 	end
@@ -511,7 +515,7 @@ local function chaseStep(g: GuardState, ctx: Ctx)
 	for _, a in ctx.actors do
 		if a.present then
 			local gx, gz = lagged(g, ctx, a)
-			if Geom.dist2(gx, gz, a.x, a.z) <= r2 and math.abs(a.y - g.y) <= 4 then
+			if Geom.dist2(gx, gz, a.x, a.z) <= r2 and math.abs(a.y - g.y) <= Config.Sim.GUARD_CATCH_HEIGHT then
 				ctx.onCatch(g, a)
 			end
 		end

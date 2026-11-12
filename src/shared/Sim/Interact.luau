@@ -112,11 +112,7 @@ function Interact.request(sim: any, actor: any, kind: number, arg: number): (boo
 		end
 	elseif kind == KIND.Emote then
 		ok = true
-	elseif
-		kind == KIND.HoldStart
-		or kind == KIND.HoldEnd
-		or kind == KIND.Gadget
-	then
+	elseif kind == KIND.HoldStart or kind == KIND.HoldEnd or kind == KIND.Gadget then
 		reason = FAIL.Unsupported
 	end
 

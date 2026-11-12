@@ -148,7 +148,11 @@ function HeistSim.new(level: any, opts: Opts?): any
 		alertT = S.GUARD_ALERT_SECONDS * mult,
 		catchT = S.GUARD_CATCH_SECONDS * mult,
 		vision = nil :: any,
-		coneVision = { range = S.GUARD_VISION_RANGE, cosHalf = math.cos(math.rad(S.GUARD_VISION_HALF_ANGLE)), allRound = false },
+		coneVision = {
+			range = S.GUARD_VISION_RANGE,
+			cosHalf = math.cos(math.rad(S.GUARD_VISION_HALF_ANGLE)),
+			allRound = false,
+		},
 		chaseVision = { range = S.GUARD_VISION_RANGE, cosHalf = -1, allRound = true },
 		chase = false,
 		chaseSpeed = S.GUARD_CHASE_SPEED_MULT * sim.walkSpeed,
@@ -175,6 +179,21 @@ function HeistSim.addPlayer(sim: any, id: number, opts: { helper: boolean? }?): 
 	return true
 end
 
+-- Loads recordings into a player's deck before the heist starts: golden solutions
+-- (levels/<id>.solution.bin decoded with Rec/Codec), Mentor tapes, ghost audits.
+-- Slots beyond the cap locked at heist start are dropped.
+function HeistSim.seedDeck(sim: any, id: number, recs: { any }): boolean
+	local p = sim.playerById[id]
+	if sim.phase ~= "Lobby" or not p then
+		return false
+	end
+	table.clear(p.deck.slots)
+	for _, rec in recs do
+		table.insert(p.deck.slots, { rec = rec, status = "OK", run = 0 })
+	end
+	return true
+end
+
 -- Per-player clone cap for a crew size (§0 C3).
 function HeistSim.capFor(levelCap: number, crewSize: number): number
 	return math.min(levelCap, math.floor(Config.Sim.CREW_CLONE_BUDGET / math.max(crewSize, 1)))
@@ -185,6 +204,9 @@ local function lockCrew(sim: any)
 	sim.cap = HeistSim.capFor(sim.level.cap, sim.crewSize)
 	for _, p in sim.players do
 		p.deck.cap = sim.cap
+		for i = #p.deck.slots, sim.cap + 1, -1 do
+			table.remove(p.deck.slots, i)
+		end
 	end
 	local S = Config.Sim
 	sim.ctx.coneVision.range = S.GUARD_VISION_RANGE * (1 + S.CREW_VISION_BONUS * (sim.crewSize - 1))
@@ -268,7 +290,15 @@ function HeistSim.startRun(sim: any, serverNow: number?): number?
 				walkSpeed = sim.walkSpeed,
 				ping = 2 * p.latency,
 				noGo = level.noGo,
-				isBlocked = function(ts: number, x0: number, y0: number, z0: number, x1: number, y1: number, z1: number)
+				isBlocked = function(
+					ts: number,
+					x0: number,
+					y0: number,
+					z0: number,
+					x1: number,
+					y1: number,
+					z1: number
+				)
 					local T = LoopClock.hazardTime(ts, a.latency)
 					return Mechanisms.doorBlocking(sim.mech, T, x0, y0, z0, x1, y1, z1) ~= 0
 				end,
@@ -332,7 +362,8 @@ function HeistSim.endRun(sim: any, id: number): boolean
 	if sim.phase ~= "Run" or not p or not p.live or not p.live.present then
 		return false
 	end
-	if sim.t < Config.Rec.END_RUN_LOCK_SECONDS - EPS then
+	-- Judged at the tick that will process it.
+	if sim.nextTick / sim.hz < Config.Rec.END_RUN_LOCK_SECONDS - EPS then
 		return false
 	end
 	p.endRequested = true
@@ -623,19 +654,11 @@ function HeistSim.step(sim: any): string
 	sim.tick, sim.t = tick, t
 	sim.nextTick = tick + 1
 	local actors = sim.actors
-	local S = Config.Sim
 
-	-- Fast-forward is cancelled by movement (§3.1).
-	if sim.rate > 1 then
-		for _, a in actors do
-			if a.kind == "live" and a.present then
-				local inp = a.player.input
-				if Geom.dist2(inp.x, inp.z, a.x, a.z) > S.STANDING_EPS * S.STANDING_EPS then
-					HeistSim.setRate(sim, nil, 1)
-					break
-				end
-			end
-		end
+	-- Fast-forward ends when its pill would vanish: a live player moved, or no
+	-- clone has anything left to play (§3.1).
+	if sim.rate > 1 and not HeistSim.canFastForward(sim) then
+		HeistSim.setRate(sim, nil, 1)
 	end
 
 	for _, a in actors do
@@ -740,7 +763,8 @@ function HeistSim.update(sim: any, serverNow: number): number
 end
 
 -- Fast-forward pill (§3.1): every live player stands still and a clone still has
--- events left to play.
+-- something left to play (it is still moving along its recording, or has events
+-- left).
 function HeistSim.canFastForward(sim: any): boolean
 	if sim.phase ~= "Run" then
 		return false
@@ -753,7 +777,11 @@ function HeistSim.canFastForward(sim: any): boolean
 			if Geom.dist2(inp.x, inp.z, a.x, a.z) > S.STANDING_EPS * S.STANDING_EPS then
 				return false
 			end
-		elseif a.kind == "clone" and a.present and a.state ~= "Stuck" and a.cursor < #a.rec.events then
+		elseif
+			a.kind == "clone"
+			and a.present
+			and (a.state == "Active" or (a.state == "Holding" and a.cursor < #a.rec.events))
+		then
 			pending = true
 		end
 	end
@@ -901,6 +929,19 @@ function HeistSim.result(sim: any): any
 		tainted = inputs.tainted,
 		stars = Scoring.stars(inputs),
 		heistHash = sim.heistHash,
+		-- The same facts in shared/Data Progress.HeistResult's shape (the server adds
+		-- friends and heistId): DataService.awardHeistResult(player, level.id, data).
+		data = {
+			haul = sim.banked,
+			clones = sim.clonesUsed,
+			timeMs = math.floor(sim.totalTime * 1000 + 0.5),
+			catches = inputs.catchesFinal,
+			busted = inputs.bustedFinal,
+			beforeDawn = complete,
+			tainted = inputs.tainted,
+			relaxed = sim.relaxed,
+			recHash = string.format("%08x", sim.heistHash),
+		},
 	}
 end
 

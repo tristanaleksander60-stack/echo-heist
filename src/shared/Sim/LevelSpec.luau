@@ -106,9 +106,7 @@ export type LevelData = {
 	noGo: { Box },
 	plates: { { id: string, index: number, box: Box } },
 	switches: { { id: string, index: number, x: number, y: number, z: number, duration: number? } },
-	doors: {
-		{ id: string, index: number, box: Box, openBy: { Source }, need: string, alarmLock: boolean }
-	},
+	doors: { { id: string, index: number, box: Box, openBy: { Source }, need: string, alarmLock: boolean } },
 	lasers: { { id: string, index: number, box: Box, offBy: { Source }, need: string } },
 	loot: { any },
 	hides: { { id: string, index: number, box: Box } },
@@ -189,7 +187,13 @@ end
 
 -- Flood fill on the XZ grid at root height, doors and lasers open. Returns a
 -- function that says whether a point is reachable from spawn 1.
-local function reachability(bounds: Box, solids: { Box }, y: number, sx: number, sz: number): (number, number) -> boolean
+local function reachability(bounds: Box, thin: { Box }, y: number, sx: number, sz: number): (number, number) -> boolean
+	-- Cells are walked with solids grown by an actor's radius (a point would slip
+	-- through zero-width seams); the last step to a target uses the real solids.
+	local solids: { Box } = {}
+	for _, b in thin do
+		table.insert(solids, Geom.expand(b, Config.Sim.ACTOR_RADIUS, 0))
+	end
 	local cell = Config.Sim.REACH_GRID
 	local w = math.ceil((bounds.maxX - bounds.minX) / cell)
 	local h = math.ceil((bounds.maxZ - bounds.minZ) / cell)
@@ -242,7 +246,7 @@ local function reachability(bounds: Box, solids: { Box }, y: number, sx: number,
 			for di = -1, 1 do
 				local ni, nj = i + di, j + dj
 				if ni >= 0 and ni < w and nj >= 0 and nj < h and seen[nj * w + ni] then
-					if not blockedBySolids(solids, cx(ni), y, cz(nj), x, z) then
+					if not blockedBySolids(thin, cx(ni), y, cz(nj), x, z) then
 						return true
 					end
 				end
@@ -533,9 +537,7 @@ function LevelSpec.validate(spec: any): (boolean, { string })
 					err("%s: leg %d crosses a solid", what, k)
 				end
 				for _, d in list("doors") do
-					if
-						Geom.isValidBox(d.box) and Geom.moveBlocked(d.box, p0.x, rootY, p0.z, p1.x, rootY, p1.z)
-					then
+					if Geom.isValidBox(d.box) and Geom.moveBlocked(d.box, p0.x, rootY, p0.z, p1.x, rootY, p1.z) then
 						err("%s: leg %d walks through door %q", what, k, tostring(d.id))
 					end
 				end

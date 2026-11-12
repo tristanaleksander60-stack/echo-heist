@@ -255,6 +255,45 @@ if server then
 	end
 end
 
+-- Pure layers (shared/Sim, shared/Rec, shared/Levels) use relative string requires
+-- ("./X" = sibling of the script, "../X" = sibling of its folder). Each one must land
+-- on a ModuleScript in the built place, so the sim loads on Roblox as it does in Lune.
+local sharedRoot = game:GetService("ReplicatedStorage"):FindFirstChild("Shared")
+if sharedRoot and sharedRoot:FindFirstChild("Sim") then
+	local function resolve(from: any, rel: string): any
+		local node = from.Parent
+		local rest = rel
+		if string.sub(rest, 1, 2) == "./" then
+			rest = string.sub(rest, 3)
+		end
+		while string.sub(rest, 1, 3) == "../" do
+			node = node and node.Parent
+			rest = string.sub(rest, 4)
+		end
+		for seg in string.gmatch(rest, "[^/]+") do
+			node = node and node:FindFirstChild(seg)
+		end
+		return node
+	end
+	local checked, bad = 0, 0
+	for _, folderName in { "Sim", "Rec", "Levels" } do
+		local folder = sharedRoot:FindFirstChild(folderName)
+		for _, m in (if folder then folder:GetDescendants() else {}) do
+			if m:IsA("ModuleScript") then
+				for p in string.gmatch(m.Source, 'require%("(%.%.?/[^"]+)"%)') do
+					checked += 1
+					local target = resolve(m, p)
+					if not (target and target:IsA("ModuleScript")) then
+						bad += 1
+						print("FAIL  " .. m:GetFullName() .. ' require("' .. p .. '")')
+					end
+				end
+			end
+		end
+	end
+	expect(bad == 0 and checked > 0, string.format("pure layers: %d relative require(s) resolve in the place", checked))
+end
+
 -- Single source of truth: the level code must not set Lighting service properties
 if server then
 	local builder = server:FindFirstChild("LevelBuilder")

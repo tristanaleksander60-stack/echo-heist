@@ -93,6 +93,18 @@ local function int(v: number?): number
 	return math.clamp(math.floor(x + 0.5), -2147483648, 2147483647)
 end
 
+-- An independent copy (the sim reuses its log table every run).
+function EventLog.copy(log: Log): Log
+	return {
+		n = log.n,
+		tick = table.clone(log.tick),
+		kind = table.clone(log.kind),
+		a = table.clone(log.a),
+		b = table.clone(log.b),
+		c = table.clone(log.c),
+	}
+end
+
 function EventLog.append(log: Log, tick: number, kind: number, a: number?, b: number?, c: number?)
 	local i = log.n + 1
 	log.n = i

@@ -108,6 +108,9 @@ Config.Sim = {
 	CREW_VISION_BONUS = 0.1, -- +10% vision range per extra crew member
 	GUARD_CHASE_SPEED_MULT = 0.9, -- Alarm Run chase speed = this x Config.Rec.WALK_SPEED
 	GUARD_CATCH_RADIUS = 2.5, -- studs: during a chase Gus catches on contact
+	GUARD_CATCH_HEIGHT = 4, -- studs: max height difference for a contact catch
+	GUARD_SUSPECT_TURN = 2 * math.pi, -- radians/s Gus turns toward a "?" suspect
+	GUARD_POINT_BLANK = 0.5, -- studs: closer than this an actor is seen whatever the facing
 	GUARD_SEARCH_TURN = math.pi / 2, -- radians/s Gus turns while searching a last-seen point
 	LAG_POSE_TICKS = 4, -- guard poses kept for the lag rewind (>= LAG_REWIND_CAP x HZ + 1)
 
@@ -126,6 +129,7 @@ Config.Sim = {
 	-- Level format limits (LevelSpec)
 	LEVEL_EXTENT = 2048, -- studs from the level origin (Codec i16 at 1/16 stud)
 	REACH_GRID = 1, -- studs per cell of the LevelSpec reachability flood fill
+	ACTOR_RADIUS = 1, -- studs: solids are grown by this for the reachability check
 	REACH_MAX_CELLS = 250000,
 }
 

@@ -1,5 +1,6 @@
 -- L0 purity check (MASTERPLAN §8.4): the deterministic layers (src/shared/Sim,
--- and src/shared/Rec until it moves there) must not read clocks, unseeded
+-- src/shared/Rec until it moves there, and the level data in src/shared/Levels
+-- that the sim requires) must not read clocks, unseeded
 -- randomness, the task scheduler or the DataModel. This is the Lune twin of the
 -- second Selene config (src/shared/Sim/selene.toml), so the rule also holds
 -- where selene is not installed. Comments and string literals are ignored.
@@ -8,7 +9,7 @@
 local fs = require("@lune/fs")
 local process = require("@lune/process")
 
-local ROOTS = { "src/shared/Sim", "src/shared/Rec" }
+local ROOTS = { "src/shared/Sim", "src/shared/Rec", "src/shared/Levels" }
 
 -- Lua patterns matched against code with comments and strings blanked out. Each
 -- line is padded with a space, and "[^%w_%.:]" in front of a name means "a bare
