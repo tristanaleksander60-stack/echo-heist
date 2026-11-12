@@ -36,6 +36,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
+local Strings = require(Shared:WaitForChild("Heist"):WaitForChild("Strings"))
 
 local LineupPlan = require(script.Parent:WaitForChild("LineupPlan"))
 local Rigs = require(script.Parent:WaitForChild("Rigs"))
@@ -138,7 +139,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 	skipChip.FontFace = FONT
 	skipChip.TextSize = 24
 	skipChip.TextColor3 = Palette.white
-	skipChip.Text = "SKIP ▶▶"
+	skipChip.Text = Strings.SKIP
 	skipChip.Visible = false
 	skipChip.ZIndex = 41
 	skipChip.Parent = fxGui
@@ -390,13 +391,13 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 	end
 
 	local function captionText(over: any): string
-		local parts = { "RUN " .. tostring(over.runs or 0) }
+		local parts = { Strings.run(over.runs or 0) }
 		local ofMe = tonumber(over.ofMe) or 0
 		if ofMe >= Config.Sim.SWARM_OF_ME then
-			table.insert(parts, string.format("%d OF ME", ofMe))
+			table.insert(parts, Strings.ofMe(ofMe))
 		end
 		table.insert(parts, Ui.money(tonumber(over.banked) or 0))
-		return table.concat(parts, " · ")
+		return table.concat(parts, Strings.SEP)
 	end
 
 	-- Camera shot for a row (world): centre, the way it faces, its width. The camera
@@ -613,7 +614,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 				t.TextStrokeTransparency = 0
 				t.RichText = true
 				-- True age at the walk-off (CLIPS §1.2), from HeistClient.
-				t.Text = Ui.agoLabel("ME", age, Palette.CLONE_HUES[1])
+				t.Text = Ui.agoLabel(Strings.ME, age, Palette.CLONE_HUES[1])
 				t.Parent = gui
 				local scale = Instance.new("UIScale")
 				scale.Parent = t

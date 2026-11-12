@@ -12,6 +12,7 @@ local UserInputService = game:GetService("UserInputService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
+local Strings = require(Shared:WaitForChild("Heist"):WaitForChild("Strings"))
 
 local LineupPlan = require(script.Parent:WaitForChild("LineupPlan"))
 local Sound = require(script.Parent:WaitForChild("Sound"))
@@ -165,13 +166,15 @@ function Ui.clock(seconds: number): string
 end
 
 -- "20 SEC AGO" / "1 MIN AGO": docs/marketing/CLIPS.md §1.2, the number is always true,
--- rounded to the nearest 10 s (at least 10), whole minutes from 55 s (LineupPlan.ago).
-Ui.ago = LineupPlan.ago
+-- rounded to the nearest 10 s (at least 10), whole minutes from 55 s (LineupPlan.agoRound).
+function Ui.ago(seconds: number): string
+	return Strings.ago(LineupPlan.agoRound(seconds))
+end
 
 -- The burned-in clone label: "◀ ME, 20 SEC AGO" with the ◀ in Clone Cyan (RichText).
 function Ui.agoLabel(who: string, seconds: number, arrowHue: Color3?): string
 	local hue = (arrowHue or Palette.CLONE_HUES[1]):ToHex()
-	return string.format('<font color="#%s">◀</font> %s, %s', hue, who, Ui.ago(seconds))
+	return Strings.agoLabel(who, Ui.ago(seconds), hue)
 end
 
 return Ui

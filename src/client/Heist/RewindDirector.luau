@@ -23,6 +23,7 @@ local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
+local Strings = require(Shared:WaitForChild("Heist"):WaitForChild("Strings"))
 
 local Sound = require(script.Parent:WaitForChild("Sound"))
 
@@ -113,7 +114,7 @@ function RewindDirector.new(gui: ScreenGui): any
 	arrows.TextSize = 56
 	arrows.TextColor3 = Palette.white
 	arrows.TextStrokeTransparency = 0.3
-	arrows.Text = "◀◀"
+	arrows.Text = Strings.REWIND_ARROWS
 	arrows.ZIndex = 53
 	arrows.Visible = false
 	arrows.Parent = overlay
@@ -174,7 +175,7 @@ function RewindDirector.new(gui: ScreenGui): any
 		stage = 0
 		playing = true
 		overlay.Visible = true
-		stamp.Text = "RUN " .. tostring(runIndex)
+		stamp.Text = Strings.run(runIndex)
 		stamp.TextColor3 = Palette.white
 		stamp.Visible = false
 		local cam = workspace.CurrentCamera

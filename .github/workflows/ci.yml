@@ -71,6 +71,11 @@ jobs:
       - name: Kit check (spike S2; skips until ServerStorage/Kit is mapped)
         run: lune run tests/kit_check.luau build/EchoHeist.rbxlx
 
+      - name: HUD layout (no overlaps at 7 viewports, docs/PLAN_STEAM_PLUS.md §4.0)
+        # Known red until the top-row layout fix lands (docs/audit/WALKTHROUGH.md P1-13).
+        continue-on-error: true
+        run: lune run tests/hud_layout.luau
+
       - name: Unit tests (L1)
         run: |
           if [ -f tests/run_unit.luau ]; then lune run tests/run_unit.luau; else echo "no unit tests yet"; fi
