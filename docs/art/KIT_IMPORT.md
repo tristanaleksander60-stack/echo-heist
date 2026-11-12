@@ -10,6 +10,8 @@ _For the owner. About 45 minutes the first time, 10 minutes after that. Updated 
 
 **Pass 2 (review fixes, 2026-11-12).** New: the loot the levels use (`Present`, `Candy`, `Toy`, `Teddy`), `Shutter_8x10` (the LOCKDOWN leaf), `BankFront_24x12`, `Shelf_Gondola_8x2` (Clone Party aisles), `Hide_CoatStand`, `Hide_DepositStack`. Remade: `Hide_Plant` (a planter niche that shows the plate), `Hide_CoatRack` (double rack over a plate), `Hide_Crate` (2.5 deep), `Xmas_SnowPile`, tintable `Ornament_Bauble` / `_Bell` / `_Star`. The atlas changed (lighter wood, readable from above), so **every** FBX changed: import them all. The prepare script now finds pieces safely (the v1 script could never print KIT OK) and wall modules are placed **centred on their grid line** (below).
 
+**Automated path (Nov 12): no Studio needed.** Claude uploads every FBX with Open Cloud and the server loads the kit at boot (`KitService`). See [Automated path](#automated-path-no-studio-open-cloud-upload--kitservice) below. The Studio steps that follow are the manual path; they still work (KitService uses a Rojo-mapped `ServerStorage/Kit` when one exists) but S2 no longer waits on them.
+
 The table below shows what Studio must show after the import (generated from `assets/fbx/kit_manifest.json` by `python3 tools/blender/kit_docs.py`). Studio uses Y for up, so sizes are X x Y x Z.
 
 <!-- kit-table:start -->
@@ -110,6 +112,70 @@ The table below shows what Studio must show after the import (generated from `as
 
 **50 FBX files, 92 MeshParts, 45,166 triangles in all.** Christmas layer: 17 parts.
 <!-- kit-table:end -->
+
+---
+
+## Automated path (no Studio): Open Cloud upload + KitService
+
+_Added 2026-11-12 (spike S2 via the fallback). Claude runs all of it; the owner does nothing unless the key or the game owner changes._
+
+**1. Upload (`tools/kit_upload.py`).** One Open Cloud **Model** asset per kit model group (`assets/fbx/<Model>.fbx`), created for the experience owner (user 10346200733) with `POST https://apis.roblox.com/assets/v1/assets` (multipart: `request` JSON `{assetType: "Model", displayName, description, creationContext.creator.userId}` + `fileContent` as `model/fbx`), then `GET /assets/v1/operations/{id}` until `done`. Ids go to `assets/kit_ids.json` after every upload (with the file's sha256, revision and moderation state).
+
+```sh
+python3 tools/kit_upload.py --status        # what is uploaded, changed or pending
+python3 tools/kit_upload.py --all           # every new or changed FBX (unchanged files are skipped by hash)
+python3 tools/kit_upload.py --images        # assets/textures/*.png as Decals (location atlases, dial-face maps)
+python3 tools/kit_upload.py --appearances   # the hero SurfaceAppearance as an rbxm Model (built with Lune)
+python3 tools/kit_upload.py --gen           # regenerate the Luau data only (no network)
+```
+
+- A **changed** FBX updates the **same** asset (`PATCH /assets/v1/assets/{id}`, a new version), so ids never change and `InsertService:LoadAsset` gets the latest version. `--new` makes a fresh asset instead (the old id goes to `history`). Decals cannot be updated: a changed PNG becomes a new Decal.
+- Back-off on HTTP 429 / 5xx (Retry-After, else 1, 2, 4 ... 60 s) and a 2 s gap between uploads. Measured Nov 12: 50 groups in 13 minutes with no 429, 6 Decals in under a minute, every asset moderation `Approved`.
+- Every run regenerates **`src/server/Kit/KitData.luau`** (manifest + ids, what the server reads) and the table inside `tests/kit_engine.luau`, then formats both with StyLua. `tests/unit/KitData.spec.luau` fails when KitData is stale.
+- Key: the Open Cloud key needs `asset:read` + `asset:write` (confirmed working Nov 12). If the game moves to a **group**, the meshes must belong to the group: `python3 tools/kit_upload.py --group <groupId> --new --force --all --images`, then commit the new ids.
+
+**2. What an upload gives (measured in a real server, Open Cloud Luau Execution).** `InsertService:LoadAsset(id)` returns `Model` > `Model "EH Kit <Model>"` (the display name) > one `MeshPart` per Blender object, named as in the manifest. Sizes match the manifest exactly (studs, no 100x problem) and every part sits at its scene position (origin + bounds centre: the axes are right, so the Vault faces -Z and Gus's torch is on +X). But: `CollisionFidelity = Default` on every part, `PivotOffset` has the right position with a **rotated basis** (Z-up to Y-up), `Anchored = false`, Material `Plastic`, a grey Color. The embedded atlas is uploaded once and shared (one image id for every atlas piece); the dial face brings its own colour map.
+
+**3. Load at boot (`src/server/Kit/KitService.luau`).** Not wired into the heist server yet (the wiring agent does that).
+
+1. `InsertService:LoadAsset` per group (pcall, 4 tries with back-off, 6 at a time). If `ServerStorage/Kit` already holds MeshParts (the manual `Kit.rbxm` path), it uses those instead.
+2. Pieces are found through a **MeshPart name map** (`KitLib.nameMap`), never `FindFirstChild(name, true)`, which can return a Model of the same name.
+3. **Collision.** Runtime cannot change `CollisionFidelity`, so every part whose fidelity differs from the manifest is **rebuilt** with `AssetService:CreateMeshPartAsync(mesh.MeshContent, {CollisionFidelity = <manifest>})`, keeping name, size, CFrame and texture. Chosen over an invisible Box collider with the mesh `CanCollide = false`: the rebuild also gives `Hull` (vault door) and `PreciseConvexDecomposition` (vault frame, door frame, both street fronts, van), and a piece stays one part, so `part:PivotTo` on a door leaf, the safe door or a Gus limb moves its collision too. If a rebuild fails, the part keeps `Default` and is listed in `report().fidelityKept`. `Config.Kit.REBUILD_FIDELITY` = `"all"` (default) / `"colliding"` / `"none"`.
+4. Runtime look, as the prepare script does it: Anchored, CanCollide (CanTouch the same), CastShadow, Material, Color (Neon idle, glass tint, ornament default, else white), Transparency, **one** atlas `TextureID` on atlas pieces (none on Neon and glass), and `PivotOffset` from the manifest bounds (resets the rotated basis). `KitPiece` attribute = the piece name.
+5. Every size is checked against the manifest (`Config.Kit.SIZE_TOLERANCE`, 0.05) and every centre against origin + bounds centre (`POSITION_TOLERANCE`).
+
+Measured boot (real server, Nov 12): **2.1 to 2.5 s** for all 92 pieces from 50 assets, including the 92 rebuilds (Box, Hull and PreciseConvexDecomposition) and the hero appearance. That is about the 2.0 s estimate below; it runs once per server, never per heist.
+
+| API (server) | What it does |
+|---|---|
+| `KitService.start()` | Begins loading in the background (idempotent; `ready()` calls it). |
+| `KitService.ready(timeout?) -> boolean` | Yields until loaded (default `Config.Kit.READY_TIMEOUT`); true when every piece is in the library and no size is off. |
+| `KitService.isReady() -> boolean` | Loaded yet (no yield). |
+| `KitService.has(name)` | Is the piece in the library (else fall back to greybox). |
+| `KitService.clone(name, opts?) -> MeshPart?` | One piece at its scene position; place it with `part:PivotTo(cf)`. |
+| `KitService.cloneModel(model, opts?) -> Model?` | A whole group (e.g. `VaultDoor`, `Gus`); `WorldPivot` = the group's scene origin, place it with `Model:PivotTo(cf)`. |
+| `KitService.spec(name)` | The manifest entry (size, boundsMin/Max, origin, flags, colour). |
+| `KitService.names()` / `report()` / `summary()` | Library contents, the boot report, one log line. |
+| `KitService.atlas(location?)` | Atlas URI for `"Bank"`, `"CornerShop"`, `"ToyShop"` (Bank when a location atlas is not uploaded). |
+
+`opts = { atlas = "CornerShop", color = Color3 }`: `atlas` swaps the texture on atlas pieces only (STYLE_BIBLE §1.4), `color` tints (tintable ornaments). Templates live in `ServerStorage/Kit/<Model>`.
+
+**Atlas ids.** The Bank atlas also comes with the FBX upload. The location swaps (`EH_Palette_CornerShop`, `EH_Palette_ToyShop`) and the dial-face maps are uploaded as Decals (`--images`). A Decal id is not an image id: `LoadAsset(decalId)` returns a Model with a `Decal` whose `Texture` is the image (measured). `kit_ids.json` records each image id (`--set-image <stem> <imageId>`, done for all six on Nov 12); KitService resolves any unrecorded one at boot the same way. `Config.Kit.Atlas.<Location>` overrides any of them. Nov 12 ids: Bank `125339359087334`, CornerShop `108976991965311`, ToyShop `77723873181805`.
+
+**Hero SurfaceAppearance.** Runtime scripts **cannot** write SurfaceAppearance maps (`ColorMapContent`: "lacking capability Plugin", measured), but they can load, clone and parent one. So `--appearances` builds `KitAppearances.rbxm` with Lune (one SurfaceAppearance per manifest piece with a `texture`, named after the piece: colour, roughness and emissive mask = the uploaded image ids, EmissiveStrength 2, EmissiveTint = the dial ring's idle colour), uploads it as a Model, and KitService clones it onto `VaultDoor_DialFace` (and clears its TextureID). Level code may still set `EmissiveTint` at runtime (it follows `VaultDoor_DialRing.Color`). Without the asset, the dial face keeps the colour map the FBX import made.
+
+**4. Check in the real engine (`tests/kit_engine.luau`).**
+
+```sh
+ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960 --place 70772627070328 \
+  --version <N> --script tests/kit_engine.luau
+```
+
+Part A loads every id from the embedded table and checks counts, sizes and centres, the Decals and the appearances asset, and reports what the upload gave. Part B runs KitService (when that place version contains it) and checks every clone's size, fidelity, flags and pivot, every group model, `PivotTo`, the atlas and the hero appearance.
+
+Results, Nov 12: place version **17** (published once, with KitService) **246/246**; the current code (with the hero appearance, which v17 predates) run as a bundled copy on v17: **248/248**, `92/92 pieces (cloud, 50 groups) in 2.1 s; rebuilt 92 for collision; 0 missing, 0 size errors, 0 position errors, 0 off-fidelity; atlas rbxassetid://125339359087334 (uploaded EH_Palette_Bank); hero SurfaceAppearance`. On v17 itself the hero check fails until the next publish carries the new module.
+
+**When the art changes:** `python3 tools/blender/build_asset.py --all`, `python3 tools/blender/kit_docs.py`, then `python3 tools/kit_upload.py --all` (only changed files go up, same ids). A changed PNG: `--images`, then `--set-image` with the id the engine check prints, then `--appearances` if a dial-face map changed. Then run the engine check.
 
 ---
 
@@ -327,6 +393,8 @@ Things the **content track** has to change in the level data (the kit cannot fix
 Every upload makes new mesh ids. That is fine: the ids are inside `Kit.rbxm`.
 
 ## Fallback if S2 fails: build the meshes on the server
+
+_This fallback is now built: it is the automated path above (Model uploads instead of single Mesh uploads, plus a CreateMeshPartAsync rebuild for the collision). The original plan, for reference:_
 
 Use this if the meshes, sizes or collision do not survive `rojo build`. Then we do not use `Kit.rbxm`:
 

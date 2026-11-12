@@ -48,7 +48,7 @@ Never rename `STORE_NAME` or `KEY_PREFIX` after launch. `Keys.isWritable` makes 
 | `shelf` | `{ id }`, max 8 | The van shelf, in order. Ornaments go on the advent tree, not the shelf |
 | `bagLevel` | 0-3 | Clone Party carry upgrades (Cash) |
 | `cosmetics.owned[id]`, `cosmetics.equipped[slot]` | `true`, id | Slots: `cloneStyle`, `cloneHat`, `vanPaint`, `trail`. Defaults are owned implicitly |
-| `daily` | `{ lastClearDay, streak, bestStreak, stars, haulDay, haulBest }` | Daily vault (UTC day numbers) and the "biggest haul today" entry |
+| `daily` | `{ lastClearDay, streak, bestStreak, stars, haulDay, haulBest, haulClones, haulTimeMs }` | Daily vault (UTC day numbers) and the "biggest haul today" entry with its tie-breaks (clones, then time) |
 | `settings` | `{ reducedMotion, relaxed, colourBlindGlyphs }` | Booleans |
 | `ftueStep`, `firstHeistDone`, `stats = { heists, clears }` | numbers, boolean | Onboarding and counters |
 
@@ -83,12 +83,14 @@ Size: a stress profile (30 levels, every trophy and cosmetic, 40 future ornament
 
 - **Story medals:** a run is cleared when `haul >= haulTarget` and the target was banked before Dawn. **Haul** = cleared. **Crew** = cleared with `clones <= par`. **Clean** = cleared with no catches and no busted clones in the final run. **Diamond** = cleared with fewer clones than `devClones`; it only applies once that value is set, and it is not a Star.
 - **Clone Party:** Haul1-3 for reaching each `haulTiers` value.
-- **Stars and unlocks:** every medal except Diamond is one Star. Medals are a union across runs. A level opens once its `unlockAfter` level is cleared and the player has at least `starsRequired` Stars (Big Score: Bank needs Night Clerk cleared and 6 Stars). Unlocks are never taken away.
+- **Stars and unlocks:** every medal except Diamond is one Star. Medals are a union across runs. A level opens once its `unlockAfter` level is cleared and the player has at least `starsRequired` Stars. Unlocks are never taken away. A clear always leaves the level unlocked.
+- **Co-op carry** (default rule 2026-11-12, owner to confirm): a crewmate who plays a level the crew leader opened, but has not unlocked it themselves, gets the full result (Cash, medals, Stars, bests); clearing it unlocks it for them. The heist server passes `opts.crew = true`; a solo call on a locked level is still refused as `Locked`. Alternative if the owner prefers: Cash only, no medals (one line in `DataService.awardHeistResult`).
+- **Play order** (`Config.Data.LEVEL_ORDER` = `Levels/Catalog`, owner decision 2026-11-12): Back Room → Two Doors → **Clone Party** (the "party break", design number L5) → Lights Out → Night Clerk → Big Score: Bank, so "8 OF ME" comes around minute 10 of a first session (`tests/sim/Pacing.spec.luau`). Clearing Two Doors opens **both** Clone Party and Lights Out: "NEXT" and the garage list lead to the party first, but a kid who leaves it or misses Haul1 keeps the story (in the sim's greedy-kid test 2 of 40 miss Haul1). Big Score: Bank needs Night Clerk cleared and 6 of the 15 Stars of L1-L5; a kid who skipped the party with only the four Haul Stars is sent back to it by the next-goal card (its Haul tiers are the easiest Stars).
 - **Personal best order:** more Stars, then fewer clones, then less time, then a bigger haul. `summary.newBest` tells the heist server when to write the ghost key.
 - **Tainted runs** (Validator, §8.8) earn Cash but no medals, bests, clears, trophies or board entries. **Relaxed** runs earn everything but are not board-eligible.
 - **Cash:** `floor(haul × CASH_PER_HAUL × (1 + min(friends × 10%, 30%)))`, plus the level's first-clear bonus on a first clear, capped at `MAX_CASH_PER_HEIST`.
 - **Daily vault:** the vault design is `(day - launchDay) % VAULT_COUNT + 1` (UTC; launch day Dec 3 = vault 1, so slot n = daily design n and `Orn_VaultNN` is design NN's ornament). The first clear of today gives 1 Star, 250 Cash, 5 Candy Canes (only during Dec 3 - Jan 4) and that vault's ornament; in December that is the day's advent ornament. The streak allows one grace day. A missed advent day can be cleared until Dec 31 for its ornament and the same rewards; catch-ups never touch the streak.
-- **Board entry:** today's best haul, untainted and not Relaxed.
+- **Board entry:** today's best run, untainted and not Relaxed: the bigger haul, then fewer clones, then less time (`DailyVault.beatsBoard`; `timeMs` is the sim's `result().daily.timeMs`). An exact tie keeps the earlier entry; an empty haul never boards.
 - **All numbers are placeholders** until the level layouts exist: `haulTarget`, `maxHaul`, `firstClearCash`, the bag costs and the item prices are all in `Config.Data`. The heist server can supply level rules from `src/shared/Levels` with `DataService.setLevelResolver(lookup, order)` before `start()`.
 
 ## Server API (`DataService`, for the future heist server)
@@ -97,8 +99,8 @@ Every call validates its input, then mutates the profile with no yield in betwee
 
 | Call | Notes |
 |---|---|
-| `awardHeistResult(player, levelId, result)` | `result = { haul, clones, timeMs, catches, busted, beforeDawn, tainted, relaxed, friends?, recHash?, heistId? }`. These facts are decided by the server from actor positions. Refused: `NotReady`, `UnknownLevel`, `Invalid` (anything out of range: haul above the level's `maxHaul`, clones above the cap, NaN, fractions), `Locked`, `TooFast` (under 10 s since the last award), `Duplicate` (a `heistId` already seen). `data` = `{ cleared, firstClear, newMedals, levelStars, starsGained, totalStars, newBest, newHaulBest, cash, trophy, unlocked, boardEligible }` |
-| `awardDailyVault(player, vaultDay, result)` | `result = { cleared, haul, clones, tainted, relaxed }`. The server works out today from `os.time()`. `vaultDay` must be today or an advent catch-up day (`WrongDay` otherwise) |
+| `awardHeistResult(player, levelId, result, opts?)` | `result = { haul, clones, timeMs, catches, busted, beforeDawn, tainted, relaxed, friends?, recHash?, heistId? }`. These facts are decided by the server from actor positions. `opts.crew = true`: co-op carry (above). Refused: `NotReady`, `UnknownLevel`, `Invalid` (anything out of range: haul above the level's `maxHaul`, clones above the cap, NaN, fractions), `Locked` (solo only), `TooFast` (under 10 s since the last award), `Duplicate` (a `heistId` already seen). `data` = `{ cleared, firstClear, newMedals, levelStars, starsGained, totalStars, newBest, newHaulBest, cash, trophy, unlocked, boardEligible }` |
+| `awardDailyVault(player, vaultDay, result, startedDay?)` | `result = { cleared, haul, clones, timeMs, tainted, relaxed }` (pass the sim's `result().daily` as is; `timeMs` is required, 0..`MAX_HEIST_MS`). The server works out today from `os.time()`. `vaultDay` must be today or an advent catch-up day (`WrongDay` otherwise). `startedDay` = the server day when the heist began: a vault started before the daily reset and finished after it is judged on that day (at most one day back), so it keeps "today" and the streak |
 | `grantTrophy(player, trophyId, reason)`, `grantCosmetic(player, id, reason)` | `grantCosmetic` is for free items only; paid cosmetics come only from receipts |
 | `earnCash`, `spendCash`, `earnCandyCanes(player, amount, reason)` | Whole amounts from 1 to `MAX_CASH_PER_HEIST`. Candy Canes only during the event |
 | `isLevelUnlocked`, `getBagLevel`, `getSettings`, `getSnapshot`, `isReady`, `waitForData`, `status`, `environment` | Reads |
@@ -144,7 +146,7 @@ No paid randomness, no Robux-to-Cash, no paid skips or hints: unit tests assert 
 
 ## Tests
 
-- **L1 (Lune):** `lune run tests/run_unit.luau`. The data specs are `DataSchema` (defaults, the 16 KB budget, JSON round trip, migration harness, repair, keys, calendar), `DataProgress` (medals, best-run order, Cash maths, first clear, tainted and Relaxed runs, the Big Score gate), `DataDaily` (streak and grace, rotation, advent, catch-up, board haul) and `DataStore` (catalog, monetization rules, buy, equip, bag, shelf, prices, product prompt checks).
+- **L1 (Lune):** `lune run tests/run_unit.luau`. The data specs are `DataSchema` (defaults, the 16 KB budget, JSON round trip, migration harness, repair, keys, calendar), `DataProgress` (medals, best-run order, Cash maths, first clear, tainted and Relaxed runs, the first-session flow and the Big Score gate), `DataDaily` (streak and grace, rotation, advent, catch-up, board haul and its tie-breaks) and `DataStore` (catalog, monetization rules, buy, equip, bag, shelf, prices, product prompt checks).
 - **Place check:** `tests/place_check.luau` checks that the library modules sit at their install paths and that the place has exactly one `ProcessReceipt`.
 - **L3 (Open Cloud Luau Execution):** `tests/engine_smoke.luau` section 6 boots `DataService` in the real engine and checks that it uses `_TEST_` keys, comes online and creates its remotes. It also runs the library's `PlayerData.prepare` (new, newer, corrupt and old documents). Only when `game.GameId` is the test universe does it do one real `UpdateAsync` and uncached `GetAsync` on a throwaway `_TEST_smoke_<guid>` key, then `RemoveAsync`. No player profile is touched.
 
@@ -161,11 +163,10 @@ No paid randomness, no Robux-to-Cash, no paid skips or hints: unit tests assert 
 ## Not built yet
 
 - Ghost keys (written by the heist server on `newBest`).
-- LiveFlags.
 - The daily board (`Leaderboard`, Dec 11).
 - Rewarded video.
 - Clone emotes and rewind styles (Jan).
 - Trophy stands.
 - The free Gift-Wrap style (use `grantCosmetic` after adding it to the catalog).
 - The store and settings UI.
-- Wiring `awardHeistResult` into the heist server: v0.1 gameplay is unchanged.
+- Wiring the awards into v0.1 (unchanged for the fun gate). The sim path (`GAME_MODE = "sim"`) calls `awardHeistResult` and `awardDailyVault` from `Heist/HeistService` since 2026-11-12 (engine smoke checks both).

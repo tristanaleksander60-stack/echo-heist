@@ -9,7 +9,9 @@
 --   * Advent catch-up: a missed advent day (Dec FIRST_DAY..LAST_DAY) can be cleared
 --     later, until CATCH_UP_UNTIL, for its ornament and the same rewards; catch-ups
 --     never touch the streak.
---   * Board ("biggest haul today"): the untainted, non-Relaxed best haul of today.
+--   * Board ("biggest haul today"): today's untainted, non-Relaxed best run, ranked by
+--     haul, then fewer clones, then less time (the sim's result().daily.timeMs), so two
+--     kids with the same haul are not a coin toss (beatsBoard).
 --   * The server passes `today` from os.time(); clients never send a time.
 
 local Calendar = require("./Calendar")
@@ -23,9 +25,13 @@ export type DailyResult = {
 	cleared: boolean, -- the heist server decided the vault was cleared
 	haul: number,
 	clones: number,
+	timeMs: number, -- heist duration in loop milliseconds (board tie-break)
 	tainted: boolean,
 	relaxed: boolean,
 }
+
+-- One "biggest haul today" board entry.
+export type BoardEntry = { haul: number, clones: number, timeMs: number }
 
 export type DailySummary = {
 	mode: string, -- "today" | "catchUp"
@@ -35,7 +41,7 @@ export type DailySummary = {
 	candyCanes: number,
 	ornament: string?,
 	streak: number,
-	newHaulBest: boolean,
+	newHaulBest: boolean, -- a new "biggest haul today" board entry (haul, clones, time)
 	totalStars: number,
 }
 
@@ -120,17 +126,49 @@ function DailyVault.validateResult(result: any): (boolean, string?)
 	if not Progress.isWhole(result.haul, 0, 1e7) or not Progress.isWhole(result.clones, 0, 16) then
 		return false, "haul/clones out of range"
 	end
+	if not Progress.isWhole(result.timeMs, 0, Config.Data.MAX_HEIST_MS) then
+		return false, "timeMs out of range"
+	end
 	return true, nil
 end
 
+-- True if run a goes above b on the board: a bigger haul, then fewer clones, then less
+-- time. An empty haul never makes the board.
+function DailyVault.beatsBoard(a: BoardEntry, b: BoardEntry): boolean
+	if a.haul ~= b.haul then
+		return a.haul > b.haul
+	end
+	if a.haul <= 0 then
+		return false
+	end
+	if a.clones ~= b.clones then
+		return a.clones < b.clones
+	end
+	return a.timeMs < b.timeMs
+end
+
 -- Applies a validated daily result. Returns nil + reason when the day cannot be played.
+-- `startedDay` (optional, from the heist server): the server day when the heist began.
+-- A vault started before the daily reset and finished after it is judged on the day
+-- it started (one day at most: a heist lasts under MAX_HEIST_MS), so "today" keeps its
+-- streak and a catch-up stays a catch-up.
 function DailyVault.apply(
 	heist: Schema.Heist,
 	vaultDay: number,
-	today: number,
+	serverToday: number,
 	result: DailyResult,
-	now: number
+	now: number,
+	startedDay: number?
 ): (DailySummary?, string?)
+	local today = serverToday
+	if
+		startedDay ~= nil
+		and Progress.isWhole(startedDay, 0, 2 ^ 31)
+		and startedDay < serverToday
+		and serverToday - startedDay <= 1
+	then
+		today = startedDay
+	end
 	local mode, reason = DailyVault.playMode(vaultDay, today)
 	if not mode then
 		return nil, reason
@@ -155,10 +193,11 @@ function DailyVault.apply(
 	if mode == "today" and not result.relaxed then
 		if daily.haulDay ~= today then
 			daily.haulDay = today
-			daily.haulBest = 0
+			daily.haulBest, daily.haulClones, daily.haulTimeMs = 0, 0, 0
 		end
-		if result.haul > daily.haulBest then
-			daily.haulBest = result.haul
+		local entry = { haul = daily.haulBest, clones = daily.haulClones, timeMs = daily.haulTimeMs }
+		if DailyVault.beatsBoard(result, entry) then
+			daily.haulBest, daily.haulClones, daily.haulTimeMs = result.haul, result.clones, result.timeMs
 			summary.newHaulBest = true
 		end
 	end

@@ -1,18 +1,30 @@
 --!strict
 -- Heist/HeistService: the sim game path's server (Config.GAME_MODE = "sim").
 -- MASTERPLAN §3.3 (garage lobby + one heist instance per party in a shared server),
--- §7.5 (a new account starts L1 at once), §8.2, §8.6, §8.8.
+-- §7.5 (a new account starts L1 at once), §5.3 (daily vault), §8.2, §8.6, §8.7, §8.8.
 --
 --   * Crews: every player starts as a solo crew. Players who arrive in the same Roblox
 --     party (Player.PartyId) share a crew; "Join friend" (Heist.JoinFriend) moves you
 --     into a friend's crew in this server. Joiners seat at the next heist.
---   * The crew leader picks a level (Heist.SelectLevel); the crew gets its own
---     HeistInstance built 3,000 studs from the others. Up to Config.Heist.MAX_INSTANCES.
+--   * The crew leader picks a level (Heist.SelectLevel: a Levels/Catalog index, in play
+--     order: L1, L2, the Clone Party break, L3, L4, L6) or today's daily vault
+--     (Heist.SelectDaily; a missed advent day can be caught up). The crew gets its own
+--     HeistInstance built 3,000 studs from the others, up to MAX_INSTANCES (LiveFlag
+--     maxInstances can lower it).
 --   * Remotes are LihFolk Net (rate limit + per-argument validation); handlers route
 --     to the player's instance, and the sim re-validates every intent (§8.5).
---   * Results go to DataService.awardHeistResult with friends and heistId added.
+--   * Results: story and party levels go to DataService.awardHeistResult (friends and
+--     heistId added; party levels with each member's own swarm), daily vaults to
+--     DataService.awardDailyVault (the sim's result().daily, timeMs included).
 --   * FTUE: HeistService.FtueStep fires (player, step) for the §7.5 funnel steps the
---     server sees; analytics can subscribe. The step index is saved with setFtueStep.
+--     server sees; Analytics binds it. The step index is saved with setFtueStep.
+--   * LiveFlags (§8.7, read here, never mid-run): kill switches joinFriend, dailyVault,
+--     store (no Robux prompt while it is off), alarmRun, dressing; tuning alarmVanSeconds,
+--     alarmLockSeconds, alarmChaseSpeedMult, crewCloneBudget and maxInstances, read at
+--     heist start and stored with the heist (HeistInstance tuning).
+--   * Art kit: HeistService.configureKit(KitService) lets LevelBuilder dress levels with
+--     the kit once it is loaded (greybox until then, Config.Heist.KIT_LEVELS switch); the
+--     Christmas layer follows Config.Data.Event on the server date (XMAS_DRESSING).
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -21,7 +33,12 @@ local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
-local Catalog = require(Shared:WaitForChild("Levels"):WaitForChild("Catalog"))
+local Levels = Shared:WaitForChild("Levels")
+local Catalog = require(Levels:WaitForChild("Catalog"))
+local DailyVaults = require(Levels:WaitForChild("DailyVaults"))
+local DataShared = Shared:WaitForChild("Data")
+local Calendar = require(DataShared:WaitForChild("Calendar"))
+local DailyVault = require(DataShared:WaitForChild("DailyVault"))
 local Codec = require(Shared:WaitForChild("Rec"):WaitForChild("Codec"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local LihFolk = ReplicatedStorage:WaitForChild("LihFolk")
@@ -31,6 +48,7 @@ local Signal = require(LihFolk:WaitForChild("Signal"))
 local HeistInstance = require(script.Parent:WaitForChild("HeistInstance"))
 local Avatars = require(script.Parent:WaitForChild("Avatars"))
 local Lobby = require(script.Parent:WaitForChild("Lobby"))
+local LiveFlags = require(script.Parent.Parent:WaitForChild("Analytics"):WaitForChild("LiveFlags"))
 
 local T = Net.T
 local H = Config.Heist
@@ -67,8 +85,15 @@ type Crew = {
 	friends: { [Player]: { [number]: boolean } },
 }
 
+export type CreateOpts = {
+	daily: HeistInstance.Daily?, -- a daily vault (levelIndex = Protocol.DAILY_INDEX)
+	tuning: HeistInstance.Tuning?, -- default: read from LiveFlags now
+}
+
 local started = false
 local DataService: any = nil
+local Analytics: any = nil
+local KitService: any = nil
 local msgPush: Net.Push? = nil
 local crewOf: { [Player]: Crew } = {}
 local crews: { Crew } = {}
@@ -77,9 +102,17 @@ local instances: { [number]: any } = {} -- slot -> instance
 local crewOfInstance: { [any]: Crew } = {}
 local nextInstanceId = 0
 local lastError = -math.huge
+local inHeist: { [Player]: boolean } = {}
+-- Players whose first Sync is still being decided (data, kit, FTUE autostart): their
+-- client shows a "preparing" card, never the garage, until the server decides.
+local preparing: { [Player]: boolean } = {}
+-- os.clock() of the last heist a player's pick created (INSTANCE_COOLDOWN_SECONDS).
+local lastStartBy: { [Player]: number } = {}
+local tryFtueStart: (player: Player) -> boolean
+local retryFtue: (player: Player) -> ()
 
 ---------------------------------------------------------------------------
--- Data hooks
+-- Data, analytics and kit hooks
 ---------------------------------------------------------------------------
 
 local function simLevelFor(dataKey: string): any
@@ -105,7 +138,8 @@ function HeistService.levelRules(dataKey: string): any
 	local rules = table.clone(base)
 	rules.haulTarget = math.min(level.goal, base.maxHaul)
 	rules.parClones = level.par
-	rules.cap = math.clamp(math.max(base.cap, Config.Sim.CREW_CLONE_BUDGET), 1, 16)
+	rules.cap =
+		math.clamp(math.max(base.cap, Config.Sim.CREW_CLONE_BUDGET, LiveFlags.get("crewCloneBudget") or 0), 1, 16)
 	return rules
 end
 
@@ -114,6 +148,23 @@ function HeistService.configureData(service: any)
 	DataService = service
 	if service.status() == "stopped" then
 		service.setLevelResolver(HeistService.levelRules, Config.Data.LEVEL_ORDER)
+	end
+end
+
+-- The server Analytics module (docs/ANALYTICS.md "Call sites"); nil = no analytics.
+function HeistService.configureAnalytics(analytics: any)
+	Analytics = analytics
+end
+
+-- src/server/Kit/KitService: levels are dressed with the art kit once it is loaded.
+function HeistService.configureKit(kit: any)
+	KitService = kit
+end
+
+local function track(fn: string, ...: any)
+	local f = Analytics and Analytics[fn]
+	if type(f) == "function" then
+		pcall(f, ...)
 	end
 end
 
@@ -152,17 +203,126 @@ local function ftueHook(player: Player, step: string)
 	end
 end
 
-local function award(player: Player, dataKey: string, data: any): any
+local function award(player: Player, dataKey: string, data: any, opts: any?): any
 	if DataService == nil then
 		return nil
 	end
-	return DataService.awardHeistResult(player, dataKey, data)
+	return DataService.awardHeistResult(player, dataKey, data, opts)
+end
+
+local function awardDaily(player: Player, day: number, result: any, startedDay: number?): any
+	if DataService == nil then
+		return nil
+	end
+	return DataService.awardDailyVault(player, day, result, startedDay)
+end
+
+-- No Robux prompt during a heist or a bust (§5.4), nor while the LiveFlag `store` is off.
+local function applyPrompts(player: Player)
+	if DataService ~= nil then
+		pcall(DataService.setPromptsBlocked, player, inHeist[player] == true or not LiveFlags.isOn("store"))
+	end
 end
 
 local function blockPrompts(player: Player, blocked: boolean)
-	if DataService ~= nil then
-		pcall(DataService.setPromptsBlocked, player, blocked)
+	inHeist[player] = if blocked then true else nil
+	applyPrompts(player)
+end
+
+local function todayDay(): number
+	return Calendar.dayIndex(os.time(), Config.Data.Daily.RESET_OFFSET_HOURS)
+end
+
+-- The Christmas dressing layer: the event window on the server date and the LiveFlag.
+local function dressingOn(): boolean
+	local mode = H.XMAS_DRESSING
+	if mode == "on" then
+		return true
+	elseif mode == "off" then
+		return false
 	end
+	return DailyVault.inEvent(todayDay()) and LiveFlags.isOn("dressing")
+end
+
+local function buildOpts(): any
+	return {
+		kit = if H.KIT_LEVELS then KitService else nil,
+		dressing = dressingOn(),
+	}
+end
+
+-- LiveFlags tuning, read once at heist start (never mid-run) and kept with the heist.
+function HeistService.tuning(): HeistInstance.Tuning
+	local function num(name: string): number?
+		local ok, v = pcall(LiveFlags.get, name)
+		return if ok and type(v) == "number" and v == v then v else nil
+	end
+	local okRun, alarmRun = pcall(LiveFlags.isOn, "alarmRun")
+	return {
+		alarmRun = not okRun or alarmRun == true,
+		alarmVanSeconds = num("alarmVanSeconds"),
+		alarmLockSeconds = num("alarmLockSeconds"),
+		alarmChaseSpeedMult = num("alarmChaseSpeedMult"),
+		crewCloneBudget = num("crewCloneBudget"),
+	}
+end
+
+-- The daily vault of `day` as it may be played today (nil when it cannot be).
+function HeistService.dailyFor(day: number, today: number?): HeistInstance.Daily?
+	local now = today or todayDay()
+	local mode = DailyVault.playMode(day, now)
+	if not mode then
+		return nil
+	end
+	local _, slot, modifier = DailyVaults.forDay(day)
+	return {
+		day = day,
+		slot = slot,
+		modifier = modifier,
+		mode = mode,
+		advent = DailyVault.adventDay(day),
+		startDay = now, -- DataService.awardDailyVault judges a reset-crossing heist on this day
+	}
+end
+
+-- The FTUE level (Config.Heist.FTUE_L1_LEVEL) as a Catalog index and data key.
+local function ftueIndex(): number
+	return Protocol.catalogIndex(H.FTUE_L1_LEVEL) or 1
+end
+
+local function ftueDataKey(): string?
+	return H.LEVEL_DATA_KEYS[H.FTUE_L1_LEVEL]
+end
+
+-- Why a locked level is locked, for the garage tape and the toast (§5.2-5.3):
+-- needsClear = the data key of the level to clear first (nil when it is cleared),
+-- starsNeeded = more Stars the player still needs (0 when enough).
+local function lockInfo(snap: any, dataKey: string?): (string?, number)
+	local rules = dataKey and Config.Data.Levels[dataKey]
+	if not rules then
+		return nil, 0
+	end
+	local heist = snap and snap.heist
+	local levels = heist and heist.levels or {}
+	local after = rules.unlockAfter
+	local rec = after and levels[after]
+	local cleared = after == nil or (rec ~= nil and (rec.clears or 0) > 0)
+	local stars = tonumber(snap and snap.stars) or 0
+	return if cleared then nil else after, math.max(0, (rules.starsRequired or 0) - stars)
+end
+
+-- The results card's NEXT for one member (read after their award, so a clear that just
+-- opened the next tape counts): { unlocked, starsNeeded, needsClear }.
+local function nextInfo(player: Player, nextIndex: number): any
+	if nextIndex <= 0 or Catalog[nextIndex] == nil then
+		return nil
+	end
+	local unlocked = isUnlocked(player, nextIndex)
+	local needsClear, starsNeeded = nil, 0
+	if not unlocked then
+		needsClear, starsNeeded = lockInfo(snapshotOf(player), H.LEVEL_DATA_KEYS[Catalog[nextIndex].id])
+	end
+	return { unlocked = unlocked, needsClear = needsClear, starsNeeded = starsNeeded }
 end
 
 ---------------------------------------------------------------------------
@@ -181,6 +341,11 @@ local function levelList(player: Player): { any }
 	for i, spec in Catalog do
 		local key = H.LEVEL_DATA_KEYS[spec.id]
 		local rec = snap and key and snap.heist and snap.heist.levels and snap.heist.levels[key]
+		local unlocked = isUnlocked(player, i)
+		local needsClear, starsNeeded = nil, 0
+		if not unlocked then
+			needsClear, starsNeeded = lockInfo(snap, key)
+		end
 		local medals = {}
 		if rec and type(rec.medals) == "table" then
 			for name, on in rec.medals do
@@ -192,15 +357,77 @@ local function levelList(player: Player): { any }
 		end
 		table.insert(out, {
 			index = i,
+			id = spec.id,
+			num = spec.num,
+			dataKey = key,
+			kind = if spec.kind == "party" then Protocol.KIND.Party else Protocol.KIND.Story,
 			name = spec.name,
 			par = spec.par,
 			cap = spec.cap,
 			runSeconds = spec.runSeconds,
-			unlocked = isUnlocked(player, i),
+			unlocked = unlocked,
+			needsClear = needsClear, -- data key of the level to clear first (locked only)
+			starsNeeded = starsNeeded, -- more Stars needed (locked only)
 			medals = medals,
 		})
 	end
 	return out
+end
+
+-- A player who has not cleared the FTUE level yet (offline / not loaded counts as new).
+local function isNewAccount(player: Player): boolean
+	local snap = snapshotOf(player)
+	if not snap then
+		return true -- offline / not loaded: treat as new so the FTUE path is the default
+	end
+	local key = ftueDataKey()
+	local rec = key and snap.heist and snap.heist.levels and snap.heist.levels[key]
+	return not (rec and (rec.clears or 0) > 0)
+end
+
+-- The daily vault is offered once the FTUE level is cleared. Studio without data
+-- (offline) keeps it open so play tests are never blocked.
+local function dailyOpenFor(player: Player): boolean
+	if DataService == nil or DataService.status() == "offline" then
+		return true
+	end
+	return dataReady(player) and not isNewAccount(player)
+end
+
+local function dailyState(player: Player): any
+	local today = todayDay()
+	local spec, slot, modifier = DailyVaults.forDay(today)
+	local snap = snapshotOf(player)
+	local trophies = snap and snap.heist and snap.heist.trophies or {}
+	local catchUp = {}
+	local advent = Config.Data.Advent
+	local first = Calendar.daysFromCivil(advent.YEAR, 12, advent.FIRST_DAY)
+	for day = math.max(first, today - 31), today - 1 do
+		if #catchUp >= H.DAILY_CATCH_UP_LIST then
+			break
+		end
+		if DailyVault.playMode(day, today) == "catchUp" and trophies[DailyVault.ornamentFor(day)] == nil then
+			local s = DailyVaults.forDay(day)
+			table.insert(catchUp, { day = day, advent = DailyVault.adventDay(day), name = s.name, id = s.id })
+		end
+	end
+	return {
+		enabled = LiveFlags.isOn("dailyVault"),
+		-- The daily vault opens after the first tape (§7.5: no skipping the FTUE).
+		locked = not dailyOpenFor(player),
+		day = today,
+		slot = slot,
+		modifier = modifier,
+		id = spec.id,
+		name = spec.name,
+		advent = DailyVault.adventDay(today),
+		clearedToday = snap ~= nil and snap.dailyClearedToday == true,
+		streak = if snap then snap.streak else 0,
+		secondsUntilReset = if snap
+			then snap.secondsUntilReset
+			else Calendar.secondsUntilReset(os.time(), Config.Data.Daily.RESET_OFFSET_HOURS),
+		catchUp = catchUp,
+	}
 end
 
 local function garageState(player: Player): any
@@ -219,6 +446,7 @@ local function garageState(player: Player): any
 		pending = crew ~= nil and table.find(crew.pending, player) ~= nil,
 		inHeist = crew ~= nil and crew.instance ~= nil,
 		levels = levelList(player),
+		daily = dailyState(player),
 	}
 end
 
@@ -228,17 +456,22 @@ local function syncPayload(player: Player): any
 	if inst and inst.byId[player.UserId] and not inst.byId[player.UserId].left then
 		return HeistInstance.syncFor(inst, player.UserId)
 	end
+	if preparing[player] then
+		return { where = "preparing" } -- the client shows the van-door card, not the garage
+	end
 	return garageState(player)
 end
 
 local function pushGarage(crew: Crew)
 	for _, p in crew.members do
-		if not (crew.instance and crew.instance.byId[p.UserId]) then
+		if not (crew.instance and crew.instance.byId[p.UserId]) and not preparing[p] then
 			push(p, "Sync", garageState(p))
 		end
 	end
 	for _, p in crew.pending do
-		push(p, "Sync", garageState(p))
+		if not preparing[p] then
+			push(p, "Sync", garageState(p))
+		end
 	end
 end
 
@@ -267,22 +500,36 @@ local function dropCrewIfEmpty(crew: Crew)
 		if i then
 			table.remove(crews, i)
 		end
+		table.clear(crew.friends)
 	end
 end
 
+local function inCrew(crew: Crew, p: Player): boolean
+	return p.Parent == Players and crewOf[p] == crew
+end
+
 -- Friendship flags for the co-op Cash bonus (cached; yields, so run in a thread).
+-- Every write re-checks after the yield that both players are still here and in it.
 local function learnFriends(crew: Crew, player: Player)
-	local known = crew.friends[player] or {}
-	crew.friends[player] = known
-	for _, other in crew.members do
-		if other ~= player and known[other.UserId] == nil then
+	if not inCrew(crew, player) then
+		return
+	end
+	crew.friends[player] = crew.friends[player] or {}
+	for _, other in table.clone(crew.members) do
+		local known = crew.friends[player]
+		if other ~= player and known and known[other.UserId] == nil then
 			local ok, isFriend = pcall(function()
 				return player:IsFriendsWithAsync(other.UserId)
 			end)
-			known[other.UserId] = ok and isFriend == true
+			if not (inCrew(crew, player) and inCrew(crew, other)) then
+				continue
+			end
+			local mine = crew.friends[player] or {}
+			crew.friends[player] = mine
+			mine[other.UserId] = ok and isFriend == true
 			local back = crew.friends[other] or {}
 			crew.friends[other] = back
-			back[player.UserId] = known[other.UserId]
+			back[player.UserId] = mine[other.UserId]
 		end
 	end
 end
@@ -325,6 +572,13 @@ local function leaveCrew(player: Player)
 				inst.folder:SetAttribute("Leader", nextLeader.UserId)
 				if inst.overMsg then
 					inst.overMsg.leader = nextLeader.UserId
+					-- The results card is up: the new leader gets REPLAY / NEXT at once.
+					for _, p in crew.members do
+						local m = inst.byId[p.UserId]
+						if m and not m.left then
+							push(p, "Leader", { leader = nextLeader.UserId })
+						end
+					end
 				end
 			end
 		end
@@ -353,8 +607,14 @@ end
 -- Instances
 ---------------------------------------------------------------------------
 
+local function maxInstances(): number
+	local ok, v = pcall(LiveFlags.get, "maxInstances")
+	local flag = if ok and type(v) == "number" then math.floor(v) else H.MAX_INSTANCES
+	return math.clamp(flag, 1, H.MAX_INSTANCES)
+end
+
 local function freeSlot(): number?
-	for slot = 1, H.MAX_INSTANCES do
+	for slot = 1, maxInstances() do
 		if instances[slot] == nil then
 			return slot
 		end
@@ -362,8 +622,12 @@ local function freeSlot(): number?
 	return nil
 end
 
+-- Slots sit on a grid around the lobby (Config.Heist.INSTANCE_SLOTS, in units of
+-- INSTANCE_SPACING): at most ~4,300 studs from the origin with 8 slots, where float
+-- precision is still fine for characters and animation (LihFolk "Instanced Interiors").
 local function originFor(slot: number): Vector3
-	return Vector3.new(slot * H.INSTANCE_SPACING, H.INSTANCE_Y, 0)
+	local cell = H.INSTANCE_SLOTS[slot] or { slot, 0 }
+	return Vector3.new(cell[1] * H.INSTANCE_SPACING, H.INSTANCE_Y, cell[2] * H.INSTANCE_SPACING)
 end
 
 local function heistFolder(): Folder
@@ -378,13 +642,19 @@ local function heistFolder(): Folder
 end
 
 -- Builds a heist instance. `members` are real players or fake ones (tests:
--- { userId, name, fake = {x, y, z, yaw} }). Returns the instance and its slot.
+-- { userId, name, fake = {x, y, z, yaw} }). levelIndex is a Catalog index, or
+-- Protocol.DAILY_INDEX with opts.daily. Returns the instance and its slot.
 function HeistService.createInstance(
 	levelIndex: number,
 	members: { any },
 	leaderId: number,
-	firstHeist: boolean?
+	firstHeist: boolean?,
+	opts: CreateOpts?
 ): (any, number?)
+	local o: CreateOpts = opts or {}
+	if levelIndex == Protocol.DAILY_INDEX and o.daily == nil then
+		return nil, nil
+	end
 	local slot = freeSlot()
 	if not slot then
 		return nil, nil
@@ -407,15 +677,21 @@ function HeistService.createInstance(
 	local inst = HeistInstance.new({
 		id = nextInstanceId,
 		levelIndex = levelIndex,
+		daily = if levelIndex == Protocol.DAILY_INDEX then o.daily else nil,
 		origin = originFor(slot),
 		parent = heistFolder(),
 		members = list,
 		leader = leaderId,
 		heistId = string.gsub(HttpService:GenerateGUID(false), "[{}]", ""),
 		firstHeist = firstHeist,
+		tuning = o.tuning or HeistService.tuning(),
+		build = buildOpts(),
 		push = push,
 		award = award,
+		awardDaily = awardDaily,
+		nextInfo = nextInfo,
 		onFtue = ftueHook,
+		analytics = Analytics,
 	})
 	inst.slot = slot
 	instances[slot] = inst
@@ -431,6 +707,8 @@ function HeistService.destroyInstance(inst: any)
 	crewOfInstance[inst] = nil
 	if crew and crew.instance == inst then
 		crew.instance = nil
+		-- A solo player who quit mid-heist leaves an empty crew: drop it now.
+		dropCrewIfEmpty(crew)
 	end
 end
 
@@ -462,9 +740,18 @@ local function returnToGarage(crew: Crew)
 	pushGarage(crew)
 end
 
-local function startHeist(crew: Crew, levelIndex: number): boolean
+local function startHeist(crew: Crew, levelIndex: number, daily: HeistInstance.Daily?): boolean
 	if crew.instance then
 		return false
+	end
+	if not daily then
+		-- Co-op carry (docs/DATA.md): crewmates who have not unlocked this tape still
+		-- get the result and unlock it by clearing it with the crew.
+		for _, p in crew.members do
+			if p ~= crew.leader and not isUnlocked(p, levelIndex) then
+				push(p, "Toast", { text = "New tape! Clear it with your crew to unlock it." })
+			end
+		end
 	end
 	local members = {}
 	local firstHeist = false
@@ -478,24 +765,40 @@ local function startHeist(crew: Crew, levelIndex: number): boolean
 	if #members == 0 then
 		return false
 	end
-	local inst = HeistService.createInstance(levelIndex, members, crew.leader.UserId, firstHeist)
+	local inst = HeistService.createInstance(levelIndex, members, crew.leader.UserId, firstHeist, { daily = daily })
 	if not inst then
 		for _, p in crew.members do
-			push(p, "Toast", { text = "The garage is full. Try again in a minute." })
+			push(p, "Toast", { text = "All the vans are out. Try again in a minute." })
 		end
 		return false
 	end
 	crew.instance = inst
 	crewOfInstance[inst] = crew
+	local spec = Catalog[levelIndex]
 	for _, p in crew.members do
 		p:SetAttribute(Protocol.PLAYER_ATTR, inst.name)
 		blockPrompts(p, true)
 		push(p, "Sync", HeistInstance.syncFor(inst, p.UserId))
-		if levelIndex == 2 then
+		if spec and spec.id == H.FTUE_L2_LEVEL and not daily then
 			ftueHook(p, "L2Started")
 		end
+		track("heistStarted", p, {
+			heistId = inst.heistId,
+			level = inst.trackLevel,
+			crew = #crew.members,
+			friends = friendsIn(crew, p),
+			daily = if daily then daily.slot else nil,
+		})
 	end
 	return true
+end
+
+-- Waits (bounded) for the art kit before a heist the server starts by itself; a
+-- player's own pick never waits (no yield inside remote handlers).
+local function waitForKit()
+	if H.KIT_LEVELS and KitService ~= nil and not KitService.isReady() then
+		pcall(KitService.ready, H.KIT_WAIT_SECONDS)
+	end
 end
 
 ---------------------------------------------------------------------------
@@ -515,6 +818,49 @@ local function instanceOf(player: Player): any
 end
 
 local INTERACT_KINDS = { KIND.Grab, KIND.Release, KIND.Press, KIND.Hide, KIND.Emote }
+
+-- Why a tape is locked, in kid words ("Clear Two Doors first." / "2 more ★ to open it.").
+local function lockedText(player: Player, index: number): string
+	local spec = Catalog[index]
+	local key = spec and H.LEVEL_DATA_KEYS[spec.id]
+	local needsClear, starsNeeded = lockInfo(snapshotOf(player), key)
+	if needsClear then
+		local name = needsClear
+		for _, other in Catalog do
+			if H.LEVEL_DATA_KEYS[other.id] == needsClear then
+				name = other.name
+			end
+		end
+		return "Clear " .. name .. " first."
+	elseif starsNeeded > 0 then
+		return string.format("%d more ★ to open it.", starsNeeded)
+	end
+	return "That tape is locked."
+end
+
+-- The crew leader may start a heist from the garage or the results card.
+local function leaderCrew(player: Player): Crew?
+	local crew = crewOf[player]
+	if not crew or crew.leader ~= player then
+		push(player, "Toast", { text = "Your crew leader picks the tape." })
+		return nil
+	end
+	-- One new heist per player pick every INSTANCE_COOLDOWN_SECONDS: alternating
+	-- SelectLevel and Leave cannot make the server build level after level.
+	local last = lastStartBy[player]
+	if last and os.clock() - last < H.INSTANCE_COOLDOWN_SECONDS then
+		push(player, "Toast", { text = "Rewinding the tape... try again in a moment." })
+		return nil
+	end
+	local inst = crew.instance
+	if inst then
+		if inst.overAt == nil then
+			return nil -- mid-heist: Leave first
+		end
+		returnToGarage(crew)
+	end
+	return crew
+end
 
 local function declareRemotes()
 	local R = Protocol.REMOTE
@@ -575,29 +921,48 @@ local function declareRemotes()
 		rate = RATE.SelectLevel,
 		args = { T.integer(1, #Catalog) },
 		handler = function(player: Player, index: number)
-			local crew = crewOf[player]
-			if not crew or crew.leader ~= player then
-				push(player, "Toast", { text = "Your crew leader picks the tape." })
-				return
-			end
 			if not isUnlocked(player, index) then
-				push(player, "Toast", { text = "Clear the tape before it first." })
+				push(player, "Toast", { text = lockedText(player, index) })
 				return
 			end
-			local inst = crew.instance
-			if inst then
-				if inst.overAt == nil then
-					return -- mid-heist: Leave first
-				end
-				returnToGarage(crew)
+			local crew = leaderCrew(player)
+			if crew and startHeist(crew, index, nil) then
+				lastStartBy[player] = os.clock()
 			end
-			startHeist(crew, index)
+		end,
+	})
+	Net.Listen(R.SelectDaily, {
+		rate = RATE.SelectDaily,
+		args = { T.optional(T.integer(0, 2 ^ 31)) },
+		handler = function(player: Player, day: number?)
+			if not LiveFlags.isOn("dailyVault") then
+				push(player, "Toast", { text = "The daily vault is closed right now." })
+				return
+			end
+			if not dailyOpenFor(player) then
+				push(player, "Toast", { text = "Finish your first heist to open the daily vault." })
+				return
+			end
+			local today = todayDay()
+			local daily = HeistService.dailyFor(day or today, today)
+			if not daily then
+				push(player, "Toast", { text = "That vault is not open today." })
+				return
+			end
+			local crew = leaderCrew(player)
+			if crew and startHeist(crew, Protocol.DAILY_INDEX, daily) then
+				lastStartBy[player] = os.clock()
+			end
 		end,
 	})
 	Net.Listen(R.JoinFriend, {
 		rate = RATE.JoinFriend,
 		args = { T.integer(1, 2 ^ 52) },
 		handler = function(player: Player, userId: number)
+			if not LiveFlags.isOn("joinFriend") then
+				push(player, "Toast", { text = "Joining crews is paused right now." })
+				return
+			end
 			local target = Players:GetPlayerByUserId(userId)
 			if not target or target == player then
 				return
@@ -678,18 +1043,43 @@ local function onCharacter(player: Player, char: Model)
 	end
 end
 
-local function isNewAccount(player: Player): boolean
-	local snap = snapshotOf(player)
-	if not snap then
-		return true -- offline / not loaded: treat as new so the FTUE path is the default
+-- Starts the FTUE level for a new solo player in the garage (re-checks everything:
+-- callers yield). Returns true when the heist started.
+tryFtueStart = function(player: Player): boolean
+	local crew = crewOf[player]
+	if
+		player.Parent ~= Players
+		or not crew
+		or crew.leader ~= player
+		or #crew.members ~= 1
+		or #crew.pending > 0
+		or crew.instance
+	then
+		return false
 	end
-	local rec = snap.heist and snap.heist.levels and snap.heist.levels[H.LEVEL_DATA_KEYS[Catalog[1].id]]
-	return not (rec and (rec.clears or 0) > 0)
+	preparing[player] = nil
+	return startHeist(crew, ftueIndex(), nil)
+end
+
+-- A failed FTUE start (every van out) retries a few times while the player is still a
+-- new, solo leader in the garage; they can also tap the first tape themselves.
+retryFtue = function(player: Player)
+	for _ = 1, H.FTUE_RETRY_TRIES do
+		task.wait(H.FTUE_RETRY_SECONDS)
+		local crew = crewOf[player]
+		if player.Parent ~= Players or not crew or crew.instance or not isNewAccount(player) then
+			return
+		end
+		if tryFtueStart(player) then
+			return
+		end
+	end
 end
 
 local function onPlayerAdded(player: Player)
 	task.spawn(Avatars.prepare, player)
 	player:SetAttribute(Protocol.PLAYER_ATTR, "")
+	applyPrompts(player)
 	-- Arrived with a Roblox party: share a crew with a party member here.
 	local party = player.PartyId
 	local joined = false
@@ -721,22 +1111,38 @@ local function onPlayerAdded(player: Player)
 	end
 	ftueHook(player, "Joined")
 	task.spawn(function()
+		-- The boot Sync shows "preparing" (the van door), not the garage, until the server
+		-- has decided: a new account goes straight into the FTUE level (§7.5).
+		preparing[player] = true
 		if DataService ~= nil and DataService.status() ~= "offline" then
 			DataService.waitForData(player, H.DATA_WAIT_SECONDS)
 		end
+		-- Kill switches set in the LiveFlags DataStore apply before the first heist here.
+		pcall(LiveFlags.waitForFirstRead, H.FLAGS_WAIT_SECONDS)
 		if player.Parent ~= Players then
+			preparing[player] = nil
 			return
 		end
 		local crew = crewOf[player]
-		if not crew then
-			return
-		end
-		if H.FTUE_AUTOSTART and crew.leader == player and #crew.members == 1 and not crew.instance then
-			if isNewAccount(player) then
-				startHeist(crew, 1)
+		if
+			crew
+			and H.FTUE_AUTOSTART
+			and crew.leader == player
+			and #crew.members == 1
+			and not crew.instance
+			and isNewAccount(player)
+		then
+			waitForKit()
+			if tryFtueStart(player) then
 				return
 			end
+			-- Full server (or the player moved on): the garage now, and retry while new.
+			preparing[player] = nil
+			push(player, "Sync", syncPayload(player))
+			task.spawn(retryFtue, player)
+			return
 		end
+		preparing[player] = nil
 		push(player, "Sync", syncPayload(player))
 	end)
 end
@@ -748,13 +1154,18 @@ local function onPlayerRemoving(player: Player)
 		HeistInstance.removeMember(inst, player.UserId)
 	end
 	leaveCrew(player)
+	inHeist[player] = nil
+	preparing[player] = nil
+	lastStartBy[player] = nil
 	Avatars.release(player)
 end
 
 local function step()
 	local now = workspace:GetServerTimeNow()
 	for _, inst in instances do
+		debug.profilebegin("EH.Instance")
 		local ok, err = pcall(HeistInstance.update, inst, now)
+		debug.profileend()
 		if not ok and os.clock() - lastError > 10 then
 			lastError = os.clock()
 			warn("[HeistService] instance " .. tostring(inst.name) .. " errored: " .. tostring(err))
@@ -789,6 +1200,14 @@ function HeistService.start(opts: StartOpts?)
 		Lobby.build()
 	end
 	declareRemotes()
+	-- The store kill switch applies at once (prompts are re-checked on every change).
+	LiveFlags.Changed:Connect(function(name: string)
+		if name == "store" then
+			for _, p in Players:GetPlayers() do
+				applyPrompts(p)
+			end
+		end
+	end)
 	if o.players == false then
 		return
 	end
@@ -803,6 +1222,11 @@ end
 -- The live instances (tests and debugging).
 function HeistService.instances(): { [number]: any }
 	return instances
+end
+
+-- Catalog index of a LevelSpec id (Protocol.catalogIndex): never hard-code indices.
+function HeistService.indexOf(specId: string): number?
+	return Protocol.catalogIndex(specId)
 end
 
 return HeistService

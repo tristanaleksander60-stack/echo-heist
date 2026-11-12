@@ -3,7 +3,6 @@
 -- deterministic all the way.
 
 local Assert = require("../unit/Assert")
-local Catalog = require("../../src/shared/Levels/Catalog")
 local EventLog = require("../../src/shared/Sim/EventLog")
 local HeistSim = require("../../src/shared/Sim/HeistSim")
 local LevelSpec = require("../../src/shared/Sim/LevelSpec")
@@ -28,7 +27,7 @@ end
 return function(test)
 	test(string.format("%d loops: no growth, same log every loop", LOOPS), function()
 		-- Night Clerk without its Dawn, so the heist never ends.
-		local spec = table.clone(Catalog[4])
+		local spec = table.clone(Harness.spec(4))
 		spec.deadline = "None"
 		local level = LevelSpec.compile(spec)
 		local sim = HeistSim.new(level, { players = { 1 } })

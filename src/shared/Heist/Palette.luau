@@ -24,11 +24,14 @@ Palette.goldLo = hex("#B87A0A")
 Palette.gold = hex("#FFC21F")
 Palette.goldHi = hex("#FFE69C")
 Palette.white = hex("#FFFFFF")
-Palette.alarm = hex("#FF3838") -- STYLE_BIBLE proposed v0 tweak (owner to confirm)
+Palette.alarm = hex("#FF3838") -- Alarm Red (owner-confirmed 2026-11-12; the plan's #FF3348 was too close to Magenta)
 Palette.amber = hex("#FFD27A")
 Palette.exit = hex("#F4F7FF")
 Palette.tapeGrey = hex("#8A8FA8")
 Palette.ok = hex("#2FBF71") -- Holly Green, used only as a UI "done" state with a word
+-- Christmas layer (STYLE_BIBLE: Santa hats and berries are Ribbon Burgundy, never Alarm Red)
+Palette.ribbon = hex("#8C2F4B")
+Palette.snow = hex("#C0C3D5")
 
 -- Clone identity per seat: P1/solo Cyan ●1, P2 Magenta ■2, P3 Indigo ▲3, P4 Ghost White ◆4.
 Palette.CLONE_HUES = table.freeze({

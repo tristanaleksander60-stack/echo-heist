@@ -244,7 +244,7 @@ do
 		)
 		local platePos = built.plates[1].Position - origin
 		check(
-			math.abs(platePos.X - 10) < 0.01 and math.abs(platePos.Z + 8) < 0.01 and origin.X >= 3000,
+			math.abs(platePos.X - 10) < 0.01 and math.abs(platePos.Z + 8) < 0.01 and origin.Magnitude >= 2999,
 			"sim: plate A at its level-space spot, instance offset 3000+ studs"
 		)
 		check(built.doors[1].CanCollide == true, "sim: door leaf built shut")
@@ -401,12 +401,16 @@ do
 	end
 
 	-- L4 builds too (guard level) and its sim steps with a fake member standing still.
-	local inst4 = HeistService.createInstance(
-		4,
-		{ { userId = -104, name = "Fake4", fake = { x = 0, y = 3, z = 14, yaw = 0 } } },
-		-104,
-		false
-	)
+	-- Catalog indices are the PLAY order (Clone Party is third): look levels up by id.
+	local l4Index = HeistService.indexOf("cs4_night_clerk")
+	check(l4Index ~= nil, "sim: L4 (cs4_night_clerk) is in the Catalog (index " .. tostring(l4Index) .. ")")
+	local inst4 = l4Index
+		and HeistService.createInstance(
+			l4Index,
+			{ { userId = -104, name = "Fake4", fake = { x = 0, y = 3, z = 14, yaw = 0 } } },
+			-104,
+			false
+		)
 	if inst4 then
 		local now4 = 70000
 		for _ = 1, 60 do
@@ -448,6 +452,327 @@ do
 		check(false, "sim: L4 instance created")
 	end
 
+	local Config = GameConfig :: any
+	local Protocol = require(sharedFolder:WaitForChild("Heist"):WaitForChild("Protocol"))
+	local DailyVault = require(dataShared:WaitForChild("DailyVault"))
+	local Calendar = require(dataShared:WaitForChild("Calendar"))
+
+	-- A fake member walker on synthetic server time, for any instance.
+	local function driver(target: any, userId: number, startNow: number)
+		local d = { now = startNow }
+		local fakeIn = target.byId[userId].fake
+		function d.step(dt: number)
+			d.now += dt
+			HeistInstance.update(target, d.now)
+		end
+		function d.wait(seconds: number)
+			for _ = 1, math.ceil(seconds / 0.05) do
+				d.step(0.05)
+			end
+		end
+		function d.walk(x: number, z: number)
+			local n = 0
+			while n < 600 do
+				n += 1
+				local dx, dz = x - fakeIn.x, z - fakeIn.z
+				local dist = math.sqrt(dx * dx + dz * dz)
+				if dist < 0.05 then
+					break
+				end
+				local s = math.min(dist, 14 * 0.05)
+				HeistInstance.setFakeInput(target, userId, fakeIn.x + dx / dist * s, 3, fakeIn.z + dz / dist * s)
+				d.step(0.05)
+			end
+		end
+		return d
+	end
+	local function hasEvent(target: any, kind: number, c: number?): boolean
+		local log = target.sim.log
+		for i = 1, log.n do
+			if log.kind[i] == kind and (c == nil or log.c[i] == c) then
+				return true
+			end
+		end
+		return false
+	end
+
+	-- L5 Clone Party: the till is time-locked until 0:20 (Interact.FAIL.Locked, streamed as a
+	-- Rejected event), then robbing it trips the Alarm Run (AlarmOn / AlarmBy / AlarmVanAt).
+	local l5Index = HeistService.indexOf("cs5_clone_party")
+	check(l5Index == 3, "sim: Clone Party is played third (party break), index " .. tostring(l5Index))
+	local inst5 = l5Index
+		and HeistService.createInstance(
+			l5Index,
+			{ { userId = -105, name = "Fake5", fake = { x = 0, y = 3, z = 14, yaw = 0 } } },
+			-105,
+			false
+		)
+	if inst5 then
+		local d = driver(inst5, -105, 80000)
+		d.step(0.05)
+		d.wait(1.1)
+		check(inst5.folder:GetAttribute("K1OpensAt") == 20, "sim: L5 till carries its opensAt (K1OpensAt = 20)")
+		d.walk(0, 4)
+		d.walk(-5.5, -1)
+		HeistInstance.interact(inst5, -105, Codec.EVENT.Grab, 1)
+		d.step(0.05)
+		d.step(0.05)
+		check(
+			hasEvent(inst5, EV.Rejected, HeistSim.FAIL.Locked) and inst5.folder:GetAttribute("K1State") == "Home",
+			string.format("sim: L5 till refuses an early grab as Locked (t = %.1f s)", inst5.sim.t)
+		)
+		while inst5.sim.phase == "Run" and inst5.sim.t < 20.2 do
+			d.step(0.05)
+		end
+		HeistInstance.interact(inst5, -105, Codec.EVENT.Grab, 1)
+		d.step(0.05)
+		d.step(0.05)
+		check(
+			inst5.folder:GetAttribute("K1State") == "Carried"
+				and inst5.folder:GetAttribute("AlarmOn") == true
+				and (inst5.folder:GetAttribute("AlarmBy") or 0) > 0
+				and (inst5.folder:GetAttribute("AlarmVanAt") or 0) > 20,
+			"sim: robbing the till after 0:20 trips the Alarm Run (AlarmOn, AlarmBy, AlarmVanAt)"
+		)
+		local lockAt = inst5.folder:GetAttribute("AlarmLockAt") or -1
+		check(
+			math.abs(lockAt - (inst5.sim.alarm.t0 + Config.Levels.PARTY_SHUTTER_SECONDS)) < 0.02,
+			string.format("sim: the shutter drop time is replicated (AlarmLockAt %.2f)", lockAt)
+		)
+		local waited = 0
+		while inst5.sim.phase == "Run" and waited < 15 do
+			d.step(0.05)
+			waited += 0.05
+		end
+		local lastAlarm = inst5.sim.lastRun and inst5.sim.lastRun.alarm
+		check(
+			inst5.sim.phase ~= "Run" and lastAlarm ~= nil and lastAlarm.kind == "live" and inst5.alarmHint == nil,
+			"sim: the run's alarm summary names the live robber (no Redo hint for a live run)"
+		)
+		HeistService.destroyInstance(inst5)
+	else
+		check(false, "sim: L5 instance created")
+	end
+
+	-- Daily vault: today's vault (Levels/DailyVaults) starts as levelIndex 0, plays to Dawn and
+	-- hands DataService.awardDailyVault the sim's result().daily (timeMs included). The fake
+	-- member gets a stand-in player for the award hook only; DataService answers NotReady
+	-- (no profile), so nothing is saved: the path is offline-safe.
+	local today = Calendar.dayIndex(os.time(), Config.Data.Daily.RESET_OFFSET_HOURS)
+	local daily = HeistService.dailyFor(today)
+	check(
+		daily ~= nil and daily.mode == "today",
+		"sim: today's daily vault is playable (slot " .. tostring(daily and daily.slot) .. ")"
+	)
+	local instD = daily
+		and HeistService.createInstance(Protocol.DAILY_INDEX, {
+			{ userId = -106, name = "FakeD", fake = { x = 0, y = 3, z = 14, yaw = 0 } },
+		}, -106, false, { daily = daily })
+	if instD then
+		local spec = Protocol.levelSpec(Protocol.DAILY_INDEX, today)
+		check(
+			instD.folder:GetAttribute("Daily") == today
+				and instD.folder:GetAttribute("Kind") == "daily"
+				and instD.folder:GetAttribute("LevelId") == spec.id,
+			"sim: daily vault instance (" .. tostring(spec.id) .. ", " .. tostring(daily.modifier) .. ")"
+		)
+		local stand = { Name = "StandIn" }
+		local captured: any = nil
+		local realAward = instD.awardDaily
+		instD.push = nil
+		instD.byId[-106].player = stand :: any
+		instD.awardDaily = function(p: any, day: number, result: any)
+			captured = { player = p, day = day, result = result }
+			return realAward(p, day, result)
+		end
+		local d = driver(instD, -106, 90000)
+		local steps = 0
+		while instD.sim.phase ~= "Over" and steps < 4000 do
+			steps += 1
+			if instD.sim.phase == "Run" and instD.sim.t > 1.6 then
+				HeistInstance.endRun(instD, -106)
+			elseif instD.sim.phase == "Between" then
+				HeistInstance.ready(instD, -106, true)
+			end
+			d.step(0.05)
+		end
+		local over = instD.overMsg
+		check(
+			instD.sim.phase == "Over" and over ~= nil and over.kind == "daily" and over.reason == "Dawn",
+			string.format("sim: daily vault ends at Dawn after %d runs (results card kind daily)", instD.sim.runIndex)
+		)
+		local valid = captured ~= nil and DailyVault.validateResult(captured.result)
+		check(
+			captured ~= nil and captured.day == today and valid and type(captured.result.timeMs) == "number",
+			"sim: awardDailyVault gets today's day and a valid DailyResult with timeMs"
+		)
+		local payload = HeistInstance.awardPayload(instD, -106)
+		check(payload ~= nil and payload.kind == "daily", "sim: award payload is the daily kind")
+		local okOffline, offline = pcall(DataService.awardDailyVault, stand :: any, today, payload and payload.result)
+		check(
+			okOffline and type(offline) == "table" and offline.ok == false and offline.code == "NotReady",
+			"sim: awardDailyVault without a profile is a clean NotReady (" .. tostring(offline and offline.code) .. ")"
+		)
+		HeistService.destroyInstance(instD)
+	else
+		check(false, "sim: daily vault instance created")
+	end
+
+	-- Analytics + LiveFlags start without errors (no players here, so no player events).
+	local analyticsFolder = server:WaitForChild("Analytics")
+	local okA, Analytics = pcall(require, analyticsFolder:WaitForChild("Analytics"))
+	local okStartA, startErrA = false, nil
+	if okA then
+		okStartA, startErrA = pcall(Analytics.start, {
+			dataService = DataService,
+			playerData = PlayerData,
+			currency = require(dataFolder:WaitForChild("Currency")),
+			receipts = require(dataFolder:WaitForChild("Receipts")),
+			shop = require(dataFolder:WaitForChild("Shop")),
+			heistService = HeistService,
+		})
+		HeistService.configureAnalytics(Analytics)
+	end
+	check(
+		okA and okStartA,
+		"analytics: Analytics.start runs" .. (if okStartA then "" else ": " .. tostring(startErrA or Analytics))
+	)
+	if okA then
+		check(
+			Analytics.environment() == (if inTestUniverse then "test" else "live"),
+			"analytics: environment " .. tostring(Analytics.environment())
+		)
+		local LiveFlags = require(analyticsFolder:WaitForChild("LiveFlags"))
+		local snap = LiveFlags.snapshot()
+		check(type(snap) == "table" and snap.values.dailyVault ~= nil, "analytics: LiveFlags loaded (dailyVault flag)")
+		local lfr = ReplicatedStorage:FindFirstChild("LihFolkRemotes")
+		local missingA = {}
+		for _, name in { "Analytics.Ready", "Analytics.Perf", "Analytics.Ui", "Heist.SelectDaily" } do
+			if not (lfr and lfr:FindFirstChild(name)) then
+				table.insert(missingA, name)
+			end
+		end
+		check(#missingA == 0, "analytics: client remotes created (" .. table.concat(missingA, ", ") .. ")")
+		local tuning = HeistService.tuning()
+		check(
+			tuning.alarmRun == true and tuning.crewCloneBudget == Config.Sim.CREW_CLONE_BUDGET,
+			"liveflags: heist tuning reads the defaults (" .. tostring(tuning.crewCloneBudget) .. ")"
+		)
+	end
+
+	-- Art kit (spike S2, automated path): KitService loads the uploaded kit, and a level built
+	-- after it is ready is dressed with kit pieces while its collision stays the sim's boxes.
+	local okKitReq, KitService = pcall(require, server:WaitForChild("Kit"):WaitForChild("KitService"))
+	check(okKitReq, "kit: KitService loads" .. (if okKitReq then "" else ": " .. tostring(KitService)))
+	if okKitReq then
+		KitService.start()
+		local kitOk = KitService.ready(45)
+		local kitReady = KitService.isReady()
+		table.insert(results, "      kit " .. KitService.summary() .. (if kitOk then "" else " (report not ok)"))
+		HeistService.configureKit(KitService)
+		local l2Index = HeistService.indexOf("cs2_two_doors") :: number
+		local instK = HeistService.createInstance(l2Index, {
+			{ userId = -107, name = "FakeK", fake = { x = 0, y = 3, z = 14, yaw = 0 } },
+		}, -107, false)
+		if instK and kitReady and not kitOk then
+			-- A partial kit (missing pieces, size errors) keeps every level greybox (KitDresser).
+			check(instK.folder:GetAttribute("Kit") == false, "kit: incomplete kit, level stays greybox (Kit = false)")
+			check(false, "kit: KitService report ok (" .. KitService.summary() .. ")")
+			HeistService.destroyInstance(instK)
+		elseif instK and kitReady then
+			local built = instK.built
+			local pieces = 0
+			for _, dsc in built.model:GetDescendants() do
+				if dsc:IsA("MeshPart") and dsc:GetAttribute("KitPiece") then
+					pieces += 1
+				end
+			end
+			check(
+				instK.folder:GetAttribute("Kit") == true and pieces >= 40,
+				string.format(
+					"kit: L2 dressed with %d kit pieces (%s)",
+					pieces,
+					tostring(built.kitResult and built.kitResult.why)
+				)
+			)
+			local solidsOk, hidden = true, 0
+			for i, sdef in instK.level.spec.solids do
+				local part = built.solids[i]
+				local b = sdef.box
+				local want = Vector3.new(b.maxX - b.minX, b.maxY - b.minY, b.maxZ - b.minZ)
+				if not (part and part.CanCollide and (part.Size - want).Magnitude < 0.01) then
+					solidsOk = false
+				end
+				if part and part.Transparency == 1 then
+					hidden += 1
+				end
+			end
+			check(
+				solidsOk and hidden >= 8,
+				string.format("kit: every sim solid is still its exact collider (%d hidden under kit)", hidden)
+			)
+			local leaf = built.doors[1]
+			local db = instK.level.doors[1].box
+			check(
+				leaf:IsA("MeshPart")
+					and leaf:GetAttribute("EH_Kind") == "door"
+					and leaf.CanCollide
+					and math.abs(leaf.Size.X - (db.maxX - db.minX)) < 0.01
+					and math.abs(leaf.Size.Y - (db.maxY - db.minY)) < 0.01
+					and math.abs(leaf.Size.Z - (db.maxZ - db.minZ)) < 0.01
+					and leaf.CollisionFidelity == Enum.CollisionFidelity.Box,
+				"kit: door leaf is a kit MeshPart sized to the sim door box (Box collision)"
+			)
+			-- Gameplay unchanged: plate A still opens the back room through the attributes.
+			local d = driver(instK, -107, 100000)
+			d.step(0.05)
+			d.wait(1.1)
+			d.walk(0, 4)
+			d.walk(-10, -8)
+			check(
+				instK.folder:GetAttribute("P1Held") == true and instK.folder:GetAttribute("D1Open") == true,
+				"kit: plate A opens the back-room door on the kit-built level"
+			)
+			HeistService.destroyInstance(instK)
+			-- The Christmas layer and the Bank pieces (vault frame + swing skin) build too.
+			local LevelBuilder = require(heistServer:WaitForChild("LevelBuilder"))
+			local l6 = HeistInstance.levelData(HeistService.indexOf("bk1_big_score") :: number)
+			local scratch = Instance.new("Folder")
+			scratch.Name = "KitScratch"
+			scratch.Parent = workspace
+			local okL6, b6 = pcall(LevelBuilder.build, l6, Vector3.new(-6000, 0, 0), scratch, {
+				kit = KitService,
+				dressing = true,
+			})
+			local skins, xmas = 0, 0
+			if okL6 then
+				for _, dsc in b6.model:GetDescendants() do
+					if dsc:GetAttribute("EH_Kind") == "doorSkin" then
+						skins += 1
+					end
+					local piece = dsc:GetAttribute("KitPiece")
+					if
+						type(piece) == "string"
+						and (string.sub(piece, 1, 5) == "Xmas_" or piece == "LaserEmitter_CandyCane")
+					then
+						xmas += 1
+					end
+				end
+			end
+			check(
+				okL6 and b6.kit and b6.dressing and skins == 1 and xmas >= 10,
+				string.format("kit: L6 with the Christmas layer (%d Christmas pieces, %d vault skin)", xmas, skins)
+			)
+			scratch:Destroy()
+		elseif instK then
+			check(instK.folder:GetAttribute("Kit") == false, "kit: not ready, level stays greybox (fallback)")
+			check(false, "kit: KitService.ready (" .. KitService.summary() .. ")")
+			HeistService.destroyInstance(instK)
+		else
+			check(false, "kit: L2 instance created")
+		end
+	end
+
 	-- Clone template stripping on a real engine rig (§6.5 #2).
 	local okRig, rig = pcall(function()
 		return Players:CreateHumanoidModelFromDescriptionAsync(
@@ -466,6 +791,8 @@ do
 		end
 		local hum = rig:FindFirstChildOfClass("Humanoid")
 		local rootPart = rig:FindFirstChild("HumanoidRootPart")
+		local count = #rig:GetDescendants()
+		check(count <= 90, "sim: stripped clone template has " .. count .. " instances (<= 90)")
 		check(
 			bad == 0
 				and hum ~= nil

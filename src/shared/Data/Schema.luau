@@ -57,8 +57,10 @@ export type Heist = {
 		streak: number,
 		bestStreak: number,
 		stars: number, -- Stars earned from daily vaults (first clears)
-		haulDay: number, -- day of haulBest (the "biggest haul today" board entry)
+		haulDay: number, -- day of the "biggest haul today" board entry (haulBest, haulClones, haulTimeMs)
 		haulBest: number,
+		haulClones: number, -- tie-break 1: fewer clones (DailyVault.beatsBoard)
+		haulTimeMs: number, -- tie-break 2: less time
 	},
 	settings: {
 		reducedMotion: boolean,
@@ -84,7 +86,16 @@ function Schema.defaultHeist(): Heist
 		shelf = {},
 		bagLevel = 0,
 		cosmetics = { owned = {}, equipped = defaultEquipped() },
-		daily = { lastClearDay = -1, streak = 0, bestStreak = 0, stars = 0, haulDay = -1, haulBest = 0 },
+		daily = {
+			lastClearDay = -1,
+			streak = 0,
+			bestStreak = 0,
+			stars = 0,
+			haulDay = -1,
+			haulBest = 0,
+			haulClones = 0,
+			haulTimeMs = 0,
+		},
 		settings = { reducedMotion = false, relaxed = false, colourBlindGlyphs = false },
 		ftueStep = 0,
 		firstHeistDone = false,

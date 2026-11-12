@@ -70,7 +70,7 @@ When this file and the code disagree, the code wins. Then fix this file.
 
 ² **Pass 2.** The first mahogany (`#41261C` / `#59392E` / `#704F42`) had the luma of the Bank's floors and wainscot (counter tops on `floor_a`: 0.003 luma, 0.08 Oklab), so counters vanished from above (rule R1, §1.3). Same hue, one value step lighter.
 
-¹ **Proposed v0 tweak, owner to confirm.** The plan's `#FF3348` is only Oklab **0.194** from Clone Magenta, and the rule (§1.3) needs 0.20 or more. `#FF3838` gives 0.209. This is the smallest change: only the blue channel moves from 0x48 to 0x38. Apply it to the laser and alarm code colours when confirmed.
+¹ **Confirmed by the owner on 2026-11-12: Alarm Red is `#FF3838` everywhere** (code: `Heist/Palette.alarm`; Blender: `eh_palette` cell 18). The plan's `#FF3348` is only Oklab **0.194** from Clone Magenta, and the rule (§1.3) needs 0.20 or more. `#FF3838` gives 0.209. This is the smallest change: only the blue channel moves from 0x48 to 0x38.
 
 - **Cell order is append-only.** Never reorder: kit UVs point at cell indices. A location re-skin (Corner Shop, Toy Shop) is an **atlas swap** (§1.4). Christmas is not an atlas swap: it is the removable dressing layer (§13).
 - Unused cells are mid grey `#808080`, so a wrong UV is visible at once.
@@ -323,7 +323,6 @@ Each bookmark is shot 3 times: **PC Quality 10**, **phone Automatic**, **phone q
 ## 11. Open items (v1)
 
 - **Golden-asset sign-off** (§9 rule 3): the owner signs off `Wall_8x12`, `VaultDoor`, `GoldBar` / `GoldStack`, `Diamond` and `Gus` v0 (or asks for changes) from the turntables and `KitPreview_*.png`. Until then they are candidates.
-- **Alarm Red `#FF3838`** (§1.1): owner to confirm, then update the laser and alarm colours in code.
 - **Location atlases** (§1.4): owner to confirm the Corner Shop (brick + light pine) and Toy Shop (navy + light pine) colours from `KitPreview_CornerShop.png` and `KitPreview_ToyShop.png` (both B3 top-down tiles included).
 - **S2 Studio checks:** the two axis checks of the prepare script; do smooth plus sharp-edge normals survive the import; CollisionFidelity of the door frames, both street fronts, the vault frame and the van (Lune cannot read it back).
 - **Level data vs kit** (content track; the KIT_IMPORT fit table lists them): the L1 counter box, the L5 till outside its counter, the L6 open vault door over WestStack / plate C, a cover piece for L6's TellerDesk hide.

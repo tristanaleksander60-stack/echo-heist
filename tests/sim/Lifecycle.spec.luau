@@ -138,6 +138,36 @@ return function(test)
 		Assert.eq(runs[2].reason, RUN_END.Timeout, "run 2 times out")
 	end)
 
+	test("L1 tutorial: run 1 ended off the plate -> run 2 auto-ends on it (untilDone), run 3 does not", function()
+		local level = Harness.level(1)
+		local _, runs = Harness.play(level, {
+			runs = {
+				{ [1] = { { go = { -12, 12 } }, { endRun = true } } },
+				{ [1] = { { goPlate = "A" }, { stay = true } } },
+				{ [1] = { { goPlate = "A" }, { stay = true } } },
+			},
+		})
+		Assert.eq(EventLog.count(runs[1].log, EV.AutoEnd), 0, "run 1 ended by END RUN off the plate")
+		Assert.eq(EventLog.count(runs[2].log, EV.AutoEnd), 1, "run 2: the auto-end is still armed")
+		Assert.eq(EventLog.count(runs[3].log, EV.AutoEnd), 0, "run 3: a clone stands on the plate, so no more")
+		Assert.eq(runs[3].reason, RUN_END.Timeout, "run 3 times out")
+	end)
+
+	test("L1 tutorial: when the plate clone is replaced at the cap, the auto-end re-arms", function()
+		local level = Harness.level(1)
+		local cap = level.cap
+		local plan = { runs = {} }
+		for _ = 1, cap - 1 do
+			table.insert(plan.runs, { [1] = { { go = { -12, 12 } }, { endRun = true } } })
+		end
+		table.insert(plan.runs, { [1] = { { goPlate = "A" }, { stay = true } } }) -- run cap: auto-ends
+		table.insert(plan.runs, { [1] = { { go = { -12, 12 } }, { endRun = true } } }) -- replaces it
+		table.insert(plan.runs, { [1] = { { goPlate = "A" }, { stay = true } } })
+		local _, runs = Harness.play(level, plan)
+		Assert.eq(EventLog.count(runs[cap].log, EV.AutoEnd), 1, "run " .. cap .. " auto-ends on the plate")
+		Assert.eq(EventLog.count(runs[cap + 2].log, EV.AutoEnd), 1, "the plate clone was replaced: armed again")
+	end)
+
 	test("heist complete ends the run at once and scores the medal inputs", function()
 		local level = Harness.level(2)
 		local sim, runs = Harness.play(level, Solutions[level.id])

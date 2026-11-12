@@ -1,0 +1,713 @@
+--!strict
+-- Audio/Cues: every sound cue and music set the game plays (MASTERPLAN §7.1-7.3, feel.md D5). Data only,
+-- like a level spec: the AudioDirector plays it, Audio/CueCheck validates it (tests/unit/AudioCues.spec).
+--
+-- ids:    the takes, played round-robin (never the same take twice in a row). Every id is in Audio/Manifest,
+--         which records what the Creator Store API returned for it (creator, title, duration). An empty list
+--         is a cue still waiting for a sound: `search` says what to look for (docs/AUDIO.md "Owner actions").
+-- alt:    audition candidates from the same search, not loaded; swap one into `ids` after listening.
+-- volume: AudioPlayer.Volume before jitter (the Audio API default is 1, not Sound's 0.5). Library files are
+--         not loudness-matched yet: re-level after the -18 LUFS pass (lihfolk-sfx "Why -18 LUFS").
+-- Shared mix and timing numbers (buses, ladders, fades, caps) are in Config.Audio.
+
+local Config = require("../Config")
+
+local A = Config.Audio
+
+export type Bus = "Music" | "SFX" | "Clone" | "UI" | "Ambience" | "Warnings"
+
+export type Cue = {
+	ids: { number },
+	alt: { number }?,
+	search: string, -- Creator Store search words (always set: they find replacements too)
+	bus: Bus,
+	volume: number,
+	pitch: number?, -- base PlaybackSpeed (default 1)
+	pitchJitter: number?, -- +- fraction (default Config.Audio.DEFAULT_PITCH_JITTER); 0 for tonal stings
+	volumeJitter: number?, -- +- fraction (default Config.Audio.DEFAULT_VOLUME_JITTER)
+	maxVoices: number?, -- live voices of this cue (default Config.Audio.DEFAULT_MAX_PER_CUE)
+	cooldown: number?, -- seconds between two starts (default Config.Audio.DEFAULT_COOLDOWN)
+	priority: number?, -- 1..5 (default Config.Audio.DEFAULT_PRIORITY)
+	rolloff: string?, -- Config.Audio.ROLLOFF preset; positional when the caller passes opts.at
+	loop: boolean?, -- plays until stopped (beds, hum, alarm)
+	choke: boolean?, -- a new start stops the previous one of this cue
+	steps: { number }?, -- semitone ladder for opts.step (arpeggio, countdown, count-up)
+	cloneable: boolean?, -- a clone's version (opts.clone) goes through the Clone bus
+	duck: boolean?, -- ducks the music (Config.Audio.DUCK_DB for DUCK_SECONDS)
+	caption: string?, -- information-bearing sounds only (captions on by default, §7.4)
+	note: string?, -- what to listen for when auditioning
+}
+
+export type MusicSet = {
+	ids: { number }, -- "mixes": same-length alternate mixes, sparse -> full. "playlist": tracks, one at a time
+	alt: { number }?,
+	search: string,
+	kind: "mixes" | "playlist",
+	volume: number,
+	tierToMix: { number }?, -- mixes: Crew Layers tier S0..S4 -> index into ids (5 entries)
+	bpm: number?, -- nil = unknown (layer fades are not bar-quantised)
+	note: string?,
+}
+
+export type MusicState = "Off" | "Garage" | "Heist" | "Alarm" | "Results"
+
+local Cues = {}
+
+local FIXED = 0
+
+Cues.cues = {
+	-------------------------------------------------------------------------------------------------------
+	-- Time: the rewind (§7.1). 2D, SFX bus (not ducked by the rewind). Clack is played locally on input.
+	-------------------------------------------------------------------------------------------------------
+	RewindClack = {
+		ids = { 9119716019, 9119716036, 9119715824 },
+		search = "cassette deck button click",
+		bus = "SFX",
+		volume = 0.7,
+		pitchJitter = 0.03,
+		maxVoices = 2,
+		cooldown = 0.1,
+		priority = 4,
+		note = "Pro Sound Effects cassette deck dbx button clicks: the tape-deck 'clack' within 100 ms of input",
+	},
+	TapeStop = {
+		ids = { 9120059083 },
+		alt = { 9120059060 },
+		search = "tape stop slow down decelerate",
+		bus = "SFX",
+		volume = 0.6,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		choke = true,
+		priority = 4,
+		note = "'Time Wave, Intense Fluttering Slow Down': layered over the music PlaybackSpeed dive",
+	},
+	RewindWhirr = {
+		ids = { 9114413015 },
+		alt = { 9114452629 },
+		search = "tape rewind whirr film rewind reel",
+		bus = "SFX",
+		volume = 0.55,
+		pitchJitter = 0.02,
+		maxVoices = 1,
+		choke = true,
+		priority = 4,
+		note = "fast film rewind (1 s) under the 0.10-1.35 s scrub; alt is a rising fishing-reel zuzz",
+	},
+	RewindStinger = {
+		ids = {},
+		search = "owner upload: the reversed last bar of each heist track + rewind whirr, 1.2 s",
+		bus = "Music",
+		volume = 0.7,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		choke = true,
+		priority = 4,
+		note = "Roblox cannot play audio backwards: render it reversed offline from owned music (§7.1)",
+	},
+	RewindClunk = {
+		ids = { 9126019188, 9119725282, 9119725132 },
+		search = "tape recorder switch clunk",
+		bus = "SFX",
+		volume = 0.7,
+		pitchJitter = 0.03,
+		maxVoices = 2,
+		priority = 4,
+		note = "Otari tape recorder switches: the 'clunk' on the bar line at 1.35 s",
+	},
+	RunStamp = {
+		ids = { 9114026047, 9114025631, 9114025813 },
+		search = "rubber date stamp impact",
+		bus = "UI",
+		volume = 0.8,
+		pitchJitter = 0.03,
+		maxVoices = 3,
+		cooldown = 0.08,
+		priority = 3,
+		note = "office date stamp: 'RUN n' stamp, BUSTED stamp, and each medal stamp on the results card",
+	},
+	CloneChime = {
+		ids = { 9126073001 },
+		search = "glass chime single bell tone ding",
+		bus = "Clone",
+		volume = 0.55,
+		pitchJitter = FIXED,
+		maxVoices = 8,
+		cooldown = 0,
+		priority = 4,
+		steps = A.ARPEGGIO_STEPS,
+		note = "the sound logo: one pitch-stepped tone per clone (C-major pentatonic), 60 ms apart; must be dry",
+	},
+	CloneBusted = {
+		ids = { 9119901860, 9119901748, 9119902088 },
+		search = "glitch video breakup tape chew",
+		bus = "SFX",
+		volume = 0.6,
+		maxVoices = 3,
+		priority = 3,
+		rolloff = "mid",
+		cloneable = true,
+		caption = "[Clone busted]",
+		note = "'Synth Zap, High Pitch Video Breakup, Glitch': the clone glitches into tape ribbons",
+	},
+	CountdownTick = {
+		ids = { 9114071134, 9114069409 },
+		search = "dial switch tick clock tick",
+		bus = "Warnings",
+		volume = 0.5,
+		pitchJitter = FIXED,
+		maxVoices = 2,
+		cooldown = 0.2,
+		priority = 4,
+		steps = A.COUNTDOWN_STEPS,
+		caption = "[10 seconds]",
+		note = "last 10 s of a run, one per second, opts.step = 10 - secondsLeft (caption only on the first)",
+	},
+	Heartbeat = {
+		ids = {},
+		search = "heartbeat single thump low",
+		bus = "Warnings",
+		volume = 0.6,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		cooldown = 0.25,
+		priority = 3,
+		note = "no Roblox-licensed heartbeat found in the partner catalogue on 2026-11-12: owner picks one",
+	},
+
+	-------------------------------------------------------------------------------------------------------
+	-- Mechanisms (§7.3): positional at the device (opts.at); clone presses go through the Clone bus.
+	-------------------------------------------------------------------------------------------------------
+	PlatePress = {
+		ids = { 9125626478, 9125626484, 9125626281 },
+		search = "lever mechanism metal clunk",
+		bus = "SFX",
+		volume = 0.6,
+		maxVoices = 4,
+		rolloff = "mid",
+		cloneable = true,
+		note = "'Lever Mechanism, Crank Clicks, Big Metal Clunk': the plate sinks 0.15 studs",
+	},
+	PlateRelease = {
+		ids = { 9120484397, 9120484641, 9120484192 },
+		search = "light switch click release",
+		bus = "SFX",
+		volume = 0.45,
+		maxVoices = 4,
+		rolloff = "mid",
+		cloneable = true,
+		note = "wall light switch clicks: the plate pops up and the cable starts to drain",
+	},
+	CableWhum = {
+		ids = { 9114245761, 9114245917 },
+		search = "electric hum short burst 60hz",
+		bus = "SFX",
+		volume = 0.35,
+		maxVoices = 4,
+		rolloff = "mid",
+		cloneable = true,
+		note = "60 Hz oscillator hum bursts: the pulse running along the floor cable (0.25 s)",
+	},
+	DoorOpen = {
+		ids = { 9117719772 },
+		search = "pneumatic servo metallic slide",
+		bus = "SFX",
+		volume = 0.7,
+		maxVoices = 3,
+		rolloff = "mid",
+		note = "'Pneumatics or Servo, Short Metallic Slide': vault door slides open in 0.35 s",
+	},
+	DoorClose = {
+		ids = { 9117721077 },
+		alt = { 9119631707 },
+		search = "metal hatch close slide",
+		bus = "SFX",
+		volume = 0.7,
+		maxVoices = 3,
+		rolloff = "mid",
+		caption = "[Door closing]",
+		note = "servo slide into a hatch close; alt is a heavier steel door slam",
+	},
+	DoorLock = {
+		ids = { 9114144270 },
+		search = "deadbolt lock thunk",
+		bus = "SFX",
+		volume = 0.6,
+		maxVoices = 3,
+		rolloff = "mid",
+		note = "the lock thunk when the door is fully shut (solid)",
+	},
+	DoorBeep = {
+		ids = { 9113880475 },
+		search = "single high beep warning",
+		bus = "Warnings",
+		volume = 0.35,
+		pitchJitter = FIXED,
+		maxVoices = 2,
+		cooldown = 0.2,
+		rolloff = "near",
+		note = "amber blink beep while a door is closing (4 Hz lamp, beep every other blink)",
+	},
+	LaserHum = {
+		ids = { 9116270244 },
+		alt = { 9114246115 },
+		search = "electric buzz hum constant loop",
+		bus = "SFX",
+		volume = 0.22,
+		pitchJitter = 0.03,
+		maxVoices = 8,
+		cooldown = 0,
+		rolloff = "near",
+		loop = true,
+		priority = 1,
+		note = "'Light Bulb Buzz, 1000 Watt Bulb, Constant' looped at each laser emitter (40-stud reach)",
+	},
+	LaserOff = {
+		ids = { 9117869243 },
+		search = "power down decelerating motor",
+		bus = "SFX",
+		volume = 0.55,
+		maxVoices = 3,
+		rolloff = "mid",
+		note = "beams retract with a power-down sweep",
+	},
+	LaserFlicker = {
+		ids = { 9126027558 },
+		search = "electric flicker staticky switch",
+		bus = "SFX",
+		volume = 0.5,
+		maxVoices = 3,
+		rolloff = "mid",
+		caption = "[Lasers back on]",
+		note = "3 flickers over 0.3 s before the beams come back",
+	},
+	LaserZap = {
+		ids = { 9118068265, 9118068267 },
+		alt = { 9119594928 },
+		search = "electric zap burst",
+		bus = "SFX",
+		volume = 0.7,
+		maxVoices = 3,
+		priority = 4,
+		rolloff = "mid",
+		cloneable = true,
+		caption = "[Zapped]",
+		note = "'Reactor Ignition, Large Electrical Zap': an actor walked into a live laser",
+	},
+
+	-------------------------------------------------------------------------------------------------------
+	-- Gus the guard (§7.3): steps and radio are positional; "?" / "!" / busted are 2D on Warnings.
+	-------------------------------------------------------------------------------------------------------
+	GusStep = {
+		ids = {},
+		search = "footsteps hard shoes concrete walk",
+		bus = "SFX",
+		volume = 0.35,
+		pitchJitter = 0.06,
+		maxVoices = 2,
+		cooldown = 0.15,
+		priority = 1,
+		rolloff = "near",
+		note = "no human footsteps in the Pro Sound Effects partner set on 2026-11-12: owner picks 4-6 takes",
+	},
+	GusRadio = {
+		ids = { 9120456889, 9120458059, 9120456241 },
+		search = "walkie talkie squelch beep",
+		bus = "SFX",
+		volume = 0.3,
+		maxVoices = 1,
+		cooldown = 4,
+		priority = 1,
+		rolloff = "near",
+		note = "radio squelch blips every few seconds while Gus patrols",
+	},
+	GusHuh = {
+		ids = { 9045118824 },
+		search = "suspense sting short question",
+		bus = "Warnings",
+		volume = 0.6,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		cooldown = 0.5,
+		priority = 4,
+		caption = "[Guard suspicious]",
+		note = "'Sneaky Schemes - Hit2' (in key with the Caper set): the '?' over Gus",
+	},
+	GusAlert = {
+		ids = { 9045118821 },
+		search = "alert sting hit",
+		bus = "Warnings",
+		volume = 0.8,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		cooldown = 0.5,
+		priority = 5,
+		duck = true,
+		caption = "[Spotted!]",
+		note = "'Sneaky Schemes - Hit1': the '!' when Gus catches someone",
+	},
+	Busted = {
+		ids = { 1840568386, 1840568339 },
+		search = "trumpet wah wah comedy fail",
+		bus = "Warnings",
+		volume = 0.7,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		cooldown = 0.5,
+		choke = true,
+		priority = 5,
+		duck = true,
+		caption = "[Guard spotted you]",
+		note = "KPM 'Trumpet Wah-Wah': the brass wah-wah when YOU are caught (clones use CloneBusted)",
+	},
+
+	-------------------------------------------------------------------------------------------------------
+	-- Loot and banking (§7.3)
+	-------------------------------------------------------------------------------------------------------
+	Grab = {
+		ids = { 9113727824, 9113727636, 9113727630 },
+		search = "cash bundle pick up",
+		bus = "SFX",
+		volume = 0.6,
+		maxVoices = 4,
+		rolloff = "mid",
+		cloneable = true,
+		note = "'Cash Movement, Pick Up Cash Bundle': grabbing cash loot",
+	},
+	GrabClink = {
+		ids = { 9113849492 },
+		search = "coins keys jingle clink",
+		bus = "SFX",
+		volume = 0.5,
+		pitchJitter = 0.08,
+		maxVoices = 4,
+		rolloff = "mid",
+		cloneable = true,
+		note = "metallic clinks: gold bars, jewels, the till (play with or instead of Grab)",
+	},
+	DiamondShimmer = {
+		ids = { 9126072453, 9126071775 },
+		search = "sparkle bell tone shimmer",
+		bus = "SFX",
+		volume = 0.7,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		priority = 4,
+		duck = true,
+		note = "'Synth Sparkle Tone, High Pitch Bell Tone Burst': the diamond, the only mid-heist world dim",
+	},
+	DropThud = {
+		ids = { 9113246043, 9113245890, 9113246038 },
+		search = "bag drop wood floor thud",
+		bus = "SFX",
+		volume = 0.6,
+		maxVoices = 3,
+		rolloff = "mid",
+		cloneable = true,
+		note = "loot dropped when its carrier is taken out",
+	},
+	BankKaching = {
+		ids = { 9113728756, 9113728625 },
+		search = "cash register ka-ching drawer",
+		bus = "SFX",
+		volume = 0.75,
+		maxVoices = 3,
+		cooldown = 0.08,
+		priority = 4,
+		rolloff = "far",
+		cloneable = true,
+		note = "electronic cash register hatch: the 'ka-ching' at the van (2D for you, at the van for clones)",
+	},
+	BankCoins = {
+		ids = { 9113849583, 9113849579 },
+		search = "coins multiple drop concrete",
+		bus = "SFX",
+		volume = 0.5,
+		maxVoices = 2,
+		cooldown = 0.1,
+		note = "the 24-coin burst right after the ka-ching",
+	},
+	CountTick = {
+		ids = { 9114071110 },
+		search = "small tick click",
+		bus = "UI",
+		volume = 0.35,
+		pitchJitter = FIXED,
+		maxVoices = 3,
+		cooldown = 0.04,
+		steps = A.COUNT_UP_STEPS,
+		note = "loot meter count-up ticks rising 4-7 semitones",
+	},
+	CountDone = {
+		ids = { 9119802009 },
+		search = "synth chime single tone notify",
+		bus = "UI",
+		volume = 0.45,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		note = "the 'done' tone when the count-up lands",
+	},
+
+	-------------------------------------------------------------------------------------------------------
+	-- Alarm Run and the van (§3.6)
+	-------------------------------------------------------------------------------------------------------
+	AlarmBell = {
+		ids = { 9125544264 },
+		alt = { 9125544285 },
+		search = "alarm bell ringing emergency",
+		bus = "Warnings",
+		volume = 0.35,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		loop = true,
+		priority = 5,
+		caption = "[Alarm!]",
+		note = "'Elevator Alarm Bell, Emergency, Several Rings' looped under the chase music",
+	},
+	VanHorn = {
+		ids = { 9113018513, 9113019386 },
+		search = "car horn honk single",
+		bus = "SFX",
+		volume = 0.7,
+		maxVoices = 2,
+		cooldown = 0.4,
+		priority = 4,
+		rolloff = "far",
+		caption = "[Van horn]",
+		note = "the getaway driver honks: 'VAN LEAVES' warnings",
+	},
+	VanEngine = {
+		ids = { 9125657802 },
+		search = "car engine start drive away",
+		bus = "SFX",
+		volume = 0.7,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		priority = 4,
+		rolloff = "far",
+		caption = "[Van leaving]",
+		note = "'Mercedes-Benz 280SL ... Engine Start, Away': the van leaves (Alarm Run end)",
+	},
+
+	-------------------------------------------------------------------------------------------------------
+	-- Heist complete and results (§7.3): stingers follow the Music slider.
+	-------------------------------------------------------------------------------------------------------
+	HeistFanfare = {
+		ids = { 1845411858 },
+		alt = { 9038513902 },
+		search = "fanfare sting win jazz",
+		bus = "Music",
+		volume = 0.8,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		choke = true,
+		priority = 5,
+		duck = true,
+		note = "APM 'Top Prize' fanfare; alt 'Diamond Heist (sting)' matches the BigScore set",
+	},
+	TrackResolve = {
+		ids = { 9045118431 },
+		search = "sting tag ending",
+		bus = "Music",
+		volume = 0.7,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		choke = true,
+		note = "'Sneaky Schemes - Tag1': the Caper track resolves on HEIST COMPLETE",
+	},
+
+	-------------------------------------------------------------------------------------------------------
+	-- UI: one family, a pitch ladder (higher positive, lower negative).
+	-------------------------------------------------------------------------------------------------------
+	UIClick = {
+		ids = { 9125759320, 9125759093, 9125758559 },
+		search = "plastic switch single click",
+		bus = "UI",
+		volume = 0.45,
+		maxVoices = 3,
+		cooldown = 0.04,
+		note = "every button press (Ui.button) within 100 ms",
+	},
+	UIBack = {
+		ids = { 9125759320, 9125759093, 9125758559 },
+		search = "plastic switch single click",
+		bus = "UI",
+		volume = 0.4,
+		pitch = 0.88,
+		maxVoices = 2,
+		cooldown = 0.04,
+		note = "the click family a step lower: close, back, cancel",
+	},
+	UIHover = {
+		ids = { 9118138693 },
+		search = "relay click soft tick",
+		bus = "UI",
+		volume = 0.18,
+		maxVoices = 2,
+		cooldown = 0.05,
+		priority = 1,
+		note = "pointer hover (PC only)",
+	},
+	HideTuck = {
+		ids = { 9118138693 },
+		search = "soft cloth rustle tuck",
+		bus = "UI",
+		volume = 0.3,
+		maxVoices = 1,
+		cooldown = 0.25,
+		note = "you slip into a hide spot (◐ HIDDEN, EventCues Hidden); placeholder: the soft relay tick",
+	},
+	UIToggle = {
+		ids = { 9119727934, 9119727950 },
+		search = "in-line plastic switch click",
+		bus = "UI",
+		volume = 0.45,
+		maxVoices = 2,
+		cooldown = 0.04,
+		note = "settings toggles",
+	},
+	UIConfirm = {
+		ids = { 9119802003 },
+		search = "synth chime single tone notify",
+		bus = "UI",
+		volume = 0.45,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		cooldown = 0.1,
+		note = "ready, equip, purchase granted (pairs with CountDone: same chime family)",
+	},
+	UIError = {
+		ids = { 9113085764 },
+		search = "buzzer short negative",
+		bus = "UI",
+		volume = 0.35,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		cooldown = 0.2,
+		note = "locked level, refused action ('Alarm Buzzer ... Airy, Fuzzy'); keep it short and quiet",
+	},
+
+	-------------------------------------------------------------------------------------------------------
+	-- Ambience beds (2D loops on the Ambience bus) and the Christmas jingle layer
+	-------------------------------------------------------------------------------------------------------
+	AmbStreet = {
+		ids = { 9112759541 },
+		search = "city night ambience distant traffic",
+		bus = "Ambience",
+		volume = 0.35,
+		pitchJitter = FIXED,
+		volumeJitter = 0,
+		maxVoices = 1,
+		loop = true,
+		priority = 1,
+		note = "street bed in the garage and outside the shop",
+	},
+	AmbRoom = {
+		ids = { 9125446564 },
+		search = "room tone air conditioning hum",
+		bus = "Ambience",
+		volume = 0.3,
+		pitchJitter = FIXED,
+		volumeJitter = 0,
+		maxVoices = 1,
+		loop = true,
+		priority = 1,
+		note = "shop interior room tone during a heist",
+	},
+	AmbVault = {
+		ids = { 9125446543 },
+		search = "machine room hum resonant",
+		bus = "Ambience",
+		volume = 0.3,
+		pitchJitter = FIXED,
+		volumeJitter = 0,
+		maxVoices = 1,
+		loop = true,
+		priority = 1,
+		note = "bank vault hum (L6 Big Score)",
+	},
+	SleighBells = {
+		ids = { 9114826043 },
+		alt = { 1840229014 },
+		search = "sleigh bells shake",
+		bus = "Ambience",
+		volume = 0.4,
+		maxVoices = 2,
+		cooldown = 0.3,
+		note = "Christmas sparkle: garage van shelf, presents, advent unlock (Dec 3 - Jan 4)",
+	},
+} :: { [string]: Cue }
+
+-- Music sets (§7.2 Crew Layers). With library music the S4 fallback is applied to alternate mixes of one
+-- track: every mix starts together (same length, so they stay aligned) and the Crew Layers tier picks which
+-- mix is heard. Commissioned stems (D10) drop into the same table with Config.Audio.MUSIC_MODE = "stems".
+Cues.sets = {
+	Garage = {
+		kind = "playlist",
+		ids = { 1835698719, 1845476443 },
+		search = "jazz lounge cool jazz",
+		volume = 0.5,
+		note = "APM 'Paname's Rififi' (JAZZ LOUNGE) and 'Agent X' (HOT BIG BAND - COOL JAZZ), alternating",
+	},
+	GarageXmas = {
+		kind = "playlist",
+		ids = { 1836687831 },
+		search = "christmas swing jazz",
+		volume = 0.5,
+		note = "APM 'Has Anybody Seen Kris Kringle?' (In The Christmas Swing)",
+	},
+	Caper = {
+		kind = "mixes",
+		ids = { 9045117610, 9045117678, 9045117303, 9045117358, 9045109623 },
+		alt = { 9045117617 },
+		search = "sneaky caper alternate mixes",
+		volume = 0.5,
+		tierToMix = { 1, 2, 3, 4, 5 },
+		note = "APM 'Sneaky Schemes' (Spot On, LOL 2), all 130 s: Alt3 PizzTriangle, Alt5 PizzLitePerc, "
+			.. "Alt2 Lite, Alt1 NoMel, full mix; alt = Alt4 NoPerc. Order the ladder by ear",
+	},
+	Xmas = {
+		kind = "mixes",
+		ids = { 1842909687, 1842909673 },
+		search = "christmas sleigh bells version underscore",
+		volume = 0.5,
+		tierToMix = { 1, 1, 2, 2, 2 },
+		note = "APM 'Fun And Games' sleigh-bells underscore -> sleigh-bells version, both 141 s",
+	},
+	BigScore = {
+		kind = "mixes",
+		ids = { 9038506885, 9038506583, 9038505017 },
+		search = "nu jazz heist alternate mixes",
+		volume = 0.5,
+		tierToMix = { 1, 1, 2, 3, 3 },
+		note = "APM 'Diamond Heist' (c), (b), (a), all 130 s (Juice Music, Nu Jazz Sounds): L6 and Clone Party",
+	},
+	Chase = {
+		kind = "mixes",
+		ids = { 9045939292 },
+		alt = { 9045939631, 9045939618 },
+		search = "heist chase tense brass drums",
+		volume = 0.55,
+		tierToMix = { 1, 1, 1, 1, 1 },
+		note = "APM 'Code Heist' full mix (Lemoncake, Covert Ops, 108 s) for the Alarm Run; alt = no-drums "
+			.. "and underscore mixes of the same track",
+	},
+	Results = {
+		kind = "playlist",
+		ids = { 9045117895 },
+		search = "sneaky caper 60 second",
+		volume = 0.45,
+		note = "APM 'Sneaky Schemes - 60' under the results card",
+	},
+} :: { [string]: MusicSet }
+
+-- Which set each music state plays (Christmas swaps in `xmas` between Config.Audio.CHRISTMAS days).
+-- AudioDirector.music(state, { set = "BigScore" }) overrides the set for one level.
+Cues.states = {
+	Garage = { set = "Garage", xmas = "GarageXmas" },
+	Heist = { set = "Caper", xmas = "Xmas" },
+	Alarm = { set = "Chase" },
+	Results = { set = "Results" },
+} :: { [string]: { set: string, xmas: string? } }
+
+return Cues

@@ -52,7 +52,7 @@ Make this a guide layer in the image editor (and, once the owner kit has it, a t
 | Age ramp | As the game draws it: each older clone 12 % dimmer, older solo clones drift up to 25° toward violet. Capture it; don't recolour it |
 | Loot | Heist Gold `#FFC21F` with a **sparkle** shape; always on a dark surface (gold vanishes on Warm Marble, STYLE_BIBLE §1.3) |
 | Guard light | Torch Amber `#FFD27A`, only as Gus's cone |
-| Danger | Alarm Red `#FF3838` (STYLE_BIBLE's proposed value) only as real alarm beacons and lasers, always with a shape; never decoration, never text |
+| Danger | Alarm Red `#FF3838` (owner-confirmed 2026-11-12, STYLE_BIBLE §1.1) only as real alarm beacons and lasers, always with a shape; never decoration, never text |
 | Christmas | Holly Green `#2FBF71`, Ribbon Burgundy `#8C2F4B` (Santa hats, berries), Snow `#C0C3D5` (small areas), warm-white fairy lights `#FFE7B8` |
 | Characters | **The Rookie**: the capture avatar (flat cap, long scarf, smug side-eye; CLIPS.md §3.1). **The scarf and the face are on the live hero only**: a clone rig strips the face, layered clothing and every accessory except at most 2 hair / hat pieces (`src/server/Heist/Avatars.luau`, `Config.Heist.MAX_CLONE_ACCESSORIES`), so the cyan copies show hair + cap and never the scarf. **Gus**: big flashlight (the "torch" of the internal docs), peaked cap, handlebar moustache, Santa hat Dec 3 - Jan 4 (STYLE_BIBLE §12). **Sir Hoardsworth** appears only once he exists in the game (open question 3) |
 | Text style | **[DECISION]** Heavy rounded caps in a free-licensed font (proposal: *Lilita One*, SIL Open Font License; the owner or the freelance artist may pick another OFL or owned font that matches the "HEIST YOURSELF" wordmark). Fill Getaway White `#F4F7FF`, outline Ink Indigo `#1C1F3B` 8-10 px, the key word in Clone Cyan |
@@ -171,7 +171,7 @@ Ad creatives are uploaded on **Mon Nov 30** (LAUNCH_CHECKLIST) for the Dec 3-6 P
 | Secondary | 7 cyan clones in a V receding to the right, each holding a toy, candy or teddy; the lit aisles behind |
 | Text | `8 OF ME` upper right ("8" in Clone Cyan) |
 | Tests | **The swarm promise.** Hypothesis: "copies of one robber" beats the seasonal promise (T5) for new players once the first session delivers it. Variable vs T5: subject (swarm vs Christmas). **Gate:** goes into the Home pool only after SwarmSeen ≥ 60 % by minute 10 (analytics); before that it runs in the Plays ad test only |
-| **[DECISION] Location** | MASTERPLAN §9.4 says "hero with gold, vault light". In the Big Score, 4 of the 7 clones must stay on the 4 vault plates (2 of them out of sight in the lobby and hall), so only 5 copies could be in frame. **Clone Party** shows all 8 and is where "8 OF ME" really happens (minute ~8). A Bank variant (T1-B: 8 of you at the Crew Line-up by the van after the Big Score) is a later single-variable test |
+| **[DECISION] Location** | MASTERPLAN §9.4 says "hero with gold, vault light". In the Big Score, 4 of the 7 clones must stay on the 4 vault plates (2 of them out of sight in the lobby and hall), so only 5 copies could be in frame. **Clone Party** shows all 8 and is where "8 OF ME" really happens (the party break right after L2: about minute 11 of a first session at the plan's midpoint, 8-14 across its band; `tests/sim/Pacing.spec.luau`). A Bank variant (T1-B: 8 of you at the Crew Line-up by the van after the Big Score) is a later single-variable test |
 
 **Capture setup T1**
 
@@ -404,4 +404,3 @@ Rules: keep a control in every round; one variable per pair; 7-14 days per round
 2. The Rookie's face: which catalog face gives the smug side-eye at 64 px? (Owner picks 2-3 candidates; the icon stranger test decides.)
 3. Sir Hoardsworth: will he exist in the game (a model, a portrait in the bank) by Dec 18? Until then he is not shown in any image.
 4. Is a diamond planned for any launch or December level? If yes, a T3 variant with it can be tested.
-5. The owner confirms the Alarm Red value (`#FF3838`, STYLE_BIBLE §11) before beacons appear in T1 / T2.

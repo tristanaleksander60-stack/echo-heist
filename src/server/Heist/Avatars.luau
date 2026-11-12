@@ -88,6 +88,27 @@ function Avatars.strip(rig: Model)
 			end
 		end
 	end
+	-- Instances that never render on a posed clone (every rig copies them: 12 active, the
+	-- pool, up to 16 Line-up figures): body-scale and OriginalSize values, the
+	-- HumanoidDescription, and rig attachments no kept accessory hangs from. Motor6Ds stay.
+	local used: { [string]: boolean } = {}
+	for _, child in rig:GetChildren() do
+		if child:IsA("Accessory") then
+			for _, a in child:GetDescendants() do
+				if a:IsA("Attachment") then
+					used[a.Name] = true
+				end
+			end
+		end
+	end
+	for _, d in rig:GetDescendants() do
+		local unusedAttachment = d:IsA("Attachment")
+			and not used[d.Name]
+			and d:FindFirstAncestorOfClass("Accessory") == nil
+		if d:IsA("ValueBase") or d:IsA("HumanoidDescription") or unusedAttachment then
+			d:Destroy()
+		end
+	end
 	local hum = rig:FindFirstChildOfClass("Humanoid")
 	if hum then
 		hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None

@@ -12,8 +12,9 @@
 --
 -- Server API (for the heist server; every call validates, then mutates with no yield):
 --   DataService.start()                                   idempotent; init.server.luau calls it
---   DataService.awardHeistResult(player, levelId, result) -> Net.Result (data = AwardSummary)
---   DataService.awardDailyVault(player, vaultDay, result) -> Net.Result (data = DailySummary)
+--   DataService.awardHeistResult(player, levelId, result, opts?) -> Net.Result (data = AwardSummary;
+--                                                         opts.crew: co-op carry on a locked level)
+--   DataService.awardDailyVault(player, vaultDay, result, startedDay?) -> Net.Result (DailySummary)
 --   DataService.grantTrophy(player, trophyId, reason)     -> Net.Result
 --   DataService.grantCosmetic(player, cosmeticId, reason) -> Net.Result (free grants only)
 --   DataService.earnCash / spendCash / earnCandyCanes(player, amount, reason) -> boolean
@@ -259,7 +260,17 @@ function DataService.setPromptsBlocked(player: Player, blocked: boolean)
 	promptsBlocked[player] = if blocked then true else nil
 end
 
-function DataService.awardHeistResult(player: Player, levelId: string, result: Progress.HeistResult): Net.Result
+-- opts.crew (heist server only): the member played in a crew whose leader picked the
+-- level. A crewmate who has not unlocked it yet still gets the full result, and a clear
+-- unlocks it for them (owner rule pending, docs/DATA.md "Co-op carry").
+export type AwardOpts = { crew: boolean? }
+
+function DataService.awardHeistResult(
+	player: Player,
+	levelId: string,
+	result: Progress.HeistResult,
+	opts: AwardOpts?
+): Net.Result
 	local profile = PlayerData.Get(player)
 	if not profile then
 		return Net.fail("NotReady")
@@ -274,7 +285,7 @@ function DataService.awardHeistResult(player: Player, levelId: string, result: P
 		return Net.fail("Invalid", why)
 	end
 	local heist = heistOf(profile)
-	if not heist.unlocked[levelId] then
+	if not heist.unlocked[levelId] and not (opts and opts.crew == true) then
 		return Net.fail("Locked")
 	end
 	if awardTooSoon(player, "heist") then
@@ -294,7 +305,14 @@ function DataService.awardHeistResult(player: Player, levelId: string, result: P
 	return Net.ok(summary)
 end
 
-function DataService.awardDailyVault(player: Player, vaultDay: number, result: DailyVault.DailyResult): Net.Result
+-- startedDay: the server day when the heist began (DailyVault.apply: a vault that runs
+-- across the daily reset is judged on the day it started).
+function DataService.awardDailyVault(
+	player: Player,
+	vaultDay: number,
+	result: DailyVault.DailyResult,
+	startedDay: number?
+): Net.Result
 	local profile = PlayerData.Get(player)
 	if not profile then
 		return Net.fail("NotReady")
@@ -308,7 +326,7 @@ function DataService.awardDailyVault(player: Player, vaultDay: number, result: D
 		return Net.fail("TooFast")
 	end
 	local heist = heistOf(profile)
-	local summary, reason = DailyVault.apply(heist, vaultDay, today(), result, os.time())
+	local summary, reason = DailyVault.apply(heist, vaultDay, today(), result, os.time(), startedDay)
 	if not summary then
 		return Net.fail(reason or "Invalid")
 	end

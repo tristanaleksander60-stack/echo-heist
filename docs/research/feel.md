@@ -66,7 +66,7 @@ Method: the vault's *Colour-Blind Safe Design* §3, using Machado 2009 full-seve
 | Echo Lime `#B8FF4A` vs Torch Amber `#FFD27A` | **0.051** | deutan |
 | Echo Lime vs Heist Gold `#FFC21F` | **0.068** | deutan |
 | Heist Gold vs Torch Amber | **0.051** | tritan |
-| Echo Magenta vs Alarm Red `#FF3348` | 0.105 | tritan |
+| Echo Magenta vs Alarm Red `#FF3348` (the research value; Alarm Red is `#FF3838` since 2026-11-12, STYLE_BIBLE §1.3) | 0.105 | tritan |
 
 I searched 326 candidate colours with Cyan fixed, requiring at least 0.25 from the Ink and Plum bases, at least 0.20 from Alarm Red and at least 0.12 from Gold and Amber. No four-colour set beats a pairwise minimum of **0.105**. Four player hues cannot be told apart by colour alone in this art direction. That is a design fact, not a tuning problem. Gold vs Amber also fails, so loot and guard light need different shapes (sparkle vs cone).
 

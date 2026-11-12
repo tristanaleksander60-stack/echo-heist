@@ -19,9 +19,16 @@
 --
 -- The swarm moment: run 8 starts with 7 clones + you = "8 OF ME" (a Swarm event
 -- after the tape-print fan-out, HeistSim.ofMe), and Dawn ends the heist into the
--- Crew Line-up (HeistSim.lineup) on the street in front of the shop. When that
--- lands in a first session depends on L1-L4's length (tests/sim/Pacing.spec.luau
--- prints the model; the §7.5 "minute 10" target is an owner decision).
+-- Crew Line-up (HeistSim.lineup) on the street in front of the shop. Played third,
+-- right after L2, as the "party break" (owner decision 2026-11-12, Levels/Catalog), so
+-- the swarm lands around minute 10 of a first session (tests/sim/Pacing.spec.luau
+-- prints the model against the §7.5 "SwarmSeen by minute 10" target). It needs no
+-- verb that L3 or L4 teaches: no plates, doors or lasers, and Gus only wakes for the
+-- till. The Clone Deck is read-only here (HeistInstance: every clone stays in the party,
+-- so no Delete or Redo can turn "8 OF ME" into "7 OF ME"), so there is no RedoAlarm
+-- hint: the HUD frames the till as the getaway ("GETAWAY!" once, then the van counter),
+-- never as blame. Runs auto-start after Config.Heist.PARTY_BETWEEN_SECONDS. L3 opens
+-- alongside it.
 -- Golden solution: PLACEHOLDER scripted runs in tests/sim/Solutions.luau (§8.9).
 
 local Config = require("../Config")

@@ -341,6 +341,12 @@ function Progress.applyHeistResult(
 	end
 
 	local unlocked = Progress.computeUnlocks(heist, order, lookup)
+	if eval.cleared and not heist.unlocked[levelId] then
+		-- Co-op carry: a crewmate cleared a level their leader opened. A clear always
+		-- leaves the level unlocked, so they can replay it on their own.
+		heist.unlocked[levelId] = true
+		table.insert(unlocked, levelId)
+	end
 	local totalStars = Progress.totalStars(heist)
 	return {
 		levelId = levelId,

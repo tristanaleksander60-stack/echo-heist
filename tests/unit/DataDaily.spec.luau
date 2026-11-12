@@ -14,7 +14,8 @@ local NOV20 = Calendar.daysFromCivil(DATA.Advent.YEAR, 11, 20)
 local NOW = 1796000000
 
 local function result(o: { [string]: any }?): DailyVault.DailyResult
-	local r: { [string]: any } = { cleared = true, haul = 400, clones = 5, tainted = false, relaxed = false }
+	local r: { [string]: any } =
+		{ cleared = true, haul = 400, clones = 5, timeMs = 120000, tainted = false, relaxed = false }
 	for k, v in o or {} do
 		r[k] = v
 	end
@@ -117,6 +118,24 @@ return function(test)
 		Assert.eq(why, "WrongDay", "future refused")
 	end)
 
+	test("daily reset: a vault started before the reset is judged on the day it started", function()
+		local heist = Schema.defaultHeist()
+		assert(DailyVault.apply(heist, DEC(5), DEC(5), result(), NOW))
+		local s = assert(DailyVault.apply(heist, DEC(6), DEC(7), result(), NOW, DEC(6)))
+		Assert.eq(s.mode, "today", "still today's vault")
+		Assert.truthy(s.firstClear, "first clear of its day")
+		Assert.eq(heist.daily.lastClearDay, DEC(6), "streak day = the start day")
+		Assert.eq(heist.daily.streak, 2, "the streak grows")
+		local late = assert(DailyVault.apply(heist, DEC(7), DEC(7), result(), NOW))
+		Assert.truthy(late.firstClear and late.streak == 3, "the next day's clear still counts")
+		local _, why = DailyVault.apply(Schema.defaultHeist(), NOV20, NOV20 + 2, result(), NOW, NOV20)
+		Assert.eq(why, "WrongDay", "more than one day back is not honoured")
+		local _, why2 = DailyVault.apply(Schema.defaultHeist(), NOV20, NOV20 + 1, result(), NOW)
+		Assert.eq(why2, "WrongDay", "without a start day the old rule holds")
+		local ok = DailyVault.apply(Schema.defaultHeist(), NOV20, NOV20 + 1, result(), NOW, NOV20)
+		Assert.truthy(ok ~= nil, "outside the advent window the start day saves it")
+	end)
+
 	test("tainted and uncleared runs; the board haul is today's untainted, non-Relaxed best", function()
 		local heist = Schema.defaultHeist()
 		local t = assert(DailyVault.apply(heist, DEC(5), DEC(5), result({ tainted = true, haul = 9000 }), NOW))
@@ -132,11 +151,38 @@ return function(test)
 		Assert.eq(heist.daily.haulDay, DEC(6), "board day")
 	end)
 
+	test("board tie-break: same haul, fewer clones first, then less time (the sim's timeMs)", function()
+		local heist = Schema.defaultHeist()
+		local function apply(o: { [string]: any }): DailyVault.DailySummary
+			return assert(DailyVault.apply(heist, DEC(5), DEC(5), result(o), NOW))
+		end
+		Assert.truthy(apply({ haul = 300, clones = 5, timeMs = 150000 }).newHaulBest, "first entry")
+		Assert.falsy(apply({ haul = 300, clones = 5, timeMs = 150000 }).newHaulBest, "an exact tie keeps the first")
+		Assert.falsy(apply({ haul = 300, clones = 5, timeMs = 160000 }).newHaulBest, "slower loses")
+		Assert.truthy(apply({ haul = 300, clones = 5, timeMs = 140000 }).newHaulBest, "faster wins the tie")
+		Assert.eq(heist.daily.haulTimeMs, 140000, "board time")
+		Assert.truthy(apply({ haul = 300, clones = 4, timeMs = 170000 }).newHaulBest, "fewer clones beat time")
+		Assert.eq(heist.daily.haulClones, 4, "board clones")
+		Assert.falsy(apply({ haul = 290, clones = 1, timeMs = 1000 }).newHaulBest, "haul comes first")
+		Assert.truthy(apply({ haul = 310, clones = 5, timeMs = 179000 }).newHaulBest, "a bigger haul always wins")
+		Assert.eq(heist.daily.haulBest, 310, "board haul")
+		local empty = { haul = 0, clones = 0, timeMs = 0 }
+		Assert.falsy(DailyVault.beatsBoard({ haul = 0, clones = 0, timeMs = 0 }, empty), "an empty haul never boards")
+		-- A new day starts a new entry: the old tie-breaks do not carry over.
+		local nextDay = assert(DailyVault.apply(heist, DEC(6), DEC(6), result({ haul = 50, clones = 5 }), NOW))
+		Assert.truthy(nextDay.newHaulBest, "new day")
+		Assert.eq(heist.daily.haulClones, 5, "clones of the new entry")
+		Assert.eq(heist.daily.haulTimeMs, 120000, "time of the new entry")
+	end)
+
 	test("validateResult refuses junk", function()
 		Assert.truthy(DailyVault.validateResult(result()), "good")
 		Assert.falsy((DailyVault.validateResult(result({ cleared = 1 }))), "flag type")
 		Assert.falsy((DailyVault.validateResult(result({ haul = -5 }))), "negative haul")
 		Assert.falsy((DailyVault.validateResult(result({ clones = 0 / 0 }))), "NaN clones")
+		Assert.falsy((DailyVault.validateResult(result({ timeMs = false }))), "timeMs missing")
+		Assert.falsy((DailyVault.validateResult(result({ timeMs = 1.5 }))), "fractional timeMs")
+		Assert.falsy((DailyVault.validateResult(result({ timeMs = DATA.MAX_HEIST_MS + 1 }))), "timeMs too long")
 		Assert.falsy((DailyVault.validateResult(nil)), "nil")
 	end)
 end

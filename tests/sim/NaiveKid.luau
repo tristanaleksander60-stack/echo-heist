@@ -6,8 +6,9 @@
 -- plates x2, doors, random spots), lingers, grabs whatever is in reach, heads for
 -- the van when carrying (the gold chevrons), gives up on a walk once it stops
 -- making progress (a shut door), and sometimes taps END RUN. On L1 it obeys the
--- stuck hint at 16 s (§7.5: re-pulse, beam, Mentor tape): run 1 it goes to stand
--- on the plate, later runs it goes for the cash. Seeded, so every kid is
+-- stuck hint at 16 s (§7.5: re-pulse, beam, Mentor tape): while the auto-end is armed
+-- (run 1, or later if run 1 ended off the plate) it goes to stand on the plate, after
+-- that it goes for the cash. Seeded, so every kid is
 -- reproducible.
 -- Value-seeking variant (opts.greedy): loot catches the eye in proportion to its value
 -- (the till over a candy bar), and with opts.topFirst the kid's first act of run 1 is
@@ -94,7 +95,9 @@ function NaiveKid.brain(level: any, seed: number, run: number, opts: any?): any
 		local hint = level.tutorial and level.tutorial.autoEnd
 		if hint and t >= HINT_AT and not hinted then
 			hinted = true
-			if hint.runs[run] then
+			-- The plate hints run while the auto-end is armed (run 1, and any later run
+			-- until a clone stands on the plate: LevelSpec untilDone).
+			if HeistSim.autoEndArmed(sim) then
 				local x, _, z = Geom.center(level.plates[hint.plate].box)
 				return { { go = { x, z } }, { stay = true } }
 			end

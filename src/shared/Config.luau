@@ -182,9 +182,13 @@ Config.Levels = {
 -- MASTERPLAN §3.3, §6.5, §7.1-7.5, §8.2, §8.6. Sim rules themselves stay in Config.Sim.
 Config.Heist = {
 	-- Instances (§3.3): one per party, each a copy of the level at its own offset.
-	INSTANCE_SPACING = 3000, -- studs between instance origins along +X (lobby at the world origin)
+	INSTANCE_SPACING = 3000, -- studs between neighbouring instance origins (lobby at the world origin)
 	INSTANCE_Y = 0, -- floor height of every instance
-	MAX_INSTANCES = 8, -- plan says 4 per 8-player server; 8 keeps solo always playable (owner decision)
+	MAX_INSTANCES = 8, -- per server (owner decision 2026-11-12; the plan had 4): 8 solo crews always fit
+	-- Slot origins on a grid around the lobby, in units of INSTANCE_SPACING: the four axis
+	-- cells first, then the diagonals (at most ~4,243 studs out; float precision stays fine).
+	INSTANCE_SLOTS = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 } },
+	INSTANCE_COOLDOWN_SECONDS = 5, -- one new heist per player pick in this long (SelectLevel / Leave churn)
 	LOBBY_ORIGIN = { 0, 0, 0 },
 
 	-- Run flow (§3.1, §7.1): { standard, quick, reduced motion } seconds; the server waits
@@ -194,6 +198,7 @@ Config.Heist = {
 	FIRST_RUN_INTRO = 1.0, -- run 1: "RUN 1" stamp, teleport settles
 	TUTORIAL_BETWEEN_SECONDS = 0.4, -- L1 (deck locked): the next run starts by itself
 	BETWEEN_MAX_SECONDS = 25, -- between runs: the next run starts when all are ready, or after this
+	PARTY_BETWEEN_SECONDS = 10, -- party levels (deck locked: every clone stays for "8 OF ME"): auto-start
 	RESULTS_SECONDS = 45, -- results card; then the crew goes back to the garage
 	OFF_MAP_DROP = 25, -- studs below the floor: a fallen character is put back at its sim position
 
@@ -206,6 +211,27 @@ Config.Heist = {
 	-- FTUE (§7.5): a new account starts L1 straight away (no level select).
 	FTUE_AUTOSTART = true,
 	DATA_WAIT_SECONDS = 4, -- how long the garage waits for the profile before deciding
+	FLAGS_WAIT_SECONDS = 3, -- ... and for the first LiveFlags DataStore/ConfigService read
+	FTUE_L1_LEVEL = "cs1_back_room", -- LevelSpec id of the FTUE level (autostart, L1Complete, daily gate)
+	FTUE_L2_LEVEL = "cs2_two_doors", -- LevelSpec id whose start is the funnel step L2Started
+	FTUE_RETRY_TRIES = 6, -- a new player's FTUE start that found every van out retries this often
+	FTUE_RETRY_SECONDS = 10,
+	FIRST_MOVE_STUDS = 2, -- funnel FirstMove: a live player this far from their run-1 spawn
+
+	-- Daily vault (§5.3): today's vault from Levels/DailyVaults; missed advent days are offered
+	-- for catch-up (Data/DailyVault.playMode) up to this many at a time in the garage list.
+	DAILY_CATCH_UP_LIST = 8,
+
+	-- Art kit (spike S2, docs/art/KIT_IMPORT.md): levels are dressed with kit pieces when
+	-- src/server/Kit/KitService is ready; collision stays the sim's boxes (invisible greybox
+	-- colliders), so gameplay never depends on the art. false = greybox only.
+	KIT_LEVELS = true,
+	KIT_WAIT_SECONDS = 4, -- a heist the server starts itself (FTUE) waits this long for the kit
+	KIT_FLOOR = true, -- floor tiles inside the building footprint
+	KIT_FLOOR_LIFT = 0.02, -- studs the visual floor tiles sit above the collision floor
+	-- Christmas dressing layer (§4.3): "auto" = on while Config.Data.Event runs (server date)
+	-- and the LiveFlag `dressing` is on; "on" / "off" force it (tests, captures).
+	XMAS_DRESSING = "auto",
 
 	-- Remote rate limits (roblox-secure-remotes: 1.5-2x the fastest legitimate use)
 	RATE = {
@@ -218,6 +244,7 @@ Config.Heist = {
 		JoinFriend = { burst = 2, perSecond = 0.5 },
 		Leave = { burst = 2, perSecond = 1 },
 		Sync = { burst = 3, perSecond = 1 },
+		SelectDaily = { burst = 3, perSecond = 1 },
 	},
 
 	-- Data keys (Config.Data.Levels) of the sim levels, by LevelSpec id.
@@ -235,7 +262,14 @@ Config.Heist = {
 	OTHER_CLONE_BRIGHTNESS = 0.7, -- other players' clones on your screen
 	CLONE_BADGE_DISTANCE = 40, -- the glyph badge hides beyond this many studs
 	CLONE_SPAWN_STAGGER = 0.06, -- "tape print": clones form 60 ms apart in record order
-	CLONE_LABEL_SECONDS = 1.0, -- "◀ YOU, 10 SEC AGO" on the newest clone
+	CLONE_LABEL_SECONDS = 1.0, -- "◀ YOU, 10 SEC AGO" on the newest clone (story levels after L1)
+	-- L1 (§7.5, 13-22 s): the label stays until the clone's recorded path ends (it stops on
+	-- the plate) plus this; the clone fades in this late so it visibly walks out of you.
+	CLONE_LABEL_HOLD_AFTER_STOP = 1.5,
+	CLONE_LABEL_MAX_SECONDS = 12,
+	TUTORIAL_CLONE_FADE_IN = 0.5,
+	STOPS_LINE_SECONDS = 4, -- "Your clone stops where you stop." from the clone's first plate press
+	CLONE_NEAR_UNFADE = 7.5, -- near-camera fade hysteresis: fade under CLONE_NEAR_FADE, back over this
 	CLONE_NEAR_FADE = 6, -- clones this close to the camera fade
 	MAX_CLONE_ACCESSORIES = 2,
 	WALK_ANIM_BASE_SPEED = 16, -- studs/s at which the walk clip plays at speed 1
@@ -245,22 +279,75 @@ Config.Heist = {
 	CONE_RAYS = 12, -- Gus's vision cone fan
 	CONE_HZ = 10,
 	END_RUN_BUTTON = 72, -- px
+	END_RUN_Y = 0.35, -- share of the HUD height: END RUN's centre (§3.4: >= 140 px above the jump button)
 	INTERACT_BUTTON = 72, -- px (>= 64)
 	HINT_SECONDS = { 8, 16, 24 }, -- L1 stuck hints (§7.5)
 	TIMER_PULSE_SECONDS = 10,
 	TIMER_RED_SECONDS = 5,
 
-	-- Sound placeholders (§7.1, §7.2): empty ids are skipped; paste licensed ids here.
-	SOUNDS = {
-		Clack = "",
-		Stinger = "",
-		Clunk = "",
-		Arpeggio = "",
-		KaChing = "",
-		Busted = "",
-		Zap = "",
-		Heartbeat = "",
-	},
+	-- Sounds: Config.Audio and Shared/Audio (the client AudioDirector); docs/AUDIO.md.
+
+	-- HUD layout and touch (§7.4, §0 C5, roblox-ui-builder): the HUD is designed at 1x and scaled
+	-- by the safe area to fit UI_DESIGN_SIZE, clamped to [UI_SCALE_MIN, UI_SCALE_MAX]. Every button is
+	-- at least TAP_MIN design px tall, so a tap target stays >= 64 px at the smallest scale.
+	-- 330 tall: a 360-dp Android phone or an iPhone SE in landscape (safe height ~300 px under
+	-- the Roblox top bar) still gets the whole canvas at UI_SCALE_MIN (panels are <= 326 tall).
+	UI_DESIGN_SIZE = { 720, 330 }, -- px: the largest panel (garage, results) fits this at 1x
+	UI_SCALE_MIN = 0.9,
+	UI_SCALE_MAX = 1.5,
+	TAP_MIN = 72, -- px at 1x (72 x 0.9 = 64.8 px on the smallest phone)
+	TOAST_SECONDS = 3,
+	END_RUN_GRAB_GUARD = 0.3, -- s: an END RUN tap this soon after a GRAB tap is ignored (thumb slip)
+	BLINK_HZ_MAX = 3, -- §7.3: nothing on screen flashes faster than 3 times a second
+	CAPTION_SECONDS = 2.5, -- sound captions ("[Alarm!]"), on by default (§7.4)
+
+	-- New-state views (§3.6, §4.2, §5.3, §7.3)
+	SWARM_STAMP_SECONDS = 1.6, -- "8 OF ME" stamp hold (Config.Sim.SWARM_OF_ME copies earn it)
+	TIER_STAMP_SECONDS = 1.0, -- party haul tier ("★ HAUL 2")
+	DIAMOND_DIM = 0.15, -- the diamond grab dims the world 15 % for DIAMOND_DIM_SECONDS (§7.3)
+	DIAMOND_DIM_SECONDS = 0.6,
+	ALARM_BEACON_TURN_SECONDS = 0.8, -- one turn of the rotating red alarm beacons (emissive, no lights)
+	ALARM_PULSE_SECONDS = 1.0, -- the red vignette pulses once per second on the Alarm Run (<= 3 flashes/s)
+	ALARM_BEACON_HEIGHT = 9, -- studs above the floor: the beacon over the alarm's loot
+	TILL_LABEL_DISTANCE = 70, -- studs: the time-locked till's "LOCKED 0:07" label hides beyond this
+	LOCKED_SLACK = 0.25, -- s: a grab this close to a till's opensAt is sent anyway (the server decides)
+	DAWN_WARN_RUNS = 2, -- party / daily levels: "☾ n RUNS TO DAWN" from this many runs left
+	DOOR_SKIN_DIAL_TURNS = 1.5, -- vault door skin: dial turns while the door swings open
+	PLATE_GLYPH_DISTANCE = 60, -- studs: the presser's glyph over a held plate (colour is never alone)
+	LASER_SPARKS = 14, -- sparks when a laser retracts (§7.3)
+	GUS_HEARTBEAT_SECONDS = 1.0, -- heartbeat tick while Gus's "?" is on you (§7.3)
+	GUS_DUST_SECONDS = 0.18, -- sprint dust puffs while Gus chases (Alarm Run)
+
+	-- Crew Line-up and the end-of-heist cut (§3.2 rule 8, §6.6, docs/marketing/CLIPS.md §1.2): the
+	-- player and every clone walk to HeistSim.lineup's spots, then pose in record order 60 ms apart
+	-- (Config.Sim.LINEUP_STAGGER). Never simulated, so it cannot desync. Skippable after SKIP_AFTER.
+	LINEUP_START_DELAY = 0.8, -- s after Over: the HEIST COMPLETE / DAWN stamp reads first
+	LINEUP_WALK_SPEED = 14, -- studs/s (faster when far: no walk takes longer than WALK_MAX_SECONDS)
+	LINEUP_WALK_MAX_SECONDS = 2.6,
+	LINEUP_TURN_SECONDS = 0.25, -- turn to face the camera on the spot
+	LINEUP_POSE_GAP = 0.35, -- s between the last arrival and the first pose
+	LINEUP_HOLD_SECONDS = 2.4, -- pose hold before the results card
+	LINEUP_SKIP_AFTER = 1.0, -- the SKIP chip (and a tap anywhere on later cuts of the session)
+	LINEUP_SKIP_AFTER_POSE = 0.5, -- first cut of a session: a tap anywhere skips only this long after the pose
+	LINEUP_HOP = 0.9, -- studs: the synchronized victory hop
+	LINEUP_POSE_ANIM = "rbxassetid://507770677", -- the default R15 cheer, on avatar figures
+	LINEUP_VAN_CLEARANCE = 1.5, -- studs: a row spot inside the van body moves to clear it
+	LINEUP_CAM_FOV = 50, -- STYLE_BIBLE B4 / CLIPS CAM_F5B
+	LINEUP_CAM_FOV_MAX = 80, -- a wall in the way pulls the camera in and widens the lens up to this
+	LINEUP_CAM_HEIGHT = 2.4, -- studs above the floor: a low camera looking up at the crew
+	LINEUP_CAM_LOOK_HEIGHT = 3.4,
+	LINEUP_CAM_FIT_WIDTH = 0.6, -- the row fills at most this share of the frame width (landscape)
+	LINEUP_CAM_FIT_HEIGHT = 0.45, -- a figure fills at most this share of the frame height
+	LINEUP_CAM_DISTANCE = { 7, 40 }, -- studs: min, max
+	LINEUP_CAM_MOVE_SECONDS = 1.4, -- ease from the play camera to the line-up shot
+	LINEUP_CAM_PUSH = 0.15, -- slow push-in during the walk and pose (share of the distance)
+	LINEUP_LABEL_SECONDS = { 1.5, 1.8 }, -- "◀ ME, N SEC AGO": hold, then fade out by (CLIPS §1.2)
+	LINEUP_FIGURE_HEIGHT = 5.6, -- studs, for the camera fit
+
+	-- Runtime performance tier (§6.3, §8.6): the PerfSample governor steps it down; names are
+	-- Analytics Events.DOMAINS.perfTier. 1 = quality ... 4 = minimum.
+	PERF_TIERS = { "quality", "balanced", "performance", "minimum" },
+	PERF_READY_TIMEOUT = 15, -- s to wait for the Analytics remotes before telemetry gives up
 }
 
 -- Data layer (src/server/Data, src/shared/Data), MASTERPLAN §5 and §8.7; docs/DATA.md.
@@ -314,9 +401,14 @@ Config.Data = {
 		EXTRA_CARRY_PER_LEVEL = 1, -- small items an actor can carry per bag level
 	},
 
+	-- Play order (= Levels/Catalog, owner decision 2026-11-12 "party break"): Clone Party
+	-- (L5) comes right after Two Doors (L2), so "8 OF ME" lands around minute 10 of a first
+	-- session. Unlocks: Clone Party AND Lights Out open when Two Doors is cleared (the party
+	-- is a break, never a wall: a kid who leaves it keeps the story); "NEXT" and the garage
+	-- follow this order. Progression analytics number levels by their place here.
+	LEVEL_ORDER = { "BackRoom", "TwoDoors", "CloneParty", "LightsOut", "NightClerk", "BigScoreBank" },
 	-- Medal rules per level (§4.2, §5.2). kind "story": Haul / Crew / Clean (+ Diamond when
 	-- devClones is set). kind "party": Haul1-3 tiers. haulTarget/haulTiers/maxHaul are $.
-	LEVEL_ORDER = { "BackRoom", "TwoDoors", "LightsOut", "NightClerk", "CloneParty", "BigScoreBank" },
 	Levels = {
 		BackRoom = {
 			kind = "story",
@@ -365,7 +457,7 @@ Config.Data = {
 			cap = 8,
 			trophy = "Trophy_CloneParty",
 			firstClearCash = 300,
-			unlockAfter = "NightClerk",
+			unlockAfter = "TwoDoors", -- the party break (played third, design number L5)
 		},
 		BigScoreBank = {
 			kind = "story",
@@ -375,8 +467,8 @@ Config.Data = {
 			cap = 8,
 			trophy = "Trophy_BigScoreBank",
 			firstClearCash = 500,
-			unlockAfter = "NightClerk",
-			starsRequired = 6, -- §4.2 gate: 6 of the 15 Stars from L1-L5
+			unlockAfter = "NightClerk", -- the last story level in play order
+			starsRequired = 6, -- §4.2 gate: 6 of the 15 Stars from L1-L5 (all played by then)
 			devClones = nil,
 		},
 	},
@@ -643,6 +735,125 @@ Config.LiveFlags = {
 		-- Experiments (sticky per player; arms must be in Config.Analytics.VARIANTS)
 		ftueVariant = { kind = "experiment", default = "base:100", desc = "onboarding A/B (from Jan 8)" },
 	},
+}
+
+-- Art kit (spike S2, automated path: docs/art/KIT_IMPORT.md "Automated path"). The asset ids and the
+-- manifest live in the generated src/server/Kit/KitData.luau (python3 tools/kit_upload.py); these are
+-- the boot knobs of src/server/Kit/KitService.luau.
+Config.Kit = {
+	FOLDER = "Kit", -- ServerStorage/<FOLDER>: one Model per kit group (a Rojo-mapped assets/Kit.rbxm is used as is)
+	-- Pieces the game swaps in as colliders (Heist/KitDresser): they keep their manifest
+	-- CollisionFidelity; every other piece is visual only and is built with Box (KitLib.gameCollision).
+	COLLIDER_PIECES = { Wall_Door_8x12_Leaf = true, Shutter_8x10 = true, Plate_4x4 = true },
+	SIZE_TOLERANCE = 0.05, -- studs per axis, MeshPart.Size vs kit_manifest.json
+	POSITION_TOLERANCE = 0.05, -- studs: a piece's centre vs origin + bounds centre (catches an FBX axis change)
+	LOAD_CONCURRENCY = 6, -- parallel InsertService:LoadAsset calls at boot
+	REBUILD_CONCURRENCY = 8, -- parallel AssetService:CreateMeshPartAsync calls at boot
+	LOAD_ATTEMPTS = 4, -- per asset; backoff RETRY_BASE_SECONDS x 1, 2, 4
+	REBUILD_ATTEMPTS = 2,
+	RETRY_BASE_SECONDS = 1,
+	-- Uploaded MeshParts get CollisionFidelity Default (measured). It cannot be changed at runtime, so a part
+	-- whose manifest collision differs is rebuilt with CreateMeshPartAsync: "all" | "colliding" (CanCollide
+	-- pieces only) | "none" (keep Default everywhere).
+	REBUILD_FIDELITY = "all",
+	READY_TIMEOUT = 90, -- seconds KitService.ready() waits by default
+	-- Atlas image overrides per location (a number or rbxassetid://...). Empty: the uploaded Decal's image
+	-- (KitData.images), else for Bank the atlas texture the FBX import made.
+	Atlas = {
+		Bank = "",
+		CornerShop = "",
+		ToyShop = "",
+	},
+}
+
+-- Audio: cue table and pure rules in src/shared/Audio (Cues, Manifest, CueCheck, Voices, Mix), the client
+-- player in src/client/Audio/AudioDirector (Audio API graph). MASTERPLAN §7.1-7.3, docs/research/feel.md D5,
+-- docs/AUDIO.md. Per-cue data (asset ids, level, jitter, voices, cooldown) lives in Audio/Cues like level data;
+-- the mix and timing numbers every cue shares live here.
+Config.Audio = {
+	-- Buses (§7.2): dB at a 100 % slider. Starting points from feel.md D5 (SFX -18 LUFS, Clone -22, UI -24,
+	-- Music -22 in play, Warnings -16), to be re-levelled once the files are measured.
+	BUS_DB = { Master = 0, Music = -6, SFX = 0, Clone = -4, UI = -6, Ambience = -10, Warnings = 2 },
+	SLIDER_EXPONENT = 2, -- slider 0..1 -> gain = slider ^ 2 (a squared curve feels even)
+	WARNINGS_FLOOR = 0.25, -- the Alerts slider never goes below 25 %; Warnings ignore the Music slider
+	MUTE_KEEPS_WARNINGS = false, -- "mute all" also silences Warnings (captions still show)
+
+	-- Clone bus (§7.2, feel.md D2): clone sounds are memories. Lowpass, then a short slap echo, 4 dB under
+	-- the player's version (BUS_DB.Clone). No clone footsteps.
+	CLONE_LOWPASS_HZ = 5000,
+	CLONE_ECHO_DELAY = 0.09, -- seconds
+	CLONE_ECHO_FEEDBACK = 0.15,
+	CLONE_ECHO_WET_DB = -12,
+	CLONE_MAX_PER_SECOND = 6, -- clone sounds started per rolling second
+	CLONE_VOICED_NEAREST = 4, -- live clone voices at once; a nearer one steals the farthest
+
+	-- Master chain (vault: The Audio API §6): starting values, not a mastered chain.
+	COMPRESSOR = { threshold = -18, ratio = 3, attack = 0.01, release = 0.15 },
+	LIMITER_DB = -1,
+
+	-- Voices (lihfolk-sfx "Voice limits")
+	MAX_VOICES = 24, -- live one-shot voices; beyond it a higher (or equal) priority steals the oldest lowest
+	MAX_VOICES_TOUCH = 16, -- phones and tablets without a keyboard
+	DEFAULT_COOLDOWN = 0.03, -- per cue: twenty plates in one frame are one sound, not a phasey stack
+	DEFAULT_MAX_PER_CUE = 4,
+	DEFAULT_PRIORITY = 2, -- 1 (far ambience spot) .. 5 (busted, alarm)
+	DEFAULT_PITCH_JITTER = 0.04, -- +-4 % PlaybackSpeed on repeated sounds; tonal stings set 0
+	DEFAULT_VOLUME_JITTER = 0.08, -- +-8 % (about +-0.7 dB)
+	UNLOADED_SECONDS = 2, -- a voice whose asset has not loaded counts as busy this long
+	-- Positional rolloff presets (studs): full volume inside min, silent at max.
+	ROLLOFF = {
+		near = { min = 4, max = 45 }, -- steps, beeps, laser hum
+		mid = { min = 8, max = 90 }, -- plates, doors, grabs, zaps
+		far = { min = 20, max = 250 }, -- van horn and engine
+	},
+
+	-- Music (§7.2 "Crew Layers")
+	-- "mixes": library tracks with same-length alternate mixes (the S4 fallback, applied to mixes): every mix of
+	--   the set starts together and the tier picks which one is heard (crossfade).
+	-- "stems": commissioned stems (D10): S0 always on, each tier adds its stem on top (additive).
+	MUSIC_MODE = "mixes",
+	-- "scheduled": every player of a set starts on the same sample with AudioPlayer:Play(atTime) on
+	--   SoundService:GetMixerTime() (the S4 primary method). "together": plain Play() in one frame (the S4
+	--   fallback; also used automatically when GetMixerTime is unavailable).
+	STEM_START = "scheduled",
+	SCHEDULE_LEAD = 0.1, -- seconds ahead of the mixer clock that a scheduled start is placed
+	LAYER_THRESHOLDS = { 1, 3, 6, 10 }, -- clones for tiers S1..S4 (S0 = none)
+	LAYER_FADE = 1.875, -- one bar at 128 BPM
+	STATE_FADE = 2.0, -- crossfade between music states (garage -> heist, heist -> results)
+	ALARM_FADE = 0.4, -- heist -> chase when the alarm goes off: it goes loud, fast
+	JOIN_FADE_IN = 2.5, -- the first sound of a session is never a full-volume downbeat
+	MUSIC_BPM = 128, -- the commissioned grid (30 s = 16 bars); library sets carry their own bpm or none
+	CHRISTMAS = { from = { 2026, 12, 3 }, to = { 2027, 1, 4 } }, -- UTC days, inclusive: Christmas mixes
+
+	-- Rewind (§7.1)
+	TAPE_STOP_SPEED = 0.25, -- music PlaybackSpeed dive 1.0 -> 0.25 ...
+	TAPE_STOP_SECONDS = 0.3, -- ... over 0.3 s, then the music stops until GO
+	REWIND_DUCK_DB = -9, -- Ambience and Clone buses under the rewind transition
+	REWIND_DUCK_RELEASE = 0.4,
+
+	-- Ducking (feel.md D5): music ducks 4 dB for 0.6 s on caught, "!", diamond and complete.
+	DUCK_DB = -4,
+	DUCK_SECONDS = 0.6,
+	DUCK_ATTACK = 0.05,
+	DUCK_RELEASE = 0.25,
+
+	-- Tonal ladders (semitones) for cues played with opts.step
+	ARPEGGIO_STEPS = { 0, 2, 4, 7, 9, 12, 14, 16 }, -- C D E G A c d e: the clone arpeggio, the sound logo
+	ARPEGGIO_STAGGER = Config.Heist.CLONE_SPAWN_STAGGER, -- 60 ms apart, like the tape print
+	ARPEGGIO_MAX_STAGGER = 0.4, -- the whole arpeggio never spreads wider than this
+	COUNTDOWN_STEPS = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 10 }, -- last 10 s: ticks rise; the last one jumps
+	COUNT_UP_STEPS = { 0, 1, 2, 3, 4, 5, 7 }, -- bank count-up ticks rise 4-7 semitones
+
+	-- View-driven timing (docs/AUDIO.md "Call sites")
+	COUNTDOWN_FROM = 10, -- seconds left when the countdown ticks start (one per second)
+	HEARTBEAT_FROM = 3, -- seconds left when the heartbeat joins
+	GUS_STEP_STRIDE = 3.2, -- studs Gus walks per footstep (chase strides are longer: same stride, faster)
+	GUS_RADIO_SECONDS = { 6, 14 }, -- random gap between radio blips while he patrols
+	MEDAL_STAMP_GAP = 0.25, -- results card: Haul, Crew, Clean stamp 0.25 s apart ...
+	MEDAL_PITCH_STEP = 0.06, -- ... each stamp a little higher
+
+	-- First-impression cues preloaded at boot (lihfolk-sfx: the first hit must not be late)
+	PRELOAD = { "RewindClack", "TapeStop", "RewindWhirr", "RewindClunk", "RunStamp", "CloneChime", "UIClick" },
 }
 
 return Config

@@ -1,11 +1,22 @@
 -- Echo Heist HUD: loop timer, loot progress, echo count, rewind button,
 -- objective hints and big centre messages (REWIND, CAUGHT, HEIST COMPLETE).
 -- Config.GAME_MODE = "sim" runs the HeistSim client (Heist/HeistClient) instead.
+-- Both paths report the approved analytics facts (Heist/Telemetry: Analytics.Ready at
+-- first control, PerfSample frame times); the v0.1 game itself is unchanged.
 
 local GameConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Config"))
 if GameConfig.GAME_MODE == "sim" then
 	require(script:WaitForChild("Heist"):WaitForChild("HeistClient")).start()
 	return
+end
+
+do
+	local ok, err = pcall(function()
+		require(script:WaitForChild("Heist"):WaitForChild("Telemetry")).start()
+	end)
+	if not ok then
+		warn("[Client] telemetry off: " .. tostring(err))
+	end
 end
 
 local Players = game:GetService("Players")

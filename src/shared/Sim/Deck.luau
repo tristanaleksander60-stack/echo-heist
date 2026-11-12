@@ -17,6 +17,7 @@ export type Slot = {
 	rec: any, -- Codec.Recording
 	status: string, -- "New" | "OK" | "Busted" | "Caught" | "Zapped" | "Stuck" | "Shrug"
 	run: number, -- run that recorded it
+	auto: boolean?, -- recorded by a tutorial auto-end: this clone stands on the plate (HeistSim)
 }
 
 export type Deck = {

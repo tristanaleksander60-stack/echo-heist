@@ -8,6 +8,19 @@ local TestLevels = require("../sim/TestLevels")
 
 local span = LevelSpec.span
 
+-- Launch level Ln by design number (num = 100 + n): Catalog is in play order.
+local function launch(n: number): any
+	for _, spec in Catalog do
+		if spec.num == 100 + n then
+			return spec
+		end
+	end
+	error(`no launch level L{n}`)
+end
+
+-- Play order (owner decision 2026-11-12): L1, L2, the L5 party break, L3, L4, L6.
+local PLAY_ORDER = { 1, 2, 5, 3, 4, 6 }
+
 local function deepCopy(v: any): any
 	if type(v) ~= "table" then
 		return v
@@ -35,7 +48,7 @@ return function(test)
 			local ok, errs = LevelSpec.validate(spec)
 			Assert.truthy(ok, spec.id .. ": " .. table.concat(errs, "; "))
 			local level = LevelSpec.compile(spec)
-			if i <= 4 then
+			if level.num <= 104 then
 				Assert.eq(level.cap, level.par + 2, spec.id .. " teaching cap = par + 2")
 			else
 				Assert.eq(level.cap, Config.Sim.MAX_LEVEL_CAP, spec.id .. " Clone Party / Big Score grant 8")
@@ -44,7 +57,7 @@ return function(test)
 			Assert.eq(level.runSeconds, runLen, spec.id .. " run length by location (§3.1)")
 			Assert.falsy(seen[level.num], "unique num")
 			seen[level.num] = true
-			Assert.eq(level.num, 100 + i, "num")
+			Assert.eq(level.num, 100 + PLAY_ORDER[i], spec.id .. " num = design number, Catalog = play order")
 			Assert.truthy(string.find(spec.solution, "PLACEHOLDER", 1, true), "solution is labelled a placeholder")
 		end
 	end)
@@ -64,7 +77,7 @@ return function(test)
 		end
 		-- The new levels' medal numbers are the data layer's (L1-L4's goal vs haulTarget
 		-- placeholders differ there; reported, not changed here).
-		local party, bank = Catalog[5], Catalog[6]
+		local party, bank = launch(5), launch(6)
 		local tiers = DATA.Levels.CloneParty.haulTiers
 		Assert.eq(#party.tiers, #tiers, "three Haul tiers")
 		for k = 1, #tiers do
@@ -74,7 +87,7 @@ return function(test)
 	end)
 
 	test("L5 and L6 match the §4.2 table (slots, Dawn, Alarm Run, scale vault)", function()
-		local l5, l6 = LevelSpec.compile(Catalog[5]), LevelSpec.compile(Catalog[6])
+		local l5, l6 = LevelSpec.compile(launch(5)), LevelSpec.compile(launch(6))
 		Assert.eq(l5.kind, "party", "Clone Party is a party level")
 		Assert.eq(l5.cap, 8, "8 slots")
 		Assert.eq(l5.dawnRuns, 8, "Dawn at run 8")
@@ -122,7 +135,7 @@ return function(test)
 	end)
 
 	test("party, bags, guardVision, dataId and lineup are validated", function()
-		local party = deepCopy(Catalog[5])
+		local party = deepCopy(launch(5))
 		Assert.truthy((LevelSpec.validate(party)), "Clone Party is valid")
 		local s = deepCopy(party)
 		s.tiers = nil
@@ -177,10 +190,10 @@ return function(test)
 
 	test("L1-L4 match the §4.2 table (par, cap, deadline, verbs)", function()
 		local l1, l2, l3, l4 =
-			LevelSpec.compile(Catalog[1]),
-			LevelSpec.compile(Catalog[2]),
-			LevelSpec.compile(Catalog[3]),
-			LevelSpec.compile(Catalog[4])
+			LevelSpec.compile(launch(1)),
+			LevelSpec.compile(launch(2)),
+			LevelSpec.compile(launch(3)),
+			LevelSpec.compile(launch(4))
 		Assert.eq(l1.par, 1, "L1 par")
 		Assert.eq(l1.cap, 3, "L1 cap")
 		Assert.truthy(l1.tutorial and l1.tutorial.autoEnd and l1.tutorial.autoEnd.runs[1], "L1 run 1 auto-ends")
@@ -312,7 +325,7 @@ return function(test)
 		s = TestLevels.alarmSpec()
 		s.guards = nil
 		rejects(s, "needs a guard")
-		s = deepCopy(Catalog[1])
+		s = deepCopy(launch(1))
 		s.tutorial.autoEnd.plate = "Z"
 		rejects(s, "autoEnd.plate")
 	end)

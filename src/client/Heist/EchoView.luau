@@ -25,6 +25,7 @@ local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 
 local Rigs = require(script.Parent:WaitForChild("Rigs"))
+local Ui = require(script.Parent:WaitForChild("Ui"))
 
 local H = Config.Heist
 -- The viewer (nil when the engine smoke test runs these views on the server).
@@ -104,10 +105,16 @@ function EchoView.new(state: any): any
 	folder.Parent = workspace
 
 	local pools: { [number]: Pool } = {}
+	-- Pools replaced (mannequin -> avatar) while their rigs may still be on screen: destroyed
+	-- at the next setRun / clear, once every rig in them has been released.
+	local retiring: { Pool } = {}
 	local active: { [number]: any } = {} -- actorId -> entry
 	local order: { any } = {}
 	local run: any = nil
 	local view = {}
+	local trailsOn = true
+	local tierNow = 1
+	local newestOwnId = 0
 
 	local function templateOf(ownerId: number): Model?
 		local f = ReplicatedStorage:FindFirstChild(Protocol.AVATARS)
@@ -122,7 +129,7 @@ function EchoView.new(state: any): any
 		local want = if templateOf(ownerId) then "avatar" else "mannequin"
 		local pool = pools[ownerId]
 		if pool and pool.kind ~= want then
-			pool.group:Destroy()
+			table.insert(retiring, pool)
 			pools[ownerId] = nil
 			pool = nil
 		end
@@ -133,6 +140,7 @@ function EchoView.new(state: any): any
 			hl.FillTransparency = 1
 			hl.OutlineTransparency = 0
 			hl.DepthMode = Enum.HighlightDepthMode.Occluded
+			hl.Enabled = tierNow < 4 -- the current performance tier (§6.8: 4 drops Highlights)
 			hl.Adornee = group
 			hl.Parent = group
 			group.Parent = folder
@@ -183,7 +191,27 @@ function EchoView.new(state: any): any
 			label = nil :: BillboardGui?,
 			phase = 0,
 			fade = -1,
+			near = false,
 		}
+	end
+
+	-- Drops the rig pools of owners who are no longer in the crew (each pool holds
+	-- hidden avatar rigs and an enabled Highlight for the whole session otherwise).
+	local function prunePools(keep: { [number]: boolean })
+		for ownerId, pool in pools do
+			if not keep[ownerId] and ownerId ~= myId() then
+				pool.group:Destroy()
+				pools[ownerId] = nil
+			end
+		end
+	end
+
+	local function crewSet(): { [number]: boolean }
+		local keep: { [number]: boolean } = {}
+		for _, m in state.crew or {} do
+			keep[m.userId] = true
+		end
+		return keep
 	end
 
 	local function release(entry: any)
@@ -218,14 +246,28 @@ function EchoView.new(state: any): any
 		return Palette.dim(hue, math.max(dim, 0.35))
 	end
 
+	local function flushRetiring()
+		for _, pool in retiring do
+			pool.group:Destroy()
+		end
+		table.clear(retiring)
+	end
+
 	-- A new run: hand every clone actor a rig from its owner's pool.
 	function view.setRun(msg: any, recs: { [number]: any }, startLocal: number)
 		for _, entry in active do
 			release(entry)
 		end
+		flushRetiring()
 		table.clear(active)
 		table.clear(order)
 		run = msg
+		newestOwnId = 0
+		local keep = crewSet()
+		for _, a in msg.actors do
+			keep[a.owner] = true -- orphan tapes of a player who left still draw
+		end
+		prunePools(keep)
 		local solo = #(state.crew or {}) <= 1
 		-- Rank own clones by age (newest = 0) per owner.
 		local byOwner: { [number]: { any } } = {}
@@ -271,24 +313,43 @@ function EchoView.new(state: any): any
 			entry.fade = 1
 			entry.goneShown = false
 			entry.phase = 0
+			entry.near = false
 			k += 1
-			if a == newestOwn and state.levelIndex == 1 then
-				local secs = math.floor(Sampler.duration(rec) + (msg.transition or 0) + 0.5)
-				local label = badgeGui(Rigs.anchorPart(entry.rig), "◀ YOU, " .. secs .. " SEC AGO", hue)
+			if a == newestOwn then
+				newestOwnId = a.id
+			end
+			if a == newestOwn and state.level and state.level.tutorial ~= nil then
+				-- "◀ YOU, 10 SEC AGO" (§6.5 #5, §7.5): the number is always true (CLIPS §1.2).
+				local duration = Sampler.duration(rec)
+				local secs = duration + (msg.transition or 0)
+				-- §7.5 (13-22 s): the clone forms a beat after control returns, so it visibly
+				-- walks out of you, and its label stays until it has stopped on the plate.
+				local controlAt = startLocal + (msg.transition or 0) * 0.25
+				entry.visibleAt = controlAt + H.TUTORIAL_CLONE_FADE_IN
+				local label, text = badgeGui(Rigs.anchorPart(entry.rig), "", hue)
+				text.RichText = true
+				text.TextColor3 = Palette.exit
+				text.Text = Ui.agoLabel("YOU", secs, Palette.hueFor(a.seat))
 				label.Name = "YouLabel"
 				label.Size = UDim2.fromOffset(190, 30)
 				label.StudsOffset = Vector3.new(0, 3.6, 0)
 				label.MaxDistance = 120
 				entry.label = label
-				entry.labelUntil = entry.visibleAt + H.CLONE_LABEL_SECONDS + (msg.transition or 0)
+				entry.labelUntil = controlAt
+					+ math.min(duration, H.CLONE_LABEL_MAX_SECONDS)
+					+ H.CLONE_LABEL_HOLD_AFTER_STOP
 			end
 			active[a.id] = entry
 			table.insert(order, entry)
 		end
+		flushRetiring()
 	end
 
-	-- "Tape print": a ring on the floor where a clone forms.
+	-- "Tape print": a ring on the floor where a clone forms (none under reduced motion).
 	local function printRing(at: Vector3, hue: Color3)
+		if state.reduced then
+			return
+		end
 		local ring = Instance.new("Part")
 		ring.Name = "PrintRing"
 		ring.Shape = Enum.PartType.Cylinder
@@ -366,6 +427,10 @@ function EchoView.new(state: any): any
 		for _, entry in order do
 			local a = entry.actor
 			local fx = state.actorFx[a.id]
+			-- Gone (busted / zapped, faded out): nothing to sample or pose until the reel.
+			if not reelT and entry.fade >= 1 and fx and fx.gone and now - (fx.goneAtLocal or now) > 0.35 then
+				continue
+			end
 			local rec = entry.rec
 			local t = reelT or tView
 			if fx and fx.stuckT and not reelT then
@@ -387,6 +452,7 @@ function EchoView.new(state: any): any
 			Rigs.setSpeed(rig, speed)
 			local pos = feet.Position + Vector3.new(0, 3, 0)
 			entry.lastPos = pos
+			entry.lastFeet = feet
 
 			-- Visibility: tape print stagger, gone after an outcome, near-camera fade.
 			local fade = 0
@@ -401,10 +467,21 @@ function EchoView.new(state: any): any
 				if since > 0.35 then
 					fade = 1
 				elseif fx.gone == "Busted" then
-					fade = if math.floor(since * 24) % 2 == 0 then 0.6 else 0
+					-- glitch at <= 3 flashes/s (§7.3); reduced motion: one smooth fade
+					fade = if state.reduced
+						then since / 0.35
+						elseif math.floor(since * 2 * H.BLINK_HZ_MAX) % 2 == 0 then 0.6
+						else 0
 				end
 			end
-			if fade < 1 and (pos - camPos).Magnitude < H.CLONE_NEAR_FADE then
+			-- Near-camera fade with hysteresis (a crowd of clones around you must not flip).
+			local dist = (pos - camPos).Magnitude
+			if entry.near then
+				entry.near = dist < H.CLONE_NEAR_UNFADE
+			else
+				entry.near = dist < H.CLONE_NEAR_FADE
+			end
+			if fade < 1 and entry.near then
 				fade = math.max(fade, 0.7)
 			end
 			if fade ~= entry.fade then
@@ -412,7 +489,7 @@ function EchoView.new(state: any): any
 				Rigs.setFade(rig, fade)
 				entry.badge.Enabled = fade < 1
 			end
-			entry.trail.Enabled = reelT ~= nil or speed > Config.Rec.WALK_SPEED + 1
+			entry.trail.Enabled = trailsOn and (reelT ~= nil or speed > Config.Rec.WALK_SPEED + 1)
 			if entry.bubble.Enabled and now > entry.bubbleUntil then
 				entry.bubble.Enabled = false
 			end
@@ -432,7 +509,111 @@ function EchoView.new(state: any): any
 		end
 		table.clear(active)
 		table.clear(order)
+		flushRetiring()
+		-- Garage: only your own pool stays (crewmates' rigs come back with the next heist).
+		prunePools({})
 		run = nil
+		newestOwnId = 0
+	end
+
+	-- Every clone drawn this run (the Crew Line-up takes over from them): actor, last
+	-- feet position (world), yaw, hue, recording.
+	function view.figures(): { any }
+		local out = {}
+		for _, entry in order do
+			if entry.lastFeet then
+				table.insert(out, {
+					actor = entry.actor,
+					feet = entry.lastFeet,
+					hue = entry.hue,
+					rec = entry.rec,
+					gone = entry.fade >= 1,
+				})
+			end
+		end
+		return out
+	end
+
+	-- The local player's newest clone this run (actor id, 0 = none).
+	function view.newestOwn(): number
+		return newestOwnId
+	end
+
+	-- Clones visible right now (PerfSample "clones on screen").
+	function view.visibleCount(): number
+		local n = 0
+		for _, entry in order do
+			if entry.fade < 1 then
+				n += 1
+			end
+		end
+		return n
+	end
+
+	-- Hides every clone at once (the Line-up figures replace them) without a new run.
+	function view.hideAll()
+		for _, entry in order do
+			entry.fade = 1
+			Rigs.setFade(entry.rig, 1)
+			entry.badge.Enabled = false
+			entry.trail.Enabled = false
+			entry.bubble.Enabled = false
+			if entry.label then
+				entry.label:Destroy()
+				entry.label = nil
+			end
+		end
+		table.clear(order)
+	end
+
+	-- Runtime performance tier (§6.3): 2+ drops trails, 4 drops the owner Highlights.
+	function view.setTier(tier: number)
+		tierNow = tier
+		trailsOn = tier < 2
+		for _, pool in pools do
+			pool.highlight.Enabled = tier < 4
+		end
+	end
+
+	-- Between runs: makes sure each crew member's pool has a rig for every clone the next
+	-- run can show (this run's + 1), building at most one per frame, so an avatar template
+	-- that arrived mid-heist never rebuilds a whole set inside setRun during the rewind.
+	local warming = false
+	function view.prewarm()
+		if warming or not run then
+			return
+		end
+		warming = true
+		local need: { [number]: number } = {}
+		for _, a in run.actors do
+			if a.kind == "clone" or a.kind == "live" then
+				need[a.owner] = (need[a.owner] or 0) + 1
+			end
+		end
+		local cap = tonumber(run.cap) or 12
+		task.spawn(function()
+			for ownerId, n in need do
+				local inUse = 0
+				for _, entry in active do
+					if entry.actor and entry.actor.owner == ownerId then
+						inUse += 1
+					end
+				end
+				local hue = Palette.CLONE_HUES[1]
+				for _, m in state.crew or {} do
+					if m.userId == ownerId then
+						hue = Palette.hueFor(m.seat)
+					end
+				end
+				local pool = poolFor(ownerId, hue)
+				while #pool.free + inUse < math.min(n, cap) and state.phase == "Between" do
+					local entry = newEntry(pool, ownerId)
+					release(entry)
+					task.wait()
+				end
+			end
+			warming = false
+		end)
 	end
 
 	return view

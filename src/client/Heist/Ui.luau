@@ -1,14 +1,27 @@
 --!strict
 -- Heist/Ui: small UI building blocks and motion tokens for the sim HUD
 -- (roblox-ui-builder: Activated everywhere, one UIScale per branch, pops on a child
--- UIScale, motion through named tokens, colour never the only signal).
+-- UIScale, motion through named tokens, colour never the only signal). Buttons click
+-- through Heist/Sound (docs/AUDIO.md §9 item 25): UIClick by default, or the cue the
+-- caller names (UIBack, UIToggle, UIConfirm), UIHover on mouse-over (PC only).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
-local Palette = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Heist"):WaitForChild("Palette"))
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Config = require(Shared:WaitForChild("Config")) :: any
+local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
+
+local LineupPlan = require(script.Parent:WaitForChild("LineupPlan"))
+local Sound = require(script.Parent:WaitForChild("Sound"))
 
 local Ui = {}
+
+local reducedMotion = false -- Ui.setReducedMotion
+
+-- Smallest button height in design px (>= 64 px on screen at the smallest UI scale).
+Ui.TAP = Config.Heist.TAP_MIN
 
 Ui.FONT = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
 Ui.FONT_BODY = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
@@ -62,8 +75,10 @@ function Ui.label(parent: Instance, props: { [string]: any }): TextLabel
 	return t
 end
 
--- A raised button with a press pop (child UIScale) that fires `onActivated`.
-function Ui.button(parent: Instance, props: { [string]: any }, onActivated: () -> ()): TextButton
+-- A raised button with a press pop (child UIScale) that fires `onActivated`. `cue` is
+-- the click sound ("UIClick" by default; "" = silent, e.g. a button whose action has
+-- its own sound such as END RUN's tape clack).
+function Ui.button(parent: Instance, props: { [string]: any }, onActivated: () -> (), cue: string?): TextButton
 	local b = Instance.new("TextButton")
 	b.AutoButtonColor = false
 	b.BackgroundColor3 = Palette.steel
@@ -86,8 +101,11 @@ function Ui.button(parent: Instance, props: { [string]: any }, onActivated: () -
 	scale.Parent = b
 	b.InputBegan:Connect(function(input: InputObject)
 		if
-			input.UserInputType == Enum.UserInputType.MouseButton1
-			or input.UserInputType == Enum.UserInputType.Touch
+			not reducedMotion
+			and (
+				input.UserInputType == Enum.UserInputType.MouseButton1
+				or input.UserInputType == Enum.UserInputType.Touch
+			)
 		then
 			TweenService:Create(scale, Ui.MOTION.press, { Scale = 0.92 }):Play()
 		end
@@ -95,13 +113,36 @@ function Ui.button(parent: Instance, props: { [string]: any }, onActivated: () -
 	b.InputEnded:Connect(function()
 		TweenService:Create(scale, Ui.MOTION.release, { Scale = 1 }):Play()
 	end)
-	b.Activated:Connect(onActivated)
+	b.MouseEnter:Connect(function()
+		if UserInputService.MouseEnabled and not UserInputService.TouchEnabled then
+			Sound.play("UIHover")
+		end
+	end)
+	local click = cue or "UIClick"
+	b.Activated:Connect(function()
+		if click ~= "" then
+			Sound.play(click)
+		end
+		onActivated()
+	end)
 	b.Parent = parent
 	return b
 end
 
+-- Reduced motion (GuiService.ReducedMotionEnabled, HeistClient): pops and press bounces stop.
+function Ui.setReducedMotion(on: boolean)
+	reducedMotion = on
+end
+
+function Ui.reducedMotion(): boolean
+	return reducedMotion
+end
+
 -- Pops an object's child UIScale (feedback within 100 ms of an input, §3.4).
 function Ui.pop(obj: Instance)
+	if reducedMotion then
+		return
+	end
 	local scale = obj:FindFirstChild("Pop")
 	if scale and scale:IsA("UIScale") then
 		scale.Scale = 1.15
@@ -121,6 +162,16 @@ end
 function Ui.clock(seconds: number): string
 	local s = math.max(0, math.ceil(seconds - 1e-6))
 	return string.format("%d:%02d", s // 60, s % 60)
+end
+
+-- "20 SEC AGO" / "1 MIN AGO": docs/marketing/CLIPS.md §1.2, the number is always true,
+-- rounded to the nearest 10 s (at least 10), whole minutes from 55 s (LineupPlan.ago).
+Ui.ago = LineupPlan.ago
+
+-- The burned-in clone label: "◀ ME, 20 SEC AGO" with the ◀ in Clone Cyan (RichText).
+function Ui.agoLabel(who: string, seconds: number, arrowHue: Color3?): string
+	local hue = (arrowHue or Palette.CLONE_HUES[1]):ToHex()
+	return string.format('<font color="#%s">◀</font> %s, %s', hue, who, Ui.ago(seconds))
 end
 
 return Ui

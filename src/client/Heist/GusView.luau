@@ -8,7 +8,12 @@
 -- Cone: a flat floor fan in Torch Amber (Transparency 0.75, Neon edge), clipped by a
 -- 12-ray fan at 10 Hz against the level's sight boxes and the doors that look shut.
 -- Stages: amber fill while his meter rises, "?" at 0.6 s, "!" when he catches.
+-- Sound (docs/AUDIO.md §9 items 15-17): a GusStep every GUS_STEP_STRIDE studs, a
+-- GusRadio blip now and then on patrol, a Heartbeat tick while his "?" is on you (the
+-- "?" and "!" stings come from the Suspect / Caught events). Sprint dust puffs while
+-- he chases (Alarm Run, §7.3). A Santa hat when the Christmas dressing layer is on.
 
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -19,9 +24,11 @@ local Mechanisms = require(Sim:WaitForChild("Mechanisms"))
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 
 local Rigs = require(script.Parent:WaitForChild("Rigs"))
+local Sound = require(script.Parent:WaitForChild("Sound"))
 
 local H = Config.Heist
 local S = Config.Sim
+local AU = Config.Audio
 local TAU = 2 * math.pi
 
 local GusView = {}
@@ -41,16 +48,9 @@ local function flat(name: string, className: string, parent: Instance): BasePart
 	return p
 end
 
--- Places two wedges so they fill triangle a-b-c (all points on one plane).
-local function triangle(
-	w1: BasePart,
-	w2: BasePart,
-	a: Vector3,
-	b: Vector3,
-	c: Vector3,
-	parts: { BasePart },
-	cfs: { CFrame }
-)
+-- Sizes two wedges to fill triangle a-b-c (all points on one plane) and appends their
+-- CFrames (in the frame a, b, c are given in) to `cfs`.
+local function triangle(w1: BasePart, w2: BasePart, a: Vector3, b: Vector3, c: Vector3, cfs: { CFrame })
 	local ab, ac, bc = b - a, c - a, c - b
 	local abd, acd, bcd = ab:Dot(ab), ac:Dot(ac), bc:Dot(bc)
 	if abd > acd and abd > bcd then
@@ -63,9 +63,7 @@ local function triangle(
 	if cross.Magnitude < 1e-4 or bc.Magnitude < 1e-4 then
 		w1.Size = Vector3.new(0.05, 0.05, 0.05)
 		w2.Size = w1.Size
-		table.insert(parts, w1)
 		table.insert(cfs, CFrame.new(a))
-		table.insert(parts, w2)
 		table.insert(cfs, CFrame.new(a))
 		return
 	end
@@ -75,9 +73,7 @@ local function triangle(
 	local height = math.abs(ab:Dot(up))
 	w1.Size = Vector3.new(0.05, height, math.abs(ab:Dot(back)))
 	w2.Size = Vector3.new(0.05, height, math.abs(ac:Dot(back)))
-	table.insert(parts, w1)
 	table.insert(cfs, CFrame.fromMatrix((a + b) / 2, right, up, back))
-	table.insert(parts, w2)
 	table.insert(cfs, CFrame.fromMatrix((a + c) / 2, -right, up, -back))
 end
 
@@ -129,12 +125,32 @@ function GusView.new(state: any): any
 		table.clear(guards)
 	end
 
+	local rng = Random.new()
+	local function radioGap(): number
+		local r = AU.GUS_RADIO_SECONDS
+		return rng:NextNumber(r[1], r[2])
+	end
+
 	function view.setLevel(level: any)
 		view.clear()
 		for i, def in level.guards do
-			local rig = Rigs.buildGus()
+			local rig = Rigs.buildGus(state.dressing == true)
 			rig.model.Parent = folder
 			local head = Rigs.anchorPart(rig)
+			local feetPart = rig.limbs[#rig.limbs].part
+			local dustAt = Instance.new("Attachment")
+			dustAt.Name = "EH_Dust"
+			dustAt.Position = Vector3.new(0, -1, 0)
+			dustAt.Parent = feetPart
+			local dust = Instance.new("ParticleEmitter")
+			dust.Rate = 0
+			dust.Lifetime = NumberRange.new(0.3, 0.5)
+			dust.Speed = NumberRange.new(1, 3)
+			dust.SpreadAngle = Vector2.new(60, 20)
+			dust.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.5), NumberSequenceKeypoint.new(1, 1.2) })
+			dust.Transparency = NumberSequence.new(0.4, 1)
+			dust.Color = ColorSequence.new(Palette.steelHi)
+			dust.Parent = dustAt
 			local gui = Instance.new("BillboardGui")
 			gui.Size = UDim2.fromOffset(80, 60)
 			gui.StudsOffset = Vector3.new(0, 2.6, 0)
@@ -162,6 +178,13 @@ function GusView.new(state: any): any
 				edges[k] = e
 			end
 			cone.Parent = folder
+			local conePartList: { BasePart } = {}
+			for k = 1, H.CONE_RAYS - 1 do
+				table.insert(conePartList, wedges[k][1])
+				table.insert(conePartList, wedges[k][2])
+				table.insert(conePartList, edges[k])
+			end
+			local key = "G" .. tostring(i)
 			guards[i] = {
 				def = def,
 				rig = rig,
@@ -169,6 +192,18 @@ function GusView.new(state: any): any
 				cone = cone,
 				wedges = wedges,
 				edges = edges,
+				coneParts = conePartList, -- wedge, wedge, edge per segment
+				coneLocal = {} :: { CFrame }, -- their CFrames in Gus's apex frame (rebuilt at CONE_HZ)
+				shownColour = nil :: Color3?,
+				shownFill = -1,
+				kMode = key .. "Mode",
+				kOffset = key .. "Offset",
+				kX = key .. "X",
+				kZ = key .. "Z",
+				kYaw = key .. "Yaw",
+				kMeter = key .. "Meter",
+				kStage = key .. "Stage",
+				kFocus = key .. "Focus",
 				rays = table.create(H.CONE_RAYS, 0),
 				nextRays = 0,
 				x = 0,
@@ -179,8 +214,29 @@ function GusView.new(state: any): any
 				phase = 0,
 				bangUntil = 0,
 				huhUntil = 0,
+				stepDist = 0,
+				nextRadio = os.clock() + radioGap(),
+				nextBeat = 0,
+				nextDust = 0,
+				dust = dust,
+				head = head,
 			}
 		end
+	end
+
+	-- The local player's live actor this run (for the heartbeat while "?" is on you).
+	local function myActor(): number
+		local run = state.run
+		local lp = Players.LocalPlayer
+		if not run or not lp then
+			return -1
+		end
+		for _, a in run.actors do
+			if a.kind == "live" and a.owner == lp.UserId then
+				return a.id
+			end
+		end
+		return -1
 	end
 
 	-- Gus caught someone ("!") or busted a clone.
@@ -202,6 +258,21 @@ function GusView.new(state: any): any
 
 	local parts: { BasePart } = {}
 	local cfs: { CFrame } = {}
+	local boxes: { any } = {} -- reused every ray pass
+	local doorIn = { open = false, solid = true, solidAt = nil :: number? }
+	local localPts: { Vector3 } = {}
+	local doorKeys: { { string } } = {}
+
+	local function doorKeysFor(level: any): { { string } }
+		if #doorKeys ~= #level.doors then
+			table.clear(doorKeys)
+			for di = 1, #level.doors do
+				local k = "D" .. tostring(di)
+				doorKeys[di] = { k .. "Open", k .. "Solid", k .. "SolidAt" }
+			end
+		end
+		return doorKeys
+	end
 
 	function view.update(tView: number, now: number, dt: number)
 		local folderInst: Instance? = state.folder
@@ -216,17 +287,19 @@ function GusView.new(state: any): any
 		local crew = math.max(#(state.crew or {}), 1)
 		local range = S.GUARD_VISION_RANGE * (1 + S.CREW_VISION_BONUS * (crew - 1))
 		local half = math.rad(S.GUARD_VISION_HALF_ANGLE)
-		for i, g in guards do
-			local p = "G" .. i
-			local mode = folderInst:GetAttribute(p .. "Mode") or "Patrol"
+		local running = state.phase == "Run"
+		local me = myActor()
+		local dKeys = doorKeysFor(level)
+		for _, g in guards do
+			local mode = folderInst:GetAttribute(g.kMode) or "Patrol"
 			local tx, tz, tyaw
 			if mode == "Patrol" then
-				tx, tz, tyaw = Guards.patrol(g.def.route, tView - (folderInst:GetAttribute(p .. "Offset") or 0))
+				tx, tz, tyaw = Guards.patrol(g.def.route, tView - (folderInst:GetAttribute(g.kOffset) or 0))
 				g.x, g.z, g.yaw = tx, tz, tyaw
 			else
-				tx = folderInst:GetAttribute(p .. "X") or g.x
-				tz = folderInst:GetAttribute(p .. "Z") or g.z
-				tyaw = folderInst:GetAttribute(p .. "Yaw") or g.yaw
+				tx = folderInst:GetAttribute(g.kX) or g.x
+				tz = folderInst:GetAttribute(g.kZ) or g.z
+				tyaw = folderInst:GetAttribute(g.kYaw) or g.yaw
 				local k = math.clamp(dt * 10, 0, 1)
 				g.x += (tx - g.x) * k
 				g.z += (tz - g.z) * k
@@ -236,57 +309,90 @@ function GusView.new(state: any): any
 			local moved = math.sqrt((g.x - g.lastX) ^ 2 + (g.z - g.lastZ) ^ 2)
 			g.lastX, g.lastZ = g.x, g.z
 			local speed = if dt > 0 then moved / dt else 0
+			-- Footsteps by distance walked (a teleport-sized jump is not a step).
+			if running and moved < 3 then
+				g.stepDist += moved
+				if g.stepDist >= AU.GUS_STEP_STRIDE then
+					g.stepDist = 0
+					Sound.play("GusStep", { at = g.head })
+				end
+			end
+			if running and mode == "Patrol" and now >= g.nextRadio then
+				g.nextRadio = now + radioGap()
+				Sound.play("GusRadio", { at = g.head })
+			end
+			if running and mode == "Chase" and speed > 1 and now >= g.nextDust then
+				g.nextDust = now + H.GUS_DUST_SECONDS
+				g.dust:Emit(3)
+			end
 			g.phase += speed * 0.35 * dt * TAU
 			local feet = CFrame.new(origin + Vector3.new(g.x, floorY, g.z)) * CFrame.Angles(0, g.yaw, 0)
 			Rigs.pose(g.rig, feet, g.phase, math.clamp(speed / 8, 0, 1), parts, cfs)
 
-			-- Rays (10 Hz): sight boxes plus doors that look shut.
+			-- Rays (CONE_HZ): sight boxes plus doors that look shut. The cone's shape (wedge
+			-- and edge sizes, their CFrames in Gus's apex frame) only changes here; every
+			-- frame in between just moves the parts with Gus.
 			if now >= g.nextRays then
 				g.nextRays = now + 1 / H.CONE_HZ
-				local boxes = table.clone(level.occluders)
+				table.clear(boxes)
+				table.move(level.occluders, 1, #level.occluders, 1, boxes)
 				for di, door in level.doors do
-					local dv = Mechanisms.doorViewOf({
-						open = folderInst:GetAttribute("D" .. di .. "Open") == true,
-						solid = folderInst:GetAttribute("D" .. di .. "Solid") ~= false,
-						solidAt = (function()
-							local v = folderInst:GetAttribute("D" .. di .. "SolidAt")
-							return if type(v) == "number" and v >= 0 then v else nil
-						end)(),
-					}, tView)
-					if dv == "shut" then
+					local k = dKeys[di]
+					local solidAt = folderInst:GetAttribute(k[3])
+					doorIn.open = folderInst:GetAttribute(k[1]) == true
+					doorIn.solid = folderInst:GetAttribute(k[2]) ~= false
+					doorIn.solidAt = if type(solidAt) == "number" and solidAt >= 0 then solidAt else nil
+					if Mechanisms.doorViewOf(doorIn, tView) == "shut" then
 						table.insert(boxes, door.box)
 					end
 				end
 				for r = 1, H.CONE_RAYS do
-					local a = g.yaw + half - (r - 1) * (2 * half) / (H.CONE_RAYS - 1)
-					local dx, dz = -math.sin(a), -math.cos(a)
-					g.rays[r] = rayBoxes(boxes, g.x, g.z, dx, dz, range)
+					local rel = half - (r - 1) * (2 * half) / (H.CONE_RAYS - 1)
+					local a = g.yaw + rel
+					local len = rayBoxes(boxes, g.x, g.z, -math.sin(a), -math.cos(a), range)
+					g.rays[r] = len
+					localPts[r] = Vector3.new(-math.sin(rel) * len, 0, -math.cos(rel) * len)
+				end
+				local out = g.coneLocal
+				table.clear(out)
+				for k = 1, H.CONE_RAYS - 1 do
+					local w = g.wedges[k]
+					local a, b = localPts[k], localPts[k + 1]
+					triangle(w[1], w[2], Vector3.zero, a, b, out)
+					local len = (b - a).Magnitude
+					g.edges[k].Size = Vector3.new(0.15, 0.05, math.max(len, 0.05))
+					table.insert(out, if len > 1e-3 then CFrame.lookAt((a + b) / 2, b) else CFrame.new(a))
 				end
 			end
-			local apex = origin + Vector3.new(g.x, floorY + 0.12, g.z)
-			local pts = {}
-			for r = 1, H.CONE_RAYS do
-				local a = g.yaw + half - (r - 1) * (2 * half) / (H.CONE_RAYS - 1)
-				local len = g.rays[r]
-				pts[r] = apex + Vector3.new(-math.sin(a) * len, 0, -math.cos(a) * len)
+			local apexFrame = CFrame.new(origin + Vector3.new(g.x, floorY + 0.12, g.z)) * CFrame.Angles(0, g.yaw, 0)
+			local meter = folderInst:GetAttribute(g.kMeter) or 0
+			local stage = folderInst:GetAttribute(g.kStage) or 0
+			-- Heartbeat while his "?" is on you (Warnings bus, §7.3).
+			local focus = folderInst:GetAttribute(g.kFocus)
+			if running and stage >= 2 and focus == me and me > 0 and now >= g.nextBeat then
+				g.nextBeat = now + H.GUS_HEARTBEAT_SECONDS
+				Sound.play("Heartbeat")
 			end
-			local meter = folderInst:GetAttribute(p .. "Meter") or 0
-			local stage = folderInst:GetAttribute(p .. "Stage") or 0
 			local banging = now < g.bangUntil
 			local colour = if banging then Palette.alarm else Palette.amber
 			local fill = if banging then 0.45 elseif stage >= 2 then 0.5 elseif meter > 0 then 0.62 else 0.75
-			for k = 1, H.CONE_RAYS - 1 do
-				local w = g.wedges[k]
-				triangle(w[1], w[2], apex, pts[k], pts[k + 1], parts, cfs)
-				w[1].Color, w[2].Color = colour, colour
-				w[1].Transparency, w[2].Transparency = fill, fill
-				local e = g.edges[k]
-				local a, b = pts[k], pts[k + 1]
-				local len = (b - a).Magnitude
-				e.Size = Vector3.new(0.15, 0.05, math.max(len, 0.05))
-				e.Color = colour
-				table.insert(parts, e)
-				table.insert(cfs, if len > 1e-3 then CFrame.lookAt((a + b) / 2, b) else CFrame.new(a))
+			-- Colour and fill only when they change (wedges fill, edges keep their glow).
+			if colour ~= g.shownColour or fill ~= g.shownFill then
+				g.shownColour, g.shownFill = colour, fill
+				for k = 1, H.CONE_RAYS - 1 do
+					local w = g.wedges[k]
+					w[1].Color, w[2].Color = colour, colour
+					w[1].Transparency, w[2].Transparency = fill, fill
+					g.edges[k].Color = colour
+				end
+			end
+			local coneLocal = g.coneLocal
+			for j, part in g.coneParts do
+				local lcf = coneLocal[j]
+				if lcf then
+					table.insert(parts, part)
+					table.insert(cfs, apexFrame * lcf)
+				end
 			end
 			-- Bubble: "!" on a catch, "?" while suspicious, "huh?" when confused.
 			if banging then

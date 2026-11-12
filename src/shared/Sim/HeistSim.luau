@@ -113,6 +113,7 @@ function HeistSim.new(level: any, opts: Opts?): any
 		rng = nil :: any,
 		walkSpeed = o.walkSpeed or Config.Rec.WALK_SPEED,
 		firstHeist = o.firstHeist == true,
+		autoEndArmed = false, -- the tutorial auto-end applies to this run (set at run start)
 		relaxed = o.relaxed == true,
 		players = {},
 		playerById = {},
@@ -278,6 +279,26 @@ function HeistSim.startRun(sim: any, serverNow: number?): number?
 	local level = sim.level
 	sim.runIndex += 1
 	sim.phase = "Run"
+	-- Tutorial auto-end (§7.5): its listed runs, and with untilDone every run in which no
+	-- replayed clone came from an auto-ended run (so a kid who ended run 1 off the plate,
+	-- or whose plate clone was replaced at the cap, is led back to the plate).
+	local ae = level.tutorial and level.tutorial.autoEnd
+	local armed = false
+	if ae then
+		armed = ae.runs[sim.runIndex] == true
+		if not armed and ae.untilDone then
+			local onPlate = false
+			for _, p in sim.players do
+				for i, slot in p.deck.slots do
+					if slot.auto == true and Deck.replays(p.deck, i) then
+						onPlate = true
+					end
+				end
+			end
+			armed = not onPlate
+		end
+	end
+	sim.autoEndArmed = armed
 	sim.tick = -1
 	sim.nextTick = 0
 	sim.t = 0
@@ -711,7 +732,11 @@ local function finishRun(sim: any, reason: number)
 		if a then
 			table.insert(sim.finalRecordings, { playerId = p.id, rec = a.rec })
 			if sim.phase ~= "Over" and not p.orphan then
-				Deck.commit(p.deck, a.rec, sim.runIndex, Actors.liveStatus(a))
+				local slot = Deck.commit(p.deck, a.rec, sim.runIndex, Actors.liveStatus(a))
+				if a.autoEnded then
+					-- this clone stands on the tutorial plate (LevelSpec autoEnd untilDone)
+					p.deck.slots[slot].auto = true
+				end
 			end
 		end
 	end
@@ -810,16 +835,17 @@ function HeistSim.step(sim: any): string
 		logSwarm(sim)
 	end
 
-	-- Tutorial: run 1 of L1 auto-ends after L1_AUTO_END_SECONDS on the plate (§7.5).
-	local tut = sim.level.tutorial
-	local ae = tut and tut.autoEnd
-	if ae and ae.runs[sim.runIndex] then
+	-- Tutorial: run 1 of L1 auto-ends after L1_AUTO_END_SECONDS on the plate (§7.5);
+	-- with untilDone, every later run too until it has fired once.
+	local ae = HeistSim.autoEndArmed(sim)
+	if ae then
 		local box = sim.level.plates[ae.plate].box
 		for _, a in actors do
 			if a.kind == "live" and a.present then
 				if Geom.contains(box, a.x, a.y, a.z) then
 					a.plateTicks += 1
 					if a.plateTicks * sim.dt >= ae.seconds - EPS then
+						a.autoEnded = true
 						EventLog.append(sim.log, tick, EV.AutoEnd, a.id)
 						endLive(sim, a, "Ended", END.EndRun, EV.EndRun)
 					end
@@ -882,6 +908,18 @@ end
 -- Fast-forward pill (§3.1): every live player stands still and a clone still has
 -- something left to play (it is still moving along its recording, or has events
 -- left).
+-- The level's tutorial auto-end when it applies to the current run (else nil): the
+-- listed runs, and with untilDone every run whose replay has no clone from an
+-- auto-ended run (decided at run start).
+function HeistSim.autoEndArmed(sim: any): any
+	local tut = sim.level.tutorial
+	local ae = tut and tut.autoEnd
+	if not ae then
+		return nil
+	end
+	return if sim.autoEndArmed then ae else nil
+end
+
 function HeistSim.canFastForward(sim: any): boolean
 	if sim.phase ~= "Run" then
 		return false

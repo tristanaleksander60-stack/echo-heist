@@ -1,15 +1,20 @@
 --!strict
 -- Heist/HeistClient: the sim path's client (Config.GAME_MODE = "sim"). MASTERPLAN
 -- §8.2 ("clients receive each recording once and render local rigs from the loop
--- clock"), §6.5, §7.1, §7.4, §7.5.
+-- clock"), §6.5, §6.6, §7.1-7.5.
 --
 -- It keeps one state table fed by the server's Heist.Msg push (and Heist.Sync at
 -- boot), and once per frame samples the replicated LoopClock and draws:
 --   EchoView (clones from Rec/Sampler), GusView (Guards.patrol + pose attributes),
---   WorldView (doors/lasers/plates/loot from attributes), RewindDirector, Hud.
+--   WorldView (doors/lasers/plates/loot/alarm from attributes, kit door skins),
+--   RewindDirector, Hud, and at heist end the LineupDirector (Crew Line-up cut).
+-- Sound goes through Heist/Sound (AudioDirector): every live sim event plays its cues
+-- (Audio/EventCues), music follows garage / heist / alarm / results, ambience follows
+-- the room. Analytics through Heist/Telemetry (Ready, Ui hints, Perf samples).
 -- The client never decides an outcome: it only sends intents (Heist.* remotes).
 
 local GuiService = game:GetService("GuiService")
+local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -22,7 +27,6 @@ local LoopClock = require(Rec:WaitForChild("LoopClock"))
 local Sim = Shared:WaitForChild("Sim")
 local EventLog = require(Sim:WaitForChild("EventLog"))
 local LevelSpec = require(Sim:WaitForChild("LevelSpec"))
-local Catalog = require(Shared:WaitForChild("Levels"):WaitForChild("Catalog"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local Net = require(ReplicatedStorage:WaitForChild("LihFolk"):WaitForChild("Net"))
 
@@ -31,11 +35,22 @@ local EchoView = require(Heist:WaitForChild("EchoView"))
 local GusView = require(Heist:WaitForChild("GusView"))
 local WorldView = require(Heist:WaitForChild("WorldView"))
 local RewindDirector = require(Heist:WaitForChild("RewindDirector"))
+local LineupDirector = require(Heist:WaitForChild("LineupDirector"))
 local Hud = require(Heist:WaitForChild("Hud"))
+local Sound = require(Heist:WaitForChild("Sound"))
+local Telemetry = require(Heist:WaitForChild("Telemetry"))
+local Ui = require(Heist:WaitForChild("Ui"))
 
 local EV = EventLog.EV
 local R = Protocol.REMOTE
+local H = Config.Heist
 local localPlayer = Players.LocalPlayer
+
+-- Music set per level id (the heist state's default is the Caper set; Big Scores swing).
+local MUSIC_SET: { [string]: string } = {
+	cs5_clone_party = "BigScore",
+	bk1_big_score = "BigScore",
+}
 
 local HeistClient = {}
 
@@ -53,6 +68,10 @@ function HeistClient.start()
 		folder = nil,
 		level = nil,
 		levelIndex = 0,
+		levelInfo = nil,
+		daily = nil,
+		dressing = false,
+		kit = false,
 		origin = Vector3.zero,
 		crew = {},
 		mySeat = 1,
@@ -62,23 +81,35 @@ function HeistClient.start()
 		phase = "",
 		frozenT = 0,
 		lastRunT = 0,
+		runEndedAt = 0,
+		runEndedAtByRun = {} :: { [number]: number }, -- os.clock() when each run's RunEnd arrived
 		deck = nil,
 		over = nil,
 		actorFx = {},
 		carrying = false,
 		liveCount = 1,
 		reduced = GuiService.ReducedMotionEnabled,
+		particleScale = 1,
 	}
+	Sound.setReducedMotion(state.reduced == true)
+	Ui.setReducedMotion(state.reduced == true)
 	GuiService:GetPropertyChangedSignal("ReducedMotionEnabled"):Connect(function()
 		state.reduced = GuiService.ReducedMotionEnabled
+		Sound.setReducedMotion(state.reduced == true)
+		Ui.setReducedMotion(state.reduced == true)
 	end)
 
-	local levelCache: { [number]: any } = {}
-	local function levelFor(index: number): any
-		local cached = levelCache[index]
-		if not cached and Catalog[index] then
-			cached = LevelSpec.compile(Catalog[index])
-			levelCache[index] = cached
+	-- Compiled levels: Catalog indices (play order) and daily vaults by UTC day.
+	local levelCache: { [string]: any } = {}
+	local function levelFor(index: number, day: number?): any
+		local key = if index == Protocol.DAILY_INDEX then "d" .. tostring(day) else tostring(index)
+		local cached = levelCache[key]
+		if not cached then
+			local spec = Protocol.levelSpec(index, day)
+			if spec then
+				cached = LevelSpec.compile(spec)
+				levelCache[key] = cached
+			end
 		end
 		return cached
 	end
@@ -90,7 +121,7 @@ function HeistClient.start()
 
 	local actions = {
 		endRun = function()
-			RewindDirector.sound("Clack")
+			Sound.play("RewindClack") -- the tape-deck clack, before any server reply (§7.1)
 			Net.Send(R.EndRun)
 		end,
 		interact = function(kind: number, index: number)
@@ -111,17 +142,80 @@ function HeistClient.start()
 		selectLevel = function(index: number)
 			Net.Send(R.SelectLevel, index)
 		end,
+		selectDaily = function(day: number?)
+			Net.Send(R.SelectDaily, day)
+		end,
 		joinFriend = function(userId: number)
 			Net.Send(R.JoinFriend, userId)
 		end,
 		leave = function()
 			Net.Send(R.Leave)
 		end,
+		hint = function(name: string)
+			Telemetry.ui("Hint", name)
+		end,
 	}
 	local hud = Hud.new(state, actions)
 	local director = RewindDirector.new(hud.fxGui)
-	hud.bigStamp = function(text: string, color: Color3)
-		director.stamp(text, color, 1.2)
+	hud.bigStamp = function(text: string, color: Color3, hold: number?)
+		director.stamp(text, color, hold or 1.2, not state.reduced)
+	end
+	local lineup = LineupDirector.new(state, hud.fxGui, echo, world, hud)
+
+	-- Sound: first-impression cues + the likely music; captions into the HUD (on by default).
+	task.spawn(function()
+		Sound.preload({ "Caper", "Garage" })
+		Sound.setCaptionHandler(function(text: string)
+			hud.caption(text)
+		end)
+	end)
+
+	-- Telemetry and the runtime performance tier (§6.3, §8.6).
+	Telemetry.start()
+	Telemetry.setCloneCounter(echo.visibleCount)
+	local shadowsWere = Lighting.GlobalShadows
+	Telemetry.onTier(function(tier: number)
+		director.setBlurAllowed(tier < 2)
+		echo.setTier(tier)
+		lineup.setTier(tier)
+		state.particleScale = if tier >= 3 then 0.5 else 1
+		Lighting.GlobalShadows = if tier >= 3 then false else shadowsWere
+	end)
+
+	-- Where a sim event happened, for AudioDirector.event (docs/AUDIO.md §9 item 3).
+	local function actorOf(id: number): any
+		local run = state.run
+		return run and run.actorById and run.actorById[id]
+	end
+	local resolver = {
+		position = function(what: string, index: number): any
+			if what == "actor" then
+				local a = actorOf(index)
+				if not a then
+					return nil
+				end
+				if a.kind == "clone" then
+					return echo.positionOf(index)
+				end
+				local p = Players:GetPlayerByUserId(a.owner)
+				local root = p and p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+				return if root and root:IsA("BasePart") then root else nil
+			end
+			return world.partFor(what, if what == "van" then 1 else index)
+		end,
+		isClone = function(id: number): boolean
+			local a = actorOf(id)
+			return a ~= nil and a.kind == "clone"
+		end,
+		isMine = function(id: number): boolean
+			local a = actorOf(id)
+			return a ~= nil and a.kind == "live" and a.owner == localPlayer.UserId
+		end,
+	}
+
+	local function musicSet(): string?
+		local info = state.levelInfo
+		return if info then MUSIC_SET[info.id] else nil
 	end
 
 	-- Current view time on the loop clock (frozen between runs).
@@ -146,6 +240,9 @@ function HeistClient.start()
 	local function applyEvent(e: Protocol.Entry, live: boolean)
 		local now = os.clock()
 		local hz = Config.Rec.HZ
+		if live then
+			Sound.event(e, resolver)
+		end
 		if e.kind == EV.Busted then
 			local fx = actorFx(e.b)
 			fx.gone = "Busted"
@@ -153,11 +250,9 @@ function HeistClient.start()
 			if live then
 				echo.effect(e.b, "Busted", now)
 				gus.bang(e.a, now)
-				RewindDirector.sound("Busted")
 			end
 		elseif e.kind == EV.Zap then
-			local run = state.run
-			local a = run and run.actorById[e.a]
+			local a = actorOf(e.a)
 			if a and a.kind == "clone" then
 				local fx = actorFx(e.a)
 				fx.gone = "Zapped"
@@ -165,7 +260,6 @@ function HeistClient.start()
 			end
 			if live then
 				echo.effect(e.a, "Zapped", now)
-				RewindDirector.sound("Zap")
 			end
 		elseif e.kind == EV.Stuck then
 			actorFx(e.a).stuckT = math.max(0, (e.tick - 1) / hz)
@@ -179,11 +273,6 @@ function HeistClient.start()
 		elseif e.kind == EV.Caught then
 			if live then
 				gus.bang(e.a, now)
-				RewindDirector.sound("Busted")
-			end
-		elseif e.kind == EV.Bank then
-			if live then
-				RewindDirector.sound("KaChing")
 			end
 		end
 		hud.onEvent(e, live)
@@ -219,11 +308,17 @@ function HeistClient.start()
 		state.over = nil
 		table.clear(state.actorFx)
 		local byId = {}
-		local liveCount = 0
+		local liveCount, clones = 0, 0
+		state.myCapacity = 1
 		for _, a in msg.actors do
 			byId[a.id] = a
 			if a.kind == "live" then
 				liveCount += 1
+				if a.owner == localPlayer.UserId and type(a.capacity) == "number" then
+					state.myCapacity = math.max(1, a.capacity)
+				end
+			elseif a.kind == "clone" then
+				clones += 1
 			end
 		end
 		msg.actorById = byId
@@ -232,6 +327,8 @@ function HeistClient.start()
 		local reelEnd = state.lastRunT
 		echo.setRun(msg, state.recs, os.clock() + transition * 0.75)
 		hud.onRun(msg)
+		Telemetry.ready() -- first control (JoinToControl)
+		Sound.music("Heist", { set = musicSet() })
 		if live then
 			local kind = msg.kind or "Standard"
 			if state.reduced and kind ~= "Intro" then
@@ -241,7 +338,24 @@ function HeistClient.start()
 				state.reelT = reelEnd * (1 - u)
 			end, function()
 				state.reelT = nil
-			end)
+			end, clones)
+			hud.dawnWarning(tonumber(msg.run) or 1)
+		else
+			Sound.go(clones)
+		end
+	end
+
+	-- Ambience follows the room (docs/AUDIO.md §9 items 5-6).
+	local function setAmbience(where: string)
+		Sound.stopCue("AmbStreet")
+		Sound.stopCue("AmbRoom")
+		Sound.stopCue("AmbVault")
+		if where == "garage" then
+			Sound.play("AmbStreet")
+		elseif where == "bank" then
+			Sound.play("AmbVault")
+		elseif where == "room" then
+			Sound.play("AmbRoom")
 		end
 	end
 
@@ -253,9 +367,17 @@ function HeistClient.start()
 			return false
 		end
 		local levelModel = folder:WaitForChild("Level", 10)
+		local daily = if type(p.daily) == "table" then p.daily else nil
 		state.folder = folder
 		state.levelIndex = p.levelIndex
-		state.level = levelFor(p.levelIndex)
+		state.daily = daily
+		state.levelInfo = if type(p.level) == "table" then p.level else nil
+		state.dressing = p.dressing == true
+		state.kit = p.kit == true
+		state.level = levelFor(p.levelIndex, daily and daily.day)
+		if not state.levelInfo and state.level then
+			state.levelInfo = { id = state.level.id, name = state.level.name, kind = state.level.kind }
+		end
 		state.origin = if typeof(p.origin) == "Vector3" then p.origin else Vector3.zero
 		state.crew = p.crew or {}
 		state.mySeat = 1
@@ -270,10 +392,15 @@ function HeistClient.start()
 		if state.level then
 			gus.setLevel(state.level)
 		end
+		Sound.setChristmas(state.dressing)
+		local location = state.levelInfo and state.levelInfo.location
+			or (state.level and state.level.spec and state.level.spec.location)
+		setAmbience(if location == "Bank" then "bank" else "room")
 		return true
 	end
 
 	local function toGarage(p: any)
+		lineup.stop()
 		state.where = "garage"
 		state.garage = p
 		state.folder = nil
@@ -281,14 +408,23 @@ function HeistClient.start()
 		state.clock = nil
 		state.phase = ""
 		state.deck = nil
+		state.over = nil
 		state.lastRunT = 0
+		table.clear(state.runEndedAtByRun)
 		table.clear(state.recs)
+		world.quiet()
 		echo.clear()
 		gus.clear()
 		world.clear()
 		director.stop()
 		hud.hideAll()
+		hud.hidePreparing()
 		hud.showGarage()
+		Sound.stopCue("AlarmBell")
+		Sound.stopCue("LaserHum")
+		Sound.setChristmas(nil)
+		Sound.music("Garage")
+		setAmbience("garage")
 	end
 
 	local syncSeen = false
@@ -303,11 +439,23 @@ function HeistClient.start()
 				toGarage(p)
 				return
 			end
+			if p.where == "preparing" then
+				-- A new account while the server starts the first heist: the van door, never
+				-- the garage (no tapes, no daily vault) until the server decides (§7.5).
+				state.where = "preparing"
+				hud.hideAll()
+				hud.hideGarage()
+				hud.showPreparing()
+				return
+			end
 			if p.where ~= "heist" then
 				return
 			end
+			lineup.stop()
 			hud.hideGarage()
+			hud.hidePreparing()
 			table.clear(state.recs)
+			table.clear(state.runEndedAtByRun)
 			state.lastRunT = 0
 			if not setupInstance(p) then
 				return
@@ -329,6 +477,7 @@ function HeistClient.start()
 				hud.onRunEnd(nil)
 				hud.showBetween()
 			elseif p.phase == "Over" and p.over then
+				Sound.music("Results")
 				hud.onOver({ result = p.over })
 			end
 		elseif state.where ~= "heist" then
@@ -357,9 +506,16 @@ function HeistClient.start()
 			local summary = p.summary
 			state.frozenT = if summary and type(summary.t) == "number" then summary.t else t
 			state.lastRunT = state.frozenT
+			state.runEndedAt = os.clock()
+			if type(p.run) == "number" then
+				state.runEndedAtByRun[p.run] = state.runEndedAt
+			end
 			state.phase = "Between"
 			ffOn = false
+			Sound.stopCue("AlarmBell")
+			Sound.music("Heist", { set = musicSet() }) -- out of the chase
 			hud.onRunEnd(p)
+			echo.prewarm() -- next run's rigs, a few per frame, while the deck is up
 		elseif kind == "Deck" then
 			state.deck = p
 			hud.onDeck()
@@ -368,7 +524,36 @@ function HeistClient.start()
 			end
 		elseif kind == "Over" then
 			state.phase = "Over"
-			hud.onOver(p)
+			world.quiet()
+			Sound.stopCue("AlarmBell")
+			Sound.music("Results")
+			local over = p.result
+			-- The Crew Line-up cut, then the results card (§6.6).
+			-- "◀ ME, N SEC AGO" (CLIPS §1.2: always true): the figure starts where that
+			-- clone's replay ended, i.e. you when its run ended, so its age at the walk-off
+			-- is the time since that run's RunEnd plus the start delay. Unknown -> no label.
+			local over0 = os.clock()
+			local function ageOf(entry: any): number?
+				local endedAt = state.runEndedAtByRun[tonumber(entry.run) or -1]
+				if not endedAt then
+					return nil
+				end
+				return over0 - endedAt + H.LINEUP_START_DELAY
+			end
+			if type(over) == "table" then
+				lineup.play(over, function()
+					hud.onOver(p)
+				end, ageOf)
+			else
+				hud.onOver(p)
+			end
+		elseif kind == "Leader" then
+			-- The crew leader left while the results card is up: the new one gets REPLAY / NEXT.
+			local over = state.over
+			if over and type(p.leader) == "number" then
+				over.leader = p.leader
+				hud.refreshResults()
+			end
 		elseif kind == "Toast" then
 			hud.toast(tostring(p.text))
 		end
@@ -425,10 +610,19 @@ function HeistClient.start()
 		end
 		local now = os.clock()
 		local tView = viewTime()
+		-- MicroProfiler labels (MASTERPLAN §8.6 budgets): constant names, one per view.
+		debug.profilebegin("EH.EchoSample")
 		echo.update(tView, now, dt, state.reelT)
+		debug.profileend()
+		debug.profilebegin("EH.GuardVision")
 		gus.update(tView, now, dt)
+		debug.profileend()
+		debug.profilebegin("EH.World")
 		world.update(tView, now, dt)
+		debug.profileend()
+		debug.profilebegin("EH.Hud")
 		hud.update(tView, now, dt, world)
+		debug.profileend()
 	end)
 end
 

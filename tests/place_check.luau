@@ -10,6 +10,8 @@ local fs = require("@lune/fs")
 local process = require("@lune/process")
 local roblox = require("@lune/roblox")
 
+local Config = require("../src/shared/Config")
+
 local path = process.args[1] or "build/EchoHeist.rbxlx"
 local game = roblox.deserializePlace(fs.readFile(path))
 
@@ -209,9 +211,32 @@ end
 -- Sim game path (Config.GAME_MODE = "sim"): server, client and shared Heist modules
 local heistServer = server and server:FindFirstChild("Heist")
 expect(heistServer ~= nil and heistServer.ClassName == "Folder", "Server.Heist is a Folder")
-for _, name in { "HeistService", "HeistInstance", "LevelBuilder", "Lobby", "Avatars" } do
+for _, name in { "HeistService", "HeistInstance", "LevelBuilder", "KitPlan", "KitDresser", "Lobby", "Avatars" } do
 	local m = heistServer and heistServer:FindFirstChild(name)
 	expect(m ~= nil and m.ClassName == "ModuleScript", "Server.Heist." .. name .. " is a ModuleScript")
+end
+-- The modules the entry script and the heist server require by path (sim path wiring:
+-- analytics + LiveFlags, the art kit) are where those requires look for them.
+for _, where in
+	{ { "Analytics", "Analytics" }, { "Analytics", "LiveFlags" }, { "Kit", "KitService" }, { "Kit", "KitData" } }
+do
+	local folder = server and server:FindFirstChild(where[1])
+	local m = folder and folder:FindFirstChild(where[2])
+	expect(m ~= nil and m.ClassName == "ModuleScript", "Server." .. where[1] .. "." .. where[2] .. " is a ModuleScript")
+end
+-- Every require(script.Parent:WaitForChild("X")) in Server.Heist lands on a sibling module.
+if heistServer then
+	for _, m in heistServer:GetChildren() do
+		if m:IsA("ModuleScript") then
+			for name in string.gmatch(m.Source, 'require%(script%.Parent:WaitForChild%("([%w_]+)"%)%)') do
+				local target = heistServer:FindFirstChild(name)
+				expect(
+					target ~= nil and target:IsA("ModuleScript"),
+					"Server.Heist." .. m.Name .. " require resolves: " .. name
+				)
+			end
+		end
+	end
 end
 local heistShared = shared and shared:FindFirstChild("Heist")
 for _, name in { "Protocol", "Palette" } do
@@ -302,7 +327,7 @@ if sharedRoot and sharedRoot:FindFirstChild("Sim") then
 		return node
 	end
 	local checked, bad = 0, 0
-	for _, folderName in { "Sim", "Rec", "Levels" } do
+	for _, folderName in { "Sim", "Rec", "Levels", "Heist" } do
 		local folder = sharedRoot:FindFirstChild(folderName)
 		for _, m in (if folder then folder:GetDescendants() else {}) do
 			if m:IsA("ModuleScript") then
@@ -317,7 +342,10 @@ if sharedRoot and sharedRoot:FindFirstChild("Sim") then
 			end
 		end
 	end
-	expect(bad == 0 and checked > 0, string.format("pure layers: %d relative require(s) resolve in the place", checked))
+	expect(
+		bad == 0 and checked > 0,
+		string.format("pure layers + Shared.Heist: %d relative require(s) resolve in the place", checked)
+	)
 end
 
 -- Single source of truth: the level code must not set Lighting service properties
@@ -326,6 +354,34 @@ if server then
 	local src = builder and builder.Source or ""
 	local assigns = string.match(src, "Lighting%.[%w_]+%s*=") ~= nil
 	expect(not assigns, "LevelBuilder does not assign Lighting properties (project file owns them)")
+end
+
+-- StreamingEnabled (MASTERPLAN §3.3, §8.6): off until the Nov 16 fun gate (v0.1 was never
+-- checked under streaming). Once the project file turns it on, its settings must match.
+do
+	local ws = game:GetService("Workspace")
+	local okOn, on = pcall(function()
+		return (ws :: any).StreamingEnabled
+	end)
+	if okOn and on == true then
+		expectProps(ws, "Workspace", {
+			StreamingMinRadius = 128,
+			StreamingTargetRadius = 512,
+		})
+		local okMode, mode = pcall(function()
+			return tostring((ws :: any).StreamOutBehavior)
+		end)
+		expect(
+			okMode and string.find(mode, "Opportunistic", 1, true) ~= nil,
+			"Workspace.StreamOutBehavior Opportunistic"
+		)
+		expect(
+			Config.Heist.INSTANCE_SPACING > 2 * 512,
+			"instance spacing is wider than twice the streaming target radius"
+		)
+	else
+		print("info  Workspace.StreamingEnabled is off (flip after the fun gate: MASTERPLAN §3.3)")
+	end
 end
 
 print(string.format("\n%d problem(s)", problems))

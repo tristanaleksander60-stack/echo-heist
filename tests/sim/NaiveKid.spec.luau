@@ -132,6 +132,21 @@ return function(test)
 		return t[math.max(1, math.floor((#t + 1) / 2))] or 0
 	end
 
+	test("L1: a kid who taps END RUN off the plate in run 1 still banks within 3 runs (untilDone)", function()
+		local level = Harness.level(1)
+		for seed = 1, SEEDS do
+			local plan = NaiveKid.plan(level, seed, 3)
+			plan.runs[1] = { [1] = { { endRun = true } } } -- the curious tap at 1.5 s
+			local sim, runs = Harness.play(level, plan, { onTick = invariants })
+			Assert.eq(EventLog.count(runs[1].log, EV.AutoEnd), 0, "run 1 ended off the plate")
+			local banked = false
+			for _, run in runs do
+				banked = banked or EventLog.count(run.log, EV.Bank) > 0
+			end
+			Assert.truthy(banked or sim.phase == "Over", "seed " .. seed .. ": banks by run 3")
+		end
+	end)
+
 	test("Clone Party: most naive kids reach Haul1 by Dawn, Haul3 takes a plan", function()
 		local p = party()
 		print(

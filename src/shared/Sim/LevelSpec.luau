@@ -67,7 +67,9 @@
 --                                  route[1]; `wait` = dwell at that point; `face` = dwell yaw
 --   nav = {{x, z}}                 chase waypoints (A* graph built here)
 --   alarm = {trigger = lootId, vanSeconds?, lockSeconds?, onCatch?}
---   tutorial = {autoEnd = {runs = {1}, plate = id, seconds?}}   L1 forced quick rewind
+--   tutorial = {autoEnd = {runs = {1}, plate = id, seconds?, untilDone?}}   L1 forced quick
+--                                  rewind; untilDone = also every later run until it has
+--                                  fired once (a kid who ended run 1 off the plate)
 --   lineup = {x, z, yaw?}          Crew Line-up row centre (default: on the street,
 --                                  LINEUP_STREET_GAP behind the van, facing +Z toward a
 --                                  street camera with the van and the front behind)
@@ -142,7 +144,9 @@ export type LevelData = {
 	dataId: string?,
 	lineup: { x: number, z: number, yaw: number, dx: number, dz: number, fx: number, fz: number },
 	hooks: any,
-	tutorial: { autoEnd: { runs: { [number]: boolean }, plate: number, seconds: number }? }?,
+	tutorial: {
+		autoEnd: { runs: { [number]: boolean }, plate: number, seconds: number, untilDone: boolean }?,
+	}?,
 	index: { [string]: { [string]: number } },
 }
 
@@ -676,6 +680,9 @@ function LevelSpec.validate(spec: any): (boolean, { string })
 			if type(ae.runs) ~= "table" or #ae.runs == 0 then
 				err("tutorial.autoEnd.runs must list run numbers")
 			end
+			if ae.untilDone ~= nil and type(ae.untilDone) ~= "boolean" then
+				err("tutorial.autoEnd.untilDone must be a boolean")
+			end
 		end
 	end
 
@@ -881,7 +888,12 @@ function LevelSpec.compile(spec: any): LevelData
 			runs[r] = true
 		end
 		tutorial = {
-			autoEnd = { runs = runs, plate = index.plate[ae.plate], seconds = ae.seconds or S.L1_AUTO_END_SECONDS },
+			autoEnd = {
+				runs = runs,
+				plate = index.plate[ae.plate],
+				seconds = ae.seconds or S.L1_AUTO_END_SECONDS,
+				untilDone = ae.untilDone == true,
+			},
 		}
 	end
 

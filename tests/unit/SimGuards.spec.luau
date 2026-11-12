@@ -9,7 +9,7 @@ local Guards = require("../../src/shared/Sim/Guards")
 local HeistSim = require("../../src/shared/Sim/HeistSim")
 local LevelSpec = require("../../src/shared/Sim/LevelSpec")
 local Mechanisms = require("../../src/shared/Sim/Mechanisms")
-local Catalog = require("../../src/shared/Levels/Catalog")
+local Harness = require("../sim/Harness")
 local TestLevels = require("../sim/TestLevels")
 
 local EV = EventLog.EV
@@ -38,7 +38,7 @@ end
 
 return function(test)
 	test("patrol(t) is periodic and a pure function of time", function()
-		local level = LevelSpec.compile(Catalog[4])
+		local level = Harness.level(4) -- L4 Night Clerk
 		local route = level.guards[1].route
 		Assert.near(route.period, 2 * (19 / 8) + 2.5 + 1.5, 1e-9, "period")
 		for k = 0, 400 do

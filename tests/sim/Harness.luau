@@ -1,5 +1,8 @@
 -- Drives HeistSim with Bots for the L2 specs (not a spec itself).
---   Harness.level(n)                  compiled launch level n (1-4)
+--   Harness.level(n)                  compiled launch level Ln (design number n = spec.num - 100,
+--                                     1-6), wherever Levels/Catalog plays it
+--   Harness.spec(n)                   the raw LevelSpec table of launch level Ln
+--   Harness.playIndex(n)              Ln's place in Levels/Catalog (the play order)
 --   Harness.play(level, plan, opts)   plays a whole heist from a plan:
 --     plan = {
 --       players = {ids}?  (default {1}),
@@ -21,8 +24,23 @@ local Harness = {}
 
 local HIST = 32
 
+-- Launch levels by design number (L1..L6 = num 101..106): the Catalog is in play order
+-- (Clone Party, L5, is played third), so tests never index it by level number.
+function Harness.playIndex(n: number): number
+	for i, spec in Catalog do
+		if spec.num == 100 + n then
+			return i
+		end
+	end
+	error(`no launch level L{n} in Levels/Catalog`)
+end
+
+function Harness.spec(n: number): any
+	return Catalog[Harness.playIndex(n)]
+end
+
 function Harness.level(n: number): any
-	return LevelSpec.compile(Catalog[n])
+	return LevelSpec.compile(Harness.spec(n))
 end
 
 -- Rolling history of what clients can see (doors, lasers) after each tick.

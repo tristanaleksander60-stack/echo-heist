@@ -121,7 +121,7 @@ Instancing only works when meshes share the same MeshContent and identical Surfa
 | Base mid | Plum Slate | `#3A3560` | most walls; large surfaces at 30-55% value |
 | Lit interior | Warm Marble | `#D8C8A8` | surfaces inside light pools |
 | Metal | Vault Steel | `#7C86A6` | doors, safes, rails |
-| **Danger** | Alarm Red | `#FF3348` | lasers, alarms, "seen!" only |
+| **Danger** | Alarm Red | `#FF3838` | lasers, alarms, "seen!" only (owner-confirmed 2026-11-12; this research first proposed `#FF3348`) |
 | Guard light | Torch Amber | `#FFD27A` | flashlight cones, guard lamps |
 | **Loot** | Heist Gold | `#FFC21F` | gold, cash, loot sparkle; nothing else gold |
 | Exit | Getaway White | `#F4F7FF` | van, chevrons, exit arrows (with icon) |

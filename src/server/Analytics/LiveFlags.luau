@@ -27,6 +27,10 @@
 --   LiveFlags.snapshot() -> { values, sources, status }
 --   LiveFlags.setTestValue(name, value?)     Studio/test only; nil clears
 --   LiveFlags.refresh()                      re-read the DataStore now (yields)
+--   LiveFlags.waitForFirstRead(timeout)      yields until both the DataStore and ConfigService layers
+--                                            were tried once (or timeout); true when the store was read.
+--   Until the first DataStore read succeeds, a switch killed only in the DataStore document is NOT
+--   applied (status.storeKnown = false): ConfigService is the primary incident path (runbook).
 --   LiveFlags.Changed                        Signal (name, value, oldValue, source)
 -- Clients: ReplicatedStorage.LiveFlags (Folder) carries one attribute per `client = true` flag; release
 -- flags also get a per-player attribute LF_<name> (the sticky rollout answer for that player).
@@ -62,6 +66,7 @@ local status = {
 	config = "idle", -- idle | ok | unavailable | error
 	storeReadAt = 0,
 	configReadAt = 0,
+	storeKnown = false, -- a DataStore read has succeeded at least once (else its kill switches are unknown)
 	errors = {} :: { string },
 }
 
@@ -143,7 +148,13 @@ local function pollStore()
 	local ok, result = readStore()
 	if not ok then
 		if status.store ~= "error" then
-			warn(`[LiveFlags] DataStore read failed, keeping the last good flags: {result}`)
+			if status.storeKnown then
+				warn(`[LiveFlags] DataStore read failed, keeping the last good flags: {result}`)
+			else
+				warn(
+					`[LiveFlags] DataStore read failed before any good read: switches killed only in the DataStore are NOT applied on this server (use ConfigService for incidents): {result}`
+				)
+			end
 		end
 		status.store = "error"
 		return
@@ -172,6 +183,7 @@ local function pollStore()
 	layers.store = overrides
 	status.store = if doc == nil then "missing" else "ok"
 	status.storeReadAt = os.time()
+	status.storeKnown = true
 	if #LiveFlagSpec.changed(before, overrides) > 0 or #LiveFlagSpec.changed(overrides, before) > 0 then
 		warnShadowed()
 	end
@@ -302,6 +314,17 @@ end
 
 function LiveFlags.refresh()
 	pollStore()
+end
+
+function LiveFlags.waitForFirstRead(timeout: number): boolean
+	if not started then
+		return false -- never started (analytics off): nothing to wait for
+	end
+	local deadline = os.clock() + math.max(0, timeout)
+	while (status.store == "idle" or status.config == "idle") and os.clock() < deadline do
+		task.wait(0.1)
+	end
+	return status.storeKnown
 end
 
 function LiveFlags.start()

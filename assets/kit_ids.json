@@ -1,0 +1,722 @@
+{
+ "appearances": {
+  "assetId": 138681520724031,
+  "history": [],
+  "moderation": "Approved",
+  "pieces": [
+   "VaultDoor_DialFace"
+  ],
+  "sha256": "f94e0498e3f654f3a50f106bb9037b2c2eca29a36f03c7873da6bdee6b7cda19",
+  "uploaded": "2026-11-12T11:36:06Z"
+ },
+ "creator": {
+  "userId": "10346200733"
+ },
+ "images": {
+  "EH_Palette_Bank": {
+   "assetId": 108670745274453,
+   "file": "assets/textures/EH_Palette_Bank.png",
+   "history": [],
+   "image": 125339359087334,
+   "moderation": "Approved",
+   "revisionId": "1",
+   "sha256": "3a21c4d0f9246bff355a8a9adc2db6b030f0ea06da7c35366f74f1f2d13b9710",
+   "uploaded": "2026-11-12T11:32:30Z"
+  },
+  "EH_Palette_CornerShop": {
+   "assetId": 74736138806862,
+   "file": "assets/textures/EH_Palette_CornerShop.png",
+   "history": [],
+   "image": 108976991965311,
+   "moderation": "Approved",
+   "revisionId": "1",
+   "sha256": "6006e6dfdb6de68c0bbcc3bfd3f5b1910b7b9f4051f9b0ce4dd6c615ad6932e1",
+   "uploaded": "2026-11-12T11:32:36Z"
+  },
+  "EH_Palette_ToyShop": {
+   "assetId": 120624084393346,
+   "file": "assets/textures/EH_Palette_ToyShop.png",
+   "history": [],
+   "image": 77723873181805,
+   "moderation": "Approved",
+   "revisionId": "1",
+   "sha256": "e3f49f38f6d2c95359d47b17ed74f76c0d2785be79147933c32025476908b06c",
+   "uploaded": "2026-11-12T11:32:41Z"
+  },
+  "VaultDoor_DialFace_Color": {
+   "assetId": 96422763187604,
+   "file": "assets/textures/VaultDoor_DialFace_Color.png",
+   "history": [],
+   "image": 72384496565045,
+   "moderation": "Approved",
+   "revisionId": "1",
+   "sha256": "ca24ce3250d24e5db44cc75c5ef320e59554a360f66d121df3f3efafb8c0e7c6",
+   "uploaded": "2026-11-12T11:32:45Z"
+  },
+  "VaultDoor_DialFace_Emissive": {
+   "assetId": 94820075279396,
+   "file": "assets/textures/VaultDoor_DialFace_Emissive.png",
+   "history": [],
+   "image": 70794957142854,
+   "moderation": "Approved",
+   "revisionId": "1",
+   "sha256": "021945f2917c689420c25d6e89b94306b5305ff70bed948712cad101979d6f1d",
+   "uploaded": "2026-11-12T11:32:50Z"
+  },
+  "VaultDoor_DialFace_Roughness": {
+   "assetId": 129386366200891,
+   "file": "assets/textures/VaultDoor_DialFace_Roughness.png",
+   "history": [],
+   "image": 72897257789999,
+   "moderation": "Approved",
+   "revisionId": "1",
+   "sha256": "0663c3cd6404a5740d315fef5ca9b1ad05dd8cb6fbf96a2b33151ef728c3f3a8",
+   "uploaded": "2026-11-12T11:32:56Z"
+  }
+ },
+ "models": {
+  "BankFront_24x12": {
+   "assetId": 83550543479169,
+   "file": "assets/fbx/BankFront_24x12.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "BankFront_24x12"
+   ],
+   "revisionId": "1",
+   "sha256": "ab37d5a3adb30e7e536eb6d8cb1ed82e06b5f8db4d806b92063a3261f3e95a93",
+   "uploaded": "2026-11-12T11:20:58Z"
+  },
+  "Candy": {
+   "assetId": 98835635040680,
+   "file": "assets/fbx/Candy.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Candy"
+   ],
+   "revisionId": "1",
+   "sha256": "8afcd973124c39dc70ac91844f9448eefdf7063c6db87af7570f23aa5da75f19",
+   "uploaded": "2026-11-12T11:21:15Z"
+  },
+  "CashBag": {
+   "assetId": 120803856698199,
+   "file": "assets/fbx/CashBag.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "CashBag"
+   ],
+   "revisionId": "1",
+   "sha256": "7fe130410dca896ee74e8a97651be88284ec82c3149fab0817dfce1de6d579b7",
+   "uploaded": "2026-11-12T11:21:26Z"
+  },
+  "CashRegister": {
+   "assetId": 75431701335019,
+   "file": "assets/fbx/CashRegister.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "CashRegister",
+    "CashRegister_Drawer"
+   ],
+   "revisionId": "1",
+   "sha256": "9f64710255ead1f4fd3eb28d5fd6375622f25b9af8f4a1d2b9de40ec8bd9005d",
+   "uploaded": "2026-11-12T11:21:42Z"
+  },
+  "Counter_4x4": {
+   "assetId": 85663296446467,
+   "file": "assets/fbx/Counter_4x4.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Counter_4x4"
+   ],
+   "revisionId": "1",
+   "sha256": "1466a042c3eab4491f0c335bf804595d8dff50e303607bb1e42637165009fcb6",
+   "uploaded": "2026-11-12T11:21:59Z"
+  },
+  "Counter_8x2": {
+   "assetId": 85972940250266,
+   "file": "assets/fbx/Counter_8x2.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Counter_8x2"
+   ],
+   "revisionId": "1",
+   "sha256": "28a1cddeb9e24f07873547960fae5b6de36a59b31862c7b7d7283343cb07773b",
+   "uploaded": "2026-11-12T11:22:15Z"
+  },
+  "Counter_8x4": {
+   "assetId": 120674079113846,
+   "file": "assets/fbx/Counter_8x4.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Counter_8x4"
+   ],
+   "revisionId": "1",
+   "sha256": "be7900fdd81cf941811e6e9addae1647686d3b68651c5ee9a86be5b568c0b4d1",
+   "uploaded": "2026-11-12T11:22:23Z"
+  },
+  "Diamond": {
+   "assetId": 92218379891720,
+   "file": "assets/fbx/Diamond.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Diamond"
+   ],
+   "revisionId": "1",
+   "sha256": "42e4b64aaefe1286a0a25b6b45e3af75986b03b97b807151621835ca0dcad08c",
+   "uploaded": "2026-11-12T11:22:31Z"
+  },
+  "Floor_8x8": {
+   "assetId": 111900679209514,
+   "file": "assets/fbx/Floor_8x8.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Floor_8x8"
+   ],
+   "revisionId": "1",
+   "sha256": "48eb69aae9e016fef8bcee158a0e6752a21d2014837f101debbcc51cc36b87fb",
+   "uploaded": "2026-11-12T11:22:42Z"
+  },
+  "GiantPresent": {
+   "assetId": 71155770348733,
+   "file": "assets/fbx/GiantPresent.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "GiantPresent"
+   ],
+   "revisionId": "1",
+   "sha256": "98998091dcaeb5f5d779b1c5bd741023cf25666a24187881fafd4639eaa43c45",
+   "uploaded": "2026-11-12T11:22:49Z"
+  },
+  "GoldBar": {
+   "assetId": 88506285657272,
+   "file": "assets/fbx/GoldBar.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "GoldBar"
+   ],
+   "revisionId": "1",
+   "sha256": "321190072b8f6f65fa1520b5f7b9ff6279c710fdb6dd3f8a1e1217356f53912a",
+   "uploaded": "2026-11-12T11:18:57Z"
+  },
+  "GoldStack": {
+   "assetId": 78782438918759,
+   "file": "assets/fbx/GoldStack.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "GoldStack"
+   ],
+   "revisionId": "1",
+   "sha256": "aa8d18d3fef2b45b7a959bbb43de23c8cc7380aa43b824ab2c6b2058f629eaf5",
+   "uploaded": "2026-11-12T11:22:57Z"
+  },
+  "Gus": {
+   "assetId": 90023245039286,
+   "file": "assets/fbx/Gus.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Gus_Cap",
+    "Gus_Flashlight",
+    "Gus_FlashlightLens",
+    "Gus_Head",
+    "Gus_LeftFoot",
+    "Gus_LeftHand",
+    "Gus_LeftLowerArm",
+    "Gus_LeftLowerLeg",
+    "Gus_LeftUpperArm",
+    "Gus_LeftUpperLeg",
+    "Gus_LowerTorso",
+    "Gus_RightFoot",
+    "Gus_RightHand",
+    "Gus_RightLowerArm",
+    "Gus_RightLowerLeg",
+    "Gus_RightUpperArm",
+    "Gus_RightUpperLeg",
+    "Gus_UpperTorso"
+   ],
+   "revisionId": "1",
+   "sha256": "f705723e124e43c7e926a1edaed559ad866cb0ec3c5cb4388c52ee8c376c32be",
+   "uploaded": "2026-11-12T11:23:08Z"
+  },
+  "Gus_DonutBox": {
+   "assetId": 79035282364017,
+   "file": "assets/fbx/Gus_DonutBox.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Gus_DonutBox"
+   ],
+   "revisionId": "1",
+   "sha256": "afde3b08433c69aa8858d1e3f0e90ec1835aa4e4afa5b504d6d3d6f8cb3ec1d5",
+   "uploaded": "2026-11-12T11:23:25Z"
+  },
+  "Gus_SantaHat": {
+   "assetId": 89376997449648,
+   "file": "assets/fbx/Gus_SantaHat.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Gus_SantaHat"
+   ],
+   "revisionId": "1",
+   "sha256": "706062774b66aaa2bd612073e21f232545877a56c2f5dba940b485f8902e1f6c",
+   "uploaded": "2026-11-12T11:23:36Z"
+  },
+  "Hide_CoatRack": {
+   "assetId": 125555342401454,
+   "file": "assets/fbx/Hide_CoatRack.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Hide_CoatRack"
+   ],
+   "revisionId": "1",
+   "sha256": "76c43da0cea7cc8ef49305fed413b2c075f6d3920e7a1c9d4e26e1fab4906661",
+   "uploaded": "2026-11-12T11:23:52Z"
+  },
+  "Hide_CoatStand": {
+   "assetId": 138836219626680,
+   "file": "assets/fbx/Hide_CoatStand.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Hide_CoatStand"
+   ],
+   "revisionId": "1",
+   "sha256": "c3ed7772916c63f14938830a6ba1e9a1b64cc9e16d68d71529148ca6e0475776",
+   "uploaded": "2026-11-12T11:24:09Z"
+  },
+  "Hide_Crate": {
+   "assetId": 90032728844632,
+   "file": "assets/fbx/Hide_Crate.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Hide_Crate"
+   ],
+   "revisionId": "1",
+   "sha256": "f05a69cc8e2357c683c9e58302870ea66e2aad277fbea5293ce40773374d4e70",
+   "uploaded": "2026-11-12T11:24:25Z"
+  },
+  "Hide_Curtain": {
+   "assetId": 113478028649719,
+   "file": "assets/fbx/Hide_Curtain.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Hide_Curtain"
+   ],
+   "revisionId": "1",
+   "sha256": "40d5f8eab3775ee024638baa82ddabf4324f0823319f124123fd5b38340837ae",
+   "uploaded": "2026-11-12T11:24:33Z"
+  },
+  "Hide_DepositStack": {
+   "assetId": 70620102409754,
+   "file": "assets/fbx/Hide_DepositStack.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Hide_DepositStack"
+   ],
+   "revisionId": "1",
+   "sha256": "309e9eb1077a7fe021d971ed502466bf3a30e7c3c6c9fd73e3f972ac14e8b670",
+   "uploaded": "2026-11-12T11:24:49Z"
+  },
+  "Hide_Plant": {
+   "assetId": 134669941232225,
+   "file": "assets/fbx/Hide_Plant.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Hide_Plant"
+   ],
+   "revisionId": "1",
+   "sha256": "59ebfa7e160659732444eb8fc011b841ac477f2d296537d29bfe232d06c005f1",
+   "uploaded": "2026-11-12T11:25:06Z"
+  },
+  "Lamp_Ceiling": {
+   "assetId": 75558260382236,
+   "file": "assets/fbx/Lamp_Ceiling.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Lamp_Ceiling",
+    "Lamp_Ceiling_Bulb"
+   ],
+   "revisionId": "1",
+   "sha256": "8ebdd63f5cc0cede22944b82bd14abfc7627bd4e00552b152a9c3f70c500a592",
+   "uploaded": "2026-11-12T11:25:13Z"
+  },
+  "LaserEmitter": {
+   "assetId": 126677387744963,
+   "file": "assets/fbx/LaserEmitter.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "LaserEmitter",
+    "LaserEmitter_Lens"
+   ],
+   "revisionId": "1",
+   "sha256": "58a7dfaf49af332b7c7b42270e5bd63467526be6d6052f530027c998f8f5bab1",
+   "uploaded": "2026-11-12T11:25:30Z"
+  },
+  "LaserEmitter_CandyCane": {
+   "assetId": 77626293773101,
+   "file": "assets/fbx/LaserEmitter_CandyCane.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "LaserEmitter_CandyCane"
+   ],
+   "revisionId": "1",
+   "sha256": "581b2f5a47cc0a642854a010fd02b7950aee1cb30fca7486d7b8c3a314005016",
+   "uploaded": "2026-11-12T11:25:41Z"
+  },
+  "Ornaments": {
+   "assetId": 115394095230080,
+   "file": "assets/fbx/Ornaments.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Ornament_Bauble",
+    "Ornament_Bell",
+    "Ornament_Donut",
+    "Ornament_Stand",
+    "Ornament_Star",
+    "Ornament_Van",
+    "Ornament_VaultDoor"
+   ],
+   "revisionId": "1",
+   "sha256": "113d23c01a174255289669981fd94a3f6e933676f3f3c3879292f3ccbd90667a",
+   "uploaded": "2026-11-12T11:25:48Z"
+  },
+  "Pedestal_Diamond": {
+   "assetId": 102876044490301,
+   "file": "assets/fbx/Pedestal_Diamond.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Pedestal_Diamond",
+    "Pedestal_Diamond_Case"
+   ],
+   "revisionId": "1",
+   "sha256": "5a3d6e3b6c49e6fa530f674165f2eeb00566a100d65938feed805fe377ae8f16",
+   "uploaded": "2026-11-12T11:26:05Z"
+  },
+  "Pillar_2x12": {
+   "assetId": 106907997975301,
+   "file": "assets/fbx/Pillar_2x12.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Pillar_2x12"
+   ],
+   "revisionId": "1",
+   "sha256": "1da38d56368de2eefae6c20cb4522ba3668c8d54e35bd08f56098df59abfe75c",
+   "uploaded": "2026-11-12T11:26:16Z"
+  },
+  "Plate_4x4": {
+   "assetId": 74030198728996,
+   "file": "assets/fbx/Plate_4x4.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Plate_4x4",
+    "Plate_4x4_Ring"
+   ],
+   "revisionId": "1",
+   "sha256": "60b581cd182f55286ea955577ceedea4a4341c024e072d3c5389f4556bb0b6ac",
+   "uploaded": "2026-11-12T11:26:32Z"
+  },
+  "Present": {
+   "assetId": 130592268643619,
+   "file": "assets/fbx/Present.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Present"
+   ],
+   "revisionId": "1",
+   "sha256": "8544f1dba37274d5c2ffe6315db9362b78cd41bfc5043d01e1ff02e512767069",
+   "uploaded": "2026-11-12T11:26:49Z"
+  },
+  "Safe": {
+   "assetId": 79233328477157,
+   "file": "assets/fbx/Safe.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Safe",
+    "Safe_Door"
+   ],
+   "revisionId": "1",
+   "sha256": "689df2d40a4a94cb87ed19d08c0dfb01da45be2e726b2c3fa4e39da5b16e7c00",
+   "uploaded": "2026-11-12T11:27:05Z"
+  },
+  "Shelf_8x2": {
+   "assetId": 106995284272490,
+   "file": "assets/fbx/Shelf_8x2.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Shelf_8x2"
+   ],
+   "revisionId": "1",
+   "sha256": "9ad7e27236d73ebaf31f0fd1316e2ecaec1834aadcbecba42ec8a455f5088064",
+   "uploaded": "2026-11-12T11:27:13Z"
+  },
+  "Shelf_Gondola_8x2": {
+   "assetId": 79459074467412,
+   "file": "assets/fbx/Shelf_Gondola_8x2.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Shelf_Gondola_8x2"
+   ],
+   "revisionId": "1",
+   "sha256": "ec0c6df2bbdd54cc38ef1260b8119b0f3a0e3974ba9d73244d673631d900e71f",
+   "uploaded": "2026-11-12T11:27:29Z"
+  },
+  "Shutter_8x10": {
+   "assetId": 108000796857150,
+   "file": "assets/fbx/Shutter_8x10.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Shutter_8x10"
+   ],
+   "revisionId": "1",
+   "sha256": "5c958e20b8491a873c1a09612344ae2c4976c0bfd84fdcd05f5dd8993f201529",
+   "uploaded": "2026-11-12T11:27:53Z"
+  },
+  "Storefront_24x12": {
+   "assetId": 94915564343762,
+   "file": "assets/fbx/Storefront_24x12.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Storefront_24x12",
+    "Storefront_24x12_Glass"
+   ],
+   "revisionId": "1",
+   "sha256": "6eef754e62580bbf9b980943d375efaa3ace30c3d5e03cfd8446297ee64738d1",
+   "uploaded": "2026-11-12T11:28:10Z"
+  },
+  "Switch_Wall": {
+   "assetId": 103972170050223,
+   "file": "assets/fbx/Switch_Wall.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Switch_Wall",
+    "Switch_Wall_Lamp",
+    "Switch_Wall_Lever"
+   ],
+   "revisionId": "1",
+   "sha256": "5bbecd2c73584d4809206e5d50a2b8b198465d47f0b75e81e4f71480d92ab19d",
+   "uploaded": "2026-11-12T11:28:26Z"
+  },
+  "Teddy": {
+   "assetId": 81918134995952,
+   "file": "assets/fbx/Teddy.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Teddy"
+   ],
+   "revisionId": "1",
+   "sha256": "d1f4a7ae67b92636e7aa7f8ea674449d4e3256b549525276c2d60bb724b750fa",
+   "uploaded": "2026-11-12T11:28:34Z"
+  },
+  "TellerCounter_8x4": {
+   "assetId": 120106658396251,
+   "file": "assets/fbx/TellerCounter_8x4.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "TellerCounter_8x4",
+    "TellerCounter_8x4_Glass"
+   ],
+   "revisionId": "1",
+   "sha256": "780f49dccada30a19a862b21f11c02f11f47096d2295dfdd9eb015507458a83d",
+   "uploaded": "2026-11-12T11:28:50Z"
+  },
+  "Toy": {
+   "assetId": 95871763460721,
+   "file": "assets/fbx/Toy.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Toy"
+   ],
+   "revisionId": "1",
+   "sha256": "1f50ba9e94789ac3269d5bbb10680aafc8711b944cf00be98492922a222d731e",
+   "uploaded": "2026-11-12T11:29:07Z"
+  },
+  "Van": {
+   "assetId": 140548604204136,
+   "file": "assets/fbx/Van.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Van",
+    "Van_Shelf"
+   ],
+   "revisionId": "1",
+   "sha256": "1920f55bcd955f07593c51e6fd309b137cff0569def27705ee0399ba2ba8b72f",
+   "uploaded": "2026-11-12T11:29:18Z"
+  },
+  "VaultDoor": {
+   "assetId": 130751008696945,
+   "file": "assets/fbx/VaultDoor.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "VaultDoor_Dial",
+    "VaultDoor_DialFace",
+    "VaultDoor_DialRing",
+    "VaultDoor_Door",
+    "VaultDoor_Frame"
+   ],
+   "revisionId": "1",
+   "sha256": "1316c307d9eff4cc71bad419da5f815190284e9dbcadfa6547a1ea5ff14fb50d",
+   "uploaded": "2026-11-12T11:29:34Z"
+  },
+  "Wall_4x12": {
+   "assetId": 91704849968562,
+   "file": "assets/fbx/Wall_4x12.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Wall_4x12"
+   ],
+   "revisionId": "1",
+   "sha256": "a821ed7a56bebe314556c83178cd31a4dbccf03c7f223e4732fe84f01065ceef",
+   "uploaded": "2026-11-12T11:29:58Z"
+  },
+  "Wall_8x12": {
+   "assetId": 109706670469141,
+   "file": "assets/fbx/Wall_8x12.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Wall_8x12"
+   ],
+   "revisionId": "1",
+   "sha256": "cf2ac2c94a63a97f0f1952b847255beb519d375d0109074e1c142a3df03099b6",
+   "uploaded": "2026-11-12T11:30:15Z"
+  },
+  "Wall_Door_8x12": {
+   "assetId": 129679275921951,
+   "file": "assets/fbx/Wall_Door_8x12.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Wall_Door_8x12",
+    "Wall_Door_8x12_Leaf"
+   ],
+   "revisionId": "1",
+   "sha256": "3b0902b97e21545136c27815c868450488eb887b8791e93a0e3b8e0de6e0f3ea",
+   "uploaded": "2026-11-12T11:30:32Z"
+  },
+  "Wall_Window_8x12": {
+   "assetId": 121895973439896,
+   "file": "assets/fbx/Wall_Window_8x12.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Wall_Window_8x12",
+    "Wall_Window_8x12_Glass"
+   ],
+   "revisionId": "1",
+   "sha256": "ccd5a57b45d843a16297f8b6a04687fca43586c92930c32a4ead70f953b81073",
+   "uploaded": "2026-11-12T11:30:45Z"
+  },
+  "Xmas_Garland_8": {
+   "assetId": 107208764811097,
+   "file": "assets/fbx/Xmas_Garland_8.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Xmas_Garland_8"
+   ],
+   "revisionId": "1",
+   "sha256": "5843fb4c882e0888cffa4c613107a986a20864f497fd077edf720dc1f566687a",
+   "uploaded": "2026-11-12T11:30:54Z"
+  },
+  "Xmas_Lights_8": {
+   "assetId": 72860800226381,
+   "file": "assets/fbx/Xmas_Lights_8.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Xmas_Lights_8",
+    "Xmas_Lights_8_Bulbs"
+   ],
+   "revisionId": "1",
+   "sha256": "d2f20d9ca2a6f141eef3f1e6c782effe011b9c50f4dfe3de0863c8855f86af01",
+   "uploaded": "2026-11-12T11:31:07Z"
+  },
+  "Xmas_SnowCap_8": {
+   "assetId": 81617322246585,
+   "file": "assets/fbx/Xmas_SnowCap_8.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Xmas_SnowCap_8"
+   ],
+   "revisionId": "1",
+   "sha256": "c71b344834f2ea316603d62439a5160cbc1497f668ec9a97a1103feb0ca60d62",
+   "uploaded": "2026-11-12T11:31:20Z"
+  },
+  "Xmas_SnowPile": {
+   "assetId": 120035304040600,
+   "file": "assets/fbx/Xmas_SnowPile.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Xmas_SnowPile"
+   ],
+   "revisionId": "1",
+   "sha256": "c6bf56a0fc5b731f292c5e433be8bfab7c6c390239c2d44ac2282c7ffe7e91f0",
+   "uploaded": "2026-11-12T11:31:33Z"
+  },
+  "Xmas_Tree": {
+   "assetId": 133876647759950,
+   "file": "assets/fbx/Xmas_Tree.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Xmas_Tree",
+    "Xmas_Tree_Lights"
+   ],
+   "revisionId": "1",
+   "sha256": "4b2497cdfb331f38f2a047d21f0d9e1088fe0d4741210b689744bf1f67e31e07",
+   "uploaded": "2026-11-12T11:31:42Z"
+  },
+  "Xmas_Wreath": {
+   "assetId": 122017207830894,
+   "file": "assets/fbx/Xmas_Wreath.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Xmas_Wreath"
+   ],
+   "revisionId": "1",
+   "sha256": "0c3e2e15c0091891ebbc6afd047c4ee3b1bc1cafd71f652ecd9fe26846e8939b",
+   "uploaded": "2026-11-12T11:31:55Z"
+  }
+ },
+ "note": "Generated by tools/kit_upload.py: one Open Cloud Model asset per kit model group (assets/fbx/<model>.fbx). Read by src/server/Kit/KitService.luau. Do not edit by hand."
+}

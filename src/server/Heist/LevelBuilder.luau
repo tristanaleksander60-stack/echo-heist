@@ -1,20 +1,30 @@
 --!strict
--- Heist/LevelBuilder: builds a greybox copy of a compiled level (Sim/LevelSpec
--- LevelData) at an instance origin. MASTERPLAN §3.3 (one copy per heist instance,
--- 3,000 studs apart), §8.5 (levels are data; the sim boxes ARE the layout here until
--- the Blender kit is imported, spike S2), docs/STYLE_BIBLE.md (palette).
+-- Heist/LevelBuilder: builds a copy of a compiled level (Sim/LevelSpec LevelData) at an
+-- instance origin. MASTERPLAN §3.3 (one copy per heist instance, 3,000 studs apart),
+-- §8.5 (levels are data), docs/STYLE_BIBLE.md (palette), docs/art/KIT_IMPORT.md (kit).
+--
+-- The greybox is always built first: the sim boxes ARE the collision. When opts.kit
+-- (src/server/Kit/KitService) is loaded, Heist/KitDresser dresses it with the art kit
+-- (Heist/KitPlan): static pieces are visual only and the greybox parts they cover turn
+-- into invisible colliders; door leaves, plates and loot are swapped for kit MeshParts
+-- sized to the same boxes. If the kit is not ready, or dressing fails, the greybox stays
+-- as it is (the clean switch: Config.Heist.KIT_LEVELS).
 --
 -- Every gameplay part carries attributes EH_Kind ("plate", "door", "laser", "loot",
 -- "switch", "hide", "van") and EH_Index (the LevelSpec index), so clients bind by
--- attribute, never by guessing names. The server builds the parts once and never
--- moves or re-colours them again: doors, lasers, plates and loot are drawn by each
--- client from the replicated state (§8.2, the server never tweens), so a client's
--- local CanCollide on a door is never overwritten by replication.
+-- attribute, never by guessing names. Greybox helpers carry EH_Kind too ("stand",
+-- "post", "hideTop", "hideFrame", "vanBody", "vanWheel"), so the dresser can find them.
+-- The server builds the parts once and never moves or re-colours them again: doors,
+-- lasers, plates and loot are drawn by each client from the replicated state (§8.2, the
+-- server never tweens), so a client's local CanCollide on a door is never overwritten.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
+
+local KitDresser = require(script.Parent:WaitForChild("KitDresser"))
 
 local LevelBuilder = {}
 
@@ -30,6 +40,16 @@ export type Built = {
 	switches: { BasePart },
 	hides: { Model },
 	van: BasePart,
+	vanBody: BasePart,
+	kit: boolean, -- dressed with the art kit
+	dressing: boolean, -- Christmas layer placed
+	kitResult: any?, -- KitDresser.Result (pieces, failures, why)
+}
+
+export type BuildOpts = {
+	kit: any?, -- KitService (dress with the art kit when it is ready)
+	dressing: boolean?, -- Christmas dressing layer
+	location: string?, -- atlas / street front override (default: the spec's location)
 }
 
 local function boxCenter(b: any): Vector3
@@ -124,9 +144,13 @@ local function deviceCenters(level: any, plateIndex: number): { Vector3 }
 end
 
 -- Builds `level` (LevelData) under `parent` with its level-space origin at `origin`.
-function LevelBuilder.build(level: any, origin: Vector3, parent: Instance): Built
+function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts: BuildOpts?): Built
 	local model = Instance.new("Model")
 	model.Name = "Level"
+	-- StreamingEnabled readiness (§3.3/§8.6): only the crew receives this level, whatever
+	-- the distance (HeistInstance adds each member with AddPersistentPlayer). A no-op
+	-- while the place has streaming off.
+	model.ModelStreamingMode = Enum.ModelStreamingMode.PersistentPerPlayer
 	model:SetAttribute("LevelId", level.id)
 	local floorY = level.floorY
 	local b = level.bounds
@@ -283,13 +307,14 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance): Buil
 			core:SetAttribute("EH_Kind", "beam")
 		end
 		for _, x in { box.minX - 0.4, box.maxX + 0.4 } do
-			part({
+			local post = part({
 				Name = "Post",
 				Size = Vector3.new(0.6, box.maxY - box.minY, 0.6),
 				CFrame = CFrame.new(origin + Vector3.new(x, (box.minY + box.maxY) / 2, cz)),
 				Color = Palette.ink,
 				CanCollide = false,
 			}, grid)
+			post:SetAttribute("EH_Kind", "post")
 		end
 		grid.Parent = model
 		table.insert(lasers, grid)
@@ -299,13 +324,15 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance): Buil
 	local loot: { BasePart } = {}
 	for i, def in level.loot do
 		local floorAt = floorY
-		part({
+		local stand = part({
 			Name = "Stand",
 			Size = Vector3.new(1.8, math.max(def.y - floorAt - 1, 0.2), 1.8),
 			CFrame = CFrame.new(origin + Vector3.new(def.x, floorAt + math.max(def.y - floorAt - 1, 0.2) / 2, def.z)),
 			Color = Palette.ink,
 			CanCollide = false,
 		}, model)
+		stand:SetAttribute("EH_Kind", "stand")
+		stand:SetAttribute("EH_Index", i)
 		local item = part({
 			Name = "Loot_" .. def.id,
 			Size = if def.value >= 100 then Vector3.new(1.6, 0.9, 1.1) else Vector3.new(0.8, 1, 0.8),
@@ -337,17 +364,18 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance): Buil
 		top:SetAttribute("EH_Kind", "hideTop")
 		for _, cx in { hb.minX + 0.2, hb.maxX - 0.2 } do
 			for _, cz in { hb.minZ + 0.2, hb.maxZ - 0.2 } do
-				part({
+				local post = part({
 					Name = "Post",
 					Size = Vector3.new(0.3, hb.maxY - hb.minY, 0.3),
 					CFrame = CFrame.new(origin + Vector3.new(cx, (hb.minY + hb.maxY) / 2, cz)),
 					Color = Palette.plumHi,
 					CanCollide = false,
 				}, m)
+				post:SetAttribute("EH_Kind", "hideFrame")
 			end
 		end
 		-- Hanging coats / crate slats: translucent sheets so the hider stays readable.
-		part({
+		local cover = part({
 			Name = "Cover",
 			Size = Vector3.new(hb.maxX - hb.minX - 0.4, (hb.maxY - hb.minY) * 0.7, 0.2),
 			CFrame = CFrame.new(
@@ -358,6 +386,7 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance): Buil
 			CanCollide = false,
 			CastShadow = false,
 		}, m)
+		cover:SetAttribute("EH_Kind", "hideFrame")
 		m.Parent = model
 		table.insert(hides, m)
 	end
@@ -396,23 +425,24 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance): Buil
 		CFrame = CFrame.new(origin + Vector3.new((v.minX + v.maxX) / 2, floorY + 4, v.maxZ + 4.5)),
 		Color = Palette.exit,
 	}, model)
+	body:SetAttribute("EH_Kind", "vanBody")
 	for _, wx in { v.minX - 0.2, v.maxX + 0.2 } do
 		for _, wz in { v.maxZ + 2, v.maxZ + 7 } do
-			part({
+			local wheel = part({
 				Name = "Wheel",
 				Shape = Enum.PartType.Cylinder,
 				Size = Vector3.new(0.8, 2.2, 2.2),
 				CFrame = CFrame.new(origin + Vector3.new(wx, floorY + 1.1, wz)),
 				Color = Palette.ink,
 			}, body)
+			wheel:SetAttribute("EH_Kind", "vanWheel")
 		end
 	end
 
 	model:SetAttribute("OriginX", origin.X)
 	model:SetAttribute("OriginY", origin.Y)
 	model:SetAttribute("OriginZ", origin.Z)
-	model.Parent = parent
-	return {
+	local built: Built = {
 		model = model,
 		origin = origin,
 		floor = floor,
@@ -424,7 +454,37 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance): Buil
 		switches = switches,
 		hides = hides,
 		van = zone,
+		vanBody = body,
+		kit = false,
+		dressing = false,
+		kitResult = nil,
 	}
+	local o: BuildOpts = opts or {}
+	if o.kit ~= nil and Config.Heist.KIT_LEVELS then
+		local location = o.location or (level.spec and level.spec.location) or "CornerShop"
+		if o.dressing and level.kind == "party" and location == "CornerShop" then
+			location = "ToyShop" -- Clone Party is the Toy Shop in Christmas dressing (§4.2)
+		end
+		local ok, res = pcall(KitDresser.dress, level, built, origin, o.kit, {
+			dressing = o.dressing == true,
+			location = location,
+			floor = Config.Heist.KIT_FLOOR,
+			floorLift = Config.Heist.KIT_FLOOR_LIFT,
+		})
+		if ok then
+			built.kitResult = res
+			built.kit = res.ok
+			built.dressing = res.ok and o.dressing == true
+			if not res.ok and res.why ~= "kit not ready" then
+				warn("[LevelBuilder] kit dressing skipped for " .. tostring(level.id) .. ": " .. tostring(res.why))
+			end
+		else
+			warn("[LevelBuilder] kit dressing failed for " .. tostring(level.id) .. ": " .. tostring(res))
+		end
+	end
+	model:SetAttribute("Kit", built.kit)
+	model.Parent = parent
+	return built
 end
 
 -- World position of a level-space point.

@@ -219,21 +219,58 @@ return function(test)
 		Assert.falsy(relaxed.boardEligible, "Relaxed is off the boards")
 	end)
 
-	test("Big Score gate: needs Night Clerk cleared AND 6 Stars", function()
+	test("first-session flow: L1, L2, the Clone Party break, L3, L4, then the Big Score", function()
+		Assert.eq(
+			table.concat(ORDER, ","),
+			"BackRoom,TwoDoors,CloneParty,LightsOut,NightClerk,BigScoreBank",
+			"play order (owner decision 2026-11-12)"
+		)
 		local heist = Schema.defaultHeist()
-		for _, id in { "BackRoom", "TwoDoors", "LightsOut" } do
-			clearWith(heist, id, { clones = 4, catches = 1 }) -- Haul only: 1 star each
-		end
-		local s = clearWith(heist, "NightClerk", { clones = 4, catches = 1 })
-		Assert.eq(s.totalStars, 4, "4 stars")
-		Assert.truthy(heist.unlocked.CloneParty, "Clone Party opens after Night Clerk")
+		clearWith(heist, "BackRoom", { clones = 4, catches = 1 }) -- Haul only: 1 star
+		local l2 = clearWith(heist, "TwoDoors", { clones = 4, catches = 1 })
+		-- The party break and the story both open after L2, the party first ("NEXT").
+		Assert.eq(table.concat(l2.unlocked, ","), "CloneParty,LightsOut", "party break + the story, in play order")
+		-- A kid who leaves the party (no award) or misses Haul1 keeps the story.
+		local miss = clearWith(heist, "CloneParty", { haul = 999, clones = 8 })
+		Assert.falsy(miss.cleared, "under Haul1")
+		Assert.eq(#miss.unlocked, 0, "the party is a break, never a wall")
+		clearWith(heist, "LightsOut", { clones = 4, catches = 1 })
+		local l4 = clearWith(heist, "NightClerk", { clones = 4, catches = 1 })
+		Assert.eq(l4.totalStars, 4, "4 stars (Haul on L1-L4, none from the party yet)")
 		Assert.falsy(heist.unlocked.BigScoreBank, "Big Score still locked at 4 stars")
+		-- The next-goal card ("2 more Stars opens the Bank") sends the kid back to the party.
 		local party = clearWith(heist, "CloneParty", { haul = 2500, clones = 8 })
 		Assert.eq(party.totalStars, 6, "6 stars")
 		Assert.eq(table.concat(party.unlocked, ","), "BigScoreBank", "gate opens at 6")
 		heist.levels.CloneParty.medals = {} -- unlocks are never taken away
 		Assert.eq(#Progress.computeUnlocks(heist, ORDER, lookup), 0, "nothing new")
 		Assert.truthy(heist.unlocked.BigScoreBank, "still unlocked")
+	end)
+
+	test("Big Score gate: needs Night Clerk cleared AND 6 Stars", function()
+		local heist = Schema.defaultHeist()
+		clearWith(heist, "BackRoom", { clones = 1 }) -- 3 stars
+		clearWith(heist, "TwoDoors", { clones = 2 }) -- 6 stars
+		local l3 = clearWith(heist, "LightsOut", { clones = 2 }) -- 9 stars
+		Assert.eq(l3.totalStars, 9, "9 stars")
+		Assert.falsy(heist.unlocked.BigScoreBank, "Stars alone never skip Night Clerk")
+		local l4 = clearWith(heist, "NightClerk", { clones = 4, catches = 1 })
+		Assert.eq(table.concat(l4.unlocked, ","), "BigScoreBank", "opens with Night Clerk")
+		Assert.eq(heist.levels.CloneParty, nil, "the party was skipped: the gate does not need it")
+	end)
+
+	test("co-op carry: a crewmate clears a level they had not unlocked; it unlocks for them", function()
+		local heist = Schema.defaultHeist()
+		Assert.falsy(heist.unlocked.LightsOut, "a new player has not unlocked Lights Out")
+		local s = clearWith(heist, "LightsOut", { clones = 2 })
+		Assert.truthy(s.cleared and s.firstClear, "full credit for the clear")
+		Assert.truthy(s.levelStars > 0, "medals and Stars count")
+		Assert.truthy(heist.unlocked.LightsOut, "a clear leaves the level unlocked")
+		Assert.truthy(table.find(s.unlocked, "LightsOut") ~= nil, "reported as newly unlocked")
+		Assert.falsy(heist.unlocked.TwoDoors, "earlier levels stay locked (no skip of the story)")
+		local miss = clearWith(heist, "BigScoreBank", { haul = 0 })
+		Assert.falsy(miss.cleared, "not cleared")
+		Assert.falsy(heist.unlocked.BigScoreBank, "a carried run that does not clear unlocks nothing")
 	end)
 
 	test("total Stars include daily-vault Stars", function()
