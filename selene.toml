@@ -1,0 +1,6 @@
+# Selene, main config (MASTERPLAN §8.9 L0). Run from the repo root:
+#   selene src tests
+# std "roblox" is generated from the Roblox API dump and cached by selene
+# (README "Lint (L0)": how to seed the cache behind a TLS-intercepting proxy).
+# The pure layers also have a stricter second config: src/shared/Sim/selene.toml.
+std = "roblox"

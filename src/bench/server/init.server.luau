@@ -55,10 +55,30 @@ local function buildRoom(): Model
 		Color = PALETTE.inkIndigo,
 	})
 	-- Three walls (cut-away diorama: the camera side is open)
-	part(room, { Name = "WallN", Size = Vector3.new(size, h, 1.5), CFrame = CFrame.new(0, h / 2, -half), Color = PALETTE.plumSlate })
-	part(room, { Name = "WallW", Size = Vector3.new(1.5, h, size), CFrame = CFrame.new(-half, h / 2, 0), Color = PALETTE.plumSlate })
-	part(room, { Name = "WallE", Size = Vector3.new(1.5, h, size), CFrame = CFrame.new(half, h / 2, 0), Color = PALETTE.plumSlate })
-	part(room, { Name = "Skirting", Size = Vector3.new(size, 0.6, 0.4), CFrame = CFrame.new(0, 0.3, -half + 0.9), Color = PALETTE.vaultSteel })
+	part(room, {
+		Name = "WallN",
+		Size = Vector3.new(size, h, 1.5),
+		CFrame = CFrame.new(0, h / 2, -half),
+		Color = PALETTE.plumSlate,
+	})
+	part(room, {
+		Name = "WallW",
+		Size = Vector3.new(1.5, h, size),
+		CFrame = CFrame.new(-half, h / 2, 0),
+		Color = PALETTE.plumSlate,
+	})
+	part(room, {
+		Name = "WallE",
+		Size = Vector3.new(1.5, h, size),
+		CFrame = CFrame.new(half, h / 2, 0),
+		Color = PALETTE.plumSlate,
+	})
+	part(room, {
+		Name = "Skirting",
+		Size = Vector3.new(size, 0.6, 0.4),
+		CFrame = CFrame.new(0, 0.3, -half + 0.9),
+		Color = PALETTE.vaultSteel,
+	})
 
 	-- Steel pillars give occlusion and overdraw behind the clones
 	for _, x in { -24, -8, 8, 24 } do
@@ -71,7 +91,10 @@ local function buildRoom(): Model
 	end
 
 	-- Gold table with bars (loot hue) in the middle of the rings
-	part(room, { Name = "GoldTable", Size = Vector3.new(6, 3, 3), CFrame = CFrame.new(0, 1.5, 0), Color = PALETTE.vaultSteel })
+	part(
+		room,
+		{ Name = "GoldTable", Size = Vector3.new(6, 3, 3), CFrame = CFrame.new(0, 1.5, 0), Color = PALETTE.vaultSteel }
+	)
 	for i = -2, 2 do
 		part(room, {
 			Name = "GoldBar",
@@ -84,7 +107,8 @@ local function buildRoom(): Model
 
 	-- Warm light pools: a Neon fixture, a marble floor disc and a PointLight.
 	-- Only the first HERO_SHADOW_LIGHTS lamps cast shadows (plan: <= 4 per view).
-	local lampSpots = { Vector3.new(-18, 12, -12), Vector3.new(18, 12, -12), Vector3.new(-18, 12, 14), Vector3.new(18, 12, 14) }
+	local lampSpots =
+		{ Vector3.new(-18, 12, -12), Vector3.new(18, 12, -12), Vector3.new(-18, 12, 14), Vector3.new(18, 12, 14) }
 	for i, pos in lampSpots do
 		local fixture = part(room, {
 			Name = "LampFixture",

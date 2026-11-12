@@ -273,32 +273,60 @@ return function(test)
 			build(rec)
 			return Validator.validate(rec).flags
 		end
-		Assert.hasBit(eventsFlag(function(r)
-			table.insert(r.events, { t = 1, kind = 200, arg = 0 })
-		end), F.EVENT, "unknown kind")
-		Assert.hasBit(eventsFlag(function(r)
-			Sampler.addEvent(r, 3, Codec.EVENT.Grab, 1)
-			Sampler.addEvent(r, 1, Codec.EVENT.Release, 1)
-		end), F.EVENT, "out of order")
-		Assert.hasBit(eventsFlag(function(r)
-			Sampler.addEvent(r, 2, Codec.EVENT.Caught, 0)
-			Sampler.addEvent(r, 3, Codec.EVENT.Grab, 1)
-		end), F.EVENT, "after Caught")
-		Assert.hasBit(eventsFlag(function(r)
-			Sampler.addEvent(r, 2, Codec.EVENT.HoldEnd, 1)
-		end), F.EVENT, "HoldEnd without HoldStart")
-		Assert.hasBit(eventsFlag(function(r)
-			Sampler.addEvent(r, 1, Codec.EVENT.HoldStart, 1)
-			Sampler.addEvent(r, 2, Codec.EVENT.HoldStart, 2)
-		end), F.EVENT, "two holds at once")
-		Assert.hasBit(eventsFlag(function(r)
-			Sampler.addEvent(r, 30, Codec.EVENT.Grab, 1)
-		end), F.EVENT, "after the run ended")
-		Assert.hasBit(eventsFlag(function(r)
-			for _ = 1, Config.Rec.MAX_EVENTS + 1 do
-				table.insert(r.events, { t = 1, kind = Codec.EVENT.Emote, arg = 0 })
-			end
-		end), F.EVENT, "too many events")
+		Assert.hasBit(
+			eventsFlag(function(r)
+				table.insert(r.events, { t = 1, kind = 200, arg = 0 })
+			end),
+			F.EVENT,
+			"unknown kind"
+		)
+		Assert.hasBit(
+			eventsFlag(function(r)
+				Sampler.addEvent(r, 3, Codec.EVENT.Grab, 1)
+				Sampler.addEvent(r, 1, Codec.EVENT.Release, 1)
+			end),
+			F.EVENT,
+			"out of order"
+		)
+		Assert.hasBit(
+			eventsFlag(function(r)
+				Sampler.addEvent(r, 2, Codec.EVENT.Caught, 0)
+				Sampler.addEvent(r, 3, Codec.EVENT.Grab, 1)
+			end),
+			F.EVENT,
+			"after Caught"
+		)
+		Assert.hasBit(
+			eventsFlag(function(r)
+				Sampler.addEvent(r, 2, Codec.EVENT.HoldEnd, 1)
+			end),
+			F.EVENT,
+			"HoldEnd without HoldStart"
+		)
+		Assert.hasBit(
+			eventsFlag(function(r)
+				Sampler.addEvent(r, 1, Codec.EVENT.HoldStart, 1)
+				Sampler.addEvent(r, 2, Codec.EVENT.HoldStart, 2)
+			end),
+			F.EVENT,
+			"two holds at once"
+		)
+		Assert.hasBit(
+			eventsFlag(function(r)
+				Sampler.addEvent(r, 30, Codec.EVENT.Grab, 1)
+			end),
+			F.EVENT,
+			"after the run ended"
+		)
+		Assert.hasBit(
+			eventsFlag(function(r)
+				for _ = 1, Config.Rec.MAX_EVENTS + 1 do
+					table.insert(r.events, { t = 1, kind = Codec.EVENT.Emote, arg = 0 })
+				end
+			end),
+			F.EVENT,
+			"too many events"
+		)
 		local empty = Sampler.new(1, 1, 20)
 		Sampler.addEvent(empty, 0, Codec.EVENT.Grab, 1)
 		Assert.hasBit(Validator.validate(empty).flags, F.EVENT, "event in an empty run")

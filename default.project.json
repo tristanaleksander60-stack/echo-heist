@@ -1,5 +1,6 @@
 {
   "name": "EchoHeist",
+  "globIgnorePaths": ["**/selene.toml", "**/sim.yml", "**/*.md"],
   "tree": {
     "$className": "DataModel",
     "Lighting": {

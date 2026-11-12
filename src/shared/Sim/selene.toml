@@ -1,0 +1,9 @@
+# Second Selene config (MASTERPLAN §8.4, §8.9 L0): the pure, deterministic layers.
+# std "sim" (sim.yml next to this file) is the Roblox std minus everything that
+# reads a clock, a random source, the scheduler or the engine DataModel.
+#
+# Run from the repo root (selene finds sim.yml in this config's folder):
+#   selene --config src/shared/Sim/selene.toml src/shared/Sim src/shared/Rec
+# Rec/ (Codec, Sampler, LoopClock, Validator) is today's pure layer, so it is
+# held to the same rules until it moves under Sim/.
+std = "sim"

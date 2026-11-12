@@ -122,7 +122,15 @@ local function slab(o: number, d: number, lo: number, hi: number, tmin: number, 
 end
 
 -- Slab test: does the segment p0 -> p1 enter box b? (Allocation free.)
-function Validator.segmentHitsBox(b: Box, x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): boolean
+function Validator.segmentHitsBox(
+	b: Box,
+	x0: number,
+	y0: number,
+	z0: number,
+	x1: number,
+	y1: number,
+	z1: number
+): boolean
 	local tmin, tmax = slab(x0, x1 - x0, b.minX, b.maxX, 0, 1)
 	if tmin >= tmax then
 		return false
@@ -172,7 +180,16 @@ function Validator.setWalkSpeed(state: State, walkSpeed: number)
 	state.maxSpeed = walkSpeed * Config.Rec.SPEED_MULT
 end
 
-local function blocked(state: State, i: number, x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): boolean
+local function blocked(
+	state: State,
+	i: number,
+	x0: number,
+	y0: number,
+	z0: number,
+	x1: number,
+	y1: number,
+	z1: number
+): boolean
 	for _, b in state.noGo do
 		if not inside(b, x0, y0, z0) and Validator.segmentHitsBox(b, x0, y0, z0, x1, y1, z1) then
 			return true
@@ -211,7 +228,14 @@ local function checkSample(state: State, i: number)
 		x, y, z = x0, y0, z0
 		changed = true
 	end
-	if x < Codec.POS_MIN or x > Codec.POS_MAX or y < Codec.POS_MIN or y > Codec.POS_MAX or z < Codec.POS_MIN or z > Codec.POS_MAX then
+	if
+		x < Codec.POS_MIN
+		or x > Codec.POS_MAX
+		or y < Codec.POS_MIN
+		or y > Codec.POS_MAX
+		or z < Codec.POS_MIN
+		or z > Codec.POS_MAX
+	then
 		note(state, i, FLAG.BOUNDS)
 		x, y, z = x0, y0, z0
 		changed = true
@@ -254,7 +278,8 @@ local function checkSample(state: State, i: number)
 
 	-- Vertical rise: never above the jump apex over the last ground, and never
 	-- faster than a jump launch (limits a faked grounded flag).
-	local ceiling = math.min(state.groundY + state.jumpHeight + Config.Rec.RISE_MARGIN, y0 + Config.Rec.MAX_RISE_SPEED * dt)
+	local ceiling =
+		math.min(state.groundY + state.jumpHeight + Config.Rec.RISE_MARGIN, y0 + Config.Rec.MAX_RISE_SPEED * dt)
 	if y > ceiling + EPS then
 		note(state, i, FLAG.RISE)
 		y = math.max(ceiling, y0)
@@ -309,6 +334,8 @@ function Validator.checkEvents(state: State): number
 	local holding = false
 	for k, e in events do
 		local kind = e.kind
+		-- One branch per rejection reason, on purpose (same action, different rule)
+		-- selene: allow(if_same_then_else)
 		if kind < 1 or kind > Codec.EVENT_COUNT or kind ~= math.floor(kind) then
 			fail(k)
 		elseif rec.n == 0 or not finite(e.t) or e.t < -EPS or e.t > tEnd then

@@ -106,7 +106,15 @@ function Sampler.record(
 end
 
 -- Appends a sample at the next tick.
-function Sampler.push(rec: Recording, x: number, y: number, z: number, yaw: number, flags: number, cut: boolean?): boolean
+function Sampler.push(
+	rec: Recording,
+	x: number,
+	y: number,
+	z: number,
+	yaw: number,
+	flags: number,
+	cut: boolean?
+): boolean
 	return Sampler.record(rec, rec.n, x, y, z, yaw, flags, cut)
 end
 
@@ -115,7 +123,10 @@ function Sampler.addEvent(rec: Recording, t: number, kind: number, arg: number?)
 	if #rec.events >= Config.Rec.MAX_EVENTS then
 		return false
 	end
-	table.insert(rec.events, { t = Codec.snapEventTime(t), kind = kind, arg = math.clamp(math.floor(arg or 0), 0, 65535) })
+	table.insert(
+		rec.events,
+		{ t = Codec.snapEventTime(t), kind = kind, arg = math.clamp(math.floor(arg or 0), 0, 65535) }
+	)
 	return true
 end
 

@@ -26,7 +26,10 @@ local function lcg(seed: number): () -> number
 end
 
 -- Builds a recording from steps at hz. Returns the recording.
-function Runs.build(steps: { any }, opts: { hz: number?, jitter: number?, seed: number?, start: { number }? }?): Codec.Recording
+function Runs.build(
+	steps: { any },
+	opts: { hz: number?, jitter: number?, seed: number?, start: { number }? }?
+): Codec.Recording
 	local o = opts or {}
 	local hz = o.hz or 20
 	local dt = 1 / hz
@@ -54,16 +57,7 @@ function Runs.build(steps: { any }, opts: { hz: number?, jitter: number?, seed: 
 				jumpT = jt + dt
 			end
 		end
-		Sampler.record(
-			rec,
-			tick,
-			x + rnd() * jitter,
-			fy + rnd() * jitter * 0.25,
-			z + rnd() * jitter,
-			yaw,
-			flags,
-			cut
-		)
+		Sampler.record(rec, tick, x + rnd() * jitter, fy + rnd() * jitter * 0.25, z + rnd() * jitter, yaw, flags, cut)
 		tick += 1
 	end
 

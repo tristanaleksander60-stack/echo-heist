@@ -30,7 +30,6 @@ task.wait(2)
 check((ReplicatedStorage:GetAttribute("LoopIndex") or 0) >= 1, "First loop started")
 check(ReplicatedStorage:GetAttribute("Target") == 1000, "Heist target is $1000")
 
-local Actors = require(server:WaitForChild("Actors"))
 local Mechanisms = require(server:WaitForChild("Mechanisms"))
 local Loot = require(server:WaitForChild("Loot"))
 local Guard = require(server:WaitForChild("Guard"))
@@ -45,7 +44,8 @@ root.CanCollide = false
 root.Size = Vector3.new(2, 2, 1)
 root.Parent = dummyModel
 dummyModel.Parent = workspace
-local fake = { kind = "echo", model = dummyModel, root = root, owner = nil, carrying = nil, alive = true, immuneUntil = 0 }
+local fake =
+	{ kind = "echo", model = dummyModel, root = root, owner = nil, carrying = nil, alive = true, immuneUntil = 0 }
 
 local walls = level:WaitForChild("Walls")
 local door = walls:WaitForChild("VaultDoor") :: BasePart

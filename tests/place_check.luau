@@ -51,10 +51,24 @@ local function expectProps(inst: any, label: string, props: { [string]: any })
 			pass = typeof(got) == "EnumItem" and got.Name == want
 			shown = if typeof(got) == "EnumItem" then got.Name else shown
 		elseif type(want) == "table" then
-			pass = typeof(got) == "Color3" and rgb(got) == rgb({ R = want[1] / 255, G = want[2] / 255, B = want[3] / 255 })
+			pass = typeof(got) == "Color3"
+				and rgb(got) == rgb({ R = want[1] / 255, G = want[2] / 255, B = want[3] / 255 })
 			shown = if typeof(got) == "Color3" then rgb(got) else shown
 		end
-		expect(pass, string.format("%s.%s = %s (got %s)", label, name, tostring(if type(want) == "table" then rgb({ R = want[1] / 255, G = want[2] / 255, B = want[3] / 255 }) else want), shown))
+		expect(
+			pass,
+			string.format(
+				"%s.%s = %s (got %s)",
+				label,
+				name,
+				tostring(
+					if type(want) == "table"
+						then rgb({ R = want[1] / 255, G = want[2] / 255, B = want[3] / 255 })
+						else want
+				),
+				shown
+			)
+		)
 	end
 end
 
@@ -74,7 +88,10 @@ expectProps(lighting, "Lighting", {
 })
 
 local LIGHTING_CHILDREN: { [string]: { class: string, props: { [string]: any } } } = {
-	Atmosphere = { class = "Atmosphere", props = { Density = 0.3, Color = { 70, 60, 120 }, Decay = { 35, 30, 75 }, Haze = 0.8 } },
+	Atmosphere = {
+		class = "Atmosphere",
+		props = { Density = 0.3, Color = { 70, 60, 120 }, Decay = { 35, 30, 75 }, Haze = 0.8 },
+	},
 	Bloom = { class = "BloomEffect", props = { Intensity = 0.8, Size = 28, Threshold = 1.0 } },
 	ColorCorrection = {
 		class = "ColorCorrectionEffect",
@@ -96,7 +113,11 @@ for _, child in lighting:GetChildren() do
 		table.insert(banned, child.ClassName)
 	end
 end
-expect(#banned == 0, "Lighting has no SunRays, DepthOfField or Blur" .. (if #banned > 0 then " (found " .. table.concat(banned, ", ") .. ")" else ""))
+expect(
+	#banned == 0,
+	"Lighting has no SunRays, DepthOfField or Blur"
+		.. (if #banned > 0 then " (found " .. table.concat(banned, ", ") .. ")" else "")
+)
 
 -- Scripts ----------------------------------------------------------------------------
 
@@ -109,11 +130,17 @@ if sss:FindFirstChild("BenchServer") then
 	-- Clone phone bench (bench.project.json, spike S1)
 	local benchShared = rs:FindFirstChild("Bench")
 	local benchConfig = benchShared and benchShared:FindFirstChild("BenchConfig")
-	expect(benchConfig ~= nil and benchConfig.ClassName == "ModuleScript", "ReplicatedStorage.Bench.BenchConfig is a ModuleScript")
+	expect(
+		benchConfig ~= nil and benchConfig.ClassName == "ModuleScript",
+		"ReplicatedStorage.Bench.BenchConfig is a ModuleScript"
+	)
 	local benchServer = sss:FindFirstChild("BenchServer")
 	expect(benchServer ~= nil and benchServer.ClassName == "Script", "ServerScriptService.BenchServer is a Script")
 	local benchClient = sps and sps:FindFirstChild("BenchClient")
-	expect(benchClient ~= nil and benchClient.ClassName == "LocalScript", "StarterPlayerScripts.BenchClient is a LocalScript")
+	expect(
+		benchClient ~= nil and benchClient.ClassName == "LocalScript",
+		"StarterPlayerScripts.BenchClient is a LocalScript"
+	)
 	for _, name in { "Looks", "Meter" } do
 		local m = benchClient and benchClient:FindFirstChild(name)
 		expect(m ~= nil and m.ClassName == "ModuleScript", "BenchClient." .. name .. " is a ModuleScript")
@@ -123,10 +150,54 @@ if sss:FindFirstChild("BenchServer") then
 	process.exit(if problems > 0 then 1 else 0)
 end
 
+-- Spike places (spikes/*.project.json): S3 video capture and S4 stems
+local SPIKES: { [string]: { config: string } } = {
+	Capture = { config = "CaptureConfig" },
+	Stems = { config = "StemsConfig" },
+}
+for key, spec in SPIKES do
+	if sss:FindFirstChild(key .. "Server") then
+		local spikeShared = rs:FindFirstChild(key .. "Spike")
+		local spikeConfig = spikeShared and spikeShared:FindFirstChild(spec.config)
+		expect(
+			spikeConfig ~= nil and spikeConfig.ClassName == "ModuleScript",
+			"ReplicatedStorage." .. key .. "Spike." .. spec.config .. " is a ModuleScript"
+		)
+		local spikeServer = sss:FindFirstChild(key .. "Server")
+		expect(
+			spikeServer ~= nil and spikeServer.ClassName == "Script",
+			"ServerScriptService." .. key .. "Server is a Script"
+		)
+		local spikeClient = sps and sps:FindFirstChild(key .. "Client")
+		expect(
+			spikeClient ~= nil and spikeClient.ClassName == "LocalScript",
+			"StarterPlayerScripts." .. key .. "Client is a LocalScript"
+		)
+		expect(
+			rs:FindFirstChild("Shared") == nil and sss:FindFirstChild("Server") == nil,
+			"spike place holds no game code"
+		)
+		print(string.format("\n%d problem(s)", problems))
+		process.exit(if problems > 0 then 1 else 0)
+	end
+end
+
 local shared = rs:FindFirstChild("Shared")
 expect(shared ~= nil, "ReplicatedStorage.Shared exists")
 local config = shared and shared:FindFirstChild("Config")
 expect(config ~= nil and config.ClassName == "ModuleScript", "Shared.Config is a ModuleScript")
+-- Lint configs (Sim/selene.toml, Sim/sim.yml) must not sync in as ModuleScripts
+local leaked = {}
+for _, d in (if shared then shared:GetDescendants() else {}) do
+	if d.Name == "selene" or d.Name == "sim" or d.Name == "README" then
+		table.insert(leaked, d:GetFullName())
+	end
+end
+expect(
+	#leaked == 0,
+	"no lint config or README synced into Shared"
+		.. (if #leaked > 0 then " (" .. table.concat(leaked, ", ") .. ")" else "")
+)
 
 local server = sss:FindFirstChild("Server")
 expect(server ~= nil and server.ClassName == "Script", "ServerScriptService.Server is a Script")

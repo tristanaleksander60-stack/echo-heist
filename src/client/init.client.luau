@@ -93,7 +93,7 @@ local echoLabel = label(right, {
 -- Objectives (left) ---------------------------------------------------------
 local obj = label(gui, {
 	AnchorPoint = Vector2.new(0, 0),
-	Position = UDim2.new(0, 10, 0, 80),
+	Position = UDim2.fromOffset(10, 80),
 	Size = UDim2.fromOffset(300, 120),
 	TextScaled = false,
 	TextSize = 17,
@@ -204,9 +204,19 @@ notify.OnClientEvent:Connect(function(msg)
 	elseif msg.type == "loop" then
 		rewindBtn.Text = "⏪ REWIND (R)"
 		local echoes = tonumber(msg.echoes) or 0
-		flash("LOOP " .. tostring(msg.index), echoes > 0 and (echoes .. " echo(es) in play") or "Make your first move", WHITE, 1.2)
+		flash(
+			"LOOP " .. tostring(msg.index),
+			echoes > 0 and (echoes .. " echo(es) in play") or "Make your first move",
+			WHITE,
+			1.2
+		)
 	elseif msg.type == "caught" then
-		flash("CAUGHT!", msg.reason == "laser" and "Zapped by a laser" or "The guard saw you", Color3.fromRGB(255, 70, 70), 1.4)
+		flash(
+			"CAUGHT!",
+			msg.reason == "laser" and "Zapped by a laser" or "The guard saw you",
+			Color3.fromRGB(255, 70, 70),
+			1.4
+		)
 	elseif msg.type == "echoBusted" then
 		flash("ECHO BUSTED", tostring(msg.owner) .. "'s echo got caught", Color3.fromRGB(255, 140, 60), 1)
 	elseif msg.type == "banked" then
@@ -215,7 +225,12 @@ notify.OnClientEvent:Connect(function(msg)
 	elseif msg.type == "votes" then
 		rewindBtn.Text = string.format("⏪ %d/%d READY", msg.n, msg.total)
 	elseif msg.type == "complete" then
-		flash("HEIST COMPLETE!", string.format("$%d in %d loops", msg.value, msg.loops), Color3.fromRGB(120, 255, 140), 6)
+		flash(
+			"HEIST COMPLETE!",
+			string.format("$%d in %d loops", msg.value, msg.loops),
+			Color3.fromRGB(120, 255, 140),
+			6
+		)
 	end
 end)
 
@@ -226,6 +241,10 @@ RunService.RenderStepped:Connect(function()
 	timerLabel.Text = string.format("%d:%02d", math.floor(left / 60), math.floor(left % 60))
 	timerLabel.TextColor3 = left <= 10 and Color3.fromRGB(255, 90, 90) or WHITE
 	loopLabel.Text = "LOOP " .. tostring(ReplicatedStorage:GetAttribute("LoopIndex") or 1)
-	lootLabel.Text = string.format("$%d / $%d", ReplicatedStorage:GetAttribute("Banked") or 0, ReplicatedStorage:GetAttribute("Target") or 0)
+	lootLabel.Text = string.format(
+		"$%d / $%d",
+		ReplicatedStorage:GetAttribute("Banked") or 0,
+		ReplicatedStorage:GetAttribute("Target") or 0
+	)
 	echoLabel.Text = "ECHOES: " .. tostring(player:GetAttribute("Echoes") or 0)
 end)

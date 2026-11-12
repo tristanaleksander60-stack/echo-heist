@@ -1,0 +1,74 @@
+# Restricted standard library for src/shared/Sim (and src/shared/Rec), MASTERPLAN §8.4.
+# The sim must be a pure step: Vector3/CFrame, plain tables, an injected clock and an
+# injected Random. Anything that reads wall time, unseeded randomness, the task
+# scheduler or the DataModel is removed here, so selene reports it as an error.
+# Selene cannot ban pairs() over dictionaries; the L2 event-log hash test catches that.
+base: roblox
+name: sim
+globals:
+  task.cancel:
+    removed: true
+  task.defer:
+    removed: true
+  task.delay:
+    removed: true
+  task.desynchronize:
+    removed: true
+  task.spawn:
+    removed: true
+  task.synchronize:
+    removed: true
+  task.wait:
+    removed: true
+  wait:
+    removed: true
+  delay:
+    removed: true
+  spawn:
+    removed: true
+  os.clock:
+    removed: true
+  os.date:
+    removed: true
+  os.difftime:
+    removed: true
+  os.time:
+    removed: true
+  tick:
+    removed: true
+  time:
+    removed: true
+  elapsedTime:
+    removed: true
+  DateTime.now:
+    removed: true
+  math.random:
+    removed: true
+  math.randomseed:
+    removed: true
+  game:
+    removed: true
+  workspace:
+    removed: true
+  script:
+    removed: true
+  plugin:
+    removed: true
+  settings:
+    removed: true
+  UserSettings:
+    removed: true
+  shared:
+    removed: true
+  _G:
+    removed: true
+  Instance.new:
+    removed: true
+  Instance.fromExisting:
+    removed: true
+  getfenv:
+    removed: true
+  setfenv:
+    removed: true
+  loadstring:
+    removed: true

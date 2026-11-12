@@ -71,7 +71,12 @@ return function(test)
 		Assert.eq(out.n, 600, "n")
 		local worst = 0
 		for i = 1, rec.n do
-			worst = math.max(worst, math.abs(out.px[i] - rec.px[i]), math.abs(out.py[i] - rec.py[i]), math.abs(out.pz[i] - rec.pz[i]))
+			worst = math.max(
+				worst,
+				math.abs(out.px[i] - rec.px[i]),
+				math.abs(out.py[i] - rec.py[i]),
+				math.abs(out.pz[i] - rec.pz[i])
+			)
 			Assert.le(yawDiff(out.yaw[i], rec.yaw[i]), YAW_TOL, "yaw " .. i)
 			Assert.eq(out.flags[i], rec.flags[i], "flags " .. i)
 		end

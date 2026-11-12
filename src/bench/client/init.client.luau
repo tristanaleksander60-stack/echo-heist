@@ -271,7 +271,9 @@ resultsBox.Parent = gui
 
 local function resultsText(): string
 	local lines = {
-		"HEIST YOURSELF clone bench (S1)  " .. DateTime.now():FormatUniversalTime("YYYY-MM-DD HH:mm", "en-us") .. " UTC",
+		"HEIST YOURSELF clone bench (S1)  "
+			.. DateTime.now():FormatUniversalTime("YYYY-MM-DD HH:mm", "en-us")
+			.. " UTC",
 		deviceLine() .. "  avatar " .. templateSource,
 		"Long-press > Select All > Copy, or screenshot this box.",
 		"look rig  N   fps  1%low worst   dc   +dc  tris  inst  clone  memMB",
@@ -358,7 +360,8 @@ end)
 makeButton(5, function()
 	resultsBox.Text = resultsText()
 	resultsBox.Visible = not resultsBox.Visible
-end).Text = "RESULTS"
+end).Text =
+	"RESULTS"
 refreshButtons()
 
 gui.Parent = player:WaitForChild("PlayerGui")

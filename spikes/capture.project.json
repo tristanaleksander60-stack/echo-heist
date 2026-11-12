@@ -1,0 +1,93 @@
+{
+  "name": "CaptureSpike",
+  "tree": {
+    "$className": "DataModel",
+    "Lighting": {
+      "$properties": {
+        "LightingStyle": "Realistic",
+        "PrioritizeLightingQuality": true,
+        "GlobalShadows": true,
+        "ClockTime": 0,
+        "Brightness": 0.5,
+        "Ambient": [
+          0.215686,
+          0.215686,
+          0.372549
+        ],
+        "OutdoorAmbient": [
+          0.294118,
+          0.313725,
+          0.509804
+        ],
+        "ColorShift_Top": [
+          1.0,
+          0.823529,
+          0.627451
+        ],
+        "EnvironmentDiffuseScale": 0.25,
+        "EnvironmentSpecularScale": 0.35,
+        "ExposureCompensation": 0.2
+      },
+      "Atmosphere": {
+        "$className": "Atmosphere",
+        "$properties": {
+          "Density": 0.3,
+          "Color": [
+            0.27451,
+            0.235294,
+            0.470588
+          ],
+          "Decay": [
+            0.137255,
+            0.117647,
+            0.294118
+          ],
+          "Haze": 0.8
+        }
+      },
+      "Bloom": {
+        "$className": "BloomEffect",
+        "$properties": {
+          "Intensity": 0.8,
+          "Size": 28,
+          "Threshold": 1.0
+        }
+      },
+      "ColorCorrection": {
+        "$className": "ColorCorrectionEffect",
+        "$properties": {
+          "Contrast": 0.12,
+          "Saturation": 0.1,
+          "TintColor": [
+            0.921569,
+            0.901961,
+            1.0
+          ]
+        }
+      },
+      "ColorGrading": {
+        "$className": "ColorGradingEffect",
+        "$properties": {
+          "TonemapperPreset": "Default"
+        }
+      }
+    },
+    "ReplicatedStorage": {
+      "CaptureSpike": {
+        "$path": "../src/spikes/capture/shared"
+      }
+    },
+    "ServerScriptService": {
+      "CaptureServer": {
+        "$path": "../src/spikes/capture/server"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "CaptureClient": {
+          "$path": "../src/spikes/capture/client"
+        }
+      }
+    }
+  }
+}

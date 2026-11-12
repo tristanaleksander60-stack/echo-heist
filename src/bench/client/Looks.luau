@@ -62,7 +62,15 @@ function Looks.buildAvatar(template: Model, hue: Color3, look: Look): Rig?
 	local hum = model:FindFirstChildOfClass("Humanoid")
 	local rootHeight = root.Size.Y / 2 + (if hum then hum.HipHeight else 2)
 	local animator = hum and hum:FindFirstChildOfClass("Animator")
-	return { model = model, kind = "avatar", root = root, rootHeight = rootHeight, animator = animator, track = nil, limbs = {} }
+	return {
+		model = model,
+		kind = "avatar",
+		root = root,
+		rootHeight = rootHeight,
+		animator = animator,
+		track = nil,
+		limbs = {},
+	}
 end
 
 -- Mannequin layout: name, size, pivot (feet space), offset from pivot, swing sign, neon trim?
@@ -79,7 +87,14 @@ local MANNEQUIN = {
 
 -- Copy up to MAX_ACCESSORIES hair/hat handles from the template and place them
 -- on the mannequin head through the matching head attachment.
-local function addAccessories(model: Model, limbs: { Limb }, template: Model?, hue: Color3, look: Look, headPivot: CFrame)
+local function addAccessories(
+	model: Model,
+	limbs: { Limb },
+	template: Model?,
+	hue: Color3,
+	look: Look,
+	headPivot: CFrame
+)
 	if not template then
 		return
 	end

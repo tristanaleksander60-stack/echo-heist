@@ -20,19 +20,36 @@ jobs:
           path: |
             ~/.cargo/bin/rojo
             ~/.cargo/bin/lune
-          key: tools-rojo-7.7.1-lune-0.11.1
+            ~/.cargo/bin/selene
+            ~/.cargo/bin/stylua
+          key: tools-rojo-7.7.1-lune-0.11.1-selene-0.31.0-stylua-2.6.0-luau
 
-      - name: Install Rojo and Lune
+      - name: Install Rojo, Lune, Selene and StyLua
         if: steps.tools-cache.outputs.cache-hit != 'true'
         run: |
-          cargo install rojo --version 7.7.1 --locked
-          cargo install lune --version 0.11.1 --locked
+          command -v rojo || cargo install rojo --version 7.7.1 --locked
+          command -v lune || cargo install lune --version 0.11.1 --locked
+          command -v selene || cargo install selene --version 0.31.0 --locked
+          # StyLua needs the luau feature to parse type annotations
+          command -v stylua || cargo install stylua --version 2.6.0 --locked --features luau
 
       - name: Fetch LihFolk checker
         run: git clone --depth 1 https://github.com/lihfolk-cy/v2-vault "$RUNNER_TEMP/v2-vault"
 
       - name: Compile every Luau file
         run: lune run tests/compile_check.luau
+
+      - name: StyLua format check
+        run: stylua --check src tests
+
+      - name: Selene (main config, std roblox)
+        # The first run generates the Roblox std from the API dump into ~/.cache/selene
+        run: selene src tests
+
+      - name: Selene (pure layers, restricted std) and purity grep
+        run: |
+          selene --config src/shared/Sim/selene.toml src/shared/Sim src/shared/Rec
+          lune run tests/pure_check.luau
 
       - name: LihFolk Roblox checks
         run: sh "$RUNNER_TEMP/v2-vault/hooks/scripts/lihfolk-check.sh" --scan src tests
@@ -41,10 +58,15 @@ jobs:
         run: |
           mkdir -p build
           rojo build -o build/EchoHeist.rbxlx
-          if [ -f bench.project.json ]; then rojo build bench.project.json -o build/CloneBench.rbxlx; fi
+          rojo build bench.project.json -o build/CloneBench.rbxlx
+          rojo build spikes/capture.project.json -o build/CaptureSpike.rbxlx
+          rojo build spikes/stems.project.json -o build/StemsSpike.rbxlx
 
       - name: Place structure check
-        run: lune run tests/place_check.luau build/EchoHeist.rbxlx
+        run: |
+          for place in EchoHeist CloneBench CaptureSpike StemsSpike; do
+            lune run tests/place_check.luau "build/$place.rbxlx"
+          done
 
       - name: Unit tests
         run: |

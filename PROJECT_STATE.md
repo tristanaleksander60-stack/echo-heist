@@ -21,6 +21,7 @@ _Last updated: 2026-11-12_
 
 ## Testing
 - Local: `lune run tests/compile_check.luau`, `rojo build -o build/EchoHeist.rbxlx`, `lune run tests/place_check.luau` (all pass).
+- Lint: `stylua --check src tests`, `selene src tests`, `selene --config src/shared/Sim/selene.toml src/shared/Sim src/shared/Rec`, `lune run tests/pure_check.luau` (all clean; README "Lint (L0)" has the Selene std workaround for TLS-intercepting proxies).
 - L1 unit specs (Lune): `lune run tests/run_unit.luau` runs every `tests/unit/*.spec.luau` (59 pass, 2026-11-12).
 - Real Roblox engine: `ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960 --place 70772627070328` publishes a Saved version and runs tests/engine_smoke.luau via Open Cloud Luau Execution. 2026-11-12: version 7, 20/20 pass (level boot, loop start, plates/door, lasers, loot grab/bank rules, guard vision).
 - Publishing fails with HTTP 409 while Collaborative Editing is on or Studio holds the place: turn it off and close Studio.
@@ -30,9 +31,12 @@ _Last updated: 2026-11-12_
 - Spike S6 PASSED: "Heist Night" Lighting recipe lives in default.project.json (LightingStyle and PrioritizeLightingQuality are written by Rojo 7.7.1); LevelBuilder no longer sets Lighting; place_check asserts it.
 - Spike S1 READY: clone phone bench (bench.project.json, src/bench). Waiting for the owner's phone results (README "Clone phone bench").
 - shared/Rec (Codec, Sampler, LoopClock, Validator) with 59 Lune unit tests (`lune run tests/run_unit.luau`). Not wired into the v0.1 server yet (the fun gate runs v0.1).
-- CI (GitHub Actions): compile check, LihFolk checker, rojo build (game + bench), place check, unit tests on every push.
+- CI (GitHub Actions): compile check, StyLua check, Selene (two configs) + purity grep, LihFolk checker, rojo build (game, bench, S3/S4 spikes), place check on every place, unit tests on every push.
+- Spike S3 READY: video capture place (spikes/capture.project.json, src/spikes/capture). Waiting for the owner's phone + PC results (README "Spike S3: video capture").
+- Spike S4 READY: stem alignment place (spikes/stems.project.json, src/spikes/stems), Play(atTime) vs fallback with a drift meter; bundled footsteps loop until two Creator Store ids are pasted into StemsConfig. Waiting for owner results (README "Spike S4: stems").
+- L0 lint: selene.toml (std roblox), second config src/shared/Sim/selene.toml + sim.yml (no task/os/math.random/clocks/DataModel) over Sim/ and Rec/, tests/pure_check.luau, stylua.toml (tabs, 120). Whole src/tests formatted once with StyLua 2.6.0. All clean.
 - Name checked (knock-out): no title, app or trademark "Heist Yourself" found. Concept doc originality claim corrected.
-- Remaining W1 for Claude: second selene config, bpy + turntable pipeline, stem test place (S4), mesh pipeline (S2), video capture (S3).
+- Remaining W1 for Claude: bpy + turntable pipeline, mesh pipeline (S2).
 - Owner: key scopes asset:write + DataStore (Nov 13), handles, ID/2SV, fun gate Mon Nov 16, bench results.
 
 ## Next (see MASTERPLAN §10.2 for the full W1 list)

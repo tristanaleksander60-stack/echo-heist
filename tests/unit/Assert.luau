@@ -10,10 +10,7 @@ end
 
 function Assert.near(actual: number, expected: number, tol: number, what: string?)
 	if not (math.abs(actual - expected) <= tol) then
-		error(
-			string.format("%s: expected %.6f +- %.6f, got %.6f", what or "near", expected, tol, actual),
-			2
-		)
+		error(string.format("%s: expected %.6f +- %.6f, got %.6f", what or "near", expected, tol, actual), 2)
 	end
 end
 
