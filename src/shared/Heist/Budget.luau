@@ -155,6 +155,69 @@ function Budget.worstParticles(tier: number): number
 	return n
 end
 
+---------------------------------------------------------------------------
+-- Start tier (Config.Perf.START): what a client knows at boot, then a short frame-time probe.
+---------------------------------------------------------------------------
+
+-- What Heist/Telemetry reads at boot. Quality levels are 0 when Automatic or unreadable.
+export type BootFacts = {
+	device: string, -- PerfSample.deviceClass: phone | tablet | desktop | console | vr | other
+	savedQuality: number, -- UserGameSettings.SavedQualityLevel: 0 Automatic, 1..10 manual
+	renderQuality: number, -- RenderSettings.QualityLevel: 0 Automatic / unreadable, 1..RENDER_LEVELS
+	viewportMin: number, -- px, the viewport's short side (0 = not known yet)
+}
+
+-- The probe's frame times (PerfSample.percentile over the probe window).
+export type Probe = { frames: number, medianMs: number, p95Ms: number }
+
+-- The player's quality level on a 1..10 scale, or nil when it says nothing (Automatic or unreadable).
+function Budget.qualityLevel(f: BootFacts): number?
+	local S = P.START
+	if f.savedQuality >= 1 and f.savedQuality <= 10 then
+		return math.floor(f.savedQuality)
+	end
+	if f.renderQuality >= 1 and f.renderQuality <= S.RENDER_LEVELS then
+		return math.clamp(math.ceil(f.renderQuality * 10 / S.RENDER_LEVELS), 1, 10)
+	end
+	return nil
+end
+
+-- The tier a client starts at from its boot facts (1 .. START.MAX).
+function Budget.startTier(f: BootFacts): number
+	local S = P.START
+	local tier = S.DEVICE[f.device] or S.DEVICE.other
+	local q = Budget.qualityLevel(f)
+	if q then
+		if q <= S.QUALITY_LOW_MAX then
+			tier = math.max(tier, 3)
+		elseif q <= S.QUALITY_MID_MAX then
+			tier = math.max(tier, 2)
+		elseif q >= S.QUALITY_HIGH_MIN then
+			tier = 1 -- a player who set high quality by hand has the device for it
+		end
+	elseif f.device == "phone" and f.viewportMin > 0 and f.viewportMin < S.SMALL_SCREEN_MIN then
+		tier += 1
+	end
+	return math.clamp(tier, 1, S.MAX)
+end
+
+-- The start tier after the loading-card probe. It only ever lowers quality (cheap card frames that are slow
+-- say a lot; fast ones say little about a heist view) and never past START.MAX.
+function Budget.probeTier(tier: number, probe: Probe?): number
+	local S = P.START
+	local start = clampTier(tier)
+	if not probe or probe.frames < S.PROBE_MIN_FRAMES then
+		return start
+	end
+	local lower = 0
+	if probe.medianMs > S.PROBE_VERY_SLOW_MEDIAN_MS then
+		lower = 2
+	elseif probe.p95Ms > S.PROBE_SLOW_P95_MS then
+		lower = 1
+	end
+	return math.max(start, math.min(start + lower, S.MAX))
+end
+
 -- Measured view counts against a tier: a list of "what: measured > budget" lines (empty = within budget).
 -- `m` holds any of: drawCalls, tris, lights, shadowed, liveParticles, highlights.
 function Budget.over(tier: number, m: { [string]: number }): { string }
