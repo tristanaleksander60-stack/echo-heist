@@ -70,6 +70,7 @@ Codec.END = table.freeze({
 	Caught = 3,
 	Left = 4, -- the player left or the loop was cut short
 	Vanish = 5,
+	Zapped = 6, -- walked into an active laser (shared/Sim)
 })
 
 export type Event = {
