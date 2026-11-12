@@ -100,7 +100,7 @@ local LevelDress: { [string]: Dress } = {
 	-- L6: plates (-12, -10), (-16, -18), (-13, -42), (13, -42); lobby (0, -6), hall (0, -24), scale room
 	-- (0, -42); the gold hero (0, -55).
 	bk1_big_score = {
-		rooms = { { 0, -6 }, { 0, -24 }, { 0, -42 } },
+		rooms = { { 0, -6 }, { 0, -24 }, { -6, -39 }, { 6, -39 } }, -- the scale room's pair stays off the vault axis
 		-- The Bank: marble columns flanking the staff door (lobby side) and in the scale room's corners (clear of
 		-- the open vault door, which lies along the vault wall west of the frame), green banker's lamps on both
 		-- teller counters (top at y 3.5). The room lamps carry the green (Config.Lighting.LOCATION.Bank).
@@ -114,10 +114,10 @@ local LevelDress: { [string]: Dress } = {
 			{ piece = "BankersLamp", x = -15, z = -5, y = 3.5, yaw = 180 },
 			{ piece = "BankersLamp", x = 15, z = -5, y = 3.5, yaw = 180 },
 		},
-		-- Warm pass: the vault's gold floods either side of the gold's hero spot (over the coins and the west
-		-- shelf), street lamps flanking the bank front, and lamps in the service alley behind the bank and in the
-		-- two side alleys (outdoors: no kit floor, snow falls there; LEVELS L6 "the alley reads as outdoors").
-		accents = { { -12, -54 }, { 12, -54 } },
+		-- Warm pass: a warm gold flood over the vault's coins beside the gold's hero spot (one: the scale room's
+		-- off-axis lamp pair uses the light budget), street lamps flanking the bank front, and lamps in the service
+		-- alley behind the bank and in the two side alleys (outdoors: no kit floor, snow falls there; LEVELS L6 "the alley reads as outdoors").
+		accents = { { 12, -54 } },
 		street = {
 			{ -15, 12.5 },
 			{ 15, 12.5 },

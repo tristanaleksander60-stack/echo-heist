@@ -905,7 +905,15 @@ def golden(level, W, Hh, samples, out_dir=None):
         p, yo = math.radians(15), math.radians(30)
         cls = (focus[0] + 16 * math.cos(p) * math.sin(yo), focus[1] + 16 * math.sin(p),
                focus[2] + 16 * math.cos(p) * math.cos(yo))
-        shots.append((pre + "b_classic" if pre == "G1" else pre + "classic", rb(*cls), rb(*focus), 70.0, focus))
+        if level["id"] in ("cs1_back_room", "bk1_big_score"):
+            shots.append((pre + "b_classic" if pre == "G1" else pre + "classic", rb(*cls), rb(*focus), 70.0, focus))
+        if level["id"] == "cs3_lights_out":
+            # L3's own room (L1-L4 share the street front): plate B under its lamp, its cable to the grid's east
+            # post, the three-layer grid, the register on its till behind it (a diorama-height view)
+            shots.append(("L3_grid", rb(-2.0, fy + 26.0, -16.0), rb(5.0, fy, -30.0), 55.0, None))
+        if level["id"] == "cs4_night_clerk":
+            # L4's back room: Gus on his patrol, the coat rack with plate B's letter over it, the rug at his post
+            shots.append(("L4_backroom", rb(6.0, fy + 26.0, -18.0), rb(-3.0, fy, -29.0), 55.0, None))
         if level["id"] == "bk1_big_score":
             # the vault from over the scale room's arch (a diorama-height view: from eye height in the classic
             # camera the scale-room lamp hangs in front of the row's middle): the A-D lamp row over the open vault
