@@ -7,9 +7,9 @@
 export type Entry = { decal: number, image: number }
 
 local UiAssets: { [string]: Entry } = {
-	EH_UI_Icons = { decal = 83898292746311, image = 0 },
-	EH_UI_Panel = { decal = 83942129498789, image = 0 },
-	EH_UI_Shadow = { decal = 109074160529071, image = 0 },
+	EH_UI_Icons = { decal = 83898292746311, image = 118088258199093 },
+	EH_UI_Panel = { decal = 83942129498789, image = 75734528180174 },
+	EH_UI_Shadow = { decal = 109074160529071, image = 75762704199266 },
 }
 
 return table.freeze(UiAssets)
