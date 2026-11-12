@@ -9,6 +9,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local HeistShared = Shared:WaitForChild("Heist")
+local CrewBoard = require(HeistShared:WaitForChild("CrewBoard"))
 local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
@@ -280,12 +281,21 @@ function TopBar.build(ctx: any): any
 	end
 
 	---------------------------------------------------------------------------
-	-- Loot meter count-up (§7.3: 0.35-1.0 s, a rising tick, a landing ding)
+	-- Loot meter count-up (§7.3, premium D10: 0.35 s + 0.08 s per digit, cap 1.0 s, Quad Out, a rising
+	-- tick, a landing ding and a pop; Shared/Heist/CrewBoard). A bank's "+$100!" flight (Hud/BankFly)
+	-- holds the next count until it lands.
 	---------------------------------------------------------------------------
 	local shown, countFrom, countTo, countT0, countDur, countTicks, counting = 0, 0, 0, 0, 0, 0, false
+	local holdUntil = 0
 
 	function bar.resetCount()
 		shown, countFrom, countTo, counting = 0, 0, 0, false
+		holdUntil = 0
+	end
+
+	-- The meter waits `seconds` before it counts a new bank (the flight lands first).
+	function bar.holdCount(seconds: number)
+		holdUntil = math.max(holdUntil, os.clock() + seconds)
 	end
 
 	local function updateCount(now: number)
@@ -293,10 +303,10 @@ function TopBar.build(ctx: any): any
 		if type(banked) ~= "number" then
 			banked = 0
 		end
-		if banked ~= countTo then
+		if banked ~= countTo and (banked < countTo or now >= holdUntil) then
 			if banked > countTo then
 				countFrom = shown
-				countDur = math.clamp(0.35 + (banked - shown) / 1000 * 0.3, 0.35, 1.0)
+				countDur = CrewBoard.countSeconds(shown, banked)
 				countT0 = now
 				countTicks = 0
 				counting = true
@@ -307,9 +317,10 @@ function TopBar.build(ctx: any): any
 			countTo = banked
 		end
 		if counting then
-			local u = math.clamp((now - countT0) / countDur, 0, 1)
-			shown = countFrom + (countTo - countFrom) * u
-			local want = math.floor((now - countT0) / 0.08)
+			local elapsed = now - countT0
+			local u = math.clamp(elapsed / countDur, 0, 1)
+			shown = CrewBoard.countValue(countFrom, countTo, elapsed, countDur)
+			local want = math.floor(elapsed / U.COUNT_UP.TICK)
 			if want > countTicks and u < 1 then
 				countTicks = want
 				Sound.play("CountTick", { step = math.min(countTicks - 1, #AU.COUNT_UP_STEPS - 1) })
@@ -317,6 +328,7 @@ function TopBar.build(ctx: any): any
 			if u >= 1 then
 				counting = false
 				Sound.play("CountDone")
+				Ui.pop(lootBox, U.COUNT_UP.END_POP)
 			end
 		end
 	end

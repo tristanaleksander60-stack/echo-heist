@@ -272,7 +272,7 @@ function Run.build(ctx: any)
 			end
 			local who = if a and a.kind == "clone" then Strings.cloneName(a.seat, a.slot, state.mySeat or 1) else nil
 			hud.toast(Strings.banked(who, Ui.money(value)))
-			Ui.pop(top.lootBox)
+			-- The meter pops when its count-up lands (TopBar), after the "+$100!" flight (Hud/BankFly).
 		elseif e.kind == EV.Grab and live then
 			local level = state.level
 			local def = level and level.loot[e.b]

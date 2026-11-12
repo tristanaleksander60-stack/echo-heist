@@ -16,6 +16,12 @@
 -- Sound goes through Heist/Sound (AudioDirector): every live sim event plays its cues
 -- (Audio/EventCues), music follows garage / heist / alarm / results, ambience follows
 -- the room. Analytics through Heist/Telemetry (Ready, Ui hints, Perf samples).
+-- Settings (Heist/Settings, U7) apply here: music and SFX volume, captions, camera shake (the rewind's
+-- FOV kick), reduced motion (the device setting OR the player's), colour-blind shapes and the guard
+-- path (state flags the views read).
+-- The bank moment: a live Bank event calls hud.onBank(amount, vanPos) (the HUD half: "+$100!" flies
+-- to the loot meter) and world.onBank(amount, vanPos) when WorldView has it (the world half, owned by
+-- the world track: the van glows and bounces). Until WorldView defines onBank that call is skipped.
 -- The client never decides an outcome: it only sends intents (Heist.* remotes).
 
 local GuiService = game:GetService("GuiService")
@@ -48,6 +54,7 @@ local LineupDirector = require(Heist:WaitForChild("LineupDirector"))
 local LightDirector = require(Heist:WaitForChild("LightDirector"))
 local JobBoard = require(Heist:WaitForChild("JobBoard"))
 local Hud = require(Heist:WaitForChild("Hud"))
+local Settings = require(Heist:WaitForChild("Settings"))
 local Sound = require(Heist:WaitForChild("Sound"))
 local Telemetry = require(Heist:WaitForChild("Telemetry"))
 local Ui = require(Heist:WaitForChild("Ui"))
@@ -99,20 +106,24 @@ function HeistClient.start()
 		actorFx = {},
 		carrying = false,
 		liveCount = 1,
-		reduced = GuiService.ReducedMotionEnabled,
+		reduced = GuiService.ReducedMotionEnabled or Settings.get("reducedMotion") == true,
 		particleScale = 1,
+		guardPath = Settings.get("guardPath") ~= false, -- GusView: his boot prints
+		colourBlindGlyphs = Settings.get("colourBlindGlyphs") == true, -- seat shapes beside numbers
 	}
 	Sound.setReducedMotion(state.reduced == true)
 	Ui.setReducedMotion(state.reduced == true)
 	local backdropRef: any = nil -- set below, once the Backdrop exists
-	GuiService:GetPropertyChangedSignal("ReducedMotionEnabled"):Connect(function()
-		state.reduced = GuiService.ReducedMotionEnabled
+	-- Reduced motion: the device's setting, or the player's own (Settings "reducedMotion").
+	local function applyReduced()
+		state.reduced = GuiService.ReducedMotionEnabled or Settings.get("reducedMotion") == true
 		Sound.setReducedMotion(state.reduced == true)
 		Ui.setReducedMotion(state.reduced == true)
 		if backdropRef then
 			backdropRef.setReducedMotion(state.reduced == true)
 		end
-	end)
+	end
+	GuiService:GetPropertyChangedSignal("ReducedMotionEnabled"):Connect(applyReduced)
 
 	-- Compiled levels: Catalog indices (play order) and daily vaults by UTC day.
 	local levelCache: { [string]: any } = {}
@@ -187,17 +198,42 @@ function HeistClient.start()
 		end,
 	}
 	local hud = Hud.new(state, actions)
-	local director = RewindDirector.new(hud.fxGui, camera.setFovKick)
+	-- Camera shake off: the rewind's FOV kick stays at 0 (Settings "shake").
+	local director = RewindDirector.new(hud.fxGui, function(deg: number)
+		camera.setFovKick(if Settings.get("shake") == false then 0 else deg)
+	end)
 	hud.bigStamp = function(text: string, color: Color3, hold: number?)
 		director.stamp(text, color, hold or 1.2, not state.reduced)
 	end
 	local lineup = LineupDirector.new(state, hud.fxGui, echo, world, hud)
 
+	-- Settings (U7): volumes now and on every change; reduced motion; the flags the views read.
+	local function applySetting(key: string, value: any)
+		if key == "musicVolume" then
+			Sound.setBusVolume("Music", tonumber(value) or 1)
+		elseif key == "sfxVolume" then
+			for _, bus in Config.Ui.SFX_BUSES do
+				Sound.setBusVolume(bus, tonumber(value) or 1)
+			end
+		elseif key == "reducedMotion" then
+			applyReduced()
+		elseif key == "guardPath" then
+			state.guardPath = value ~= false
+		elseif key == "colourBlindGlyphs" then
+			state.colourBlindGlyphs = value == true
+		end
+	end
+	Settings.onChanged(applySetting)
+
 	-- Sound: first-impression cues + the likely music; captions into the HUD (on by default).
 	task.spawn(function()
 		Sound.preload({ "Caper", "Garage" })
+		applySetting("musicVolume", Settings.get("musicVolume"))
+		applySetting("sfxVolume", Settings.get("sfxVolume"))
 		Sound.setCaptionHandler(function(text: string)
-			hud.caption(text)
+			if Settings.get("captions") ~= false then
+				hud.caption(text)
+			end
 		end)
 	end)
 
@@ -272,6 +308,29 @@ function HeistClient.start()
 		return fx
 	end
 
+	-- The bank moment (PLAN §5 "First bank"): the HUD half here, the world half in WorldView if it
+	-- has one (world.onBank(amount, worldPos); no-op until the world track adds it).
+	local function bankMoment(e: Protocol.Entry)
+		local level = state.level
+		local def = level and level.loot and level.loot[e.b]
+		local amount = if def then tonumber(def.value) or 0 else 0
+		local van = world.partFor("van", 1)
+		local pos: Vector3? = nil
+		if van and van:IsA("BasePart") then
+			pos = van.Position
+		elseif van and van:IsA("Model") then
+			pos = van:GetPivot().Position
+		end
+		hud.onBank(amount, pos)
+		local onBank = (world :: any).onBank
+		if type(onBank) == "function" then
+			local ok, err = pcall(onBank, amount, pos)
+			if not ok then
+				warn("[HeistClient] world.onBank: " .. tostring(err))
+			end
+		end
+	end
+
 	local function applyEvent(e: Protocol.Entry, live: boolean)
 		local now = os.clock()
 		local hz = Config.Rec.HZ
@@ -309,6 +368,8 @@ function HeistClient.start()
 			if live then
 				gus.bang(e.a, now, "catch", resolver.position("actor", e.b))
 			end
+		elseif e.kind == EV.Bank and live then
+			bankMoment(e)
 		end
 		hud.onEvent(e, live)
 	end

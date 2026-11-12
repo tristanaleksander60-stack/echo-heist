@@ -539,7 +539,8 @@ function GusView.new(state: any): any
 	-- Boot prints at PRINT_HZ: his next PRINT_HORIZON s of patrol (hidden off patrol).
 	local function bootPrints(g: any, show: boolean, tPatrol: number, origin: Vector3, floorY: number)
 		local n = 0
-		if show and GC.PRINTS ~= false then
+		-- "Show guard path" (settings, U7): HeistClient keeps state.guardPath.
+		if show and GC.PRINTS ~= false and state.guardPath ~= false then
 			n = GusBeats.bootPrints(g.def.route, tPatrol, g.printOut)
 		end
 		local out = g.printOut
