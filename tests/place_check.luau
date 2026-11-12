@@ -100,7 +100,7 @@ end
 
 local LIGHTING_CHILDREN: { [string]: { class: string, props: { [string]: any } } } = {
 	Sky = {
-		-- Plain night setup until the night faces are uploaded (Config.Lighting note; city cubemap: phase 2):
+		-- Plain night faces (assets/sky, uploaded 2026-11-12; the city cubemap replaces them in phase 2):
 		-- the "sun" is the key light, drawn as a small moon.
 		class = "Sky",
 		props = { CelestialBodiesShown = true, SunAngularSize = 9, MoonAngularSize = 0, StarCount = 0 },
@@ -128,6 +128,19 @@ for name, spec in LIGHTING_CHILDREN do
 	expect(child ~= nil and child.ClassName == spec.class, string.format("Lighting.%s is a %s", name, spec.class))
 	if child then
 		expectProps(child, "Lighting." .. name, spec.props)
+	end
+end
+do
+	-- The six night faces are set (never Roblox's default day faces behind a ClockTime 15 sun).
+	local sky = lighting:FindFirstChild("Sky")
+	for _, face in { "Back", "Down", "Front", "Left", "Right", "Up" } do
+		local ok, content = pcall(function()
+			return (sky :: any)["Skybox" .. face .. "Content"]
+		end)
+		expect(
+			ok and string.find(tostring(content), "rbxassetid://%d+") ~= nil,
+			"Lighting.Sky.Skybox" .. face .. "Content is an uploaded night face"
+		)
 	end
 end
 do

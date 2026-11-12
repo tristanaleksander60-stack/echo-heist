@@ -168,7 +168,7 @@ Banked loot survives loops. Each player can have up to 4 echoes; when you rewind
 ## Code layout
 | File | Role |
 |---|---|
-| `default.project.json` | Rojo tree, plus lighting recipe A "Moonlit Diorama" (Lighting, Sky and post effects are set only here; `tests/place_check.luau` asserts them). The Sky keeps Roblox's faces until the plain night faces (`python3 tools/blender/sky_faces.py` → `assets/sky/`) are uploaded and their image ids pasted as `SkyboxBk/Dn/Ft/Lf/Rt/Up` in every project file; the Heist City cubemap replaces them in phase 2 (W4) |
+| `default.project.json` | Rojo tree, plus lighting recipe A "Moonlit Diorama" (Lighting, Sky and post effects are set only here; `tests/place_check.luau` asserts them). The Sky uses the plain night faces (`python3 tools/blender/sky_faces.py` → `assets/sky/`, uploaded as Decals; image ids in `SkyboxBk/Dn/Ft/Lf/Rt/Up` of every project file, decal ids in `assets/sky/sky_ids.json`); the Heist City cubemap replaces them in phase 2 (W4) |
 | `src/shared/Config.luau` | All tuning numbers |
 | `src/server/init.server.luau` | Loop coordinator: start/end loop, rewind votes, catching, banking |
 | `src/server/Echoes.luau` | Recording (15 Hz) and replaying echoes |

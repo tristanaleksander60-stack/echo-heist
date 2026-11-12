@@ -755,8 +755,8 @@ Config.LiveFlags = {
 
 -- Light and levels (PLAN_STEAM_PLUS §4.1 W1-W3, docs/research/roblox_quality.md §1.2, docs/audit/LEVELS.md
 -- §4 P0). The global recipe A "Moonlit Diorama" lives in default.project.json (place_check asserts it); the
--- Sky keeps Roblox's faces until the plain night faces (assets/textures/EH_SkyNight_*.png,
--- tools/blender/sky_faces.py) are uploaded and pasted into the project's Sky node; the city cubemap is phase 2.
+-- Sky uses the plain night faces (assets/sky/EH_SkyNight_*.png from tools/blender/sky_faces.py, uploaded
+-- as Decals 2026-11-12, image ids in every project file's Sky node); the city cubemap is phase 2.
 -- Lamps: Heist/KitPlan.lamps (one over each plate, a hero over the goal, room centres from Heist/LevelDress),
 -- built by Heist/LevelBuilder (light + unlit floor pool) and dressed with Lamp_Ceiling by Heist/KitDresser.
 Config.Lighting = {

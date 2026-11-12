@@ -1,0 +1,26 @@
+{
+ "EH_SkyNight_Bk": {
+  "decalId": 96132966384481,
+  "imageId": 90458356352519
+ },
+ "EH_SkyNight_Dn": {
+  "decalId": 123665406793060,
+  "imageId": 108707070296486
+ },
+ "EH_SkyNight_Ft": {
+  "decalId": 85396389692814,
+  "imageId": 103394177161659
+ },
+ "EH_SkyNight_Lf": {
+  "decalId": 86399843065775,
+  "imageId": 99926702251753
+ },
+ "EH_SkyNight_Rt": {
+  "decalId": 92415693190757,
+  "imageId": 81443795822443
+ },
+ "EH_SkyNight_Up": {
+  "decalId": 73024588988003,
+  "imageId": 84848570083307
+ }
+}

@@ -27,7 +27,13 @@
           "SunTextureId": "rbxasset://sky/moon.jpg",
           "SunAngularSize": 9,
           "MoonAngularSize": 0,
-          "StarCount": 0
+          "StarCount": 0,
+          "SkyboxBk": "rbxassetid://90458356352519",
+          "SkyboxDn": "rbxassetid://108707070296486",
+          "SkyboxFt": "rbxassetid://103394177161659",
+          "SkyboxLf": "rbxassetid://99926702251753",
+          "SkyboxRt": "rbxassetid://81443795822443",
+          "SkyboxUp": "rbxassetid://84848570083307"
         }
       },
       "Atmosphere": {
