@@ -431,6 +431,87 @@ Config.Heist.CAMERA = {
 	},
 }
 
+-- Gus on his mesh (PLAN_STEAM_PLUS §4.4 A4-A5, STYLE_BIBLE §12, roblox_quality §4.2-4.3, POLISH §4.3,
+-- premium C1/C3/C4/C5/C6). Client only: the rig (Heist/GusRig), the acting beats (Shared/Heist/GusBeats)
+-- and his intention cues (boot prints, cone flicker, nameplate) in Heist/GusView. Angles in degrees.
+Config.Gus = {
+	-- The kit's Gus model replicated by the server (Heist/GusTemplate) for the client rig; the box rig
+	-- stands in until it arrives (checked again every UPGRADE_CHECK_SECONDS).
+	TEMPLATE_FOLDER = "HeistGusKit",
+	UPGRADE_CHECK_SECONDS = 1,
+	MAX_MESH = 2, -- mesh rigs per view (MASTERPLAN §6.8: <= 2 Gus per view); extra guards use the box rig
+	-- Walk (FK, phase by distance walked): cycle = two strides.
+	WALK_STRIDE = 2.6, -- studs per step (POLISH §4.3)
+	WALK_SPEED = 8, -- studs/s that count as a full walk (Config.Sim.GUARD_SPEED)
+	HIP_SWING = 28,
+	KNEE_LIFT = 40,
+	ARM_SWING = 18,
+	ELBOW = 18,
+	BOB = 0.12, -- studs, two dips per cycle
+	TWIST = 4, -- torso counter-yaw
+	LEAN = 4,
+	TORCH_ARM_SWING = 6, -- the torch arm stays forward
+	-- The funny sprint (chase): high knees, pumping arms, a waddle roll, a big lean.
+	RUN_STRIDE = 3.5,
+	RUN_SPEED = 14,
+	RUN_HIP_SWING = 42,
+	RUN_KNEE_LIFT = 75,
+	RUN_ARM_SWING = 45,
+	RUN_ELBOW = 80,
+	RUN_BOB = 0.3,
+	RUN_LEAN = 14,
+	RUN_WADDLE = 7, -- side-to-side roll
+	RUN_HEAD_BOB = 8, -- neck pitch per step
+	-- Secondary motion (C5): torch sway, head/moustache and cap lag behind the step bob.
+	TORCH_SWAY = 4,
+	TORCH_SWAY_HZ = 0.5,
+	MOUSTACHE_BOUNCE = 3, -- neck pitch, lagging the bob (the moustache is part of Gus_Head)
+	MOUSTACHE_LAG = 0.9, -- radians of phase lag behind the step
+	CAP_BOUNCE = 0.06, -- studs
+	BREATH = 0.03, -- studs of chest rise when he stands
+	BREATH_HZ = 0.25,
+	IDLE_LOOK = 6, -- head yaw drift while he stands
+	-- Look (C4, roblox_quality §4.3): the head leads the body; clamped, loses interest behind.
+	HEAD_LEAD = 0.2, -- seconds (0.15-0.25)
+	LOOK_YAW_MAX = 70,
+	LOOK_PITCH_MAX = 40,
+	LOOK_LOSE = 30, -- hysteresis past LOOK_YAW_MAX before the head gives up
+	NECK_SHARE = 0.7, -- of the look on the neck (the rest on the waist)
+	HEAD_SMOOTH = 0.06, -- seconds, head yaw time constant
+	BODY_SMOOTH = 0.1, -- seconds, body yaw time constant off patrol
+	BLEND = 0.12, -- seconds between beats (per-joint blend)
+	-- Beats (C1: every change starts with >= 66 ms of anticipation).
+	ANTICIPATION = 0.1,
+	DOZE_NOD_SECONDS = 4,
+	WAKE_SECONDS = 0.7,
+	DOUBLE_TAKE_FOLLOW = 0.75, -- the body starts to follow the head this long into the "?"
+	POINT_SECONDS = 0.5, -- "!" point before the sprint
+	CATCH_SECONDS = 0.8,
+	WRONG_ONE_SECONDS = 2.0, -- the "huh?" freeze (Config.Sim.GUARD_HUH_SECONDS)
+	SCRATCH_SECONDS = 1.0, -- lost sight: a short head scratch, then back to the round
+	BANG_SECONDS = 1.2, -- the "!" bubble after a catch or the chase start
+	-- Boot prints (A5, premium §6.3): his next HORIZON seconds of patrol, one print per stride.
+	PRINT_HORIZON = 2,
+	PRINT_STRIDE = 2.6,
+	PRINT_MAX = 5,
+	PRINT_HZ = 10,
+	PRINT_SPREAD = 0.35, -- studs left/right of the path
+	PRINT_SIZE = { 0.55, 1.0 }, -- studs (width, length)
+	PRINT_RIM = 0.12, -- studs of ink rim around the light print (reads on lit and dark floors)
+	PRINT_TRANSPARENCY = { 0.15, 0.8 }, -- nearest, farthest
+	-- The cone flickers before he turns (A5).
+	FLICKER_LEAD = 0.5,
+	FLICKER_TURN_DEG = 20,
+	FLICKER_HZ = 10,
+	FLICKER_DEPTH = 0.18, -- extra transparency on the off beats
+	-- "GUS" nameplate the first time he is on screen.
+	NAMEPLATE_SECONDS = 3,
+	NAMEPLATE_DISTANCE = 90,
+	BUBBLE_POP = 1.3,
+	-- Sound (docs/AUDIO.md "Gus"): key ring every KEYS_STEPS steps while he walks.
+	KEYS_STEPS = 2,
+}
+
 -- Data layer (src/server/Data, src/shared/Data), MASTERPLAN §5 and §8.7; docs/DATA.md.
 -- Display-safe: this module replicates, so it holds no secrets. The server reads its
 -- own copy to decide every outcome. Dates are UTC calendar days { year, month, day }.

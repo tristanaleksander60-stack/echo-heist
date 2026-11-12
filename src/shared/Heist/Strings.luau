@@ -396,6 +396,9 @@ Strings.YOU = "YOU"
 Strings.GUS_SPOTTED = "!"
 Strings.GUS_HUH = "huh?"
 Strings.GUS_SUSPICIOUS = "?"
+Strings.GUS_ZZ = "zz" -- dozing (L5's back office)
+-- The nameplate the first time Gus is on screen (PLAN A5).
+Strings.GUS_NAME = "GUS"
 -- "20 SEC AGO" / "1 MIN AGO" (LineupPlan.agoRound gives the number, CLIPS §1.2).
 function Strings.ago(n: number, minutes: boolean): string
 	return string.format(if minutes then "%d MIN AGO" else "%d SEC AGO", n)
