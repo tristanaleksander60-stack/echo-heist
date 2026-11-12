@@ -33,6 +33,10 @@ Palette.exit = hex("#F4F7FF")
 Palette.bulbWarm = hex("#F6C0A2") -- Bulb Warm: lamps, idle plate rims, fairy lights (rule N1 vs every clone hue)
 Palette.tapeGrey = hex("#8A8FA8")
 Palette.ok = hex("#2FBF71") -- Holly Green, used only as a UI "done" state with a word
+-- Boot Chalk: Gus's boot prints (his next 2 s of patrol, PLAN A5), a light value step on every floor
+-- with an Ink rim for lit pools; never Torch Amber (the cone's). Audited in tools/blender/eh_palette.py
+-- (RUNTIME_SIGNALS: Oklab >= 0.15 from every clone hue, Torch Amber and Alarm Red).
+Palette.bootPrint = hex("#9098C0")
 -- Christmas layer (STYLE_BIBLE: Santa hats and berries are Ribbon Burgundy, never Alarm Red)
 Palette.ribbon = hex("#8C2F4B")
 Palette.snow = hex("#C0C3D5")
