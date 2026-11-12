@@ -190,7 +190,8 @@ local function ceilingLamp(
 	floorY: number,
 	l: any,
 	index: number,
-	look: any
+	look: any,
+	poolRect: any?
 ): (BasePart, BasePart)
 	local spec = LIGHT.LAMP[l.kind] or LIGHT.LAMP.room
 	-- street lamps hang their light at the StreetLamp lantern (spec.bulbY / lightY), ceiling lamps under the shade
@@ -247,10 +248,17 @@ local function ceilingLamp(
 
 	local pc = LIGHT.POOL
 	local d = spec.pool or (if l.kind == "hero" then pc.heroDiameter else pc.diameter)
+	-- The pool part covers KitPlan.poolRect (a street pool stops at the building's wall face, so it never shines
+	-- through the shop front onto the roofless interior). Its SurfaceGui is on the part's Front face turned to look
+	-- up, so the canvas is a map of the floor: canvas right = world +X, canvas up = world -Z (Front face: up is the
+	-- part's UpVector; right is its -X as you face it). The discs stay centred on the lamp; the canvas clips them.
+	local rect = poolRect or { minX = l.x - d / 2, maxX = l.x + d / 2, minZ = l.z - d / 2, maxZ = l.z + d / 2 }
+	local w, h = rect.maxX - rect.minX, rect.maxZ - rect.minZ
+	local centre = origin + Vector3.new((rect.minX + rect.maxX) / 2, floorY + pc.lift, (rect.minZ + rect.maxZ) / 2)
 	local pool = part({
 		Name = "LightPool",
-		Size = Vector3.new(d, 0.05, d),
-		CFrame = CFrame.new(origin + Vector3.new(l.x, floorY + pc.lift, l.z)),
+		Size = Vector3.new(w, h, 0.05),
+		CFrame = CFrame.fromMatrix(centre, Vector3.new(-1, 0, 0), Vector3.new(0, 0, -1)),
 		Transparency = 1,
 		CanCollide = false,
 		CanQuery = false,
@@ -261,12 +269,24 @@ local function ceilingLamp(
 	pool:SetAttribute("EH_Index", index)
 	local gui = Instance.new("SurfaceGui")
 	gui.Name = "Pool"
-	gui.Face = Enum.NormalId.Top
+	gui.Face = Enum.NormalId.Front
 	gui.LightInfluence = 0
 	gui.Brightness = pc.brightness
 	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
 	gui.PixelsPerStud = pc.pixelsPerStud
 	gui.MaxDistance = 250
+	local clip = Instance.new("Frame")
+	clip.Name = "Clip"
+	clip.Size = UDim2.fromScale(1, 1)
+	clip.BackgroundTransparency = 1
+	clip.ClipsDescendants = true
+	clip.Parent = gui
+	local cu, cv = (l.x - rect.minX) / w, (l.z - rect.minZ) / h
+	local function disc(inst: GuiObject, share: number)
+		inst.AnchorPoint = Vector2.new(0.5, 0.5)
+		inst.Position = UDim2.fromScale(cu, cv)
+		inst.Size = UDim2.fromScale(share * d / w, share * d / h)
+	end
 	-- A smooth radial falloff (Config.Lighting.POOL_SOFT): the uploaded gradient image in one ImageLabel once its
 	-- id is known (Heist/UiImages publishes it at boot; the client's LightDirector swaps late pools over), and
 	-- until then thin discs that follow the same curve (KitPlan.poolRings), never the old hard steps.
@@ -277,9 +297,7 @@ local function ceilingLamp(
 	for _, ring in KitPlan.poolRings(stepped, soft) do
 		local f = Instance.new("Frame")
 		f.Name = "Ring"
-		f.AnchorPoint = Vector2.new(0.5, 0.5)
-		f.Position = UDim2.fromScale(0.5, 0.5)
-		f.Size = UDim2.fromScale(ring.size, ring.size)
+		disc(f, ring.size)
 		f.BackgroundColor3 = rgb(look.pool)
 		f.BackgroundTransparency = ring.alpha
 		f.BorderSizePixel = 0
@@ -287,17 +305,17 @@ local function ceilingLamp(
 		local corner = Instance.new("UICorner")
 		corner.CornerRadius = UDim.new(0.5, 0)
 		corner.Parent = f
-		f.Parent = gui
+		f.Parent = clip
 	end
 	local img = Instance.new("ImageLabel")
 	img.Name = "Soft"
-	img.Size = UDim2.fromScale(1, 1)
+	disc(img, 1)
 	img.BackgroundTransparency = 1
 	img.Image = if hasImage then uri :: string else ""
 	img.ImageColor3 = rgb(look.pool)
 	img.ImageTransparency = 1 - KitPlan.poolPeak(stepped, soft)
 	img.Visible = hasImage
-	img.Parent = gui
+	img.Parent = clip
 	gui.Parent = pool
 	return bulb, pool
 end
@@ -772,7 +790,9 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 	local looks =
 		KitPlan.lampLooks(lampList, KitPlan.location(level, buildOpts.dressing == true, buildOpts.location), LIGHT)
 	for k, l in lampList do
-		local bulb, pool = ceilingLamp(model, origin, floorY, l, k, looks[k])
+		local spec = LIGHT.LAMP[l.kind] or LIGHT.LAMP.room
+		local d = spec.pool or (if l.kind == "hero" then LIGHT.POOL.heroDiameter else LIGHT.POOL.diameter)
+		local bulb, pool = ceilingLamp(model, origin, floorY, l, k, looks[k], KitPlan.poolRect(level, l.x, l.z, d))
 		lamps[k] = bulb
 		pools[k] = pool
 	end

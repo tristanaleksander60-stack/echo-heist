@@ -1224,10 +1224,10 @@ do
 				pools += 1
 				local gui = d:FindFirstChildOfClass("SurfaceGui")
 				local rings = 0
-				for _, c in (if gui then gui:GetChildren() else {}) do
+				for _, c in (if gui then gui:GetDescendants() else {}) do
 					rings += if c:IsA("Frame") and c.Name == "Ring" then 1 else 0
 				end
-				local soft = gui and gui:FindFirstChild("Soft")
+				local soft = gui and gui:FindFirstChild("Soft", true)
 				if soft and soft:IsA("ImageLabel") and rings == LIGHT.POOL_SOFT.rings then
 					softPools += 1
 				end

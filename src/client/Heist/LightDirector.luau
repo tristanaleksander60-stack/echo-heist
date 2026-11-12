@@ -26,13 +26,13 @@ function LightDirector.new(): any
 
 	-- One pool onto the gradient image (no-op until it is known, or when the pool has no "Soft" label).
 	local function soften(gui: SurfaceGui)
-		local img = gui:FindFirstChild("Soft")
+		local img = gui:FindFirstChild("Soft", true) -- under the pool's "Clip" frame
 		if not poolImage or not img or not img:IsA("ImageLabel") then
 			return
 		end
 		img.Image = poolImage
 		img.Visible = true
-		for _, c in gui:GetChildren() do
+		for _, c in gui:GetDescendants() do
 			if c:IsA("Frame") and c.Name == "Ring" then
 				c.Visible = false
 			end

@@ -130,20 +130,35 @@ local function lamp(parent: Instance, origin: Vector3, l: any, index: number)
 	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
 	gui.PixelsPerStud = pc.pixelsPerStud
 	gui.MaxDistance = 250
-	local rings = if l.kind == "street" then LIGHT.LAMP.street.poolRings else LIGHT.LAMP.room.poolRings
-	for _, ring in rings or pc.rings do
+	-- soft falloff (Config.Lighting.POOL_SOFT), as the heist pools: the gradient image once resolved, else soft discs
+	local rings = (if l.kind == "street" then LIGHT.LAMP.street.poolRings else LIGHT.LAMP.room.poolRings) or pc.rings
+	local soft = LIGHT.POOL_SOFT
+	local uri = game:GetService("ReplicatedStorage"):GetAttribute("EH_UiImage_" .. soft.image)
+	local hasImage = type(uri) == "string" and uri ~= ""
+	for _, ring in KitPlan.poolRings(rings, soft) do
 		local f = Instance.new("Frame")
+		f.Name = "Ring"
 		f.AnchorPoint = Vector2.new(0.5, 0.5)
 		f.Position = UDim2.fromScale(0.5, 0.5)
 		f.Size = UDim2.fromScale(ring.size, ring.size)
 		f.BackgroundColor3 = rgb(l.poolColor or pc.color)
 		f.BackgroundTransparency = ring.alpha
 		f.BorderSizePixel = 0
+		f.Visible = not hasImage
 		local corner = Instance.new("UICorner")
 		corner.CornerRadius = UDim.new(0.5, 0)
 		corner.Parent = f
 		f.Parent = gui
 	end
+	local img = Instance.new("ImageLabel")
+	img.Name = "Soft"
+	img.Size = UDim2.fromScale(1, 1)
+	img.BackgroundTransparency = 1
+	img.Image = if hasImage then uri :: string else ""
+	img.ImageColor3 = rgb(l.poolColor or pc.color)
+	img.ImageTransparency = 1 - KitPlan.poolPeak(rings, soft)
+	img.Visible = hasImage
+	img.Parent = gui
 	gui.Parent = pool
 end
 

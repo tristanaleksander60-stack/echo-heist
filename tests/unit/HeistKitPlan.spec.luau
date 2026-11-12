@@ -1020,6 +1020,44 @@ return function(test)
 		end
 	end)
 
+	test(
+		"pool rects: no pool crosses a wall (street pools stop at the shop front, the vault's at its walls)",
+		function()
+			local cut = 0
+			for _, level in levels() do
+				local walls = {}
+				for _, sd in level.spec.solids or {} do
+					local bx = sd.box
+					if bx.maxY - bx.minY >= 8 and math.min(bx.maxX - bx.minX, bx.maxZ - bx.minZ) <= 1.5 then
+						table.insert(walls, bx)
+					end
+				end
+				for _, l in KitPlan.lamps(level, LevelDress[level.id], LIGHT) do
+					local spec = LIGHT.LAMP[l.kind]
+					local d = spec.pool or (if l.kind == "hero" then LIGHT.POOL.heroDiameter else LIGHT.POOL.diameter)
+					local r = KitPlan.poolRect(level, l.x, l.z, d)
+					local what = string.format("%s: %s pool at (%g, %g)", level.id, l.kind, l.x, l.z)
+					Assert.truthy(
+						r.minX <= l.x and r.maxX >= l.x and r.minZ <= l.z and r.maxZ >= l.z,
+						what .. ": lamp inside"
+					)
+					Assert.truthy(r.maxX - r.minX <= d + 1e-9 and r.maxZ - r.minZ <= d + 1e-9, what .. ": never bigger")
+					cut += if r.maxX - r.minX < d - 1e-9 or r.maxZ - r.minZ < d - 1e-9 then 1 else 0
+					for _, bx in walls do
+						-- a wall line strictly inside the rect would mean light on both sides of it
+						local alongX = bx.maxX - bx.minX >= bx.maxZ - bx.minZ
+						local line = if alongX then (bx.minZ + bx.maxZ) / 2 else (bx.minX + bx.maxX) / 2
+						local crosses = if alongX
+							then line > r.minZ + 1e-6 and line < r.maxZ - 1e-6 and bx.maxX > r.minX and bx.minX < r.maxX
+							else line > r.minX + 1e-6 and line < r.maxX - 1e-6 and bx.maxZ > r.minZ and bx.minZ < r.maxZ
+						Assert.falsy(crosses, what .. " crosses the wall " .. boxText(bx))
+					end
+				end
+			end
+			Assert.truthy(cut >= 16, "the street pools (and more) are cut (" .. cut .. ")")
+		end
+	)
+
 	test("hide plates: L4's B under the coat rack, L6's A-D under the desk, fern and stacks", function()
 		local function letters(id: string): { [string]: string }
 			local out = {}

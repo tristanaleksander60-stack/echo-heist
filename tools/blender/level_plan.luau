@@ -79,6 +79,14 @@ local function lamps(level: any, location: string): { any }
 			shadows = spec.shadows == true,
 			pool = spec.pool or (if l.kind == "hero" then L.POOL.heroDiameter else L.POOL.diameter),
 			rings = spec.poolRings or L.POOL.rings,
+			-- the soft pool (Config.Lighting.POOL_SOFT): the radial image's peak, and its fallback discs
+			peak = KitPlan.poolPeak(spec.poolRings or L.POOL.rings, L.POOL_SOFT),
+			softRings = KitPlan.poolRings(spec.poolRings or L.POOL.rings, L.POOL_SOFT),
+			rect = (function()
+				local d = spec.pool or (if l.kind == "hero" then L.POOL.heroDiameter else L.POOL.diameter)
+				local r = KitPlan.poolRect(level, l.x, l.z, d)
+				return { r.minX, r.maxX, r.minZ, r.maxZ }
+			end)(),
 			lightY = spec.lightY or L.LIGHT_Y,
 		})
 	end
@@ -151,6 +159,19 @@ local function dump(spec: any): any
 	for i, h in level.hides do
 		hides[i] = { id = h.id, box = box(h.box) }
 	end
+	-- plates inside hides (the letter disc over the hide) and need-all lamp rows (LevelBuilder)
+	local hidePlates = {}
+	for _, hp in KitPlan.hidePlates(level) do
+		table.insert(hidePlates, { hide = hp.hide, letters = hp.letters, x = hp.x, z = hp.z, top = hp.top })
+	end
+	local vaultRows = {}
+	for _, row in KitPlan.vaultRows(level, Config.Lighting) do
+		local ls = {}
+		for _, l in row.lamps do
+			table.insert(ls, { x = l.x, y = l.y, z = l.z, plate = l.plate, letter = l.letter })
+		end
+		table.insert(vaultRows, { door = row.door, nx = row.nx, nz = row.nz, lamps = ls })
+	end
 	local loot = {}
 	for i, it in level.loot do
 		loot[i] = {
@@ -202,6 +223,8 @@ local function dump(spec: any): any
 		doors = doors,
 		lasers = lasers,
 		hides = hides,
+		hidePlates = hidePlates,
+		vaultRows = vaultRows,
 		loot = loot,
 		switches = switches,
 		guards = guards,
@@ -210,6 +233,7 @@ local function dump(spec: any): any
 		backdrop = BackdropPlan.plan(BackdropPlan.levelSite(level)), -- W4: what the client Backdrop builds
 		backdropConfig = Config.Backdrop,
 		lighting = Config.Lighting,
+		worldFx = Config.WorldFx, -- the laser's ink sleeve
 		camera = Config.Heist.CAMERA, -- the golden frames use the game's own diorama / golden numbers
 		kit = kit,
 		warnings = plan.warnings,
@@ -251,6 +275,15 @@ local function garage(): any
 			{ index = b.index, x = b.x, z = b.z, yaw = b.yaw, collider = box(b.collider), yours = b.yours }
 		)
 	end
+	-- the soft pools' peak per lamp (Heist/Lobby draws the room / street falloff, Config.Lighting.POOL_SOFT)
+	local L = Config.Lighting
+	local garageLamps = {}
+	for _, l in plan.lamps do
+		local entry = table.clone(l)
+		local rings = (if l.kind == "street" then L.LAMP.street.poolRings else L.LAMP.room.poolRings) or L.POOL.rings
+		entry.peak = KitPlan.poolPeak(rings, L.POOL_SOFT)
+		table.insert(garageLamps, entry)
+	end
 	return {
 		id = "garage",
 		location = Config.Lobby.LOCATION,
@@ -260,7 +293,7 @@ local function garage(): any
 		lines = lines,
 		numbers = plan.numbers,
 		bays = bays,
-		lamps = plan.lamps,
+		lamps = garageLamps,
 		card = plan.card,
 		spawn = plan.spawn,
 		kit = items,

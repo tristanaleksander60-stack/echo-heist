@@ -762,6 +762,39 @@ function KitPlan.poolPeak(stepped: { { size: number, alpha: number } }, soft: an
 	return math.min(mean * (soft.exponent + 1), soft.peakMax)
 end
 
+-- The floor a lamp's pool may cover (level space): its square, cut at every wall line that crosses it, on the far
+-- side from the lamp, so a pool never shines through a wall onto the next room or, for a street lamp, through the
+-- shop front onto the interior (the levels are roofless: the diorama camera sees it). Doorway gaps are cut too
+-- (a sliver of light through a doorway is not worth a second shape). LevelBuilder sizes the pool part to this rect
+-- and keeps the disc centred on the lamp inside it.
+export type Rect = { minX: number, maxX: number, minZ: number, maxZ: number }
+function KitPlan.poolRect(level: any, x: number, z: number, diameter: number): Rect
+	local r = diameter / 2
+	local out = { minX = x - r, maxX = x + r, minZ = z - r, maxZ = z + r }
+	for i, s in level.spec.solids or {} do
+		local w = wallOf(i, s.box)
+		if w then
+			local half = w.thick / 2
+			if w.axis == "X" then
+				if w.line > z - r and w.line < z + r and w.b > x - r and w.a < x + r then
+					if z > w.line then
+						out.minZ = math.max(out.minZ, w.line + half)
+					else
+						out.maxZ = math.min(out.maxZ, w.line - half)
+					end
+				end
+			elseif w.line > x - r and w.line < x + r and w.b > z - r and w.a < z + r then
+				if x > w.line then
+					out.minX = math.max(out.minX, w.line + half)
+				else
+					out.maxX = math.min(out.maxX, w.line - half)
+				end
+			end
+		end
+	end
+	return out
+end
+
 function KitPlan.poolRings(stepped: { { size: number, alpha: number } }, soft: any): { { size: number, alpha: number } }
 	local peak = KitPlan.poolPeak(stepped, soft)
 	local n = math.max(2, math.floor(soft.rings))
