@@ -11,6 +11,7 @@
 local process = require("@lune/process")
 local serde = require("@lune/serde")
 
+local BackdropPlan = require("../../src/shared/Heist/BackdropPlan")
 local Catalog = require("../../src/shared/Levels/Catalog")
 local Config = require("../../src/shared/Config")
 local LevelDress = require("../../src/server/Heist/LevelDress")
@@ -203,6 +204,8 @@ local function dump(spec: any): any
 		guards = guards,
 		cables = cables(level),
 		lamps = lamps(level, location),
+		backdrop = BackdropPlan.plan(BackdropPlan.levelSite(level)), -- W4: what the client Backdrop builds
+		backdropConfig = Config.Backdrop,
 		lighting = Config.Lighting,
 		kit = kit,
 		warnings = plan.warnings,

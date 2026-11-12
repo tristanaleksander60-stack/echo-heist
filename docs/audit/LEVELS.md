@@ -346,3 +346,26 @@ Re-rendered with `python3 tools/blender/level_shots.py --only L1|L2|L5 --samples
 | L5 Clone Party | 0.083 → 0.178 | No floating shutter in the street shot; aisle and office lamps with pools; the till under its hero lamp; van zone no longer the brightest thing | **5.5 → 6.5** |
 
 Still open (needs sim level data or later phases): spawn framing and the camera (P0-6, C0), the till on its counter and loot on the shelves (P1-4), every Corner Shop level's own first room (P1-1), street dressing and the backdrop (P1-6, W4), and the sky faces upload (the renders show the plain night sky the Sky node gets once `assets/sky/` is uploaded; Studio draws Roblox's day faces until then).
+
+## 7. World track: backdrop, snow and signature silhouettes vs the golden frames (2026-11-12)
+
+Rendered with `python3 tools/blender/level_shots.py --golden --samples 32` (R2: Blender, not Studio; `tools/blender/backdrop_shots.py` draws the same `Shared/Heist/BackdropPlan` the client builds, the uploaded Heist City sky faces as the camera-ray world, `Config.Backdrop.SNOW.maxAlive` flakes over the camera focus and a depth-pass haze for the Atmosphere). Files: [`levels/golden/G1a_diorama.png`](levels/golden/G1a_diorama.png) (pitch 50, distance 28, FOV 42), [`G1b_classic.png`](levels/golden/G1b_classic.png) (16 studs, FOV 70, pitch 15, 30 degrees right of the spawn axis so the van is at frame left), [`G2_party_wide.png`](levels/golden/G2_party_wide.png) (8 OF ME, pitch 55), each with a 160 x 90 thumbnail.
+
+| Frame | Median sRGB luma | Warm share | Glow share | Score vs GOLDEN_FRAMES (0-10) |
+|---|---|---|---|---|
+| G1a diorama | 0.213 (R2 L1 spawn was 0.170) | 4 % (target about 60 %) | 1.5 % | **5.5** |
+| G1b classic | 0.212 | 3 % | 9.0 % | **6.5** |
+| G2 party wide | 0.204 | 3 % | 3.6 % | **6** |
+
+**What reads now.** A snowy night street instead of a void: falling snow, snow on the awnings' upper slope and the sills, the striped awnings framing the door, amber (Corner Shop) and pink (Toy Shop) window light spilling onto the pavement, neighbour facades with lit windows either side of the shop, and in the classic view **the Snow Globe on Hoardsworth's tower rising over the shop roof** (burgundy and gold, full of stolen presents). Plate A and its letter read through the right display window. In G2 the giant toy drummer is the clear signature silhouette in the front corner, the room lamps tint the floor candy pink and gold, the crew of 8 sits in the central third under the stamp, Gus is in the back office.
+
+**Self-critique (honest).**
+- **Warm share 3-4 %, not 60 %.** The world is still indigo; the location colour only lives in the room-lamp pools and the window spill. Warm area needs W3/W5 work outside this track: warm rugs in the pools, warmer interior walls (the Corner Shop atlas), a warm street lamp pool (GOLDEN G1 lists one; there is no street lamp piece yet).
+- **The van is the brightest thing in G1b** (Getaway White body and zone): a van/camera call (C0, LEVELS P0-6), not the backdrop's.
+- **No cash glint from the spawn** in either G1 view: the counter is behind the left wall (camera C0 / level W5).
+- **The diorama camera (G1a) never sees the sky:** at pitch 50 and FOV 42 the frame's top edge is 29 degrees below the horizon, so the landmark and skyline show only in the classic camera, the street and the garage. If the owner picks the diorama default (D5), the landmark needs a second, in-world read (a Hoardsworth billboard on a neighbour facade, say).
+- **Facade windows render near-white** (Neon Bulb Warm + bloom). In Studio Neon keeps more of its colour; check, and make them smaller or dimmer if they still read as slabs.
+- **Render-only artefacts:** the spill is drawn in 6 bands (the game uses a UIGradient); flakes are icospheres (the game uses the uploaded soft dot); the clones are the stripped stand-in, not avatars (clone track).
+- **G2 compromises:** pitch 55 instead of about 45 (at 45 the 12-stud front wall hides the crew's legs unless they stand among the shelves); the world is not dimmed 15 %; the stamp is not the chosen display face. The pull-back camera and the stamp are the camera and HUD tracks'.
+
+**[verify in Studio]** the sky orientation (Ft = Roblox -Z, so the tower stands behind the shop from the spawn; `Config.Backdrop.SKY_LANDMARK_YAW` / `SKY_TURN` fix it in one number), the awning snow slabs' fit on the slope, the spill gradient's direction (bright at the wall), the rings' haze at 300 / 600 studs under Atmosphere 0.28, and the snow's look with the uploaded flake texture.

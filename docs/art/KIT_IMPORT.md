@@ -134,6 +134,8 @@ python3 tools/kit_upload.py --all           # every new or changed FBX (unchange
 python3 tools/kit_upload.py --images        # assets/textures/*.png as Decals (location atlases, dial-face maps)
 python3 tools/kit_upload.py --appearances   # the hero SurfaceAppearance as an rbxm Model (built with Lune)
 python3 tools/kit_upload.py --gen           # regenerate the Luau data only (no network)
+python3 tools/kit_upload.py --sky           # assets/sky Heist City faces + snowflake as Decals (assets/sky/sky_ids.json)
+python3 tools/kit_upload.py --resolve-sky   # Decal -> image ids: read-only Luau task on an existing place version
 ```
 
 - A **changed** FBX updates the **same** asset (`PATCH /assets/v1/assets/{id}`, a new version), so ids never change and `InsertService:LoadAsset` gets the latest version. `--new` makes a fresh asset instead (the old id goes to `history`). Decals cannot be updated: a changed PNG becomes a new Decal.

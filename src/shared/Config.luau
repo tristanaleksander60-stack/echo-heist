@@ -895,7 +895,7 @@ Config.Backdrop = {
 		count = 16, -- facades in the whole near ring (a heist; the garage gets the same)
 		cornice = 0.8, -- studs: the marble lip on top
 		snow = 0.35, -- studs: the snow on the cornice
-		window = { w = 2.6, h = 3.4, floorH = 6, colPitch = 5, sill = 4 }, -- the first row's bottom above the ground
+		window = { w = 2.2, h = 2.8, floorH = 6, colPitch = 5, sill = 4 }, -- the first row's bottom above the ground
 		litEvery = 3, -- every 3rd window slot is lit (warm-white Neon), the rest stay dark glass
 		bodyColors = { { 60, 44, 54 }, { 46, 44, 74 }, { 66, 50, 46 }, { 52, 56, 82 } }, -- brick and slate, dark
 		corniceColor = { 168, 152, 122 }, -- Warm Marble shade
@@ -903,6 +903,10 @@ Config.Backdrop = {
 	},
 	WINDOW_COLOR = { 246, 192, 162 }, -- Bulb Warm #F6C0A2 (eh_palette.NEON, rule N1): the only glow allowed
 	SNOW_COLOR = { 192, 195, 213 }, -- Snow #C0C3D5 (small areas only, STYLE_BIBLE §1.3)
+	-- The warm window spill on the pavement in front of each kit display window (unlit SurfaceGui, the room
+	-- lamps' location colour): opacity at the wall, fading to nothing SPILL_DEPTH studs out toward the kerb.
+	SPILL_ALPHA = 0.18,
+	SPILL_DEPTH = 5,
 	-- L2 / L3, the skyline rings: four copies of one quarter-arc kit mesh each (body + Neon windows; kit pieces
 	-- built by assets/blender/backdrop.py, published to ReplicatedStorage by server Heist/BackdropKit).
 	RINGS = {
@@ -932,7 +936,7 @@ Config.Backdrop = {
 		lightInfluence = 0.3,
 		lightEmission = 0.15,
 		transparency = 0.15,
-		box = { 64, 26, 64 }, -- studs: the emitter volume around the camera
+		box = { 48, 22, 48 }, -- studs: the emitter volume around the camera focus (the camera sits inside it)
 		above = 6, -- studs: the volume's centre above the camera focus
 		maxAlive = 240, -- rate x lifetime stays under this (unit spec)
 		lowTierScale = 0.5, -- tier >= LOW_TIER: half the rate (120 alive, roblox_quality §2.1 "Q1")

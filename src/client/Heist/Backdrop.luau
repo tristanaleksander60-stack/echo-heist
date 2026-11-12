@@ -34,7 +34,7 @@ local SILLS = {
 	Storefront_24x12 = { y = 2.25, xs = { { -7.65, -0.35 }, { -23.65, -16.35 } } },
 	BankFront_24x12 = { y = 2.65, xs = { { -5.45, -1.55 }, { -22.45, -18.55 } } },
 }
-local SPILL_DEPTH = 5 -- studs of warm window light on the pavement in front of each display window
+local SPILL_DEPTH = B.SPILL_DEPTH -- studs of warm window light on the pavement in front of each display window
 
 local function rgb(t: { number }): Color3
 	return Color3.fromRGB(t[1], t[2], t[3])
@@ -214,13 +214,13 @@ function Backdrop.new(): any
 			local grad = Instance.new("Frame")
 			grad.Size = UDim2.fromScale(1, 1)
 			grad.BackgroundColor3 = spillColor
-			grad.BackgroundTransparency = 0.55
+			grad.BackgroundTransparency = 1 - B.SPILL_ALPHA
 			grad.BorderSizePixel = 0
 			local g = Instance.new("UIGradient")
 			-- bright at the wall, gone at the kerb (the gradient's Y runs along the part's Z)
 			g.Rotation = 90
 			g.Transparency = NumberSequence.new({
-				NumberSequenceKeypoint.new(0, 0.1),
+				NumberSequenceKeypoint.new(0, 0),
 				NumberSequenceKeypoint.new(1, 1),
 			})
 			g.Parent = grad
