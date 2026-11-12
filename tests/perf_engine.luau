@@ -857,6 +857,40 @@ if cloneActor and six then
 		for _ = 1, 2 do
 			pcall(echo.update, 3.2, os.clock(), 1 / 30, nil)
 		end
+		-- Clone LOD (Config.Perf.CLONE_LOD): from its tier, with the camera ~40 studs from the crowd every avatar
+		-- clone draws as the light rig; inside NEAR they are textured again (hysteresis); the view is then measured
+		-- from the far camera (the Big Score crowd fills a hall well past FAR).
+		local lodFar = 0
+		local LOD = P.CLONE_LOD
+		local crowdAt = echo.positionOf(1)
+		local camWas = camera.CFrame
+		local function settle()
+			for _ = 1, 2 do
+				pcall(echo.update, 3.2, os.clock(), 1 / 30, nil)
+			end
+		end
+		if crowdAt and Budget.cloneLod(tier) then
+			camera.CFrame = CFrame.lookAt(crowdAt + Vector3.new(0, 12, 38), crowdAt)
+			settle()
+			lodFar = echo.lodCount()
+			local drawn = echo.drawnRigOf(1)
+			check(
+				lodFar == 12 and drawn ~= nil and drawn.kind == "mannequin",
+				string.format("tier %d: clone LOD, camera ~40 studs away: %d of 12 clones light", tier, lodFar)
+			)
+			camera.CFrame = CFrame.lookAt(crowdAt + Vector3.new(0, 4, LOD.NEAR - 4), crowdAt)
+			settle()
+			check(echo.lodCount() == 0, string.format("tier %d: inside NEAR the clones are textured again", tier))
+			camera.CFrame = CFrame.lookAt(crowdAt + Vector3.new(0, 12, 38), crowdAt)
+			settle()
+			lodFar = echo.lodCount()
+		elseif crowdAt then
+			camera.CFrame = CFrame.lookAt(crowdAt + Vector3.new(0, 12, 38), crowdAt)
+			settle()
+			check(echo.lodCount() == 0, string.format("tier %d: no clone LOD below tier %d", tier, LOD.TIER))
+			camera.CFrame = camWas
+			settle()
+		end
 		local b = Budget.forTier(tier)
 		local clonesT = tallyOf(clonesFolder)
 		local levelLights = lightsOf(levelModel)
@@ -869,11 +903,12 @@ if cloneActor and six then
 		local glows = echo.glowCount()
 		local hl = clonesT.highlightsOn
 		local levelTris = l6T.kitTris + l6T.primTris
-		local avatarTris = (12 + 4) * P.AVATAR_TRIS_EST
+		local avatarTris = (12 - lodFar + 4) * P.AVATAR_TRIS_EST + lodFar * P.MANNEQUIN_TRIS
 		local tris = levelTris + bdT.kitTris + bdT.primTris + avatarTris + 2 * gusTris
 		local draws = batchCount(l6T)
 			+ batchCount(bdT)
-			+ 4 * 17 -- 12 clones of 4 avatars instance together: ~17 meshes per avatar
+			+ (if lodFar >= 12 then 0 else 4 * 17) -- 12 clones of 4 avatars instance together: ~17 meshes per avatar
+			+ (if lodFar > 0 then LOD.MANNEQUIN_DRAWS else 0) -- the light rigs: primitive boxes and balls
 			+ 4 * 17 -- the 4 live characters
 			+ 2 * 18 -- Gus
 			+ clonesT.surfaceGuisOn
@@ -892,7 +927,7 @@ if cloneActor and six then
 		table.insert(results, "      " .. line(string.format("tier %d clones (12) + halo", tier), clonesT))
 		info(
 			string.format(
-				"tier %d view: lights %d (+%d halo) / shadowed %d, glows %d, Highlights %d, snow %.0f + worst bursts %d = %d particles, ~%dk tris (level %dk, backdrop %dk, 16 avatars %dk est., Gus %dk), ~%d draws (estimate), %d live instances (streaming on)",
+				"tier %d view: lights %d (+%d halo) / shadowed %d, glows %d, Highlights %d, snow %.0f + worst bursts %d = %d particles, ~%dk tris (level %dk, backdrop %dk, avatars %dk est. with %d of 12 clones light, Gus %dk), ~%d draws (estimate), %d live instances (streaming on)",
 				tier,
 				lit,
 				haloLight,
@@ -906,6 +941,7 @@ if cloneActor and six then
 				math.floor(levelTris / 1000 + 0.5),
 				math.floor((bdT.kitTris + bdT.primTris) / 1000 + 0.5),
 				math.floor(avatarTris / 1000 + 0.5),
+				lodFar,
 				math.floor(2 * gusTris / 1000 + 0.5),
 				draws,
 				instTotal
@@ -935,6 +971,28 @@ if cloneActor and six then
 		if draws > b.drawCalls then
 			warnLine(string.format("tier %d: ~%d draws (estimate) over the %d budget", tier, draws, b.drawCalls))
 		end
+		camera.CFrame = camWas
+	end
+	do
+		-- Line-up at tier 3 (LineupDirector, Budget.lineupLight): past the front row and beyond FAR from the shot's
+		-- camera the figures are built light; never you or your newest clone. 16 figures = 2 rows of LINEUP_ROW.
+		local backRow = math.max(0, 16 - Config.Sim.LINEUP_ROW)
+		local light = 0
+		for k = 0, 15 do
+			if Budget.lineupLight(3, k // Config.Sim.LINEUP_ROW, P.CLONE_LOD.FAR + 10, k == 15) then
+				light += 1
+			end
+		end
+		check(light == backRow - 1, string.format("Line-up tier 3: %d of 16 figures light (back row, not you)", light))
+		info(
+			string.format(
+				"Line-up tier 3: ~%dk tris saved (%d figures light at ~%d tris instead of ~%dk)",
+				light * (P.AVATAR_TRIS_EST - P.MANNEQUIN_TRIS) // 1000,
+				light,
+				P.MANNEQUIN_TRIS,
+				P.AVATAR_TRIS_EST // 1000
+			)
+		)
 	end
 	table.insert(results, "      " .. line("Line-up (16 figures)", lineupT))
 	table.insert(results, "      " .. line("Gus x2", gusT))

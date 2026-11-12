@@ -156,6 +156,36 @@ function Budget.worstParticles(tier: number): number
 end
 
 ---------------------------------------------------------------------------
+-- Clone LOD (Config.Perf.CLONE_LOD): the textured avatar near the camera, the crew-hue mannequin beyond.
+---------------------------------------------------------------------------
+
+-- Whether the clone LOD is on at `tier` (EchoView builds the light rigs from here).
+function Budget.cloneLod(tier: number): boolean
+	return clampTier(tier) >= P.CLONE_LOD.TIER
+end
+
+-- Whether a clone draws as the light version this frame. `wasFar` is what it drew last frame (hysteresis: it
+-- turns light beyond FAR and textured again inside NEAR); `exempt` is your newest clone in the L1 tutorial.
+function Budget.cloneFar(tier: number, dist: number, wasFar: boolean, exempt: boolean): boolean
+	local L = P.CLONE_LOD
+	if exempt or clampTier(tier) < L.TIER then
+		return false
+	end
+	if wasFar then
+		return dist >= L.NEAR
+	end
+	return dist > L.FAR
+end
+
+-- Whether a Line-up figure is built as the light version: from TIER, never in the front row (`row` 0, the
+-- figures nearest the camera) and never `exempt` (you and your newest clone), beyond FAR from the shot's camera.
+-- Picked once when the figure is built (the cut is a few seconds: no swaps on screen).
+function Budget.lineupLight(tier: number, row: number, dist: number, exempt: boolean): boolean
+	local L = P.CLONE_LOD
+	return not exempt and clampTier(tier) >= L.TIER and row >= 1 and dist > L.FAR
+end
+
+---------------------------------------------------------------------------
 -- Start tier (Config.Perf.START): what a client knows at boot, then a short frame-time probe.
 ---------------------------------------------------------------------------
 

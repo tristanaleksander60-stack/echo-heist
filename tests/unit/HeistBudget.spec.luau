@@ -261,4 +261,41 @@ return function(test)
 		)
 		Assert.truthy(Budget.softToybox(Budget.probeTier(2, slow)), "a low phone reaches recipe C at boot")
 	end)
+	test(
+		"clone LOD: from tier 3 the light rig beyond FAR, textured again inside NEAR; never the tutorial clone",
+		function()
+			local L = P.CLONE_LOD
+			Assert.truthy(L.NEAR < L.FAR, "a hysteresis band")
+			Assert.falsy(Budget.cloneLod(L.TIER - 1), "off below the LOD tier")
+			Assert.truthy(Budget.cloneLod(L.TIER) and Budget.cloneLod(4), "on from the LOD tier")
+			Assert.falsy(Budget.cloneFar(2, 200, false, false), "tier 2: always textured")
+			Assert.falsy(Budget.cloneFar(2, 200, true, false), "tier 2: a far clone comes back")
+			Assert.falsy(Budget.cloneFar(3, L.NEAR - 1, false, false), "near: textured")
+			Assert.truthy(Budget.cloneFar(3, L.FAR + 1, false, false), "beyond FAR: light")
+			Assert.falsy(Budget.cloneFar(3, (L.NEAR + L.FAR) / 2, false, false), "in the band: keeps textured")
+			Assert.truthy(Budget.cloneFar(3, (L.NEAR + L.FAR) / 2, true, false), "in the band: keeps light")
+			Assert.falsy(Budget.cloneFar(3, L.NEAR - 0.01, true, false), "inside NEAR: textured again")
+			Assert.falsy(Budget.cloneFar(4, 500, false, true), "the L1 tutorial's newest own clone: never")
+			-- a clone pacing across the edge swaps at most once per crossing of the whole band
+			local far, swaps = false, 0
+			for i = 0, 400 do
+				local d = L.FAR + 1.2 * math.sin(i / 7) -- wobbles +-1.2 studs round FAR
+				local nf = Budget.cloneFar(3, d, far, false)
+				if nf ~= far then
+					swaps += 1
+					far = nf
+				end
+			end
+			Assert.le(swaps, 1, "jitter round FAR does not flicker")
+		end
+	)
+
+	test("Line-up LOD: past the front row, beyond FAR, from tier 3; never you or your newest clone", function()
+		local L = P.CLONE_LOD
+		Assert.falsy(Budget.lineupLight(3, 0, 100, false), "the front row stays textured")
+		Assert.truthy(Budget.lineupLight(3, 1, L.FAR + 1, false), "back row, far: light")
+		Assert.falsy(Budget.lineupLight(3, 1, L.FAR - 1, false), "back row, near: textured")
+		Assert.falsy(Budget.lineupLight(2, 1, 100, false), "tier 2: textured")
+		Assert.falsy(Budget.lineupLight(4, 1, 100, true), "you / your newest clone: textured")
+	end)
 end

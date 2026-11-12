@@ -1901,6 +1901,18 @@ Config.Perf = {
 	AVATAR_TRIS_EST = 7000, -- a catalog R15 avatar with hair and 2-3 accessories (not readable from Luau)
 	MANNEQUIN_TRIS = 216, -- 18 box parts
 
+	-- Clone LOD (roblox_quality §6.4; Budget.cloneFar / Budget.lineupLight): from TIER, a clone drawn from an
+	-- avatar template is the textured avatar within NEAR studs of the camera and the 216-tri mannequin in its crew
+	-- hue beyond FAR (same pill, glow and owner Highlight); between the two it keeps what it was (hysteresis), so
+	-- a clone walking along the edge never flickers. Never your newest clone in the L1 tutorial ("YOU, 10 SEC
+	-- AGO"). Line-up figures past the front row use the same distance from the shot's camera (picked once per cut).
+	CLONE_LOD = {
+		TIER = 3,
+		NEAR = 15,
+		FAR = 18,
+		MANNEQUIN_DRAWS = 3, -- estimate: every mannequin in view batches into a few primitive draws (perf_engine)
+	},
+
 	-- The start tier (Budget.startTier / Budget.probeTier, Heist/Telemetry): picked at boot from what a client
 	-- script can know, so a low phone is at recipe C before its first run instead of ~70 s of slow frames later.
 	-- The governor keeps its hysteresis from there (it may step back up to tier 1: PerfSample.seed).
