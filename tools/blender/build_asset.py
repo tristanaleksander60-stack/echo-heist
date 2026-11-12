@@ -1,0 +1,114 @@
+"""Build Echo Heist kit assets from Python specs: build -> gates -> FBX export -> FBX check -> turntable.
+
+    python3 tools/blender/build_asset.py assets/blender/gold_bar.py        # one spec
+    python3 tools/blender/build_asset.py --all                             # every spec in assets/blender/
+    options: --no-render  --no-mood  --size 384  --blend (also save build/blender/<Asset>.blend)
+
+A spec is a Python file with `build(k)` returning one eh_kit.Asset or a list of them (k = the eh_kit module).
+For every asset this writes:
+    assets/fbx/<Asset>.fbx              Roblox FBX (FBX Unit Scale, 1 stud = 1 unit, atlas embedded)
+    assets/fbx/<Asset>.gate.json        gate report (A1-A18, kit grid/tile, palette, FBX check)
+    docs/art/turntables/<Asset>.png     contact sheet rendered from the re-imported FBX (round trip)
+Exit code 1 if any gate fails; failing assets are still exported so they can be inspected.
+"""
+import argparse, glob, importlib.util, json, os, sys, time
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import bpy  # noqa: E402
+import eh_kit as k  # noqa: E402
+import eh_palette as P  # noqa: E402
+import turntable as tt  # noqa: E402
+
+REPO = k.REPO
+FBX_DIR = os.path.join(REPO, "assets", "fbx")
+TT_DIR = os.path.join(REPO, "docs", "art", "turntables")
+BLEND_DIR = os.path.join(REPO, "build", "blender")
+
+
+def load_spec(path):
+    spec = importlib.util.spec_from_file_location("eh_spec_" + os.path.splitext(os.path.basename(path))[0], path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def build_spec(path, render=True, mood=True, size=384, blend=False):
+    P.write_atlas(k.ATLAS_PATH)
+    k.reset_scene()
+    mod = load_spec(path)
+    assets = mod.build(k)
+    assets = assets if isinstance(assets, list) else [assets]
+    results = []
+    for a in assets:
+        t0 = time.time()
+        passed, rep = k.gate_asset(a)
+        objs = [o.ob for o in a.objects]
+        fbx = os.path.join(FBX_DIR, a.name + ".fbx")
+        k.export_fbx(objs, fbx)
+        ok, fails, info = k.verify_fbx(fbx, objs)
+        rep["fbx"] = {"path": os.path.relpath(fbx, REPO), "bytes": os.path.getsize(fbx), "ok": ok, "fails": fails, **info}
+        if not ok:
+            rep["asset_fails"] += fails
+            passed = False
+        rep["passed"] = passed
+        rep["spec"] = os.path.relpath(path, REPO)
+        rep["notes"] = a.notes
+        if blend:
+            os.makedirs(BLEND_DIR, exist_ok=True)
+            bpy.ops.wm.save_as_mainfile(filepath=os.path.join(BLEND_DIR, a.name + ".blend"), copy=True)
+        results.append((a, passed, rep, fbx, t0))
+    for a, passed, rep, fbx, t0 in results:
+        if render:
+            png = os.path.join(TT_DIR, a.name + ".png")
+            objs = tt.load_file(fbx)
+            fails = [f for o in rep["objects"] for f in o["fails"]] + rep["asset_fails"]
+            info = [("GATES PASS" if passed else "GATES FAIL: " + "; ".join(fails)[:180]) +
+                    f"   |  FBX {rep['fbx']['bytes'] // 1024} KB, UnitScaleFactor {rep['fbx'].get('UnitScaleFactor')}"]
+            if a.notes:
+                info.append(a.notes[:170])
+            tt.render_contact_sheet(png, objs, 8, size, f"{a.name}  (rendered from {os.path.relpath(fbx, REPO)})",
+                                    info, mood=mood)
+            rep["turntable"] = os.path.relpath(png, REPO)
+        rep["seconds"] = round(time.time() - t0, 1)
+        with open(os.path.join(FBX_DIR, a.name + ".gate.json"), "w") as f:
+            json.dump(rep, f, indent=1, default=str)
+        print_summary(rep)
+    return all(p for _a, p, *_r in results)
+
+
+def print_summary(rep):
+    print(f"\n== {rep['asset']}: {'PASS' if rep['passed'] else 'FAIL'}  ({rep['tris_total']} tris, {rep.get('seconds')} s)")
+    for o in rep["objects"]:
+        print(f"   {o['name']:<24} {o['class']:<8} {o['tris']:>6} tris (target {o['budget'][0]}, ceiling {o['budget'][1]})"
+              f"  dims {o['dims']}  {'ok' if o['passed'] else 'FAIL'}")
+        for f in o["fails"]:
+            print("      -", f)
+    for f in rep["asset_fails"]:
+        print("   -", f)
+    if rep.get("turntable"):
+        print("   turntable:", rep["turntable"])
+
+
+def main(argv):
+    ap = argparse.ArgumentParser(description="Build Echo Heist kit assets from spec scripts")
+    ap.add_argument("specs", nargs="*")
+    ap.add_argument("--all", action="store_true")
+    ap.add_argument("--no-render", action="store_true")
+    ap.add_argument("--no-mood", action="store_true")
+    ap.add_argument("--size", type=int, default=384)
+    ap.add_argument("--blend", action="store_true")
+    a = ap.parse_args(argv)
+    specs = sorted(glob.glob(os.path.join(REPO, "assets", "blender", "*.py"))) if a.all else a.specs
+    specs = [s for s in specs if not os.path.basename(s).startswith("_")]
+    if not specs:
+        ap.error("give a spec path or --all")
+    ok = True
+    for s in specs:
+        ok &= build_spec(os.path.abspath(s), not a.no_render, not a.no_mood, a.size, a.blend)
+    print("\nALL GATES PASS" if ok else "\nSOME GATES FAILED")
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
