@@ -251,10 +251,10 @@ do
 		expect(m ~= nil and m.ClassName == "ModuleScript", "Client.Heist." .. name .. " is a ModuleScript")
 	end
 end
--- The default game is the v0.1 prototype until the owner switches (fun gate, Nov 16).
+-- The default game is the sim path (the owner finished the fun test on 2026-11-12).
 expect(
-	config ~= nil and string.find(config.Source, 'Config.GAME_MODE = "v01"', 1, true) ~= nil,
-	'Config.GAME_MODE defaults to "v01"'
+	config ~= nil and string.find(config.Source, 'Config.GAME_MODE = "sim"', 1, true) ~= nil,
+	'Config.GAME_MODE defaults to "sim"'
 )
 
 -- Data layer (docs/DATA.md): lihfolk-systems modules where the library expects them

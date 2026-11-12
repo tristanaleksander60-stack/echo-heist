@@ -2,10 +2,11 @@
 
 local Config = {}
 
--- Which game runs: "v01" = the v0.1 prototype (default, the Nov 16 fun gate),
--- "sim" = the HeistSim path (src/server/Heist, src/client/Heist; Config.Heist below).
+-- Which game runs: "v01" = the v0.1 prototype (kept for reference),
+-- "sim" = the HeistSim path (src/server/Heist, src/client/Heist; Config.Heist below),
+-- the default since the owner finished the fun test on 2026-11-12.
 -- Both entry scripts (src/server/init.server.luau, src/client/init.client.luau) read it.
-Config.GAME_MODE = "v01"
+Config.GAME_MODE = "sim"
 
 -- Loop
 Config.LOOP_SECONDS = 60
