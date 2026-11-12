@@ -993,12 +993,15 @@ Config.Lobby = {
 	},
 	-- Work lamps: one Lamp_Ceiling over each bay's door side; bay 1 (yours) is the shadowed key and the brightest,
 	-- the neighbouring bays dimmer (GOLDEN G3). Pools: unlit SurfaceGui discs like the heist lamps.
-	-- the work lamp hangs off the van's cab end toward the aisle: it lights the open door and the bay without hanging
-	-- in front of the door from the aisle (studs, in the van's frame: along its length toward the cab, toward the aisle)
-	LAMP_OFFSET = 4.5,
-	LAMP_ALONG = 5,
-	WORK_LAMP = { range = 20, brightness = 1.0, color = { 255, 196, 132 }, pool = 15, poolColor = { 236, 190, 140 } },
+	-- Work lamps: a Lamp_Ceiling between each van's back and its wall (a warm wash on the brick; from the aisle it never
+	-- hangs over an open door). Your bay (1) adds the key: a shadowed SpotLight over the aisle in front of your van
+	-- (y up, `out` toward the aisle, `along` the van), the brightest light in the garage; the other bays stay dimmer.
+	LAMP_OFFSET = 4.6, -- studs from the van's centre toward its wall
+	WORK_LAMP = { range = 20, brightness = 1.1, color = { 255, 192, 128 }, pool = 15, poolColor = { 236, 190, 140 } },
 	YOUR_LAMP = {
+		y = 10.5,
+		out = 7,
+		along = 1,
 		range = 30,
 		brightness = 1.7,
 		angle = 80,
@@ -1036,7 +1039,7 @@ Config.Lobby = {
 		{ x = 13, ornament = "Ornament_Star" },
 		{ x = 15.4 },
 	},
-	TROPHY_LIGHT_AT = { 15, 8.5, -16 }, -- in front of the board, reaching the shelf behind it
+	TROPHY_LIGHT_AT = { 12.5, 8.5, -21 }, -- between the board and the shelf behind it
 	-- Snow drifting in at the door, and on the street (Xmas_SnowPile: x, z, yaw).
 	SNOW_PILES = { { -5, -25.2, 160 }, { 5.5, -25.6, 20 }, { -14, -36, 0 }, { 20, -47, 90 } },
 	BAY_LINE = { width = 0.3, color = { 168, 152, 122 } }, -- painted bay lines (Warm Marble shade)

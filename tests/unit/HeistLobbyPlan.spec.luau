@@ -85,7 +85,7 @@ return function(test: (string, () -> ()) -> ())
 				yoursLamp = l
 			end
 		end
-		Assert.eq(work, 7, "a work lamp over each other bay")
+		Assert.eq(work, 8, "a work lamp at each bay")
 		Assert.truthy(yoursLamp ~= nil and yoursLamp.shadows, "your bay's lamp is the shadowed key")
 		for _, l in plan.lamps do
 			if l ~= yoursLamp then
@@ -128,6 +128,18 @@ return function(test: (string, () -> ()) -> ())
 		Assert.truthy((count.wall or 0) >= 30, "brick wall tiles round the garage")
 		Assert.truthy((count.trophy or 0) >= 1, "a trophy on your shelf")
 		Assert.eq(count.lamp, 9 + #C.AISLE_LAMPS, "8 work-lamp fixtures, the aisle floods and the street lamp")
+		for _, it in plan.items do
+			if it.role == "lamp" and it.pieces[1] == "Lamp_Ceiling" then
+				for i, bay in plan.bays do
+					local c = bay.collider
+					local inside = it.pivot.x > c.minX
+						and it.pivot.x < c.maxX
+						and it.pivot.z > c.minZ
+						and it.pivot.z < c.maxZ
+					Assert.falsy(inside, "a work lamp fixture hangs over van " .. i)
+				end
+			end
+		end
 		Assert.truthy((count.snow or 0) >= 2, "snow at the door")
 		Assert.eq(#grey.items, 0, "no kit: no items (greybox only)")
 	end)

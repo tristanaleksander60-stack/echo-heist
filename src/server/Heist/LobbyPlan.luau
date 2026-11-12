@@ -210,25 +210,39 @@ function LobbyPlan.plan(cfg: any, light: any, specs: { [string]: any }?, KP: any
 			collider = collider,
 			yours = i == 1,
 		})
-		-- the work lamp off the van's cab end, over its door side (the cab is the kit's -X end: +X in the world once
-		-- the back row turns 180)
-		local lz = z + (if back then cfg.LAMP_OFFSET else -cfg.LAMP_OFFSET)
-		local lx = b.x + (if back then cfg.LAMP_ALONG else -cfg.LAMP_ALONG)
-		local L = if i == 1 then cfg.YOUR_LAMP else cfg.WORK_LAMP
+		-- the work lamp hangs between the van's back and its wall (a warm wash on the brick, never over the open door
+		-- from the aisle); your bay adds the key: a shadowed spot over the aisle in front of your van (no fixture)
+		local W0 = cfg.WORK_LAMP
 		table.insert(plan.lamps, {
-			kind = if i == 1 then "yours" else "work",
-			x = lx,
+			kind = "work",
+			x = b.x,
 			y = light.LIGHT_Y,
-			z = lz,
-			range = L.range,
-			brightness = L.brightness,
-			color = L.color,
-			shadows = L.shadows == true,
-			angle = L.angle,
-			pool = L.pool,
-			poolColor = L.poolColor,
+			z = z + (if back then -cfg.LAMP_OFFSET else cfg.LAMP_OFFSET),
+			range = W0.range,
+			brightness = W0.brightness,
+			color = W0.color,
+			shadows = false,
+			pool = W0.pool,
+			poolColor = W0.poolColor,
 			bay = i,
 		})
+		if i == 1 then
+			local Y = cfg.YOUR_LAMP
+			table.insert(plan.lamps, {
+				kind = "yours",
+				x = b.x + Y.along,
+				y = Y.y,
+				z = z + (if back then Y.out else -Y.out),
+				range = Y.range,
+				brightness = Y.brightness,
+				color = Y.color,
+				shadows = true,
+				angle = Y.angle,
+				pool = Y.pool,
+				poolColor = Y.poolColor,
+				bay = i,
+			})
+		end
 		-- the painted bay number on the floor at the aisle end of the bay
 		local nz = z + (if back then depth / 2 + 2.6 else -depth / 2 - 2.6)
 		table.insert(plan.numbers, { x = b.x, z = nz, yaw = if back then 0 else 180, text = tostring(i) })
@@ -286,6 +300,9 @@ function LobbyPlan.plan(cfg: any, light: any, specs: { [string]: any }?, KP: any
 	if hasAll(lampNames) then
 		local hang = light.LAMP_HANG_Y - 12
 		for k, l in plan.lamps do
+			if l.kind ~= "work" and l.kind ~= "aisle" then
+				continue
+			end
 			table.insert(
 				plan.items,
 				item("lamp", lampNames :: { string }, { x = l.x, y = hang, z = l.z, yaw = 0 }, { 1, 1, 1 }, k)

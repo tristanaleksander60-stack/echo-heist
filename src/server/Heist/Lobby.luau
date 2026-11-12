@@ -81,9 +81,9 @@ local function lamp(parent: Instance, origin: Vector3, l: any, index: number)
 	holder:SetAttribute("EH_Kind", "garageLamp")
 	holder:SetAttribute("EH_Index", index)
 	holder:SetAttribute("EH_LampKind", l.kind)
-	if l.kind == "trophy" then
-		holder.Transparency = 1 -- a light over the trophy shelf, no fixture to see
-	elseif l.kind == "work" or l.kind == "yours" or l.kind == "aisle" or l.kind == "street" then
+	if l.kind == "trophy" or l.kind == "yours" then
+		holder.Transparency = 1 -- the shelf lamp and your bay's key spot have no fixture to see
+	elseif l.kind == "work" or l.kind == "aisle" or l.kind == "street" then
 		table.insert(greyVisuals, holder) -- the kit fixture (Lamp_Ceiling / StreetLamp) carries its own bulb
 	end
 	local at = Instance.new("Attachment")
