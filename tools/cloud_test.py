@@ -15,7 +15,7 @@ luau-execution-sessions:write for this experience. In a Claude cloud session
 the key is injected by the network proxy (x-api-key header); locally, set
 ROBLOX_API_KEY.
 """
-import argparse, json, os, sys, time, urllib.request, urllib.error
+import argparse, json, os, subprocess, sys, time, urllib.request, urllib.error
 
 BASE = "https://apis.roblox.com"
 
@@ -39,11 +39,17 @@ def main():
     ap.add_argument("--script", default="tests/engine_smoke.luau")
     ap.add_argument("--publish-type", default="Saved", choices=["Saved", "Published"])
     ap.add_argument("--version", type=int, help="skip publishing and test this existing version")
+    ap.add_argument("--no-build", action="store_true",
+                    help="publish --place-file as it is (default: rebuild it with Rojo first, so a stale file never goes up)")
     a = ap.parse_args()
     key = os.environ.get("ROBLOX_API_KEY", "injected-by-proxy")
 
     version = a.version
     if version is None:
+        if not a.no_build and a.place_file == "build/EchoHeist.rbxlx":
+            os.makedirs("build", exist_ok=True)
+            subprocess.run(["rojo", "build", "-o", a.place_file], check=True, stdout=subprocess.DEVNULL)
+            print(f"Rebuilt {a.place_file} with Rojo")
         body = open(a.place_file, "rb").read()
         ctype = "application/xml" if a.place_file.endswith(".rbxlx") else "application/octet-stream"
         r = call("POST", f"{BASE}/universes/v1/{a.universe}/places/{a.place}/versions?versionType={a.publish_type}", key, body, ctype)
