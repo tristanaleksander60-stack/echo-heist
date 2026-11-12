@@ -391,20 +391,10 @@ function MomentDirector.new(state: any, deps: Deps): any
 			SW.CAM_DISTANCE[1],
 			SW.CAM_DISTANCE[2]
 		)
-		local want = v3(focus)
-		local f = s.focus
-		local dt = math.max(now - (s.lastShot or now), 0)
-		s.lastShot = now
-		if f and dt > 0 then
-			f = f:Lerp(want, 1 - math.exp(-SW.CAM_FOLLOW * dt))
-		else
-			f = want
-		end
-		s.focus = f
-		-- the distance follows the fit (never closer than the fit, so nobody leaves the 32 %)
-		s.dist = math.max(dist, if s.dist then s.dist + (dist - s.dist) * (1 - math.exp(-SW.CAM_FOLLOW * dt)) else dist)
-		s.fits = fits
-		return orbit(f, s.yaw, SW.CAM_PITCH, s.dist), SW.CAM_FOV, w, fits
+		-- Exact every frame (the copies move smoothly, so the fit does too): the frame's own focus and
+		-- distance, so nobody ever leaves the central 32 %. The weight eases it in and out of play.
+		s.focus, s.dist, s.fits = v3(focus), dist, fits
+		return orbit(s.focus, s.yaw, SW.CAM_PITCH, dist), SW.CAM_FOV, w, fits
 	end
 
 	local function endSwarm()

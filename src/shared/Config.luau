@@ -1794,7 +1794,6 @@ Config.Moments = {
 		CAM_FOV = 45,
 		CAM_SHARE_Y = 0.8, -- every copy also inside 80 % of the half height
 		CAM_DISTANCE = { 12, 90 }, -- studs: min, max
-		CAM_FOLLOW = 8, -- focus follow rate (1/s) while the crowd moves
 		FIGURE_UP = 2.5, -- studs above / below the root used for the fit (head, feet)
 		FIGURE_DOWN = 2.8,
 		PILL = 34, -- px: the stamp's numbered pills
