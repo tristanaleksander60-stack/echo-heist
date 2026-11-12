@@ -18,12 +18,16 @@
 -- Cost on low-end phones: figure rigs are built a few per frame during the start delay
 -- (the run's clones stay up until every figure exists, then swap in one frame); the
 -- crew's character part lists are collected once; after the cut only the camera holds.
--- Framing: the row centred, low camera (2.4 studs) looking up, the row fitted in
--- LINEUP_CAM_FIT_WIDTH of the frame; a wall between the row and the camera pulls the
--- camera in and widens the lens. A row spot inside the van body moves to clear it (the
--- default row is LINEUP_STREET_GAP behind the van zone, where the parked van stands).
--- Every exit restores camera, HUD, CoreGui, controls and characters (vault "Cameras
--- and Cutscenes": restore on every path, with a watchdog).
+-- Framing (C5, PLAN_STEAM_PLUS §4.2): a row inside the van body (the default row is
+-- LINEUP_STREET_GAP behind the van zone, where the parked van stands; L5 / L6 put it there
+-- too) keeps its facing and slides onto the pavement by the shop front (LineupPlan.slide,
+-- CAMERA.LINEUP.ROW_GAP), so the lit shop front is behind the crew; turning round is the
+-- fallback. The shot (LineupPlan.shot) keeps every figure inside the central 32 % of the
+-- frame width (9:16-safe, H3): low and straight on first, then higher over the van (at most
+-- CAMERA.LINEUP.MAX_PITCH down) until every lane is clear; if none is, the old fit pulls the
+-- camera in and widens the lens. The camera is borrowed from Heist/CameraDirector
+-- (state.camera suspend / resume). Every exit restores camera, HUD, CoreGui, controls and
+-- characters (vault "Cameras and Cutscenes": restore on every path, with a watchdog).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

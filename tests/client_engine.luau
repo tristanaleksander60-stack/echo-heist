@@ -1,7 +1,7 @@
 -- Client views in a real Roblox server (Open Cloud Luau Execution): the client wiring.
 -- Run: ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960 \
 --      --place 70772627070328 --script tests/client_engine.luau   (add --version N to skip publishing)
--- 2026-11-12, place v21: 22 checks, 0 failed.
+-- 2026-11-12, place v21: 22 checks, 0 failed. Section F (camera track) not yet run in the engine.
 -- Loads every client module, builds L6 with the uploaded kit + Christmas layer and runs
 -- WorldView on it (vault door skin swing + dial, alarm beacons), the L5 till lock label,
 -- GusView with the Santa hat, the Line-up arrangement against the real van body, and
@@ -34,6 +34,9 @@ for _, name in
 	{
 		"Sound",
 		"LineupPlan",
+		"CameraMath",
+		"CameraDirector",
+		"GoldenShots",
 		"Ui",
 		"Rigs",
 		"EchoView",
@@ -320,6 +323,138 @@ workspace:BulkMoveTo(parts, cfs, Enum.BulkMoveMode.FireCFrameChanged)
 local arm = mq.model:FindFirstChild("LeftArm")
 local armY = if arm and arm:IsA("BasePart") then arm.Position.Y else nil
 check(armY ~= nil and armY > 53.5, "mannequin cheer raises the arms (" .. tostring(armY) .. ")")
+
+-- F. Camera track (PLAN_STEAM_PLUS §4.2 C0, C5): on the real kit L1, the diorama camera at the
+-- street spawn sees plate A and a clone standing on it (workspace raycasts against the built
+-- level, Christmas layer on); the classic follow cam is reported (the old finding); the wall
+-- fade's engine call (Camera:GetPartsObscuringTarget) names the shop front for the classic
+-- camera; and on the real kit L5 the Line-up shot search finds a clear 9:16-safe lane.
+-- CameraDirector itself binds to RenderStepped, so it only runs on a client (Studio play).
+local CameraMath = require(clientHeist:WaitForChild("CameraMath"))
+local HC = require(shared:WaitForChild("Config")).Heist
+local camCfg = HC.CAMERA
+local l1Index = Protocol.catalogIndex("cs1_back_room") :: number
+local l1 = HeistInstance.levelData(l1Index)
+local origin1 = Vector3.new(-9000, 0, 3000)
+local okL1, b1 = pcall(LevelBuilder.build, l1, origin1, scratch, { kit = KitService, dressing = true })
+check(okL1 and b1 ~= nil, "L1 builds with the kit for the camera checks")
+if okL1 and b1 then
+	local D = camCfg.DIORAMA
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Include
+	params.FilterDescendantsInstances = { b1.model }
+	local spawn = l1.spawns[1]
+	local yaw = math.deg(spawn.yaw)
+	local you = { spawn.x, spawn.y + D.FOCUS_HEIGHT, spawn.z }
+	local lead = CameraMath.lead(D.FOV, D.PITCH, D.DISTANCE, D.SUBJECT_SCREEN_Y)
+	local dioPos = CameraMath.orbit(CameraMath.ahead(you, yaw, lead), yaw, D.PITCH, D.DISTANCE)
+	local clPos = CameraMath.orbit(you, yaw, camCfg.CLASSIC.PITCH, camCfg.CLASSIC.ZOOM)
+	local pb = l1.plates[1].box
+	local px, pz = (pb.minX + pb.maxX) / 2, (pb.minZ + pb.maxZ) / 2
+	local function seen(from: { number }, p: Vector3): (boolean, string)
+		local a = origin1 + Vector3.new(from[1], from[2], from[3])
+		local b = origin1 + p
+		local hit = workspace:Raycast(a, b - a, params)
+		-- a hit at the target spot (the pad, its letter, the lamp pool around it) is the target itself
+		if not hit or (hit.Position - b).Magnitude < 2.5 then
+			return true, "clear"
+		end
+		return false, hit.Instance:GetFullName()
+	end
+	for _, t in
+		{
+			{ "plate A", Vector3.new(px, 0.45, pz) },
+			{ "clone feet on plate A", Vector3.new(px, 0.6, pz) },
+			{ "clone head on plate A", Vector3.new(px, 5.2, pz) },
+		}
+	do
+		local ok, by = seen(dioPos, t[2])
+		check(ok, "diorama camera at the L1 spawn sees " .. t[1] .. " (" .. by .. ")")
+		local okC, byC = seen(clPos, t[2])
+		table.insert(results, "      classic camera: " .. t[1] .. (if okC then " visible" else " behind " .. byC))
+	end
+	local cam = workspace.CurrentCamera
+	if cam then
+		local target = origin1 + Vector3.new(px, 5.2, pz)
+		cam.CameraType = Enum.CameraType.Scriptable
+		cam.FieldOfView = camCfg.CLASSIC.FOV
+		cam.CFrame = CFrame.lookAt(origin1 + Vector3.new(clPos[1], clPos[2], clPos[3]), target)
+		local okObs, obscuring = pcall(cam.GetPartsObscuringTarget, cam, { target }, {})
+		local names = {}
+		if okObs then
+			for _, part in obscuring do
+				if part:IsDescendantOf(b1.model) then
+					table.insert(names, part.Name)
+				end
+			end
+		end
+		check(
+			okObs and #names > 0,
+			"GetPartsObscuringTarget names the wall to fade (" .. table.concat(names, ", ") .. ")"
+		)
+	end
+end
+local l5cIndex = Protocol.catalogIndex("cs5_clone_party") :: number
+local l5c = HeistInstance.levelData(l5cIndex)
+local origin5c = Vector3.new(-9000, 0, -3000)
+local okL5, b5c = pcall(LevelBuilder.build, l5c, origin5c, scratch, { kit = KitService, dressing = true })
+if okL5 and b5c then
+	local L = camCfg.LINEUP
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Include
+	params.FilterDescendantsInstances = { b5c.model }
+	local slots = {}
+	for k = 1, 7 do
+		slots[k] = { run = k }
+	end
+	local entries = HeistSim.lineup({
+		level = l5c,
+		players = { { id = 1, seat = 1, orphan = false, deck = { slots = slots } } },
+		runIndex = 8,
+	})
+	local spots = {}
+	for k, e in entries do
+		spots[k] = { x = e.x, z = e.z }
+	end
+	local v = l5c.van
+	local body = {
+		cx = (v.minX + v.maxX) / 2,
+		cz = v.maxZ + 4.5,
+		hx = (v.maxX - v.minX + 1) / 2 + HC.LINEUP_VAN_CLEARANCE,
+		hz = 4 + HC.LINEUP_VAN_CLEARANCE,
+	}
+	local out = LineupPlan.slide(spots, entries[1].yaw, body, L.ROW_GAP, 0.5, 80)
+	local shot = LineupPlan.shot({
+		spots = out,
+		yaw = entries[1].yaw,
+		floorY = l5c.floorY,
+		fov = HC.LINEUP_CAM_FOV,
+		aspect = 16 / 9,
+		share = L.CENTRAL_SHARE,
+		shareY = 0.9,
+		figureHeight = HC.LINEUP_FIGURE_HEIGHT,
+		figureHalfWidth = L.FIGURE_HALF_WIDTH,
+		lookHeight = HC.LINEUP_CAM_LOOK_HEIGHT,
+		heights = L.HEIGHTS,
+		yaws = L.YAWS,
+		minDistance = HC.LINEUP_CAM_DISTANCE[1],
+		maxDistance = L.MAX_DISTANCE,
+		maxPitch = L.MAX_PITCH,
+		push = HC.LINEUP_CAM_PUSH,
+		blocked = function(from: { number }, to: { number }): boolean
+			local a = origin5c + Vector3.new(from[1], from[2], from[3])
+			local b = origin5c + Vector3.new(to[1], to[2], to[3])
+			local hit = workspace:Raycast(a, b - a, params)
+			return hit ~= nil and hit.Distance < (b - a).Magnitude - 0.5
+		end,
+	})
+	local how = if shot
+		then string.format(" (height %.0f, yaw %d, %.1f studs)", shot.height, shot.yaw, shot.distance)
+		else ""
+	check(shot ~= nil, "L5 kit: a clear 9:16-safe Line-up shot" .. how)
+else
+	check(false, "L5 builds with the kit for the Line-up shot")
+end
 
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))
