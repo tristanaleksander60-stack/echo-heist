@@ -595,7 +595,6 @@ function Hints.build(ctx: any): any
 			caught = runFacts.caught,
 		})
 		due = Help.due(tracker, level)
-		ctx.levelLineDue = due.levelLine
 	end
 
 	function hints.onRun(m: any, n: number)

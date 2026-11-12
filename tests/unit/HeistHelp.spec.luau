@@ -197,6 +197,22 @@ return function(test)
 		Assert.truthy(Help.graceFor(DailyVaults.designs[4], {}), "a guarded daily too")
 	end)
 
+	test("Protocol: client and server compile the same Relaxed spec; story Catalog levels only", function()
+		local Protocol = require("../../src/shared/Heist/Protocol")
+		for i, spec in Catalog do
+			local r = Protocol.levelSpec(i, nil, true)
+			if spec.kind == "party" then
+				Assert.eq(r, nil, "no Relaxed party")
+			else
+				Assert.truthy(r and r.relaxed == true, spec.id .. " relaxed")
+				Assert.truthy(LevelSpec.compile(r).relaxed, "compiles relaxed")
+				Assert.falsy(Protocol.levelSpec(i, nil, false).relaxed, "plain unless asked")
+			end
+		end
+		Assert.eq(Protocol.levelSpec(Protocol.DAILY_INDEX, DailyVaults.FIRST_DAY, true), nil, "no Relaxed daily")
+		Assert.eq(#Protocol.FTUE_STEPS, 12, "the FTUE funnel list (append only)")
+	end)
+
 	test("words: every daily vault has its own goal line; level intros stay within 30 words", function()
 		for _, spec in DailyVaults.designs do
 			local line = Strings.LEVEL_LINES[spec.id]
