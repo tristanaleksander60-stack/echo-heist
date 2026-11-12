@@ -36,6 +36,9 @@ _Last updated: 2026-11-12_
 - Spike S4 READY: stem alignment place (spikes/stems.project.json, src/spikes/stems), Play(atTime) vs fallback with a drift meter; bundled footsteps loop until two Creator Store ids are pasted into StemsConfig. Waiting for owner results (README "Spike S4: stems").
 - L0 lint: selene.toml (std roblox), second config src/shared/Sim/selene.toml + sim.yml (no task/os/math.random/clocks/DataModel) over Sim/ and Rec/, tests/pure_check.luau, stylua.toml (tabs, 120). Whole src/tests formatted once with StyLua 2.6.0. All clean.
 - Name checked (knock-out): no title, app or trademark "Heist Yourself" found. Concept doc originality claim corrected.
+- Art pipeline: bpy 5.3 + turntable/gate pipeline (`python3 tools/blender/build_asset.py --all`), bank kit v0 (6 assets, 16-17/18 self-review), docs/STYLE_BIBLE.md v0, docs/art/KIT_IMPORT.md. Spike S2 waits on the owner's Studio import (assets/Kit.rbxm); then paste kit.project.snippet.json into default.project.json and run tests/kit_check.luau.
+- Spikes S3 (video capture) and S4 (stems) built as spike places; waiting on owner device runs. Selene (main + pure Sim std), StyLua and pure_check in CI.
+- Open: confirm Alarm Red #FF3838 (plan colour was too close to Clone Magenta); loot always on dark display surfaces (gold vanishes on warm marble).
 - Remaining W1 for Claude: bpy + turntable pipeline, mesh pipeline (S2).
 - Owner: key scopes asset:write + DataStore (Nov 13), handles, ID/2SV, fun gate Mon Nov 16, bench results.
 

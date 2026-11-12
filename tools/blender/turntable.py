@@ -77,12 +77,12 @@ def _workbench(s, mode):
     sh.show_xray = False
     if mode == "studio":
         sh.light = "STUDIO"; sh.color_type = "TEXTURE"
+        sh.studio_light = "paint.sl"       # truest palette read of the built-in studio lights
         sh.show_cavity = True; sh.cavity_type = "WORLD"
         sh.cavity_ridge_factor = 1.0; sh.cavity_valley_factor = 1.0
         sh.show_object_outline = True; sh.object_outline_color = (0.02, 0.02, 0.03)
         sh.show_specular_highlight = True
-        sh.show_shadows = True; sh.shadow_intensity = 0.35
-        s.display.light_direction = (0.45, -0.55, 0.7)
+        sh.show_shadows = False            # Workbench shadows read as ghosting; the art must read without them
         s.world.color = BG
     elif mode == "flat":
         sh.light = "FLAT"; sh.color_type = "TEXTURE"
@@ -307,14 +307,16 @@ def _compose(out_path, tiles, angles, T, head):
         put(tiles[k], i * T, y3, lab)
     yf = y3 + T
     dr.text((10, yf + 6), "silhouettes 64 px (V1), then 2x", fill=(200, 205, 225), font=f_small)
+    big = max(64, min(128, (W - (T if "mood" in tiles else 0) - 20) // 8 - 6))   # 2x strip fits the sheet
     for i, p in enumerate(tiles["sil"]):
         im = Image.open(p).convert("RGB")
         sheet.paste(im, (10 + i * 70, yf + 26))
-        sheet.paste(im.resize((128, 128), Image.NEAREST), (10 + i * 134, yf + 26 + 70))
+        sheet.paste(im.resize((big, big), Image.NEAREST), (10 + i * (big + 6), yf + 26 + 70))
     if "mood" in tiles:
         put(tiles["mood"], W - T, yf, "mood: Heist Night (Eevee)")
     os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
-    sheet.save(out_path, optimize=True)
+    # 256-colour palette keeps a sheet near 250 KB instead of ~900 KB (repo size); flat colours survive intact.
+    sheet.quantize(colors=256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(out_path, optimize=True)
 
 
 def load_file(path):

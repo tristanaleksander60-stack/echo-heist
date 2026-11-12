@@ -68,6 +68,9 @@ jobs:
             lune run tests/place_check.luau "build/$place.rbxlx"
           done
 
+      - name: Kit check (spike S2; skips until ServerStorage/Kit is mapped)
+        run: lune run tests/kit_check.luau build/EchoHeist.rbxlx
+
       - name: Unit tests
         run: |
           if [ -f tests/run_unit.luau ]; then lune run tests/run_unit.luau; else echo "no unit tests yet"; fi

@@ -1,0 +1,10 @@
+{
+  "_comment": "Spike S2 (docs/art/KIT_IMPORT.md). Do NOT add this yet: rojo build fails when assets/Kit.rbxm is missing. When the owner has saved assets/Kit.rbxm, copy the ServerStorage node below into the tree of default.project.json (next to ReplicatedStorage), then run: rojo build -o build/EchoHeist.rbxlx && lune run tests/kit_check.luau build/EchoHeist.rbxlx",
+  "tree": {
+    "ServerStorage": {
+      "Kit": {
+        "$path": "assets/Kit.rbxm"
+      }
+    }
+  }
+}

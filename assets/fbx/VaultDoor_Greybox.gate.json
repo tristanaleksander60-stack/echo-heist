@@ -1,0 +1,333 @@
+{
+ "asset": "VaultDoor_Greybox",
+ "objects": [
+  {
+   "name": "VaultDoor_Frame",
+   "class": "medium",
+   "tris": 1196,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    16.0,
+    3.5,
+    12.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.0,
+     -0.75,
+     0.0
+    ],
+    "local_max": [
+     16.0,
+     2.75,
+     12.0
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "plum_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 708,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "PreciseConvexDecomposition",
+    "CanCollide": true,
+    "CastShadow": true
+   },
+   "notes": "origin = wall grid corner; needs the round opening in its collision (or invisible Box colliders)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "VaultDoor_Door",
+   "class": "medium",
+   "tris": 1504,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    11.6,
+    2.75,
+    8.6
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.5,
+     -0.5,
+     0.0
+    ],
+    "local_max": [
+     11.1,
+     2.25,
+     8.6
+    ]
+   },
+   "swatches": [
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 146,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Hull",
+    "CanCollide": true,
+    "CastShadow": true
+   },
+   "notes": "origin = hinge axis at floor level; rotate about Roblox Y to open",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "VaultDoor_Dial",
+   "class": "small",
+   "tris": 768,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    4.482,
+    0.885,
+    4.482
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -2.2409,
+     -0.8153,
+     -2.2408
+    ],
+    "local_max": [
+     2.2409,
+     0.07,
+     2.2409
+    ]
+   },
+   "swatches": [
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Z": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 102,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true
+   },
+   "notes": "origin = wheel axis; spin about the door normal",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "VaultDoor_DialRing",
+   "class": "small",
+   "tris": 288,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    3.5,
+    0.24,
+    3.5
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.75,
+     -0.2,
+     -1.75
+    ],
+    "local_max": [
+     1.75,
+     0.04,
+     1.75
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_hi"
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Z": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Warm Marble #D8C8A8 idle; opener's clone hue; Alarm Red",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false
+   },
+   "notes": "Neon, TextureID cleared, Color driven by code",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 3756,
+ "asset_budget": {
+  "class": "hero",
+  "target": 10000,
+  "ceiling": 20000
+ },
+ "seats": [
+  {
+   "name": "VaultDoor_Door",
+   "gap": 0.0,
+   "penetration": 0.62503,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "VaultDoor_Dial",
+   "gap": 0.0,
+   "penetration": 0.07,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "VaultDoor_DialRing",
+   "gap": 0.0,
+   "penetration": 0.04,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [
+  {
+   "name": "VaultDoor_Dial",
+   "offset": {
+    "X": 0.0,
+    "Z": 0.0
+   },
+   "max": 0.0
+  },
+  {
+   "name": "VaultDoor_DialRing",
+   "offset": {
+    "X": 0.0,
+    "Z": 0.0
+   },
+   "max": 0.0
+  },
+  {
+   "name": "VaultDoor_Frame:Bezel",
+   "offset": {
+    "X": 0.0
+   },
+   "max": 0.0
+  }
+ ],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/VaultDoor_Greybox.fbx",
+  "bytes": 98012,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "VaultDoor_Dial",
+   "VaultDoor_DialRing",
+   "VaultDoor_Door",
+   "VaultDoor_Frame"
+  ],
+  "geometry_extents": [
+   [
+    0.24,
+    3.5,
+    3.5
+   ],
+   [
+    0.885,
+    4.482,
+    4.482
+   ],
+   [
+    2.75,
+    8.6,
+    11.6
+   ],
+   [
+    3.5,
+    12.0,
+    16.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/vault_door.py",
+ "notes": "Greybox pass 1 toward the golden vault door. Import as one Model; keep the 4 pivots.",
+ "seconds": 0.1
+}

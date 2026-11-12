@@ -1,0 +1,93 @@
+{
+ "asset": "Diamond",
+ "objects": [
+  {
+   "name": "Diamond",
+   "class": "small",
+   "tris": 94,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.0,
+    2.0,
+    1.75
+   ],
+   "pivot": {
+    "rule": "center",
+    "local_min": [
+     -1.0,
+     -1.0,
+     -0.875
+    ],
+    "local_max": [
+     1.0,
+     1.0,
+     0.875
+    ]
+   },
+   "swatches": [
+    "ice",
+    "ice_hi",
+    "ice_lo"
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false
+   },
+   "notes": "hovers + spins on the pedestal; sparkle VFX carries the loot read",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 94,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "fbx": {
+  "path": "assets/fbx/Diamond.fbx",
+  "bytes": 21148,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Diamond"
+  ],
+  "geometry_extents": [
+   [
+    1.75,
+    2.0,
+    2.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/diamond.py",
+ "notes": "Hero loot. Studio: SmoothPlastic, Color white, atlas TextureID, Box, CanCollide off, CastShadow off.",
+ "seconds": 0.0
+}

@@ -191,6 +191,10 @@ def audit(verbose=True):
             dv = abs(luma(HEX[k]) - luma(HEX[g]))
             if dv < MIN_VALUE_STEP:
                 lines.append(f"WARN value step {k} vs {g}: {dv:.2f} < {MIN_VALUE_STEP} (needs a shape / white core)")
+    for lk in ("gold", "gold_hi", "ice", "ice_hi"):      # display rule: what loot may never sit on / against
+        bad = [e for e, eh in env if ok_dist(HEX[lk], eh) < MIN_DIST_SIGNAL or abs(luma(HEX[lk]) - luma(eh)) < MIN_VALUE_STEP]
+        if bad:
+            lines.append(f"WARN display rule: never put {lk} loot on or against {', '.join(bad)} (Oklab < {MIN_DIST_SIGNAL} or value < {MIN_VALUE_STEP})")
     for g in ground:
         if luma(HEX[g]) < luma(HEX["ink"]) - 1e-6:
             ok = False; lines.append(f"FAIL {g} darker than Ink Indigo")

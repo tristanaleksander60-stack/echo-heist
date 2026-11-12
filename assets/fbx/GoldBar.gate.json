@@ -11,20 +11,20 @@
    ],
    "budget_note": "ok",
    "dims": [
-    1.956,
-    0.962,
+    2.0,
+    1.0,
     0.6
    ],
    "pivot": {
     "rule": "bottom",
     "local_min": [
-     -0.9779,
-     -0.4809,
-     0.0
+     -1.0,
+     -0.5,
+     -0.0
     ],
     "local_max": [
-     0.9779,
-     0.4809,
+     1.0,
+     0.5,
      0.6
     ]
    },
@@ -55,14 +55,12 @@
     "CastShadow": false
    },
    "notes": "carried loot; CanCollide off while carried",
-   "fails": [
-    "A7 dimensions [1.956, 0.962, 0.6] != expected [2.0, 1.0, 0.6]"
-   ],
-   "passed": false
+   "fails": [],
+   "passed": true
   }
  ],
  "asset_fails": [],
- "lihfolk_bpy": "/home/user/lihfolk-cy/v2-vault/skills/roblox-blender-modeling/scripts",
+ "lihfolk_bpy": "LihFolk plugin",
  "tris_total": 52,
  "seats": [],
  "align": [],
@@ -71,10 +69,10 @@
   256
  ],
  "palette_audit": true,
- "passed": false,
+ "passed": true,
  "fbx": {
   "path": "assets/fbx/GoldBar.fbx",
-  "bytes": 20316,
+  "bytes": 20268,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -84,13 +82,12 @@
   "geometry_extents": [
    [
     0.6,
-    0.962,
-    1.956
+    1.0,
+    2.0
    ]
   ]
  },
  "spec": "assets/blender/gold_bar.py",
  "notes": "Loot: carried bar. Studio: SmoothPlastic, Color white, TextureID = kit atlas, Box, CastShadow off.",
- "turntable": "docs/art/turntables/GoldBar.png",
- "seconds": 15.0
+ "seconds": 0.0
 }

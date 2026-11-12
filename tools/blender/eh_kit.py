@@ -277,7 +277,7 @@ def finalize(mb, shading="angle", angle=30.0, pivot=(0, 0, 0)):
     bpy.context.scene.collection.objects.link(ob)
     ob.location = pv
     me.materials.append(atlas_material())
-    ob["eh_parts"] = {k: [list(a) for a in mb.part_bbox(k)] for k in mb.parts}
+    ob["eh_parts"] = {k: [*mb.part_bbox(k)[0], *mb.part_bbox(k)[1]] for k in mb.parts}   # local lo + hi
     return ob
 
 
@@ -381,7 +381,7 @@ def pivot_check(ob, rule, tol=1e-3):
 
 def gate_asset(asset):
     """Runs every gate for an asset. Returns (passed, report dict)."""
-    rep = {"asset": asset.name, "objects": [], "asset_fails": [], "lihfolk_bpy": getattr(lf, "EH_SOURCE", "?")}
+    rep = {"asset": asset.name, "objects": [], "asset_fails": [], "lihfolk_bpy": "vendored 666ae79" if getattr(lf, "EH_SOURCE", "").endswith("vendor") else "LihFolk plugin"}
     names = [o.ob.name for o in asset.objects]
     total = 0
     for o in asset.objects:
@@ -446,7 +446,15 @@ def gate_asset(asset):
             rep["asset_fails"].append(f"A16 '{feat}' floats {s['gap']} studs off '{surf}'")
     rep["align"] = []
     for feat, parent, axes, target in asset.align:
-        a = lf.alignment_report([by[feat]], by[parent], axes=axes, target=target)[0]
+        if ":" in feat:   # a named part inside one object: centre of its bbox vs target
+            oname, pname = feat.split(":")
+            ob = by[oname]; bb = list(ob["eh_parts"][pname])
+            ctr = (Vector(bb[:3]) + Vector(bb[3:])) / 2 + ob.location
+            size = max(by[parent].dimensions) or 1.0
+            off = {x: round((ctr["XYZ".index(x)] - target["XYZ".index(x)]) / size, 5) for x in axes}
+            a = {"name": feat, "offset": off, "max": max(abs(v) for v in off.values())}
+        else:
+            a = lf.alignment_report([by[feat]], by[parent], axes=axes, target=target)[0]
         rep["align"].append(a)
         if a["max"] > 0.02:
             rep["asset_fails"].append(f"A16 '{feat}' off-centre on '{parent}' by {a['max']:.2%}")
