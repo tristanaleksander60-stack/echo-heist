@@ -336,17 +336,20 @@ Every string goes through one file, so the words pass is one diff.
 
 ---
 
-## 7. Levels
+## 7. Levels (from `docs/audit/LEVELS.md`, 42 renders plus a contact sheet)
 
-Each level gets the W5 pass and must pass the composition rules (C0) and grading on bookmarks plus random frames.
+The render audit scores today's levels: L1 3/10, L2 2.5, L5 5.5, L3 3, L4 4, L6 4. The kit pieces are good; the levels built from them read as a kit-dressed greybox, and L1-L4 are the same picture at thumbnail size.
 
-Specific findings so far, from the renders:
-- the spawn camera looks at the player's back, which hides the objective;
-- a blown-out white slab fills the bottom fifth of the frame;
-- dark-clothed avatars sink into the indigo floor;
-- L6's spawn view repeats L1's storefront.
+**Global fixes (folded into W2, W5, C0 and F):**
+1. **Plates are invisible until pressed.** `KitDresser` deletes the pad and its icon. Fix: idle plates glow in Bulb Warm and carry a letter; each device they drive carries the same letter.
+2. **Cables mislead.** L2's two cables merge into a T, so the world teaches the opposite of the lesson. Laser cables in L3 and L6 vanish into walls; L6's four vault cables share one spine. Fix: reroute to the near jamb or post, with parallel offsets (routes per level in LEVELS.md §4).
+3. **No lights; the goal is never lit, sparkled or framed.** Fix: a `lamp` role in `KitPlan` (light plus floor pool over plates, goal and room centres), plus a goal sparkle. Use the unused kit pieces (`Safe`, `CashRegister`, `Lamp_Ceiling`, `Gus_DonutBox`, `Hide_Curtain`, `TellerCounter`, `Wall_Window`), and add windows in L1's partition so the cash glitters through glass.
+4. **Doors and shutters poke above the cut-away walls**, and the shutters float like billboards in the Line-up shot. Fix: pocket-slide doors and roll-up shutters in `WorldView`.
+5. **The spawn frame is dominated by the white van zone** (73-85 % of the bright pixels). Fix: dim it until you carry loot, and use real arrows. The camera framing follows C0.
+6. **Gus's cone paints through walls.** Fix: clip it to the room.
+7. **L1-L4 share one front room.** Fix: each level gets its own silhouette and storytelling prop (§3.1). Also: L4 needs its plate and hide spots signposted; L6 needs "VAULT 2/4" lamps, a lit vault, the vault door clear of plate C, a real teller lobby, and an outdoor alley.
 
-The full per-level fix list goes into `docs/audit/LEVELS.md` when the render audit finishes, and is scheduled in phases 2-4 per the cut order.
+The P0 list in LEVELS.md §4 lands in phase 1 (plates, letters, cables, lamps for L1/L2/Party) and phase 2 (the rest), per the cut order.
 
 ---
 
