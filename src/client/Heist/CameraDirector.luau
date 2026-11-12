@@ -5,8 +5,8 @@
 -- Two modes, the player's pick (MENU > CAMERA: DIORAMA / CLASSIC), saved as the boolean
 -- setting `classicCamera` through Data.SetSetting (DataService publishes it back as the
 -- player attribute Setting_ClassicCamera):
---   "diorama"  pitch 50 (35..65), distance 28 (20..38), FOV 42, free yaw, you in the lower
---              third (the view tilts up by CameraMath.aimUp); drag (touch outside the
+--   "diorama"  pitch 52 (35..65), distance 30 (20..40), FOV 45, free yaw, you in the lower
+--              third (the focus leads you by CameraMath.lead); drag (touch outside the
 --              thumbstick, right mouse) turns, pinch / wheel / I O zoom, right stick turns.
 --   "classic"  the Roblox follow cam, constrained: zoom 8 / 16 / 28, FOV 70.
 -- Both: walls between the camera and you fade to CAMERA.FADE.ALPHA within 0.1 s (a 10 Hz
@@ -60,24 +60,8 @@ local function t3(v: Vector3): { number }
 	return { v.X, v.Y, v.Z }
 end
 
--- The objective of a level for the run-start beat: the top loot (it trips the alarm and is
--- what the heist is about), else the most valuable item. Level space, or nil.
-function CameraDirector.objectiveOf(level: any): { number }?
-	if type(level) ~= "table" or type(level.loot) ~= "table" then
-		return nil
-	end
-	local best: any = nil
-	for _, item in level.loot do
-		if
-			best == nil
-			or (item.top == true and best.top ~= true)
-			or ((item.top == true) == (best.top == true) and (item.value or 0) > (best.value or 0))
-		then
-			best = item
-		end
-	end
-	return if best then { best.x, best.y or 3, best.z } else nil
-end
+-- The objective of a level for the run-start beat (CameraMath.objective), level space.
+CameraDirector.objectiveOf = CameraMath.objective
 
 function CameraDirector.new(state: any): any
 	local C = Config.Heist.CAMERA
@@ -560,12 +544,12 @@ function CameraDirector.new(state: any): any
 		if cam.CameraType ~= Enum.CameraType.Scriptable then
 			cam.CameraType = Enum.CameraType.Scriptable
 		end
-		local p, dist, fov, aim
+		local p, dist, fov, lead
 		if classic then
-			p, dist, fov, aim = CL.PITCH, CL.ZOOM, CL.FOV, 0
+			p, dist, fov, lead = CL.PITCH, CL.ZOOM, CL.FOV, 0
 		else
 			p, dist, fov = pitch, distance, D.FOV
-			aim = CameraMath.aimUp(fov, D.SUBJECT_SCREEN_Y)
+			lead = CameraMath.lead(fov, p, dist, D.SUBJECT_SCREEN_Y)
 		end
 		local target = f
 		local b = beat
@@ -573,11 +557,12 @@ function CameraDirector.new(state: any): any
 			local e = os.clock() - b.t0
 			local u = CameraMath.beatBlend(e, b.hold, b.ease)
 			target = b.objective:Lerp(f, u)
+			lead *= u -- the objective centred, then you in the lower third
 			if e >= b.hold + b.ease then
 				skipBeat()
 			end
 		end
-		local pos, lookAt = CameraMath.orbit(t3(target), yaw, p, dist, aim)
+		local pos, lookAt = CameraMath.orbit(CameraMath.ahead(t3(target), yaw, lead), yaw, p, dist)
 		local cf = CFrame.lookAt(v3(pos), v3(lookAt))
 		cam.CFrame = cf
 		cam.Focus = CFrame.new(target)

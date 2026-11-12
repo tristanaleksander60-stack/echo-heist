@@ -12,6 +12,7 @@ local Catalog = require("../../src/shared/Levels/Catalog")
 local DailyVaults = require("../../src/shared/Levels/DailyVaults")
 local Config = require("../../src/shared/Config")
 local Assert = require("./Assert")
+local LevelBoxes = require("./LevelBoxes")
 
 local H = Config.Heist
 
@@ -115,6 +116,78 @@ return function(test)
 					)
 					for k, s in level.solids do
 						Assert.falsy(insideBox(p.x, p.z, s, 0.5), at .. " not in solid " .. k)
+					end
+				end
+			end
+		end
+	end)
+
+	test("C5: every level's row slides clear of the van and gets a 9:16-safe shot with clear lanes", function()
+		local L = H.CAMERA.LINEUP
+		for _, level in levels() do
+			local body = vanBody(level)
+			local boxes = LevelBoxes.of(level, true)
+			for _, shape in { { crew = 1, clones = math.max(level.cap, 1) }, { crew = 4, clones = 3 } } do
+				local entries = lineupOf(level, shape.crew, shape.clones)
+				local spots = {}
+				for i, e in entries do
+					spots[i] = { x = e.x, z = e.z }
+				end
+				local yaw = entries[1].yaw
+				local out, moved = LineupPlan.slide(spots, yaw, body, L.ROW_GAP, 0.5, 80)
+				local where = string.format("%s crew %d", level.id, shape.crew)
+				if not moved then
+					out = LineupPlan.arrange(spots, yaw, body, 0.5, 60)
+				end
+				local b = level.bounds
+				for i, p in out do
+					local at = string.format("%s figure %d (%.1f, %.1f)", where, i, p.x, p.z)
+					Assert.falsy(
+						math.abs(p.x - body.cx) < body.hx and math.abs(p.z - body.cz) < body.hz,
+						at .. " clear of the van body"
+					)
+					Assert.truthy(
+						p.x >= b.minX + 1 and p.x <= b.maxX - 1 and p.z >= b.minZ + 1 and p.z <= b.maxZ - 1,
+						at .. " on the floor"
+					)
+					for k, solid in level.solids do
+						Assert.falsy(insideBox(p.x, p.z, solid, 0.5), at .. " not in solid " .. k)
+					end
+				end
+				for _, aspect in { 16 / 9, 19.5 / 9 } do
+					local shot = LineupPlan.shot({
+						spots = out,
+						yaw = yaw,
+						floorY = level.floorY,
+						fov = H.LINEUP_CAM_FOV,
+						aspect = aspect,
+						share = L.CENTRAL_SHARE,
+						shareY = 0.9,
+						figureHeight = H.LINEUP_FIGURE_HEIGHT,
+						figureHalfWidth = L.FIGURE_HALF_WIDTH,
+						lookHeight = H.LINEUP_CAM_LOOK_HEIGHT,
+						heights = L.HEIGHTS,
+						yaws = L.YAWS,
+						minDistance = H.LINEUP_CAM_DISTANCE[1],
+						maxDistance = L.MAX_DISTANCE,
+						maxPitch = L.MAX_PITCH,
+						push = H.LINEUP_CAM_PUSH,
+						blocked = function(from: { number }, to: { number }): boolean
+							return LevelBoxes.blocked(boxes, from, to) ~= nil
+						end,
+					})
+					Assert.truthy(shot ~= nil, where .. ": a clear 9:16-safe shot exists")
+					local s = shot :: LineupPlan.Shot
+					for _, p in
+						LineupPlan.figurePoints(out, yaw, level.floorY, H.LINEUP_FIGURE_HEIGHT, L.FIGURE_HALF_WIDTH)
+					do
+						for _, from in { s.pos, s.start } do
+							local nx, _, depth = LineupPlan.projectAt(from, s.look, p, H.LINEUP_CAM_FOV, aspect)
+							Assert.truthy(
+								depth > 0 and math.abs(nx) <= L.CENTRAL_SHARE + 1e-6,
+								where .. ": inside the central 32 %"
+							)
+						end
 					end
 				end
 			end

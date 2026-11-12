@@ -7,8 +7,8 @@
 -- down -Z (into the shop from the street); pitch is degrees DOWN from the horizon. The
 -- camera never rolls: every frame is built from a yaw and a pitch with world up.
 --   * orbit: where the camera stands for a focus, yaw, pitch and distance, and the point
---     it looks at. `aimUp` tilts the view up without moving the camera, so the focus sits
---     below the centre of the frame (you in the lower third, the objective above).
+--     it looks at. `lead` / `ahead` put the focus ahead of you, so you sit below the centre
+--     of the frame (you in the lower third, the objective above).
 --   * project: a world point in normalised screen space (-1..1 both ways, +y up) for a
 --     camera given by position, yaw and view pitch; the frustum test of the specs.
 --   * beatWindow: when the run-start beat holds and eases inside the transition.
@@ -29,18 +29,28 @@ function CameraMath.look(yawDeg: number, pitchDeg: number): V3
 	return { -math.sin(y) * c, -math.sin(p), -math.cos(y) * c }
 end
 
--- Degrees to tilt the view up so the focus lands at `subjectY` (normalised, -1..1, negative =
--- below the centre) for a vertical FOV in degrees.
-function CameraMath.aimUp(fovDeg: number, subjectY: number): number
-	return math.deg(math.atan(-subjectY * math.tan(rad(fovDeg) / 2)))
+-- How far ahead of the subject (studs, along the camera's flat forward) the orbit's focus goes
+-- so the subject lands at `subjectY` (normalised, -1..1, negative = below the centre) for a
+-- vertical FOV, a downward pitch and a distance (all degrees / studs). Leading the focus moves
+-- the camera forward with it, so it looks over the walls between you and the room ahead (the
+-- L1 plate-A fix), where tilting the view in place would not.
+function CameraMath.lead(fovDeg: number, pitchDeg: number, distance: number, subjectY: number): number
+	local t = -subjectY * math.tan(rad(fovDeg) / 2)
+	local p = rad(pitchDeg)
+	return t * distance / (math.sin(p) + t * math.cos(p))
 end
 
--- Camera position for a focus, and the point it looks at (position + the tilted view direction).
-function CameraMath.orbit(focus: V3, yawDeg: number, pitchDeg: number, distance: number, aimUpDeg: number?): (V3, V3)
+-- The focus `lead` studs ahead of `subject` for a camera yaw (degrees).
+function CameraMath.ahead(subject: V3, yawDeg: number, lead: number): V3
+	local y = rad(yawDeg)
+	return { subject[1] - math.sin(y) * lead, subject[2], subject[3] - math.cos(y) * lead }
+end
+
+-- Camera position for a focus, and the point it looks at (the focus).
+function CameraMath.orbit(focus: V3, yawDeg: number, pitchDeg: number, distance: number): (V3, V3)
 	local dir = CameraMath.look(yawDeg, pitchDeg)
 	local pos = { focus[1] - dir[1] * distance, focus[2] - dir[2] * distance, focus[3] - dir[3] * distance }
-	local view = CameraMath.look(yawDeg, pitchDeg - (aimUpDeg or 0))
-	return pos, { pos[1] + view[1], pos[2] + view[2], pos[3] + view[3] }
+	return pos, { focus[1], focus[2], focus[3] }
 end
 
 -- The yaw (degrees) and downward pitch (degrees) of a direction.
@@ -183,7 +193,7 @@ end
 
 -- Distance that fits every point inside `share` of the half width and `shareY` of the half
 -- height (normalised) for a camera looking at `focus` with the given yaw / pitch / FOV / aspect
--- (no aim-up). Searches outward from `from` in `step` studs up to `max`; nil if none fits.
+-- (the focus itself, no lead). Searches outward from `from` in `step` studs up to `max`; nil if none fits.
 function CameraMath.fitDistance(
 	focus: V3,
 	points: { V3 },
@@ -214,6 +224,22 @@ function CameraMath.fitDistance(
 		d += step
 	end
 	return nil
+end
+
+-- The objective of a level for the run-start beat (C1): the top loot (it trips the alarm and
+-- is what the heist is about), else the most valuable item. Level space { x, y, z }, or nil.
+function CameraMath.objective(level: any): V3?
+	if type(level) ~= "table" or type(level.loot) ~= "table" then
+		return nil
+	end
+	local best: any = nil
+	for _, item in level.loot do
+		local top, bestTop = item.top == true, best ~= nil and best.top == true
+		if best == nil or (top and not bestTop) or (top == bestTop and (item.value or 0) > (best.value or 0)) then
+			best = item
+		end
+	end
+	return if best then { best.x, best.y or 3, best.z } else nil
 end
 
 return table.freeze(CameraMath)

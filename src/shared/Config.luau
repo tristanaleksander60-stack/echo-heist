@@ -369,13 +369,16 @@ Config.Heist.CAMERA = {
 	DEFAULT_MODE = "diorama", -- decision D5 A/B: "diorama" | "classic"
 	-- C0 "diorama": the long lens that makes the town read as a miniature and shows your crew.
 	DIORAMA = {
-		PITCH = 50, -- degrees down (design band 45-55)
+		-- Tuned inside the plan's bands on the L1 spawn (tests/unit/HeistCamera.spec.luau): at 52 / 30 / 45
+		-- the shop front's top clears plate A's near edge by about 2 studs and the clone on it stays in frame
+		-- (50 / 28 / 42 left the plate's near half behind the wall top).
+		PITCH = 52, -- degrees down (design band 45-55)
 		PITCH_MIN = 35, -- never flatter: the walls must not hide the room
 		PITCH_MAX = 65,
-		DISTANCE = 28, -- studs from the focus (design band 26-32)
+		DISTANCE = 30, -- studs from the focus (design band 26-32)
 		ZOOM_MIN = 20, -- zoom limits (wheel, pinch, I / O keys)
-		ZOOM_MAX = 38,
-		FOV = 42, -- vertical, degrees (design band 40-45)
+		ZOOM_MAX = 40,
+		FOV = 45, -- vertical, degrees (design band 40-45)
 		SUBJECT_SCREEN_Y = -0.35, -- you sit in the lower third: normalised height below the centre (-1..1)
 		FOCUS_HEIGHT = 1.5, -- studs above the HumanoidRootPart
 		FOLLOW_RATE = 14, -- 1/s: exponential follow of the focus (frame-rate independent)
@@ -414,10 +417,11 @@ Config.Heist.CAMERA = {
 	-- (9:16-safe, premium H3) and searches for a clear lane: straight on first, then higher.
 	LINEUP = {
 		CENTRAL_SHARE = 0.32,
-		ROW_GAP = 5, -- studs: a row inside the van body slides this far clear of it toward the shop
-		HEIGHTS = { 2.4, 6, 10, 14, 18, 22, 26 }, -- camera heights tried, lowest first
+		ROW_GAP = 7, -- studs: a row inside the van body slides this far clear of it, onto the pavement by the shop front
+		HEIGHTS = { 2.4, 6, 10, 14, 18, 22, 26, 30, 34, 38 }, -- camera heights tried, lowest first (high = over the van)
 		YAWS = { 0, 18, -18 }, -- degrees off the row's facing tried at each height
 		MAX_DISTANCE = 60, -- studs
+		MAX_PITCH = 42, -- degrees down at most (a crane over the van stands back rather than looking straight down)
 		FIGURE_HALF_WIDTH = 1.25,
 	},
 	-- Golden-frame staging (Studio only, workspace attribute EH_Scenario; docs/GOLDEN_FRAMES.md "Capture").

@@ -115,6 +115,7 @@ export type ShotOpts = {
 	yaws: { number }, -- degrees off the row's facing, tried at each height
 	minDistance: number,
 	maxDistance: number,
+	maxPitch: number?, -- degrees: a higher camera stands further back so it never looks down steeper than this
 	push: number, -- the shot starts this share further back (the slow push-in) and must be clear there too
 	blocked: (from: { number }, to: { number }) -> boolean,
 }
@@ -211,6 +212,9 @@ function LineupPlan.shot(o: ShotOpts): Shot?
 				return { cx + fx * d, o.floorY + h, cz + fz * d }
 			end
 			local d = o.minDistance
+			if o.maxPitch then
+				d = math.max(d, (h - o.lookHeight) / math.tan(math.rad(o.maxPitch)))
+			end
 			while d <= o.maxDistance do
 				if fits(posAt(d)) then
 					break

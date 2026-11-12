@@ -522,6 +522,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 			yaws = L.YAWS,
 			minDistance = H.LINEUP_CAM_DISTANCE[1],
 			maxDistance = L.MAX_DISTANCE,
+			maxPitch = L.MAX_PITCH,
 			push = H.LINEUP_CAM_PUSH,
 			blocked = function(from: { number }, to: { number }): boolean
 				local a = origin + Vector3.new(from[1], from[2], from[3])
