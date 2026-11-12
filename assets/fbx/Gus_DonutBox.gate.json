@@ -1,0 +1,111 @@
+{
+ "asset": "Gus_DonutBox",
+ "objects": [
+  {
+   "name": "Gus_DonutBox",
+   "class": "small",
+   "tris": 596,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.6,
+    2.45,
+    2.385
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.3,
+     -0.95,
+     0.0
+    ],
+    "local_max": [
+     1.3,
+     1.4997,
+     2.3853
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "plum_hi",
+    "steel_hi",
+    "wood_hi",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 172,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Story"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "storytelling prop: one per room Gus guards (a desk, a crate)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 596,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "25ceb5baf40c100ead48",
+ "fbx": {
+  "path": "assets/fbx/Gus_DonutBox.fbx",
+  "bytes": 28092,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Gus_DonutBox"
+  ],
+  "geometry_extents": [
+   [
+    2.385,
+    2.45,
+    2.6
+   ]
+  ]
+ },
+ "spec": "assets/blender/gus.py",
+ "notes": "Gus's donut box: open pastry box, two donuts left (vanilla and chocolate), one eaten, crumbs.",
+ "turntable": "docs/art/turntables/Gus_DonutBox.png",
+ "seconds": 21.9
+}

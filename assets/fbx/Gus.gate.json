@@ -1,0 +1,1537 @@
+{
+ "asset": "Gus",
+ "objects": [
+  {
+   "name": "Gus_LowerTorso",
+   "class": "small",
+   "tris": 424,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.499,
+    1.916,
+    0.96
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.17,
+     -0.98,
+     -0.38
+    ],
+    "local_max": [
+     1.3292,
+     0.936,
+     0.58
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "steel_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    2.1
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 157,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "Root",
+    "parent": null
+   },
+   "role": "char",
+   "notes": "the root: place the Model by this part's pivot (hip centre, 2.1 above the floor)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_UpperTorso",
+   "class": "small",
+   "tris": 624,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    2.72,
+    2.435,
+    2.07
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.36,
+     -1.3472,
+     -0.07
+    ],
+    "local_max": [
+     1.36,
+     1.088,
+     2.0
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "shirt",
+    "shirt_lo",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    2.62
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 180,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "Waist",
+    "parent": "Gus_LowerTorso"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_Head",
+   "class": "small",
+   "tris": 560,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.08,
+    1.946,
+    1.6
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.04,
+     -1.1453,
+     -0.1
+    ],
+    "local_max": [
+     1.04,
+     0.8004,
+     1.5
+    ]
+   },
+   "swatches": [
+    "hair",
+    "ink",
+    "skin",
+    "skin_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    4.5
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 169,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "Neck",
+    "parent": "Gus_UpperTorso"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_Cap",
+   "class": "small",
+   "tris": 184,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.04,
+    2.359,
+    0.799
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.02,
+     -1.3896,
+     -0.0789
+    ],
+    "local_max": [
+     1.02,
+     0.969,
+     0.72
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    5.78
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 45,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "HatAttach",
+    "parent": "Gus_Head"
+   },
+   "role": "char",
+   "notes": "hidden while the Christmas layer shows the Santa hat",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_RightUpperArm",
+   "class": "small",
+   "tris": 180,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.84,
+    0.799,
+    1.348
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.42,
+     -0.3994,
+     -0.928
+    ],
+    "local_max": [
+     0.42,
+     0.3994,
+     0.42
+    ]
+   },
+   "swatches": [
+    "shirt",
+    "shirt_lo"
+   ],
+   "location": [
+    -1.42,
+    0.0,
+    4.12
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 22,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "RightShoulder",
+    "parent": "Gus_UpperTorso"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_RightLowerArm",
+   "class": "small",
+   "tris": 120,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.712,
+    0.628,
+    0.966
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.4001,
+     -0.3138,
+     -0.8619
+    ],
+    "local_max": [
+     0.3122,
+     0.3138,
+     0.1041
+    ]
+   },
+   "swatches": [
+    "shirt",
+    "shirt_lo"
+   ],
+   "location": [
+    -1.52,
+    0.0,
+    3.28
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 35,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "RightElbow",
+    "parent": "Gus_RightUpperArm"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_RightHand",
+   "class": "small",
+   "tris": 116,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.638,
+    0.64,
+    0.704
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.288,
+     -0.37,
+     -0.602
+    ],
+    "local_max": [
+     0.35,
+     0.27,
+     0.102
+    ]
+   },
+   "swatches": [
+    "skin",
+    "skin_lo"
+   ],
+   "location": [
+    -1.6,
+    0.0,
+    2.5
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 18,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "RightWrist",
+    "parent": "Gus_RightLowerArm"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_LeftUpperArm",
+   "class": "small",
+   "tris": 180,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.84,
+    0.799,
+    1.348
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.42,
+     -0.3994,
+     -0.928
+    ],
+    "local_max": [
+     0.42,
+     0.3994,
+     0.42
+    ]
+   },
+   "swatches": [
+    "shirt",
+    "shirt_lo"
+   ],
+   "location": [
+    1.42,
+    0.0,
+    4.12
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 22,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "LeftShoulder",
+    "parent": "Gus_UpperTorso"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_LeftLowerArm",
+   "class": "small",
+   "tris": 120,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.712,
+    0.628,
+    0.966
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3122,
+     -0.3138,
+     -0.8619
+    ],
+    "local_max": [
+     0.4001,
+     0.3138,
+     0.1041
+    ]
+   },
+   "swatches": [
+    "shirt",
+    "shirt_lo"
+   ],
+   "location": [
+    1.52,
+    0.0,
+    3.28
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 35,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "LeftElbow",
+    "parent": "Gus_LeftUpperArm"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_LeftHand",
+   "class": "small",
+   "tris": 116,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.638,
+    0.64,
+    0.704
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.35,
+     -0.37,
+     -0.602
+    ],
+    "local_max": [
+     0.288,
+     0.27,
+     0.102
+    ]
+   },
+   "swatches": [
+    "skin",
+    "skin_lo"
+   ],
+   "location": [
+    1.6,
+    0.0,
+    2.5
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 18,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "LeftWrist",
+    "parent": "Gus_LeftLowerArm"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_RightUpperLeg",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.84,
+    0.799,
+    0.94
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.42,
+     -0.3994,
+     -0.86
+    ],
+    "local_max": [
+     0.42,
+     0.3994,
+     0.08
+    ]
+   },
+   "swatches": [
+    "ink_hi"
+   ],
+   "location": [
+    -0.52,
+    0.0,
+    1.95
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "RightHip",
+    "parent": "Gus_LowerTorso"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_RightLowerLeg",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.72,
+    0.685,
+    0.87
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.36,
+     -0.3424,
+     -0.79
+    ],
+    "local_max": [
+     0.36,
+     0.3424,
+     0.08
+    ]
+   },
+   "swatches": [
+    "ink_hi"
+   ],
+   "location": [
+    -0.52,
+    0.0,
+    1.15
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "RightKnee",
+    "parent": "Gus_RightUpperLeg"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_RightFoot",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.84,
+    1.37,
+    0.65
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.42,
+     -0.97,
+     -0.42
+    ],
+    "local_max": [
+     0.42,
+     0.4,
+     0.23
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "steel_lo"
+   ],
+   "location": [
+    -0.52,
+    0.0,
+    0.42
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 32,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "RightAnkle",
+    "parent": "Gus_RightLowerLeg"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_LeftUpperLeg",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.84,
+    0.799,
+    0.94
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.42,
+     -0.3994,
+     -0.86
+    ],
+    "local_max": [
+     0.42,
+     0.3994,
+     0.08
+    ]
+   },
+   "swatches": [
+    "ink_hi"
+   ],
+   "location": [
+    0.52,
+    0.0,
+    1.95
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "LeftHip",
+    "parent": "Gus_LowerTorso"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_LeftLowerLeg",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.72,
+    0.685,
+    0.87
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.36,
+     -0.3424,
+     -0.79
+    ],
+    "local_max": [
+     0.36,
+     0.3424,
+     0.08
+    ]
+   },
+   "swatches": [
+    "ink_hi"
+   ],
+   "location": [
+    0.52,
+    0.0,
+    1.15
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "LeftKnee",
+    "parent": "Gus_LeftUpperLeg"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_LeftFoot",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.84,
+    1.37,
+    0.65
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.42,
+     -0.97,
+     -0.42
+    ],
+    "local_max": [
+     0.42,
+     0.4,
+     0.23
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.52,
+    0.0,
+    0.42
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 32,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "LeftAnkle",
+    "parent": "Gus_LeftLowerLeg"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_Flashlight",
+   "class": "small",
+   "tris": 336,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.98,
+    2.29,
+    0.98
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.49,
+     -1.77,
+     -0.49
+    ],
+    "local_max": [
+     0.49,
+     0.52,
+     0.49
+    ]
+   },
+   "swatches": [
+    "ink",
+    "steel",
+    "steel_hi"
+   ],
+   "location": [
+    -1.6,
+    -0.05,
+    2.25
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 194,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "FlashlightGrip",
+    "parent": "Gus_RightHand"
+   },
+   "role": "char",
+   "notes": "points along -Z (Roblox); the amber cone starts at the lens",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_FlashlightLens",
+   "class": "tiny",
+   "tris": 48,
+   "budget": [
+    150,
+    300
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.8,
+    0.05,
+    0.8
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.4,
+     -0.05,
+     -0.4
+    ],
+    "local_max": [
+     0.4,
+     0.0,
+     0.4
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -1.6,
+    -1.8,
+    2.25
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Torch Amber #FFD27A when the cone is on; Vault Steel shade #4E5675 off (code)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Guard"
+   ],
+   "joint": {
+    "name": "Lens",
+    "parent": "Gus_Flashlight"
+   },
+   "role": "char",
+   "notes": "Neon lens; the Torch Amber cone is a code-drawn floor cone (MASTERPLAN 6.5)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 3488,
+ "asset_budget": {
+  "class": "creature",
+  "target": 5000,
+  "ceiling": 10742
+ },
+ "seats": [
+  {
+   "name": "Gus_UpperTorso",
+   "gap": 0.0,
+   "penetration": 0.13,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_Head",
+   "gap": 0.0,
+   "penetration": 0.14902,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_Cap",
+   "gap": 0.0,
+   "penetration": 0.2768,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_RightUpperArm",
+   "gap": 0.0,
+   "penetration": 0.16478,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_RightLowerArm",
+   "gap": 0.0,
+   "penetration": 0.13999,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_RightHand",
+   "gap": 0.0,
+   "penetration": 0.02147,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_LeftUpperArm",
+   "gap": 0.0,
+   "penetration": 0.16478,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_LeftLowerArm",
+   "gap": 0.0,
+   "penetration": 0.13999,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_LeftHand",
+   "gap": 0.0,
+   "penetration": 0.02147,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_RightUpperLeg",
+   "gap": 0.0,
+   "penetration": 0.31,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_RightLowerLeg",
+   "gap": 0.0,
+   "penetration": 0.14,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_RightFoot",
+   "gap": 0.0,
+   "penetration": 0.29,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_LeftUpperLeg",
+   "gap": 0.0,
+   "penetration": 0.31,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_LeftLowerLeg",
+   "gap": 0.0,
+   "penetration": 0.14,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_LeftFoot",
+   "gap": 0.0,
+   "penetration": 0.29,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_Flashlight",
+   "gap": 0.0,
+   "penetration": 0.15965,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Gus_FlashlightLens",
+   "gap": 0.0,
+   "penetration": 0.02,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "0e07dd74725e7ef207d2",
+ "fbx": {
+  "path": "assets/fbx/Gus.fbx",
+  "bytes": 130284,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Gus_Cap",
+   "Gus_Flashlight",
+   "Gus_FlashlightLens",
+   "Gus_Head",
+   "Gus_LeftFoot",
+   "Gus_LeftHand",
+   "Gus_LeftLowerArm",
+   "Gus_LeftLowerLeg",
+   "Gus_LeftUpperArm",
+   "Gus_LeftUpperLeg",
+   "Gus_LowerTorso",
+   "Gus_RightFoot",
+   "Gus_RightHand",
+   "Gus_RightLowerArm",
+   "Gus_RightLowerLeg",
+   "Gus_RightUpperArm",
+   "Gus_RightUpperLeg",
+   "Gus_UpperTorso"
+  ],
+  "geometry_extents": [
+   [
+    0.05,
+    0.8,
+    0.8
+   ],
+   [
+    0.628,
+    0.712,
+    0.966
+   ],
+   [
+    0.628,
+    0.712,
+    0.966
+   ],
+   [
+    0.638,
+    0.64,
+    0.704
+   ],
+   [
+    0.638,
+    0.64,
+    0.704
+   ],
+   [
+    0.65,
+    0.84,
+    1.37
+   ],
+   [
+    0.65,
+    0.84,
+    1.37
+   ],
+   [
+    0.685,
+    0.72,
+    0.87
+   ],
+   [
+    0.685,
+    0.72,
+    0.87
+   ],
+   [
+    0.799,
+    0.84,
+    0.94
+   ],
+   [
+    0.799,
+    0.84,
+    0.94
+   ],
+   [
+    0.799,
+    0.84,
+    1.348
+   ],
+   [
+    0.799,
+    0.84,
+    1.348
+   ],
+   [
+    0.799,
+    2.04,
+    2.359
+   ],
+   [
+    0.96,
+    1.916,
+    2.499
+   ],
+   [
+    0.98,
+    0.98,
+    2.29
+   ],
+   [
+    1.6,
+    1.946,
+    2.08
+   ],
+   [
+    2.07,
+    2.435,
+    2.72
+   ]
+  ]
+ },
+ "spec": "assets/blender/gus.py",
+ "notes": "Gus v0: rigid R15-style rig (18 parts), joint pivots for the code pose player; cap, torch, Neon lens.",
+ "turntable": "docs/art/turntables/Gus.png",
+ "seconds": 5.6
+}

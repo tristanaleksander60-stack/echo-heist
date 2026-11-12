@@ -227,8 +227,11 @@ end
 -- out of Gus's sight beside the staff door, cross the hall while he faces the east
 -- wall and hide on B (fern), C and D (deposit stacks). Run 5 crosses the same way,
 -- waits at the vault door for the scale, grabs the gold (Alarm Run) and leaves by
--- the loading dock (D) and the service alley to the van. Crossing window measured
--- 5.2-6.8+ s; the plan crosses at 6.0.
+-- the loading dock (D) and the service alley to the van, then ENDs the run (the
+-- level's haul is all the loot, so the banked gold clears at the end of the run).
+-- Crossing windows for C/D measured (tests/sim/BigScore.spec.luau, no catch, bust
+-- or zap): 5.2-7.8 s, then about every 9 s (9.4-16.8, 18.4-25.8, ...) now that the
+-- staff pillar keeps the wait spot hidden; the plan crosses at 6.0.
 ---------------------------------------------------------------------------
 
 local BANK_CROSS = 6.0
@@ -241,10 +244,13 @@ Solutions.bk1_big_score = function(level: any): any
 		runs = {
 			{ [1] = { { go = { 0, 9 } }, { go = { 0, -7 } }, { goPlate = "A" }, { endRun = true } } },
 			{
-				[1] = cat(
-					toStaffDoor(),
-					{ { waitUntil = 5.3 }, { go = { 0, -13 } }, { go = { 0, -16 } }, { goPlate = "B" }, { endRun = true } }
-				),
+				[1] = cat(toStaffDoor(), {
+					{ waitUntil = 5.3 },
+					{ go = { 0, -13 } },
+					{ go = { 0, -16 } },
+					{ goPlate = "B" },
+					{ endRun = true },
+				}),
 			},
 			{
 				[1] = cat(toStaffDoor(), {
@@ -277,6 +283,7 @@ Solutions.bk1_big_score = function(level: any): any
 					{ go = { 25, -64 } },
 					{ go = { 25, 12 } },
 					{ go = { 3, 18 } },
+					{ endRun = true },
 					{ stay = true },
 				}),
 			},
@@ -285,8 +292,11 @@ Solutions.bk1_big_score = function(level: any): any
 end
 
 ---------------------------------------------------------------------------
--- Daily vaults (par 1-3, any vetted modifier). `goLoot` follows the day's loot
--- position; Gus is watched, not timed.
+-- Daily vaults (par 1-3, any vetted modifier). The goal item never moves (loot
+-- modifiers move the bonus only), so a recording of these runs on the unmodified
+-- layout must clear every modified day too (Daily.spec "frozen solution"); Gus is
+-- watched, not timed, only to find the window on the base layout. The final run
+-- ENDs after banking: a vault's haul is all its loot, so the clear comes at run end.
 ---------------------------------------------------------------------------
 
 local function plateRun(plate: string): any
@@ -304,6 +314,7 @@ local function throughDoor(zDoor: number, item: string, pre: { any }?): any
 			{ go = { 0, zDoor - 2 } },
 			{ go = { 0, zDoor + 10 } },
 			{ goVan = true },
+			{ endRun = true },
 			{ stay = true },
 		}),
 	}
@@ -321,7 +332,16 @@ Solutions.dv03_candy_cane_lasers = function(_level: any): any
 	return {
 		runs = {
 			plateRun("A"),
-			{ [1] = { { wait = 1 }, { goLoot = "Present" }, { grab = "Present" }, { goVan = true }, { stay = true } } },
+			{
+				[1] = {
+					{ wait = 1 },
+					{ goLoot = "Present" },
+					{ grab = "Present" },
+					{ goVan = true },
+					{ endRun = true },
+					{ stay = true },
+				},
+			},
 		},
 	}
 end
@@ -340,6 +360,7 @@ Solutions.dv04_mistletoe_patrol = function(_level: any): any
 					{ go = { 0, -22 } },
 					{ go = { 0, -12 } },
 					{ goVan = true },
+					{ endRun = true },
 					{ stay = true },
 				},
 			},
@@ -361,6 +382,7 @@ Solutions.dv05_tinsel_corridor = function(_level: any): any
 					{ go = { 0, -32 } },
 					{ go = { 0, -10 } },
 					{ goVan = true },
+					{ endRun = true },
 					{ stay = true },
 				},
 			},
@@ -374,7 +396,15 @@ local SWITCH_PRESS = 5.0
 Solutions.dv06_snow_day_switch = function(level: any): any
 	return {
 		runs = {
-			{ [1] = { { go = { 0, 9 } }, { go = { -12, -6 } }, { waitUntil = SWITCH_PRESS }, { press = "Bell" }, { endRun = true } } },
+			{
+				[1] = {
+					{ go = { 0, 9 } },
+					{ go = { -12, -6 } },
+					{ waitUntil = SWITCH_PRESS },
+					{ press = "Bell" },
+					{ endRun = true },
+				},
+			},
 			{
 				[1] = {
 					{ go = { 0, 9 } },
@@ -391,6 +421,7 @@ Solutions.dv06_snow_day_switch = function(level: any): any
 					{ go = { 15, -10 } },
 					{ go = { 0, 9 } },
 					{ goVan = true },
+					{ endRun = true },
 					{ stay = true },
 				},
 			},
@@ -445,6 +476,7 @@ local function bankHallRuns(laserPlate: string, item: string, zDoorIn: number): 
 				{ go = { 0, -13 } },
 				{ go = { 0, 9 } },
 				{ goVan = true },
+				{ endRun = true },
 				{ stay = true },
 			},
 		},
@@ -466,25 +498,11 @@ Solutions.dv11_jingle_vault = function(_level: any): any
 	}
 end
 
--- Plate C (coat stand, east) is reached while Gus walks west, facing away from it.
+-- Par 2: plate A (staff door + half the vault), then plate B under the fern (grid
+-- off + the other half), then the gift: both cross the hall in Gus's blind window.
 Solutions.dv12_night_before = function(_level: any): any
 	local hall = bankHallRuns("B", "Gift", -40)
-	return {
-		runs = {
-			plateRun("A"),
-			hall[1],
-			{
-				[1] = {
-					{ go = { 0, 9 } },
-					{ go = { 0, -7 } },
-					{ go = { 0, -16 } },
-					{ goPlate = "C" },
-					{ endRun = true },
-				},
-			},
-			hall[2],
-		},
-	}
+	return { runs = { plateRun("A"), hall[1], hall[2] } }
 end
 
 return Solutions

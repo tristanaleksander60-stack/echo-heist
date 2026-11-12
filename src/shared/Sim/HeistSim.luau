@@ -24,9 +24,16 @@
 -- Dawn and the banked haul is scored against the level's tiers (Haul1..3, `Tier`
 -- events as they are reached). Daily vaults are story levels with a fixed 5-clone
 -- loadout and Dawn at run 6; result().daily is DailyVault.DailyResult's shape.
--- Hooks for the view: a `Swarm` event at run start for each player with at least
--- SWARM_SEEN_CLONES clones in the run ("8 OF ME"), HeistSim.ofMe, and
--- HeistSim.lineup for the scripted Crew Line-up (§3.2 rule 8, never simulated).
+-- Hooks for the view: a `Swarm` event SWARM_FANOUT_SECONDS into a run (once the
+-- tape-print fan-out has spread the copies) for each player with at least
+-- SWARM_SEEN_CLONES of their own clones, or of the crew's, in the world (a = seat,
+-- b = copies of that player incl. them, c = the crew's copies: "8 OF ME" when
+-- b >= SWARM_OF_ME, "16 ROBBERS" in co-op), HeistSim.ofMe, HeistSim.lineup for the
+-- scripted Crew Line-up (§3.2 rule 8, never simulated), and lastRun.alarm (who
+-- tripped the alarm, when; `hint` = "RedoAlarm" when a clone did it early) for the
+-- Clone Deck hint "Clone #N sets off the alarm: Redo #N?".
+-- Party levels: result().data.clones is the most clones ONE player had (<= the
+-- per-player cap, which is what Data's party rules check); clonesUsed is the crew's.
 
 local Codec = require("../Rec/Codec")
 local Config = require("../Config")
@@ -136,11 +143,13 @@ function HeistSim.new(level: any, opts: Opts?): any
 		run = { catches = 0, busted = 0, zapped = 0, stuck = 0, shrugs = 0, clones = 0, tainted = false },
 		lastRun = nil :: any,
 		clonesUsed = 0,
+		ownClonesUsed = 0, -- party levels: most clones of one player (result().data.clones)
 		totalTime = 0,
 		finalRunTime = 0,
 		finalRecordings = {},
 		ctx = nil :: any,
 		tripAlarm = Alarm.trigger,
+		swarmTick = math.ceil(S.SWARM_FANOUT_SECONDS * Config.Rec.HZ - EPS),
 	}
 	for i, def in level.guards do
 		sim.guards[i] = Guards.new(def, level.rootY)
@@ -287,12 +296,14 @@ function HeistSim.startRun(sim: any, serverNow: number?): number?
 	end
 	local run = sim.run
 	run.catches, run.busted, run.zapped, run.stuck, run.shrugs, run.clones, run.tainted = 0, 0, 0, 0, 0, 0, false
+	run.ownMax = 0
 
 	-- Actors: clones by (seat, slot), then live players by seat.
 	local actors = sim.actors
 	table.clear(actors)
 	local clones = 0
 	for _, p in sim.players do
+		local own = 0
 		for slot, s in p.deck.slots do
 			if Deck.replays(p.deck, slot) then
 				local a = Actors.newClone(#actors + 1, p, slot, s.rec)
@@ -301,9 +312,11 @@ function HeistSim.startRun(sim: any, serverNow: number?): number?
 				clones += 1
 				if not p.helper then
 					run.clones += 1
+					own += 1
 				end
 			end
 		end
+		run.ownMax = math.max(run.ownMax, own)
 	end
 	local live = 0
 	for _, p in sim.players do
@@ -341,19 +354,39 @@ function HeistSim.startRun(sim: any, serverNow: number?): number?
 	end
 	sim.liveCount = live
 	EventLog.append(sim.log, 0, EV.RunStart, sim.runIndex, clones, live)
-	-- The swarm moment (§4.2 "8 OF ME", funnel SwarmSeen = 6+ own clones on screen).
-	for _, p in sim.players do
-		local own = 0
-		for _, a in actors do
-			if a.kind == "clone" and a.player == p and a.present then
-				own += 1
+	return sim.runIndex
+end
+
+-- The swarm moment (§4.2 "8 OF ME", funnel SwarmSeen = 6+ clones on screen), logged
+-- once per run after the tape-print fan-out, when the copies stand apart: one event
+-- per crew member still in the crew with 6+ own clones in the world, or 6+ crew
+-- clones (co-op crews of 3-4 never reach 6 own clones but see 12). a = seat, b =
+-- that player's copies (clones + their live run), c = every copy in the crew.
+local function logSwarm(sim: any)
+	local need = Config.Sim.SWARM_SEEN_CLONES
+	local crewClones, crew = 0, 0
+	for _, a in sim.actors do
+		if a.present then
+			crew += 1
+			if a.kind == "clone" then
+				crewClones += 1
 			end
 		end
-		if own >= Config.Sim.SWARM_SEEN_CLONES then
-			EventLog.append(sim.log, 0, EV.Swarm, p.seat, own + (if p.live then 1 else 0))
+	end
+	for _, p in sim.players do
+		local own, mine = 0, 0
+		for _, a in sim.actors do
+			if a.player == p and a.present then
+				mine += 1
+				if a.kind == "clone" then
+					own += 1
+				end
+			end
+		end
+		if not p.orphan and (own >= need or crewClones >= need) then
+			EventLog.append(sim.log, sim.tick, EV.Swarm, p.seat, mine, crew)
 		end
 	end
-	return sim.runIndex
 end
 
 -- Latest position of a live player (the server's view of their character), used
@@ -590,6 +623,7 @@ local function bankAll(sim: any)
 			for _, item in Loot.unload(a) do
 				sim.banked += Loot.bankItem(sim.loot, item, sim.t)
 				sim.clonesUsed = math.max(sim.clonesUsed, sim.run.clones)
+				sim.ownClonesUsed = math.max(sim.ownClonesUsed, sim.run.ownMax)
 				EventLog.append(sim.log, sim.tick, EV.Bank, a.id, item, sim.banked)
 				if party then
 					-- Party levels never complete: tiers are scored at Dawn.
@@ -655,6 +689,7 @@ local function finishRun(sim: any, reason: number)
 		if level.kind == "party" then
 			-- The swarm that ran until Dawn (a story level's count only grows with banks).
 			sim.clonesUsed = math.max(sim.clonesUsed, sim.run.clones)
+			sim.ownClonesUsed = math.max(sim.ownClonesUsed, sim.run.ownMax)
 		end
 		EventLog.append(sim.log, sim.tick, EV.Dawn, sim.banked, sim.runIndex)
 	else
@@ -683,6 +718,28 @@ local function finishRun(sim: any, reason: number)
 
 	local h = EventLog.hash(sim.log)
 	sim.heistHash = EventLog.fold(sim.heistHash, h)
+	-- Who tripped the alarm (Clone Deck hint): a = actor id (0 = a catch).
+	local alarm = nil
+	local at, id = nil, 0
+	for i = 1, sim.log.n do
+		if sim.log.kind[i] == EV.AlarmOn then
+			at, id = sim.log.tick[i], sim.log.a[i]
+			break
+		end
+	end
+	if at then
+		local by = sim.actors[id]
+		local t = at / sim.hz
+		local clone = by ~= nil and by.kind == "clone"
+		alarm = {
+			t = t,
+			actorId = id,
+			kind = if by then by.kind else "catch",
+			ownerId = if by then by.ownerId else 0,
+			slot = if clone then by.slot else 0,
+			hint = if clone and t < Config.Sim.ALARM_HINT_SECONDS - EPS then "RedoAlarm" else nil,
+		}
+	end
 	sim.lastRun = {
 		runIndex = sim.runIndex,
 		reason = reason,
@@ -697,6 +754,7 @@ local function finishRun(sim: any, reason: number)
 		shrugs = sim.run.shrugs,
 		clones = sim.run.clones,
 		tainted = sim.run.tainted,
+		alarm = alarm,
 	}
 end
 
@@ -748,6 +806,9 @@ function HeistSim.step(sim: any): string
 		Guards.update(g, ctx)
 	end
 	local vanLeft = Alarm.update(sim)
+	if tick == sim.swarmTick then
+		logSwarm(sim)
+	end
 
 	-- Tutorial: run 1 of L1 auto-ends after L1_AUTO_END_SECONDS on the plate (§7.5).
 	local tut = sim.level.tutorial
@@ -991,6 +1052,7 @@ function HeistSim.result(sim: any): any
 		tiers = level.tiers,
 		tierMet = sim.tierMet,
 		clonesUsed = sim.clonesUsed,
+		clonesPerPlayer = if party then sim.ownClonesUsed else nil,
 		clonesNow = clonesNow,
 		par = level.par,
 		bag = bag, -- highest bag level that counted (bag runs are excluded from Diamond, §4.2)
@@ -1005,7 +1067,9 @@ function HeistSim.result(sim: any): any
 		-- friends and heistId): DataService.awardHeistResult(player, level.dataId, data).
 		data = {
 			haul = sim.banked,
-			clones = sim.clonesUsed,
+			-- Party levels: one player's swarm (Data's party cap is per player, 8); story
+			-- levels: the crew's (the heist server widens their cap to the crew budget).
+			clones = if party then sim.ownClonesUsed else sim.clonesUsed,
 			timeMs = math.floor(sim.totalTime * 1000 + 0.5),
 			catches = inputs.catchesFinal,
 			busted = inputs.bustedFinal,
@@ -1021,6 +1085,8 @@ function HeistSim.result(sim: any): any
 			clones = sim.clonesUsed,
 			tainted = inputs.tainted,
 			relaxed = sim.relaxed,
+			-- Board tie-break after haul and clones (biggest haul today, §5.3).
+			timeMs = math.floor(sim.totalTime * 1000 + 0.5),
 		},
 	}
 end

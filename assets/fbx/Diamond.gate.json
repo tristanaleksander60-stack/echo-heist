@@ -33,6 +33,11 @@
     "ice_hi",
     "ice_lo"
    ],
+   "location": [
+    0.0,
+    0.0,
+    0.875
+   ],
    "symmetry_error": {
     "X": 0.0,
     "Y": 0.0
@@ -52,8 +57,15 @@
     "Color": "white (255,255,255)",
     "CollisionFidelity": "Box",
     "CanCollide": false,
-    "CastShadow": false
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
    },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "loot",
    "notes": "hovers + spins on the pedestal; sparkle VFX carries the loot read",
    "fails": [],
    "passed": true
@@ -70,9 +82,10 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "9aafb28e2fa24718bb0f",
  "fbx": {
   "path": "assets/fbx/Diamond.fbx",
-  "bytes": 21148,
+  "bytes": 21340,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -89,5 +102,6 @@
  },
  "spec": "assets/blender/diamond.py",
  "notes": "Hero loot. Studio: SmoothPlastic, Color white, atlas TextureID, Box, CanCollide off, CastShadow off.",
- "seconds": 0.0
+ "turntable": "docs/art/turntables/Diamond.png",
+ "seconds": 4.8
 }

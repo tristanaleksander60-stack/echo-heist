@@ -23,7 +23,7 @@ return Vault.spec(1, "dv01_stocking_stuffer", "Stocking Stuffer", "CornerShop", 
 		Vault.cookieTin(),
 	},
 	daily = {
-		modifiers = { "None", "LootB", "LootC", "LightsOff" },
-		alt = { Stocking = { B = { x = 10, z = -28 }, C = { x = 5, z = -31 } } },
+		modifiers = { "None", "LootB", "LootC" },
+		alt = { Bauble = { B = { x = 10, z = -30 }, C = { x = -12, z = -32 } } },
 	},
 })

@@ -1,42 +1,131 @@
 # Kit import: from FBX files to `assets/Kit.rbxm` (spike S2)
 
-_For the owner. About 30 minutes the first time, 10 minutes after that. Written 2026-11-12._
+_For the owner. About 45 minutes the first time, 10 minutes after that. Updated 2026-11-12 for the launch kit v1, pass 2 (review fixes)._
 
 **Goal.** Claude builds the art in Blender and writes FBX files to `assets/fbx/`. Roblox Studio must import them once and save them as one file, `assets/Kit.rbxm`. Rojo then puts that file into `ServerStorage/Kit`. The game only **clones** these pieces. It never creates meshes itself.
 
 **Spike S2 passes when** the built place has every piece with the right size and the right collision (MASTERPLAN §8.11).
 
-You import 6 FBX files and get 9 MeshParts. The table below shows what Studio must show after the import. Studio uses Y for up, so the numbers are X x Y x Z.
+**What changed since v0.** The bank kit v0 (6 files) became the launch kit: walls, doors, windows, the storefront, floors, counters, shelves, lamps, plates, switches, laser posts, hiding spots, a safe, the van, loot, three hero props (the golden-pass vault door, the cash register with the diamond pedestal, the Giant Present), the Christmas dressing layer and Gus. `Bank_Wall_*` is now `Wall_*` (one kit for every location) and `VaultDoor_Greybox` is now `VaultDoor`. If you imported v0 already, delete it and import everything again.
 
-| FBX file | MeshPart | Size in Studio (X x Y x Z) | Tris | CollisionFidelity | Material | CanCollide | CastShadow |
-|---|---|---|---|---|---|---|---|
-| Bank_Wall_4x12.fbx | Bank_Wall_4x12 | 4 x 12 x 2 | 196 | Box | SmoothPlastic | on | on |
-| Bank_Wall_8x12.fbx | Bank_Wall_8x12 | 8 x 12 x 2 | 284 | Box | SmoothPlastic | on | on |
-| Diamond.fbx | Diamond | 2 x 1.75 x 2 | 94 | Box | SmoothPlastic | off | off |
-| GoldBar.fbx | GoldBar | 2 x 0.6 x 1 | 52 | Box | SmoothPlastic | on | off |
-| GoldStack.fbx | GoldStack | 2.04 x 1.8 x 3.1 | 312 | Box | SmoothPlastic | on | on |
-| VaultDoor_Greybox.fbx | VaultDoor_Frame | 16 x 12 x 3.5 | 1196 | PreciseConvexDecomposition | SmoothPlastic | on | on |
-| VaultDoor_Greybox.fbx | VaultDoor_Door | 11.6 x 8.6 x 2.75 | 1504 | Hull | SmoothPlastic | on | on |
-| VaultDoor_Greybox.fbx | VaultDoor_Dial | 4.48 x 4.48 x 0.89 | 768 | Box | SmoothPlastic | off | on |
-| VaultDoor_Greybox.fbx | VaultDoor_DialRing | 3.5 x 3.5 x 0.24 | 288 | Box | **Neon** | off | off |
+**Pass 2 (review fixes, 2026-11-12).** New: the loot the levels use (`Present`, `Candy`, `Toy`, `Teddy`), `Shutter_8x10` (the LOCKDOWN leaf), `BankFront_24x12`, `Shelf_Gondola_8x2` (Clone Party aisles), `Hide_CoatStand`, `Hide_DepositStack`. Remade: `Hide_Plant` (a planter niche that shows the plate), `Hide_CoatRack` (double rack over a plate), `Hide_Crate` (2.5 deep), `Xmas_SnowPile`, tintable `Ornament_Bauble` / `_Bell` / `_Star`. The atlas changed (lighter wood, readable from above), so **every** FBX changed: import them all. The prepare script now finds pieces safely (the v1 script could never print KIT OK) and wall modules are placed **centred on their grid line** (below).
 
-The same numbers are in `assets/fbx/kit_manifest.json`. Claude rebuilds that file with every art change.
+The table below shows what Studio must show after the import (generated from `assets/fbx/kit_manifest.json` by `python3 tools/blender/kit_docs.py`). Studio uses Y for up, so sizes are X x Y x Z.
+
+<!-- kit-table:start -->
+| Model (FBX) | MeshPart | Size in Studio (X x Y x Z) | Tris | Collision | Material | CanCollide | CastShadow | Layer |
+|---|---|---|---|---|---|---|---|---|
+| BankFront_24x12.fbx | BankFront_24x12 | 24 x 13.9 x 2.94 | 2244 | PreciseConvexDecomposition | SmoothPlastic | on | on | base |
+| Candy.fbx | Candy | 2.64 x 1.1 x 1.1 | 336 | Box | SmoothPlastic | on | off | base |
+| CashBag.fbx | CashBag | 1.9 x 2.02 x 1.97 | 600 | Box | SmoothPlastic | on | off | base |
+| CashRegister.fbx | CashRegister | 4.14 x 3.95 x 3.2 | 1032 | Box | SmoothPlastic | off | on | base |
+| CashRegister.fbx | CashRegister_Drawer | 2.97 x 0.67 x 2.77 | 488 | Box | SmoothPlastic | off | off | base |
+| Counter_4x4.fbx | Counter_4x4 | 4.3 x 3.5 x 4.3 | 208 | Box | SmoothPlastic | on | on | base |
+| Counter_8x2.fbx | Counter_8x2 | 8.3 x 3.5 x 2.3 | 244 | Box | SmoothPlastic | on | on | base |
+| Counter_8x4.fbx | Counter_8x4 | 8.3 x 3.5 x 4.3 | 316 | Box | SmoothPlastic | on | on | base |
+| Diamond.fbx | Diamond | 2 x 1.75 x 2 | 94 | Box | SmoothPlastic | off | off | base |
+| Floor_8x8.fbx | Floor_8x8 | 8 x 0.5 x 8 | 144 | Box | SmoothPlastic | on | on | base |
+| GiantPresent.fbx | GiantPresent | 7.2 x 6.794 x 7.2 | 1380 | Box | SmoothPlastic | on | on | base |
+| GoldBar.fbx | GoldBar | 2 x 0.6 x 1 | 52 | Box | SmoothPlastic | on | off | base |
+| GoldStack.fbx | GoldStack | 2.04 x 1.8 x 3.1 | 312 | Box | SmoothPlastic | on | on | base |
+| Gus.fbx | Gus_Cap | 2.04 x 0.799 x 2.359 | 184 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_Flashlight | 0.98 x 0.98 x 2.29 | 336 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_FlashlightLens | 0.8 x 0.8 x 0.05 | 48 | Box | Neon | off | off | base |
+| Gus.fbx | Gus_Head | 2.08 x 1.6 x 1.946 | 560 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_LeftFoot | 0.84 x 0.65 x 1.37 | 80 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_LeftHand | 0.638 x 0.704 x 0.64 | 116 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_LeftLowerArm | 0.712 x 0.966 x 0.628 | 120 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_LeftLowerLeg | 0.72 x 0.87 x 0.685 | 80 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_LeftUpperArm | 0.84 x 1.348 x 0.799 | 180 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_LeftUpperLeg | 0.84 x 0.94 x 0.799 | 80 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_LowerTorso | 2.499 x 0.96 x 1.916 | 424 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_RightFoot | 0.84 x 0.65 x 1.37 | 80 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_RightHand | 0.638 x 0.704 x 0.64 | 116 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_RightLowerArm | 0.712 x 0.966 x 0.628 | 120 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_RightLowerLeg | 0.72 x 0.87 x 0.685 | 80 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_RightUpperArm | 0.84 x 1.348 x 0.799 | 180 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_RightUpperLeg | 0.84 x 0.94 x 0.799 | 80 | Box | SmoothPlastic | off | on | base |
+| Gus.fbx | Gus_UpperTorso | 2.72 x 2.07 x 2.435 | 624 | Box | SmoothPlastic | off | on | base |
+| Gus_DonutBox.fbx | Gus_DonutBox | 2.6 x 2.385 x 2.45 | 596 | Box | SmoothPlastic | off | on | base |
+| Gus_SantaHat.fbx | Gus_SantaHat | 2.24 x 1.781 x 2.736 | 360 | Box | SmoothPlastic | off | on | xmas |
+| Hide_CoatRack.fbx | Hide_CoatRack | 6 x 6.85 x 4.8 | 544 | Box | SmoothPlastic | off | on | base |
+| Hide_CoatStand.fbx | Hide_CoatStand | 4.747 x 7.13 x 4.67 | 572 | Box | SmoothPlastic | off | on | base |
+| Hide_Crate.fbx | Hide_Crate | 4.443 x 5.85 x 2.74 | 552 | Box | SmoothPlastic | off | on | base |
+| Hide_Curtain.fbx | Hide_Curtain | 6.38 x 10.78 x 1.84 | 468 | Box | SmoothPlastic | off | on | base |
+| Hide_DepositStack.fbx | Hide_DepositStack | 6.24 x 7 x 6.355 | 696 | Box | SmoothPlastic | off | on | base |
+| Hide_Plant.fbx | Hide_Plant | 6.293 x 6.174 x 5.969 | 568 | Box | SmoothPlastic | off | on | base |
+| Lamp_Ceiling.fbx | Lamp_Ceiling | 3.2 x 3.38 x 3.2 | 568 | Box | SmoothPlastic | off | off | base |
+| Lamp_Ceiling.fbx | Lamp_Ceiling_Bulb | 0.84 x 0.84 x 0.84 | 120 | Box | Neon | off | off | base |
+| LaserEmitter.fbx | LaserEmitter | 1.4 x 10.45 x 1.15 | 428 | Box | SmoothPlastic | on | on | base |
+| LaserEmitter.fbx | LaserEmitter_Lens | 0.4 x 8.38 x 0.16 | 200 | Box | Neon | off | off | base |
+| LaserEmitter_CandyCane.fbx | LaserEmitter_CandyCane | 3.094 x 11.111 x 1.17 | 888 | Box | SmoothPlastic | on | on | xmas |
+| Ornaments.fbx | Ornament_Bauble | 0.96 x 1.355 x 0.96 | 288 | Box | SmoothPlastic | off | off | xmas |
+| Ornaments.fbx | Ornament_Bell | 1.04 x 1.345 x 1.04 | 328 | Box | SmoothPlastic | off | off | xmas |
+| Ornaments.fbx | Ornament_Donut | 1 x 1.302 x 0.38 | 400 | Box | SmoothPlastic | off | off | xmas |
+| Ornaments.fbx | Ornament_Stand | 0.95 x 2.13 x 0.9 | 180 | Box | SmoothPlastic | off | off | xmas |
+| Ornaments.fbx | Ornament_Star | 1.046 x 1.19 x 0.2 | 164 | Box | SmoothPlastic | off | off | xmas |
+| Ornaments.fbx | Ornament_Van | 1.15 x 0.995 x 0.54 | 280 | Box | SmoothPlastic | off | off | xmas |
+| Ornaments.fbx | Ornament_VaultDoor | 1.04 x 1.435 x 0.33 | 472 | Box | SmoothPlastic | off | off | xmas |
+| Pedestal_Diamond.fbx | Pedestal_Diamond | 3.2 x 3.4 x 3.28 | 528 | Box | SmoothPlastic | on | on | base |
+| Pedestal_Diamond.fbx | Pedestal_Diamond_Case | 2.6 x 2.7 x 2.6 | 60 | Box | Glass (T 0.7) | off | off | base |
+| Pillar_2x12.fbx | Pillar_2x12 | 2.3 x 12 x 2.3 | 324 | Box | SmoothPlastic | on | on | base |
+| Plate_4x4.fbx | Plate_4x4 | 4 x 0.36 x 4 | 484 | Box | SmoothPlastic | on | off | base |
+| Plate_4x4.fbx | Plate_4x4_Ring | 3.3 x 0.14 x 3.3 | 288 | Box | Neon | off | off | base |
+| Present.fbx | Present | 2.101 x 2.021 x 1.9 | 388 | Box | SmoothPlastic | on | off | base |
+| Safe.fbx | Safe | 3.2 x 3.95 x 2.92 | 452 | Box | SmoothPlastic | on | on | base |
+| Safe.fbx | Safe_Door | 2.71 x 2.94 x 0.7 | 548 | Box | SmoothPlastic | on | on | base |
+| Shelf_8x2.fbx | Shelf_8x2 | 8.1 x 7.85 x 2.08 | 776 | Box | SmoothPlastic | on | on | base |
+| Shelf_Gondola_8x2.fbx | Shelf_Gondola_8x2 | 8 x 7.85 x 2.16 | 744 | Box | SmoothPlastic | on | on | base |
+| Shutter_8x10.fbx | Shutter_8x10 | 8.1 x 10.35 x 1.46 | 556 | Box | SmoothPlastic | on | on | base |
+| Storefront_24x12.fbx | Storefront_24x12 | 24 x 12 x 4.75 | 1980 | PreciseConvexDecomposition | SmoothPlastic | on | on | base |
+| Storefront_24x12.fbx | Storefront_24x12_Glass | 22.4 x 6.08 x 0.06 | 24 | Box | Glass (T 0.6) | off | off | base |
+| Switch_Wall.fbx | Switch_Wall | 1.6 x 2.52 x 0.84 | 224 | Box | SmoothPlastic | on | on | base |
+| Switch_Wall.fbx | Switch_Wall_Lamp | 0.4 x 0.2 x 0.38 | 58 | Box | Neon | off | off | base |
+| Switch_Wall.fbx | Switch_Wall_Lever | 0.52 x 1.472 x 1.156 | 172 | Box | SmoothPlastic | off | on | base |
+| Teddy.fbx | Teddy | 2.057 x 2.266 x 1.6 | 596 | Box | SmoothPlastic | on | off | base |
+| TellerCounter_8x4.fbx | TellerCounter_8x4 | 8.3 x 8.25 x 4.35 | 412 | Box | SmoothPlastic | on | on | base |
+| TellerCounter_8x4.fbx | TellerCounter_8x4_Glass | 7.1 x 3.2 x 0.06 | 24 | Box | Glass (T 0.6) | off | off | base |
+| Toy.fbx | Toy | 1.586 x 2.8 x 1.19 | 580 | Box | SmoothPlastic | on | off | base |
+| Van.fbx | Van | 14.9 x 7.689 x 7.08 | 1856 | PreciseConvexDecomposition | SmoothPlastic | on | on | base |
+| Van.fbx | Van_Shelf | 6 x 4.06 x 0.98 | 124 | Box | SmoothPlastic | off | on | base |
+| VaultDoor.fbx | VaultDoor_Dial | 4.55 x 4.55 x 0.924 | 1104 | Box | SmoothPlastic | off | on | base |
+| VaultDoor.fbx | VaultDoor_DialFace | 2.16 x 2.16 x 0.06 | 384 | Box | SmoothPlastic + SA | off | off | base |
+| VaultDoor.fbx | VaultDoor_DialRing | 3.5 x 3.5 x 0.24 | 384 | Box | Neon | off | off | base |
+| VaultDoor.fbx | VaultDoor_Door | 11.96 x 8.65 x 3.46 | 3832 | Hull | SmoothPlastic | on | on | base |
+| VaultDoor.fbx | VaultDoor_Frame | 16 x 12 x 3.7 | 2452 | PreciseConvexDecomposition | SmoothPlastic | on | on | base |
+| Wall_4x12.fbx | Wall_4x12 | 4 x 12 x 2 | 196 | Box | SmoothPlastic | on | on | base |
+| Wall_8x12.fbx | Wall_8x12 | 8 x 12 x 2 | 284 | Box | SmoothPlastic | on | on | base |
+| Wall_Door_8x12.fbx | Wall_Door_8x12 | 8 x 12 x 2.06 | 664 | PreciseConvexDecomposition | SmoothPlastic | on | on | base |
+| Wall_Door_8x12.fbx | Wall_Door_8x12_Leaf | 6 x 9.96 x 1.34 | 508 | Box | SmoothPlastic | on | on | base |
+| Wall_Window_8x12.fbx | Wall_Window_8x12 | 8 x 12 x 2.5 | 768 | Box | SmoothPlastic | on | on | base |
+| Wall_Window_8x12.fbx | Wall_Window_8x12_Glass | 5 x 5 x 0.06 | 12 | Box | Glass (T 0.6) | off | off | base |
+| Xmas_Garland_8.fbx | Xmas_Garland_8 | 8.825 x 1.738 x 0.923 | 736 | Box | SmoothPlastic | off | off | xmas |
+| Xmas_Lights_8.fbx | Xmas_Lights_8 | 8.24 x 0.857 x 0.25 | 286 | Box | SmoothPlastic | off | off | xmas |
+| Xmas_Lights_8.fbx | Xmas_Lights_8_Bulbs | 7.529 x 0.958 x 0.285 | 400 | Box | Neon | off | off | xmas |
+| Xmas_SnowCap_8.fbx | Xmas_SnowCap_8 | 8 x 0.67 x 2.5 | 512 | Box | SmoothPlastic | off | off | xmas |
+| Xmas_SnowPile.fbx | Xmas_SnowPile | 4.85 x 3.535 x 3.105 | 576 | Box | SmoothPlastic | off | off | xmas |
+| Xmas_Tree.fbx | Xmas_Tree | 4.1 x 6 x 3.899 | 312 | Box | SmoothPlastic | off | on | xmas |
+| Xmas_Tree.fbx | Xmas_Tree_Lights | 4.119 x 5.64 x 4.033 | 400 | Box | Neon | off | off | xmas |
+| Xmas_Wreath.fbx | Xmas_Wreath | 2.826 x 3.56 x 1.135 | 548 | Box | SmoothPlastic | off | off | xmas |
+
+**50 FBX files, 92 MeshParts, 45,166 triangles in all.** Christmas layer: 17 parts.
+<!-- kit-table:end -->
 
 ---
 
 ## Before you start
 
-1. Pull the repo, so `assets/fbx/` has the 6 `.fbx` files.
+1. Pull the repo, so `assets/fbx/` has every `.fbx` file and `assets/textures/` has the images.
 2. Open Roblox Studio. Make a **new Baseplate place** called `KitWorkshop`. Do not use the live place or the test place.
-3. Know who owns the game. The meshes must belong to the **same owner as the experience** (you, or your group). Otherwise they do not load in the game.
+3. Know who owns the game. The meshes and images must belong to the **same owner as the experience** (you, or your group). Otherwise they do not load in the game.
 
 ## Step 1. Import each FBX file (Import 3D)
 
-Do this once for each of the 6 files.
+Do this once for each file in `assets/fbx/` (you can select several files at once).
 
-1. Click **Home > Import 3D** (or **File > Import 3D**) and choose one file in `assets/fbx/`.
+1. Click **Home > Import 3D** and choose the file(s).
 2. In the import window, under **File General**, set:
-   - **Name**: keep the file name, for example `VaultDoor_Greybox`. Code finds pieces by name.
+   - **Name**: keep the file name, for example `VaultDoor`. Code finds pieces by name.
    - **Upload to Roblox**: **ON**. This is needed: the saved file only keeps a link to the uploaded mesh.
    - **Creator**: the owner of the experience (you or your group).
    - **Import Only As Model**: ON.
@@ -47,133 +136,193 @@ Do this once for each of the 6 files.
    - **World Forward**: Front.
    - **World Up**: Top.
    - **Scale Unit**: **Studs**.
-   - **Merge Meshes**: **OFF**. Merged meshes lose their names and pivots.
+   - **Merge Meshes**: **OFF**. Merged meshes lose their names and pivots (Gus needs his 18 separate parts and their pivots).
 4. Select each child in the list on the left. Check that **Use Imported Pivot** is ON. Check that **Make Double Sided** and **Ignore Vertex Colors** are OFF.
 5. Look at **File Geometry**. The size must match the table above. A wall is 8 x 12 x 2, not 800 x 1200 x 200. If it is 100 times too big, stop and tell Claude: the export setting is wrong.
-6. Read the warnings panel. "Missing texture" or "non-manifold" must not appear. Then click **Import**.
+6. Read the warnings panel. "Non-manifold" must not appear. Then click **Import**.
 
 ## Step 2. Put everything in one folder
 
 1. In the Explorer, make a **Folder** in Workspace called **`Kit`**. Use this exact name, with a capital K.
-2. Drag the 6 imported Models into `Kit`. The result looks like this:
-   `Kit > Bank_Wall_4x12, Bank_Wall_8x12, Diamond, GoldBar, GoldStack, VaultDoor_Greybox (Frame, Door, Dial, DialRing)`.
-3. If a Model is called `Scene`, rename it to its file name.
-4. **Never resize or rotate a piece in Studio.** A wrong size is fixed in Blender, not in Studio.
+2. Drag every imported Model into `Kit`. If a Model is called `Scene`, rename it to its file name. Many MeshParts have
+   the same name as their Model (`CashBag` inside `CashBag`, `Safe` inside `Safe`): that is expected, keep it.
+3. **Never resize or rotate a piece in Studio.** A wrong size is fixed in Blender, not in Studio.
 
-## Step 3. Run the prepare script (command bar)
+## Step 3. Upload the images (once per art revision)
 
-1. Click **View > Command Bar**.
-2. In the Explorer, select the `Kit` folder.
-3. Paste the script below into the command bar and press Enter.
+Upload these PNG files with the **Asset Manager > Import** (or **Create > Decals**) under the experience owner, and copy each id:
 
-The script sets the same look on every piece: SmoothPlastic, Color white, one shared atlas texture, Anchored. It removes any SurfaceAppearance that the importer made. It sets CanCollide and CastShadow. It also sets the glow ring to Neon with no texture. Then it prints a check line for each piece.
+| File | What it is | Where the id goes |
+|---|---|---|
+| `assets/textures/EH_Palette_Bank.png` | The kit atlas (the importer usually uploads it too) | `ATLAS` at the top of the prepare script; `Config.Kit.Atlas.Bank` |
+| `assets/textures/EH_Palette_CornerShop.png` | Corner Shop atlas swap (brick walls, pine wood) | `Config.Kit.Atlas.CornerShop` (tell Claude) |
+| `assets/textures/EH_Palette_ToyShop.png` | Toy Shop atlas swap (Drop 1, Dec 11) | `Config.Kit.Atlas.ToyShop` (tell Claude) |
+| `assets/textures/VaultDoor_DialFace_Color.png` | Vault combination face colour map (1024) | `DIALFACE_COLOR` in the prepare script |
+| `assets/textures/VaultDoor_DialFace_Roughness.png` | Its roughness map | `DIALFACE_ROUGHNESS` |
+| `assets/textures/VaultDoor_DialFace_Emissive.png` | Its emissive mask (the numbers and ticks glow) | `DIALFACE_EMISSIVE` |
 
-```lua
--- Echo Heist kit prepare + check. Select the Kit folder, then run in the command bar.
-local Selection = game:GetService("Selection")
-local kit = Selection:Get()[1]
-assert(kit and kit.Name == "Kit", "Select the Kit folder first")
+The location look is an **atlas swap**: every kit piece keeps the same mesh and UVs, and code sets `MeshPart.TextureID` to the location's atlas id when it builds a level (STYLE_BIBLE §1.4). So the kit itself only ever uses the Bank atlas.
 
-local WANT = {
-	Bank_Wall_4x12 = { size = Vector3.new(4, 12, 2), collision = "Box", material = "SmoothPlastic", canCollide = true, castShadow = true, atlas = true },
-	Bank_Wall_8x12 = { size = Vector3.new(8, 12, 2), collision = "Box", material = "SmoothPlastic", canCollide = true, castShadow = true, atlas = true },
-	Diamond = { size = Vector3.new(2, 1.75, 2), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = false, atlas = true },
-	GoldBar = { size = Vector3.new(2, 0.6, 1), collision = "Box", material = "SmoothPlastic", canCollide = true, castShadow = false, atlas = true },
-	GoldStack = { size = Vector3.new(2.04, 1.8, 3.1), collision = "Box", material = "SmoothPlastic", canCollide = true, castShadow = true, atlas = true },
-	VaultDoor_Dial = { size = Vector3.new(4.482, 4.482, 0.885), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = true, atlas = true },
-	VaultDoor_DialRing = { size = Vector3.new(3.5, 3.5, 0.24), collision = "Box", material = "Neon", canCollide = false, castShadow = false, atlas = false },
-	VaultDoor_Door = { size = Vector3.new(11.6, 8.6, 2.75), collision = "Hull", material = "SmoothPlastic", canCollide = true, castShadow = true, atlas = true },
-	VaultDoor_Frame = { size = Vector3.new(16, 12, 3.5), collision = "PreciseConvexDecomposition", material = "SmoothPlastic", canCollide = true, castShadow = true, atlas = true },
-}
+## Step 4. Run the prepare script (command bar)
 
--- 1. Find the atlas texture id the importer uploaded (first one found).
-local atlas = ""
-for _, d in kit:GetDescendants() do
-	if d:IsA("MeshPart") and d.TextureID ~= "" then
-		atlas = d.TextureID
-		break
-	elseif d:IsA("SurfaceAppearance") and d.ColorMap ~= "" then
-		atlas = d.ColorMap
-		break
-	end
-end
-print("Kit atlas texture:", atlas ~= "" and atlas or "NOT FOUND (upload assets/textures/EH_Palette_Bank.png, paste its id here)")
+1. Open `docs/art/KitPrepare.commandbar.lua` (generated; do not edit it by hand except for the ids at the top).
+2. Paste the ids from Step 3 into its first lines. A bare number (`123456789`) is fine: the script adds `rbxassetid://`.
+3. In the Explorer, select the `Kit` folder. Paste the whole script into **View > Command Bar** and press Enter.
 
--- 2. Same look on every piece, then check it.
-local problems = 0
-for name, w in WANT do
-	local p = kit:FindFirstChild(name, true)
-	if not (p and p:IsA("MeshPart")) then
-		problems += 1
-		warn("MISSING", name)
-		continue
-	end
-	for _, sa in p:GetChildren() do
-		if sa:IsA("SurfaceAppearance") then
-			sa:Destroy()
-		end
-	end
-	p.Material = Enum.Material[w.material]
-	p.Color = if w.atlas then Color3.new(1, 1, 1) else Color3.fromRGB(216, 200, 168) -- Warm Marble idle glow
-	p.TextureID = if w.atlas then atlas else ""
-	p.Anchored = true
-	p.CanCollide = w.canCollide
-	p.CanTouch = w.canCollide
-	p.CastShadow = w.castShadow
-	local sizeOk = (p.Size - w.size).Magnitude < 0.05
-	local nativeOk = (p.Size - p.MeshSize).Magnitude < 0.05
-	local collOk = p.CollisionFidelity.Name == w.collision
-	if not (sizeOk and nativeOk and collOk) then
-		problems += 1
-	end
-	print(string.format("%-20s size %s %s | native %s | collision %s %s",
-		name, tostring(p.Size), sizeOk and "ok" or ("WANT " .. tostring(w.size)),
-		nativeOk and "ok" or "SCALED IN STUDIO", p.CollisionFidelity.Name, collOk and "ok" or ("SET TO " .. w.collision)))
-end
+The script finds every piece among the `MeshPart`s under `Kit` (by name, and checks it sits in the right Model; it never uses `FindFirstChild(name, true)`, which returns a Model of the same name). It warns about duplicate names and pieces the manifest does not know. Then it gives every piece its look: SmoothPlastic, Color white, the one atlas texture, Anchored, CanCollide and CastShadow from the table. Runtime-tinted parts (Neon rings, lenses, bulbs) get no texture and their idle colour (`eh_palette.NEON`); glass parts get Glass and their transparency; the three tintable ornaments get the atlas and their default colour. It removes any SurfaceAppearance the importer made, except on `VaultDoor_DialFace`, where it builds the hero SurfaceAppearance (colour, roughness, emissive mask). Then it prints a check line per piece and two axis checks:
 
--- 3. Front check: the dial must sit on the front (-Z, the LookVector side) of the vault frame.
-local frame, dial = kit:FindFirstChild("VaultDoor_Frame", true), kit:FindFirstChild("VaultDoor_Dial", true)
-if frame and dial then
-	print("Vault front faces -Z:", dial.Position.Z < frame.Position.Z and "yes" or "NO, tell Claude (FBX axis)")
-end
-print(problems == 0 and "KIT OK" or (problems .. " problem(s): fix them, then run again"))
-```
+- `Vault front faces -Z: yes` (the dial is on the frame's LookVector side).
+- `Gus torch on his right (+X): yes` (the export turns Blender -X into Roblox +X; this line proves it).
 
-## Step 4. Set collision by hand (scripts cannot do this)
+If either says NO, stop and tell Claude: the FBX axis setting must change before anything is placed.
 
-Roblox builds the collision shape when the part is made. A script cannot change `CollisionFidelity` later, so set it in the Properties window:
+## Step 5. Set collision by hand (scripts cannot do this)
 
-1. Hold Ctrl and click every piece whose table row says **Box**. In **Properties > Collision**, set **CollisionFidelity = Box**.
-2. Select `VaultDoor_Door` and set **Hull**.
-3. Select `VaultDoor_Frame` and set **PreciseConvexDecomposition**. The frame has a round opening, and Box would block the doorway.
-4. Run the script from Step 3 again. It must print **KIT OK**.
+Roblox builds the collision shape when the part is made, so set it in the Properties window:
 
-To see the collision shapes, go to **File > Studio Settings > Physics** and turn on **Show Decomposition Geometry**. Walk an avatar through the vault opening: you must not get stuck.
+1. Select every piece whose table row says **Box** and set **CollisionFidelity = Box** (most pieces).
+2. **Hull**: `VaultDoor_Door`.
+3. **PreciseConvexDecomposition**: `VaultDoor_Frame` (round opening), `Wall_Door_8x12` (6 x 10 opening), `Storefront_24x12` and `BankFront_24x12` (8 x 10 entrances), `Van` (open cargo bay).
+4. Run the script from Step 4 again. It must print **KIT OK**.
 
-## Step 5. Save the file
+To see the collision shapes: **File > Studio Settings > Physics > Show Decomposition Geometry**. Walk an avatar through the vault opening, the door frame and both street entrances: you must not get stuck.
+
+## Step 6. Save the file
 
 1. Right-click the `Kit` folder and choose **Save to File...**.
-2. Choose the repo folder `assets/` and the name **`Kit.rbxm`**. It must be binary `.rbxm`, not `.rbxmx`.
-3. The file should be small, well under 1 MB. The meshes stay on Roblox; the file only has links to them.
-4. Tell Claude: "Kit.rbxm is saved." You can commit it, or let Claude do it.
+2. Choose the repo folder `assets/` and the name **`Kit.rbxm`**. Binary `.rbxm`, not `.rbxmx`.
+3. The file should be well under 1 MB: the meshes stay on Roblox, the file only links to them.
+4. Tell Claude: "Kit.rbxm is saved", plus the atlas ids from Step 3.
 
-## Step 6. What Claude does next (you do not need to do this)
+## Step 7. What Claude does next (you do not need to do this)
 
-1. Claude copies the node from `kit.project.snippet.json` into `default.project.json`:
-   ```json
-   "ServerStorage": { "Kit": { "$path": "assets/Kit.rbxm" } }
-   ```
-   It is not added before the file exists, because Rojo stops with an error when a `$path` is missing.
-2. Claude runs `rojo build -o build/EchoHeist.rbxlx` and then `lune run tests/kit_check.luau build/EchoHeist.rbxlx`. The check compares the built place with `kit_manifest.json`: names, sizes, Material, CanCollide, CastShadow, a mesh link on every part, and one shared atlas. It also proves that the mesh links survive the Content-property serialization change.
-   - Lune 0.11 cannot read `CollisionFidelity` from a file, so the check only warns about it. Your Step 4 check in Studio is the proof.
-3. Claude runs the Open Cloud smoke test (`tools/cloud_test.py`). In the real engine, the server clones a kit piece and checks its size and collision.
+1. Copies the node from `kit.project.snippet.json` into `default.project.json` (`"ServerStorage": { "Kit": { "$path": "assets/Kit.rbxm" } }`). Not before the file exists: Rojo stops when a `$path` is missing.
+2. Runs `rojo build -o build/EchoHeist.rbxlx` and `lune run tests/kit_check.luau build/EchoHeist.rbxlx`. The check compares the built place with `kit_manifest.json`: names, sizes, Material, CanCollide, CastShadow, a mesh link on every part, one shared atlas. Lune cannot read `CollisionFidelity`, so it only warns; your Step 5 check is the proof. `tests/kit_check.luau` finds pieces the way the prepare script does (a name map of the `MeshPart` descendants, plus a check that each sits in its manifest `model`), so the pieces that share their Model's name are found (fixed in the Nov 12 integration check; verified in Lune on a synthetic kit place).
+3. Runs the Open Cloud smoke test (`tools/cloud_test.py`): the server clones kit pieces and checks size and collision in the real engine.
+
+---
+
+## How the game uses the kit (for the level layout code)
+
+Everything below is also in `kit_manifest.json` per part: `tags`, `layer`, `sim`, `joint`, `origin` / `boundsMin` / `boundsMax` (Roblox axes, relative to the pivot), and extras (`opening`, `niche`, `open`, `grips`, `hooks`, `ornamentScale`, `hangPoint`, `tintable`). The manifest root also has `neon` (idle and runtime colours) and `ornamentDays`.
+
+**Place kit pieces only with `PivotTo` / `GetPivot`, never by setting `.CFrame` or `.Position`.** A MeshPart's `CFrame` is the centre of its bounding box; the imported pivot (the kit point: wall corner, hinge, joint, hang point) lives in `PivotOffset`. Setting `.CFrame` to a pivot position shifts the piece by its centre-to-pivot offset (for a wall, half a module). `Model:PivotTo(cf)` for a whole piece; `part:PivotTo(cf)` for one part (a leaf, a Gus limb).
+
+**Module space.** Each piece's pivot is its kit point. In Roblox axes a wall-line module spans **X from -W to 0** from its pivot (the pivot is the module's left end seen from the front; Blender's +X became Roblox -X), Y 0..12, Z 0..2 (front face on Z = 0, facing -Z). Everything below uses `CFrame.new(x, y, z) * CFrame.Angles(0, math.rad(yaw), 0)`.
+
+**Walls are centred on their grid line (STYLE_BIBLE §5.2).** The sim's walls are 1 thick on the line (line ± 0.5); a kit wall is 2 thick on the same line (line ± 1), so the kit covers every sim wall box with 0.5 to spare on both faces: an actor can never reach a sim wall (solid to physics wherever the sim is solid). This holds for shell walls, partitions, door frames, windows, both street fronts and the vault frame. For a run of length W from `a` to `b`:
+
+| Wall along | Front faces | Model pivot | yaw |
+|---|---|---|---|
+| X on line z = Z0 | -Z | (b, 0, Z0 - 1) | 0 |
+| X on line z = Z0 | +Z | (a, 0, Z0 + 1) | 180 |
+| Z on line x = X0 | -X | (X0 - 1, 0, a) | 90 |
+| Z on line x = X0 | +X | (X0 + 1, 0, b) | -90 |
+
+Plain walls are dressed on both faces, so their facing does not matter; it does for `Storefront_24x12`, `BankFront_24x12` (front = the **street**) and `VaultDoor` (front = the dial side). A **street front** with the street at +Z (Shop.shell, Bank.shell): pivot **(-12, 0, zLine + 1), yaw 180** spans x -12..12 with the entrance on -4..4; a `Wall_4x12` (shop) or `Wall_8x12` (bank) fills each side to the corners. A **Pillar_2x12** is centred on every outside corner (grid corner (gx, gz): pivot (gx + 1, 0, gz - 1)); it hides where the two walls meet. Floors: `Floor_8x8`'s pivot is its top front-left corner (walking surface at y = 0); tiles run under the walls.
+
+**LevelSpec boxes vs kit pieces.**
+
+<!-- fit-table:start -->
+Boxes and footprints are **X range, Z range in Roblox world studs** (Y is up; heights are left out). "Fit" lists, per side, how far the sim box reaches past the kit piece (+) or the kit past the box (-). Generated from `kit_manifest.json` and the level data by `tools/blender/kit_docs.py`.
+
+| Level item | Sim box | Kit piece and placement (Model pivot X, Y, Z; yaw) | Kit footprint | Fit (+ box past kit) | Verdict |
+|---|---|---|---|---|---|
+| Shell wall (L1 west, x = -16) | X -16.5..-15.5, Z -34..10 | `Wall_8x12` pivot (-17, 0, -8), yaw 90 | X -17..-15, Z -8..0 | -X -0.50, +X -0.50 | Kit covers the sim wall (the safe direction) |
+| Partition (L2, z = -20) | X -16.5..-3, Z -20.5..-19.5 | `Wall_8x12` pivot (-4, 0, -21), yaw 0 | X -12..-4, Z -21..-19 | -Z -0.50, +Z -0.50 | Kit covers the sim wall (the safe direction) |
+| Front wall beside the storefront (L1, z = 10) | X -16.5..-4, Z 9.5..10.5 | `Wall_4x12` pivot (-16, 0, 11), yaw 180 | X -16..-12, Z 9..11 | -Z -0.50, +Z -0.50 | Kit covers the sim wall (the safe direction) |
+| Door frame (L1 BackRoom door) | X -3..3, Z -20.5..-19.5 | `Wall_Door_8x12` pivot (4, 0, -21), yaw 0 | opening X -3..3 | - | Exact |
+| Door leaf (L1 BackRoom door) | X -3..3, Z -20.5..-19.5 | `Wall_Door_8x12_Leaf` pivot (4, 0, -21), yaw 0 | X -3..3, Z -20.67..-19.33 | -Z -0.17, +Z -0.17 | Kit covers the box; kit wider by -Z 0.17, +Z 0.17: solid to physics where the sim is open (safe) |
+| Storefront entrance (L5 Shutter) | X -4..4, Z 9.5..10.5 | `Storefront_24x12` pivot (-12, 0, 11), yaw 180 | opening X -4..4 | - | Exact |
+| Shutter (L5 Shutter, DV09 Shutter) | X -4..4, Z 9.5..10.5 | `Shutter_8x10` pivot (0, 10.35, 10), yaw 180 | X -4.05..4.05, Z 9.27..10.73 | -X -0.05, +X -0.05, -Z -0.23, +Z -0.23 | Kit covers the box; kit wider by -X 0.05, +X 0.05, -Z 0.23, +Z 0.23: solid to physics where the sim is open (safe) |
+| Bank front entrance (L6 FrontDoors) | X -4..4, Z 9.5..10.5 | `BankFront_24x12` pivot (-12, 0, 11), yaw 180 | opening X -4..4 | - | Exact |
+| Shutter (L6 FrontDoors) | X -4..4, Z 9.5..10.5 | `Shutter_8x10` pivot (0, 10.35, 10), yaw 180 | X -4.05..4.05, Z 9.27..10.73 | -X -0.05, +X -0.05, -Z -0.23, +Z -0.23 | Kit covers the box; kit wider by -X 0.05, +X 0.05, -Z 0.23, +Z 0.23: solid to physics where the sim is open (safe) |
+| Vault frame (L6 VaultDoor) | X -3..3, Z -48.5..-47.5 | `VaultDoor_Frame` pivot (-8, 0, -47), yaw 180 | opening X -2.7..2.7 | - | Kit opening narrower by 0.30 / 0.30 (solid to physics where the sim is open: the safe direction) |
+| Vault door OPEN (L6) | X -3..3, Z -48.5..-47.5 | `VaultDoor_Door` pivot (-8, 0, -47), yaw 180, open yaw -175 at the hinge | X -17.6..-5.3, Z -46.8..-42.25 | - | **CONFLICT: the open door rests on plate C (4.0 x 1.8), hide WestStack (6.0 x 2.8)** (CanCollide is off while open, but it covers them visually): content track, move them >= 3 studs north |
+| Plate (L1 A) | X 8..12, Z -10..-6 | `Plate_4x4` pivot (10, 0, -8), yaw 0 | X 8..12, Z -10..-6 | exact | Exact |
+| Laser post (L3 Grid, west end) | X -15.5..15.5, Z -34.5..-33.5 | `LaserEmitter` pivot (-15, 0, -34), yaw -90 | X -15..-13.85, Z -34.7..-33.3 | -X +0.50, -Z -0.20, +Z -0.20 | Post on the wall face, lens toward +X; beams by code from lens to lens. The box's last 0.5 is inside the wall |
+| Counter (L2-L4, west wall) | X -15.5..-11, Z -4..0 | `Counter_4x4` pivot (-11, 0, 0), yaw -90 | X -15.15..-10.85, Z -4.15..0.15 | -X +0.35, +X -0.15, -Z -0.15, +Z -0.15 | Kit covers the box (the box's -X end is inside the wall); kit wider by +X 0.15, -Z 0.15, +Z 0.15: solid to physics where the sim is open (safe) |
+| Counter (L1) | X -13..-7, Z -4..0 | `Counter_8x4` pivot (-14, 0, 0), yaw 180 | X -14.15..-5.85, Z -4.15..0.15 | -X -1.15, +X -1.15, -Z -0.15, +Z -0.15 | Kit covers the box; kit wider by -X 1.15, +X 1.15, -Z 0.15, +Z 0.15: solid to physics where the sim is open (safe). Content track: widen the L1 counter box to X -14..-6 to match the 8-wide module |
+| Counter + till (L5, west wall) | X -15.5..-10, Z -3..1 | `Counter_8x4` pivot (-15, 0, 1), yaw 180 | X -15.15..-6.85, Z -3.15..1.15 | -X +0.35, +X -3.15, -Z -0.15, +Z -0.15 | Kit covers the box (the box's -X end is inside the wall); kit wider by +X 3.15, -Z 0.15, +Z 0.15: solid to physics where the sim is open (safe). The till (Register loot at X -8.5, Z -1) sits on the counter's east end, outside the box: content track, widen the box to X -15.5..-7 (or move the till to X <= -10.5) |
+| Lobby counter run (L6, west half, 1 of 2 modules) | X -19.5..-3, Z -6..-4 | `Counter_8x2` pivot (-11, 0, -4), yaw 180 | X -11.15..-2.85, Z -6.15..-3.85 | -Z -0.15, +Z -0.15 | Kit covers the sim wall (the safe direction) |
+| Aisle shelf (L5 west row, 1 of 2 modules) | X -9..-7, Z -22..-6 | `Shelf_Gondola_8x2` pivot (-9, 0, -22), yaw 90 | X -9.08..-6.92, Z -22..-14 | -X -0.08, +X -0.08 | Kit covers the sim wall (the safe direction) |
+| Pillar (L6 StaffPillar) | X 2..4, Z -18..-16 | `Pillar_2x12` pivot (4, 0, -18), yaw 0 | X 1.85..4.15, Z -18.15..-15.85 | -X -0.15, +X -0.15, -Z -0.15, +Z -0.15 | Kit covers the box; kit wider by -X 0.15, +X 0.15, -Z 0.15, +Z 0.15: solid to physics where the sim is open (safe) |
+| Hide: L4 Crate | X 3.5..7.5, Z -35.5..-32.5 | `Hide_Crate` pivot (5.8, 0, -33.63), yaw 180 | X 3.28..7.72, Z -35..-32.26 | -X -0.22, +X -0.22, -Z +0.50, +Z -0.24 | Inside the box |
+| Hide: L4 CoatRack (plate B) | X -15..-9, Z -26..-20.5 | `Hide_CoatRack` pivot (-12, 0, -23), yaw 0 | X -15..-9, Z -25.4..-20.6 | -Z +0.60, +Z +0.10 | Plate B ring inside the open niche (visible) |
+| Hide: DV09 CoatRack (plate A) | X 7..13, Z -11..-5 | `Hide_CoatRack` pivot (10, 0, -8), yaw 0 | X 7..13, Z -10.4..-5.6 | -Z +0.60, +Z +0.60 | Plate A ring inside the open niche (visible) |
+| Hide: L6 Fern (plate B; DV10, DV12 same) | X -19.5..-13, Z -21..-14.5 | `Hide_Plant` pivot (-16, 0, -18), yaw 90 | X -18.98..-13.02, Z -21.15..-14.85 | -X +0.52, +X +0.02, -Z -0.15, +Z +0.35 | Plate B ring inside the open niche (visible) |
+| Hide: L6 WestStack (plate C) | X -16..-10, Z -45..-39 | `Hide_DepositStack` pivot (-13, 0, -42), yaw 180 | X -16.12..-9.88, Z -45.12..-38.77 | -X -0.12, +X -0.12, -Z -0.12, +Z -0.23 | Plate C ring inside the open niche (visible) |
+| Hide: L6 EastStack (plate D) | X 10..16, Z -45..-39 | `Hide_DepositStack` pivot (13, 0, -42), yaw 180 | X 9.88..16.12, Z -45.12..-38.77 | -X -0.12, +X -0.12, -Z -0.12, +Z -0.23 | Plate D ring inside the open niche (visible) |
+| Hide: L6 CoatStand | X 13.5..18.5, Z -19.5..-14.5 | `Hide_CoatStand` pivot (16, 0, -17), yaw 90 | X 13.93..18.6, Z -19.37..-14.63 | -X +0.43, +X -0.10, -Z +0.13, +Z +0.13 | Inside the box |
+| Hide: DV12 CoatStand | X 13..19.5, Z -21..-14.5 | `Hide_CoatStand` pivot (16.25, 0, -17.75), yaw 90 | X 14.18..18.85, Z -20.12..-15.38 | -X +1.18, +X +0.65, -Z +0.88, +Z +0.88 | Inside the box |
+| Hide: DV04 Tree (Christmas layer piece) | X -15.5..-10.5, Z -26.5..-21.5 | `Xmas_Tree` pivot (-13, 0, -24), yaw 0 | X -15.05..-10.95, Z -25.95..-22.05 | -X +0.45, +X +0.45, -Z +0.55, +Z +0.55 | A Christmas-layer piece: DV04 needs the dressing on while it is live |
+| Hide: L6 TellerDesk (plate A) | X -15..-9, Z -13..-7 | none | - | - | **No kit piece reads as cover here.** Plate A (X -14..-10, Z -12..-8) sits in the box, behind the 3.5-tall lobby counter: a 5.2 avatar shows above it. Suggest a `Hide_DepositStack` (open side to the counter) or a `Hide_CoatStand`: content-track call |
+<!-- fit-table:end -->
+
+Things the **content track** has to change in the level data (the kit cannot fix them): the L1 counter box (6 wide; the module is 8), the L5 till outside its counter box, the open vault door resting on L6's WestStack / plate C, and a cover piece for L6's TellerDesk hide.
+
+**Hides.** Every hide prop is walk-in (CanCollide off; the sim box decides). Hides with a plate under them keep a **4 x 4 open floor niche** at their centre (manifest `niche`): place the piece with its niche centre on the plate centre. `Hide_Plant` (two planters, fronds arching over the open ends: open toward the room), `Hide_CoatRack` (stand between the two rows of coats), `Hide_DepositStack` (a U of deposit-box towers, open on -Z), `Hide_CoatStand` (a ring of coats, open on -Z), `Hide_Crate` (back on the wall face), `Hide_Curtain` (on a wall face).
+
+**Loot kinds.** One mesh per LevelSpec `kind` (generated from the level data; the build fails if a kind has no mesh):
+
+<!-- loot-table:start -->
+| Loot kind | Kit mesh | Placed in | Shown as |
+|---|---|---|---|
+| Candy | `Candy` | 35 in 14 level(s) | carried; on window displays and shelf boards (dark tops only) |
+| Cash | `CashBag` | 10 in 6 level(s) | carried; a till (`top` Register) is `CashRegister` + `CashRegister_Drawer` |
+| Diamond | `Diamond` | no launch level yet | on `Pedestal_Diamond` (+ `_Case`); hovers 1.25 above the cushion |
+| Gold | `GoldBar` | 7 in 6 level(s) | carried; on display a `GoldStack` (L6 Gold: the stack on a dark pedestal or Counter_8x2 top) |
+| Present | `Present` | 17 in 12 level(s) | carried (daily vaults); heavy loot (`heavy`) is `GiantPresent` with 4 `grips` |
+| Teddy | `Teddy` | 6 in 1 level(s) | carried; on `Shelf_Gondola_8x2` boards (L5 back rows) |
+| Toy | `Toy` | 6 in 1 level(s) | carried; on `Shelf_Gondola_8x2` boards (L5) |
+<!-- loot-table:end -->
+
+**Doors.** `Wall_Door_8x12_Leaf` is a pocket door: it slides 6 studs along its local -X into the wall beside it (needs a solid wall ≥ 6 wide there). `Shutter_8x10` is the LOCKDOWN leaf of the 8 x 10 street entrances (L5 Shutter, L6 FrontDoors, DV09 Shutter): its pivot is its top centre, 0.35 inside the header, on the wall's centre plane (pivot (0, 10.35, zLine), yaw 180 for a +Z street). Rolled up = `Size.Y` 0.35 with the top pinned (hidden in the header) and CanCollide off; the drop tweens `Size.Y` to 10.35, re-pivoting each step (`part:PivotTo(top)`, the size changes about the centre). `Safe_Door` swings -100° about its hinge pivot.
+
+**Vault door.** `VaultDoor_Door` opens **outward** (toward the front, -Z) by **-175° about its hinge pivot** and comes to rest along the wall face on the viewer's left (+X): `door:PivotTo(hinge * CFrame.Angles(0, math.rad(-175), 0))`, and `VaultDoor_Dial`, `_DialFace`, `_DialRing` follow with the same hinge transform (`open.follow`). During the swing it sweeps a half disc of radius 11.4 in front of the wall around the hinge; at rest it covers module-local X -2.7..9.6, Z -4.75..-0.2 (`open.footprintMin/Max`). It is CanCollide **on only while shut** (the sim's 6 x 10 door box); from the first frame of opening until it is shut again it is visual only, so it never blocks anyone the sim lets through. Keep plates, hides and loot out of the resting footprint (the fit table checks L6).
+
+**Christmas layer.** Pieces with `layer = "xmas"`: `Xmas_*`, `Ornament_*`, `LaserEmitter_CandyCane` (swaps the post, keeps `LaserEmitter_Lens`) and `Gus_SantaHat` (weld at `HatAttach` on `Gus_Head`, hide `Gus_Cap`). The server clones them only while the dressing is on (server date, MASTERPLAN §4.3). Wall dressing (`Xmas_Garland_8`, `Xmas_Lights_8`, `Xmas_SnowCap_8`) uses the pivot of the wall module it dresses; snow caps go on exterior walls only. `Present` loot is not dressing: it is layer base (the daily vaults keep it after the season).
+
+**Advent ornaments.** Each advent day has its own look (`ornamentDays` in the manifest, from `eh_palette.ORNAMENT_DAYS`): `Ornament_Bauble`, `_Bell` and `_Star` are tintable (drawn on the tint cell: set `MeshPart.Color`), `_VaultDoor`, `_Donut` and `_Van` keep their colours (Color white). On the tree, ornaments hang at **0.65 size** (`ornamentScale`: `Size * 0.65`, then `PivotTo` the hook; their pivot is the hang point); on the shelf `Ornament_Stand`, full size. `Orn_Vault<NN>` looks like the advent ornament of the day design NN first played (Dec 2 + NN). Decorated tree: `docs/art/turntables/KitPreview_Tree.png`.
+
+<!-- ornament-table:start -->
+| Dec | Trophy id | Mesh | MeshPart.Color |
+|---|---|---|---|
+| 3 | `Orn_Advent2026_03` | `Ornament_VaultDoor` | `#FFFFFF` (fixed colours: keep white) |
+| 4 | `Orn_Advent2026_04` | `Ornament_Bauble` | `#8C2F4B` |
+| 5 | `Orn_Advent2026_05` | `Ornament_Star` | `#EDE2C8` |
+| 6 | `Orn_Advent2026_06` | `Ornament_Bell` | `#2FBF71` |
+| 7 | `Orn_Advent2026_07` | `Ornament_Bauble` | `#C0C3D5` |
+| 8 | `Orn_Advent2026_08` | `Ornament_Star` | `#2FBF71` |
+| 9 | `Orn_Advent2026_09` | `Ornament_Bell` | `#A8987A` |
+| 10 | `Orn_Advent2026_10` | `Ornament_Bauble` | `#1C7C48` |
+| 11 | `Orn_Advent2026_11` | `Ornament_Star` | `#8C2F4B` |
+| 12 | `Orn_Advent2026_12` | `Ornament_Bell` | `#EDE2C8` |
+| 13 | `Orn_Advent2026_13` | `Ornament_Donut` | `#FFFFFF` (fixed colours: keep white) |
+| 14 | `Orn_Advent2026_14` | `Ornament_Bauble` | `#7C86A6` |
+| 15 | `Orn_Advent2026_15` | `Ornament_Star` | `#C0C3D5` |
+| 16 | `Orn_Advent2026_16` | `Ornament_Bell` | `#7C86A6` |
+| 17 | `Orn_Advent2026_17` | `Ornament_Bauble` | `#A8987A` |
+| 18 | `Orn_Advent2026_18` | `Ornament_Star` | `#1C7C48` |
+| 19 | `Orn_Advent2026_19` | `Ornament_Bell` | `#C0C3D5` |
+| 20 | `Orn_Advent2026_20` | `Ornament_Bauble` | `#2FBF71` |
+| 21 | `Orn_Advent2026_21` | `Ornament_Star` | `#7C86A6` |
+| 22 | `Orn_Advent2026_22` | `Ornament_Bell` | `#8C2F4B` |
+| 23 | `Orn_Advent2026_23` | `Ornament_Bauble` | `#EDE2C8` |
+| 24 | `Orn_Advent2026_24` | `Ornament_Van` | `#FFFFFF` (fixed colours: keep white) |
+<!-- ornament-table:end -->
+
+**Gus.** 18 parts (15 R15 body parts + `Gus_Cap`, `Gus_Flashlight`, `Gus_FlashlightLens`). Each part's pivot is its joint with `joint.parent`. At rest every pivot is axis-aligned, so the rest offset is `C0 = CFrame.new(origin[child] - origin[parent])` (manifest `origin`, Roblox axes). The pose player sets **`part:PivotTo(parent:GetPivot() * C0 * pose)`**, parents before children. Never `part.CFrame = ...`: `Gus_Head`'s centre is 0.7 above its Neck pivot and `Gus_Flashlight`'s is about 0.6 in front of the grip, so a CFrame-based pose spins each limb about its centre and drifts it. With Motor6Ds instead: `Part0 = parent`, `Part1 = child`, `C0 = parent.PivotOffset * C0rest`, `C1 = child.PivotOffset`, and the pose goes in `Transform`. The Torch Amber cone starts at the lens (MASTERPLAN §6.5).
+
+**Hero SurfaceAppearance.** Only `VaultDoor_DialFace` (STYLE_BIBLE §4: ≤ 3 per level). Its `EmissiveTint` follows `VaultDoor_DialRing.Color` (Warm Marble shade idle, the opener's hue, Alarm Red).
+
+**Runtime colours.** Every Neon part's idle colour is in `eh_palette.NEON` (and the manifest's `neon`), audited against every clone colour (rule N1, Oklab ≥ 0.15), so a press always changes the colour: plate rings and switch lamps idle in dim Vault Steel shade `#4E5675`, the dial ring in Warm Marble shade `#A8987A`, lamps and fairy lights in Bulb Warm `#F6C0A2`. No loot on `TellerCounter_8x4`'s marble top (display rule).
 
 ## When the art changes later
 
-1. Claude rebuilds the art (`python3 tools/blender/build_asset.py --all`) and tells you which FBX files changed.
-2. Import only those files (Step 1), using the same settings.
-3. Replace the old Model in `Kit`, keeping the same names.
-4. Run Steps 3 to 5 again.
+1. Claude rebuilds the art (`python3 tools/blender/build_asset.py --all`, then `python3 tools/blender/kit_docs.py`) and tells you which FBX files changed. Unchanged assets keep their FBX, turntable and gate report byte for byte (a content hash in each gate report), so `git status` shows exactly what to re-import.
+2. Import only those files (Step 1), with the same settings, and replace the old Models in `Kit` (same names).
+3. Run Steps 4 to 6 again.
 
 Every upload makes new mesh ids. That is fine: the ids are inside `Kit.rbxm`.
 
@@ -181,14 +330,16 @@ Every upload makes new mesh ids. That is fine: the ids are inside `Kit.rbxm`.
 
 Use this if the meshes, sizes or collision do not survive `rojo build`. Then we do not use `Kit.rbxm`:
 
-1. Upload each mesh once. Either import it in Studio with Upload ON and copy each `MeshId`, or let Claude upload through Open Cloud. Open Cloud needs the **`asset:write`** scope on your API key (decision D5). The mesh ids must be owned by the **experience owner**.
-2. Claude puts the ids in a data table (`src/shared/Config.luau`, `Config.Kit`).
-3. At server boot, the server builds each piece **once** and caches it in `ServerStorage/Kit`:
+1. Upload each mesh once (Studio import with Upload ON, copy each `MeshId`; or Open Cloud with the **`asset:write`** scope, decision D5). The ids must be owned by the **experience owner**.
+2. Claude puts the ids in a data table (`Config.Kit`).
+3. At server boot the server builds each piece **once** and caches it in `ServerStorage/Kit`:
    ```lua
    local part = AssetService:CreateMeshPartAsync(Content.fromUri(meshId), {
    	CollisionFidelity = Enum.CollisionFidelity.Box, -- per the table above
    	RenderFidelity = Enum.RenderFidelity.Automatic,
    })
    ```
-   Then it sets Size, TextureID, Material and the other flags from the table. Each heist clones the cached parts.
-4. This costs about 22 ms plus 0.27 ms per 1,000 triangles per mesh [UNVERIFIED, from a DevForum report]. That is about 0.1 s for this kit, so it runs at boot only, never per heist.
+   Then it sets Size, TextureID, Material, PivotOffset and the other flags from the manifest. Each heist clones the cached parts.
+<!-- fallback-cost:start -->
+4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 92 MeshParts and 45,166 triangles about **2.0 s** at boot (generated by kit_docs.py). Boot only, never per heist.
+<!-- fallback-cost:end -->

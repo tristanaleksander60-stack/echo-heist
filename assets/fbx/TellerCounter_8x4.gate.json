@@ -73,7 +73,7 @@
    ],
    "joint": null,
    "role": "env",
-   "notes": "bank teller counter: marble top, steel screen posts; glass separate",
+   "notes": "bank teller counter: marble top (display rule: never loot on it), steel screen posts; glass separate",
    "fails": [],
    "passed": true
   },
@@ -163,6 +163,7 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "5e8fa14d8c9a3568426f",
  "fbx": {
   "path": "assets/fbx/TellerCounter_8x4.fbx",
   "bytes": 28860,
@@ -189,5 +190,5 @@
  "spec": "assets/blender/furniture.py",
  "notes": "Bank teller counter 8x4x8.25: counter to 4, marble top, screen with deal-tray gaps (glass part).",
  "turntable": "docs/art/turntables/TellerCounter_8x4.png",
- "seconds": 9.0
+ "seconds": 63.1
 }

@@ -135,6 +135,7 @@ def tube(mb, path, r, segs, col, cols=None, cap_col=None, part=None, normal=None
     from mathutils import Vector
     pts = [Vector(p) for p in path]
     rings = []
+    prev_u = None
     for i, p in enumerate(pts):
         if i == 0:
             t = (pts[1] - pts[0]).normalized()
@@ -144,9 +145,12 @@ def tube(mb, path, r, segs, col, cols=None, cap_col=None, part=None, normal=None
             t = ((pts[i + 1] - pts[i]).normalized() + (pts[i] - pts[i - 1]).normalized()).normalized()
         if normal is not None:
             ref = Vector(normal)
+        elif prev_u is not None:
+            ref = prev_u                      # parallel transport: no twist between rings
         else:
             ref = Vector((0, 0, 1)) if abs(t.z) < 0.9 else Vector((1, 0, 0))
         u = (ref - t * ref.dot(t)).normalized()
+        prev_u = u
         w = t.cross(u)
         rr = r[i] if isinstance(r, (list, tuple)) else r
         rings.append([mb.v(p + rr * (math.cos(2 * math.pi * j / segs) * u + math.sin(2 * math.pi * j / segs) * w))

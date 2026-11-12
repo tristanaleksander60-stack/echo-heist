@@ -12,13 +12,18 @@
 --   D  under the east deposit stack (hidden)   holds the loading-dock door (§3.6:
 --                                              "a clone on a plate holds the escape door")
 -- Gus paces the hall between the staff door and the lasers (cross while he faces
--- the east wall). Grabbing the Hoardsworth Gold trips the Alarm Run: Gus chases the
+-- the east wall). A marble pillar just inside the staff door (east side) blocks his
+-- view through the doorway when he turns west at the east end, so the natural spot
+-- to wait for the crossing, beside the staff door in the lobby, is safe: a kid who
+-- misses one window waits for the next (one every ~9 s). Grabbing the Hoardsworth Gold trips the Alarm Run: Gus chases the
 -- nearest robber he can see, LOCKDOWN shuts the front doors and the dock 10 s later
 -- (alarmLock), the van leaves after 20 s. The way out is the dock and the service
 -- alley; an extra clone running a different route is a decoy (over par: no Crew
 -- star, still a clear). Gus catching a live player also trips the alarm.
 -- Par 4, cap 8 (Big Scores grant 8), Dawn at run 8. Free loot in the lobby keeps
--- the naive-kid guarantee. Numbers match Config.Data.Levels.BigScoreBank (tests).
+-- the naive-kid guarantee. `haul` = all the loot, so banking the gold clears the
+-- heist at the end of that run, not at once: the coins beside it still count (a
+-- second trip under the Alarm Run, or a clone that carries them). Numbers match Config.Data.Levels.BigScoreBank (tests).
 -- Golden solution: PLACEHOLDER scripted runs in tests/sim/Solutions.luau (§8.9).
 
 local Bank = require("./Bank")
@@ -38,6 +43,20 @@ Bank.wallZGap(solids, -48, -20.5, 20.5, -3, 3) -- scale room | vault (vault door
 -- Teller counter across the lobby with a gate in the middle (low: Gus sees over it).
 table.insert(solids, { box = span(-19.5, 0, -6, -3, 3.5, -4), sight = false })
 table.insert(solids, { box = span(3, 0, -6, 19.5, 3.5, -4), sight = false })
+-- Marble pillar (kit Pillar_2x12) in the hall beside the staff door: hides the lobby
+-- side of the doorway from Gus at the hall's east end.
+table.insert(solids, { id = "StaffPillar", box = span(2, 0, -18, 4, 12, -16) })
+
+local loot = {
+	{ id = "Gold", x = 0, y = 3, z = -55, value = 2000, kind = "Gold", top = true },
+	{ id = "Coins", x = 13, y = 3, z = -55, value = 150, kind = "Gold" },
+	{ id = "Drawer", x = 12, y = 3, z = -9, value = 50, kind = "Cash" },
+	{ id = "CandyBowl", x = 8, y = 3, z = 4, value = 20, kind = "Candy" },
+}
+local allLoot = 0
+for _, item in loot do
+	allLoot += item.value
+end
 
 return {
 	format = 1,
@@ -51,6 +70,7 @@ return {
 	par = PAR,
 	cap = L.BIG_SCORE_CAP,
 	goal = 2000,
+	haul = allLoot,
 	deadline = "Alarm",
 	dawnRuns = LevelSpec.dawnRunsFor(PAR),
 	seed = 106,
@@ -111,12 +131,9 @@ return {
 		{ x = 0, z = 13 },
 	},
 	alarm = { trigger = "Gold", onCatch = true },
-	loot = {
-		{ id = "Gold", x = 0, y = 3, z = -55, value = 2000, kind = "Gold", top = true },
-		{ id = "Coins", x = 13, y = 3, z = -55, value = 150, kind = "Gold" },
-		{ id = "Drawer", x = 12, y = 3, z = -9, value = 50, kind = "Cash" },
-		{ id = "CandyBowl", x = 8, y = 3, z = 4, value = 20, kind = "Candy" },
-	},
+	loot = loot,
+	-- Crew Line-up on the street in front of the bank, facing a street camera.
+	lineup = { x = 0, z = 28, yaw = 180 },
 	hooks = {
 		reel = true, -- "first Heist Reel worth posting" (§4.2)
 		lockdown = { doors = { "FrontDoors", "LoadingDock" } },

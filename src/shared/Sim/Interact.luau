@@ -7,7 +7,9 @@
 --
 -- Kinds are Rec/Codec EVENT ids; args are 1-based LevelSpec indices.
 --   Grab (loot)    within INTERACT_RANGE of the item, item at home or dropped, and
---                  room to carry it (1 item; 1 + bag level in a `bags` level)
+--                  room to carry it (1 item; 1 + bag level in a `bags` level); a
+--                  time-locked item (`opensAt`, the Clone Party till) only from
+--                  that loop time on
 --   Release        drop everything you carry where you stand
 --   Press (switch) within range; toggles (or starts a timed switch)
 --   Hide (hide)    you are inside that hide box (hiding itself is positional)
@@ -40,6 +42,7 @@ Interact.FAIL = table.freeze({
 	Unsupported = 7,
 	NotInside = 8,
 	NotActive = 9, -- the actor is out of the run
+	Locked = 10, -- a time-locked item before its opensAt (the till's timer)
 })
 
 local FAIL = Interact.FAIL
@@ -68,6 +71,8 @@ function Interact.request(sim: any, actor: any, kind: number, arg: number): (boo
 			reason = FAIL.Unknown
 		elseif def.heavy then
 			reason = FAIL.Unsupported
+		elseif def.opensAt and t < def.opensAt - EPS then
+			reason = FAIL.Locked
 		elseif Loot.count(actor) >= (actor.capacity or 1) then
 			reason = FAIL.Busy
 		elseif not Loot.available(sim.loot, arg) then

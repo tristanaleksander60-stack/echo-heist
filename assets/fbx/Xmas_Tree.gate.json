@@ -1,0 +1,189 @@
+{
+ "asset": "Xmas_Tree",
+ "objects": [
+  {
+   "name": "Xmas_Tree",
+   "class": "small",
+   "tris": 312,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    4.1,
+    3.899,
+    6.0
+   ],
+   "pivot": {
+    "rule": "bottom",
+    "local_min": [
+     -2.05,
+     -1.9497,
+     0.0
+    ],
+    "local_max": [
+     2.05,
+     1.9497,
+     6.0
+    ]
+   },
+   "swatches": [
+    "holly",
+    "holly_lo",
+    "marble",
+    "marble_hi",
+    "ribbon",
+    "wood",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 88,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [
+    "EH_Xmas",
+    "EH_OrnamentTree"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "van / garage tree: 22 hooks for the advent ornaments (Dec 3-24); ornaments hang at 0.65 size here (Size * 0.65, then PivotTo the hook: full size they reach the floor and crowd the tiers)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Xmas_Tree_Lights",
+   "class": "small",
+   "tris": 400,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    4.119,
+    4.033,
+    5.64
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -2.0479,
+     -2.1153,
+     1.33
+    ],
+    "local_max": [
+     2.0711,
+     1.9172,
+     6.97
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 8,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Bulb Warm #F6C0A2 (eh_palette.NEON)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [],
+   "joint": null,
+   "role": "xmas",
+   "notes": "star + rim bulbs, Neon",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 712,
+ "seats": [
+  {
+   "name": "Xmas_Tree_Lights",
+   "gap": 0.0,
+   "penetration": 0.09941,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "fc0507ba901482e8713e",
+ "fbx": {
+  "path": "assets/fbx/Xmas_Tree.fbx",
+  "bytes": 35788,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Xmas_Tree",
+   "Xmas_Tree_Lights"
+  ],
+  "geometry_extents": [
+   [
+    3.899,
+    4.1,
+    6.0
+   ],
+   [
+    4.033,
+    4.119,
+    5.64
+   ]
+  ]
+ },
+ "spec": "assets/blender/xmas.py",
+ "notes": "Small Christmas tree (6.97 tall): three holly tiers, Ribbon pot; Neon star and bulbs; 22 ornament hooks.",
+ "turntable": "docs/art/turntables/Xmas_Tree.png",
+ "seconds": 55.0
+}

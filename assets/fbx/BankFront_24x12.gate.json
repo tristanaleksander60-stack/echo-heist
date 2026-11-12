@@ -1,0 +1,129 @@
+{
+ "asset": "BankFront_24x12",
+ "objects": [
+  {
+   "name": "BankFront_24x12",
+   "class": "medium",
+   "tris": 2244,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    24.0,
+    2.94,
+    13.9
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.0,
+     -0.64,
+     0.0
+    ],
+    "local_max": [
+     24.0,
+     2.3,
+     13.9
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "plum",
+    "plum_deep",
+    "plum_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 1847,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "PreciseConvexDecomposition",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Wall"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "bank street front; PreciseConvexDecomposition keeps the entrance walkable; name SurfaceGui on the -Z face of the board",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 2244,
+ "tile_x": {
+  "axis": "X",
+  "period": 24.0,
+  "with": "BankFront_24x12",
+  "other_axis": "X",
+  "mode": "equal",
+  "a_cells": 7224,
+  "b_cells": 7224,
+  "iou": 1.0,
+  "cover": 1.0,
+  "inside": true,
+  "ok": true
+ },
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "942b6e4ffe1676dfafde",
+ "fbx": {
+  "path": "assets/fbx/BankFront_24x12.fbx",
+  "bytes": 54604,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "BankFront_24x12"
+  ],
+  "geometry_extents": [
+   [
+    2.94,
+    13.9,
+    24.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/storefront.py",
+ "notes": "Bank front 24x12: 8x10 entrance, marble pilasters, barred windows, name board and a pediment; no awnings.",
+ "turntable": "docs/art/turntables/BankFront_24x12.png",
+ "seconds": 15.3
+}

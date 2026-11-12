@@ -26,7 +26,8 @@ return Vault.spec(8, "dv08_frosty_window", "Frosty Window", "CornerShop", 2, {
 		Vault.cookieTin(),
 	},
 	daily = {
-		modifiers = { "None", "LootB", "LootC", "LightsOff" },
-		alt = { Present = { B = { x = 10, z = -34 }, C = { x = -10, z = -34 } } },
+		modifiers = { "None", "LootB", "LootC" },
+		-- B behind the grid, C in the pantry: the snow globe costs a trip past a clone.
+		alt = { SnowGlobe = { B = { x = -12, z = -20 }, C = { x = 12, z = -35 } } },
 	},
 })

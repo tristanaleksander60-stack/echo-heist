@@ -29,7 +29,7 @@ return Vault.spec(5, "dv05_tinsel_corridor", "Tinsel Corridor", "CornerShop", 2,
 		Vault.cookieTin(),
 	},
 	daily = {
-		modifiers = { "None", "LootB", "LootC", "LightsOff" },
-		alt = { Present = { B = { x = 10, z = -37 }, C = { x = -10, z = -37 } } },
+		modifiers = { "None", "LootB", "LootC" },
+		alt = { Tinsel = { B = { x = -13, z = -21 }, C = { x = 10, z = -38 } } },
 	},
 })

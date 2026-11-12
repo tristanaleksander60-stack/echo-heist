@@ -50,6 +50,8 @@ return function(test)
 		end
 		Assert.eq(#seen, DATA.Daily.VAULT_COUNT, "every vault comes up")
 		Assert.eq(DailyVault.vaultFor(NOV20), DailyVault.vaultFor(NOV20 + DATA.Daily.VAULT_COUNT), "repeats")
+		Assert.eq(DailyVault.vaultFor(DEC(3)), 1, "launch day is vault 1 (slot n = daily design n)")
+		Assert.eq(DailyVault.vaultFor(DEC(14)), DATA.Daily.VAULT_COUNT, "Dec 14 is the last vault")
 		Assert.eq(DailyVault.adventDay(DEC(3)), 3, "Dec 3")
 		Assert.eq(DailyVault.adventDay(DEC(24)), 24, "Dec 24")
 		Assert.eq(DailyVault.adventDay(DEC(2)), nil, "before launch")

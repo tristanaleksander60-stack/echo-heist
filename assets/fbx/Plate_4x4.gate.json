@@ -123,7 +123,7 @@
    "uv_out_of_0_1": 0,
    "studio": {
     "Material": "Neon",
-    "Color": "Getaway White #F4F7FF idle; the presser's clone hue when held",
+    "Color": "Vault Steel shade #4E5675 idle (dim, never a clone colour); the presser's clone hue when held",
     "CollisionFidelity": "Box",
     "CanCollide": false,
     "CastShadow": false,
@@ -159,6 +159,7 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "fcfd7321e0126a56aaf1",
  "fbx": {
   "path": "assets/fbx/Plate_4x4.fbx",
   "bytes": 34540,
@@ -185,5 +186,5 @@
  "spec": "assets/blender/mechanisms.py",
  "notes": "Pressure plate 4x4x0.36: chamfered steel slab (walk-on), dark ring seat, glyph disc; Neon ring part.",
  "turntable": "docs/art/turntables/Plate_4x4.png",
- "seconds": 1.8
+ "seconds": 5.2
 }

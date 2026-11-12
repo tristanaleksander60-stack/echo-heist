@@ -1,0 +1,108 @@
+{
+ "asset": "Present",
+ "objects": [
+  {
+   "name": "Present",
+   "class": "small",
+   "tris": 388,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.101,
+    1.9,
+    2.021
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.0505,
+     -0.95,
+     0.0
+    ],
+    "local_max": [
+     1.0505,
+     0.95,
+     2.0211
+    ]
+   },
+   "swatches": [
+    "gold",
+    "gold_hi",
+    "gold_lo",
+    "holly",
+    "holly_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 172,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Loot"
+   ],
+   "joint": null,
+   "role": "present",
+   "notes": "carried Present loot (daily vaults); CanCollide off while carried",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 388,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "b8ec0e842d0df738c924",
+ "fbx": {
+  "path": "assets/fbx/Present.fbx",
+  "bytes": 27276,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Present"
+  ],
+  "geometry_extents": [
+   [
+    1.9,
+    2.021,
+    2.101
+   ]
+  ]
+ },
+ "spec": "assets/blender/loot.py",
+ "notes": "Loot: gift box 1.8 x 1.8 x 1.45 (bow to 2.1): holly paper, gold ribbon and a two-loop gold bow.",
+ "turntable": "docs/art/turntables/Present.png",
+ "seconds": 5.2
+}

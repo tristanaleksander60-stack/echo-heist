@@ -86,9 +86,10 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "bff8fa1953c510b81ca2",
  "fbx": {
   "path": "assets/fbx/Counter_4x4.fbx",
-  "bytes": 23132,
+  "bytes": 23148,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -104,7 +105,7 @@
   ]
  },
  "spec": "assets/blender/furniture.py",
- "notes": "Shop counter 4x4x3.5: raised front panels, dark display top, clerk-side recess and pulls.",
+ "notes": "Counter 4x4x3.5: raised panels, dark display top, clerk-side recess and pulls.",
  "turntable": "docs/art/turntables/Counter_4x4.png",
- "seconds": 3.3
+ "seconds": 13.1
 }

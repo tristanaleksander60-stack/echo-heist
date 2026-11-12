@@ -1,0 +1,108 @@
+{
+ "asset": "Hide_DepositStack",
+ "objects": [
+  {
+   "name": "Hide_DepositStack",
+   "class": "module",
+   "tris": 696,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    6.24,
+    6.355,
+    7.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.12,
+     -3.2346,
+     0.0
+    ],
+    "local_max": [
+     3.12,
+     3.12,
+     7.0
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 628,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Hide"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "origin = niche centre on the floor; walk-in: CanCollide off; open side faces -Z (Roblox)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 696,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "89df51fd872be1e00e6d",
+ "fbx": {
+  "path": "assets/fbx/Hide_DepositStack.fbx",
+  "bytes": 28972,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Hide_DepositStack"
+  ],
+  "geometry_extents": [
+   [
+    6.24,
+    6.355,
+    7.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/hides.py",
+ "notes": "Hide spot: a U of steel deposit-box towers (6 x 6 x 7), dark lined niche over the plate, three doors left open.",
+ "turntable": "docs/art/turntables/Hide_DepositStack.png",
+ "seconds": 24.0
+}

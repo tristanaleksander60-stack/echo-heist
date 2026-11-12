@@ -9,6 +9,9 @@
 -- stuck hint at 16 s (§7.5: re-pulse, beam, Mentor tape): run 1 it goes to stand
 -- on the plate, later runs it goes for the cash. Seeded, so every kid is
 -- reproducible.
+-- Value-seeking variant (opts.greedy): loot catches the eye in proportion to its value
+-- (the till over a candy bar), and with opts.topFirst the kid's first act of run 1 is
+-- to go for the top loot (the till / gold) and try to grab it.
 -- These are synthetic stand-ins; real "naive" recordings from kid wave 1 replace
 -- them (levels/<id>.naive/*.bin, §8.4).
 
@@ -34,10 +37,12 @@ local function lcg(seed: number): (number, number) -> number
 	end
 end
 
-local function interests(level: any): { any }
+local function interests(level: any, greedy: boolean): { any }
 	local out = {}
 	for _, d in level.loot do
-		table.insert(out, { x = d.x, z = d.z, w = 3, loot = d.id })
+		-- Greedy: a $15 candy bar weighs 1.5, the $300 till 30 (plates stay at 2).
+		local w = if greedy then math.max(1, d.value / 10) else 3
+		table.insert(out, { x = d.x, z = d.z, w = w, loot = d.id })
 	end
 	for _, p in level.plates do
 		local x, _, z = Geom.center(p.box)
@@ -50,10 +55,23 @@ local function interests(level: any): { any }
 	return out
 end
 
--- The brain for one run: returns a `decide` step.
-function NaiveKid.brain(level: any, seed: number, run: number): any
+-- The top loot (the alarm trigger, else the most valuable item).
+local function topLoot(level: any): any
+	local best = level.loot[1]
+	for _, d in level.loot do
+		if d.top or (not best.top and d.value > best.value) then
+			best = d
+		end
+	end
+	return best
+end
+
+-- The brain for one run: returns a `decide` step. opts = {greedy?, topFirst?}.
+function NaiveKid.brain(level: any, seed: number, run: number, opts: any?): any
+	local o = opts or {}
 	local rnd = lcg(seed * 7919 + run * 104729 + 17)
-	local spots = interests(level)
+	local spots = interests(level, o.greedy == true)
+	local first = o.topFirst == true and run == 1
 	local total = 0
 	for _, s in spots do
 		total += s.w
@@ -63,6 +81,11 @@ function NaiveKid.brain(level: any, seed: number, run: number): any
 	local decide
 	decide = function(bot: any, sim: any, _view: any, t: number): { any }
 		local a = HeistSim.liveActor(sim, bot.id)
+		if first then
+			first = false
+			local top = topLoot(level)
+			return { { go = { top.x, top.z }, timeout = 6, giveUp = 1 }, { grab = top.id }, { decide = decide } }
+		end
 		if a and a.carrying ~= 0 then
 			return { { goVan = true, timeout = 8 }, { wait = rnd(0.2, 1) }, { decide = decide } }
 		end
@@ -109,11 +132,11 @@ function NaiveKid.brain(level: any, seed: number, run: number): any
 	return { decide = decide }
 end
 
--- A Harness plan of `runs` naive runs for player 1.
-function NaiveKid.plan(level: any, seed: number, runs: number): any
+-- A Harness plan of `runs` naive runs for player 1 (opts: see NaiveKid.brain).
+function NaiveKid.plan(level: any, seed: number, runs: number, opts: any?): any
 	local plan = { runs = {} }
 	for r = 1, runs do
-		table.insert(plan.runs, { [1] = { NaiveKid.brain(level, seed, r) } })
+		table.insert(plan.runs, { [1] = { NaiveKid.brain(level, seed, r, opts) } })
 	end
 	return plan
 end

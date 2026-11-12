@@ -1,0 +1,108 @@
+{
+ "asset": "Xmas_SnowPile",
+ "objects": [
+  {
+   "name": "Xmas_SnowPile",
+   "class": "small",
+   "tris": 576,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    4.85,
+    3.105,
+    3.535
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -2.3861,
+     -1.291,
+     -0.3085
+    ],
+    "local_max": [
+     2.4638,
+     1.8138,
+     3.2265
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "snow",
+    "steel",
+    "steel_hi",
+    "wood"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 146,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [
+    "EH_Xmas"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "kerb / street dressing; walk-through (CanCollide off)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 576,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "ba817042f0e268173c39",
+ "fbx": {
+  "path": "assets/fbx/Xmas_SnowPile.fbx",
+  "bytes": 32636,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Xmas_SnowPile"
+  ],
+  "geometry_extents": [
+   [
+    3.105,
+    3.535,
+    4.85
+   ]
+  ]
+ },
+ "spec": "assets/blender/xmas.py",
+ "notes": "Snow drift (about 5.5 x 3.3 x 1): a long shovelled drift, a snow shovel stuck in it, a snowball stash; never a floor field.",
+ "turntable": "docs/art/turntables/Xmas_SnowPile.png",
+ "seconds": 46.4
+}

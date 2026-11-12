@@ -78,6 +78,9 @@ jobs:
       - name: Sim tests (L2, headless HeistSim)
         run: lune run tests/run_sim.luau
 
+      - name: Marketing shot lists still hold in the sim (docs/marketing/CLIPS.md)
+        run: lune run docs/marketing/clips_check.luau
+
       - name: Upload built place
         uses: actions/upload-artifact@v4
         with:

@@ -1,0 +1,110 @@
+{
+ "asset": "Counter_8x2",
+ "objects": [
+  {
+   "name": "Counter_8x2",
+   "class": "module",
+   "tris": 244,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.3,
+    2.3,
+    3.5
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.15,
+     -0.15,
+     0.0
+    ],
+    "local_max": [
+     8.15,
+     2.15,
+     3.5
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "wood",
+    "wood_hi",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 48,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Counter"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "front (-Y) = customer side; the dark top is a loot display",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 244,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "758f6b33b82ede4d7d19",
+ "fbx": {
+  "path": "assets/fbx/Counter_8x2.fbx",
+  "bytes": 23692,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Counter_8x2"
+  ],
+  "geometry_extents": [
+   [
+    2.3,
+    3.5,
+    8.3
+   ]
+  ]
+ },
+ "spec": "assets/blender/furniture.py",
+ "notes": "Counter 8x2x3.5: raised panels, dark display top (two-faced divider: L6 counters are 2 deep).",
+ "turntable": "docs/art/turntables/Counter_8x2.png",
+ "seconds": 29.3
+}

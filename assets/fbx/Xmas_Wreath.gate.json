@@ -1,0 +1,108 @@
+{
+ "asset": "Xmas_Wreath",
+ "objects": [
+  {
+   "name": "Xmas_Wreath",
+   "class": "small",
+   "tris": 548,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.826,
+    1.135,
+    3.56
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.4131,
+     -1.0952,
+     -1.8598
+    ],
+    "local_max": [
+     1.4131,
+     0.04,
+     1.7
+    ]
+   },
+   "swatches": [
+    "holly",
+    "holly_lo",
+    "ribbon",
+    "ribbon_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 265,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [
+    "EH_Xmas"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "origin = back centre on the wall / door face; front faces -Y",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 548,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "f90ef1e263f54a47de99",
+ "fbx": {
+  "path": "assets/fbx/Xmas_Wreath.fbx",
+  "bytes": 31692,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Xmas_Wreath"
+  ],
+  "geometry_extents": [
+   [
+    1.135,
+    2.826,
+    3.56
+   ]
+  ]
+ },
+ "spec": "assets/blender/xmas.py",
+ "notes": "Wreath 3.3 across: puffy holly ring, Ribbon berries, a big Ribbon bow at the bottom.",
+ "turntable": "docs/art/turntables/Xmas_Wreath.png",
+ "seconds": 26.8
+}

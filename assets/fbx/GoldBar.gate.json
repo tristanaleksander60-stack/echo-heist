@@ -33,6 +33,11 @@
     "gold_hi",
     "gold_lo"
    ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
    "symmetry_error": {
     "X": 0.0,
     "Y": 0.0
@@ -52,8 +57,15 @@
     "Color": "white (255,255,255)",
     "CollisionFidelity": "Box",
     "CanCollide": true,
-    "CastShadow": false
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
    },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "loot",
    "notes": "carried loot; CanCollide off while carried",
    "fails": [],
    "passed": true
@@ -70,9 +82,10 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "1233ddde01b13968ad16",
  "fbx": {
   "path": "assets/fbx/GoldBar.fbx",
-  "bytes": 20268,
+  "bytes": 20460,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -89,5 +102,6 @@
  },
  "spec": "assets/blender/gold_bar.py",
  "notes": "Loot: carried bar. Studio: SmoothPlastic, Color white, TextureID = kit atlas, Box, CastShadow off.",
- "seconds": 0.0
+ "turntable": "docs/art/turntables/GoldBar.png",
+ "seconds": 4.8
 }

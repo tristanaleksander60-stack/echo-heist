@@ -1,0 +1,117 @@
+{
+ "asset": "Xmas_SnowCap_8",
+ "objects": [
+  {
+   "name": "Xmas_SnowCap_8",
+   "class": "small",
+   "tris": 512,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.0,
+    2.5,
+    0.67
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.0,
+     -0.35,
+     11.85
+    ],
+    "local_max": [
+     8.0,
+     2.15,
+     12.52
+    ]
+   },
+   "swatches": [
+    "snow"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 109,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [
+    "EH_Xmas"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "wall-module coordinates; exterior shell walls only (the diorama's top edge)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 512,
+ "tile_x": {
+  "axis": "X",
+  "period": 8.0,
+  "with": "Xmas_SnowCap_8",
+  "other_axis": "X",
+  "mode": "equal",
+  "a_cells": 249,
+  "b_cells": 249,
+  "iou": 1.0,
+  "cover": 1.0,
+  "inside": true,
+  "ok": true
+ },
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "ee79102d7d07c133ac9c",
+ "fbx": {
+  "path": "assets/fbx/Xmas_SnowCap_8.fbx",
+  "bytes": 29180,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Xmas_SnowCap_8"
+  ],
+  "geometry_extents": [
+   [
+    0.67,
+    2.5,
+    8.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/xmas.py",
+ "notes": "Snow on an 8-stud wall top: lumpy slab, a drooping front lip, three drifts; flat ends so it tiles.",
+ "turntable": "docs/art/turntables/Xmas_SnowCap_8.png",
+ "seconds": 37.6
+}

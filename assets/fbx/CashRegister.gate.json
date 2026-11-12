@@ -1,0 +1,201 @@
+{
+ "asset": "CashRegister",
+ "objects": [
+  {
+   "name": "CashRegister",
+   "class": "small",
+   "tris": 1032,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    4.14,
+    3.2,
+    3.95
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.7,
+     -1.6,
+     0.0
+    ],
+    "local_max": [
+     2.44,
+     1.6,
+     3.95
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 432,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_LootDisplay"
+   ],
+   "joint": null,
+   "role": "hero",
+   "notes": "register body on a counter top (origin = bottom centre); drawer slides out along -Y when grabbed",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "CashRegister_Drawer",
+   "class": "small",
+   "tris": 488,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.97,
+    2.77,
+    0.67
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.4,
+     -0.12,
+     0.0
+    ],
+    "local_max": [
+     1.57,
+     2.65,
+     0.67
+    ]
+   },
+   "swatches": [
+    "gold",
+    "gold_hi",
+    "gold_lo",
+    "ink",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    -1.55,
+    0.15
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 198,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Loot"
+   ],
+   "joint": null,
+   "role": "loot",
+   "notes": "origin = drawer front-bottom centre; open = move 1.6 studs along -Z (Roblox)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 1520,
+ "asset_budget": {
+  "class": "hero",
+  "target": 10000,
+  "ceiling": 20000
+ },
+ "seats": [
+  {
+   "name": "CashRegister_Drawer",
+   "gap": 0.0,
+   "penetration": 0.3,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "be66bfe643fd4e8be326",
+ "fbx": {
+  "path": "assets/fbx/CashRegister.fbx",
+  "bytes": 47436,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "CashRegister",
+   "CashRegister_Drawer"
+  ],
+  "geometry_extents": [
+   [
+    0.67,
+    2.77,
+    2.97
+   ],
+   [
+    3.2,
+    3.95,
+    4.14
+   ]
+  ]
+ },
+ "spec": "assets/blender/hero_props.py",
+ "notes": "Hero prop: chrome retro register (3.4x3.2x3.95), 16 keys, crank, sale tab; drawer of gold bills as its own part.",
+ "turntable": "docs/art/turntables/CashRegister.png",
+ "seconds": 5.4
+}

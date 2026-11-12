@@ -1,0 +1,110 @@
+{
+ "asset": "Toy",
+ "objects": [
+  {
+   "name": "Toy",
+   "class": "small",
+   "tris": 580,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.586,
+    1.19,
+    2.8
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.7928,
+     -0.47,
+     0.0
+    ],
+    "local_max": [
+     0.7928,
+     0.72,
+     2.8
+    ]
+   },
+   "swatches": [
+    "gold",
+    "gold_hi",
+    "gold_lo",
+    "ice",
+    "ice_hi",
+    "ice_lo",
+    "ink"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 134,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Loot"
+   ],
+   "joint": null,
+   "role": "loot",
+   "notes": "carried Toy loot (L5 shelves); CanCollide off while carried",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 580,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "7eec3edc0fdbd70ae514",
+ "fbx": {
+  "path": "assets/fbx/Toy.fbx",
+  "bytes": 28860,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Toy"
+  ],
+  "geometry_extents": [
+   [
+    1.19,
+    1.586,
+    2.8
+   ]
+  ]
+ },
+ "spec": "assets/blender/loot.py",
+ "notes": "Loot: wind-up tin robot 1.6 x 1.1 x 2.8 in Diamond Ice: chest dial, gold lights, antenna, gold key.",
+ "turntable": "docs/art/turntables/Toy.png",
+ "seconds": 5.1
+}

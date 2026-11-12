@@ -11,28 +11,27 @@
    ],
    "budget_note": "ok",
    "dims": [
-    6.071,
-    7.188,
-    7.821
+    6.293,
+    5.969,
+    6.174
    ],
    "pivot": {
     "rule": "point",
     "local_min": [
-     -3.0105,
-     -3.6794,
+     -3.1466,
+     -2.9845,
      0.0
     ],
     "local_max": [
-     3.06,
-     3.5089,
-     7.8214
+     3.1466,
+     2.9845,
+     6.1736
     ]
    },
    "swatches": [
-    "ink",
+    "ink_hi",
     "leaf",
     "leaf_hi",
-    "leaf_lo",
     "marble",
     "marble_hi",
     "marble_lo"
@@ -42,9 +41,11 @@
     0.0,
     0.0
    ],
-   "symmetry_error": null,
+   "symmetry_error": {
+    "X": 0.0
+   },
    "self_intersections": 0,
-   "cross_shell_overlaps": 740,
+   "cross_shell_overlaps": 279,
    "cap_overlaps": 0,
    "flipped_faces": 0,
    "boundary_edges": 0,
@@ -69,7 +70,7 @@
    ],
    "joint": null,
    "role": "env",
-   "notes": "origin = pot centre on the floor; walk-in: CanCollide off; stand among the leaves",
+   "notes": "origin = niche centre on the floor (= the plate centre); walk-in: CanCollide off; the open ends face -Z and +Z (Roblox)",
    "fails": [],
    "passed": true
   }
@@ -85,9 +86,10 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "580fa5b0ab5b8062c8fd",
  "fbx": {
   "path": "assets/fbx/Hide_Plant.fbx",
-  "bytes": 36364,
+  "bytes": 34508,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -96,14 +98,14 @@
   ],
   "geometry_extents": [
    [
-    6.071,
-    7.188,
-    7.821
+    5.969,
+    6.174,
+    6.293
    ]
   ]
  },
  "spec": "assets/blender/hides.py",
- "notes": "Hide spot: big leafy potted plant (cream pot, 10 blade leaves in three greens), 7.8 tall.",
+ "notes": "Hide spot: two cream planter troughs flanking a 4.2-wide open floor niche (the plate shows), big fronds arching over it.",
  "turntable": "docs/art/turntables/Hide_Plant.png",
- "seconds": 3.2
+ "seconds": 15.2
 }

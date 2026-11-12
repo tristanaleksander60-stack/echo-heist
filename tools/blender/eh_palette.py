@@ -46,9 +46,11 @@ SWATCHES = [
     # --- launch kit additions (2026-11-12). Location cells (LOCATION_CELLS) change per atlas swap ---
     ("floor_a",   "#262942", "Floor A",           "env"),      # 23 floor checker, dark (a ground colour)
     ("floor_b",   "#36314D", "Floor B",           "env"),      # 24 floor checker, dark (a ground colour)
-    ("wood_lo",   "#41261C", "Wood shade",        "env"),      # 25 counter tops, shelf boards (loot displays)
-    ("wood",      "#59392E", "Wood",              "env"),      # 26 furniture bodies, crates, door leaves
-    ("wood_hi",   "#704F42", "Wood light",        "env"),      # 27 chamfers on wood
+    ("wood_lo",   "#633F32", "Wood shade",        "env"),      # 25 counter tops, shelf boards (loot displays)
+    ("wood",      "#7B5244", "Wood",              "env"),      # 26 furniture bodies, crates, door leaves
+    ("wood_hi",   "#956A5B", "Wood light",        "env"),      # 27 chamfers on wood
+    #    2026-11-12 pass 2: the first mahogany (#41261C / #59392E / #704F42) had the luma of the dark floors and
+    #    walls (counter tops vanished top-down, rule R1 below); one value step lighter, same hue
     # --- characters (Gus). Never location cells, so Gus looks the same in every location ---
     ("skin_lo",   "#A87158", "Gus skin shade",    "char"),     # 28 ears, chin underside, hands' sides
     ("skin",      "#D09673", "Gus skin",          "char"),     # 29 face, nose, hands
@@ -75,15 +77,18 @@ FIXED_ROLES = ("char",)
 # (MeshPart.TextureID per location). Each one passes the same audit as the base.
 LOCATIONS = {
     "Bank": {},
-    "CornerShop": {   # warm brick walls, pine furniture, a cool/warm dark checker floor [decision, owner review]
+    "CornerShop": {   # warm brick walls, light pine furniture, a cool/warm dark checker floor [decision, owner review]
         "plum_deep": "#44281F", "plum": "#573429", "plum_hi": "#704B3E",
         "floor_a": "#2D2C3A", "floor_b": "#4D372E",
-        "wood_lo": "#503721", "wood": "#6B4F34", "wood_hi": "#85684C",
+        # pass 2: the first pine (#503721 / #6B4F34) was the brick's and the warm tile's own colour (R1); light
+        # enough that counter tops also read against the cut-away brick wall tops (plum_hi) in the B3 planning view
+        "wood_lo": "#816243", "wood": "#9A7755", "wood_hi": "#B3916D",
     },
-    "ToyShop": {      # sage walls, light pine, green-grey floor (Drop 1, Dec 11) [decision, owner review]
-        "plum_deep": "#213625", "plum": "#284029", "plum_hi": "#465F4B",
-        "floor_a": "#1C332E", "floor_b": "#2E3D2B",
-        "wood_lo": "#5E492E", "wood": "#7C6445", "wood_hi": "#967F5E",
+    "ToyShop": {      # storybook-navy walls, slate / cocoa checker, light pine (Drop 1, Dec 11) [decision, owner review]
+        # pass 2: the first sage walls and green-grey floor hid every plant and curtain (R1: leaf on sage 0.01)
+        "plum_deep": "#143352", "plum": "#1F3F5F", "plum_hi": "#3D5E7F",
+        "floor_a": "#242B39", "floor_b": "#453127",
+        "wood_lo": "#7D6441", "wood": "#967952", "wood_hi": "#B0936B",
     },
 }
 
@@ -95,6 +100,48 @@ CLONES = [
     ("clone_p4", "#F4F7FF", "Ghost White (P4)",       "◆4"),
 ]
 ORPHAN = ("tape", "#8A8FA8", "Tape Grey (orphan clones)")
+
+# Runtime-tinted Neon parts: the idle colour the prepare script gives them and what code sets at runtime. Every
+# idle and fixed runtime colour is audited against every clone colour (rule N1: Oklab >= 0.15), so a clone press
+# always changes the colour and no glow in the set can be read as a clone. Every Neon part of the kit must be listed
+# here (kit_docs.py fails otherwise). (idle hex, runtime colours named in words, fixed runtime hexes to audit)
+WARM_BULB = "#F6C0A2"   # Bulb Warm: lamps, fairy lights, the tree star. The v1 #FFE7B8 was 0.087 from Ghost White (P4)
+NEON = {
+    "Plate_4x4_Ring":      ("#4E5675", "presser's clone hue while held", ()),   # idle = dim Vault Steel shade, no bloom
+    "Switch_Wall_Lamp":    ("#4E5675", "flipper's clone hue while on", ()),
+    "VaultDoor_DialRing":  ("#A8987A", "opener's clone hue while opening; Alarm Red on alarm", ("#FF3838",)),
+    "LaserEmitter_Lens":   ("#FF3838", "Alarm Red while armed; Vault Steel shade #4E5675 when off", ("#4E5675",)),
+    "Gus_FlashlightLens":  ("#4E5675", "Torch Amber #FFD27A while Gus patrols", ("#FFD27A",)),
+    "Lamp_Ceiling_Bulb":   (WARM_BULB, "fixed (PointLight in the same colour, Shadows off)", ()),
+    "Xmas_Lights_8_Bulbs": (WARM_BULB, "fixed", ()),
+    "Xmas_Tree_Lights":    (WARM_BULB, "fixed (bulbs and the star)", ()),
+}
+GLASS_TINT = "#A9B2CC"
+
+# Advent ornaments (Christmas layer trophies, Config.Data.Trophies Orn_Advent<year>_<day>): which mesh and which
+# MeshPart.Color each advent day gets. Ornament_Bauble / _Bell / _Star are drawn on the tint cell (one colour family,
+# the Color multiplies it); _VaultDoor / _Donut / _Van are fixed-colour (Color white). 22 days, 22 distinct looks.
+# Orn_Vault<NN> (one per daily-vault design) looks like the advent ornament of the day design NN first played
+# (Dec 2 + NN; designs 13-14 take days 15-16).
+ORNAMENT_TINTS = {"ribbon": "#8C2F4B", "marble_lo": "#A8987A", "holly": "#2FBF71", "holly_lo": "#1C7C48",
+                  "snow": "#C0C3D5", "marble_hi": "#EDE2C8", "steel": "#7C86A6"}
+ORNAMENT_DAYS = [  # (day of December, mesh, tint key or None for fixed-colour meshes)
+    (3, "Ornament_VaultDoor", None), (4, "Ornament_Bauble", "ribbon"), (5, "Ornament_Star", "marble_hi"),
+    (6, "Ornament_Bell", "holly"), (7, "Ornament_Bauble", "snow"), (8, "Ornament_Star", "holly"),
+    (9, "Ornament_Bell", "marble_lo"), (10, "Ornament_Bauble", "holly_lo"), (11, "Ornament_Star", "ribbon"),
+    (12, "Ornament_Bell", "marble_hi"), (13, "Ornament_Donut", None), (14, "Ornament_Bauble", "steel"),
+    (15, "Ornament_Star", "snow"), (16, "Ornament_Bell", "steel"), (17, "Ornament_Bauble", "marble_lo"),
+    (18, "Ornament_Star", "holly_lo"), (19, "Ornament_Bell", "snow"), (20, "Ornament_Bauble", "holly"),
+    (21, "Ornament_Star", "steel"), (22, "Ornament_Bell", "ribbon"), (23, "Ornament_Bauble", "marble_hi"),
+    (24, "Ornament_Van", None),
+]
+ORNAMENT_IDLE = {"Ornament_Bauble": "ribbon", "Ornament_Bell": "holly", "Ornament_Star": "marble_hi"}
+
+
+def ornament_days():
+    """[{day, mesh, color}] for the manifest (color = MeshPart.Color hex; white for fixed-colour meshes)."""
+    return [{"day": d, "mesh": m, "color": ORNAMENT_TINTS[t] if t else "#FFFFFF"} for d, m, t in ORNAMENT_DAYS]
+
 
 # Which asset roles may use which swatch roles.
 ROLE_RULES = {
@@ -199,6 +246,13 @@ RESERVED_REL_CHROMA = 0.40  # "saturation above 40 %": Oklch chroma relative to 
 MIN_DIST_SIGNAL = 0.15    # clone vs base colours, loot vs base
 MIN_DIST_DANGER = 0.20    # alarm red vs every clone hue (plus a shape)
 MIN_VALUE_STEP = 0.15     # greyscale: loot / danger / clones vs the ground
+# R1 readability (2026-11-12 pass 2): movement blockers and hides must read against the walls and floors around
+# them, from the side (B2) and from above (B3 planning view): Oklab >= 0.10 OR a luma step >= 0.08, per location.
+MIN_DIST_READ = 0.10
+MIN_STEP_READ = 0.08
+READ_CELLS = ("wood_lo", "wood", "leaf", "leaf_hi")   # counter tops / shelf boards, bodies, foliage and curtain faces
+SURROUND = ("plum_deep", "plum", "floor_a", "floor_b")   # wainscot, upper wall, both floor tiles
+SHADE_READ = ("leaf_lo", "wood_hi")                   # shade and chamfer cells: warnings only (small areas)
 
 
 def _audit_cols(cols, tag):
@@ -246,6 +300,22 @@ def _audit_cols(cols, tag):
         bad = [e for e, eh in env if ok_dist(cols[lk], eh) < MIN_DIST_SIGNAL or abs(luma(cols[lk]) - luma(eh)) < MIN_VALUE_STEP]
         if bad:
             lines.append(f"WARN [{tag}] display rule: never put {lk} loot on or against {', '.join(bad)} (Oklab < {MIN_DIST_SIGNAL} or value < {MIN_VALUE_STEP})")
+    def reads(a, b):
+        return ok_dist(cols[a], cols[b]) >= MIN_DIST_READ or abs(luma(cols[a]) - luma(cols[b])) >= MIN_STEP_READ
+    for k in READ_CELLS + SHADE_READ:                # R1: furniture and hides vs walls and floors
+        for g in SURROUND:
+            if not reads(k, g):
+                msg = (f"[{tag}] R1 {k} {cols[k]} vs {g} {cols[g]}: Oklab {ok_dist(cols[k], cols[g]):.3f}, "
+                       f"luma step {abs(luma(cols[k]) - luma(cols[g])):.3f} (need >= {MIN_DIST_READ} or >= {MIN_STEP_READ})")
+                if k in READ_CELLS:
+                    ok = False; lines.append("FAIL " + msg)
+                else:
+                    lines.append("WARN " + msg + " (shade cell)")
+    if not reads("wood_lo", "plum_hi"):              # B3: counter tops vs the cut-away wall tops
+        lines.append(f"WARN [{tag}] R1 wood_lo vs plum_hi (wall tops) {ok_dist(cols['wood_lo'], cols['plum_hi']):.3f} / "
+                     f"{abs(luma(cols['wood_lo']) - luma(cols['plum_hi'])):.3f}: counters and walls look alike from above")
+    if abs(luma(cols["wood"]) - luma(cols["wood_lo"])) < 0.05:   # a counter's top must read against its body
+        ok = False; lines.append(f"FAIL [{tag}] R1 wood vs wood_lo luma step {abs(luma(cols['wood']) - luma(cols['wood_lo'])):.3f} < 0.05")
     for g in ground:
         if luma(cols[g]) < luma(cols["ink"]) - 1e-6:
             ok = False; lines.append(f"FAIL [{tag}] {g} darker than Ink Indigo")
@@ -254,6 +324,32 @@ def _audit_cols(cols, tag):
             L, C, H = oklch(cols[k])
             if C > 0.093:
                 ok = False; lines.append(f"FAIL [{tag}] location cell {k} {cols[k]} chroma {C:.3f} > 0.093 (walls stay calm)")
+    return ok, lines
+
+
+def _audit_neon():
+    """N1: every Neon idle colour and fixed runtime colour vs every clone colour (Oklab >= MIN_DIST_SIGNAL), so a
+    clone press always shows on a plate ring, switch lamp or dial ring, and no lamp or fairy light reads as a clone.
+    O1: ornament tints follow the environment rules (reserved clone hues, Alarm Red is never decoration)."""
+    lines, ok = [], True
+    for part, (idle, _what, fixed) in NEON.items():
+        for h in (idle,) + tuple(fixed):
+            for ck, chex, cname, _g in CLONES:
+                d = ok_dist(h, chex)
+                if d < MIN_DIST_SIGNAL:
+                    ok = False; lines.append(f"FAIL [Neon] N1 {part} {h} vs {cname}: Oklab {d:.3f} < {MIN_DIST_SIGNAL}")
+    for t, h in ORNAMENT_TINTS.items():
+        L, C, H = oklch(h)
+        for ck, chex, cname, _g in CLONES:
+            l2, c2, h2 = oklch(chex)
+            dh = abs((H - h2 + 180) % 360 - 180)
+            if c2 >= 0.02 and dh <= RESERVED_HUE_DEG and C / c2 > RESERVED_REL_CHROMA:
+                ok = False; lines.append(f"FAIL [Ornament] O1 tint {t} {h} is {dh:.0f} deg from {cname}")
+        if ok_dist(h, HEX["alarm"]) < MIN_DIST_DANGER:
+            ok = False; lines.append(f"FAIL [Ornament] O1 tint {t} {h} too close to Alarm Red")
+    looks = [(m, t) for _d, m, t in ORNAMENT_DAYS]
+    if len(set(looks)) != len(looks):
+        ok = False; lines.append("FAIL [Ornament] two advent days share one (mesh, tint) look")
     return ok, lines
 
 
@@ -271,6 +367,9 @@ def audit(verbose=True):
         o, ls = _audit_cols(location_cols(loc), loc)
         ok &= o
         lines += ls
+    o, ls = _audit_neon()
+    ok &= o
+    lines += ls
     if verbose:
         lines.append("swatch       hex      L     C      h     value")
         for k, h, _n, r in SWATCHES:

@@ -1,0 +1,555 @@
+{
+ "asset": "Ornaments",
+ "objects": [
+  {
+   "name": "Ornament_Bauble",
+   "class": "small",
+   "tris": 288,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.96,
+    0.96,
+    1.355
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.48,
+     -0.48,
+     -1.32
+    ],
+    "local_max": [
+     0.48,
+     0.48,
+     0.035
+    ]
+   },
+   "swatches": [
+    "snow",
+    "steel_hi",
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 30,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "MeshPart.Color = the day's ornament colour (manifest ornamentDays)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [
+    "EH_Ornament"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "origin = hang point (top of the loop); tintable (atlas tint cell)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Ornament_Star",
+   "class": "small",
+   "tris": 164,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.046,
+    0.2,
+    1.19
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.5231,
+     -0.1,
+     -1.155
+    ],
+    "local_max": [
+     0.5231,
+     0.1,
+     0.035
+    ]
+   },
+   "swatches": [
+    "snow",
+    "steel_hi",
+    "white"
+   ],
+   "location": [
+    1.8,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "MeshPart.Color = the day's ornament colour (manifest ornamentDays)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [
+    "EH_Ornament"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "origin = hang point (top of the loop); tintable (atlas tint cell)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Ornament_Bell",
+   "class": "small",
+   "tris": 328,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.04,
+    1.04,
+    1.345
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.52,
+     -0.52,
+     -1.31
+    ],
+    "local_max": [
+     0.52,
+     0.52,
+     0.035
+    ]
+   },
+   "swatches": [
+    "snow",
+    "steel_hi",
+    "white"
+   ],
+   "location": [
+    3.6,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 48,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "MeshPart.Color = the day's ornament colour (manifest ornamentDays)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [
+    "EH_Ornament"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "origin = hang point (top of the loop); tintable (atlas tint cell)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Ornament_VaultDoor",
+   "class": "small",
+   "tris": 472,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.04,
+    0.33,
+    1.435
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.52,
+     -0.2,
+     -1.4
+    ],
+    "local_max": [
+     0.52,
+     0.13,
+     0.035
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "steel",
+    "steel_hi"
+   ],
+   "location": [
+    5.4,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 110,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [
+    "EH_Ornament"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "origin = hang point (top of the loop)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Ornament_Donut",
+   "class": "small",
+   "tris": 400,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.0,
+    0.38,
+    1.302
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.5,
+     -0.21,
+     -1.2675
+    ],
+    "local_max": [
+     0.5,
+     0.17,
+     0.035
+    ]
+   },
+   "swatches": [
+    "holly",
+    "marble_hi",
+    "ribbon",
+    "ribbon_hi",
+    "steel_hi",
+    "wood_hi"
+   ],
+   "location": [
+    7.2,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 54,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [
+    "EH_Ornament"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "origin = hang point (top of the loop)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Ornament_Van",
+   "class": "small",
+   "tris": 280,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.15,
+    0.54,
+    0.995
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.55,
+     -0.27,
+     -0.96
+    ],
+    "local_max": [
+     0.6,
+     0.27,
+     0.035
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "snow",
+    "steel_hi"
+   ],
+   "location": [
+    9.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 83,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [
+    "EH_Ornament"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "origin = hang point (top of the loop)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Ornament_Stand",
+   "class": "small",
+   "tris": 180,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.95,
+    0.9,
+    2.13
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.45,
+     -0.45,
+     0.0
+    ],
+    "local_max": [
+     0.5,
+     0.45,
+     2.13
+    ]
+   },
+   "swatches": [
+    "steel",
+    "steel_hi",
+    "wood",
+    "wood_lo"
+   ],
+   "location": [
+    10.8,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 80,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [
+    "EH_Ornament"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "shelf stand; an ornament's origin goes on the arm's hang point",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 2112,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "51bfdd9d15b3378d0255",
+ "fbx": {
+  "path": "assets/fbx/Ornaments.fbx",
+  "bytes": 75180,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Ornament_Bauble",
+   "Ornament_Bell",
+   "Ornament_Donut",
+   "Ornament_Stand",
+   "Ornament_Star",
+   "Ornament_Van",
+   "Ornament_VaultDoor"
+  ],
+  "geometry_extents": [
+   [
+    0.2,
+    1.046,
+    1.19
+   ],
+   [
+    0.33,
+    1.04,
+    1.435
+   ],
+   [
+    0.38,
+    1.0,
+    1.302
+   ],
+   [
+    0.54,
+    0.995,
+    1.15
+   ],
+   [
+    0.9,
+    0.95,
+    2.13
+   ],
+   [
+    0.96,
+    0.96,
+    1.355
+   ],
+   [
+    1.04,
+    1.04,
+    1.345
+   ]
+  ]
+ },
+ "spec": "assets/blender/ornaments.py",
+ "notes": "Advent ornaments: Bauble, Star, Bell, VaultDoor, Donut (Gus's), Van, plus a shelf stand. Origin = hang point.",
+ "turntable": "docs/art/turntables/Ornaments.png",
+ "seconds": 5.3
+}

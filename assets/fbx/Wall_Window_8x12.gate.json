@@ -169,9 +169,10 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "795d018b3d00e715e317",
  "fbx": {
   "path": "assets/fbx/Wall_Window_8x12.fbx",
-  "bytes": 34028,
+  "bytes": 34012,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -195,5 +196,5 @@
  "spec": "assets/blender/wall.py",
  "notes": "Window wall 8x12: 5x5 opening on the dado line, marble sill and casing, glass as its own part.",
  "turntable": "docs/art/turntables/Wall_Window_8x12.png",
- "seconds": 4.5
+ "seconds": 25.6
 }

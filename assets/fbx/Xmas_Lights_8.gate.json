@@ -1,0 +1,183 @@
+{
+ "asset": "Xmas_Lights_8",
+ "objects": [
+  {
+   "name": "Xmas_Lights_8",
+   "class": "small",
+   "tris": 286,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.24,
+    0.25,
+    0.857
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.12,
+     0.06,
+     10.1134
+    ],
+    "local_max": [
+     8.12,
+     0.31,
+     10.97
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 28,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [
+    "EH_Xmas"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "wire + clips; wall-module coordinates",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Xmas_Lights_8_Bulbs",
+   "class": "small",
+   "tris": 400,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    7.529,
+    0.285,
+    0.958
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.2355,
+     0.0375,
+     9.68
+    ],
+    "local_max": [
+     7.7645,
+     0.3225,
+     10.638
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 80,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Bulb Warm #F6C0A2 (eh_palette.NEON; a slow 2-step twinkle by brightness only)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [],
+   "joint": null,
+   "role": "xmas",
+   "notes": "10 Neon bulbs; never Alarm Red",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 686,
+ "seats": [
+  {
+   "name": "Xmas_Lights_8_Bulbs",
+   "gap": 0.0,
+   "penetration": 0.04512,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "1c005261a21806cfd572",
+ "fbx": {
+  "path": "assets/fbx/Xmas_Lights_8.fbx",
+  "bytes": 34268,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Xmas_Lights_8",
+   "Xmas_Lights_8_Bulbs"
+  ],
+  "geometry_extents": [
+   [
+    0.25,
+    0.857,
+    8.24
+   ],
+   [
+    0.285,
+    0.958,
+    7.529
+   ]
+  ]
+ },
+ "spec": "assets/blender/xmas.py",
+ "notes": "Fairy lights for an 8-stud wall: two swags of dark wire, 10 warm-white Neon bulbs (own part).",
+ "turntable": "docs/art/turntables/Xmas_Lights_8.png",
+ "seconds": 15.7
+}

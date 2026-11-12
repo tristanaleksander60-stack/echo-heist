@@ -1,0 +1,194 @@
+{
+ "asset": "Safe",
+ "objects": [
+  {
+   "name": "Safe",
+   "class": "small",
+   "tris": 452,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    3.2,
+    2.92,
+    3.95
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.6,
+     -1.42,
+     0.0
+    ],
+    "local_max": [
+     1.6,
+     1.5,
+     3.95
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 246,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Safe"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "floor safe body; loot sits inside on the dark shelf or floor",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Safe_Door",
+   "class": "small",
+   "tris": 548,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.71,
+    0.7,
+    2.94
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.14,
+     -0.7,
+     0.0
+    ],
+    "local_max": [
+     2.57,
+     0.0,
+     2.94
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "marble",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    -1.3,
+    -1.42,
+    0.68
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 134,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_SafeDoor"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "origin = hinge axis (left) at the door bottom; open = rotate about Roblox Y by -100 deg",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 1000,
+ "seats": [
+  {
+   "name": "Safe_Door",
+   "gap": 0.02121,
+   "penetration": 0.0,
+   "gap_frac": 0.00537,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "4e96eaf03bc9fa5976a4",
+ "fbx": {
+  "path": "assets/fbx/Safe.fbx",
+  "bytes": 38956,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Safe",
+   "Safe_Door"
+  ],
+  "geometry_extents": [
+   [
+    0.7,
+    2.71,
+    2.94
+   ],
+   [
+    2.92,
+    3.2,
+    3.95
+   ]
+  ]
+ },
+ "spec": "assets/blender/props.py",
+ "notes": "Floor safe 3.2x3x3.95: hollow steel body (dark interior, shelf), front lip, hinged door with dial and 3-spoke handle.",
+ "turntable": "docs/art/turntables/Safe.png",
+ "seconds": 5.7
+}

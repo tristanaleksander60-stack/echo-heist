@@ -1,0 +1,107 @@
+{
+ "asset": "Xmas_Garland_8",
+ "objects": [
+  {
+   "name": "Xmas_Garland_8",
+   "class": "module",
+   "tris": 736,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.825,
+    0.923,
+    1.738
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.9228,
+     -0.6532,
+     9.3617
+    ],
+    "local_max": [
+     7.902,
+     0.2695,
+     11.1
+    ]
+   },
+   "swatches": [
+    "holly",
+    "holly_lo",
+    "ribbon",
+    "ribbon_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 397,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [
+    "EH_Xmas"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "wall-module coordinates: same CFrame as the Wall_8x12 it dresses",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 736,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "5c766dac58b306517aa3",
+ "fbx": {
+  "path": "assets/fbx/Xmas_Garland_8.fbx",
+  "bytes": 34876,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Xmas_Garland_8"
+  ],
+  "geometry_extents": [
+   [
+    0.923,
+    1.738,
+    8.825
+   ]
+  ]
+ },
+ "spec": "assets/blender/xmas.py",
+ "notes": "Christmas garland for an 8-stud wall: two puffy swags under the crown, Ribbon bows at x 0 and 4.",
+ "turntable": "docs/art/turntables/Xmas_Garland_8.png",
+ "seconds": 5.6
+}

@@ -57,10 +57,14 @@ function DailyVault.currentStreak(lastDay: number, streak: number, today: number
 	return streak
 end
 
--- Vault design (1..count) for a day: a fixed rotation by UTC date.
+-- Vault design (1..count) for a day: a fixed rotation by UTC date, anchored so launch day
+-- (Config.Data.Event.FIRST, Dec 3) is vault 1. Then rotation slot n holds daily design n
+-- (Levels/DailyVaults) and Orn_VaultNN looks like design NN's advent ornament (docs/art/KIT_IMPORT.md).
+local ROTATION_ANCHOR = Calendar.dayOf(Config.Data.Event.FIRST)
+
 function DailyVault.vaultFor(day: number, count: number?): number
 	local n = count or Config.Data.Daily.VAULT_COUNT
-	return (day % n) + 1
+	return ((day - ROTATION_ANCHOR) % n) + 1
 end
 
 -- December day number if `day` is in the advent window, else nil.

@@ -34,7 +34,7 @@ def plate(k):
               cast_shadow=False, tags=["EH_Plate"], sim="plate: Shop.plate(x, z) 4 x 4 trigger; walkable 0.3 step",
               notes="steel plate; the centre disc carries the presser's glyph (Decal / SurfaceGui by code); sinks 0.1 when held"),
         k.Obj(rg, "small", role="env", symmetric="XY", pivot="point", collision="Box", material="Neon", can_collide=False,
-              cast_shadow=False, atlas=False, tint="Getaway White #F4F7FF idle; the presser's clone hue when held",
+              cast_shadow=False, atlas=False, tint="Vault Steel shade #4E5675 idle (dim, never a clone colour); the presser's clone hue when held",
               notes="Neon ring, TextureID cleared, Color by code"),
     ], seats=[("Plate_4x4_Ring", "Plate_4x4")],
         notes="Pressure plate 4x4x0.36: chamfered steel slab (walk-on), dark ring seat, glyph disc; Neon ring part.")
@@ -102,7 +102,7 @@ def emitter(k):
     ob = k.finalize(mb, pivot=(0, 0, 0))
     return k.Asset("LaserEmitter", [
         k.Obj(ob, "small", role="danger", symmetric="X", pivot="point", collision="Box", tags=["EH_Laser"],
-              sim="solid post 1.4 x 10.45 at the laser box's end; beams by code between facing lenses",
+              sim="solid post (footprint 1.4 x 1.15, 10.45 tall) at the laser box's end, back on the wall face; beams by code between facing lenses",
               notes="origin = floor level on the wall face (back of the post); lenses face -Y (across the room)"),
         k.Obj(lens_part(k), "small", role="danger", symmetric="X", pivot="point", collision="Box", material="Neon",
               can_collide=False, cast_shadow=False, atlas=False, free_shells=True,

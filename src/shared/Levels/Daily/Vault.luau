@@ -5,10 +5,20 @@
 -- today" board, and two free sweets by the door (the naive-kid guarantee: nobody
 -- leaves empty-handed). Geometry reuses the Corner Shop and Bank kits.
 --
--- A vault spec carries a `daily` table (read by Levels/DailyVaults, ignored by the
--- sim): order = its place in the advent sequence (1 = the launch-day vault),
--- modifiers = the vetted date-seeded modifiers CI proves it solvable with,
--- alt = {[lootId] = {B = {x, z}, C = {x, z}}} for the "loot position" modifiers.
+-- Haul: a vault's `haul` is all its loot (goal + bonus + sweets), so banking the
+-- goal item does NOT end the heist at once: the heist clears at the end of the run
+-- that met the goal (END RUN, the timer or a catch), or the moment everything is
+-- banked. A kid who grabs the goal first can still bank the bonus in that run; the
+-- board ranks the haul (then fewer clones, then the time in result().daily.timeMs).
+--
+-- A vault spec carries a `daily` table (read by Levels/DailyVaults and the HUD,
+-- ignored by the sim): order = its place in the advent sequence (1 = the launch-day
+-- vault), modifiers = the vetted date-seeded modifiers CI proves it solvable with,
+-- alt = {[lootId] = {B = {x, z}, C = {x, z}}} for the "loot position" modifiers
+-- (bonus loot only: the goal item never moves, so one human-recorded solution.bin
+-- and the Ghost Hint stay valid on every modified day), and, filled in here:
+-- goalItems / bonus = loot ids of the goal and of the bonus (the HUD's "+ $40 bonus"),
+-- bonusValue = the bonus's $.
 
 local Config = require("../../Config")
 local LevelSpec = require("../../Sim/LevelSpec")
@@ -42,6 +52,22 @@ function Vault.spec(order: number, id: string, name: string, location: string, p
 	end
 	s.daily = s.daily or {}
 	s.daily.order = order
+	-- Goal item(s) = loot worth the goal on its own; bonus = everything else but the sweets.
+	local total = 0
+	local goalItems, bonus, bonusValue = {}, {}, 0
+	for _, item in s.loot do
+		total += item.value
+		if s.goal and item.value >= s.goal then
+			table.insert(goalItems, item.id)
+		elseif item.id ~= "CandyJar" and item.id ~= "Gingerbread" then
+			table.insert(bonus, item.id)
+			bonusValue += item.value
+		end
+	end
+	s.haul = s.haul or total
+	s.daily.goalItems = goalItems
+	s.daily.bonus = bonus
+	s.daily.bonusValue = bonusValue
 	return s
 end
 

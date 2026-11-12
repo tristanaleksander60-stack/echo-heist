@@ -1,11 +1,13 @@
-"""Kit furniture (launch kit modules): Floor_8x8, Counter_4x4, Counter_8x4, Shelf_8x2, Lamp_Ceiling (+ bulb),
-TellerCounter_8x4 (+ glass). Shared by Corner Shop, Toy Shop and Bank through the atlas swap (wood_* and floor_*
+"""Kit furniture (launch kit modules): Floor_8x8, Counter_4x4, Counter_8x4, Counter_8x2, Shelf_8x2, Shelf_Gondola_8x2,
+Lamp_Ceiling (+ bulb), TellerCounter_8x4 (+ glass). Shared by Corner Shop, Toy Shop and Bank through the atlas swap (wood_* and floor_*
 are location cells: pine in the shop, mahogany in the bank).
 
 Build: python3 tools/blender/build_asset.py assets/blender/furniture.py
 Rules: 4-stud grid footprints, origin = the footprint's front-bottom-left grid corner (the floor's origin is its
 TOP front-left corner, so a floor tile placed at y = 0 has its walking surface on y = 0). Every surface loot may
-sit on is dark (STYLE_BIBLE 1.3 display rule): counter tops and shelf boards are wood_lo, never marble.
+sit on is dark (STYLE_BIBLE 1.3 display rule): counter tops and shelf boards are wood_lo, never marble. The one
+marble top is TellerCounter_8x4's: NO LOOT on it (gold on Warm Marble is 0.02 luma apart); bank cash sits in a
+CashRegister_Drawer or on a Counter_8x2's dark top.
 LevelSpec: counters are `solids` with sight = false (3.5 tall, Gus sees over them: Shop.luau uses 3.5).
 """
 import math, random
@@ -29,9 +31,9 @@ def floor(k):
 
 # ---------------------------------------------------------------- counters
 
-def counter(k, W):
-    name = f"Counter_{int(W)}x4"
-    D, Hc = 4.0, 3.5
+def counter(k, W, D=4.0):
+    name = f"Counter_{int(W)}x{int(D)}"
+    Hc = 3.5
     mb = k.MB(name)
     mb.box((0.25, 0.3, 0.0), (W - 0.25, D - 0.3, 0.45), "ink", chamfer=0.07, cham_col="ink_hi", flat=("-z", "+z"), part="Kick")
     mb.box((0.0, 0.15, 0.45), (W, D - 0.15, 3.2), "wood", chamfer=0.12, cham_col="wood_hi", flat=("+z",), part="Body")
@@ -39,6 +41,10 @@ def counter(k, W):
         cx = 4 * i + 2
         mb.box((cx - 1.45, 0.02, 0.85), (cx + 1.45, 0.2, 2.8), "wood", chamfer=0.07, cham_col="wood_hi", flat=("+y",),
                part=f"Panel_{i}")
+        if D < 3:   # a 2-deep counter is a bank divider: panels on both faces, no clerk recess
+            mb.box((cx - 1.45, D - 0.2, 0.85), (cx + 1.45, D - 0.02, 2.8), "wood", chamfer=0.07, cham_col="wood_hi", flat=("-y",),
+                   part=f"PanelB_{i}")
+            continue
         # clerk side: a dark open-shelf read (inset) and a drawer pull per cell
         mb.box((cx - 1.6, D - 0.2, 1.0), (cx + 1.6, D - 0.05, 2.6), "ink_hi", chamfer=0.05, cham_col="ink_hi", flat=("-y",),
                part=f"Recess_{i}")
@@ -48,7 +54,8 @@ def counter(k, W):
     return k.Asset(name, [k.Obj(ob, "module", role="env", symmetric="X", pivot="point", expect_dims=(W + 0.3, D + 0.3, Hc),
                                 collision="Box", tags=["EH_Counter"], sim="solid, sight = false (Gus sees over), 3.5 tall",
                                 notes="front (-Y) = customer side; the dark top is a loot display")],
-                   notes=f"Shop counter {int(W)}x4x3.5: raised front panels, dark display top, clerk-side recess and pulls.")
+                   notes=f"Counter {int(W)}x{int(D)}x3.5: raised panels, dark display top" + (", clerk-side recess and pulls." if D > 3 else
+                                                                                             " (two-faced divider: L6 counters are 2 deep)."))
 
 
 # ---------------------------------------------------------------- shelf
@@ -91,6 +98,41 @@ def shelf(k):
                    notes="Wall shelving 8x2x7.85: steel sides, dark boards with marble price strips, fixed-seed products.")
 
 
+def gondola(k):
+    """Double-sided aisle unit (Clone Party's three 2 x 16 shelf rows: two modules end to end per row). Both faces
+    carry boards, price strips and products; a dark divider down the middle. End faces flat (tiles along X)."""
+    W, D, Hs = 8.0, 2.0, 7.6
+    mb = k.MB("Shelf_Gondola_8x2")
+    for x0 in (0.0, W - 0.3):
+        mb.box((x0, 0.0, 0.0), (x0 + 0.3, D, Hs), "steel_lo", chamfer=0.07, cham_col="steel", flat=("-z", "-x" if x0 == 0 else "+x"),
+               part="Side")
+    mb.box((0.3, D / 2 - 0.1, 0.0), (W - 0.3, D / 2 + 0.1, Hs - 0.1), "ink_hi", part="Divider")
+    mb.box((0.3, 0.05, 0.0), (W - 0.3, D - 0.05, 0.3), "ink", part="Kick")
+    mb.box((0.0, -0.05, Hs - 0.05), (W, D + 0.05, Hs + 0.25), "steel_lo", chamfer=0.07, cham_col="steel", flat=("-x", "+x"), part="Cap")
+    rnd = random.Random(16)   # fixed seed: the same unit every build
+    for zi, zt in enumerate(SHELF_Z):
+        mb.box((0.3, 0.0, zt - 0.15), (W - 0.3, D, zt), "wood_lo", part=f"Board_{zi}")
+        for side in (-1, 1):
+            y0 = -0.08 if side < 0 else D - 0.02
+            mb.box((0.3, y0, zt - 0.32), (W - 0.3, y0 + 0.1, zt + 0.06), "marble", part=f"Strip_{zi}{side}")
+            x = 0.5
+            while x < W - 1.0:
+                w = rnd.choice((0.7, 0.9, 1.1))
+                if x + w > W - 0.5:
+                    break
+                h = rnd.choice((0.9, 1.1, 1.3)) if zi < 3 else rnd.choice((0.8, 1.0))
+                col = rnd.choice(PRODUCT_COLS)
+                d = rnd.choice((0.55, 0.7))
+                ya, yb = (0.12, 0.12 + d) if side < 0 else (D - 0.12 - d, D - 0.12)
+                mb.box((x, ya, zt), (x + w, yb, zt + h), col, part=f"Box_{zi}_{side}_{x:.1f}")
+                x += w + rnd.choice((0.15, 0.6))
+    ob = k.finalize(mb, pivot=(0, 0, 0))
+    return k.Asset("Shelf_Gondola_8x2", [k.Obj(ob, "module", role="env", pivot="point", collision="Box", tags=["EH_Shelf"],
+                                               sim="solid, blocks sight: L5 shelf rows (footprint 2 x 16, 7 tall) = two modules end to end along their X",
+                                               notes="double-sided aisle unit; both faces carry dark display boards")],
+                   tile_x=W, notes="Aisle gondola 8 x 2 x 7.85: shelves on both faces, dark divider, fixed-seed products; tiles end to end.")
+
+
 # ---------------------------------------------------------------- lamp
 
 def lamp(k):
@@ -111,7 +153,7 @@ def lamp(k):
         k.Obj(ob, "small", role="env", symmetric="XY", pivot="point", collision="Box", can_collide=False, cast_shadow=False,
               tags=["EH_Lamp"], sim="none", notes="origin = top centre at the ceiling plane (y 12); hangs to y 8.62"),
         k.Obj(bb, "tiny", role="env", symmetric="XY", pivot="point", collision="Box", material="Neon", can_collide=False,
-              cast_shadow=False, atlas=False, tint="Lamp warm #FFE2B8 (code); PointLight here, Shadows off",
+              cast_shadow=False, atlas=False, tint="Bulb Warm #F6C0A2 (eh_palette.NEON); PointLight here, same colour, Shadows off",
               notes="Neon bulb; the light pool is a floor decal or disc (STYLE_BIBLE 3), not more lights"),
     ], seats=[("Lamp_Ceiling_Bulb", "Lamp_Ceiling")],
         notes="Pendant lamp: canopy on the cut-away ceiling plane, cord, enamel shade (light inside), Neon bulb part.")
@@ -140,8 +182,8 @@ def teller(k):
     gl = k.finalize(mg, pivot=(0, 0, 0))
     return k.Asset("TellerCounter_8x4", [
         k.Obj(ob, "module", role="env", symmetric="X", pivot="point", collision="Box", tags=["EH_Counter"],
-              sim="solid to 4 tall, sight = false (glass screen: Gus sees through)",
-              notes="bank teller counter: marble top, steel screen posts; glass separate"),
+              sim="solid to 4 tall, sight = false (glass screen: Gus sees through); NO LOOT on the marble top",
+              notes="bank teller counter: marble top (display rule: never loot on it), steel screen posts; glass separate"),
         k.Obj(gl, "small", role="env", symmetric="X", pivot="point", collision="Box", material="Glass", can_collide=False,
               cast_shadow=False, atlas=False, transparency=0.6, tint="Vault Steel light #A9B2CC", free_shells=True,
               notes="Glass, Transparency 0.6, TextureID cleared"),
@@ -150,4 +192,4 @@ def teller(k):
 
 
 def build(k):
-    return [floor(k), counter(k, 4.0), counter(k, 8.0), shelf(k), lamp(k), teller(k)]
+    return [floor(k), counter(k, 4.0), counter(k, 8.0), counter(k, 8.0, 2.0), shelf(k), gondola(k), lamp(k), teller(k)]

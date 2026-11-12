@@ -3,6 +3,7 @@
 -- does exactly what its live run did; randomness only comes from the injected seed.
 
 local Assert = require("../unit/Assert")
+local Config = require("../../src/shared/Config")
 local EventLog = require("../../src/shared/Sim/EventLog")
 local HeistSim = require("../../src/shared/Sim/HeistSim")
 local LevelSpec = require("../../src/shared/Sim/LevelSpec")
@@ -26,12 +27,26 @@ local function idle(n: number, redoSlot: number?): { any }
 	return runs
 end
 
+-- Hash of a run's log without its heist-wide counters (Bank's running total, Tier):
+-- a party banks every loop, so only those numbers may differ between idle loops.
+local function worldHash(log: any): number
+	local out = EventLog.new()
+	for i = 2, log.n do
+		local kind = log.kind[i]
+		if kind ~= EV.Tier then
+			local c = if kind == EV.Bank then 0 else log.c[i]
+			EventLog.append(out, log.tick[i], kind, log.a[i], log.b[i], c)
+		end
+	end
+	return EventLog.hash(out)
+end
+
 return function(test)
-	for n = 1, 4 do
+	for n = 1, 6 do
 		local level = Harness.level(n)
 		test(level.id .. ": same inputs twice -> identical event-log hashes", function()
-			local simA, runsA = Harness.play(level, Solutions[level.id])
-			local simB, runsB = Harness.play(level, Solutions[level.id])
+			local simA, runsA = Harness.play(level, Solutions.planFor(level))
+			local simB, runsB = Harness.play(level, Solutions.planFor(level))
 			Assert.eq(#runsA, #runsB, "run count")
 			for i = 1, #runsA do
 				Assert.eq(runsA[i].hash, runsB[i].hash, "run " .. i)
@@ -68,6 +83,59 @@ return function(test)
 			end
 			Assert.truthy(out[3].log.n > 3, "something happened in those loops")
 		end
+	end)
+
+	test("Clone Party: idle loops with farming clones and the till's Alarm Run are identical", function()
+		local level = Harness.level(5)
+		local farm = {}
+		Solutions.partyTrip(level, "Shelf1W3", farm)
+		Solutions.partyTrip(level, "Shelf1W2", farm)
+		table.insert(farm, { endRun = true })
+		-- Run 2 robs the till as it opens: the alarm (and Gus's chase) replays every loop.
+		local till = {
+			{ go = { 0, 9 } },
+			{ go = { -7, 0 } },
+			{ goLoot = "Register" },
+			{ waitUntil = Config.Levels.PARTY_TILL_OPENS_SECONDS },
+			{ grab = "Register" },
+			{ go = { 0, 9 } },
+			{ go = { 0, 17 } },
+			{ endRun = true },
+		}
+		local runs = { { [1] = farm }, { [1] = till } }
+		for _, r in idle(3, 3) do
+			table.insert(runs, r)
+		end
+		local _, out = Harness.play(level, { runs = runs })
+		Assert.eq(#out, 5, "five runs")
+		local h3 = worldHash(out[3].log)
+		for i = 4, 5 do
+			Assert.eq(worldHash(out[i].log), h3, "idle run " .. i)
+			Assert.truthy(out[i].banked > out[i - 1].banked, "and the haul keeps growing")
+		end
+		Assert.eq(EventLog.count(out[3].log, EV.AlarmOn), 1, "the till clone trips the alarm")
+		Assert.truthy(EventLog.count(out[3].log, EV.Chase) >= 1, "Gus chases")
+		Assert.eq(
+			EventLog.count(out[3].log, EV.Caught) + EventLog.count(out[3].log, EV.Busted),
+			1,
+			"and catches somebody, every loop the same"
+		)
+	end)
+
+	test("Big Score: idle loops with four plate clones and Gus are identical", function()
+		local level = Harness.level(6)
+		local sol = Solutions.planFor(level)
+		local runs = { sol.runs[1], sol.runs[2], sol.runs[3], sol.runs[4] }
+		for _, r in idle(3, 5) do
+			table.insert(runs, r)
+		end
+		local _, out = Harness.play(level, { runs = runs })
+		Assert.eq(#out, 7, "seven runs")
+		local h5 = EventLog.hash(out[5].log, 2)
+		for i = 6, 7 do
+			Assert.eq(EventLog.hash(out[i].log, 2), h5, "idle run " .. i)
+		end
+		Assert.eq(EventLog.count(out[5].log, EV.DoorOpen, 2), 1, "the scale vault opens on its own")
 	end)
 
 	test("a clone does exactly what its live run did (same ticks, same outcomes)", function()

@@ -1,0 +1,126 @@
+{
+ "asset": "Shelf_Gondola_8x2",
+ "objects": [
+  {
+   "name": "Shelf_Gondola_8x2",
+   "class": "module",
+   "tris": 744,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.0,
+    2.16,
+    7.85
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.0,
+     -0.08,
+     0.0
+    ],
+    "local_max": [
+     8.0,
+     2.08,
+     7.85
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "plum_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo",
+    "wood_hi",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 312,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Shelf"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "double-sided aisle unit; both faces carry dark display boards",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 744,
+ "tile_x": {
+  "axis": "X",
+  "period": 8.0,
+  "with": "Shelf_Gondola_8x2",
+  "other_axis": "X",
+  "mode": "equal",
+  "a_cells": 6288,
+  "b_cells": 6288,
+  "iou": 1.0,
+  "cover": 1.0,
+  "inside": true,
+  "ok": true
+ },
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "de667e9c889ae666f3ef",
+ "fbx": {
+  "path": "assets/fbx/Shelf_Gondola_8x2.fbx",
+  "bytes": 28588,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Shelf_Gondola_8x2"
+  ],
+  "geometry_extents": [
+   [
+    2.16,
+    7.85,
+    8.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/furniture.py",
+ "notes": "Aisle gondola 8 x 2 x 7.85: shelves on both faces, dark divider, fixed-seed products; tiles end to end.",
+ "turntable": "docs/art/turntables/Shelf_Gondola_8x2.png",
+ "seconds": 46.3
+}

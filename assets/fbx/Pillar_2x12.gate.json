@@ -87,9 +87,10 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "7c9a4373eeafc921af5b",
  "fbx": {
   "path": "assets/fbx/Pillar_2x12.fbx",
-  "bytes": 25196,
+  "bytes": 25212,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -107,5 +108,5 @@
  "spec": "assets/blender/wall.py",
  "notes": "Pillar 2x2x12: fills the outside corner where two shell walls meet; continues baseboard, dado and crown lines.",
  "turntable": "docs/art/turntables/Pillar_2x12.png",
- "seconds": 7.3
+ "seconds": 42.9
 }

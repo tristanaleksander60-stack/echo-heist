@@ -1,0 +1,476 @@
+{
+ "asset": "VaultDoor",
+ "objects": [
+  {
+   "name": "VaultDoor_Frame",
+   "class": "medium",
+   "tris": 2452,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    16.0,
+    3.7,
+    12.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.0,
+     -0.85,
+     0.0
+    ],
+    "local_max": [
+     16.0,
+     2.85,
+     12.0
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "plum_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 1201,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "PreciseConvexDecomposition",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Wall"
+   ],
+   "joint": null,
+   "role": "hero",
+   "notes": "origin = wall grid corner; needs the round opening in its collision (or invisible Box colliders)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "VaultDoor_Door",
+   "class": "medium",
+   "tris": 3832,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    11.96,
+    3.46,
+    8.65
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.66,
+     -0.66,
+     -0.0
+    ],
+    "local_max": [
+     11.3,
+     2.8,
+     8.65
+    ]
+   },
+   "swatches": [
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    1.75,
+    -0.95,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 853,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Hull",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Door"
+   ],
+   "joint": null,
+   "role": "hero",
+   "notes": "origin = hinge axis at floor level; open = PivotTo(hinge * CFrame.Angles(0, rad(-175), 0)), outward (back shows the bolt mechanism); the dial parts follow with the same hinge transform",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "VaultDoor_Dial",
+   "class": "small",
+   "tris": 1104,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    4.55,
+    0.924,
+    4.55
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -2.2749,
+     -0.8,
+     -2.2749
+    ],
+    "local_max": [
+     2.2749,
+     0.1243,
+     2.2749
+    ]
+   },
+   "swatches": [
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    8.0,
+    -0.67,
+    3.6
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Z": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 357,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "hero",
+   "notes": "origin = wheel axis; spin about the door normal",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "VaultDoor_DialFace",
+   "class": "small",
+   "tris": 384,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.16,
+    0.06,
+    2.16
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.08,
+     -0.46,
+     -1.08
+    ],
+    "local_max": [
+     1.08,
+     -0.4,
+     1.08
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    8.0,
+    -0.67,
+    3.6
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Z": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "SurfaceAppearance: ColorMap + RoughnessMap + EmissiveMaskContent; EmissiveTint = the ring colour (code)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": "VaultDoor_DialFace"
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "hero",
+   "notes": "hero SurfaceAppearance (1 of <= 3 per level); spins with the wheel; numbers + ticks glow",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "VaultDoor_DialRing",
+   "class": "small",
+   "tris": 384,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    3.5,
+    0.24,
+    3.5
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.75,
+     -0.2,
+     -1.75
+    ],
+    "local_max": [
+     1.75,
+     0.04,
+     1.75
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_hi"
+   ],
+   "location": [
+    8.0,
+    -0.67,
+    3.6
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Z": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Warm Marble shade #A8987A idle; opener's clone hue; Alarm Red (eh_palette.NEON)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "hero",
+   "notes": "Neon, TextureID cleared, Color driven by code",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 8156,
+ "asset_budget": {
+  "class": "hero",
+  "target": 10000,
+  "ceiling": 20000
+ },
+ "seats": [
+  {
+   "name": "VaultDoor_Door",
+   "gap": 0.0,
+   "penetration": 3.73449,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "VaultDoor_Dial",
+   "gap": 0.0,
+   "penetration": 0.27434,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "VaultDoor_DialFace",
+   "gap": 0.0,
+   "penetration": 0.02,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "VaultDoor_DialRing",
+   "gap": 0.0,
+   "penetration": 0.04,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [
+  {
+   "name": "VaultDoor_Dial",
+   "offset": {
+    "X": 0.0,
+    "Z": 0.0
+   },
+   "max": 0.0
+  },
+  {
+   "name": "VaultDoor_DialFace",
+   "offset": {
+    "X": 0.0,
+    "Z": 0.0
+   },
+   "max": 0.0
+  },
+  {
+   "name": "VaultDoor_DialRing",
+   "offset": {
+    "X": 0.0,
+    "Z": 0.0
+   },
+   "max": 0.0
+  },
+  {
+   "name": "VaultDoor_Frame:Bezel",
+   "offset": {
+    "X": 0.0
+   },
+   "max": 0.0
+  }
+ ],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "3b7fd1b2389883f13a18",
+ "fbx": {
+  "path": "assets/fbx/VaultDoor.fbx",
+  "bytes": 225292,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "VaultDoor_Dial",
+   "VaultDoor_DialFace",
+   "VaultDoor_DialRing",
+   "VaultDoor_Door",
+   "VaultDoor_Frame"
+  ],
+  "geometry_extents": [
+   [
+    0.06,
+    2.16,
+    2.16
+   ],
+   [
+    0.24,
+    3.5,
+    3.5
+   ],
+   [
+    0.924,
+    4.55,
+    4.55
+   ],
+   [
+    3.46,
+    8.65,
+    11.96
+   ],
+   [
+    3.7,
+    12.0,
+    16.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/vault_door.py",
+ "notes": "Golden pass: stepped bezel, rivets, keystone + plaque, 24-bolt door face, bolt mechanism on the back, emissive combination face.",
+ "turntable": "docs/art/turntables/VaultDoor.png",
+ "seconds": 6.7
+}

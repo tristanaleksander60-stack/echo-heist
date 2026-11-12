@@ -1,0 +1,106 @@
+{
+ "asset": "CashBag",
+ "objects": [
+  {
+   "name": "CashBag",
+   "class": "small",
+   "tris": 600,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.9,
+    1.97,
+    2.02
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.95,
+     -1.02,
+     0.0
+    ],
+    "local_max": [
+     0.95,
+     0.95,
+     2.02
+    ]
+   },
+   "swatches": [
+    "gold",
+    "gold_hi",
+    "gold_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 252,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Loot"
+   ],
+   "joint": null,
+   "role": "loot",
+   "notes": "carried Cash loot; CanCollide off while carried",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 600,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "348e24896ab7b7532fc7",
+ "fbx": {
+  "path": "assets/fbx/CashBag.fbx",
+  "bytes": 32156,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "CashBag"
+  ],
+  "geometry_extents": [
+   [
+    1.9,
+    1.97,
+    2.02
+   ]
+  ]
+ },
+ "spec": "assets/blender/props.py",
+ "notes": "Loot: cash sack (1.9 x 2.02), cinched neck and a raised $ badge; Heist Gold only.",
+ "turntable": "docs/art/turntables/CashBag.png",
+ "seconds": 14.3
+}

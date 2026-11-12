@@ -1,0 +1,113 @@
+{
+ "asset": "GiantPresent",
+ "objects": [
+  {
+   "name": "GiantPresent",
+   "class": "hero",
+   "tris": 1380,
+   "budget": [
+    10000,
+    20000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    7.2,
+    7.2,
+    6.794
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.6,
+     -3.6,
+     0.0
+    ],
+    "local_max": [
+     3.6,
+     3.6,
+     6.7944
+    ]
+   },
+   "swatches": [
+    "gold",
+    "gold_hi",
+    "gold_lo",
+    "holly",
+    "holly_lo",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 729,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_HeavyLoot"
+   ],
+   "joint": null,
+   "role": "present",
+   "notes": "2 grips required, 4 max (Config); origin = bottom centre",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 1380,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "068f7db396912a879656",
+ "fbx": {
+  "path": "assets/fbx/GiantPresent.fbx",
+  "bytes": 48716,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "GiantPresent"
+  ],
+  "geometry_extents": [
+   [
+    6.794,
+    7.2,
+    7.2
+   ]
+  ]
+ },
+ "spec": "assets/blender/hero_props.py",
+ "notes": "Hero loot: Giant Present 6x6x5 (bow to 6.8): holly paper, gold ribbon + bow, tag, 4 grip straps.",
+ "turntable": "docs/art/turntables/GiantPresent.png",
+ "seconds": 22.6
+}

@@ -25,7 +25,7 @@ return Vault.spec(2, "dv02_twin_chimneys", "Twin Chimneys", "CornerShop", 2, {
 		Vault.cookieTin(),
 	},
 	daily = {
-		modifiers = { "None", "LootB", "LootC", "LightsOff" },
-		alt = { Present = { B = { x = -10, z = -28 }, C = { x = 4, z = -31 } } },
+		modifiers = { "None", "LootB", "LootC" },
+		alt = { Tinsel = { B = { x = -12, z = -28 }, C = { x = 8, z = -32 } } },
 	},
 })

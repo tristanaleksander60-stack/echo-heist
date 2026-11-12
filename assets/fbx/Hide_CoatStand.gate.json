@@ -1,0 +1,114 @@
+{
+ "asset": "Hide_CoatStand",
+ "objects": [
+  {
+   "name": "Hide_CoatStand",
+   "class": "small",
+   "tris": 572,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    4.747,
+    4.67,
+    7.13
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -2.3736,
+     -2.07,
+     0.0
+    ],
+    "local_max": [
+     2.3736,
+     2.6,
+     7.13
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_lo",
+    "steel",
+    "steel_hi",
+    "steel_lo",
+    "wood",
+    "wood_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 190,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Hide"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "origin = ring centre on the floor; walk-in: CanCollide off; stand inside the ring of coats",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 572,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "8caae87faa10afd0dd16",
+ "fbx": {
+  "path": "assets/fbx/Hide_CoatStand.fbx",
+  "bytes": 30828,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Hide_CoatStand"
+  ],
+  "geometry_extents": [
+   [
+    4.67,
+    4.747,
+    7.13
+   ]
+  ]
+ },
+ "spec": "assets/blender/hides.py",
+ "notes": "Hide spot: round coat stand (4.7 across), five coats on a ring rail on three legs, open at the front.",
+ "turntable": "docs/art/turntables/Hide_CoatStand.png",
+ "seconds": 22.3
+}

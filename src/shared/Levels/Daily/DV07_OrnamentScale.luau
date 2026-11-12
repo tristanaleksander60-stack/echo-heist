@@ -26,7 +26,7 @@ return Vault.spec(7, "dv07_ornament_scale", "Ornament Scale", "Bank", 3, {
 		Vault.cookieTin(),
 	},
 	daily = {
-		modifiers = { "None", "LootB", "LootC", "LightsOff" },
-		alt = { Gift = { B = { x = -10, z = -40 }, C = { x = 6, z = -36 } } },
+		modifiers = { "None", "LootB", "LootC" },
+		alt = { Coins = { B = { x = -12, z = -40 }, C = { x = 10, z = -44 } } },
 	},
 })

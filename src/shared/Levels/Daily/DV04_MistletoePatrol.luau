@@ -33,7 +33,7 @@ return Vault.spec(4, "dv04_mistletoe_patrol", "Mistletoe Patrol", "CornerShop", 
 		Vault.cookieTin(),
 	},
 	daily = {
-		modifiers = { "None", "GuardFast", "GuardSlow", "LightsOff", "LootB" },
-		alt = { Present = { B = { x = 4, z = -35 } } },
+		modifiers = { "None", "GuardFast", "GuardSlow", "LightsOff", "LootB", "LootC" },
+		alt = { Ribbon = { B = { x = 12, z = -35 }, C = { x = -6, z = -35 } } },
 	},
 })

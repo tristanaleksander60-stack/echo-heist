@@ -7,10 +7,11 @@ Kit rules (STYLE_BIBLE 5.1): footprint W x 2 x 12 studs, W a multiple of 4. Orig
 front-bottom-left (x = 0, y = 0, z = 0); the module fills [0, W] x [0, 2] x [0, 12]; front faces -Y; both faces
 are dressed. End faces at x = 0 and x = W are flat and identical, so modules tile (tile check).
 
-Placement (STYLE_BIBLE 5.2): shell walls put their front face on the room's grid line and grow outward; the
-2 x 2 Pillar fills the outside corner. Partitions are centred on a grid line (y = 1 on the line) and butt into
-the shell walls. Doorways: Wall_Door_8x12 has a 6 x 10 opening (x 1-7), the LevelSpec door box of
-Shop.doorAt(z, -3, 3) when the module spans x -4..4. Its leaf is a pocket door: it slides 6 studs along -X into
+Placement (STYLE_BIBLE 5.2, pass 2): EVERY wall module, shell or partition, is centred on its grid line (y = 1 on
+the line), so the 2-thick kit wall covers the 1-thick LevelSpec wall box (line +- 0.5) on both faces; modules run
+grid point to grid point and a 2 x 2 Pillar centred on each outside corner hides the joint. In Roblox axes a module
+spans X [-W, 0] from its pivot (KIT_IMPORT pivot formulas). Doorways: Wall_Door_8x12 has a 6 x 10 opening (Blender
+x 1-7, Roblox local X -7..-1), the LevelSpec door box of Shop.doorAt(z, -3, 3) when the module spans x -4..4. Its leaf is a pocket door: it slides 6 studs along -X into
 the wall beside it (the leaf is 0.5 thick, inside the 1.4 core), so an open door never blocks the room.
 """
 import _kitlib as L
@@ -67,7 +68,7 @@ def window(k):
     gl = k.finalize(mg, pivot=(0, 0, 0))
     return k.Asset("Wall_Window_8x12", [
         k.Obj(ob, "module", role="env", symmetric="XY", pivot="point", expect_dims=(W, D + 0.5, H),
-              collision="Box", tags=["EH_Wall"], sim="solid; Gus sees through the glass band z 4.85-9.85",
+              collision="Box", tags=["EH_Wall"], sim="solid; Gus sees through the glass band Y 4.85-9.85",
               notes="window wall: blocks movement; glass is see-through for Gus (LevelSpec: no occluder there)"),
         k.Obj(gl, "small", role="env", symmetric="XY", pivot="point", collision="Box", material="Glass",
               can_collide=False, cast_shadow=False, atlas=False, transparency=0.6,
@@ -124,7 +125,7 @@ def door(k):
     return k.Asset("Wall_Door_8x12", [
         k.Obj(ob, "module", role="env", symmetric="XY", pivot="point", expect_dims=(W, D + 0.06, H),
               collision="PreciseConvexDecomposition", tags=["EH_Wall"],
-              sim="solid except the opening x 1-7, z 0-10 (6 x 10)",
+              sim="solid except the opening local X -7..-1, Y 0-10 (6 x 10)", extra={"opening": {"x": [-7.0, -1.0], "y": [0.0, 10.0]}},
               notes="door frame; PreciseConvexDecomposition so the 6 x 10 opening stays walkable"),
         k.Obj(lf, "small", role="env", symmetric="Y", pivot="point", collision="Box",
               tags=["EH_Door"], sim="door: solid when shut (LevelSpec door box)",

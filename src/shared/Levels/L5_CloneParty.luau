@@ -6,17 +6,22 @@
 -- The repeatable loop: "how much can 8 of you steal before Dawn?" No doors, no
 -- plates, no par: three aisles of toy shelves whose loot comes back
 -- PARTY_RESPAWN_SECONDS after it is banked, so every clone keeps stealing. Gus dozes
--- in the back office facing the wall. The till by the counter is the top loot:
--- grabbing it trips the Alarm Run (Gus chases the nearest robber he can see, the
--- shop shutter drops 10 s later, the van leaves after 20 s), and the clone that
--- robbed it trips it again at the same second every later run, so the best
--- plan robs it late. Bag levels count here (`bags`). Haul tiers = the 3 Stars;
--- they match Config.Data.Levels.CloneParty.haulTiers (asserted in tests).
+-- in the back office facing the wall. The till by the counter is the top loot, and
+-- it is TIME-LOCKED: it only opens at 0:20 of every run (PARTY_TILL_OPENS_SECONDS;
+-- the view shows its countdown, an early grab is refused as Locked). Robbing it
+-- trips the Alarm Run (Gus chases the nearest robber he can see, the shop shutter
+-- drops PARTY_SHUTTER_SECONDS later, the van timer outlasts the 30 s run), so the
+-- till is always the last act of a run: the getaway beat. The clone that robbed it
+-- robs it again at the same second every later run, which costs the final ~10 s of
+-- each run (the chase, the shutter), never the whole run. Bag levels count here
+-- (`bags`). Haul tiers = the 3 Stars; they match Config.Data.Levels.CloneParty.haulTiers
+-- (asserted in tests).
 --
--- The swarm moment: run 8 starts with 7 clones + you = "8 OF ME" (a Swarm event at
--- run start, HeistSim.ofMe), and Dawn ends the heist into the Crew Line-up
--- (HeistSim.lineup). On the first-session pace (tests/sim/Pacing.spec.luau) that is
--- about minute 8.
+-- The swarm moment: run 8 starts with 7 clones + you = "8 OF ME" (a Swarm event
+-- after the tape-print fan-out, HeistSim.ofMe), and Dawn ends the heist into the
+-- Crew Line-up (HeistSim.lineup) on the street in front of the shop. When that
+-- lands in a first session depends on L1-L4's length (tests/sim/Pacing.spec.luau
+-- prints the model; the §7.5 "minute 10" target is an owner decision).
 -- Golden solution: PLACEHOLDER scripted runs in tests/sim/Solutions.luau (§8.9).
 
 local Config = require("../Config")
@@ -55,6 +60,7 @@ local loot: { any } = {
 		kind = "Cash",
 		top = true,
 		respawn = L.PARTY_REGISTER_RESPAWN,
+		opensAt = L.PARTY_TILL_OPENS_SECONDS,
 	},
 }
 for u, x in SHELF_X do
@@ -138,12 +144,18 @@ return {
 		{ x = -8, z = 13 },
 		{ x = 8, z = 13 },
 	},
-	alarm = { trigger = "Register" },
+	alarm = { trigger = "Register", lockSeconds = L.PARTY_SHUTTER_SECONDS },
 	loot = loot,
+	-- Crew Line-up on the street in front of the shop, facing a street camera (the van
+	-- and the lit shop front behind the crew).
+	lineup = { x = 0, z = 28, yaw = 180 },
 	hooks = {
-		swarm = { run = L.PARTY_DAWN_RUNS, ofMe = Config.Sim.SWARM_OF_ME, stamp = "8 OF ME" },
+		-- The view stamps string.format(stamp, b) on the Swarm event (a = seat, b = copies
+		-- of you, c = the crew's) when b >= ofMe, and crewStamp with c in co-op.
+		swarm = { run = L.PARTY_DAWN_RUNS, ofMe = Config.Sim.SWARM_OF_ME, stamp = "%d OF ME", crewStamp = "%d ROBBERS" },
 		board = "BiggestHaulToday", -- garage server board (§4.2), personal best (§5.3)
 		lineup = true,
+		till = { loot = "Register", opensAt = L.PARTY_TILL_OPENS_SECONDS }, -- countdown on the till
 	},
 	solution = "PLACEHOLDER scripted (tests/sim/Solutions.luau); human-recorded solution.bin pending",
 }

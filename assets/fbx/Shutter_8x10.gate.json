@@ -1,0 +1,109 @@
+{
+ "asset": "Shutter_8x10",
+ "objects": [
+  {
+   "name": "Shutter_8x10",
+   "class": "small",
+   "tris": 556,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.1,
+    1.46,
+    10.35
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -4.05,
+     -0.73,
+     -10.35
+    ],
+    "local_max": [
+     4.05,
+     0.73,
+     0.0
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    10.35
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 109,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Door"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "origin = top centre, 0.35 inside the header; rolled up = Size.Y 0.35 with the top pinned (hidden in the header), CanCollide off; drop = tween Size.Y to 10.35",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 556,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "e68cea942ee7f36923ae",
+ "fbx": {
+  "path": "assets/fbx/Shutter_8x10.fbx",
+  "bytes": 28732,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Shutter_8x10"
+  ],
+  "geometry_extents": [
+   [
+    1.46,
+    8.1,
+    10.35
+   ]
+  ]
+ },
+ "spec": "assets/blender/storefront.py",
+ "notes": "Security shutter 8.1 x 10.35 x 1.0: steel ribs both faces, ink bottom bar, pull handles, padlock.",
+ "turntable": "docs/art/turntables/Shutter_8x10.png",
+ "seconds": 26.2
+}

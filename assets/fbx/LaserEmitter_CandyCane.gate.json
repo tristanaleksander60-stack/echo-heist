@@ -82,6 +82,7 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "9cc2e86ee101641fee3d",
  "fbx": {
   "path": "assets/fbx/LaserEmitter_CandyCane.fbx",
   "bytes": 37596,
@@ -102,5 +103,5 @@
  "spec": "assets/blender/mechanisms.py",
  "notes": "Candy-cane laser post (Christmas layer): helical Ribbon / cream stripes, hook, same lens housings at y 1-9.",
  "turntable": "docs/art/turntables/LaserEmitter_CandyCane.png",
- "seconds": 5.9
+ "seconds": 29.7
 }

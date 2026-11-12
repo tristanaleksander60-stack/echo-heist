@@ -97,6 +97,7 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "07f9deedacfae071ebe1",
  "fbx": {
   "path": "assets/fbx/Floor_8x8.fbx",
   "bytes": 21788,
@@ -117,5 +118,5 @@
  "spec": "assets/blender/furniture.py",
  "notes": "Floor 8x8: four 4x4 tiles (checker floor_a / floor_b), grout chamfers in Ink; top at y = 0.",
  "turntable": "docs/art/turntables/Floor_8x8.png",
- "seconds": 1.8
+ "seconds": 5.0
 }

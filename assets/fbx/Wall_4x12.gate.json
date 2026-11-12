@@ -127,6 +127,7 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "5731e2a1a52dcc28c57b",
  "fbx": {
   "path": "assets/fbx/Wall_4x12.fbx",
   "bytes": 22540,
@@ -147,5 +148,5 @@
  "spec": "assets/blender/wall.py",
  "notes": "Kit wall 4x2x12 on the 4-stud grid; origin = front-bottom-left grid corner; tiles along X.",
  "turntable": "docs/art/turntables/Wall_4x12.png",
- "seconds": 1.6
+ "seconds": 6.4
 }

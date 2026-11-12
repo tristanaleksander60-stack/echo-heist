@@ -55,21 +55,27 @@
 --                                  box = the solid leaf when shut; sources are plate
 --                                  or switch ids
 --   lasers = {{id, box, offBy = {sourceId}, need}}  box = the beam volume
---   loot = {{id, x, y, z, value, kind?, top?, heavy?, respawn?, spots?}}
+--   loot = {{id, x, y, z, value, kind?, top?, heavy?, respawn?, spots?, opensAt?}}
 --                                  top = trips the Alarm Run when grabbed;
 --                                  heavy = {grips, maxGrips} (format only until Dec 11);
 --                                  respawn = seconds after banking (Clone Party), spots =
---                                  {{x, y, z}} chosen with the run's Random
+--                                  {{x, y, z}} chosen with the run's Random; opensAt =
+--                                  loop seconds before which it cannot be grabbed (a
+--                                  time-locked till: the view shows its countdown)
 --   hides = {{id, box}}            EH_Hide volumes
 --   guards = {{id, speed?, route = {{x, z, wait?, face?}}}}  closed patrol loop; t = 0 at
 --                                  route[1]; `wait` = dwell at that point; `face` = dwell yaw
 --   nav = {{x, z}}                 chase waypoints (A* graph built here)
 --   alarm = {trigger = lootId, vanSeconds?, lockSeconds?, onCatch?}
 --   tutorial = {autoEnd = {runs = {1}, plate = id, seconds?}}   L1 forced quick rewind
---   lineup = {x, z, yaw?}          Crew Line-up row centre (default: in front of the van)
+--   lineup = {x, z, yaw?}          Crew Line-up row centre (default: on the street,
+--                                  LINEUP_STREET_GAP behind the van, facing +Z toward a
+--                                  street camera with the van and the front behind)
 --   hooks = {...}                  free-form presentation data for the view (swarm
 --                                  stamp, boards); never read by the sim
 --   solution = "PLACEHOLDER..."    note about where the golden solution comes from
+--
+-- Other keys are ignored by the sim (e.g. `daily`, which Levels/DailyVaults reads).
 --
 -- Recorded event args are 1-based indices in spec order (loot index for Grab,
 -- switch index for Press, hide index for Hide). Reordering a published level's
@@ -565,6 +571,16 @@ function LevelSpec.validate(spec: any): (boolean, { string })
 		if item.respawn ~= nil and (not isNum(item.respawn) or item.respawn <= 0) then
 			err("%s: respawn must be positive seconds", what)
 		end
+		if
+			item.opensAt ~= nil
+			and (
+				not isNum(item.opensAt)
+				or item.opensAt < 0
+				or (isNum(spec.runSeconds) and item.opensAt >= spec.runSeconds)
+			)
+		then
+			err("%s: opensAt must be loop seconds in [0, runSeconds)", what)
+		end
 		if item.spots ~= nil then
 			for k, p in item.spots do
 				checkPoint(p, what .. ".spots[" .. k .. "]")
@@ -776,6 +792,7 @@ function LevelSpec.compile(spec: any): LevelData
 			heavy = item.heavy,
 			respawn = item.respawn,
 			spots = spots,
+			opensAt = item.opensAt,
 		}
 	end
 	local hides = {}
@@ -834,15 +851,18 @@ function LevelSpec.compile(spec: any): LevelData
 	local goal = spec.goal or (tiers and tiers[1])
 
 	-- Crew Line-up row: centre, facing (yaw), across (dx, dz) and forward (fx, fz).
+	-- Across runs to the figures' left, so record order reads left to right for a
+	-- camera facing the row. Default: on the street side of the van, facing +Z (yaw
+	-- 180), so a street camera films faces with the van and the front behind them.
 	local lx, _, _ = Geom.center(spec.van)
-	local lz = spec.van.minZ - 2 - S.LINEUP_SPACING
-	local lyaw = 0
+	local lz = spec.van.maxZ + S.LINEUP_STREET_GAP
+	local lyaw = math.pi
 	if spec.lineup then
 		lx, lz = spec.lineup.x, spec.lineup.z
 		lyaw = ((spec.lineup.yaw or 0) * DEG) % (2 * math.pi)
 	end
 	local fx, fz = Geom.forward(lyaw)
-	local lineup = { x = lx, z = lz, yaw = lyaw, dx = -fz, dz = fx, fx = fx, fz = fz }
+	local lineup = { x = lx, z = lz, yaw = lyaw, dx = fz, dz = -fx, fx = fx, fz = fz }
 
 	local alarm = nil
 	if spec.alarm then

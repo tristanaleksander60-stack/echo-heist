@@ -29,7 +29,7 @@ return Vault.spec(11, "dv11_jingle_vault", "Jingle Vault", "Bank", 2, {
 		Vault.cookieTin(),
 	},
 	daily = {
-		modifiers = { "None", "LootB", "LootC", "LightsOff" },
-		alt = { Gift = { B = { x = 12, z = -44 }, C = { x = 4, z = -46 } } },
+		modifiers = { "None", "LootB", "LootC" },
+		alt = { Coins = { B = { x = 12, z = -46 }, C = { x = -12, z = -28 } } },
 	},
 })

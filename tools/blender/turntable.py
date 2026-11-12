@@ -206,6 +206,12 @@ def render_contact_sheet(out_path, objs=None, angles=8, size=384, title=None, in
     objs = mesh_objects(objs)
     if not objs:
         raise SystemExit("turntable: no mesh objects")
+    glass = []
+    for o in objs:   # glass parts (Studio: Glass material, Transparency 0.6-0.7) draw as their edges, not as solid slabs
+        if o.name.endswith(("_Glass", "_Case")):
+            m = o.modifiers.new("eh_glass", "WIREFRAME")
+            m.thickness = 0.04; m.use_replace = True; m.use_even_offset = True
+            glass.append((o, m))
     hidden = [o for o in s.objects if o not in objs and o.type in {"MESH", "CURVE"} and not o.hide_render]
     for o in hidden:
         o.hide_render = True
@@ -255,6 +261,8 @@ def render_contact_sheet(out_path, objs=None, angles=8, size=384, title=None, in
         rig.remove()
         for o in hidden:
             o.hide_render = False
+        for o, m in glass:
+            o.modifiers.remove(m)
     head = [title or objs[0].name]
     head.append("  |  ".join(f"{o.name}: {tri_count(o)} tris" for o in objs) +
                 f"  |  total {sum(tri_count(o) for o in objs)} tris")

@@ -4,32 +4,33 @@
   {
    "name": "Hide_CoatRack",
    "class": "small",
-   "tris": 592,
+   "tris": 544,
    "budget": [
     600,
     1500
    ],
    "budget_note": "ok",
    "dims": [
-    6.9,
-    1.8,
-    7.6
+    6.0,
+    4.8,
+    6.85
    ],
    "pivot": {
     "rule": "bottom",
     "local_min": [
-     -3.45,
-     -0.9,
+     -3.0,
+     -2.4,
      0.0
     ],
     "local_max": [
-     3.45,
-     0.9,
-     7.6
+     3.0,
+     2.4,
+     6.85
     ]
    },
    "swatches": [
-    "ink_hi",
+    "marble",
+    "marble_lo",
     "steel",
     "steel_hi",
     "steel_lo",
@@ -42,9 +43,11 @@
     0.0,
     0.0
    ],
-   "symmetry_error": null,
+   "symmetry_error": {
+    "Y": 0.0
+   },
    "self_intersections": 0,
-   "cross_shell_overlaps": 249,
+   "cross_shell_overlaps": 206,
    "cap_overlaps": 0,
    "flipped_faces": 0,
    "boundary_edges": 0,
@@ -69,14 +72,14 @@
    ],
    "joint": null,
    "role": "env",
-   "notes": "walk-in: CanCollide off; stand behind the coats",
+   "notes": "walk-in: CanCollide off; stand between the two rows of coats (on the plate)",
    "fails": [],
    "passed": true
   }
  ],
  "asset_fails": [],
  "lihfolk_bpy": "LihFolk plugin",
- "tris_total": 592,
+ "tris_total": 544,
  "seats": [],
  "align": [],
  "A11_atlas": [
@@ -85,9 +88,10 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "37193f9fab4e220fb509",
  "fbx": {
   "path": "assets/fbx/Hide_CoatRack.fbx",
-  "bytes": 29436,
+  "bytes": 28028,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -96,14 +100,14 @@
   ],
   "geometry_extents": [
    [
-    1.8,
-    6.9,
-    7.6
+    4.8,
+    6.0,
+    6.85
    ]
   ]
  },
  "spec": "assets/blender/hides.py",
- "notes": "Hide spot: free-standing coat rack (6 wide) with three long coats and two hats.",
+ "notes": "Hide spot: double garment rack (6 x 4.5), three long coats on each rail, the plate niche between them.",
  "turntable": "docs/art/turntables/Hide_CoatRack.png",
- "seconds": 5.9
+ "seconds": 14.0
 }

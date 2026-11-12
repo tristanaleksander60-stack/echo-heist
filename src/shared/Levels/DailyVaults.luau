@@ -13,7 +13,16 @@
 --   * One date-seeded modifier per day from the vault's vetted list (§5.3: guard
 --     speed +-10%, loot position A/B/C, lights on/off). A design's first run through
 --     the advent (Dec 3-14) and any day before it play unmodified ("None").
---   * Every (vault, modifier) pair is validated and proven solvable in CI.
+--   * Vetted = survives ONE recording (§5.3 D1, §8.9: one human-recorded solution.bin
+--     per vault, replayed by CI and by the Ghost Hint after 2 failed runs): loot
+--     positions move bonus loot only, never the goal item; guard speed only where
+--     Gus walks a patrol; lights off only where there is a Gus. Every (vault,
+--     modifier) pair is validated, solvable at par, and cleared by the unmodified
+--     solution replayed as frozen tapes (tests/sim/Daily.spec.luau). When the owner's
+--     recordings land, a pair they do not survive is dropped from the list (or
+--     re-recorded), not patched.
+--   * Ornament naming outside the advent follows Data/DailyVault (Orn_Vault<slot>);
+--     vaultFor is anchored at Dec 3 there, so slot n = design n.
 --
 -- Pure: day numbers come from the server (Data/Calendar.dayIndex(os.time())).
 

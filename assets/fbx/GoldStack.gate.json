@@ -33,6 +33,11 @@
     "gold_hi",
     "gold_lo"
    ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
    "symmetry_error": {
     "X": 0.0,
     "Y": 0.0
@@ -52,8 +57,15 @@
     "Color": "white (255,255,255)",
     "CollisionFidelity": "Box",
     "CanCollide": true,
-    "CastShadow": true
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
    },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "loot",
    "notes": "",
    "fails": [],
    "passed": true
@@ -70,9 +82,10 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "eb0c40686f48d184580f",
  "fbx": {
   "path": "assets/fbx/GoldStack.fbx",
-  "bytes": 25116,
+  "bytes": 25308,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -89,5 +102,6 @@
  },
  "spec": "assets/blender/gold_bar.py",
  "notes": "Loot: 6-bar table stack (3-2-1). One grab = one bar; the stack shrinks in code.",
- "seconds": 0.0
+ "turntable": "docs/art/turntables/GoldStack.png",
+ "seconds": 13.0
 }

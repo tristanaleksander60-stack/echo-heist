@@ -138,11 +138,16 @@ Config.Sim = {
 	REACH_MAX_CELLS = 250000,
 
 	-- Swarm moment and Crew Line-up hooks (§3.2 rule 8, §4.2 "8 OF ME", §7.5 funnel)
-	SWARM_SEEN_CLONES = 6, -- own clones in a run that log a Swarm event (funnel SwarmSeen)
+	SWARM_SEEN_CLONES = 6, -- own (or crew) clones in a run that log a Swarm event (funnel SwarmSeen)
 	SWARM_OF_ME = 8, -- copies of you (clones + you) that earn the "8 OF ME" stamp
+	SWARM_FANOUT_SECONDS = 1.5, -- the Swarm event waits for the tape-print fan-out (copies spread out)
 	LINEUP_STAGGER = 0.06, -- seconds between figures of the victory pose, in record order
 	LINEUP_ROW = 8, -- figures per Line-up row
 	LINEUP_SPACING = 2.5, -- studs between figures and between rows
+	LINEUP_STREET_GAP = 4, -- default row: this many studs on the street side of the van
+
+	-- Clone Deck hints (between runs, view only)
+	ALARM_HINT_SECONDS = 10, -- a clone that trips the alarm this early earns "Clone #N sets off the alarm: Redo #N?"
 }
 
 -- Level content rules shared by the authored levels (src/shared/Levels), MASTERPLAN
@@ -154,6 +159,8 @@ Config.Levels = {
 	PARTY_DAWN_RUNS = 8,
 	PARTY_RESPAWN_SECONDS = 3, -- a banked shelf item is back on its shelf this long after
 	PARTY_REGISTER_RESPAWN = 600, -- the register (alarm) is robbed once per run (back next loop)
+	PARTY_TILL_OPENS_SECONDS = 20, -- the till is time-locked until 0:20 of every run (robbing it is the last act)
+	PARTY_SHUTTER_SECONDS = 6, -- the shutter drops this long after the till alarm (the getaway beat)
 
 	-- Big Scores (L6, §4.2): 8 slots granted, Alarm Run, Dawn at par + DAWN_RUNS_OVER_PAR
 	BIG_SCORE_CAP = 8,
@@ -478,5 +485,164 @@ do
 			{ kind = "ornament", name = string.format("Advent Ornament %d", day) }
 	end
 end
+
+-- Analytics (pure catalog + Tracker in src/shared/Analytics, AnalyticsService adapter in
+-- src/server/Analytics/Analytics), MASTERPLAN §7.5, §9.3, §9.7, §8.6, §8.12; docs/ANALYTICS.md.
+-- Event names, funnel steps, custom fields and bucket edges are the dashboard schema and live in
+-- Analytics/Events (like a file format); the numbers that steer sending and budgets live here.
+Config.Analytics = {
+	-- ServerBuild (§8.12 rollout check) sends game.PlaceVersion as "pv" .. PlaceVersion % 100; BUILD is
+	-- only the fallback where PlaceVersion is 0 (Studio, an unpublished place).
+	BUILD = 1,
+
+	-- Environments (Data/Keys.isTestEnvironment). Studio never reaches the dashboard, so calls are
+	-- only recorded in memory there. The test experience has its own dashboard (early testers, §9.5).
+	SEND_IN_TEST = true,
+	STUDIO_PRINT = false, -- print every recorded call to the Output in Studio (call-site debugging)
+	RECENT_KEPT = 200, -- last calls kept for Analytics.recent() (Studio, test, engine smoke)
+	WARN_EVERY_SECONDS = 10, -- at most one analytics warning in the Output this often
+	LEFT_KEEP_SECONDS = 60, -- a departed player's queued calls still find their Player this long
+
+	-- Our own budgets: Roblox does not publish AnalyticsService limits (vault: batch, never flood).
+	SERVER_BURST = 120, -- calls the server may send at once
+	SERVER_PER_MINUTE = 120, -- refill per minute for the whole server ...
+	SERVER_PER_MINUTE_PER_PLAYER = 20, -- ... plus this per player present (we expect ~8)
+	PLAYER_BURST = 30, -- unbatched custom events one player can send at once (a buggy call site)
+	PLAYER_PER_MINUTE = 30,
+	BACKLOG_MAX = 400, -- calls waiting for budget; custom events are dropped first beyond this
+	PENDING_PER_PLAYER = 64, -- calls held per player until the join source is known
+	BATCH_FLUSH_SECONDS = 60, -- batched counts flush this often, on leave and in BindToClose
+	TICK_SECONDS = 1, -- timers (Minute10, flush, budget) are checked this often
+	SHUTDOWN_SECONDS = 3, -- BindToClose share for the final flush
+
+	-- Join source (§9.3, §9.7). Launch data "v1|<verb>|<arg>[|<tag>]" can arrive a few seconds
+	-- after join (Roblox docs), so the server polls GetJoinData.
+	JOIN_DATA_POLLS = 10,
+	JOIN_DATA_POLL_SECONDS = 1,
+	FACTS_WAIT_SECONDS = 12, -- wait this long for the profile (cohort, ftueStep) before logging without it
+	LAUNCH_DATA_MAX_BYTES = 200,
+	ACQ_HINT_KEY = "EH_AcqSource", -- optional ConfigService string the owner targets by acquisition source
+	CHANNEL_TAGS = { "tt", "yt", "ig", "dc", "web", "devlog", "event" }, -- Creator Hub share link per channel
+	AD_TAGS = { "ad_plays", "ad_eng", "ad_test" }, -- Ads Manager join-option launch data (§9.5)
+	CREATOR_SLOTS = 30, -- personal creator links cr01..cr30 (20 micro + 10 mid, §9.6)
+	VARIANTS = { "base", "a", "b", "c" }, -- experiment arms that may appear in custom fields
+
+	-- Session KPIs (§7.5, §9.7)
+	MINUTE10_SECONDS = 600,
+	-- A profile created at most this long before the join is "new". The profile is created after
+	-- PlayerAdded on the same server, so this only covers clock skew; a crash rejoin minutes later
+	-- must not count as a second first session.
+	NEW_PLAYER_GRACE_SECONDS = 30,
+	HEIST_SESSIONS_KEPT = 4, -- open heist funnel sessions kept per player
+	STORE_SESSION_SECONDS = 600, -- a store funnel session stays open this long after StoreOpened
+	STORE_REOPEN_SECONDS = 10, -- a StoreOpened sooner than this after the last one reuses its session
+	STORE_SESSIONS_MAX = 20, -- store funnel sessions per player session (a spamming client)
+
+	-- Client remotes (LihFolk Net). Analytics.Ui carries clip and store UI steps only the client sees.
+	RATE = {
+		Ready = { burst = 2, perSecond = 0.1 },
+		Perf = { burst = 2, perSecond = 0.05 },
+		Ui = { burst = 8, perSecond = 1 },
+	},
+
+	-- Client frame-time telemetry (§8.6, §6.3, §6.8), shared/Analytics/PerfSample.
+	Perf = {
+		INTERVAL_SECONDS = 60, -- one sample per client per minute (LiveFlag perfIntervalSeconds raises it)
+		MIN_FRAMES = 300, -- a window with fewer frames is not sent (paused, backgrounded)
+		BIN_MS = 0.5, -- histogram resolution
+		MAX_MS = 100, -- slower frames land in the overflow bin (exact worst frame kept)
+		MAX_FRAME_SECONDS = 2, -- longer gaps are pauses (app in background), not frames
+		-- A frame is slow when it is clearly slower than 30 fps: the 33.3 ms low-phone ceiling (§6.8)
+		-- plus a vsync jitter margin. A device held at 30 fps by the OS (Low Power Mode, battery saver)
+		-- or a 60 fps device that misses a vsync (33.3 ms frames) is at the ceiling, not over it.
+		SLOW_MS = 36,
+		STEP_DOWN_SECONDS = 20, -- p95 > SLOW_MS for this long steps the performance tier down (§8.6)
+		STEP_DOWN_SHARE = 0.05, -- p95 > SLOW_MS means more than 5% of a second's frames are slow
+		-- after a step, the next slow streak must cut the slow share by this much (relative), else the
+		-- governor stops (lowering quality cannot beat an OS frame cap or a CPU-bound device)
+		STEP_MIN_GAIN = 0.1,
+		STEP_COOLDOWN_SECONDS = 30, -- after a step down, wait this long before judging again
+		MIN_FRAMES_PER_SECOND = 10, -- a second with fewer frames is not judged (loading hitch)
+		TABLET_MIN_SIDE = 600, -- viewport short side (px) from which a touch device counts as a tablet
+	},
+
+	-- KPI bars (§9.7), read by Analytics/Kpi for reports. pct = percent, s = seconds, min = minutes.
+	-- higher = true: bigger is better. Below kill = kill/rework; >= healthy = healthy; >= double =
+	-- double down; anything between kill and healthy = fix before scaling (lower-is-better mirrored).
+	KPI = {
+		AD_SHIFT_POINTS = 4, -- ad cohorts: retention bars 4 points lower; kill never fires on them
+		joinToControl = { unit = "s", higher = false, kill = 20, healthy = 10 },
+		firstCloneSeen45 = { unit = "pct", higher = true, kill = 60, healthy = 85 },
+		l1Complete = { unit = "pct", higher = true, kill = 50, healthy = 70, double = 80 },
+		swarmSeen10 = { unit = "pct", higher = true, kill = 35, healthy = 60, double = 75 },
+		bounce60 = { unit = "pct", higher = false, kill = 35, healthy = 20, double = 12 },
+		medianFirstSession = { unit = "min", higher = true, kill = 5, healthy = 12, double = 18 },
+		d1 = { unit = "pct", higher = true, kill = 8, healthy = 15, double = 22, minCohort = 300, retention = true },
+		d7 = { unit = "pct", higher = true, kill = 1.5, healthy = 4, double = 6, minCohort = 300, retention = true },
+		friendSessions = { unit = "pct", higher = true, kill = 8, healthy = 20, double = 30 },
+		clipTaps = { unit = "pct", higher = true, kill = 1, healthy = 5, double = 10 },
+		medianFirstBank = { unit = "s", higher = false, kill = 90, healthy = 60 }, -- Nov 30 gate: <= 60 s
+	},
+}
+
+-- LiveFlags (src/server/Analytics/LiveFlags, pure rules in src/shared/Analytics/LiveFlagSpec),
+-- MASTERPLAN §8.7, §8.12; docs/ANALYTICS.md "LiveFlags". Turns features off or retunes them
+-- without a publish. Layers, lowest first: these defaults < ConfigService key "EH_<name>"
+-- (Creator Hub, about a minute, per-switch history) < the DataStore document (polled, Open Cloud
+-- writable for incidents) < a Studio/test-only testing value. A failed read keeps the last good one.
+-- Kill switches: off wins (a switch is off when any layer sets it false).
+-- kind: kill (boolean, default true, the system works) | release (boolean or 0-100 percent of
+-- players, default off) | tune (number in [min, max]) | experiment ("arm:weight,..." sticky arms).
+-- client = true: mirrored as an attribute on ReplicatedStorage.LiveFlags for the UI.
+Config.LiveFlags = {
+	POLL_SECONDS = 60, -- §8.7: the DataStore document is re-read this often (one read per server)
+	STORE_NAME = "EH_Live_v1",
+	KEY = "LiveFlags", -- "_TEST_LiveFlags" in Studio and the test experience (Config.Data.TEST_PREFIX)
+	CONFIG_PREFIX = "EH_", -- ConfigService keys: EH_saveClip, EH_alarmVanSeconds, ...
+	ATTRIBUTE_FOLDER = "LiveFlags",
+	MAX_DOC_BYTES = 20000, -- a document bigger than this as JSON is refused
+	Flags = {
+		-- Kill switches (default true)
+		analytics = { kind = "kill", default = true, desc = "every AnalyticsService call" },
+		analyticsCustom = { kind = "kill", default = true, desc = "custom events (funnels and economy stay)" },
+		perfSampling = { kind = "kill", default = true, client = true, desc = "client PerfSample telemetry" },
+		store = { kind = "kill", default = true, client = true, desc = "Robux store prompts and store UI" },
+		cashShop = { kind = "kill", default = true, client = true, desc = "Cash and Candy Cane purchases" },
+		quickCrew = { kind = "kill", default = true, client = true, desc = "Quick Crew board (strangers)" },
+		joinFriend = { kind = "kill", default = true, client = true, desc = "Join friend crew moves" },
+		saveClip = { kind = "kill", default = true, client = true, desc = "SAVE CLIP button" },
+		saveClipVideo = { kind = "kill", default = true, client = true, desc = "video capture (off = screenshot)" },
+		shareLinks = { kind = "kill", default = true, client = true, desc = "PromptLinkSharingAsync share" },
+		invites = { kind = "kill", default = true, client = true, desc = "PromptGameInvite button" },
+		rsvpPrompt = { kind = "kill", default = true, desc = "event RSVP prompt after the first heist" },
+		dailyVault = { kind = "kill", default = true, client = true, desc = "daily vault / advent entry" },
+		boards = { kind = "kill", default = true, client = true, desc = "daily biggest-haul board" },
+		dressing = { kind = "kill", default = true, client = true, desc = "Christmas dressing layer" },
+		giftBeat = { kind = "kill", default = true, client = true, desc = "Dec 25-26 gift beat" },
+		alarmRun = { kind = "kill", default = true, desc = "Alarm Run (off: alarms do not start a chase)" },
+		ghostHint = { kind = "kill", default = true, client = true, desc = "Ghost Hint after 2 failed runs" },
+		-- Release flags (default off)
+		clipUpload = { kind = "release", default = false, client = true, desc = "UploadCaptureAsync (§9.3)" },
+		referralReward = { kind = "release", default = false, desc = "referral cosmetic after 10 min (§9.3)" },
+		rewardedVideo = { kind = "release", default = false, client = true, desc = "13+ rewarded video" },
+		globalBoard = { kind = "release", default = false, client = true, desc = "global daily board (Dec 11)" },
+		-- Tuning (read at heist start, never mid-run; the value goes into the heist record)
+		alarmVanSeconds = { kind = "tune", default = Config.Sim.ALARM_VAN_SECONDS, min = 10, max = 40 },
+		alarmLockSeconds = { kind = "tune", default = Config.Sim.ALARM_LOCK_SECONDS, min = 3, max = 20 },
+		alarmChaseSpeedMult = { kind = "tune", default = Config.Sim.GUARD_CHASE_SPEED_MULT, min = 0.5, max = 1.1 },
+		crewCloneBudget = { kind = "tune", default = Config.Sim.CREW_CLONE_BUDGET, min = 4, max = 16 },
+		maxInstances = { kind = "tune", default = Config.Heist.MAX_INSTANCES, min = 1, max = 8 },
+		perfSampleRate = { kind = "tune", default = 1, min = 0, max = 1, client = true },
+		perfIntervalSeconds = {
+			kind = "tune",
+			default = Config.Analytics.Perf.INTERVAL_SECONDS,
+			min = 30,
+			max = 600,
+			client = true,
+		},
+		-- Experiments (sticky per player; arms must be in Config.Analytics.VARIANTS)
+		ftueVariant = { kind = "experiment", default = "base:100", desc = "onboarding A/B (from Jan 8)" },
+	},
+}
 
 return Config

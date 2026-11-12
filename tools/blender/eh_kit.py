@@ -229,8 +229,13 @@ class MB:
         """Cuts the geometry (or only part_verts' faces) by a plane, deletes the side the normal points away
         from, and caps the cut with one planar face per loop (triangulated later). Used to sit round shapes on
         the floor."""
-        geom_faces = list(self.bm.faces) if part_verts is None else list({f for v in part_verts if v.is_valid for f in v.link_faces})
-        geom = list({e for f in geom_faces for e in f.edges}) + geom_faces + list({v for f in geom_faces for v in f.verts})
+        # sorted by element index: sets of BMesh elements iterate in memory-address order, which changes from run
+        # to run, and bisect_plane numbers the new verts in input order (the content hash must not churn)
+        for seq in (self.bm.verts, self.bm.edges, self.bm.faces):
+            seq.index_update()
+        by_index = lambda xs: sorted(xs, key=lambda x: x.index)  # noqa: E731
+        geom_faces = list(self.bm.faces) if part_verts is None else by_index({f for v in part_verts if v.is_valid for f in v.link_faces})
+        geom = by_index({e for f in geom_faces for e in f.edges}) + geom_faces + by_index({v for f in geom_faces for v in f.verts})
         res = bmesh.ops.bisect_plane(self.bm, geom=geom, dist=1e-6, plane_co=Vector(plane_co),
                                      plane_no=Vector(plane_no), clear_inner=True)
         cut_edges = [e for e in res["geom_cut"] if isinstance(e, bmesh.types.BMEdge) and e.is_valid and e.is_boundary]
@@ -341,12 +346,18 @@ def used_swatches(ob):
 
 # ---------------------------------------------------------------- specs
 
+def roblox_point(v, origin=(0, 0, 0)):
+    """A Blender point (relative to `origin`) in Roblox axes: (x, y, z) -> (-x, z, y) (see build_asset._roblox_point)."""
+    x, y, z = (v[i] - origin[i] for i in range(3))
+    return [round(-x, 3) + 0.0, round(z, 3), round(y, 3)]
+
+
 class Obj:
     """One exported object (one MeshPart in Studio)."""
 
     def __init__(self, ob, cls, role="env", symmetric=None, pivot="corner", collision="Box", material="SmoothPlastic",
                  can_collide=True, cast_shadow=True, expect_dims=None, tint=None, notes="", layer="base", tags=(),
-                 joint=None, atlas=None, transparency=0.0, texture=None, sim=None, free_shells=False):
+                 joint=None, atlas=None, transparency=0.0, texture=None, sim=None, free_shells=False, extra=None):
         self.ob, self.cls, self.role, self.symmetric, self.pivot = ob, cls, role, symmetric, pivot
         self.collision, self.material, self.can_collide, self.cast_shadow = collision, material, can_collide, cast_shadow
         self.expect_dims, self.tint, self.notes = expect_dims, tint, notes
@@ -361,6 +372,7 @@ class Obj:
         # free_shells: an object made of separate pieces held by ANOTHER object (glass panes in a frame, bulbs on
         # a wire). Its A16 floating-shell check is replaced by an asset seat check against the holder.
         self.free_shells = free_shells
+        self.extra = dict(extra or {})   # more manifest fields (Roblox axes): grips, hooks, light points...
 
 
 class Asset:

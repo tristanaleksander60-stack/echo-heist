@@ -145,4 +145,31 @@ function TestLevels.alarm(): any
 	return LevelSpec.compile(TestLevels.alarmSpec())
 end
 
+-- A party level (Clone Party rules on the corridor): no completion, haul tiers, Dawn
+-- at run 3, bag levels count, four respawning trinkets by the spawn plus the Prize.
+function TestLevels.partySpec(): any
+	local s = TestLevels.corridorSpec()
+	s.id, s.num, s.name = "t_party", 904, "t_party"
+	s.kind = "party"
+	s.goal = nil
+	s.tiers = { 30, 60, 1000 }
+	s.deadline = "Dawn"
+	s.dawnRuns = 3
+	s.par = 0
+	s.cap = 8
+	s.bags = true
+	s.loot = {
+		{ id = "Prize", x = 0, y = 3, z = -38, value = 100, respawn = 2 },
+		{ id = "T1", x = -6, y = 3, z = 4, value = 10, respawn = 2 },
+		{ id = "T2", x = 0, y = 3, z = 4, value = 10, respawn = 2 },
+		{ id = "T3", x = 6, y = 3, z = 4, value = 10, respawn = 2 },
+		{ id = "T4", x = 12, y = 3, z = 8, value = 10, respawn = 2 },
+	}
+	return s
+end
+
+function TestLevels.party(): any
+	return LevelSpec.compile(TestLevels.partySpec())
+end
+
 return TestLevels

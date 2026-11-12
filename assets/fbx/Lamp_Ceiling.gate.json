@@ -126,7 +126,7 @@
    "uv_out_of_0_1": 0,
    "studio": {
     "Material": "Neon",
-    "Color": "Lamp warm #FFE2B8 (code); PointLight here, Shadows off",
+    "Color": "Bulb Warm #F6C0A2 (eh_palette.NEON); PointLight here, same colour, Shadows off",
     "CollisionFidelity": "Box",
     "CanCollide": false,
     "CastShadow": false,
@@ -162,9 +162,10 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "9875246662a9a705f605",
  "fbx": {
   "path": "assets/fbx/Lamp_Ceiling.fbx",
-  "bytes": 35084,
+  "bytes": 35052,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -188,5 +189,5 @@
  "spec": "assets/blender/furniture.py",
  "notes": "Pendant lamp: canopy on the cut-away ceiling plane, cord, enamel shade (light inside), Neon bulb part.",
  "turntable": "docs/art/turntables/Lamp_Ceiling.png",
- "seconds": 7.5
+ "seconds": 54.3
 }

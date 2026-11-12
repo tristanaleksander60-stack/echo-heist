@@ -1,0 +1,106 @@
+{
+ "asset": "Candy",
+ "objects": [
+  {
+   "name": "Candy",
+   "class": "small",
+   "tris": 336,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.64,
+    1.1,
+    1.1
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.32,
+     -0.55,
+     0.0
+    ],
+    "local_max": [
+     1.32,
+     0.55,
+     1.1
+    ]
+   },
+   "swatches": [
+    "gold",
+    "gold_hi",
+    "gold_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 80,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Loot"
+   ],
+   "joint": null,
+   "role": "loot",
+   "notes": "carried Candy loot; lies on its side; CanCollide off while carried",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 336,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "c2095ea6fbb24a73fe1b",
+ "fbx": {
+  "path": "assets/fbx/Candy.fbx",
+  "bytes": 25996,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Candy"
+  ],
+  "geometry_extents": [
+   [
+    1.1,
+    1.1,
+    2.64
+   ]
+  ]
+ },
+ "spec": "assets/blender/loot.py",
+ "notes": "Loot: gold-foil wrapped sweet (2.6 long), foil bands, pinched necks and pleated wrapper fans.",
+ "turntable": "docs/art/turntables/Candy.png",
+ "seconds": 13.1
+}

@@ -21,7 +21,8 @@ return Vault.spec(3, "dv03_candy_cane_lasers", "Candy-Cane Lasers", "CornerShop"
 		Vault.cookieTin(),
 	},
 	daily = {
-		modifiers = { "None", "LootB", "LootC", "LightsOff" },
-		alt = { Present = { B = { x = 10, z = -24 }, C = { x = -6, z = -26 } } },
+		modifiers = { "None", "LootB", "LootC" },
+		-- B and C put the lollipop behind the grid: a second trip while the clone holds A.
+		alt = { Lollipop = { B = { x = -12, z = -22 }, C = { x = 12, z = -26 } } },
 	},
 })

@@ -1,0 +1,112 @@
+{
+ "asset": "Gus_SantaHat",
+ "objects": [
+  {
+   "name": "Gus_SantaHat",
+   "class": "small",
+   "tris": 360,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.24,
+    2.736,
+    1.781
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.12,
+     -1.12,
+     -0.1849
+    ],
+    "local_max": [
+     1.12,
+     1.6163,
+     1.5961
+    ]
+   },
+   "swatches": [
+    "ribbon",
+    "ribbon_hi",
+    "snow"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    5.78
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 81,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [
+    "EH_Guard",
+    "EH_Xmas"
+   ],
+   "joint": {
+    "name": "HatAttach",
+    "parent": "Gus_Head"
+   },
+   "role": "xmas",
+   "notes": "Christmas layer: weld to Gus_Head at the HatAttach point and hide Gus_Cap",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 360,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "319b10db6737b4bace2a",
+ "fbx": {
+  "path": "assets/fbx/Gus_SantaHat.fbx",
+  "bytes": 27052,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Gus_SantaHat"
+  ],
+  "geometry_extents": [
+   [
+    1.781,
+    2.24,
+    2.736
+   ]
+  ]
+ },
+ "spec": "assets/blender/gus.py",
+ "notes": "Gus's Santa hat (Christmas layer): Ribbon cone flopping back, snow fur band and pompom; same pivot as Gus_Cap.",
+ "turntable": "docs/art/turntables/Gus_SantaHat.png",
+ "seconds": 13.6
+}

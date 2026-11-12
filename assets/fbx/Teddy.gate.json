@@ -1,0 +1,109 @@
+{
+ "asset": "Teddy",
+ "objects": [
+  {
+   "name": "Teddy",
+   "class": "small",
+   "tris": 596,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.057,
+    1.6,
+    2.266
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.0285,
+     -0.88,
+     0.0
+    ],
+    "local_max": [
+     1.0285,
+     0.72,
+     2.2657
+    ]
+   },
+   "swatches": [
+    "gold",
+    "gold_hi",
+    "gold_lo",
+    "ice",
+    "ice_hi",
+    "ink"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 205,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": true,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Loot"
+   ],
+   "joint": null,
+   "role": "loot",
+   "notes": "carried Teddy loot (L5 back shelf rows); CanCollide off while carried",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 596,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "2ff2334069f7af919605",
+ "fbx": {
+  "path": "assets/fbx/Teddy.fbx",
+  "bytes": 31388,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Teddy"
+  ],
+  "geometry_extents": [
+   [
+    1.6,
+    2.057,
+    2.266
+   ]
+  ]
+ },
+ "spec": "assets/blender/loot.py",
+ "notes": "Loot: sitting golden teddy bear (1.6 x 1.6 x 2.4): light belly and muzzle, ink eyes, ice bow tie.",
+ "turntable": "docs/art/turntables/Teddy.png",
+ "seconds": 13.7
+}

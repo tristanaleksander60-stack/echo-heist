@@ -37,7 +37,8 @@ return Vault.spec(10, "dv10_gingerbread_lobby", "Gingerbread Lobby", "Bank", 2, 
 		Vault.cookieTin(),
 	},
 	daily = {
-		modifiers = { "None", "GuardFast", "GuardSlow", "LightsOff", "LootB" },
-		alt = { Gift = { B = { x = 4, z = -36 } } },
+		modifiers = { "None", "GuardFast", "GuardSlow", "LightsOff", "LootB", "LootC" },
+		-- B and C put the cookie tin in the vault room, past Gus and the grid.
+		alt = { CookieTin = { B = { x = 12, z = -36 }, C = { x = -12, z = -36 } } },
 	},
 })

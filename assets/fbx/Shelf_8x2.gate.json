@@ -88,9 +88,10 @@
  ],
  "palette_audit": true,
  "passed": true,
+ "contentHash": "c188d73b149cdd2f2590",
  "fbx": {
   "path": "assets/fbx/Shelf_8x2.fbx",
-  "bytes": 30012,
+  "bytes": 30028,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -108,5 +109,5 @@
  "spec": "assets/blender/furniture.py",
  "notes": "Wall shelving 8x2x7.85: steel sides, dark boards with marble price strips, fixed-seed products.",
  "turntable": "docs/art/turntables/Shelf_8x2.png",
- "seconds": 6.2
+ "seconds": 38.0
 }

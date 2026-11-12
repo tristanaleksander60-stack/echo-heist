@@ -50,7 +50,8 @@ return Vault.spec(9, "dv09_sleigh_bell_alarm", "Sleigh Bell Alarm", "CornerShop"
 		Vault.cookieTin(),
 	},
 	daily = {
-		modifiers = { "None", "GuardFast", "GuardSlow", "LightsOff", "LootB" },
-		alt = { Bell = { B = { x = -8, z = -31 } } },
+		-- No GuardFast/GuardSlow: Gus dozes until the alarm (no patrol to speed up).
+		modifiers = { "None", "LightsOff", "LootB", "LootC" },
+		alt = { Stocking = { B = { x = -13, z = -24 }, C = { x = 5, z = -33 } } },
 	},
 })

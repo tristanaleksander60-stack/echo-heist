@@ -1,0 +1,192 @@
+{
+ "asset": "Van",
+ "objects": [
+  {
+   "name": "Van",
+   "class": "medium",
+   "tris": 1856,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    14.9,
+    7.08,
+    7.689
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -7.45,
+     -3.74,
+     0.0612
+    ],
+    "local_max": [
+     7.45,
+     3.34,
+     7.75
+    ]
+   },
+   "swatches": [
+    "exit",
+    "ink",
+    "ink_hi",
+    "marble_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 1039,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "PreciseConvexDecomposition",
+    "CanCollide": true,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Van"
+   ],
+   "joint": null,
+   "role": "exit",
+   "notes": "Getaway White body; hollow cargo bay with the sliding door open on -Y; chevrons point at the door",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Van_Shelf",
+   "class": "small",
+   "tris": 124,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    6.0,
+    0.98,
+    4.06
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.2,
+     1.9,
+     1.89
+    ],
+    "local_max": [
+     2.8,
+     2.88,
+     5.95
+    ]
+   },
+   "swatches": [
+    "steel",
+    "wood",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 82,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_TrophyShelf"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "trophy / ornament shelf inside the cargo bay: two dark boards (loot display rule)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 1980,
+ "seats": [
+  {
+   "name": "Van_Shelf",
+   "gap": 0.0,
+   "penetration": 0.1,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "a25e1316c18f9e11fed1",
+ "fbx": {
+  "path": "assets/fbx/Van.fbx",
+  "bytes": 52844,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Van",
+   "Van_Shelf"
+  ],
+  "geometry_extents": [
+   [
+    0.98,
+    4.06,
+    6.0
+   ],
+   [
+    7.08,
+    7.689,
+    14.9
+   ]
+  ]
+ },
+ "spec": "assets/blender/van.py",
+ "notes": "Getaway step van 14x6.4x7.75: hollow cargo bay, open sliding door (-Y), exit band with chevrons, roof rack.",
+ "turntable": "docs/art/turntables/Van.png",
+ "seconds": 7.0
+}

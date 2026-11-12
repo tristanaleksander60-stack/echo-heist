@@ -61,13 +61,35 @@ local function contentUri(inst: any, idName: string, contentName: string): strin
 	return if type(uri) == "string" then uri else ""
 end
 
+-- Every MeshPart under Kit, by name (as docs/art/KitPrepare.commandbar.lua does). Each Model is named after
+-- its FBX file and many MeshParts share their Model's name (CashBag inside CashBag), so
+-- kit:FindFirstChild(name, true) would return the Model: never look kit pieces up that way.
+local meshes: { [string]: any } = {}
+for _, d in kit:GetDescendants() do
+	if d:IsA("MeshPart") then
+		if meshes[d.Name] then
+			expect(false, "unique MeshPart name: " .. d:GetFullName() .. " and " .. meshes[d.Name]:GetFullName())
+		else
+			meshes[d.Name] = d
+		end
+		if parts[d.Name] == nil then
+			print("warn  " .. d:GetFullName() .. " is not in the manifest (an old or renamed piece)")
+		end
+	end
+end
+
 local textures: { [string]: boolean } = {}
 for name, want in parts do
-	local mesh = kit:FindFirstChild(name, true)
-	expect(mesh ~= nil and mesh:IsA("MeshPart"), name .. " is a MeshPart in ServerStorage/Kit")
-	if mesh == nil or not mesh:IsA("MeshPart") then
+	local mesh = meshes[name]
+	expect(mesh ~= nil, name .. " is a MeshPart in ServerStorage/Kit")
+	if mesh == nil then
 		continue
 	end
+	local model = mesh:FindFirstAncestorOfClass("Model")
+	expect(
+		model ~= nil and model.Name == want.model,
+		name .. " sits in the Model " .. want.model .. " (found " .. (if model then model.Name else "none") .. ")"
+	)
 	local size = prop(mesh, "Size")
 	local sizeOk = typeof(size) == "Vector3"
 		and math.abs(size.X - want.size[1]) <= SIZE_TOLERANCE
