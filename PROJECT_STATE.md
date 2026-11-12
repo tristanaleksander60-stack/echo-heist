@@ -26,6 +26,15 @@ _Last updated: 2026-11-12_
 - Publishing fails with HTTP 409 while Collaborative Editing is on or Studio holds the place: turn it off and close Studio.
 - Still needs a human playtest in Studio: feel, echo smoothness, animations, 2-player flow.
 
+## W1 progress (Nov 12)
+- Spike S6 PASSED: "Heist Night" Lighting recipe lives in default.project.json (LightingStyle and PrioritizeLightingQuality are written by Rojo 7.7.1); LevelBuilder no longer sets Lighting; place_check asserts it.
+- Spike S1 READY: clone phone bench (bench.project.json, src/bench). Waiting for the owner's phone results (README "Clone phone bench").
+- shared/Rec (Codec, Sampler, LoopClock, Validator) with 59 Lune unit tests (`lune run tests/run_unit.luau`). Not wired into the v0.1 server yet (the fun gate runs v0.1).
+- CI (GitHub Actions): compile check, LihFolk checker, rojo build (game + bench), place check, unit tests on every push.
+- Name checked (knock-out): no title, app or trademark "Heist Yourself" found. Concept doc originality claim corrected.
+- Remaining W1 for Claude: second selene config, bpy + turntable pipeline, stem test place (S4), mesh pipeline (S2), video capture (S3).
+- Owner: key scopes asset:write + DataStore (Nov 13), handles, ID/2SV, fun gate Mon Nov 16, bench results.
+
 ## Next (see MASTERPLAN §10.2 for the full W1 list)
 1. Fun gate: owner plays v0.1 in Studio with 2-3 people by Mon Nov 16 (`rojo build -o EchoHeist.rbxlx`), solo and 2-client, once with 30 s loops via Config.
 2. Feel pass: echo smoothness (consider client-side replay), guard readability (vision cone visual), sounds.
