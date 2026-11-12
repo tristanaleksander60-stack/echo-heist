@@ -1,0 +1,134 @@
+{
+ "G1a_diorama": {
+  "brightest_1pct_owner": {
+   "lamp": 4.4,
+   "other": 92.5,
+   "plate": 3.0,
+   "rug": 0.0,
+   "zone": 0.1
+  },
+  "brightest_group": "lamp",
+  "frame": "G1a_diorama.png",
+  "glow_share": 0.7,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.939,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.895,
+    "share": 0.44,
+    "warm": 15.3
+   },
+   "rug": {
+    "p95_luma": 0.597,
+    "share": 2.65,
+    "warm": 14.6
+   },
+   "zone": {
+    "p95_luma": 0.452,
+    "share": 3.91,
+    "warm": 13.3
+   }
+  },
+  "median_luma": 0.387,
+  "warm_share": 47.4
+ },
+ "G1b_classic": {
+  "brightest_1pct_owner": {
+   "lamp": 22.9,
+   "other": 76.9,
+   "rug": 0.0,
+   "van": 0.0,
+   "zone": 0.2
+  },
+  "brightest_group": "lamp",
+  "frame": "G1b_classic.png",
+  "glow_share": 0.7,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.936,
+    "share": 0.23,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.597,
+    "share": 0.62,
+    "warm": 7.0
+   },
+   "van": {
+    "p95_luma": 0.272,
+    "share": 20.92,
+    "warm": 1.0
+   },
+   "zone": {
+    "p95_luma": 0.524,
+    "share": 1.15,
+    "warm": 38.0
+   }
+  },
+  "median_luma": 0.237,
+  "warm_share": 25.3
+ },
+ "G2_party_wide": {
+  "brightest_1pct_owner": {
+   "cash": 19.2,
+   "lamp": 0.5,
+   "other": 69.7,
+   "rug": 10.6,
+   "zone": 0.0
+  },
+  "brightest_group": "lamp",
+  "frame": "G2_party_wide.png",
+  "glow_share": 1.2,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.902,
+    "share": 1.63,
+    "warm": 21.6
+   },
+   "lamp": {
+    "p95_luma": 0.936,
+    "share": 0.01,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.902,
+    "share": 1.83,
+    "warm": 15.2
+   },
+   "zone": {
+    "p95_luma": 0.454,
+    "share": 1.62,
+    "warm": 17.4
+   }
+  },
+  "median_luma": 0.263,
+  "warm_share": 21.5
+ },
+ "G3_garage": {
+  "brightest_1pct_owner": {
+   "board": 4.9,
+   "other": 95.1,
+   "van": 0.0
+  },
+  "brightest_group": "board",
+  "frame": "G3_garage.png",
+  "glow_share": 0.0,
+  "groups": {
+   "board": {
+    "p95_luma": 0.472,
+    "share": 3.35,
+    "warm": 33.4
+   },
+   "van": {
+    "p95_luma": 0.388,
+    "share": 22.4,
+    "warm": 0.3
+   }
+  },
+  "median_luma": 0.154,
+  "warm_share": 30.8
+ }
+}
