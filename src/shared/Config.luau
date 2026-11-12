@@ -1937,8 +1937,10 @@ Config.Perf = {
 		PROBE_SKIP_SECONDS = 0.5, -- the first frames after boot are load hitches, not the device
 		PROBE_SECONDS = 2.5, -- then this long is measured
 		PROBE_MIN_FRAMES = 20, -- fewer frames than this (a backgrounded app) and the probe says nothing
-		PROBE_SLOW_P95_MS = 36, -- p95 slower than 30 fps on the card: one tier lower
-		PROBE_VERY_SLOW_MEDIAN_MS = 50, -- median under 20 fps on the card: two tiers lower
+		-- judged by the median (boot hitches and texture loads spike a few frames, they do not move it): slower
+		-- than 30 fps (Analytics.Perf SLOW_MS: an OS 30 fps cap is not slow) one tier lower, under 20 fps two
+		PROBE_SLOW_MEDIAN_MS = 36,
+		PROBE_VERY_SLOW_MEDIAN_MS = 50,
 	},
 }
 

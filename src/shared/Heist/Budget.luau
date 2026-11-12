@@ -242,7 +242,7 @@ function Budget.probeTier(tier: number, probe: Probe?): number
 	local lower = 0
 	if probe.medianMs > S.PROBE_VERY_SLOW_MEDIAN_MS then
 		lower = 2
-	elseif probe.p95Ms > S.PROBE_SLOW_P95_MS then
+	elseif probe.medianMs > S.PROBE_SLOW_MEDIAN_MS then
 		lower = 1
 	end
 	return math.max(start, math.min(start + lower, S.MAX))

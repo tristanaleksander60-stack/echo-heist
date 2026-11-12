@@ -245,11 +245,13 @@ return function(test)
 		local ST = P.START
 		local fast = { frames = 150, medianMs = 16.7, p95Ms = 18 }
 		local capped = { frames = 75, medianMs = 33.4, p95Ms = 34 } -- an OS 30 fps cap: not slow
-		local slow = { frames = 60, medianMs = 34, p95Ms = 45 }
+		local slow = { frames = 60, medianMs = 40, p95Ms = 45 }
+		local hitchy = { frames = 120, medianMs = 17, p95Ms = 90 } -- boot hitches: a few long frames
 		local crawl = { frames = 40, medianMs = 60, p95Ms = 80 }
 		Assert.eq(Budget.probeTier(1, fast), 1, "fast card: unchanged")
 		Assert.eq(Budget.probeTier(2, fast), 2, "a fast card never raises quality")
 		Assert.eq(Budget.probeTier(1, capped), 1, "a 30 fps cap is not slow")
+		Assert.eq(Budget.probeTier(1, hitchy), 1, "load hitches do not move the median")
 		Assert.eq(Budget.probeTier(1, slow), 2, "slow card: one lower")
 		Assert.eq(Budget.probeTier(2, slow), 3, "slow card on a phone: recipe C")
 		Assert.eq(Budget.probeTier(1, crawl), 3, "crawling card: two lower")
