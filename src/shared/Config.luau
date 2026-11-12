@@ -347,7 +347,7 @@ Config.Heist = {
 	LINEUP_CAM_FOV_MAX = 80, -- a wall in the way pulls the camera in and widens the lens up to this
 	LINEUP_CAM_HEIGHT = 2.4, -- studs above the floor: a low camera looking up at the crew
 	LINEUP_CAM_LOOK_HEIGHT = 3.4,
-	LINEUP_CAM_FIT_WIDTH = 0.6, -- the row fills at most this share of the frame width (landscape)
+	LINEUP_CAM_FIT_WIDTH = 0.32, -- the row fills at most this share of the frame width (9:16-safe, CAMERA.LINEUP)
 	LINEUP_CAM_FIT_HEIGHT = 0.45, -- a figure fills at most this share of the frame height
 	LINEUP_CAM_DISTANCE = { 7, 40 }, -- studs: min, max
 	LINEUP_CAM_MOVE_SECONDS = 1.4, -- ease from the play camera to the line-up shot
@@ -359,6 +359,72 @@ Config.Heist = {
 	-- Analytics Events.DOMAINS.perfTier. 1 = quality ... 4 = minimum.
 	PERF_TIERS = { "quality", "balanced", "performance", "minimum" },
 	PERF_READY_TIMEOUT = 15, -- s to wait for the Analytics remotes before telemetry gives up
+}
+
+-- Camera track (PLAN_STEAM_PLUS §4.2 C0, C1, C5; docs/audit/POLISH.md §4.5; docs/GOLDEN_FRAMES.md).
+-- Client Heist/CameraDirector (engine) + Heist/CameraMath (pure, Lune-tested). Angles in degrees,
+-- distances in studs, times in seconds. The player's pick persists as the boolean setting
+-- `classicCamera` (Data.SetSetting; off = diorama).
+Config.Heist.CAMERA = {
+	DEFAULT_MODE = "diorama", -- decision D5 A/B: "diorama" | "classic"
+	-- C0 "diorama": the long lens that makes the town read as a miniature and shows your crew.
+	DIORAMA = {
+		PITCH = 50, -- degrees down (design band 45-55)
+		PITCH_MIN = 35, -- never flatter: the walls must not hide the room
+		PITCH_MAX = 65,
+		DISTANCE = 28, -- studs from the focus (design band 26-32)
+		ZOOM_MIN = 20, -- zoom limits (wheel, pinch, I / O keys)
+		ZOOM_MAX = 38,
+		FOV = 42, -- vertical, degrees (design band 40-45)
+		SUBJECT_SCREEN_Y = -0.35, -- you sit in the lower third: normalised height below the centre (-1..1)
+		FOCUS_HEIGHT = 1.5, -- studs above the HumanoidRootPart
+		FOLLOW_RATE = 14, -- 1/s: exponential follow of the focus (frame-rate independent)
+		SNAP_DISTANCE = 20, -- studs: a teleport this far snaps instead of gliding
+		YAW_PER_SCREEN = 240, -- degrees of yaw for a drag across the whole screen width (touch, right mouse)
+		PITCH_PER_SCREEN = 90, -- degrees of pitch for a drag over the whole screen height
+		WHEEL_STEP = 0.12, -- share of the distance per wheel notch
+		KEY_ZOOM_RATE = 1.2, -- share of the distance per second while I / O is held
+		PAD_YAW_RATE = 150, -- degrees a second at full right stick
+		PAD_PITCH_RATE = 70,
+		PAD_DEADZONE = 0.2,
+		THUMBSTICK_MARGIN = 24, -- px around the touch thumbstick frame that never rotates the camera
+	},
+	-- "classic": today's Roblox follow cam, constrained (POLISH §4.5 rule 1).
+	CLASSIC = {
+		FOV = 70,
+		ZOOM_MIN = 8,
+		ZOOM = 16,
+		ZOOM_MAX = 28,
+		PITCH = 25, -- the run-start beat ends behind you at this pitch, then the default camera takes over
+	},
+	-- Both modes: walls between the camera and you fade (POLISH §4.5 rule 1, vault "Camera Obstruction").
+	FADE = {
+		HZ = 10, -- obstruction checks a second (Camera:GetPartsObscuringTarget)
+		ALPHA = 0.7, -- LocalTransparencyModifier of a faded wall
+		IN_SECONDS = 0.1, -- fade out of the way within this
+		OUT_SECONDS = 0.25, -- and come back over this once clear
+		INVISIBLE = 0.95, -- parts at least this transparent are colliders, never faded
+		POINTS = { 2.4, 0, -1.8 }, -- studs above the root: head, root, feet (three cast points: no flicker)
+	},
+	-- C1: the run-start framing beat (eases from the objective to you; any input skips it). It
+	-- always ends when the transition ends (control returns), so it never delays first control.
+	BEAT_SECONDS = 0.8,
+	FOV_KICK_MAX = 6, -- POLISH §4.5 rule 8: FOV kicks stay within +-6 degrees
+	-- C5: the Line-up shot keeps every figure inside the central 32 % of the frame width
+	-- (9:16-safe, premium H3) and searches for a clear lane: straight on first, then higher.
+	LINEUP = {
+		CENTRAL_SHARE = 0.32,
+		ROW_GAP = 5, -- studs: a row inside the van body slides this far clear of it toward the shop
+		HEIGHTS = { 2.4, 6, 10, 14, 18, 22, 26 }, -- camera heights tried, lowest first
+		YAWS = { 0, 18, -18 }, -- degrees off the row's facing tried at each height
+		MAX_DISTANCE = 60, -- studs
+		FIGURE_HALF_WIDTH = 1.25,
+	},
+	-- Golden-frame staging (Studio only, workspace attribute EH_Scenario; docs/GOLDEN_FRAMES.md "Capture").
+	GOLDEN = {
+		G2 = { PITCH = 45, FOV = 45, YAW = 0, MAX_DISTANCE = 70 },
+		G3 = { PITCH = 30, DISTANCE = 22, FOV = 45, YAW = 35 },
+	},
 }
 
 -- Data layer (src/server/Data, src/shared/Data), MASTERPLAN §5 and §8.7; docs/DATA.md.

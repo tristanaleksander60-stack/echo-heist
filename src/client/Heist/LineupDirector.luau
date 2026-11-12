@@ -44,6 +44,7 @@ local Sound = require(script.Parent:WaitForChild("Sound"))
 local Ui = require(script.Parent:WaitForChild("Ui"))
 
 local H = Config.Heist
+local CAM = H.CAMERA
 local FONT = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Heavy)
 
 local LineupDirector = {}
@@ -219,7 +220,10 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 			return
 		end
 		local cam = workspace.CurrentCamera
-		if cam then
+		local cameraDirector = state.camera -- Heist/CameraDirector: it takes the camera back in its mode
+		if cameraDirector then
+			cameraDirector.resume("lineup")
+		elseif cam then
 			cam.FieldOfView = s.fov
 			cam.CameraType = Enum.CameraType.Custom
 			local lp = Players.LocalPlayer
@@ -368,7 +372,15 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 		for i, p in spots do
 			plain[i] = { x = p.X, z = p.Z }
 		end
-		local out, newYaw = LineupPlan.arrange(plain, yaw, box, 0.5, 60)
+		-- C5: keep the street-facing row and slide it toward the shop front (the camera then
+		-- looks over the van); turning round is the fallback when sliding finds no room.
+		local out, newYaw = plain, yaw
+		local slid, didSlide = LineupPlan.slide(plain, yaw, box, CAM.LINEUP.ROW_GAP, 0.5, 80)
+		if didSlide then
+			out = slid
+		else
+			out, newYaw = LineupPlan.arrange(plain, yaw, box, 0.5, 60)
+		end
 		local moved: { Vector3 } = {}
 		for i, p in out do
 			moved[i] = Vector3.new(p.x, spots[i].Y, p.z)
@@ -473,6 +485,62 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 			fov = fov,
 			start = at(d * (1 + H.LINEUP_CAM_PUSH), 0.6),
 			final = at(d, 0),
+		}
+	end
+
+	-- C5: the 9:16-safe shot (every figure inside the central CAM.LINEUP.CENTRAL_SHARE of the
+	-- width) from LineupPlan.shot: straight on and low first, then higher over the van, with
+	-- clear lanes to every figure. Nil when nothing fits (frameShot pulls in and widens).
+	local function searchShot(spots: { Vector3 }, rowYaw: number, floorY: number): any
+		local cam = workspace.CurrentCamera
+		local level = state.folder and state.folder:FindFirstChild("Level")
+		if not cam or not level then
+			return nil
+		end
+		local vp = cam.ViewportSize
+		local origin: Vector3 = state.origin
+		local params = RaycastParams.new()
+		params.FilterType = Enum.RaycastFilterType.Include
+		params.FilterDescendantsInstances = { level }
+		local plain = {}
+		for i, p in spots do
+			plain[i] = { x = p.X, z = p.Z }
+		end
+		local L = CAM.LINEUP
+		local found = LineupPlan.shot({
+			spots = plain,
+			yaw = rowYaw,
+			floorY = floorY,
+			fov = H.LINEUP_CAM_FOV,
+			aspect = math.max(vp.X, 1) / math.max(vp.Y, 1),
+			share = L.CENTRAL_SHARE,
+			shareY = 0.9,
+			figureHeight = H.LINEUP_FIGURE_HEIGHT,
+			figureHalfWidth = L.FIGURE_HALF_WIDTH,
+			lookHeight = H.LINEUP_CAM_LOOK_HEIGHT,
+			heights = L.HEIGHTS,
+			yaws = L.YAWS,
+			minDistance = H.LINEUP_CAM_DISTANCE[1],
+			maxDistance = L.MAX_DISTANCE,
+			push = H.LINEUP_CAM_PUSH,
+			blocked = function(from: { number }, to: { number }): boolean
+				local a = origin + Vector3.new(from[1], from[2], from[3])
+				local b = origin + Vector3.new(to[1], to[2], to[3])
+				local hit = workspace:Raycast(a, b - a, params)
+				return hit ~= nil and hit.Distance < (b - a).Magnitude - 0.5
+			end,
+		})
+		if not found then
+			return nil
+		end
+		local function v(t: { number }): Vector3
+			return origin + Vector3.new(t[1], t[2], t[3])
+		end
+		local lookAt = v(found.look)
+		return {
+			fov = H.LINEUP_CAM_FOV,
+			start = CFrame.lookAt(v(found.start), lookAt),
+			final = CFrame.lookAt(v(found.pos), lookAt),
 		}
 	end
 
@@ -664,11 +732,14 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 		-- The HUD and CoreGui go now; the run's clones and the real characters stay until the
 		-- figures are built (buildSome swaps them in one frame).
 		collectCharacters()
+		if state.camera then
+			state.camera.suspend("lineup") -- CameraDirector stops writing until restore()
+		end
 		saved = { fov = cam.FieldOfView, cf = cam.CFrame }
 		pcall(StarterGui.SetCoreGuiEnabled, StarterGui, Enum.CoreGuiType.All, false)
 		controls(false)
 		hud.setCutscene(true)
-		shot = frameShot(centre, fwd, width)
+		shot = searchShot(spots, rowYaw, floorY) or frameShot(centre, fwd, width)
 		cam.CameraType = Enum.CameraType.Scriptable
 		if reduced then
 			cam.CFrame = shot.final

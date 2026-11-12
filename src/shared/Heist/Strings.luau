@@ -89,6 +89,14 @@ Strings.MENU_TITLE = "Leave this heist?"
 Strings.KEEP_PLAYING = "KEEP PLAYING"
 Strings.BACK_TO_GARAGE = "BACK TO GARAGE"
 Strings.HIDDEN = "HIDDEN"
+-- The MENU's camera A/B button (Heist/CameraDirector modes); the label names the mode in use.
+Strings.CAMERA_MODE = table.freeze({
+	diorama = "CAMERA: DIORAMA",
+	classic = "CAMERA: CLASSIC",
+})
+function Strings.cameraMode(mode: string?): string
+	return Strings.CAMERA_MODE[mode or "diorama"] or Strings.CAMERA_MODE.diorama
+end
 Strings.PREPARING = "The van door opens..."
 
 ---------------------------------------------------------------------------

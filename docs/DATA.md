@@ -49,7 +49,7 @@ Never rename `STORE_NAME` or `KEY_PREFIX` after launch. `Keys.isWritable` makes 
 | `bagLevel` | 0-3 | Clone Party carry upgrades (Cash) |
 | `cosmetics.owned[id]`, `cosmetics.equipped[slot]` | `true`, id | Slots: `cloneStyle`, `cloneHat`, `vanPaint`, `trail`. Defaults are owned implicitly |
 | `daily` | `{ lastClearDay, streak, bestStreak, stars, haulDay, haulBest, haulClones, haulTimeMs }` | Daily vault (UTC day numbers) and the "biggest haul today" entry with its tie-breaks (clones, then time) |
-| `settings` | `{ reducedMotion, relaxed, colourBlindGlyphs }` | Booleans |
+| `settings` | `{ reducedMotion, relaxed, colourBlindGlyphs, classicCamera }` | Booleans (`classicCamera`: the camera A/B pick, off = diorama; additive, no migration) |
 | `ftueStep`, `firstHeistDone`, `stats = { heists, clears }` | numbers, boolean | Onboarding and counters |
 
 Stars are stored as a `Currency` balance so the UI gets a `Stars` attribute. The balance is a mirror: it is recomputed from the medals plus `daily.stars` after every award and on load, and it is never spent. Cash and Candy Canes are normal balances. None of them can be bought with Robux (`paid = false`).

@@ -194,12 +194,33 @@ function Messages.build(ctx: any): any
 		Name = "MenuSheet",
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.fromOffset(420, 190),
+		Size = UDim2.fromOffset(420, 200 + TAP),
 		Visible = false,
 		ZIndex = 30,
 	})
 	Ui.corner(menuSheet, 18)
 	msg.menuSheet = menuSheet
+	-- Camera A/B (PLAN_STEAM_PLUS §4.2 C0, decision D5): one tap flips DIORAMA / CLASSIC and
+	-- saves it (Heist/CameraDirector); the label always shows the mode in use.
+	local cameraBtn: TextButton
+	cameraBtn = Ui.button(menuSheet, {
+		Name = "CameraMode",
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.fromOffset(210, 62),
+		Size = UDim2.fromOffset(300, TAP),
+		TextSize = 20,
+		Text = Strings.cameraMode(if actions.cameraMode then actions.cameraMode() else nil),
+		ZIndex = 32,
+	}, function()
+		if actions.toggleCamera then
+			cameraBtn.Text = Strings.cameraMode(actions.toggleCamera())
+		end
+	end, "UIToggle")
+	if actions.onCameraMode then
+		actions.onCameraMode(function(mode: string)
+			cameraBtn.Text = Strings.cameraMode(mode)
+		end)
+	end
 	Ui.label(menuSheet, {
 		Position = UDim2.fromOffset(0, 14),
 		Size = UDim2.new(1, 0, 0, 40),

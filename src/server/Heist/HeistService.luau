@@ -41,6 +41,7 @@ local Calendar = require(DataShared:WaitForChild("Calendar"))
 local DailyVault = require(DataShared:WaitForChild("DailyVault"))
 local Codec = require(Shared:WaitForChild("Rec"):WaitForChild("Codec"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
+local Scenario = require(Shared:WaitForChild("Heist"):WaitForChild("Scenario"))
 local LihFolk = ReplicatedStorage:WaitForChild("LihFolk")
 local Net = require(LihFolk:WaitForChild("Net"))
 local Signal = require(LihFolk:WaitForChild("Signal"))
@@ -48,6 +49,7 @@ local Signal = require(LihFolk:WaitForChild("Signal"))
 local HeistInstance = require(script.Parent:WaitForChild("HeistInstance"))
 local Avatars = require(script.Parent:WaitForChild("Avatars"))
 local Lobby = require(script.Parent:WaitForChild("Lobby"))
+local Staging = require(script.Parent:WaitForChild("Staging"))
 local LiveFlags = require(script.Parent.Parent:WaitForChild("Analytics"):WaitForChild("LiveFlags"))
 
 local T = Net.T
@@ -91,6 +93,7 @@ export type CreateOpts = {
 }
 
 local started = false
+local staging: string? = nil -- golden-frame scenario (Studio only, Heist/Staging); nil on live servers
 local DataService: any = nil
 local Analytics: any = nil
 local KitService: any = nil
@@ -801,6 +804,32 @@ local function waitForKit()
 	end
 end
 
+-- Golden-frame staging (Studio only: `staging` is nil unless RunService:IsStudio(), see
+-- Heist/Staging): G1 / TYPE start L1, G2 / CLONE_AB start the Clone Party with the solution's
+-- clones seeded into your deck (you + 7 = 8 OF ME in run 1), G3 stays in the garage.
+local function stage(player: Player, crew: Crew, name: string): boolean
+	local spec = Scenario.spec(name)
+	if not spec then
+		return false
+	end
+	if not spec.level then
+		push(player, "Sync", syncPayload(player))
+		return true
+	end
+	local index = Protocol.catalogIndex(spec.level)
+	if not index then
+		return false
+	end
+	waitForKit()
+	if not startHeist(crew, index) then
+		return false
+	end
+	if spec.tapes and crew.instance then
+		Staging.seed(crew.instance, player.UserId)
+	end
+	return true
+end
+
 ---------------------------------------------------------------------------
 -- Remotes
 ---------------------------------------------------------------------------
@@ -1124,6 +1153,12 @@ local function onPlayerAdded(player: Player)
 			return
 		end
 		local crew = crewOf[player]
+		if staging and crew and crew.leader == player and not crew.instance then
+			preparing[player] = nil
+			if stage(player, crew, staging) then
+				return
+			end
+		end
 		if
 			crew
 			and H.FTUE_AUTOSTART
@@ -1196,6 +1231,10 @@ function HeistService.start(opts: StartOpts?)
 	local o: StartOpts = opts or {}
 	heistFolder()
 	Avatars.folder()
+	staging = Staging.active()
+	if staging then
+		Staging.prepare(staging)
+	end
 	if o.lobby ~= false then
 		Lobby.build()
 	end
