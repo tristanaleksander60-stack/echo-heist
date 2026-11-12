@@ -35,6 +35,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local HeistShared = Shared:WaitForChild("Heist")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Sampler = require(Shared:WaitForChild("Rec"):WaitForChild("Sampler"))
+local Budget = require(HeistShared:WaitForChild("Budget"))
 local CloneGait = require(HeistShared:WaitForChild("CloneGait"))
 local ClonePose = require(HeistShared:WaitForChild("ClonePose"))
 local CloneState = require(HeistShared:WaitForChild("CloneState"))
@@ -310,7 +311,7 @@ function EchoView.new(state: any): any
 
 	-- §6.8: tier 4 drops the Highlights, except on your own clones (never invisible by design).
 	local function highlightOn(ownerId: number): boolean
-		return tierNow < 4 or ownerId == myId()
+		return Budget.othersHighlight(tierNow) or ownerId == myId()
 	end
 
 	local function poolFor(ownerId: number, hue: Color3): Pool
@@ -362,6 +363,7 @@ function EchoView.new(state: any): any
 		Rigs.loadPack(rig, Rigs.packOf(t))
 		local anchor = Rigs.anchorPart(rig)
 		local badge, pill, number = pillGui(anchor)
+		badge.MaxDistance = Budget.pillDistance(tierNow)
 		local bubble, bubbleText = bubbleGui(anchor)
 		local trailA0 = Instance.new("Attachment")
 		trailA0.Position = Vector3.new(0, 0.6, 0)
@@ -409,6 +411,8 @@ function EchoView.new(state: any): any
 			phase = 0,
 			fade = -1,
 			near = false,
+			glowOk = true, -- the tier's glow budget (Budget.glowSet) lets this clone draw its floor glow
+			camDist = 0,
 		}
 		Icons.attach(pill, "seat_circle", {
 			AnchorPoint = Vector2.new(0, 0.5),
@@ -648,7 +652,7 @@ function EchoView.new(state: any): any
 			say(entry, words.Busted, Palette.alarm, 1.2, now)
 		elseif kind == "Zapped" then
 			entry.emitter.Color = ColorSequence.new(Palette.ink)
-			entry.emitter:Emit(C.ZAP_SPARKS)
+			entry.emitter:Emit(Budget.burst(tierNow, C.ZAP_SPARKS))
 			entry.emitter.Color = ColorSequence.new(entry.hue)
 			say(entry, words.Zapped, Palette.alarm, 1.0, now)
 		elseif kind == "Stuck" then
@@ -720,6 +724,26 @@ function EchoView.new(state: any): any
 	local parts: { BasePart } = {}
 	local cframes: { CFrame } = {}
 
+	-- The tier's floor-glow budget (Budget.glowSet: your own clones first, then the nearest). Rechecked every
+	-- Config.Perf.GLOW_RECHECK_SECONDS and on a tier change; a clone over the budget keeps its pill and Highlight.
+	local glowCheckAt = -math.huge
+	local glowCandidates: { Budget.GlowCandidate } = {}
+	local function applyGlowBudget()
+		local me = myId()
+		table.clear(glowCandidates)
+		for i, entry in order do
+			glowCandidates[i] = { own = entry.actor ~= nil and entry.actor.owner == me, dist = entry.camDist or 0 }
+		end
+		local allowed = Budget.glowSet(tierNow, glowCandidates)
+		for i, entry in order do
+			local ok = allowed[i] == true
+			if entry.glowOk ~= ok then
+				entry.glowOk = ok
+				entry.glowGui.Enabled = ok and (entry.printing == true or entry.fade < 1)
+			end
+		end
+	end
+
 	-- Poses every clone at view time tView (or along the reel when `reelT` is set:
 	-- the rewind plays each path backwards from the end of the last run, §7.1).
 	function view.update(tView: number, now: number, dt: number, reelT: number?)
@@ -754,9 +778,9 @@ function EchoView.new(state: any): any
 			if entry.burstAt and now >= entry.burstAt then
 				entry.burstAt = nil
 				if not state.reduced then
-					entry.ribbons:Emit(C.RIBBON_COUNT)
+					entry.ribbons:Emit(Budget.burst(tierNow, C.RIBBON_COUNT))
 				end
-				entry.emitter:Emit(C.SPARK_COUNT)
+				entry.emitter:Emit(Budget.burst(tierNow, C.SPARK_COUNT))
 			end
 			-- Gone (busted / zapped, vanished): nothing to sample or pose until the reel.
 			local goneFor = if fx and fx.gone and not reelT then now - (fx.goneAtLocal or now) else -1
@@ -786,6 +810,7 @@ function EchoView.new(state: any): any
 			local feet = CFrame.new(origin + Vector3.new(f.x, f.y - rig.rootHeight, f.z)) * CFrame.Angles(0, f.yaw, 0)
 			local pos = feet.Position + Vector3.new(0, 3, 0)
 			local camDist = (pos - camPos).Magnitude
+			entry.camDist = camDist
 
 			-- Walk cycle locked to the recording: distance travelled, not wall time.
 			local distance = CloneGait.distanceAt(rec, entry.dist, t)
@@ -932,7 +957,7 @@ function EchoView.new(state: any): any
 				Rigs.setPrint(rig, h)
 				entry.fade = 0
 				entry.badge.Enabled = true
-				entry.glowGui.Enabled = true
+				entry.glowGui.Enabled = entry.glowOk
 				entry.band.Transparency = C.PRINT_BAND_ALPHA + (1 - C.PRINT_BAND_ALPHA) * p
 				table.insert(parts, entry.band)
 				table.insert(cframes, CFrame.new(glowAt + Vector3.new(0, h, 0)) * CFrame.Angles(0, 0, math.pi / 2))
@@ -959,7 +984,7 @@ function EchoView.new(state: any): any
 					entry.fade = fade
 					Rigs.setFade(rig, fade)
 					entry.badge.Enabled = fade < 1
-					entry.glowGui.Enabled = fade < 1
+					entry.glowGui.Enabled = fade < 1 and entry.glowOk
 				end
 			end
 
@@ -992,6 +1017,10 @@ function EchoView.new(state: any): any
 		end
 		if #parts > 0 then
 			workspace:BulkMoveTo(parts, cframes, Enum.BulkMoveMode.FireCFrameChanged)
+		end
+		if now - glowCheckAt >= Config.Perf.GLOW_RECHECK_SECONDS then
+			glowCheckAt = now
+			applyGlowBudget()
 		end
 		if now - healthAt >= H.CLONE_HEALTH_INTERVAL then
 			healthAt = now
@@ -1133,15 +1162,37 @@ function EchoView.new(state: any): any
 		table.clear(order)
 	end
 
-	-- Runtime performance tier (§6.3): 2+ drops trails (and your halo light), 4 drops the owner
-	-- Highlights of other players' clones (yours keep theirs).
+	-- Runtime performance tier (§6.3; budgets in Shared/Heist/Budget, docs/PERF.md): trails only at tier 1 (and
+	-- your halo light at 1-2), the pill's draw distance, the floor-glow cap (your own clones first), smaller
+	-- bursts; tier 4 drops the owner Highlights of other players' clones (yours keep theirs).
 	function view.setTier(tier: number)
 		tierNow = tier
-		trailsOn = tier < 2
+		trailsOn = Budget.forTier(tier).trails
 		halo.setTier(tier)
 		for ownerId, pool in pools do
 			pool.highlight.Enabled = highlightOn(ownerId)
 		end
+		local pillMax = Budget.pillDistance(tier)
+		for _, pool in pools do
+			for _, entry in pool.free do
+				entry.badge.MaxDistance = pillMax
+			end
+		end
+		for _, entry in active do
+			entry.badge.MaxDistance = pillMax
+		end
+		applyGlowBudget()
+	end
+
+	-- Floor glows drawn right now (tests, perf_engine).
+	function view.glowCount(): number
+		local n = 0
+		for _, entry in order do
+			if entry.glowGui.Enabled then
+				n += 1
+			end
+		end
+		return n
 	end
 
 	-- The rig drawing an actor (tests, diagnostics).

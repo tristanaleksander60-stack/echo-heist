@@ -25,7 +25,6 @@
 -- The client never decides an outcome: it only sends intents (Heist.* remotes).
 
 local GuiService = game:GetService("GuiService")
-local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -38,6 +37,7 @@ local LoopClock = require(Rec:WaitForChild("LoopClock"))
 local Sim = Shared:WaitForChild("Sim")
 local EventLog = require(Sim:WaitForChild("EventLog"))
 local LevelSpec = require(Sim:WaitForChild("LevelSpec"))
+local Budget = require(Shared:WaitForChild("Heist"):WaitForChild("Budget"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local Net = require(ReplicatedStorage:WaitForChild("LihFolk"):WaitForChild("Net"))
 
@@ -109,6 +109,7 @@ function HeistClient.start()
 		liveCount = 1,
 		reduced = GuiService.ReducedMotionEnabled or Settings.get("reducedMotion") == true,
 		particleScale = 1,
+		perfTier = 1, -- the runtime performance tier (Telemetry.onTier; Shared/Heist/Budget)
 		guardPath = Settings.get("guardPath") ~= false, -- GusView: his boot prints
 		colourBlindGlyphs = Settings.get("colourBlindGlyphs") == true, -- seat shapes beside numbers
 	}
@@ -248,15 +249,16 @@ function HeistClient.start()
 	-- Telemetry and the runtime performance tier (§6.3, §8.6).
 	Telemetry.start()
 	Telemetry.setCloneCounter(echo.visibleCount)
-	local shadowsWere = Lighting.GlobalShadows
+	-- Budgets per tier: Shared/Heist/Budget (Config.Perf, docs/PERF.md). LightDirector owns the Lighting service
+	-- (recipe C "Soft Toybox" from tier 3, incl. GlobalShadows off).
 	Telemetry.onTier(function(tier: number)
+		state.perfTier = tier
+		state.particleScale = Budget.particleScale(tier)
 		director.setBlurAllowed(tier < 2)
 		echo.setTier(tier)
 		lineup.setTier(tier)
 		lights.setTier(tier)
 		backdrop.setTier(tier)
-		state.particleScale = if tier >= 3 then 0.5 else 1
-		Lighting.GlobalShadows = if tier >= 3 then false else shadowsWere
 	end)
 	DebugChip.start(echo, Telemetry.tier) -- Studio only: clones drawn / healthy / tier / avatar
 	GoldenShots.start(camera, state, echo) -- Studio only: golden-frame staging (EH_Scenario)
