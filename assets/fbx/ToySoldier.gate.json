@@ -1,0 +1,112 @@
+{
+ "asset": "ToySoldier",
+ "objects": [
+  {
+   "name": "ToySoldier",
+   "class": "medium",
+   "tris": 2736,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    3.5,
+    4.02,
+    11.32
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.75,
+     -2.27,
+     0.0
+    ],
+    "local_max": [
+     1.75,
+     1.75,
+     11.32
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi",
+    "steel",
+    "steel_lo",
+    "wood",
+    "wood_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 1055,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "toy",
+   "notes": "Toy Shop signature silhouette (L5): origin = the plinth centre on the floor (the drum overhangs the plinth toward -Y); visual only, in the front corner, facing the street",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 2736,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "3273d4c22894ecb5f5a6",
+ "fbx": {
+  "path": "assets/fbx/ToySoldier.fbx",
+  "bytes": 74460,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "ToySoldier"
+  ],
+  "geometry_extents": [
+   [
+    3.5,
+    4.02,
+    11.32
+   ]
+  ]
+ },
+ "spec": "assets/blender/signature.py",
+ "notes": "Giant toy drummer 11.3 tall on a 3.5 round plinth: bearskin, burgundy coat, white X belts, snare drum.",
+ "turntable": "docs/art/turntables/ToySoldier.png",
+ "seconds": 6.0
+}

@@ -87,6 +87,18 @@
    "sha256": "ab37d5a3adb30e7e536eb6d8cb1ed82e06b5f8db4d806b92063a3261f3e95a93",
    "uploaded": "2026-11-12T11:20:58Z"
   },
+  "BankersLamp": {
+   "assetId": 138758854637908,
+   "file": "assets/fbx/BankersLamp.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "BankersLamp"
+   ],
+   "revisionId": "1",
+   "sha256": "c04db630b54ec94a28076ea9b3b82257222c75166657dfc99b6f33070fad8dbb",
+   "uploaded": "2026-11-12T17:18:43Z"
+  },
   "Candy": {
    "assetId": 98835635040680,
    "file": "assets/fbx/Candy.fbx",
@@ -123,6 +135,18 @@
    "revisionId": "1",
    "sha256": "9f64710255ead1f4fd3eb28d5fd6375622f25b9af8f4a1d2b9de40ec8bd9005d",
    "uploaded": "2026-11-12T11:21:42Z"
+  },
+  "Column_2x12": {
+   "assetId": 112027802609788,
+   "file": "assets/fbx/Column_2x12.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Column_2x12"
+   ],
+   "revisionId": "1",
+   "sha256": "89e400cdf274b80d0d245771ac4feeb6e2266d5bedba5472e9542f3f3c7d756d",
+   "uploaded": "2026-11-12T17:18:51Z"
   },
   "Counter_4x4": {
    "assetId": 85663296446467,
@@ -500,6 +524,32 @@
    "sha256": "5c958e20b8491a873c1a09612344ae2c4976c0bfd84fdcd05f5dd8993f201529",
    "uploaded": "2026-11-12T11:27:53Z"
   },
+  "Skyline_Far": {
+   "assetId": 110173936074097,
+   "file": "assets/fbx/Skyline_Far.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Skyline_Far",
+    "Skyline_Far_Windows"
+   ],
+   "revisionId": "1",
+   "sha256": "0ddcb2b930716db36b35b2cff7adf3187907195b8689e9de2eea44fc49183106",
+   "uploaded": "2026-11-12T17:19:02Z"
+  },
+  "Skyline_Near": {
+   "assetId": 126730984101373,
+   "file": "assets/fbx/Skyline_Near.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Skyline_Near",
+    "Skyline_Near_Windows"
+   ],
+   "revisionId": "1",
+   "sha256": "e5573a0c22c1d637665250e9259bba8061461e8ac39434fa479ed59653ecab9e",
+   "uploaded": "2026-11-12T17:19:14Z"
+  },
   "Storefront_24x12": {
    "assetId": 94915564343762,
    "file": "assets/fbx/Storefront_24x12.fbx",
@@ -563,6 +613,18 @@
    "revisionId": "1",
    "sha256": "1f50ba9e94789ac3269d5bbb10680aafc8711b944cf00be98492922a222d731e",
    "uploaded": "2026-11-12T11:29:07Z"
+  },
+  "ToySoldier": {
+   "assetId": 74425849811909,
+   "file": "assets/fbx/ToySoldier.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "ToySoldier"
+   ],
+   "revisionId": "1",
+   "sha256": "943e127f3ee883e6b0d5e2bb7690032fcc8682de0e2af0120502d5ebd7ede4ae",
+   "uploaded": "2026-11-12T17:19:22Z"
   },
   "Van": {
    "assetId": 140548604204136,

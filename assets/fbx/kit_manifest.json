@@ -48,6 +48,40 @@
     ]
    }
   },
+  "BankersLamp": {
+   "model": "BankersLamp",
+   "size": [
+    1.32,
+    1.44,
+    0.86
+   ],
+   "tris": 328,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.66,
+    0.0,
+    -0.43
+   ],
+   "boundsMax": [
+    0.66,
+    1.44,
+    0.43
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
   "Candy": {
    "model": "Candy",
    "size": [
@@ -195,6 +229,40 @@
    ],
    "tags": [
     "EH_Loot"
+   ]
+  },
+  "Column_2x12": {
+   "model": "Column_2x12",
+   "size": [
+    2.0,
+    12.0,
+    2.0
+   ],
+   "tris": 600,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.0,
+    0.0,
+    -1.0
+   ],
+   "boundsMax": [
+    1.0,
+    12.0,
+    1.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
    ]
   },
   "Counter_4x4": {
@@ -2454,6 +2522,144 @@
    ],
    "sim": "door: the 8 x 10 entrance box (wall line +- 0.5), solid when down"
   },
+  "Skyline_Far": {
+   "model": "Skyline_Far",
+   "size": [
+    604.401,
+    100.949,
+    638.695
+   ],
+   "tris": 352,
+   "class": "medium",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -634.987,
+    0.0,
+    -0.0
+   ],
+   "boundsMax": [
+    -30.586,
+    100.949,
+    638.695
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "Skyline_Far_Windows": {
+   "model": "Skyline_Far",
+   "size": [
+    561.626,
+    86.0,
+    596.373
+   ],
+   "tris": 1236,
+   "class": "hero",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -595.617,
+    3.0,
+    3.731
+   ],
+   "boundsMax": [
+    -33.992,
+    89.0,
+    600.104
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tint": "Bulb Warm #F6C0A2"
+  },
+  "Skyline_Near": {
+   "model": "Skyline_Near",
+   "size": [
+    316.773,
+    55.878,
+    323.381
+   ],
+   "tris": 292,
+   "class": "medium",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -323.535,
+    0.0,
+    0.0
+   ],
+   "boundsMax": [
+    -6.761,
+    55.878,
+    323.381
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "Skyline_Near_Windows": {
+   "model": "Skyline_Near",
+   "size": [
+    288.575,
+    44.4,
+    297.02
+   ],
+   "tris": 996,
+   "class": "hero",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -299.792,
+    3.0,
+    4.453
+   ],
+   "boundsMax": [
+    -11.217,
+    47.4,
+    301.474
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tint": "Bulb Warm #F6C0A2"
+  },
   "Storefront_24x12": {
    "model": "Storefront_24x12",
    "size": [
@@ -2794,6 +3000,40 @@
     "EH_Loot"
    ],
    "sim": "loot point (LevelSpec loot x, y, z)"
+  },
+  "ToySoldier": {
+   "model": "ToySoldier",
+   "size": [
+    3.5,
+    11.32,
+    4.02
+   ],
+   "tris": 2736,
+   "class": "medium",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "toy",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.75,
+    0.0,
+    -2.27
+   ],
+   "boundsMax": [
+    1.75,
+    11.32,
+    1.75
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ]
   },
   "Van": {
    "model": "Van",
@@ -3893,6 +4133,14 @@
   "Xmas_Tree_Lights": {
    "idle": "#F6C0A2",
    "runtime": "fixed (bulbs and the star)"
+  },
+  "Skyline_Near_Windows": {
+   "idle": "#F6C0A2",
+   "runtime": "fixed (lit windows of the backdrop skyline, PLAN 3.1 exception)"
+  },
+  "Skyline_Far_Windows": {
+   "idle": "#F6C0A2",
+   "runtime": "fixed (lit windows of the backdrop skyline, PLAN 3.1 exception)"
   }
  }
 }

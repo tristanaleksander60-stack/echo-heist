@@ -11,12 +11,17 @@
 --   displays = { [loot id] = "Safe" | "CashRegister" }: the kit display the goal sits on (the till is
 --              automatic: a top Cash item sits on a CashRegister).
 --   hero     = { x, z }: overrides the hero lamp's spot (default: over the goal loot).
+--   props    = { { piece, x, z, y?, yaw? } }: the location's signature silhouette (PLAN_STEAM_PLUS §3.1, W5):
+--              the kit piece's own pivot at (x, floor + y, z), yaw in degrees (0 = its front toward -Z, 180 =
+--              toward the street). Visual only; tests/unit/HeistKitPlan.spec keeps each clear of every sim box,
+--              plate, door, loot point, nav point and spawn.
 
 export type Dress = {
 	rooms: { { number } }?,
 	windows: { { axis: string, line: number } }?,
 	displays: { [string]: string }?,
 	hero: { number }?,
+	props: { { piece: string, x: number, z: number, y: number?, yaw: number? } }?,
 }
 
 local LevelDress: { [string]: Dress } = {
@@ -45,11 +50,27 @@ local LevelDress: { [string]: Dress } = {
 	-- office desk lamp (0, -34).
 	cs5_clone_party = {
 		rooms = { { -4, -14 }, { 4, -14 }, { 0, -34 } },
+		-- The Toy Shop's giant toy drummer in the east front corner, turned a little toward the door: seen from
+		-- the street through the entrance and in the 8 OF ME wide shot (GOLDEN_FRAMES G2).
+		props = { { piece = "ToySoldier", x = 13.2, z = 1.4, yaw = 160 } },
 	},
 	-- L6: plates (-12, -10), (-16, -18), (-13, -42), (13, -42); lobby (0, -6), hall (0, -24), scale room
 	-- (0, -42); the gold hero (0, -55).
 	bk1_big_score = {
 		rooms = { { 0, -6 }, { 0, -24 }, { 0, -42 } },
+		-- The Bank: marble columns flanking the staff door (lobby side) and in the scale room's corners (clear of
+		-- the open vault door, which lies along the vault wall west of the frame), green banker's lamps on both
+		-- teller counters (top at y 3.5). The room lamps carry the green (Config.Lighting.LOCATION.Bank).
+		props = {
+			{ piece = "Column_2x12", x = -5.5, z = -12.5 },
+			{ piece = "Column_2x12", x = 5.5, z = -12.5 },
+			{ piece = "Column_2x12", x = -18.5, z = -37.5 },
+			{ piece = "Column_2x12", x = 18.5, z = -37.5 },
+			{ piece = "Column_2x12", x = -18.5, z = -46.5 },
+			{ piece = "Column_2x12", x = 18.5, z = -46.5 },
+			{ piece = "BankersLamp", x = -15, z = -5, y = 3.5, yaw = 180 },
+			{ piece = "BankersLamp", x = 15, z = -5, y = 3.5, yaw = 180 },
+		},
 	},
 }
 

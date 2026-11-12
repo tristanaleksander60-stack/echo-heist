@@ -39,6 +39,8 @@ approximated by a ray test against the greybox colliders. These are audit render
 Writes docs/audit/levels/<L>_<id>_{1_spawn,1b_spawn_clones,2_objective,3_plan,3b_plan_solved,4_thumb,5_street}.png
 (1, 3 and 5: run 1, nothing held; 1b, 2 and 3b: the solution's clones on their spots, their plates held) and
 contact_sheet.png. --shots 5_street renders only the named shots; --sheet-only rebuilds the contact sheet.
+--golden renders the GOLDEN_FRAMES G1 / G2 approximations with the W4 backdrop (tools/blender/backdrop_shots.py) into
+docs/audit/levels/golden/.
 """
 import argparse, json, math, os, subprocess, sys, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -374,7 +376,7 @@ def lamp_light(level, lp):
     o.data.use_custom_distance = True
     o.data.cutoff_distance = lp["range"]
     P = LG["POOL"]
-    pc = "#%02X%02X%02X" % tuple(P["color"])
+    pc = "#%02X%02X%02X" % tuple(lp.get("poolColor") or P["color"])
     for k, rg in enumerate(P["rings"]):
         r = lp["pool"] * rg["size"] / 2
         d = MR.cyl("pool", r, r, 0.01, MR.mat(pc, 0.9, emit=P["brightness"] * 0.6, alpha=1 - rg["alpha"]), None,
@@ -715,6 +717,107 @@ def shoot(level, W, Hh, samples, only=None):
     return made
 
 
+GOLDEN = os.path.join(REPO, "docs", "audit", "levels", "golden")
+
+
+def golden(level, W, Hh, samples):
+    """docs/GOLDEN_FRAMES.md approximations with the W4 backdrop, the Heist City sky, snow and haze
+    (tools/blender/backdrop_shots.py). L1 -> G1a (diorama: pitch 50, distance 28, FOV 42) and G1b (classic follow:
+    16 studs, FOV 70, Poppercam); L5 -> G2 (the 8 OF ME wide shot: 7 clones + you bunched at the entrance, pitch
+    about 45, every clone inside the central 32 % of the width)."""
+    import backdrop_shots as BS
+    from PIL import Image, ImageDraw
+    os.makedirs(GOLDEN, exist_ok=True)
+    os.makedirs(TMP, exist_ok=True)
+    s = MR.reset(samples)
+    s.view_settings.exposure = 0.3
+    loc, dressing = level["location"], level["dressing"]
+    lib = Lib(loc)
+    held, doors, lasers = build(level, False, lib)
+    gl = gus_and_cone(level, doors, loc, dressing)
+    BS.backdrop(level, lib, put)
+    lighting(s)
+    BS.world_sky(s, TMP)
+    cd = bpy.data.cameras.new("cam")
+    cam = bpy.data.objects.new("cam", cd)
+    s.collection.objects.link(cam)
+    cd.sensor_fit = "VERTICAL"
+    cd.clip_start = 0.1
+    cd.clip_end = 5000
+    s.render.resolution_x, s.render.resolution_y = W, Hh
+    s.render.resolution_percentage = 100
+    fy = level["floorY"]
+    sp = level["spawns"][0]
+    shots = []
+    figs = []
+    stamp = None
+    if level["id"] == "cs5_clone_party":
+        # 8 OF ME: the tape-print fan-out at the run start, the crew bunched in the shop's front area (between the
+        # front wall and the shelf ends, clear of the counter), facing the camera; you in front
+        spots = [(-4.0, -5.0), (0.0, -5.0), (4.0, -5.0), (-6.0, -2.0), (-2.0, -2.0), (2.0, -2.0), (6.0, -2.0)]
+        n = len(spots)
+        for k, (x, z) in enumerate(spots):
+            age = n - 1 - k
+            J = MR.figure(f"clone{k + 1}", tuple(rb(x, fy, z)), 180.0, clone=CYAN, dim=min(0.12 * age, 0.6),
+                          hue=25.0 * age / (n - 1))
+            figs.append((J, k + 1, MR.hsv_shift(CYAN, min(0.12 * age, 0.6), 25.0 * age / (n - 1))))
+        MR.figure("player", tuple(rb(0.0, fy, 1.5)), 180.0, colors=MR.ROOKIE)
+        # pitch 55, not the spec's "about 45": at 45 the 12-stud front wall hides the crew's legs unless they stand
+        # among the shelves (the pull-back camera itself is the camera track's, C0)
+        focus = (0.0, fy + 3.0, 2.0)
+        p = math.radians(55)
+        cpos = (focus[0], focus[1] + 40 * math.sin(p), focus[2] + 40 * math.cos(p))
+        shots.append(("G2_party_wide", rb(*cpos), rb(*focus), 50.0, None))
+        stamp = "8 OF ME"
+    else:
+        J = player(level)
+        move(J, level, sp["x"], sp["z"], sp["yaw"])
+        focus = (sp["x"], fy + 4.5, sp["z"])
+        p = math.radians(50)
+        dio = (focus[0], focus[1] + 28 * math.sin(p), focus[2] + 28 * math.cos(p))
+        shots.append(("G1a_diorama", rb(*dio), rb(*focus), 42.0, focus))
+        # classic follow: 16 studs back at 15 degrees (GOLDEN_FRAMES G1b; no Poppercam pull-in: the camera track
+        # moves the van collider out of the way, C0)
+        # 30 degrees right of the spawn's axis so the van sits at frame left instead of under the lens
+        p, yo = math.radians(15), math.radians(30)
+        cls = (focus[0] + 16 * math.cos(p) * math.sin(yo), focus[1] + 16 * math.sin(p),
+               focus[2] + 16 * math.cos(p) * math.cos(yo))
+        shots.append(("G1b_classic", rb(*cls), rb(*focus), 70.0, focus))
+    flakes = None
+    for name, pos, tgt, fov, snow_at in shots:
+        if flakes is not None:
+            bpy.data.objects.remove(flakes, do_unlink=True)
+            flakes = None
+        if snow_at is not None:   # exterior view: the camera-following snow volume over the focus
+            cp = (-pos.x, pos.z, pos.y)       # the camera in Roblox axes
+            flakes = BS.snowfall(snow_at, level["backdropConfig"], cp)
+        cam.location = pos
+        cam.rotation_euler = (tgt - pos).to_track_quat("-Z", "Y").to_euler()
+        cd.angle_y = math.radians(fov)
+        raw = os.path.join(TMP, f"golden_{name}_raw.png")
+        render(s, cam, raw)
+        depth = os.path.join(TMP, f"golden_{name}_depth.png")
+        BS.depth_pass(s, cam, depth)
+        hazed = os.path.join(TMP, f"golden_{name}_haze.png")
+        BS.haze(raw, depth, hazed)
+        notes = notes_for(s, cam, figs, gl, level)
+        out = os.path.join(GOLDEN, f"{name}.png")
+        img = MR.finish(hazed, out, notes, tag=False, vignette=0.12, truecolor=True)
+        if stamp:
+            img = img.convert("RGBA")
+            f, _ = MR._font(int(Hh * 0.1))
+            d = ImageDraw.Draw(img)
+            bpy.context.view_layer.update()
+            heads = [(1 - world_to_camera_view(s, cam, MR.head_top(J, 0.6)).y) * Hh for J, _k, _h in figs]
+            sy = (min(heads) if heads else Hh * 0.45) - Hh * 0.03     # above the crew, covering no face
+            d.text((W / 2, sy), stamp, font=f, fill=(255, 230, 156, 255), anchor="mb",
+                   stroke_width=max(3, int(Hh * 0.008)), stroke_fill=(28, 31, 59, 255))
+            img.convert("RGB").save(out, optimize=True)
+        small = Image.open(out).convert("RGB").resize((160, 90), Image.LANCZOS)
+        small.save(os.path.join(GOLDEN, f"{name}_160x90.png"))
+        print("wrote", os.path.relpath(out, REPO))
+
+
 def contact_sheet(levels):
     from PIL import Image, ImageDraw
     cols = ("1_spawn", "1b_spawn_clones", "2_objective", "3_plan", "3b_plan_solved", "5_street", "4_thumb")
@@ -755,6 +858,9 @@ def main(argv):
     ap.add_argument("--shots", help="comma list of shot names to render (default: all)")
     ap.add_argument("--sheet-only", action="store_true")
     ap.add_argument("--out", help="output folder (default docs/audit/levels)")
+    ap.add_argument("--golden", action="store_true",
+                    help="GOLDEN_FRAMES G1 (L1) and G2 (L5) with the backdrop, sky, snow and haze into "
+                         "docs/audit/levels/golden/ (one process per level; --only L1 or L5)")
     a = ap.parse_args(argv)
     global OUT
     if a.out:
@@ -762,8 +868,16 @@ def main(argv):
     plan = load_plan(not a.plain, a.daily)
     levels = plan["levels"]
     W, Hh = a.size, a.size * 9 // 16
+    if a.golden and not a.only:
+        for tag in ("L1", "L5"):
+            subprocess.run([sys.executable, os.path.abspath(__file__), "--golden", "--only", tag, "--size",
+                            str(a.size), "--samples", str(a.samples)], check=True)
+        return
     if a.only:
         lv = next(lv for lv in levels if short(lv).upper() == a.only.upper() or lv["id"] == a.only)
+        if a.golden:
+            golden(lv, W, Hh, a.samples)
+            return
         shoot(lv, W, Hh, a.samples, a.shots.split(",") if a.shots else None)
         return
     if a.sheet_only:

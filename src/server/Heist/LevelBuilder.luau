@@ -189,7 +189,8 @@ local function ceilingLamp(
 	origin: Vector3,
 	floorY: number,
 	l: any,
-	index: number
+	index: number,
+	look: any
 ): (BasePart, BasePart)
 	local spec = LIGHT.LAMP[l.kind] or LIGHT.LAMP.room
 	local bulb = part({
@@ -222,7 +223,7 @@ local function ceilingLamp(
 	end
 	light.Range = spec.range
 	light.Brightness = spec.brightness
-	light.Color = rgb(spec.color)
+	light.Color = rgb(look.color) -- KitPlan.lampLooks: the location colour on room lamps
 	light.Shadows = spec.shadows == true
 	if spec.shadows then
 		light:SetAttribute("EH_HeroShadow", true)
@@ -256,7 +257,7 @@ local function ceilingLamp(
 		f.AnchorPoint = Vector2.new(0.5, 0.5)
 		f.Position = UDim2.fromScale(0.5, 0.5)
 		f.Size = UDim2.fromScale(ring.size, ring.size)
-		f.BackgroundColor3 = rgb(pc.color)
+		f.BackgroundColor3 = rgb(look.pool)
 		f.BackgroundTransparency = ring.alpha
 		f.BorderSizePixel = 0
 		local corner = Instance.new("UICorner")
@@ -318,6 +319,8 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 	-- while the place has streaming off.
 	model.ModelStreamingMode = Enum.ModelStreamingMode.PersistentPerPlayer
 	model:SetAttribute("LevelId", level.id)
+	-- the location it is built as (the client Backdrop and views read it; KitPlan.location)
+	model:SetAttribute("Location", KitPlan.location(level, (opts or {}).dressing == true, (opts or {}).location))
 	local floorY = level.floorY
 	local b = level.bounds
 
@@ -607,8 +610,13 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 	-- Lamps (W2): one over each plate, a hero over the goal, room centres (KitPlan.lamps, Heist/LevelDress).
 	local lamps: { BasePart } = {}
 	local pools: { BasePart } = {}
-	for k, l in KitPlan.lamps(level, LevelDress[level.id], LIGHT) do
-		local bulb, pool = ceilingLamp(model, origin, floorY, l, k)
+	-- Room lamps take the location's light colour (Config.Lighting.LOCATION, PLAN_STEAM_PLUS §3.1).
+	local lampList = KitPlan.lamps(level, LevelDress[level.id], LIGHT)
+	local buildOpts: BuildOpts = opts or {}
+	local looks =
+		KitPlan.lampLooks(lampList, KitPlan.location(level, buildOpts.dressing == true, buildOpts.location), LIGHT)
+	for k, l in lampList do
+		local bulb, pool = ceilingLamp(model, origin, floorY, l, k, looks[k])
 		lamps[k] = bulb
 		pools[k] = pool
 	end
@@ -681,10 +689,8 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 	}
 	local o: BuildOpts = opts or {}
 	if o.kit ~= nil and Config.Heist.KIT_LEVELS then
-		local location = o.location or (level.spec and level.spec.location) or "CornerShop"
-		if o.dressing and level.kind == "party" and location == "CornerShop" then
-			location = "ToyShop" -- Clone Party is the Toy Shop in Christmas dressing (§4.2)
-		end
+		-- Clone Party is the Toy Shop in Christmas dressing (§4.2)
+		local location = KitPlan.location(level, o.dressing == true, o.location)
 		local ok, res = pcall(KitDresser.dress, level, built, origin, o.kit, {
 			dressing = o.dressing == true,
 			location = location,

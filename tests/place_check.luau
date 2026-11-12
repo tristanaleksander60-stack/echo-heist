@@ -100,8 +100,8 @@ end
 
 local LIGHTING_CHILDREN: { [string]: { class: string, props: { [string]: any } } } = {
 	Sky = {
-		-- Plain night faces (assets/sky, uploaded 2026-11-12; the city cubemap replaces them in phase 2):
-		-- the "sun" is the key light, drawn as a small moon.
+		-- The Heist City faces (assets/sky/sky_ids.json, checked below): the "sun" is the key light, drawn as a
+		-- small moon.
 		class = "Sky",
 		props = { CelestialBodiesShown = true, SunAngularSize = 9, MoonAngularSize = 0, StarCount = 0 },
 	},
@@ -131,15 +131,22 @@ for name, spec in LIGHTING_CHILDREN do
 	end
 end
 do
-	-- The six night faces are set (never Roblox's default day faces behind a ClockTime 15 sun).
+	-- The six faces are the uploaded Heist City cubemap (tools/blender/sky_city.py, PLAN_STEAM_PLUS §4.1 W4: the
+	-- skyline with Hoardsworth's tower and the Snow Globe Vault), resolved to image ids in assets/sky/sky_ids.json;
+	-- never Roblox's default day faces behind a ClockTime 15 sun, nor the retired plain night faces.
+	local serde = require("@lune/serde")
+	local ids = serde.decode("json", fs.readFile("assets/sky/sky_ids.json"))
 	local sky = lighting:FindFirstChild("Sky")
+	local short = { Back = "Bk", Down = "Dn", Front = "Ft", Left = "Lf", Right = "Rt", Up = "Up" }
 	for _, face in { "Back", "Down", "Front", "Left", "Right", "Up" } do
 		local ok, content = pcall(function()
 			return (sky :: any)["Skybox" .. face .. "Content"]
 		end)
+		local entry = ids["EH_SkyCity_" .. short[face]]
+		local want = if entry and entry.imageId then "rbxassetid://" .. string.format("%d", entry.imageId) else "?"
 		expect(
-			ok and string.find(tostring(content), "rbxassetid://%d+") ~= nil,
-			"Lighting.Sky.Skybox" .. face .. "Content is an uploaded night face"
+			ok and string.find(tostring(content), want, 1, true) ~= nil,
+			"Lighting.Sky.Skybox" .. face .. "Content is the uploaded Heist City face " .. want
 		)
 	end
 end

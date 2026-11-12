@@ -41,7 +41,7 @@ export type PartSpec = {
 	[string]: any,
 }
 export type Item = {
-	role: string, -- wall | counter | shelf | pillar | floor | frame | front | vaultFrame | vaultSkin |
+	role: string, -- wall | counter | shelf | pillar | floor | frame | front | vaultFrame | vaultSkin | signature |
 	-- door | plate | loot | till | display | post | hide | switch | van | lamp | xmas
 	mode: string, -- "visual" (static, no collision) | "swap" (replaces a tagged greybox part) |
 	-- "dress" (inside a tagged Model: laser posts, hide props) | "skin" (vault door, client-drawn)
@@ -525,6 +525,38 @@ function KitPlan.lamps(level: any, dress: any?, cfg: any): { Lamp }
 		if free then
 			table.insert(out, { x = r[1], z = r[2], kind = "room" })
 		end
+	end
+	return out
+end
+
+-- The location a level is built as (atlas, street front, light colour): the spec's location, an explicit
+-- override, and Clone Party in Christmas dressing is the Toy Shop (MASTERPLAN §4.2). LevelBuilder, KitDresser,
+-- tools/blender/level_plan.luau and the client Backdrop all use this one rule.
+function KitPlan.location(level: any, dressing: boolean?, override: string?): string
+	local location = override or (level.spec and level.spec.location) or "CornerShop"
+	if dressing and level.kind == "party" and location == "CornerShop" then
+		location = "ToyShop"
+	end
+	return location
+end
+
+-- Each lamp's light and floor-pool colour (PLAN_STEAM_PLUS §3.1: one dominant light colour per location).
+-- Room lamps take the location's colour (in turn when it has several: the Toy Shop's pink and gold); plate
+-- lamps (signals) and the hero (the focal pool) keep cfg.LAMP's warm white. Returns {color, pool} per lamp,
+-- in the order of `lamps`. Pure data: never adds or removes a light.
+function KitPlan.lampLooks(lamps: { Lamp }, location: string?, cfg: any): { { color: { number }, pool: { number } } }
+	local loc = cfg.LOCATION and location and cfg.LOCATION[location]
+	local out = {}
+	local rooms = 0
+	for k, l in lamps do
+		local spec = cfg.LAMP[l.kind] or cfg.LAMP.room
+		local color, pool = spec.color, cfg.POOL.color
+		if l.kind == "room" and loc then
+			rooms += 1
+			color = loc.room[(rooms - 1) % #loc.room + 1]
+			pool = loc.pool or pool
+		end
+		out[k] = { color = color, pool = pool }
 	end
 	return out
 end
@@ -1168,6 +1200,27 @@ function KitPlan.plan(level: any, specs: { [string]: PartSpec }, opts: Options?)
 					i
 				)
 			)
+		end
+	end
+
+	---------------------------------------------------------------- signature props
+	-- Each location's signature silhouette (PLAN_STEAM_PLUS §3.1, W5) from Heist/LevelDress `props`: the piece's
+	-- own pivot at (x, floor + y, z), turned by yaw. Visual only; the unit spec keeps them off every sim box,
+	-- plate, loot point, nav point, spawn and door.
+	local props = o.dress and o.dress.props
+	if props then
+		for _, pr in props do
+			if has(pr.piece) then
+				add(
+					item(
+						"signature",
+						"visual",
+						{ pr.piece },
+						{ x = pr.x, y = floorY + (pr.y or 0), z = pr.z, yaw = pr.yaw or 0 },
+						{ 1, 1, 1 }
+					)
+				)
+			end
 		end
 	end
 

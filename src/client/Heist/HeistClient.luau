@@ -7,7 +7,8 @@
 -- boot), and once per frame samples the replicated LoopClock and draws:
 --   EchoView (clones from Rec/Sampler), GusView (Guards.patrol + pose attributes),
 --   WorldView (doors/lasers/plates/loot/alarm from attributes, kit door skins), LightDirector
---   (lamp shadows and floor pools by performance tier),
+--   (lamp shadows and floor pools by performance tier), Backdrop (ground, facades, skyline rings, sky turn and
+--   falling snow round the heist instance or the garage),
 --   RewindDirector, Hud, and at heist end the LineupDirector (Crew Line-up cut).
 -- The camera is CameraDirector's (diorama / classic, wall fade, run-start beat); the
 -- Line-up borrows it through state.camera (suspend / resume), the rewind's FOV dip goes
@@ -35,6 +36,7 @@ local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local Net = require(ReplicatedStorage:WaitForChild("LihFolk"):WaitForChild("Net"))
 
 local Heist = script.Parent
+local Backdrop = require(Heist:WaitForChild("Backdrop"))
 local EchoView = require(Heist:WaitForChild("EchoView"))
 local CameraDirector = require(Heist:WaitForChild("CameraDirector"))
 local GoldenShots = require(Heist:WaitForChild("GoldenShots"))
@@ -101,10 +103,14 @@ function HeistClient.start()
 	}
 	Sound.setReducedMotion(state.reduced == true)
 	Ui.setReducedMotion(state.reduced == true)
+	local backdropRef: any = nil -- set below, once the Backdrop exists
 	GuiService:GetPropertyChangedSignal("ReducedMotionEnabled"):Connect(function()
 		state.reduced = GuiService.ReducedMotionEnabled
 		Sound.setReducedMotion(state.reduced == true)
 		Ui.setReducedMotion(state.reduced == true)
+		if backdropRef then
+			backdropRef.setReducedMotion(state.reduced == true)
+		end
 	end)
 
 	-- Compiled levels: Catalog indices (play order) and daily vaults by UTC day.
@@ -128,6 +134,9 @@ function HeistClient.start()
 	local lights = LightDirector.new()
 	local camera = CameraDirector.new(state)
 	state.camera = camera -- LineupDirector hands the camera back through it
+	local backdrop = Backdrop.new()
+	backdropRef = backdrop
+	backdrop.setReducedMotion(state.reduced == true)
 	local ffOn = false
 
 	local actions = {
@@ -200,6 +209,7 @@ function HeistClient.start()
 		echo.setTier(tier)
 		lineup.setTier(tier)
 		lights.setTier(tier)
+		backdrop.setTier(tier)
 		state.particleScale = if tier >= 3 then 0.5 else 1
 		Lighting.GlobalShadows = if tier >= 3 then false else shadowsWere
 	end)
@@ -418,6 +428,7 @@ function HeistClient.start()
 			world.bind(levelModel)
 			lights.bind(levelModel)
 		end
+		backdrop.showHeist(levelModel, state.level, state.origin)
 		if state.level then
 			gus.setLevel(state.level)
 		end
@@ -447,6 +458,7 @@ function HeistClient.start()
 		gus.clear()
 		world.clear()
 		lights.clear()
+		backdrop.showGarage()
 		director.stop()
 		hud.hideAll()
 		hud.hidePreparing()

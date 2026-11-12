@@ -243,7 +243,7 @@ Replaced "Heist Night" v1 on 2026-11-12 (PLAN_STEAM_PLUS §4.1 W1, `docs/researc
 | medium | 2,000 / 4,000 | Storefront_24x12 1,980, BankFront_24x12 2,244, Van 1,856, VaultDoor_Frame 2,452, VaultDoor_Door 3,832, CandyCane 888 |
 | hero (assembly) | 10,000 / 20,000 | VaultDoor 8,156 (golden pass, 8-10k), CashRegister 1,520, GiantPresent 1,380 |
 | creature (Gus) | 5,000 / 10,742 | Gus 3,488 in 18 rigid parts |
-| Whole launch kit | — | 50 FBX, 92 MeshParts, 45,166 tris (pass 2). A dressed 32 x 24 room (KitPreview): Corner Shop 20.3k (29.1k with the Christmas layer), Bank 22.9k (31.8k), Toy Shop 20.2k (27.8k): about a tenth of the 300k "triangles in view" target |
+| Whole launch kit | — | 55 FBX, 99 MeshParts, 51,706 tris (W4/W5, Nov 12: + the backdrop skyline quarters Skyline_Near 1,288 and Skyline_Far 1,588 (client backdrop only, 4 instanced copies each), ToySoldier 2,736, Column_2x12 600, BankersLamp 328; was 50 FBX, 92 MeshParts, 45,166 tris in pass 2). A dressed 32 x 24 room (KitPreview): Corner Shop 20.3k (29.1k with the Christmas layer), Bank 22.9k (31.8k), Toy Shop 20.2k (27.8k): about a tenth of the 300k "triangles in view" target |
 | Hard Roblox limit | 20,000 per mesh | — |
 
 **Busiest phone view** (MASTERPLAN §6.8): Big Score with 4 players, 12 clones and 2 guards.
@@ -356,3 +356,15 @@ Each bookmark is shot 3 times: **PC Quality 10**, **phone Automatic**, **phone q
 | [decision] Snow as meshes | MASTERPLAN §4.3 / §6.4 say "snow decals". A decal on a cut-away wall top or a kerb is a texture per face that does not instance; `Xmas_SnowCap_8` / `Xmas_SnowPile` are atlas meshes that instance with the kit and add a silhouette (the drift, the cap lip) a decal cannot |
 | [decision] Holly on present loot | MASTERPLAN §6.2 keeps the Christmas accents to the dressing layer. `GiantPresent` and `Present` are **loot** (layer base: the daily vaults keep them after the season) wrapped in Holly paper with a **Heist Gold** ribbon and bow: the gold carries the loot read, the paper says "present". They are the only loot allowed the Holly cells (palette role `present`) |
 | Lighting | Christmas Eve recipe: Ambient +10 % (§3); no extra lights for the dressing (Neon + bloom only) |
+
+## 14. World backdrop and signature silhouettes (W4 / W5, 2026-11-12)
+
+| Rule | Number |
+|---|---|
+| Layers | L0 ground plane 1.2 below the lot + a kerb band; L1 16 facade cards round the lot (body, Warm Marble shade cornice, Snow on it, Bulb Warm Neon windows on every 3rd slot); L2 `Skyline_Near` (radius 300, heights 30-58); L3 `Skyline_Far` (radius 600, 56-104, Vault Steel shade faces, sparser windows); the Heist City sky. Built on the client (`Heist/Backdrop`, plan in `Shared/Heist/BackdropPlan`), never collides, never queried, no shadows. No searchlights |
+| Heights | Rings stay under about 10.5 degrees from the street camera, so the sky's landmark (the Snow Globe at 12-19 degrees) always rises above them and above the shop roof line (10 degrees from the classic camera) |
+| Budget | About 30 draw calls and 25k triangles for the whole backdrop (unit spec: L1 measures 14 draw calls, 12.7k triangles, 115 instances at tier 1). Tier 3+ drops the far ring; tier 4 the facade windows |
+| Glow | Only the windows (Bulb Warm `#F6C0A2`, small, static: the PLAN §3.1 exception), listed in `eh_palette.NEON` like every Neon kit part |
+| Landmark | Hoardsworth Tower with the Snow Globe Vault (`tools/blender/sky_city.py`): burgundy body, antique gold fins and cradle (never Heist Gold), a glass globe full of stolen presents. One landmark only; it stands toward -Z (the spawn views' direction); `Config.Backdrop.SKY_LANDMARK_YAW` and `Sky.SkyboxOrientation` turn it for a site whose first view faces elsewhere |
+| Snow | Falling: 40 / s, 4.5-6 s, <= 240 alive in a 48 x 22 x 48 volume over the camera focus (120 on tier 3+); reduced motion 0.5x rate and 0.45x speed (never off); off inside a building footprint (no roofs). Caps: the upper 38 % of each awning slope and the sills only (the stripes stay visible); Snow stays a small-area colour (§1.3) |
+| Signature silhouettes | Corner Shop: the striped awning (Storefront_24x12) + amber room light. Toy Shop: `ToySoldier` (11.3 tall drummer, role `toy`: burgundy coat, never gold) + candy pink and gold room light. Bank: `Column_2x12` (6 in L6) + `BankersLamp` (Leaf glass, 2 on the teller counters) + green room light (`Config.Lighting.LOCATION`). All visual only, placed by `Heist/LevelDress.props`, kept off every plate, door, laser, hide, loot point, nav point and spawn (unit spec) |

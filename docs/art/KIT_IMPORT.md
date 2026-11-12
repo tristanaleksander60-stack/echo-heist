@@ -18,10 +18,12 @@ The table below shows what Studio must show after the import (generated from `as
 | Model (FBX) | MeshPart | Size in Studio (X x Y x Z) | Tris | Collision | Material | CanCollide | CastShadow | Layer |
 |---|---|---|---|---|---|---|---|---|
 | BankFront_24x12.fbx | BankFront_24x12 | 24 x 13.9 x 2.94 | 2244 | PreciseConvexDecomposition | SmoothPlastic | on | on | base |
+| BankersLamp.fbx | BankersLamp | 1.32 x 1.44 x 0.86 | 328 | Box | SmoothPlastic | off | off | base |
 | Candy.fbx | Candy | 2.64 x 1.1 x 1.1 | 336 | Box | SmoothPlastic | on | off | base |
 | CashBag.fbx | CashBag | 1.9 x 2.02 x 1.97 | 600 | Box | SmoothPlastic | on | off | base |
 | CashRegister.fbx | CashRegister | 4.14 x 3.95 x 3.2 | 1032 | Box | SmoothPlastic | off | on | base |
 | CashRegister.fbx | CashRegister_Drawer | 2.97 x 0.67 x 2.77 | 488 | Box | SmoothPlastic | off | off | base |
+| Column_2x12.fbx | Column_2x12 | 2 x 12 x 2 | 600 | Box | SmoothPlastic | off | on | base |
 | Counter_4x4.fbx | Counter_4x4 | 4.3 x 3.5 x 4.3 | 208 | Box | SmoothPlastic | on | on | base |
 | Counter_8x2.fbx | Counter_8x2 | 8.3 x 3.5 x 2.3 | 244 | Box | SmoothPlastic | on | on | base |
 | Counter_8x4.fbx | Counter_8x4 | 8.3 x 3.5 x 4.3 | 316 | Box | SmoothPlastic | on | on | base |
@@ -79,6 +81,10 @@ The table below shows what Studio must show after the import (generated from `as
 | Shelf_8x2.fbx | Shelf_8x2 | 8.1 x 7.85 x 2.08 | 776 | Box | SmoothPlastic | on | on | base |
 | Shelf_Gondola_8x2.fbx | Shelf_Gondola_8x2 | 8 x 7.85 x 2.16 | 744 | Box | SmoothPlastic | on | on | base |
 | Shutter_8x10.fbx | Shutter_8x10 | 8.1 x 10.35 x 1.46 | 556 | Box | SmoothPlastic | on | on | base |
+| Skyline_Far.fbx | Skyline_Far | 604.401 x 100.949 x 638.695 | 352 | Box | SmoothPlastic | off | off | base |
+| Skyline_Far.fbx | Skyline_Far_Windows | 561.626 x 86 x 596.373 | 1236 | Box | Neon | off | off | base |
+| Skyline_Near.fbx | Skyline_Near | 316.773 x 55.878 x 323.381 | 292 | Box | SmoothPlastic | off | off | base |
+| Skyline_Near.fbx | Skyline_Near_Windows | 288.575 x 44.4 x 297.02 | 996 | Box | Neon | off | off | base |
 | Storefront_24x12.fbx | Storefront_24x12 | 24 x 12 x 4.75 | 1980 | PreciseConvexDecomposition | SmoothPlastic | on | on | base |
 | Storefront_24x12.fbx | Storefront_24x12_Glass | 22.4 x 6.08 x 0.06 | 24 | Box | Glass (T 0.6) | off | off | base |
 | Switch_Wall.fbx | Switch_Wall | 1.6 x 2.52 x 0.84 | 224 | Box | SmoothPlastic | on | on | base |
@@ -88,6 +94,7 @@ The table below shows what Studio must show after the import (generated from `as
 | TellerCounter_8x4.fbx | TellerCounter_8x4 | 8.3 x 8.25 x 4.35 | 412 | Box | SmoothPlastic | on | on | base |
 | TellerCounter_8x4.fbx | TellerCounter_8x4_Glass | 7.1 x 3.2 x 0.06 | 24 | Box | Glass (T 0.6) | off | off | base |
 | Toy.fbx | Toy | 1.586 x 2.8 x 1.19 | 580 | Box | SmoothPlastic | on | off | base |
+| ToySoldier.fbx | ToySoldier | 3.5 x 11.32 x 4.02 | 2736 | Box | SmoothPlastic | off | on | base |
 | Van.fbx | Van | 14.9 x 7.689 x 7.08 | 1856 | PreciseConvexDecomposition | SmoothPlastic | on | on | base |
 | Van.fbx | Van_Shelf | 6 x 4.06 x 0.98 | 124 | Box | SmoothPlastic | off | on | base |
 | VaultDoor.fbx | VaultDoor_Dial | 4.55 x 4.55 x 0.924 | 1104 | Box | SmoothPlastic | off | on | base |
@@ -110,7 +117,7 @@ The table below shows what Studio must show after the import (generated from `as
 | Xmas_Tree.fbx | Xmas_Tree_Lights | 4.119 x 5.64 x 4.033 | 400 | Box | Neon | off | off | xmas |
 | Xmas_Wreath.fbx | Xmas_Wreath | 2.826 x 3.56 x 1.135 | 548 | Box | SmoothPlastic | off | off | xmas |
 
-**50 FBX files, 92 MeshParts, 45,166 triangles in all.** Christmas layer: 17 parts.
+**55 FBX files, 99 MeshParts, 51,706 triangles in all.** Christmas layer: 17 parts.
 <!-- kit-table:end -->
 
 ---
@@ -127,6 +134,8 @@ python3 tools/kit_upload.py --all           # every new or changed FBX (unchange
 python3 tools/kit_upload.py --images        # assets/textures/*.png as Decals (location atlases, dial-face maps)
 python3 tools/kit_upload.py --appearances   # the hero SurfaceAppearance as an rbxm Model (built with Lune)
 python3 tools/kit_upload.py --gen           # regenerate the Luau data only (no network)
+python3 tools/kit_upload.py --sky           # assets/sky Heist City faces + snowflake as Decals (assets/sky/sky_ids.json)
+python3 tools/kit_upload.py --resolve-sky   # Decal -> image ids: read-only Luau task on an existing place version
 ```
 
 - A **changed** FBX updates the **same** asset (`PATCH /assets/v1/assets/{id}`, a new version), so ids never change and `InsertService:LoadAsset` gets the latest version. `--new` makes a fresh asset instead (the old id goes to `history`). Decals cannot be updated: a changed PNG becomes a new Decal.
@@ -409,5 +418,5 @@ Use this if the meshes, sizes or collision do not survive `rojo build`. Then we 
    ```
    Then it sets Size, TextureID, Material, PivotOffset and the other flags from the manifest. Each heist clones the cached parts.
 <!-- fallback-cost:start -->
-4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 92 MeshParts and 45,166 triangles about **2.0 s** at boot (generated by kit_docs.py). Boot only, never per heist.
+4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 99 MeshParts and 51,706 triangles about **2.2 s** at boot (generated by kit_docs.py). Boot only, never per heist.
 <!-- fallback-cost:end -->

@@ -1,0 +1,182 @@
+{
+ "asset": "Skyline_Near",
+ "objects": [
+  {
+   "name": "Skyline_Near",
+   "class": "medium",
+   "tris": 292,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    316.773,
+    323.381,
+    55.878
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     6.7615,
+     0.0,
+     0.0
+    ],
+    "local_max": [
+     323.5346,
+     323.3812,
+     55.8779
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "backdrop skyline quarter arc, facades at radius 300 facing the centre; client places 4 copies (yaw 0/90/180/270 + the ring's yaw0); visual only",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Skyline_Near_Windows",
+   "class": "hero",
+   "tris": 996,
+   "budget": [
+    10000,
+    20000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    288.575,
+    297.02,
+    44.4
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     11.2167,
+     4.4532,
+     3.0
+    ],
+    "local_max": [
+     299.7919,
+     301.4735,
+     47.4
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Bulb Warm #F6C0A2",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "lit windows (Neon, Bulb Warm; fixed). The only glow of the backdrop (PLAN 3.1 exception)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 1288,
+ "seats": [
+  {
+   "name": "Skyline_Near_Windows",
+   "gap": 0.0,
+   "penetration": 0.05004,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "5c2d41368b7485d9ed2a",
+ "fbx": {
+  "path": "assets/fbx/Skyline_Near.fbx",
+  "bytes": 42188,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Skyline_Near",
+   "Skyline_Near_Windows"
+  ],
+  "geometry_extents": [
+   [
+    44.4,
+    288.575,
+    297.02
+   ],
+   [
+    55.878,
+    316.773,
+    323.381
+   ]
+  ]
+ },
+ "spec": "assets/blender/backdrop.py",
+ "notes": "Skyline Near: 13 buildings on a quarter arc, radius 300; windows 3.2x4.4.",
+ "turntable": "docs/art/turntables/Skyline_Near.png",
+ "seconds": 5.6
+}

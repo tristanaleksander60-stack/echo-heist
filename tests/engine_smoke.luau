@@ -823,8 +823,99 @@ do
 					lettered == #b6.plates,
 					string.format("light: %d/%d kit plates carry their letter", lettered, #b6.plates)
 				)
+				-- W5 signature silhouettes (Heist/LevelDress props): six marble columns and two green banker's
+				-- lamps, all visual only; the Bank's room lamps carry the green (Config.Lighting.LOCATION.Bank).
+				local columns, bankers, solidSig = 0, 0, 0
+				for _, dsc in b6.model:GetDescendants() do
+					local piece = dsc:GetAttribute("KitPiece")
+					if dsc:IsA("BasePart") and (piece == "Column_2x12" or piece == "BankersLamp") then
+						if piece == "Column_2x12" then
+							columns += 1
+						else
+							bankers += 1
+						end
+						if dsc.CanCollide or dsc.CanQuery or dsc.CanTouch then
+							solidSig += 1
+						end
+					end
+				end
+				check(
+					columns == 6 and bankers == 2 and solidSig == 0,
+					string.format("world: L6 has %d columns, %d banker's lamps (%d solid)", columns, bankers, solidSig)
+				)
+				local green = LIGHT.LOCATION.Bank.room[1]
+				local greenRooms = 0
+				for _, l in lights do
+					local c = l.Color
+					if
+						math.abs(c.R * 255 - green[1]) < 1
+						and math.abs(c.G * 255 - green[2]) < 1
+						and math.abs(c.B * 255 - green[3]) < 1
+					then
+						greenRooms += 1
+					end
+				end
+				check(greenRooms >= 1, string.format("world: L6 room lamps are banker's green (%d)", greenRooms))
 			end
 			scratch:Destroy()
+
+			-- W4 backdrop: the server hands the client the skyline ring meshes (Heist/BackdropKit); the plan the
+			-- client builds fits its budget; the Sky shows the Heist City faces (never the retired night ones).
+			local okBk, BackdropKit = pcall(require, server:WaitForChild("Heist"):WaitForChild("BackdropKit"))
+			if okBk then
+				local okPub, published = pcall(BackdropKit.publish, KitService)
+				local folderBk = ReplicatedStorage:FindFirstChild(Config.Backdrop.KIT_FOLDER)
+				local quietParts = 0
+				if folderBk then
+					for _, c in folderBk:GetChildren() do
+						if c:IsA("MeshPart") and not c.CanCollide and not c.CanQuery and not c.CanTouch then
+							quietParts += 1
+						end
+					end
+				end
+				check(
+					okPub and published == 2 * #Config.Backdrop.RINGS and quietParts == published,
+					string.format(
+						"world: BackdropKit published %s ring pieces (%d visual only)",
+						tostring(published),
+						quietParts
+					)
+				)
+			else
+				check(false, "world: BackdropKit loads: " .. tostring(BackdropKit))
+			end
+			local BackdropPlan = require(sharedFolder:WaitForChild("Heist"):WaitForChild("BackdropPlan"))
+			local l1 = HeistInstance.levelData(HeistService.indexOf("cs1_back_room") :: number)
+			local bplan = BackdropPlan.plan(BackdropPlan.levelSite(l1))
+			local draws, tris, nparts = BackdropPlan.budget(bplan, 1, {
+				Skyline_Near = 292,
+				Skyline_Near_Windows = 996,
+				Skyline_Far = 352,
+				Skyline_Far_Windows = 1236,
+			})
+			check(
+				draws <= 30 and tris <= 25000,
+				string.format("world: L1 backdrop %d draw calls, %d tris, %d instances", draws, tris, nparts)
+			)
+			local sky = game:GetService("Lighting"):FindFirstChildOfClass("Sky")
+			local retired = { "90458356352519", "108707070296486", "103394177161659" }
+			local cityFaces = 0
+			if sky then
+				for _, face in { "Bk", "Dn", "Ft", "Lf", "Rt", "Up" } do
+					local okUri, uri = pcall(function()
+						return tostring((sky :: any)["Skybox" .. face])
+					end)
+					uri = if okUri then uri else ""
+					local isRetired = false
+					for _, id in retired do
+						isRetired = isRetired or string.find(uri, id, 1, true) ~= nil
+					end
+					if string.find(uri, "rbxassetid://%d+") and not isRetired then
+						cityFaces += 1
+					end
+				end
+			end
+			check(cityFaces == 6, string.format("world: Sky shows %d/6 Heist City faces", cityFaces))
 		elseif instK then
 			check(instK.folder:GetAttribute("Kit") == false, "kit: not ready, level stays greybox (fallback)")
 			check(false, "kit: KitService.ready (" .. KitService.summary() .. ")")
@@ -883,7 +974,9 @@ do
 
 	-- The client view modules load in the engine (they run only on clients in play).
 	local loadErrors = {}
-	for _, name in { "Ui", "Rigs", "EchoView", "GusView", "WorldView", "RewindDirector", "Hud", "HeistClient" } do
+	for _, name in
+		{ "Ui", "Rigs", "EchoView", "GusView", "WorldView", "RewindDirector", "Hud", "Backdrop", "HeistClient" }
+	do
 		local ok, err = pcall(require, clientHeist:WaitForChild(name))
 		if not ok then
 			table.insert(loadErrors, name .. ": " .. tostring(err))

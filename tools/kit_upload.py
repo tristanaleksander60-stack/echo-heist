@@ -17,6 +17,8 @@ InsertService:LoadAsset. Guide: docs/art/KIT_IMPORT.md "Automated path".
   python3 tools/kit_upload.py --set-image EH_Palette_Bank 123   # record a Decal's resolved image id
   python3 tools/kit_upload.py --ui               # upload new or changed assets/ui/*.png (UI kit, tools/ui/make_ui_kit.py)
   python3 tools/kit_upload.py --set-ui-image EH_UI_Icons 123     # record a UI Decal's resolved image id
+  python3 tools/kit_upload.py --sky              # the Heist City sky faces + the snowflake (assets/sky) as Decals
+  python3 tools/kit_upload.py --resolve-sky      # Decal -> image ids for assets/sky (read-only Luau task, no publish)
 
 Every run that changes ids (and --gen) regenerates src/server/Kit/KitData.luau (manifest + ids, read by
 KitService) and the embedded table in tests/kit_engine.luau (the real-engine check), then formats both
@@ -62,6 +64,10 @@ FBX_DIR = ROOT / "assets/fbx"
 TEX_DIR = ROOT / "assets/textures"
 UI_DIR = ROOT / "assets/ui"
 UI_ASSETS = ROOT / "src/shared/Heist/UiAssets.luau"
+SKY_DIR = ROOT / "assets/sky"
+SKY_IDS = SKY_DIR / "sky_ids.json"
+SKY_FILES = ("EH_SkyCity_*.png", "EH_SnowFlake.png")   # what --sky uploads (sky_city.py faces, Backdrop snow)
+UNIVERSE, PLACE = "10776026960", "70772627070328"       # the test experience (tools/cloud_test.py)
 KIT_DATA = ROOT / "src/server/Kit/KitData.luau"
 ENGINE_TEST = ROOT / "tests/kit_engine.luau"
 sys.path.insert(0, str(ROOT / "tools/blender"))
@@ -571,6 +577,116 @@ def run_uploads(key: str, todo: list, kind: str, ids: dict, new: bool, dry: bool
     return None, failures
 
 
+# ------------------------------------------------------------------------------------------ sky (Backdrop W4)
+
+def sky_rows(ids: dict) -> list:
+    rows = []
+    for pattern in SKY_FILES:
+        for path in sorted(SKY_DIR.glob(pattern)):
+            rec = ids.get(path.stem)
+            state = "pending" if rec is None else ("changed" if rec.get("sha256") != sha256(path) else "uploaded")
+            rows.append({"name": path.stem, "state": state, "rec": rec, "pieces": [], "path": path})
+    return rows
+
+
+def save_sky(ids: dict) -> None:
+    SKY_IDS.write_text(json.dumps(ids, indent=1, sort_keys=True) + "\n")
+
+
+def upload_sky(key: str, force: bool, dry: bool) -> int:
+    """assets/sky faces + the snowflake as Decals; ids into assets/sky/sky_ids.json (a changed PNG is a new Decal,
+    so its image id must be resolved again: --resolve-sky)."""
+    ids = load_json(SKY_IDS, {})
+    todo = [r for r in sky_rows(ids) if r["state"] != "uploaded" or force]
+    if not todo:
+        print("sky: nothing to upload")
+        return 0
+    for i, r in enumerate(todo):
+        print(f"[{i + 1}/{len(todo)}] create {r['name']} ({r['path'].stat().st_size / 1024:.0f} KB)", flush=True)
+        if dry:
+            continue
+        try:
+            res = send(key, r["path"], "image/png", "Decal", r["name"])
+        except ScopeError as e:
+            print(str(e))
+            return 3
+        old = r["rec"] or {}
+        history = list(old.get("history", [])) + ([old["decalId"]] if old.get("decalId") else [])
+        ids[r["name"]] = {"decalId": res["assetId"], "file": str(r["path"].relative_to(ROOT)),
+                          "sha256": sha256(r["path"]), "moderation": res["moderation"],
+                          "uploaded": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "history": history}
+        save_sky(ids)
+        print(f"  ok {r['name']} -> Decal {res['assetId']} (moderation {res['moderation']})", flush=True)
+        time.sleep(GAP_SECONDS)
+    return 0
+
+
+RESOLVE_LUAU = """
+local InsertService = game:GetService("InsertService")
+local out = {}
+for _, id in { %s } do
+	local ok, model = pcall(function()
+		return InsertService:LoadAsset(id)
+	end)
+	local tex = "none"
+	if ok and model then
+		local d = model:FindFirstChildWhichIsA("Decal", true)
+		if d then
+			local okc, c = pcall(function()
+				return d.TextureContent.Uri
+			end)
+			tex = if okc and c and c ~= "" then c else tostring((d :: any).Texture)
+		end
+	else
+		tex = "error " .. tostring(model)
+	end
+	table.insert(out, tostring(id) .. "=" .. tostring(tex))
+end
+return table.concat(out, ";")
+"""
+
+
+def resolve_sky(key: str, version: int) -> int:
+    """A Decal id is not an image id (KIT_IMPORT "Atlas ids"): InsertService:LoadAsset(decal) in a real server gives the
+    Decal whose texture is the image. Runs a read-only Luau Execution task on an EXISTING place version (nothing is
+    published) and records imageId for every sky entry that lacks one."""
+    import re
+    ids = load_json(SKY_IDS, {})
+    want = {rec["decalId"]: stem for stem, rec in ids.items()
+            if isinstance(rec, dict) and rec.get("decalId") and not rec.get("imageId")}
+    if not want:
+        print("sky: every entry has an image id")
+        return 0
+    base = "https://apis.roblox.com/cloud/v2"
+    body = json.dumps({"script": RESOLVE_LUAU % ", ".join(str(i) for i in want), "timeout": "60s"}).encode()
+    task = call("POST", f"{base}/universes/{UNIVERSE}/places/{PLACE}/versions/{version}/luau-execution-session-tasks",
+                key, body, "application/json")
+    path = task["path"]
+    t = {}
+    for _ in range(60):
+        time.sleep(3)
+        t = call("GET", f"{base}/{path}", key)
+        if t.get("state") in ("COMPLETE", "FAILED", "CANCELLED"):
+            break
+    if t.get("state") != "COMPLETE":
+        print("resolve task", t.get("state"), json.dumps(t.get("error")))
+        return 1
+    text = ";".join(str(x) for x in (t.get("output") or {}).get("results", []))
+    bad = 0
+    for part in text.split(";"):
+        did, _, tex = part.partition("=")
+        m = re.search(r"(\d{6,})", tex)
+        stem = want.get(int(did)) if did.strip().isdigit() else None
+        if stem and m:
+            ids[stem]["imageId"] = int(m.group(1))
+            print(f"  {stem}: Decal {did} -> image {m.group(1)}")
+        elif stem:
+            bad += 1
+            print(f"  {stem}: Decal {did} not resolved ({tex})")
+    save_sky(ids)
+    return 1 if bad else 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--probe", action="store_true", help="upload one small pending group, then stop")
@@ -587,7 +703,17 @@ def main() -> int:
     ap.add_argument("--set-ui-image", nargs=2, metavar=("STEM", "IMAGE_ID"), help="record a UI Decal's image id")
     ap.add_argument("--set-image", nargs=2, metavar=("STEM", "IMAGE_ID"), help="record a Decal's image id")
     ap.add_argument("--group", metavar="GROUP_ID", help="upload as this group (the game's owner) instead of the user")
+    ap.add_argument("--sky", action="store_true", help="upload new or changed assets/sky faces + snowflake as Decals")
+    ap.add_argument("--resolve-sky", action="store_true",
+                    help="resolve the sky Decals to image ids (read-only Luau task on --version; never publishes)")
+    ap.add_argument("--version", type=int, default=28, help="existing place version for --resolve-sky")
     a = ap.parse_args()
+    if a.sky or a.resolve_sky:
+        key = os.environ.get("ROBLOX_API_KEY", "proxy-injected")
+        code = upload_sky(key, a.force, a.dry_run) if a.sky else 0
+        if code == 0 and a.resolve_sky and not a.dry_run:
+            code = resolve_sky(key, a.version)
+        return code
     if a.group:
         CREATOR.clear()
         CREATOR["groupId"] = str(int(a.group))

@@ -1,0 +1,108 @@
+{
+ "asset": "Column_2x12",
+ "objects": [
+  {
+   "name": "Column_2x12",
+   "class": "module",
+   "tris": 600,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.0,
+    2.0,
+    12.0
+   ],
+   "pivot": {
+    "rule": "bottom",
+    "local_min": [
+     -1.0,
+     -1.0,
+     0.0
+    ],
+    "local_max": [
+     1.0,
+     1.0,
+     12.0
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 156,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "Bank signature silhouette: visual only; stands in corners and beside the vault frame / staff door",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 600,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "6469eb2f18e71ab920e7",
+ "fbx": {
+  "path": "assets/fbx/Column_2x12.fbx",
+  "bytes": 30860,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Column_2x12"
+  ],
+  "geometry_extents": [
+   [
+    2.0,
+    2.0,
+    12.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/signature.py",
+ "notes": "Round marble column 2x2x12: square plinth, torus base, tapered shaft, capital and abacus.",
+ "turntable": "docs/art/turntables/Column_2x12.png",
+ "seconds": 15.6
+}
