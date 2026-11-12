@@ -1,0 +1,57 @@
+# L0 static + L1 unit checks on every push and pull request (MASTERPLAN §8.9).
+# L3 engine tests (Open Cloud) run locally via tools/cloud_test.py until the
+# ROBLOX_API_KEY / TEST_UNIVERSE_ID / TEST_PLACE_ID secrets are added.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Rust tool binaries
+        id: tools-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/rojo
+            ~/.cargo/bin/lune
+          key: tools-rojo-7.7.1-lune-0.11.1
+
+      - name: Install Rojo and Lune
+        if: steps.tools-cache.outputs.cache-hit != 'true'
+        run: |
+          cargo install rojo --version 7.7.1 --locked
+          cargo install lune --version 0.11.1 --locked
+
+      - name: Fetch LihFolk checker
+        run: git clone --depth 1 https://github.com/lihfolk-cy/v2-vault "$RUNNER_TEMP/v2-vault"
+
+      - name: Compile every Luau file
+        run: lune run tests/compile_check.luau
+
+      - name: LihFolk Roblox checks
+        run: sh "$RUNNER_TEMP/v2-vault/hooks/scripts/lihfolk-check.sh" --scan src tests
+
+      - name: Build places
+        run: |
+          mkdir -p build
+          rojo build -o build/EchoHeist.rbxlx
+          if [ -f bench.project.json ]; then rojo build bench.project.json -o build/CloneBench.rbxlx; fi
+
+      - name: Place structure check
+        run: lune run tests/place_check.luau build/EchoHeist.rbxlx
+
+      - name: Unit tests
+        run: |
+          if [ -f tests/run_unit.luau ]; then lune run tests/run_unit.luau; else echo "no unit tests yet"; fi
+
+      - name: Upload built place
+        uses: actions/upload-artifact@v4
+        with:
+          name: places
+          path: build/*.rbxlx

@@ -25,9 +25,9 @@
 "Steal Back Christmas": a greedy toy tycoon has locked up all the presents in his vault. Use your echoes to get them back before Christmas morning. (An original villain, no borrowed IP.)
 
 ## Originality check (2026-11-11)
-- **Roblox:** the "clone" games (Clone Engine 417M visits, Clone Friends 151M, Clone Yourself 240M, Clone Adventure 69M) are sandboxes where clones *follow* you or obey commands. **No game uses recordings of your past runs as co-op partners** (searched: clone yourself, past self, time clone, copies of yourself, replay yourself, echo heist, record and replay).
+- **Roblox:** the "clone" games (Clone Engine 417M visits, Clone Friends 151M, Clone Yourself 240M, Clone Adventure 69M) are sandboxes where clones *follow* you or obey commands. ~~No game uses recordings of your past runs as co-op partners.~~ **Corrected 2026-11-12 (MASTERPLAN §2.1, docs/research/market.md):** that claim was false. The mechanic exists elsewhere: Rewind Robbers (Playgama browser game, Oct 2026: takes, tape rewind, bank, museum, getaway van), ECHOES: Clone Puzzles on Roblox (about 4 CCU), Loop Heist and several game-jam games. The first search only covered phrasing such as clone yourself, past self, time clone, copies of yourself, replay yourself, echo heist and record and replay.
 - **Steam:** the time-clone mechanic exists in older single-player puzzle indies, but it is not a current viral co-op hit.
-- **Status: GREEN on the mechanic.** The risk is the flip side: no proven demand signal right now. The heist theme provides the demand (heist and steal games are big on Roblox).
+- **Status: YELLOW (corrected).** The mechanic is not new. What is ours: **your own Roblox avatar as the clone, 16 robbers live with friends, Gus the guard, and a daily shared vault.** Earlier text said: The risk is the flip side: no proven demand signal right now. The heist theme provides the demand (heist and steal games are big on Roblox).
 
 ## Technical notes
 - Record each player's movement plus actions per tick (server-validated), and replay them as NPC rigs.
