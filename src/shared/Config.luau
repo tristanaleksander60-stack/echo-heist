@@ -1121,8 +1121,14 @@ Config.Clone = {
 	ANIM_DISTANCE = 90, -- beyond this many studs from the camera, clips stop (the root still moves)
 	POSE_DISTANCE = 60, -- custom Lua poses (plate, carry, stuck, busted) only nearer than this
 
-	-- Custom poses (ClonePose, written to the joints' Transform in PreSimulation; radians and seconds).
+	-- Custom poses (ClonePose; radians and seconds). Avatars play them as Animation clips baked from
+	-- ClonePose (tools/clone_clips.luau -> Shared/Heist/CloneClips); mannequins pose their arms in Lua.
+	-- Re-bake and re-upload after changing a pose number: lune run tools/clone_clips.luau build/clips,
+	-- then python3 tools/anim_upload.py --clips build/clips.
 	POSE_BLEND = 0.18, -- into and out of a custom pose
+	BUSTED_FADE_IN = 0.05, -- the busted clip raises the hands itself
+	LOOK_SMOOTH = 0.15, -- IKControl SmoothTime of the plate glance
+	LOOK_REACH = 6, -- studs from the head to the glance's IK target (the clamped direction)
 	CARRY_SHOULDER = 1.0, -- arms forward
 	CARRY_INWARD = 0.32, -- hands toward the middle
 	CARRY_ELBOW = 1.05, -- forearms up: the loot sits between both hands
