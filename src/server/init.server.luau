@@ -58,6 +58,10 @@ if Config.GAME_MODE == "sim" then
 	if not okKit then
 		warn("[Server] art kit unavailable; levels stay greybox: " .. tostring(kitErr))
 	end
+	-- UI kit images (Decal -> image id): cosmetic, the HUD renders without them until they arrive.
+	pcall(function()
+		require(script:WaitForChild("Heist"):WaitForChild("UiImages")).start()
+	end)
 	HeistService.start()
 	return
 end
