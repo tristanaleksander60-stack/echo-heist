@@ -119,7 +119,7 @@ function HeistClient.start()
 
 	local echo = EchoView.new(state)
 	local gus = GusView.new(state)
-	local world = WorldView.new(state, echo.positionOf)
+	local world = WorldView.new(state, echo.carryPointOf) -- clones carry loot in their hands
 	local lights = LightDirector.new()
 	local ffOn = false
 

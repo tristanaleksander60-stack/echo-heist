@@ -685,7 +685,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 				local carrier = num(folder:GetAttribute(k.kCarrier), 0)
 				local pos = carrierPos(carrier)
 				if pos then
-					cf = CFrame.new(pos + Vector3.new(0, 2.6, 0))
+					cf = CFrame.new(pos + Vector3.new(0, Config.Clone.CARRY_LIFT, 0))
 				end
 				local a = actorOf(carrier)
 				if a and a.kind == "live" and lp and a.owner == lp.UserId then

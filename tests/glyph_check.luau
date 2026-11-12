@@ -15,11 +15,8 @@ local FILES = { "src/shared/Heist/Strings.luau" }
 local ALLOWED: { [number]: boolean } = { [0xB7] = true }
 
 -- Allowed in one file only, each with its reason.
-local ALLOWED_IN: { [string]: { [number]: string } } = {
-	-- EchoView belongs to the clone track (not edited by the HUD track); its busted
-	-- bubble "...  ✕" moves to Strings with that track's next change.
-	["src/client/Heist/EchoView.luau"] = { [0x2715] = "owned by the clone track (EchoView), pending" },
-}
+-- (Empty: the clone track's bubble moved to Strings.CLONE_BUBBLE and a cross icon.)
+local ALLOWED_IN: { [string]: { [number]: string } } = {}
 
 type Lit = { line: number, text: string }
 

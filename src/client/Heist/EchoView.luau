@@ -1,68 +1,95 @@
 --!strict
 -- Heist/EchoView: draws every clone of the run on this client (MASTERPLAN §6.5, §8.2,
--- §8.5 "clone rig"). Clones are pure data on the server; here each one is a pooled
--- rig posed from its recording with Rec/Sampler on the replicated loop clock.
+-- §8.5 "clone rig"; PLAN_STEAM_PLUS §3.1, §4.4 A1-A3). Clones are pure data on the server; here
+-- each one is a pooled rig posed from its recording with Rec/Sampler on the replicated loop clock.
 --
 --   * Pools per owner, never destroyed on rewind; an owner's pool switches from
 --     mannequins to their avatar template once it arrives in ReplicatedStorage.
---   * Identity: owner hue + glyph + number badge (§0 C5), hidden beyond 40 studs;
---     one Highlight per owner group: crew-hue fill + outline. Your own clones keep it at
---     every performance tier (never invisible by design, PLAN_STEAM_PLUS §1 S1).
+--   * "That's me" (A2): your textured avatar under one Highlight per owner group (crew-hue fill +
+--     outline; your own clones keep it at every performance tier: never invisible by design), a
+--     floor glow disc in the crew hue (unlit SurfaceGui, no light object) and a numbered pill over
+--     the head (seat icon + number, Icons.seat), hidden beyond CLONE_BADGE_DISTANCE.
+--   * Age ramp: each older run 12% dimmer; solo only: older runs drift toward violet
+--     (CloneState.driftHue). Other players' clones at 70% brightness; orphan tapes in Tape Grey.
+--   * "Tape print": each clone builds up from the feet in Config.Clone.PRINT_SECONDS (parts appear
+--     by height under a rising scan band), 60 ms apart in record order, with a floor ring.
+--   * Clones act (A3): a per-frame state from the recording (Shared/Heist/CloneState: moving, idle,
+--     on-plate, carry, stuck, busted, jump, fall) drives the owner's catalog pack (idle, walk, run,
+--     jump, fall; clip speeds locked to the recording by Shared/Heist/CloneGait, so feet do not
+--     slide at 1x or 3x) and the custom Lua poses (Shared/Heist/ClonePose: plate stance with one
+--     glance back at you, carry, stuck, busted), written to the joints in PreSimulation.
+--   * Server-decided outcomes arrive as events: Busted (hands up, glitch slices, then a tape-ribbon
+--     burst), Zapped (sparks), Stuck (taps the wall, shrugs), Shrug ("?").
 --   * CloneHealth: about once a second every drawn avatar rig is checked (head alive,
 --     limbs near the root, joints whole); a broken one is swapped for the mannequin in
 --     place and reported once per owner (Telemetry.ui "CloneBroken").
---   * Age ramp: each older run 12% dimmer; solo: older runs drift toward violet.
---     Other players' clones at 70% brightness; orphan tapes in Tape Grey.
---   * "Tape print": clones form 60 ms apart in record order with a floor ring.
---   * Server-decided outcomes arrive as events: Busted (glitch + tape burst), Zapped
---     (soot), Stuck ("..." and hold), Shrug ("?").
---   * One BulkMoveTo per frame for every rig part.
+--   * Your live character gets a warm rim and ground ring (Heist/PlayerHalo).
+--   * One BulkMoveTo per frame for every rig part, glow and band. Nothing is created per frame:
+--     rigs, pills, bubbles, glows, bands and emitters are pooled with the rig.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local HeistShared = Shared:WaitForChild("Heist")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Sampler = require(Shared:WaitForChild("Rec"):WaitForChild("Sampler"))
-local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
-local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
+local CloneGait = require(HeistShared:WaitForChild("CloneGait"))
+local ClonePose = require(HeistShared:WaitForChild("ClonePose"))
+local CloneState = require(HeistShared:WaitForChild("CloneState"))
+local Palette = require(HeistShared:WaitForChild("Palette"))
+local Protocol = require(HeistShared:WaitForChild("Protocol"))
+local Strings = require(HeistShared:WaitForChild("Strings"))
 
+local Icons = require(script.Parent:WaitForChild("Icons"))
+local PlayerHalo = require(script.Parent:WaitForChild("PlayerHalo"))
 local Rigs = require(script.Parent:WaitForChild("Rigs"))
 local Telemetry = require(script.Parent:WaitForChild("Telemetry"))
+local Theme = require(script.Parent:WaitForChild("Theme"))
 local Ui = require(script.Parent:WaitForChild("Ui"))
 
 local H = Config.Heist
+local C = Config.Clone
+local TAU = 2 * math.pi
+local RIBBON_IMAGE = "EH_FX_Ribbon"
+
 local EchoView = {}
 
-type Pool = { kind: string, free: { any }, group: Model, highlight: Highlight }
+type Pool = { kind: string, free: { any }, group: Model, highlight: Highlight, fx: Folder }
 
-local function badgeGui(parent: BasePart, text: string, color: Color3): (BillboardGui, TextLabel)
+-- The numbered pill over a clone's head: seat icon + number on the seat colour, ink rim.
+local function pillGui(anchor: BasePart): (BillboardGui, Frame, TextLabel)
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "Badge"
-	gui.Size = UDim2.fromOffset(44, 28)
-	gui.StudsOffset = Vector3.new(0, 2.4, 0)
+	gui.Size = UDim2.fromOffset(C.PILL_SIZE[1], C.PILL_SIZE[2])
+	gui.StudsOffset = Vector3.new(0, C.PILL_OFFSET, 0)
 	gui.MaxDistance = H.CLONE_BADGE_DISTANCE
 	gui.LightInfluence = 0
-	local label = Instance.new("TextLabel")
-	label.Name = "Text"
-	label.BackgroundColor3 = Palette.ink
-	label.BackgroundTransparency = 0.25
-	label.Size = UDim2.fromScale(1, 1)
-	label.FontFace = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
-	label.TextSize = 20
-	label.TextColor3 = color
-	label.Text = text
-	label.Parent = gui
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0.5, 0)
-	corner.Parent = label
-	gui.Adornee = parent
-	gui.Parent = parent
-	return gui, label
+	local pill = Ui.frame(gui, {
+		Name = "Pill",
+		Size = UDim2.fromScale(1, 1),
+		BackgroundColor3 = Palette.white,
+		BackgroundTransparency = 0,
+	})
+	Ui.pill(pill)
+	Ui.stroke(pill, Palette.ink, Theme.STROKE)
+	local number = Ui.label(pill, {
+		Name = "Number",
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -4, 0.5, 0),
+		Size = UDim2.fromScale(0.6, 1),
+		TextColor3 = Palette.ink,
+		TextSize = Theme.TYPE.body,
+		Text = "",
+	})
+	gui.Adornee = anchor
+	gui.Parent = anchor
+	return gui, pill, number
 end
 
-local function bubbleGui(parent: BasePart): (BillboardGui, TextLabel)
+-- The speech bubble (BUSTED, ZAP!, STUCK + cross icon, ?): Strings.CLONE_BUBBLE.
+local function bubbleGui(anchor: BasePart): (BillboardGui, TextLabel)
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "Bubble"
 	gui.Size = UDim2.fromOffset(120, 32)
@@ -70,32 +97,125 @@ local function bubbleGui(parent: BasePart): (BillboardGui, TextLabel)
 	gui.MaxDistance = 80
 	gui.LightInfluence = 0
 	gui.Enabled = false
-	local label = Instance.new("TextLabel")
-	label.BackgroundTransparency = 1
-	label.Size = UDim2.fromScale(1, 1)
-	label.FontFace = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
-	label.TextSize = 22
-	label.TextColor3 = Palette.white
-	label.TextStrokeTransparency = 0.2
-	label.Text = ""
-	label.Parent = gui
-	gui.Adornee = parent
-	gui.Parent = parent
+	local label = Ui.label(gui, {
+		Name = "Text",
+		Size = UDim2.fromScale(1, 1),
+		TextSize = Theme.TYPE.title,
+		TextColor3 = Palette.white,
+		Text = "",
+	})
+	gui.Adornee = anchor
+	gui.Parent = anchor
 	return gui, label
 end
 
-local function burst(parent: BasePart, color: Color3): ParticleEmitter
+local function emitter(parent: BasePart, name: string): ParticleEmitter
 	local e = Instance.new("ParticleEmitter")
-	e.Name = "Burst"
+	e.Name = name
+	e.Enabled = false
 	e.Rate = 0
+	e.LightInfluence = 0
+	e.Parent = parent
+	return e
+end
+
+local function sparks(parent: BasePart): ParticleEmitter
+	local e = emitter(parent, "Burst")
 	e.Lifetime = NumberRange.new(0.3, 0.6)
 	e.Speed = NumberRange.new(6, 12)
 	e.SpreadAngle = Vector2.new(180, 180)
 	e.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.45), NumberSequenceKeypoint.new(1, 0) })
-	e.Color = ColorSequence.new(color)
+	e.Color = ColorSequence.new(Palette.white)
 	e.LightEmission = 0.6
-	e.Parent = parent
 	return e
+end
+
+-- Tape-ribbon burst (roblox_quality §5.1 "Busted"): curled strips of tape, Tape Grey + the clone hue.
+local function ribbons(parent: BasePart): ParticleEmitter
+	local e = emitter(parent, "Ribbons")
+	e.Texture = C.RIBBON_FALLBACK
+	e.Lifetime = NumberRange.new(0.5, 0.8)
+	e.Speed = NumberRange.new(10, 16)
+	e.SpreadAngle = Vector2.new(180, 180)
+	e.Drag = 4
+	e.Acceleration = Vector3.new(0, -14, 0)
+	e.Rotation = NumberRange.new(0, 360)
+	e.RotSpeed = NumberRange.new(-240, 240)
+	e.Squash = NumberSequence.new(-0.6)
+	e.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.5), NumberSequenceKeypoint.new(1, 0.35) })
+	e.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) })
+	e.LightEmission = 0.2
+	e.Brightness = 1.2
+	return e
+end
+
+-- The scan band of the tape print: a thin neon disc that rises from the feet to the head.
+local function band(parent: Instance): Part
+	local p = Instance.new("Part")
+	p.Name = "PrintBand"
+	p.Shape = Enum.PartType.Cylinder
+	p.Size = Vector3.new(0.12, 3.2, 3.2)
+	p.Material = Enum.Material.Neon
+	p.Transparency = 1
+	p.Anchored = true
+	p.CanCollide = false
+	p.CanQuery = false
+	p.CanTouch = false
+	p.CastShadow = false
+	p.Parent = parent
+	return p
+end
+
+-- Recolours a glow disc (PlayerHalo.disc): every disc frame and the ring's stroke.
+local function tintGlow(gui: SurfaceGui, hue: Color3)
+	for _, f in gui:GetChildren() do
+		if f:IsA("Frame") then
+			if f.Name == "Ring" then
+				local s = f:FindFirstChildOfClass("UIStroke")
+				if s then
+					s.Color = hue
+				end
+			else
+				f.BackgroundColor3 = hue
+			end
+		end
+	end
+end
+
+-- Ribbon emitters waiting for the ribbon texture (shared by every view; set once it resolves).
+local ribbonList: { ParticleEmitter } = {}
+local ribbonUri: string? = nil
+local function useRibbon(e: ParticleEmitter)
+	if ribbonUri then
+		e.Texture = ribbonUri
+		e.FlipbookLayout = Enum.ParticleFlipbookLayout.Grid2x2
+		e.FlipbookMode = Enum.ParticleFlipbookMode.Loop
+		e.FlipbookFramerate = NumberRange.new(4, 8)
+		e.FlipbookStartRandom = true
+	else
+		table.insert(ribbonList, e)
+	end
+end
+Theme.onImage(RIBBON_IMAGE, function(uri: string)
+	ribbonUri = uri
+	local waiting = table.clone(ribbonList)
+	table.clear(ribbonList)
+	for _, e in waiting do
+		if e.Parent then
+			useRibbon(e)
+		end
+	end
+end)
+
+-- Path lengths per recording (CloneGait.distances), computed once per recording.
+local distCache: { [any]: { number } } = setmetatable({} :: any, { __mode = "k" })
+local function distancesOf(rec: any): { number }
+	local d = distCache[rec]
+	if not d then
+		d = CloneGait.distances(rec)
+		distCache[rec] = d
+	end
+	return d
 end
 
 function EchoView.new(state: any): any
@@ -128,6 +248,54 @@ function EchoView.new(state: any): any
 	local brokenOwners: { [number]: string } = {}
 	local healthAt = 0
 	local lastHealthy = 0
+	local halo = PlayerHalo.new(folder)
+	-- The view's clock rate (1x, 3x fast-forward, the reel's), measured per frame.
+	local lastT: number? = nil
+	local rate = 1
+	-- Loot carriers this frame (server attributes K<i>State / K<i>Carrier), actor id -> true.
+	local carriedBy: { [number]: boolean } = {}
+	local lootKeys: { { string } } = {}
+	local ctx: any = { gone = nil, stuck = nil, carrying = nil, plates = nil, prevLoco = nil }
+
+	-- "◀ YOU, 10 SEC AGO" (§6.5 #5): one label for the view, moved to the newest own clone.
+	local youGui: BillboardGui? = nil
+	local youText: TextLabel? = nil
+	local function youLabel(anchor: BasePart, text: string)
+		local gui = youGui
+		local label = youText
+		if not gui or not label then
+			local g = Instance.new("BillboardGui")
+			g.Name = "YouLabel"
+			g.Size = UDim2.fromOffset(190, 30)
+			g.StudsOffset = Vector3.new(0, 3.6, 0)
+			g.MaxDistance = 120
+			g.LightInfluence = 0
+			local l = Ui.label(g, {
+				Name = "Text",
+				Size = UDim2.fromScale(1, 1),
+				RichText = true,
+				TextColor3 = Palette.exit,
+				TextSize = Theme.TYPE.body,
+				Text = "",
+			})
+			l.BackgroundColor3 = Palette.ink
+			l.BackgroundTransparency = 0.25
+			Ui.pill(l)
+			g.Parent = folder
+			gui, label = g, l
+			youGui, youText = g, l
+		end
+		local g, l = gui :: BillboardGui, label :: TextLabel
+		l.Text = text
+		g.Adornee = anchor
+		g.Enabled = true
+	end
+	local function hideYouLabel()
+		if youGui then
+			youGui.Enabled = false
+			youGui.Adornee = nil
+		end
+	end
 
 	local function templateOf(ownerId: number): Model?
 		local f = ReplicatedStorage:FindFirstChild(Protocol.AVATARS)
@@ -163,7 +331,11 @@ function EchoView.new(state: any): any
 			hl.Adornee = group
 			hl.Parent = group
 			group.Parent = folder
-			pool = { kind = want, free = {}, group = group, highlight = hl }
+			-- Glows and print bands sit outside the group, so the Highlight never outlines them.
+			local fx = Instance.new("Folder")
+			fx.Name = "Fx_" .. tostring(ownerId)
+			fx.Parent = folder
+			pool = { kind = want, free = {}, group = group, highlight = hl, fx = fx }
 			pools[ownerId] = pool
 		end
 		local p = pool :: Pool
@@ -172,17 +344,22 @@ function EchoView.new(state: any): any
 		return p
 	end
 
+	local function destroyPool(pool: Pool)
+		pool.group:Destroy()
+		pool.fx:Destroy()
+	end
+
 	local function newEntry(pool: Pool, ownerId: number): any
 		local rig: any = nil
-		if pool.kind == "avatar" then
-			local t = templateOf(ownerId)
-			rig = t and Rigs.buildAvatar(t)
+		local t = if pool.kind == "avatar" then templateOf(ownerId) else nil
+		if t then
+			rig = Rigs.buildAvatar(t)
 		end
 		rig = rig or Rigs.buildMannequin()
 		rig.model.Parent = pool.group
-		Rigs.startWalk(rig)
+		Rigs.loadPack(rig, Rigs.packOf(t))
 		local anchor = Rigs.anchorPart(rig)
-		local badge, badgeText = badgeGui(anchor, "", Palette.white)
+		local badge, pill, number = pillGui(anchor)
 		local bubble, bubbleText = bubbleGui(anchor)
 		local trailA0 = Instance.new("Attachment")
 		trailA0.Position = Vector3.new(0, 0.6, 0)
@@ -198,21 +375,58 @@ function EchoView.new(state: any): any
 		trail.Transparency = NumberSequence.new(0.3, 1)
 		trail.Enabled = false
 		trail.Parent = anchor
-		return {
+		local glowPart, glowGui, glowRing =
+			PlayerHalo.disc("FloorGlow", C.GLOW_SIZE, Palette.white, C.GLOW_ALPHA, C.GLOW_RING_ALPHA, C.GLOW_DISC)
+		glowGui.Enabled = false
+		glowPart.Parent = pool.fx
+		local ribbon = ribbons(anchor)
+		useRibbon(ribbon)
+		local entry: any = {
 			rig = rig,
 			pool = pool,
 			badge = badge,
-			badgeText = badgeText,
+			pill = pill,
+			number = number,
+			pillIcon = nil :: ImageLabel?,
+			pillIconName = "seat_circle",
 			bubble = bubble,
 			bubbleText = bubbleText,
+			bubbleIcon = nil :: ImageLabel?,
 			bubbleUntil = 0,
 			trail = trail,
-			emitter = burst(anchor, Palette.white),
-			label = nil :: BillboardGui?,
+			emitter = sparks(anchor),
+			ribbons = ribbon,
+			glowPart = glowPart,
+			glowGui = glowGui,
+			glowRing = glowRing,
+			band = band(pool.fx),
+			height = Rigs.heightOf(rig),
+			frame = CloneState.newFrame(),
+			pose = ClonePose.new(),
+			gait = CloneGait.new(),
 			phase = 0,
 			fade = -1,
 			near = false,
 		}
+		Icons.attach(pill, "seat_circle", {
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, 5, 0.5, 0),
+			Size = UDim2.fromOffset(C.PILL_SIZE[2] - 8, C.PILL_SIZE[2] - 8),
+			ImageColor3 = Palette.ink,
+		}, function(img: ImageLabel)
+			entry.pillIcon = img
+			Icons.set(img, entry.pillIconName)
+		end)
+		Icons.attach(bubbleText, "cross", {
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, 4, 0.5, 0),
+			Size = UDim2.fromOffset(22, 22),
+			ImageColor3 = Palette.alarm,
+			Visible = false,
+		}, function(img: ImageLabel)
+			entry.bubbleIcon = img
+		end)
+		return entry
 	end
 
 	-- Drops the rig pools of owners who are no longer in the crew (each pool holds
@@ -220,7 +434,7 @@ function EchoView.new(state: any): any
 	local function prunePools(keep: { [number]: boolean })
 		for ownerId, pool in pools do
 			if not keep[ownerId] and ownerId ~= myId() then
-				pool.group:Destroy()
+				destroyPool(pool)
 				pools[ownerId] = nil
 			end
 		end
@@ -234,17 +448,27 @@ function EchoView.new(state: any): any
 		return keep
 	end
 
+	local function hideFx(entry: any)
+		entry.glowGui.Enabled = false
+		entry.band.Transparency = 1
+		entry.badge.Enabled = false
+		entry.trail.Enabled = false
+		entry.bubble.Enabled = false
+		if entry.youLabel then
+			entry.youLabel = false
+			hideYouLabel()
+		end
+	end
+
 	local function release(entry: any)
 		local rig = entry.rig
 		Rigs.setFade(rig, 1)
-		Rigs.setSpeed(rig, 0)
-		entry.trail.Enabled = false
-		entry.bubble.Enabled = false
-		if entry.label then
-			entry.label:Destroy()
-			entry.label = nil
-		end
+		Rigs.locomote(rig, "none", 0, 1, 0, false, false)
+		Rigs.clearPose(rig)
+		entry.pose.busy = false
+		hideFx(entry)
 		entry.fade = 1
+		entry.burstAt = nil
 		table.insert(entry.pool.free, entry)
 	end
 
@@ -253,11 +477,10 @@ function EchoView.new(state: any): any
 			return Palette.tapeGrey
 		end
 		local hue = Palette.hueFor(a.seat)
-		if solo and ownCount > 1 then
-			-- Older runs drift up to 25 degrees toward violet (§6.5 #4)
+		if solo then
+			-- Older runs drift toward violet, solo only (§6.5 #4): co-op seat hues must stay apart.
 			local h, s, v = hue:ToHSV()
-			local f = rank / (ownCount - 1)
-			hue = Color3.fromHSV((h + f * 25 / 360) % 1, s, v)
+			hue = Color3.fromHSV(CloneState.driftHue(h, rank, ownCount, true), s, v)
 		end
 		local dim = 1 - H.CLONE_AGE_DIM * rank
 		if a.owner ~= myId() then
@@ -268,9 +491,50 @@ function EchoView.new(state: any): any
 
 	local function flushRetiring()
 		for _, pool in retiring do
-			pool.group:Destroy()
+			destroyPool(pool)
 		end
 		table.clear(retiring)
+	end
+
+	-- The clone's look: hue (rig tint, glow, trail, sparks), pill (seat colour, icon, number).
+	local function dress(entry: any, a: any, hue: Color3)
+		Rigs.tint(entry.rig, hue)
+		entry.hue = hue
+		local seatHue = if a.orphan then Palette.tapeGrey else Palette.hueFor(a.seat)
+		entry.pill.BackgroundColor3 = seatHue
+		entry.number.Text = Strings.cloneNumber(a.slot)
+		entry.pillIconName = Icons.seat(a.seat)
+		Icons.set(entry.pillIcon, entry.pillIconName)
+		entry.trail.Color = ColorSequence.new(hue)
+		entry.emitter.Color = ColorSequence.new(hue)
+		entry.ribbons.Color = ColorSequence.new(Palette.tapeGrey, hue)
+		tintGlow(entry.glowGui, hue)
+		entry.band.Color = hue
+	end
+
+	-- Fresh per-run state of an entry.
+	local function restart(entry: any)
+		Rigs.setFade(entry.rig, 1) -- a fresh rig is visible until it prints
+		entry.fade = 1
+		entry.goneShown = false
+		entry.phase = 0
+		entry.near = false
+		entry.printed = false
+		entry.printDone = nil
+		entry.stateName = nil
+		entry.stateSince = 0
+		entry.outName = nil
+		entry.burstAt = nil
+		entry.glowY = nil
+		entry.frame.loco = "idle"
+		entry.printing = false
+		entry.band.Transparency = 1
+		entry.glowRing.Size = UDim2.fromScale(C.GLOW_DISC, C.GLOW_DISC)
+		local stroke = entry.glowRing:FindFirstChildOfClass("UIStroke")
+		if stroke then
+			stroke.Transparency = C.GLOW_RING_ALPHA
+		end
+		CloneGait.reset(entry.gait)
 	end
 
 	-- A new run: hand every clone actor a rig from its owner's pool.
@@ -283,12 +547,19 @@ function EchoView.new(state: any): any
 		table.clear(order)
 		run = msg
 		newestOwnId = 0
+		lastT = nil
 		local keep = crewSet()
 		for _, a in msg.actors do
 			keep[a.owner] = true -- orphan tapes of a player who left still draw
 		end
 		prunePools(keep)
 		local solo = #(state.crew or {}) <= 1
+		-- Loot attribute names, built once per run (no string building per frame).
+		table.clear(lootKeys)
+		local level = state.level
+		for i = 1, #(level and level.loot or {}) do
+			lootKeys[i] = { "K" .. i .. "State", "K" .. i .. "Carrier" }
+		end
 		-- Rank own clones by age (newest = 0) per owner.
 		local byOwner: { [number]: { any } } = {}
 		for _, a in msg.actors do
@@ -320,20 +591,12 @@ function EchoView.new(state: any): any
 			local hue = hueFor(a, rankOf[a.id] or 0, #list, solo)
 			local pool = poolFor(a.owner, Palette.hueFor(a.seat))
 			local entry = table.remove(pool.free) or newEntry(pool, a.owner)
-			Rigs.tint(entry.rig, hue)
+			restart(entry)
+			dress(entry, a, hue)
 			entry.actor = a
 			entry.rec = rec
-			entry.hue = hue
-			entry.badgeText.Text = Palette.badge(a.seat, a.slot)
-			entry.badgeText.TextColor3 = if a.orphan then Palette.tapeGrey else Palette.hueFor(a.seat)
-			entry.trail.Color = ColorSequence.new(hue)
-			entry.emitter.Color = ColorSequence.new(hue)
+			entry.dist = distancesOf(rec)
 			entry.visibleAt = startLocal + k * H.CLONE_SPAWN_STAGGER
-			entry.printed = false
-			entry.fade = 1
-			entry.goneShown = false
-			entry.phase = 0
-			entry.near = false
 			k += 1
 			if a == newestOwn then
 				newestOwnId = a.id
@@ -346,15 +609,8 @@ function EchoView.new(state: any): any
 				-- walks out of you, and its label stays until it has stopped on the plate.
 				local controlAt = startLocal + (msg.transition or 0) * 0.25
 				entry.visibleAt = controlAt + H.TUTORIAL_CLONE_FADE_IN
-				local label, text = badgeGui(Rigs.anchorPart(entry.rig), "", hue)
-				text.RichText = true
-				text.TextColor3 = Palette.exit
-				text.Text = Ui.agoLabel("YOU", secs, Palette.hueFor(a.seat))
-				label.Name = "YouLabel"
-				label.Size = UDim2.fromOffset(190, 30)
-				label.StudsOffset = Vector3.new(0, 3.6, 0)
-				label.MaxDistance = 120
-				entry.label = label
+				youLabel(Rigs.anchorPart(entry.rig), Ui.agoLabel("YOU", secs, Palette.hueFor(a.seat)))
+				entry.youLabel = true
 				entry.labelUntil = controlAt
 					+ math.min(duration, H.CLONE_LABEL_MAX_SECONDS)
 					+ H.CLONE_LABEL_HOLD_AFTER_STOP
@@ -365,39 +621,12 @@ function EchoView.new(state: any): any
 		flushRetiring()
 	end
 
-	-- "Tape print": a ring on the floor where a clone forms (none under reduced motion).
-	local function printRing(at: Vector3, hue: Color3)
-		if state.reduced then
-			return
-		end
-		local ring = Instance.new("Part")
-		ring.Name = "PrintRing"
-		ring.Shape = Enum.PartType.Cylinder
-		ring.Anchored = true
-		ring.CanCollide = false
-		ring.CanQuery = false
-		ring.CanTouch = false
-		ring.CastShadow = false
-		ring.Material = Enum.Material.Neon
-		ring.Color = hue
-		ring.Transparency = 0.2
-		ring.Size = Vector3.new(0.1, 1, 1)
-		ring.CFrame = CFrame.new(at) * CFrame.Angles(0, 0, math.pi / 2)
-		ring.Parent = folder
-		local tw = TweenService:Create(
-			ring,
-			TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-			{ Size = Vector3.new(0.1, 5, 5), Transparency = 1 }
-		)
-		tw.Completed:Once(function()
-			ring:Destroy()
-		end)
-		tw:Play()
-	end
-
-	local function say(entry: any, text: string, color: Color3, seconds: number, now: number)
+	local function say(entry: any, text: string, color: Color3, seconds: number, now: number, cross: boolean?)
 		entry.bubbleText.Text = text
 		entry.bubbleText.TextColor3 = color
+		if entry.bubbleIcon then
+			entry.bubbleIcon.Visible = cross == true
+		end
 		entry.bubble.Enabled = true
 		entry.bubbleUntil = now + seconds
 	end
@@ -408,17 +637,20 @@ function EchoView.new(state: any): any
 		if not entry then
 			return
 		end
+		local words = Strings.CLONE_BUBBLE
 		if kind == "Busted" then
-			entry.emitter:Emit(24)
-			say(entry, "BUSTED", Palette.alarm, 1.2, now)
+			-- Hands up and the glitch first (ClonePose); the tape-ribbon burst when it vanishes.
+			entry.burstAt = now + ClonePose.bustedSeconds()
+			say(entry, words.Busted, Palette.alarm, 1.2, now)
 		elseif kind == "Zapped" then
 			entry.emitter.Color = ColorSequence.new(Palette.ink)
-			entry.emitter:Emit(16)
-			say(entry, "ZAP!", Palette.alarm, 1.0, now)
+			entry.emitter:Emit(C.ZAP_SPARKS)
+			entry.emitter.Color = ColorSequence.new(entry.hue)
+			say(entry, words.Zapped, Palette.alarm, 1.0, now)
 		elseif kind == "Stuck" then
-			say(entry, "...  ✕", Palette.alarm, 3.0, now)
+			say(entry, words.Stuck, Palette.alarm, 3.0, now, true)
 		elseif kind == "Shrug" then
-			say(entry, "?", Palette.white, 1.2, now)
+			say(entry, words.Shrug, Palette.white, 1.2, now)
 		end
 	end
 
@@ -430,12 +662,63 @@ function EchoView.new(state: any): any
 		return nil
 	end
 
+	-- Where a clone's carried loot hangs, minus Config.Clone.CARRY_LIFT (WorldView adds the lift to
+	-- every carrier point): between its hands, bobbing, while it carries; positionOf otherwise.
+	function view.carryPointOf(actorId: number): Vector3?
+		local entry = active[actorId]
+		if not entry or not entry.lastFeet then
+			return view.positionOf(actorId)
+		end
+		if entry.frame.state ~= CloneState.CARRY then
+			return entry.lastPos
+		end
+		local s = entry.rig.scale or 1
+		local hands = C.CARRY_HANDS
+		local at = entry.lastFeet
+			* CFrame.new(hands[1] * s, entry.rig.rootHeight + hands[2] * s + entry.pose.bob, hands[3] * s)
+		return at.Position - Vector3.new(0, C.CARRY_LIFT, 0)
+	end
+
+	-- Loot carriers from the instance folder's attributes (the server decides who carries).
+	local function readCarriers()
+		table.clear(carriedBy)
+		local f: Instance? = state.folder
+		if not f then
+			return
+		end
+		for _, k in lootKeys do
+			if f:GetAttribute(k[1]) == "Carried" then
+				local by = f:GetAttribute(k[2])
+				if type(by) == "number" and by > 0 then
+					carriedBy[by] = true
+				end
+			end
+		end
+	end
+
+	-- Your live character's head (the plate glance looks back at you).
+	local function ownerHead(ownerId: number): Vector3?
+		local p = Players:GetPlayerByUserId(ownerId)
+		local char = p and p.Character
+		local head = char and char:FindFirstChild("Head")
+		if head and head:IsA("BasePart") then
+			return head.Position
+		end
+		return nil
+	end
+
+	-- Seconds after a clone is gone until it has fully vanished.
+	local function goneSeconds(kind: string): number
+		return if kind == "Busted" then ClonePose.bustedSeconds() else C.ZAP_FADE
+	end
+
 	local parts: { BasePart } = {}
 	local cframes: { CFrame } = {}
 
 	-- Poses every clone at view time tView (or along the reel when `reelT` is set:
 	-- the rewind plays each path backwards from the end of the last run, §7.1).
 	function view.update(tView: number, now: number, dt: number, reelT: number?)
+		halo.update()
 		if not run then
 			return
 		end
@@ -444,11 +727,35 @@ function EchoView.new(state: any): any
 		local origin: Vector3 = state.origin
 		local camera = workspace.CurrentCamera
 		local camPos = if camera then camera.CFrame.Position else Vector3.zero
+		-- Clock rate: the run clock's, or measured from the view time (reel, tests).
+		local tNow = reelT or tView
+		local clock = state.clock
+		if clock and state.phase == "Run" and not reelT then
+			rate = clock.rate
+		elseif lastT and dt > 0 then
+			local raw = math.abs(tNow - (lastT :: number)) / dt
+			if raw <= C.MAX_VIEW_RATE then
+				rate = raw
+			end
+		end
+		lastT = tNow
+		readCarriers()
+		local level = state.level
+		ctx.plates = level and level.plates
 		for _, entry in order do
 			local a = entry.actor
 			local fx = state.actorFx[a.id]
-			-- Gone (busted / zapped, faded out): nothing to sample or pose until the reel.
-			if not reelT and entry.fade >= 1 and fx and fx.gone and now - (fx.goneAtLocal or now) > 0.35 then
+			local rig = entry.rig
+			if entry.burstAt and now >= entry.burstAt then
+				entry.burstAt = nil
+				if not state.reduced then
+					entry.ribbons:Emit(C.RIBBON_COUNT)
+				end
+				entry.emitter:Emit(C.SPARK_COUNT)
+			end
+			-- Gone (busted / zapped, vanished): nothing to sample or pose until the reel.
+			local goneFor = if fx and fx.gone and not reelT then now - (fx.goneAtLocal or now) else -1
+			if goneFor > goneSeconds(fx and fx.gone or "") and entry.fade >= 1 then
 				continue
 			end
 			local rec = entry.rec
@@ -456,66 +763,195 @@ function EchoView.new(state: any): any
 			if fx and fx.stuckT and not reelT then
 				t = math.min(t, fx.stuckT)
 			end
-			local x, y, z, yaw = Sampler.at(rec, t)
-			if x == nil then
+			ctx.gone = if fx and not reelT then fx.gone else nil
+			ctx.stuck = fx ~= nil and fx.stuckT ~= nil and not reelT
+			ctx.carrying = carriedBy[a.id] == true and not reelT
+			ctx.prevLoco = entry.frame.loco
+			local f = CloneState.derive(rec, t, ctx, entry.frame)
+			if not f then
 				continue
 			end
-			local vx, _, vz = Sampler.velocity(rec, t)
-			local speed = math.sqrt(vx * vx + vz * vz)
-			if (fx and fx.stuckT and not reelT) or (fx and fx.gone and not reelT) then
-				speed = 0
+			if f.state ~= entry.stateName then
+				if entry.stateName and ClonePose.CUSTOM[entry.stateName] then
+					entry.outName, entry.outAt, entry.outFrom = entry.stateName, now, entry.stateSince
+				end
+				entry.stateName, entry.stateSince = f.state, now
 			end
-			local rig = entry.rig
-			local feet = CFrame.new(origin + Vector3.new(x :: number, y - rig.rootHeight, z)) * CFrame.Angles(0, yaw, 0)
-			entry.phase += speed * 0.35 * dt
-			Rigs.pose(rig, feet, entry.phase * 2 * math.pi, math.clamp(speed / 10, 0, 1), parts, cframes)
-			Rigs.setSpeed(rig, speed)
+			local feet = CFrame.new(origin + Vector3.new(f.x, f.y - rig.rootHeight, f.z)) * CFrame.Angles(0, f.yaw, 0)
 			local pos = feet.Position + Vector3.new(0, 3, 0)
+			local camDist = (pos - camPos).Magnitude
+
+			-- Walk cycle locked to the recording: distance travelled, not wall time.
+			local distance = CloneGait.distanceAt(rec, entry.dist, t)
+			entry.phase = distance / C.MANNEQUIN_STRIDE * TAU
+			local walkPhase = distance / C.STRIDE * TAU
+
+			-- Custom pose (blend in, or out of the last custom state).
+			local pose = entry.pose
+			local poseName: string? = nil
+			local since, weight = 0, 0
+			local zapped = f.state == CloneState.BUSTED and not (fx and fx.gone == "Busted")
+			if ClonePose.CUSTOM[f.state] and not zapped then
+				poseName = f.state
+				since = now - entry.stateSince
+				if f.state == CloneState.BUSTED and fx and fx.goneAtLocal then
+					since = now - fx.goneAtLocal
+				end
+				weight = if f.state == CloneState.BUSTED then 1 else math.min(1, since / C.POSE_BLEND)
+			elseif entry.outName and now - entry.outAt < C.POSE_BLEND then
+				poseName = entry.outName
+				since = now - entry.outFrom
+				weight = 1 - (now - entry.outAt) / C.POSE_BLEND
+			end
+			if poseName and camDist < C.POSE_DISTANCE then
+				local yawL, pitchL = 0, 0
+				if poseName == CloneState.PLATE and ClonePose.glance(since) > 0 then
+					local target = ownerHead(a.owner)
+					if target then
+						local head = feet.Position + Vector3.new(0, rig.rootHeight * 1.5, 0)
+						local d = target - head
+						local y, p, ok = ClonePose.look(d.X, d.Y, d.Z, f.yaw)
+						if ok then
+							yawL, pitchL = y, p
+						end
+					end
+				end
+				ClonePose.compute(pose, poseName, since, now, walkPhase, f.loco == "move", yawL, pitchL, weight)
+			else
+				ClonePose.compute(pose, "", 0, now, 0, false, 0, 0, 0)
+			end
+			if pose.glitchX ~= 0 and not state.reduced then
+				feet *= CFrame.new(pose.glitchX, 0, 0)
+			end
+			Rigs.pose(
+				rig,
+				feet,
+				entry.phase,
+				math.clamp(f.speed / 10, 0, 1),
+				parts,
+				cframes,
+				if pose.busy then pose.joints else nil
+			)
 			entry.lastPos = pos
 			entry.lastFeet = feet
 
-			-- Visibility: tape print stagger, gone after an outcome, near-camera fade.
+			-- Visibility: tape print, gone after an outcome, near-camera fade.
 			local fade = 0
+			local printing = false
 			if now < entry.visibleAt and not reelT then
 				fade = 1
 			elseif not entry.printed and not reelT then
 				entry.printed = true
-				printRing(feet.Position + Vector3.new(0, 0.1, 0), entry.hue)
+				printing = not state.reduced and now - entry.visibleAt < C.PRINT_SECONDS
+				if not printing then
+					entry.printDone = now
+				end
+			elseif not entry.printDone and not reelT then
+				printing = now - entry.visibleAt < C.PRINT_SECONDS
+				if not printing then
+					entry.printDone = now
+				end
 			end
-			if fx and fx.gone and not reelT then
-				local since = now - (fx.goneAtLocal or now)
-				if since > 0.35 then
+			if goneFor >= 0 then
+				local total = goneSeconds(fx.gone)
+				if goneFor > total then
 					fade = 1
 				elseif fx.gone == "Busted" then
-					-- glitch at <= 3 flashes/s (§7.3); reduced motion: one smooth fade
+					-- hands up first (visible), then the glitch slices; reduced motion: one smooth fade
+					local g = goneFor - C.BUSTED_HANDS_UP
+					fade = if g < 0
+						then 0
+						elseif state.reduced then g / C.BUSTED_GLITCH
+						elseif pose.glitchX ~= 0 then 0.5
+						else 0
+				else
+					-- zapped: flicker out at <= BLINK_HZ_MAX flashes a second (§7.3)
 					fade = if state.reduced
-						then since / 0.35
-						elseif math.floor(since * 2 * H.BLINK_HZ_MAX) % 2 == 0 then 0.6
+						then goneFor / total
+						elseif math.floor(goneFor * 2 * H.BLINK_HZ_MAX) % 2 == 0 then 0.6
 						else 0
 				end
 			end
 			-- Near-camera fade with hysteresis (a crowd of clones around you must not flip).
-			local dist = (pos - camPos).Magnitude
 			if entry.near then
-				entry.near = dist < H.CLONE_NEAR_UNFADE
+				entry.near = camDist < H.CLONE_NEAR_UNFADE
 			else
-				entry.near = dist < H.CLONE_NEAR_FADE
+				entry.near = camDist < H.CLONE_NEAR_FADE
 			end
-			if fade < 1 and entry.near then
+			if fade < 1 and entry.near and not printing then
 				fade = math.max(fade, 0.7)
 			end
-			if fade ~= entry.fade then
-				entry.fade = fade
-				Rigs.setFade(rig, fade)
-				entry.badge.Enabled = fade < 1
+
+			-- Floor glow: on the floor under the clone (it stays down while the clone is airborne).
+			if f.loco ~= "jump" and f.loco ~= "fall" or not entry.glowY then
+				entry.glowY = feet.Position.Y
 			end
-			entry.trail.Enabled = trailsOn and (reelT ~= nil or speed > Config.Rec.WALK_SPEED + 1)
+			local glowAt = Vector3.new(feet.Position.X, entry.glowY + 0.06, feet.Position.Z)
+			table.insert(parts, entry.glowPart)
+			table.insert(cframes, CFrame.new(glowAt))
+
+			if printing then
+				local p = math.clamp((now - entry.visibleAt) / C.PRINT_SECONDS, 0, 1)
+				local h = p * entry.height
+				Rigs.setPrint(rig, h)
+				entry.fade = 0
+				entry.badge.Enabled = true
+				entry.glowGui.Enabled = true
+				entry.band.Transparency = C.PRINT_BAND_ALPHA + (1 - C.PRINT_BAND_ALPHA) * p
+				table.insert(parts, entry.band)
+				table.insert(cframes, CFrame.new(glowAt + Vector3.new(0, h, 0)) * CFrame.Angles(0, 0, math.pi / 2))
+				local ring = C.PRINT_RING_FROM + (1 - C.PRINT_RING_FROM) * p
+				entry.glowRing.Size = UDim2.fromScale(ring, ring)
+				local stroke = entry.glowRing:FindFirstChildOfClass("UIStroke")
+				if stroke then
+					stroke.Transparency = p
+				end
+				entry.printing = true
+			else
+				if entry.printing then
+					-- print over: the band goes, the ring settles at the disc's rim
+					entry.printing = false
+					entry.band.Transparency = 1
+					entry.glowRing.Size = UDim2.fromScale(C.GLOW_DISC, C.GLOW_DISC)
+					local stroke = entry.glowRing:FindFirstChildOfClass("UIStroke")
+					if stroke then
+						stroke.Transparency = C.GLOW_RING_ALPHA
+					end
+					entry.fade = -1
+				end
+				if fade ~= entry.fade then
+					entry.fade = fade
+					Rigs.setFade(rig, fade)
+					entry.badge.Enabled = fade < 1
+					entry.glowGui.Enabled = fade < 1
+				end
+			end
+
+			-- Catalog animations: off when hidden or far (the root still moves).
+			local loco = if entry.fade >= 1 or camDist > C.ANIM_DISTANCE then "none" else f.loco
+			local sendSpeed, sendWeights = false, false
+			if loco == "move" then
+				sendSpeed, sendWeights = CloneGait.step(entry.gait, f.speed, rate)
+			end
+			local g = entry.gait
+			Rigs.locomote(
+				rig,
+				loco,
+				math.max(g.speed, 0),
+				g.walkW,
+				g.runW,
+				sendSpeed,
+				sendWeights,
+				CloneGait.phase(distance)
+			)
+
+			entry.trail.Enabled = trailsOn and entry.fade < 1 and (reelT ~= nil or f.speed > Config.Rec.WALK_SPEED + 1)
 			if entry.bubble.Enabled and now > entry.bubbleUntil then
 				entry.bubble.Enabled = false
 			end
-			if entry.label and now > (entry.labelUntil or 0) then
-				entry.label:Destroy()
-				entry.label = nil
+			if entry.youLabel and now > (entry.labelUntil or 0) then
+				entry.youLabel = false
+				hideYouLabel()
 			end
 		end
 		if #parts > 0 then
@@ -527,6 +963,22 @@ function EchoView.new(state: any): any
 		end
 	end
 
+	-- Custom poses go to avatar joints after the animator's step (RenderStepped / Heartbeat writes
+	-- would be overwritten). Joints a pose no longer sets go back to the animator.
+	RunService.PreSimulation:Connect(function()
+		for _, entry in order do
+			local rig = entry.rig
+			if rig.kind ~= "avatar" then
+				continue
+			end
+			if entry.pose.busy and entry.fade < 1 then
+				Rigs.writePose(rig, entry.pose.joints)
+			else
+				Rigs.clearPose(rig)
+			end
+		end
+	end)
+
 	-- Swaps one drawn clone's rig for a fresh entry from the owner's (now mannequin) pool,
 	-- keeping its actor, recording, timing and look; the old rig hides until its pool retires.
 	local function swapEntry(old: any, ownerId: number)
@@ -534,30 +986,29 @@ function EchoView.new(state: any): any
 		local pool = poolFor(ownerId, Palette.hueFor(a.seat))
 		local entry = table.remove(pool.free) or newEntry(pool, ownerId)
 		Rigs.setFade(old.rig, 1)
-		Rigs.setSpeed(old.rig, 0)
-		old.badge.Enabled = false
-		old.trail.Enabled = false
-		old.bubble.Enabled = false
-		if old.label then
-			old.label:Destroy()
-			old.label = nil
-		end
-		Rigs.tint(entry.rig, old.hue)
+		Rigs.locomote(old.rig, "none", 0, 1, 0, false, false)
+		old.pose.busy = false
+		local hadLabel = old.youLabel
+		hideFx(old)
+		restart(entry)
+		dress(entry, a, old.hue)
 		entry.actor = a
 		entry.rec = old.rec
-		entry.hue = old.hue
-		entry.badgeText.Text = old.badgeText.Text
-		entry.badgeText.TextColor3 = old.badgeText.TextColor3
-		entry.trail.Color = ColorSequence.new(old.hue)
-		entry.emitter.Color = ColorSequence.new(old.hue)
+		entry.dist = old.dist
 		entry.visibleAt = old.visibleAt
 		entry.printed = true
+		entry.printDone = old.printDone or old.visibleAt
 		entry.fade = -1 -- the next update writes the fade
 		entry.goneShown = old.goneShown
-		entry.phase = old.phase
 		entry.near = old.near
 		entry.lastPos = old.lastPos
 		entry.lastFeet = old.lastFeet
+		entry.burstAt = old.burstAt
+		if hadLabel then
+			youLabel(Rigs.anchorPart(entry.rig), if youText then youText.Text else "")
+			entry.youLabel = true
+			entry.labelUntil = old.labelUntil
+		end
 		active[a.id] = entry
 		local i = table.find(order, old)
 		if i then
@@ -609,6 +1060,7 @@ function EchoView.new(state: any): any
 		prunePools({})
 		run = nil
 		newestOwnId = 0
+		halo.hide()
 	end
 
 	-- Every clone drawn this run (the Crew Line-up takes over from them): actor, last
@@ -650,22 +1102,20 @@ function EchoView.new(state: any): any
 		for _, entry in order do
 			entry.fade = 1
 			Rigs.setFade(entry.rig, 1)
-			entry.badge.Enabled = false
-			entry.trail.Enabled = false
-			entry.bubble.Enabled = false
-			if entry.label then
-				entry.label:Destroy()
-				entry.label = nil
-			end
+			Rigs.locomote(entry.rig, "none", 0, 1, 0, false, false)
+			entry.pose.busy = false
+			Rigs.clearPose(entry.rig)
+			hideFx(entry)
 		end
 		table.clear(order)
 	end
 
-	-- Runtime performance tier (§6.3): 2+ drops trails, 4 drops the owner Highlights of other
-	-- players' clones (yours keep theirs).
+	-- Runtime performance tier (§6.3): 2+ drops trails (and your halo light), 4 drops the owner
+	-- Highlights of other players' clones (yours keep theirs).
 	function view.setTier(tier: number)
 		tierNow = tier
 		trailsOn = tier < 2
+		halo.setTier(tier)
 		for ownerId, pool in pools do
 			pool.highlight.Enabled = highlightOn(ownerId)
 		end
@@ -675,6 +1125,30 @@ function EchoView.new(state: any): any
 	function view.rigOf(actorId: number): any
 		local entry = active[actorId]
 		return entry and entry.rig
+	end
+
+	-- What a clone is doing this frame (CloneState: "moving", "on-plate", "carry", ...; tests).
+	function view.stateOf(actorId: number): string?
+		local entry = active[actorId]
+		return if entry and entry.stateName then entry.frame.state else nil
+	end
+
+	-- When a clone's tape print started and finished (os.clock seconds; nil while not done).
+	function view.printTimes(actorId: number): (number?, number?)
+		local entry = active[actorId]
+		if not entry then
+			return nil, nil
+		end
+		return entry.visibleAt, entry.printDone
+	end
+
+	-- The fx a clone draws with (tests): its floor glow gui, its pill gui and its ribbon emitter.
+	function view.fxOf(actorId: number): any
+		local entry = active[actorId]
+		if not entry then
+			return nil
+		end
+		return { glow = entry.glowGui, glowPart = entry.glowPart, pill = entry.badge, ribbons = entry.ribbons }
 	end
 
 	-- Studio diagnostic chip: clones drawn, healthy at the last check, and what your own

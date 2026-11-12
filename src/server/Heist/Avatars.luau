@@ -5,7 +5,8 @@
 -- ReplicatedStorage.HeistAvatars/<userId>; clients clone and pool it (a mannequin
 -- stands in until it arrives). Stripped silhouette: no SurfaceAppearance, textures,
 -- decals, face or layered clothing, at most MAX_CLONE_ACCESSORIES hair/hat pieces,
--- SmoothPlastic, no shadows, no collisions, no scripts; the client tints it.
+-- SmoothPlastic, no shadows, no collisions, no scripts; the client tints it. The owner's
+-- animation pack stays as EH_Anim_<slot> attributes (clones walk like their owner).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -42,6 +43,23 @@ local function getFolder(): Folder
 	return nf
 end
 
+-- The owner's catalog animation pack (PLAN_STEAM_PLUS §4.4 A3): the Animate script's slots
+-- (walk, run, idle, jump, fall; its first Animation each) as template attributes EH_Anim_<slot>,
+-- so clones play the owner's own walk. Keeps attributes already set (a live character's pack wins).
+function Avatars.readPack(from: Instance, into: Instance)
+	local animate = from:FindFirstChild("Animate")
+	if not animate then
+		return
+	end
+	for _, slot in Config.Clone.ANIM_SLOTS do
+		local holder = animate:FindFirstChild(slot)
+		local anim = holder and holder:FindFirstChildWhichIsA("Animation")
+		if anim and anim.AnimationId ~= "" and into:GetAttribute("EH_Anim_" .. slot) == nil then
+			into:SetAttribute("EH_Anim_" .. slot, anim.AnimationId)
+		end
+	end
+end
+
 -- Strips a rig in place (also used by the engine tests on real rigs).
 -- Safe strip only (PLAN_STEAM_PLUS §1 S1): the joints, every attachment a joint uses, the rig
 -- attachments and the scale values all stay, and the Humanoid never rescales or rebuilds the
@@ -65,6 +83,7 @@ function Avatars.strip(rig: Model)
 			animator.Parent = hum
 		end
 	end
+	Avatars.readPack(rig, rig) -- before the scripts go
 	local kept = 0
 	for _, child in rig:GetChildren() do
 		if child:IsA("Accessory") then
@@ -170,6 +189,11 @@ function Avatars.prepare(player: Player)
 	if player.Parent ~= Players then
 		rig:Destroy() -- left while the avatar was loading
 		return
+	end
+	-- The live character's Animate holds the pack the player really walks with.
+	local character = player.Character
+	if character then
+		Avatars.readPack(character, rig)
 	end
 	Avatars.strip(rig)
 	local joints = RigJoints.whole(rig)
