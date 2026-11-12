@@ -199,7 +199,7 @@ return function(test)
 		Assert.truthy(string.find(o[1], "drawCalls", 1, true) ~= nil, "draw calls named")
 	end)
 	test("start tier: device class, quality level and screen pick it; never below START.MAX", function()
-		local S = P.START
+		local ST = P.START
 		local function facts(o: { [string]: any }): any
 			local f: { [string]: any } = { device = "desktop", savedQuality = 0, renderQuality = 0, viewportMin = 1080 }
 			for k, v in o do
@@ -222,7 +222,7 @@ return function(test)
 			3,
 			"Automatic saved level: the render level (4 of 21) decides"
 		)
-		Assert.eq(Budget.qualityLevel(facts({ renderQuality = S.RENDER_LEVELS })), 10, "render level 21 -> 10")
+		Assert.eq(Budget.qualityLevel(facts({ renderQuality = ST.RENDER_LEVELS })), 10, "render level 21 -> 10")
 		Assert.eq(Budget.qualityLevel(facts({ savedQuality = 0, renderQuality = 0 })), nil, "Automatic says nothing")
 		Assert.eq(Budget.startTier(facts({ device = "phone", viewportMin = 320 })), 3, "a small, old phone screen")
 		Assert.eq(
@@ -231,17 +231,17 @@ return function(test)
 			"a manual quality level beats the screen size"
 		)
 		Assert.eq(Budget.startTier(facts({ device = "phone", viewportMin = 0 })), 2, "no viewport yet: no screen rule")
-		Assert.eq(Budget.startTier(facts({ device = "fridge" })), S.DEVICE.other, "unknown device: other")
+		Assert.eq(Budget.startTier(facts({ device = "fridge" })), ST.DEVICE.other, "unknown device: other")
 		for _, d in { "phone", "tablet", "desktop", "console", "vr", "other" } do
 			for q = 0, 10 do
 				local t = Budget.startTier(facts({ device = d, savedQuality = q, viewportMin = 300 }))
-				Assert.truthy(t >= 1 and t <= S.MAX, d .. " q" .. q .. " within 1..START.MAX")
+				Assert.truthy(t >= 1 and t <= ST.MAX, d .. " q" .. q .. " within 1..START.MAX")
 			end
 		end
 	end)
 
 	test("start tier: the loading-card probe only lowers quality, never past START.MAX", function()
-		local S = P.START
+		local ST = P.START
 		local fast = { frames = 150, medianMs = 16.7, p95Ms = 18 }
 		local capped = { frames = 75, medianMs = 33.4, p95Ms = 34 } -- an OS 30 fps cap: not slow
 		local slow = { frames = 60, medianMs = 34, p95Ms = 45 }
@@ -252,10 +252,10 @@ return function(test)
 		Assert.eq(Budget.probeTier(1, slow), 2, "slow card: one lower")
 		Assert.eq(Budget.probeTier(2, slow), 3, "slow card on a phone: recipe C")
 		Assert.eq(Budget.probeTier(1, crawl), 3, "crawling card: two lower")
-		Assert.eq(Budget.probeTier(2, crawl), S.MAX, "never past START.MAX")
+		Assert.eq(Budget.probeTier(2, crawl), ST.MAX, "never past START.MAX")
 		Assert.eq(Budget.probeTier(2, nil), 2, "no probe: unchanged")
 		Assert.eq(
-			Budget.probeTier(1, { frames = S.PROBE_MIN_FRAMES - 1, medianMs = 90, p95Ms = 99 }),
+			Budget.probeTier(1, { frames = ST.PROBE_MIN_FRAMES - 1, medianMs = 90, p95Ms = 99 }),
 			1,
 			"too few frames"
 		)
