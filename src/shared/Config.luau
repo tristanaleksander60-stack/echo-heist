@@ -1567,6 +1567,13 @@ Config.Audio = {
 	TAPE_STOP_SECONDS = 0.3, -- ... over 0.3 s, then the music stops until GO
 	REWIND_DUCK_DB = -9, -- Ambience and Clone buses under the rewind transition
 	REWIND_DUCK_RELEASE = 0.4,
+	-- The world muffle (premium §6.2 "muffle first"): SFX + Ambience (the Clone bus feeds SFX) through one
+	-- low-pass that sweeps 20 kHz -> 800 Hz with the tape-stop and opens on the snap. UI, Warnings and the
+	-- music (it dives on its own) stay clear. AudioDirector.muffle(on, seconds?).
+	MUFFLE_HZ = 800,
+	MUFFLE_OPEN_HZ = 20000,
+	MUFFLE_IN = 0.1,
+	MUFFLE_OUT = 0.25,
 
 	-- Ducking (feel.md D5): music ducks 4 dB for 0.6 s on caught, "!", diamond and complete.
 	DUCK_DB = -4,
@@ -1729,6 +1736,133 @@ Config.Onboarding = {
 	POINTER_PERIOD = 0.9, -- s per tap
 	POINTER_TRAVEL = 14, -- px it moves in toward the button on each tap
 	ADVICE_DELAY = 0.15, -- s after the failure event before its counterplay line (<= 1 s, G4)
+}
+
+-- Signature moments (PLAN_STEAM_PLUS §4.4 F1-F5, §4.2 C3, §5; premium F3-F7, H1, H4; POLISH items 12-15
+-- and 19; MASTERPLAN §6.6, §7.1, §9.2). Client only: Heist/MomentDirector (8 OF ME, busted view, heist
+-- complete, blooper cut, hit-stop, the juice governor), Heist/RewindDirector (the rewind finish),
+-- Heist/LineupDirector (snare roll, busted podium); pure maths in Shared/Heist/MomentPlan.
+-- Tier numbers are Config.Heist.PERF_TIERS indices (1 = quality .. 4 = minimum).
+Config.Moments = {
+	-- Hit-stop (premium F3): ONLY these four heavy beats, each this long; none under reduced motion.
+	HIT_STOP_SECONDS = 0.066,
+	HIT_STOP_BEATS = { rewind = true, busted = true, diamond = true, complete = true },
+	-- The juice governor: every effect has a low-tier substitute from LOW_TIER; live particles stay
+	-- under the cap (touch: phones and tablets without a keyboard); <= FLASH_MAX full-screen flashes
+	-- in any FLASH_WINDOW seconds (MASTERPLAN §7.3 photosensitivity).
+	LOW_TIER = 3,
+	PARTICLE_CAP_TOUCH = 360,
+	PARTICLE_CAP = 900,
+	FLASH_MAX = 3,
+	FLASH_WINDOW = 1,
+
+	-- The rewind finish (§7.1 picture; roblox_quality §5.2; POLISH §4.4 "Rewind"). Inside the existing
+	-- 1.8 / 1.0 / 0.8 s windows: the 66 ms freeze opens it, the path trails reel with the scrub.
+	REWIND = {
+		FLASH_ALPHA = 0.75, -- the opening white flash (25 %), held for HIT_STOP_SECONDS
+		TRAIL_POINTS = 13, -- samples per clone path (12 segments) ...
+		TRAIL_POINTS_LOW = 7, -- ... from LOW_TIER (the substitute: a coarser path)
+		TRAIL_MAX_CLONES = 12, -- paths drawn (the newest runs when there are more)
+		TRAIL_WIDTH = 0.45, -- studs
+		TRAIL_LIFT = 0.3, -- studs above the recorded feet
+		TRAIL_TRANSPARENCY = 0.2,
+		TRAIL_LIGHT_EMISSION = 0.8,
+		SCAN_BANDS = 9, -- dark scanline bands across the screen (one gradient, no image)
+		SCAN_ALPHA = 0.86, -- the darkest band's transparency
+		SCAN_SPEED = 0.35, -- screens per second the bands roll down
+		TRACKING_HEIGHT = 5, -- px: the VHS tracking line
+		TRACKING_SECONDS = 0.55, -- one sweep down the screen
+		TRACKING_JITTER = 6, -- px of sideways tear
+		MUFFLE = true, -- the world through an 800 Hz low-pass (Config.Audio.MUFFLE_HZ) while it reels
+	},
+
+	-- "8 OF ME" and the swarm moment (§5 row "8 OF ME"; POLISH §4.4; MASTERPLAN §9.2 #5).
+	SWARM = {
+		DIM = 0.15, -- the world dims 15 % ...
+		DIM_IN = 0.1, -- ... in this, and is back by DIM_SECONDS
+		DIM_SECONDS = 0.6,
+		ROLL_START = 0.15, -- s after the event: the first clone's beat
+		ROLL_STAGGER = 0.06, -- 60 ms apart in record order, with the arpeggio's notes
+		BEAT_SECONDS = 0.3, -- one pose beat: a hop and a pill flash
+		BEAT_HOP = 0.7, -- studs
+		CHOIR_GAP = 0.06, -- the choir hit lands this long after the last note
+		OUTLINE_FILL = 0.15, -- the owner outline's fill flashes to this and back
+		CAM_IN = 0.6, -- the pull-back eases out over this ...
+		CAM_HOLD = 1.6, -- ... holds ...
+		CAM_OUT = 0.5, -- ... and eases back to play (H1: >= 0.2 s, Sine InOut)
+		CAM_PITCH = 45,
+		CAM_FOV = 45,
+		CAM_SHARE_Y = 0.8, -- every copy also inside 80 % of the half height
+		CAM_DISTANCE = { 12, 90 }, -- studs: min, max
+		CAM_FOLLOW = 8, -- focus follow rate (1/s) while the crowd moves
+		FIGURE_UP = 2.5, -- studs above / below the root used for the fit (head, feet)
+		FIGURE_DOWN = 2.8,
+		PILL = 34, -- px: the stamp's numbered pills
+		PILL_GAP = 6,
+		PILLS_MAX = 16,
+		PILL_ROW_Y = 0.55, -- the pill row's centre (under the stamp at 0.42)
+	},
+
+	-- C3 the busted view (you caught): freeze, the camera eases to Gus, his catch beat, a stamp, one line.
+	BUSTED = {
+		CAM_IN = 0.6,
+		HOLD = 1.3,
+		CAM_OUT = 0.4,
+		DISTANCE = 16,
+		PITCH = 38,
+		FOV = 45,
+		FOCUS_HEIGHT = 3,
+		STAMP_AT = 0.5, -- s after the catch: the BUSTED stamp (then the advice line, Hud/Hints)
+	},
+
+	-- Heist complete: the slam, gold rain, the trophy fly-in, then the blooper / Line-up / job sheet.
+	COMPLETE = {
+		RAIN = 60, -- gold particles in all (pooled emitter; <= 60) ...
+		RAIN_LOW = 24, -- ... from LOW_TIER
+		RAIN_SECONDS = 1.2, -- emitted over this, in RAIN_BURSTS bursts
+		RAIN_BURSTS = 6,
+		RAIN_HEIGHT = 14, -- studs above the camera focus
+		RAIN_SPREAD = 10, -- studs: the emitter box's half size
+		RAIN_LIFETIME = { 1.8, 2.4 },
+		RAIN_TEXTURE = "rbxasset://textures/particles/sparkles_main.dds",
+		SLAM_DOOR_SECONDS = 0.18, -- every door slams shut this fast (WorldView.slamDoors)
+		SLAM_FOV = -2.5, -- degrees: the slam's FOV punch (behind the shake setting) ...
+		SLAM_SECONDS = 0.2, -- ... and back over this
+		SLAM_FLASH = 0.85, -- a dust-white flash card (transparency), through the flash limit
+		TROPHY_DELAY = 0.45, -- s after the slam
+		TROPHY_SECONDS = 0.9, -- the flight to the van (screen arc)
+		TROPHY_SIZE = 96, -- px at the start
+		TROPHY_END = 0.35, -- scale at the van
+		TROPHY_ARC = 120, -- px above the straight line
+	},
+
+	-- The Line-up (§5 row "Line-up"; premium §6.7): a snare roll landing on the pose, busted clones slumped
+	-- on a separate busted podium (never hidden).
+	LINEUP = {
+		SNARE_SECONDS = 0.6,
+		PODIUM_GAP = 2.5, -- studs between the crew and the busted podium
+		PODIUM_HEIGHT = 0.6,
+		PODIUM_DEPTH = 2.6,
+		SLUMP_TILT = 14, -- degrees forward
+		SLUMP_SINK = 0.15, -- studs
+		SHRUG_HOP = 0.2, -- studs: the sheepish shrug on the beat
+	},
+
+	-- The blooper cut (MASTERPLAN §9.2 #2 "MY CLONE BETRAYED ME"): the final run's best clone failure
+	-- replays first, from the recordings the client holds.
+	BLOOPER = {
+		LEAD = 3, -- s of the clone's run before the failure
+		TAIL = 0.8, -- s after it
+		MAX = 4, -- the whole cut never runs longer (skippable)
+		START_DELAY = 0.9, -- s after Over: the HEIST COMPLETE stamp reads first
+		SKIP_AFTER = 0.5,
+		WEIGHTS = { Busted = 3, Zapped = 2, Stuck = 1 },
+		CAM_DISTANCE = 20,
+		CAM_PITCH = 40,
+		CAM_FOV = 45,
+		CAM_FOLLOW = 6,
+		CAPTION_SIZE = 64, -- px (the display face)
+	},
 }
 
 return Config

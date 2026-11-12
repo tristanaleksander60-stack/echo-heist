@@ -541,6 +541,8 @@ end
 ---------------------------------------------------------------------------
 Strings.REWIND_BANNER = "REWIND"
 Strings.SKIP = "SKIP"
+-- The blooper cut at heist end (MASTERPLAN §9.2 #2): the caption over the clone's failure replay.
+Strings.BLOOPER_CAPTION = "MY CLONE BETRAYED ME"
 Strings.ME = "ME"
 Strings.YOU = "YOU"
 -- Gus's head label by vision stage.
