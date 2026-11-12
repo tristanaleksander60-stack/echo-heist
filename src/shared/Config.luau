@@ -1509,4 +1509,44 @@ Config.Clone = {
 	HALO_RAY = 12, -- studs down to find the floor under you
 }
 
+-- Onboarding and help (PLAN_STEAM_PLUS §6, §8.4; WALKTHROUGH P0-2, P0-4, P1-6, P1-7; premium
+-- G2, G4). The rules live in Shared/Heist/Help (pure, so the sim bots check them); the client
+-- side in Hud/Hints and Heist/FirstTime; Relaxed in Levels/Relaxed + Sim/HeistSim.
+Config.Onboarding = {
+	-- Stuck help after L1: "Show me?" after this many runs in a row with no progress (no new
+	-- plate held by a clone, no goal banked).
+	SHOW_ME_RUNS = 2,
+	LEVEL_LINE_STUCK_RUNS = 2, -- runs without a bank before the level line comes back
+	-- A deck clone counts for a ghost step's plate when it reaches it at most this many seconds
+	-- after the solution's clone did (later: "redo it like this").
+	GHOST_LATE_SLACK = 3,
+	GHOST_FADE_SECONDS = 0.6, -- the chalk ghost fades out after its step
+	GHOST_HOLD_SECONDS = 1.2, -- and stands at the end of its step this long first
+	GHOST_DASH_SPACING = 1.2, -- studs between the dashes of its chalk trail
+	GHOST_DASH_MAX = 60, -- trail dashes kept at once (the oldest is reused)
+	GHOST_ALPHA = 0.82, -- the figure's fill transparency (the chalk outline carries it)
+	-- Relaxed (§6.1 item 5): Gus walks at this share of his speed (runs +50% and detection x2
+	-- are Config.Rec.RELAXED_LENGTH_MULT and Config.Sim.RELAXED_DETECT_MULT; no Diamond medal).
+	RELAXED_GUARD_SPEED_MULT = 0.75,
+	-- The free first catch (Config.Sim.FIRST_HEIST_GRACE_MULT detection x2) goes to the first
+	-- heists that have a guard (WALKTHROUGH P1-6), not to L1: plays of guarded launch levels below
+	-- this count get it.
+	GRACE_GUARD_HEISTS = 2,
+	-- The daily vault opens once this launch level is cleared (PLAN D4, WALKTHROUGH P1-7).
+	DAILY_UNLOCK_LEVEL = "cs4_night_clerk",
+	-- First-time beats (premium G2): callers within this many seconds of a kind's first call all
+	-- get `true`, so the world and the HUD can both play the bigger version of one moment.
+	FIRST_TIME_WINDOW = 1.5,
+	FIRST_CLONE_LINE_SECONDS = 4, -- "That's you. It copies you." at the first run with a clone
+	GUS_INTRO_SECONDS = 4, -- "That's Gus. Don't wake him." at the first party run
+	FIRST_PLATE_POP = 1.35, -- the objective line pops from this scale on the first plate press
+	FIRST_REWIND_POP = 1.5, -- REWIND pops from this scale on the first rewind
+	FIRST_BANK_STAMP_SECONDS = 1.4, -- "+$100!" stamp on the first bank (later banks: a toast)
+	-- The finger pointer (§6.2) on REWIND and GRAB the first time each is the right move.
+	POINTER_SIZE = 46, -- px at 1x
+	POINTER_PERIOD = 0.9, -- s per tap
+	POINTER_TRAVEL = 14, -- px it moves in toward the button on each tap
+	ADVICE_DELAY = 0.15, -- s after the failure event before its counterplay line (<= 1 s, G4)
+}
+
 return Config

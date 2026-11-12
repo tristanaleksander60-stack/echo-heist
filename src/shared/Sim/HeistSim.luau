@@ -80,7 +80,7 @@ export type Opts = {
 	newRandom: ((seed: number) -> any)?, -- default Rng.new; the server may pass Random.new
 	players: { number }?, -- crew ids in seat order
 	firstHeist: boolean?, -- first heist of a new account: detection times x2
-	relaxed: boolean?, -- runs +50%, detection times x2
+	relaxed: boolean?, -- runs +50%, detection times x2 (also on when level.relaxed, Levels/Relaxed)
 	walkSpeed: number?, -- server-set WalkSpeed (validator, chase speed)
 }
 
@@ -104,6 +104,9 @@ end
 function HeistSim.new(level: any, opts: Opts?): any
 	local o: Opts = opts or {}
 	local S = Config.Sim
+	-- Relaxed is a level modifier (Levels/Relaxed: slower guards) plus these sim rules; the
+	-- `relaxed` opt alone (tests, older callers) applies only the sim rules.
+	local relaxed = o.relaxed == true or level.relaxed == true
 	local sim = {
 		level = level,
 		hz = Config.Rec.HZ,
@@ -114,7 +117,7 @@ function HeistSim.new(level: any, opts: Opts?): any
 		walkSpeed = o.walkSpeed or Config.Rec.WALK_SPEED,
 		firstHeist = o.firstHeist == true,
 		autoEndArmed = false, -- the tutorial auto-end applies to this run (set at run start)
-		relaxed = o.relaxed == true,
+		relaxed = relaxed,
 		players = {},
 		playerById = {},
 		crewSize = 0,
@@ -126,7 +129,7 @@ function HeistSim.new(level: any, opts: Opts?): any
 		nextTick = 0,
 		t = 0,
 		tierMet = 0, -- party levels: highest haul tier banked so far
-		runLength = LoopClock.lengthFor(level.runSeconds, o.relaxed == true),
+		runLength = LoopClock.lengthFor(level.runSeconds, relaxed),
 		clock = nil :: LoopClock.Clock?,
 		rate = 1,
 		actors = {},
@@ -176,7 +179,10 @@ function HeistSim.new(level: any, opts: Opts?): any
 		},
 		chaseVision = { range = S.GUARD_VISION_RANGE * (level.visionMult or 1), cosHalf = -1, allRound = true },
 		chase = false,
-		chaseSpeed = S.GUARD_CHASE_SPEED_MULT * sim.walkSpeed,
+		-- Relaxed levels: Gus chases at the same reduced share as his patrol (Levels/Relaxed).
+		chaseSpeed = S.GUARD_CHASE_SPEED_MULT
+			* sim.walkSpeed
+			* (if level.relaxed == true then Config.Onboarding.RELAXED_GUARD_SPEED_MULT else 1),
 		onCatch = nil :: any,
 	}
 	sim.ctx.onCatch = function(g: any, a: any)

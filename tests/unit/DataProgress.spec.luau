@@ -113,6 +113,13 @@ return function(test)
 		Assert.eq(medalList(Progress.evaluate(noDev, run({ clones = 0 })).medals), "Clean,Crew,Haul", "no dev")
 	end)
 
+	test("Relaxed runs earn every Star but never the Diamond (PLAN §6.1 item 5)", function()
+		local e = Progress.evaluate(STORY, run({ clones = 1, relaxed = true }))
+		Assert.truthy(e.cleared, "a Relaxed clear counts")
+		Assert.eq(medalList(e.medals), "Clean,Crew,Haul", "no Diamond")
+		Assert.eq(e.stars, 3, "all three Stars")
+	end)
+
 	test("party medals are haul tiers; tainted runs earn no medals", function()
 		Assert.eq(medalList(Progress.evaluate(PARTY, run({ haul = 999 })).medals), "", "below tier 1")
 		local e = Progress.evaluate(PARTY, run({ haul = 2500, clones = 8 }))

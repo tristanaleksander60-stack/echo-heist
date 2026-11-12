@@ -76,6 +76,8 @@
 --   hooks = {...}                  free-form presentation data for the view (swarm
 --                                  stamp, boards); never read by the sim
 --   solution = "PLACEHOLDER..."    note about where the golden solution comes from
+--   relaxed = true                 the Relaxed modifier is on (Levels/Relaxed.apply: slower
+--                                  guards; HeistSim: runs +50%, detection x2). Story only
 --
 -- Other keys are ignored by the sim (e.g. `daily`, which Levels/DailyVaults reads).
 --
@@ -147,6 +149,7 @@ export type LevelData = {
 	tutorial: {
 		autoEnd: { runs: { [number]: boolean }, plate: number, seconds: number, untilDone: boolean }?,
 	}?,
+	relaxed: boolean,
 	index: { [string]: { [string]: number } },
 }
 
@@ -667,6 +670,11 @@ function LevelSpec.validate(spec: any): (boolean, { string })
 			err("an Alarm level needs a guard to chase")
 		end
 	end
+	if spec.relaxed ~= nil and type(spec.relaxed) ~= "boolean" then
+		err("relaxed must be a boolean")
+	elseif spec.relaxed == true and (spec.kind or "story") ~= "story" then
+		err("relaxed is for story levels only")
+	end
 	if spec.tutorial ~= nil then
 		local ae = type(spec.tutorial) == "table" and spec.tutorial.autoEnd
 		if ae then
@@ -937,6 +945,7 @@ function LevelSpec.compile(spec: any): LevelData
 		dataId = spec.dataId,
 		lineup = lineup,
 		hooks = spec.hooks or {},
+		relaxed = spec.relaxed == true,
 	}
 end
 
