@@ -126,6 +126,13 @@ GLASS_TINT = "#A9B2CC"
 # night light. Kit floors are the location cells floor_a / floor_b (never Ink).
 RUNTIME = {"floor": "#3A365C"}
 
+# Runtime signal colours code draws on the floor (Heist/Palette.luau), audited as signals (rule set "SIGNAL"):
+# Oklab >= MIN_DIST_SIGNAL from every clone colour, Torch Amber (the cone owns it) and Alarm Red, a value step
+# >= MIN_VALUE_STEP above every ground colour of every location, and outside the reserved clone hues.
+# boot_print: Gus's boot prints (his next 2 s of patrol, PLAN_STEAM_PLUS A5), drawn with an Ink rim so they
+# also read on lit floor pools.
+RUNTIME_SIGNALS = {"boot_print": "#9098C0"}
+
 # Advent ornaments (Christmas layer trophies, Config.Data.Trophies Orn_Advent<year>_<day>): which mesh and which
 # MeshPart.Color each advent day gets. Ornament_Bauble / _Bell / _Star are drawn on the tint cell (one colour family,
 # the Color multiplies it); _VaultDoor / _Donut / _Van are fixed-colour (Color white). 22 days, 22 distinct looks.
@@ -366,6 +373,34 @@ def _audit_neon():
     return ok, lines
 
 
+def _audit_signals():
+    """SIGNAL: runtime floor signals vs clones, Torch Amber, Alarm Red and every location's ground."""
+    lines, ok = [], True
+    for k, h in RUNTIME_SIGNALS.items():
+        others = [(cname, chex) for _ck, chex, cname, _g in CLONES]
+        others += [("Torch Amber", HEX["amber"]), ("Alarm Red", HEX["alarm"])]
+        for name, oh in others:
+            d = ok_dist(h, oh)
+            if d < MIN_DIST_SIGNAL:
+                ok = False; lines.append(f"FAIL [Signal] {k} {h} vs {name}: Oklab {d:.3f} < {MIN_DIST_SIGNAL}")
+        L, C, H = oklch(h)
+        for _ck, chex, cname, _g in CLONES:
+            l2, c2, h2 = oklch(chex)
+            dh = abs((H - h2 + 180) % 360 - 180)
+            if c2 >= 0.02 and dh <= RESERVED_HUE_DEG and C / c2 > RESERVED_REL_CHROMA:
+                ok = False; lines.append(f"FAIL [Signal] {k} {h} is {dh:.0f} deg from {cname} (reserved hue)")
+        for loc in LOCATIONS:
+            cols = location_cols(loc)
+            for g in ("ink", "plum_deep", "plum", "floor_a", "floor_b"):
+                dv = abs(luma(h) - luma(cols[g]))
+                if dv < MIN_VALUE_STEP:
+                    ok = False; lines.append(f"FAIL [Signal] [{loc}] value step {k} vs {g}: {dv:.2f} < {MIN_VALUE_STEP}")
+        for g, gh in RUNTIME.items():
+            if abs(luma(h) - luma(gh)) < MIN_VALUE_STEP:
+                ok = False; lines.append(f"FAIL [Signal] value step {k} vs runtime {g}")
+    return ok, lines
+
+
 def location_cols(loc):
     cols = dict(HEX); cols.update(LOCATIONS[loc])
     return cols
@@ -381,6 +416,9 @@ def audit(verbose=True):
         ok &= o
         lines += ls
     o, ls = _audit_neon()
+    ok &= o
+    lines += ls
+    o, ls = _audit_signals()
     ok &= o
     lines += ls
     if verbose:

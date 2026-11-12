@@ -2,8 +2,9 @@
 
 _Audio track, 2026-11-12. MASTERPLAN §7.1-7.3, docs/research/feel.md D2-D5, lihfolk-sfx._
 
-**Status.** 49 cues and 7 music sets. **46 of 49 cues have real, Roblox-licensed ids** (77 takes) and every
-music set has real tracks; 3 cues wait for the owner (GusStep, Heartbeat, RewindStinger). 100 distinct ids in
+**Status.** 56 cues and 7 music sets. **47 of 56 cues have real, Roblox-licensed ids** and every
+music set has real tracks; 9 cues wait for the owner (GusStep, Heartbeat, RewindStinger, and Gus's six beat
+cues added by the Gus track: see "Missing" under the Gus cue sheet). 100 distinct ids in
 `src/shared/Audio/Manifest.luau` (89 used + 11 audition alternates), every one returned by the Creator Store
 API and every one **loaded in a real Roblox server** (live load check, place version 19: 100/100 ready, store
 and engine lengths agree). The AudioDirector built its graph in the same server (77 wires, all connected,
@@ -152,6 +153,28 @@ audition and swap. Volumes are starting levels for un-normalised library files.
 | GusHuh | Warnings | 9045118824 "Sneaky Schemes - Hit2" (APMOfficial, 2 s) |  | 0.60 | 0 | 1 | 0.5 | caption [Guard suspicious] |
 | GusAlert | Warnings | 9045118821 "Sneaky Schemes - Hit1" (APMOfficial, 2 s) |  | 0.80 | 0 | 1 | 0.5 | ducks music, caption [Spotted!] |
 | Busted | Warnings | 1840568386 "Trumpet Wah-Wah (N)" (APMOfficial, 4 s); 1840568339 "Trumpet Wah-Wah (L)" (APMOfficial, 4 s) |  | 0.70 | 0 | 1 | 0.5 | ducks music, caption [Guard spotted you] |
+| GusKeys | SFX | **missing**: search "keys jingle keyring walking" |  | 0.40 | 0.08 | 1 | 0.3 | 3D near; every 2nd step on patrol |
+| GusSnore | SFX | **missing**: search "cartoon snore single comedic" |  | 0.50 | 0.05 | 1 | 2 | 3D near; one per nod while he dozes, caption [Gus snores] |
+| GusBarkHey | SFX | **missing**: search "man shout hey cartoon guard" |  | 0.80 | 0.04 | 1 | 1 | 3D mid; wake-startle and chase start, caption [Gus: Hey!] |
+| GusBarkHm | SFX | **missing**: search "man hmm curious cartoon" |  | 0.60 | 0.04 | 1 | 1 | 3D mid; the double-take snap, caption [Gus: Hm?] |
+| GusBarkGotcha | SFX | **missing**: search "man gotcha cartoon voice" |  | 0.80 | 0.04 | 1 | 1 | 3D mid; the catch lunge, caption [Gus: Gotcha!] |
+| GusBarkWrongOne | SFX | **missing**: search "man confused huh what cartoon" |  | 0.70 | 0.04 | 1 | 1 | 3D mid; busted a clone, caption [Gus: Wrong one?!] |
+
+#### Missing (owner's audio pass)
+
+Gus track, 2026-11-12: the acting beats call these cues (Heist/GusView); they are in `Cues.luau` with empty
+`ids` and play nothing until the owner pastes licensed ids (one take is enough; barks want 2-3 takes so a
+repeat does not sound canned). Gus's voice should be one actor across all four barks: a warm, slightly
+puffed-out night guard, funny not scary.
+
+| Cue | What | Takes wanted |
+|---|---|---|
+| GusKeys | a key ring jingling with a step | 3-4 |
+| GusSnore | one cartoon snore (in, out) | 1-2 |
+| GusBarkHey | "Hey!" (startled, then cross) | 2-3 |
+| GusBarkHm | "Hm?" (two notes, curious) | 2 |
+| GusBarkGotcha | "Gotcha!" | 2 |
+| GusBarkWrongOne | "Wrong one?!" (baffled) | 1-2 |
 
 ### Loot and bank
 
@@ -329,6 +352,9 @@ Line numbers are from 2026-11-12.
 16. Radio: every `GUS_RADIO_SECONDS` (random in the range) while patrolling, `play("GusRadio", { at = root })`.
 17. The bubble (lines 291-302): "?" and "!" stings come from the Suspect and Caught events; when the label
     first turns "?" for the local player's actor, start `play("Heartbeat")` once per second until it clears.
+    Wired (Gus track): GusKeys every `Config.Gus.KEYS_STEPS` steps on patrol, GusSnore once per doze nod,
+    GusBarkHey on wake and chase start, GusBarkHm on the double-take snap, GusBarkGotcha on a catch,
+    GusBarkWrongOne when he busts a clone (all positional at his head).
 
 **EchoView.luau**
 18. No clone footsteps (§7.2). Clone outcomes already sound through the events (Busted, Zap); Stuck and
@@ -380,7 +406,8 @@ ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960
    swap a take with its alternate in `Cues.luau` (only ids already in the manifest). Most important: the
    Caper ladder order (does each mix sound fuller than the last?), CloneChime (glassy, dry, pitched cleanly
    up an octave and a third), RewindWhirr, BankKaching, Busted.
-2. **Pick 3 missing sounds** (Toolbox search words in the sheet): GusStep (4-6 takes, hard shoes on
+2. **Pick the missing sounds** (Toolbox search words in the sheet; Gus's six beat cues are listed under
+   "Missing" in the Gus cue sheet): GusStep (4-6 takes, hard shoes on
    concrete), Heartbeat (one thump), and render **RewindStinger** (reversed last bar of each heist track +
    whirr, 1.2 s) from owned music; upload under the experience owner and paste the ids. A non-partner id
    needs its manifest row with `creatorId` added to `LICENSED_CREATORS` only for your own uploads.

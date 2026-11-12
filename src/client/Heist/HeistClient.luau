@@ -283,7 +283,7 @@ function HeistClient.start()
 			fx.goneAtLocal = if live then now else -math.huge
 			if live then
 				echo.effect(e.b, "Busted", now)
-				gus.bang(e.a, now)
+				gus.bang(e.a, now, "bust", resolver.position("actor", e.b))
 			end
 		elseif e.kind == EV.Zap then
 			local a = actorOf(e.a)
@@ -306,7 +306,7 @@ function HeistClient.start()
 			end
 		elseif e.kind == EV.Caught then
 			if live then
-				gus.bang(e.a, now)
+				gus.bang(e.a, now, "catch", resolver.position("actor", e.b))
 			end
 		end
 		hud.onEvent(e, live)

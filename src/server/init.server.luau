@@ -55,6 +55,8 @@ if Config.GAME_MODE == "sim" then
 			KitService.start() -- background load (~2.5 s); levels stay greybox until it is ready
 			-- the skyline ring meshes for the client backdrop (W4), once the kit is loaded
 			require(script:WaitForChild("Heist"):WaitForChild("BackdropKit")).start(KitService)
+			-- Gus's mesh for the client rig (box Gus until it arrives)
+			require(script:WaitForChild("Heist"):WaitForChild("GusTemplate")).publish(KitService)
 		end
 	end)
 	if not okKit then

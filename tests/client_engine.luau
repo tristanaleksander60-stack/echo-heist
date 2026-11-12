@@ -4,7 +4,7 @@
 -- 2026-11-12, place v21: 22 checks, 0 failed. Section F (camera track) not yet run in the engine.
 -- Loads every client module, builds L6 with the uploaded kit + Christmas layer and runs
 -- WorldView on it (vault door skin swing + dial, alarm beacons), the L5 till lock label,
--- GusView with the Santa hat, the Line-up arrangement against the real van body, and
+-- Gus on his mesh (every beat attached, head lead, Santa hat), the Line-up arrangement against the real van body, and
 -- Rigs.buildCopy / playCheer on a default R15 character.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -44,6 +44,7 @@ for _, name in
 		"TypeSpecimen",
 		"Rigs",
 		"EchoView",
+		"GusRig",
 		"GusView",
 		"WorldView",
 		"RewindDirector",
@@ -289,15 +290,154 @@ if okB5 and b5 then
 	w5.clear()
 end
 
--- D. GusView: Santa hat with the dressing layer
+-- D. Gus on his mesh (Gus track, PLAN_STEAM_PLUS §4.4 A4-A5): the server replicates the kit's Gus
+-- (Heist/GusTemplate), GusRig builds the 18-part mesh, every beat poses with every part attached
+-- (each joint within reach of its parent's, everything within a Gus of the root), the head leads the
+-- body before a patrol turn, GusView drives the beats from the guard attributes, the Santa hat.
+local GusConfig = require(shared:WaitForChild("Config")).Gus
+local GusTemplate = require(heistServer:WaitForChild("GusTemplate"))
+local GusRig = require(clientHeist:WaitForChild("GusRig"))
+local GusBeats = require(shared:WaitForChild("Heist"):WaitForChild("GusBeats"))
+local GB = GusBeats.BEAT
+local published = KitService.isReady() and GusTemplate.publishNow(KitService)
+local gusMap = GusRig.template()
+check(
+	published and gusMap ~= nil,
+	"the kit's Gus is replicated for clients (ReplicatedStorage/" .. GusConfig.TEMPLATE_FOLDER .. ")"
+)
+if gusMap then
+	-- The kit's joint pivots (part:GetPivot at rest) match the skeleton GusRig poses with.
+	local rootSpec = GusBeats.PARTS[1]
+	local rootPivot = gusMap[rootSpec.name]:GetPivot().Position
+	local worst, worstName = 0, ""
+	for _, spec in GusBeats.PARTS do
+		local p = gusMap[spec.name]:GetPivot().Position - rootPivot
+		local o, r = spec.origin, rootSpec.origin
+		local e = (p - Vector3.new(o[1] - r[1], o[2] - r[2], o[3] - r[3])).Magnitude
+		if e > worst then
+			worst, worstName = e, spec.name
+		end
+	end
+	check(worst < 0.05, string.format("kit joint pivots match GusBeats.PARTS (worst %.3f, %s)", worst, worstName))
+end
+local okMesh, meshInfo = pcall(function()
+	local rig = GusRig.build(false)
+	assert(rig.kind == "mesh", "mesh rig (got " .. rig.kind .. ")")
+	assert(#rig.parts == 18, "18 parts")
+	rig.model.Parent = scratch
+	local pose = GusBeats.newPose()
+	local walk: any = { phase = 0, amount = 1, run = 0, clock = 0 }
+	local feet = CFrame.new(-9000, 60, 300)
+	local spread, slack = 0, 0
+	local parts, cfs = {}, {}
+	for _, beat in { GB.Doze, GB.Wake, GB.Patrol, GB.DoubleTake, GB.Chase, GB.Catch, GB.WrongOne, GB.Scratch } do
+		for t = 0, 2.0, 0.1 do
+			walk.phase = (t * 1.5) % 1
+			walk.clock = t
+			walk.run = if beat == GB.Chase then 1 else 0
+			GusBeats.pose(beat, t, walk, pose)
+			table.clear(parts)
+			table.clear(cfs)
+			GusRig.pose(rig, feet, pose, math.rad(40), 0, parts, cfs)
+			workspace:BulkMoveTo(parts, cfs, Enum.BulkMoveMode.FireCFrameChanged)
+			spread = math.max(spread, GusRig.spread(rig))
+			for i, spec in GusBeats.PARTS do
+				local pi = rig.parentIx[i]
+				if pi > 0 then
+					local o, po = spec.origin, GusBeats.PARTS[pi].origin
+					local rest = Vector3.new(o[1] - po[1], o[2] - po[2], o[3] - po[3]).Magnitude
+					local now = (rig.parts[i]:GetPivot().Position - rig.parts[pi]:GetPivot().Position).Magnitude
+					slack = math.max(slack, math.abs(now - rest))
+				end
+			end
+		end
+	end
+	assert(spread < 6.5, string.format("a part drifted %.2f studs from the root", spread))
+	assert(slack < 0.75, string.format("a joint moved %.2f studs off its parent", slack))
+	assert(GusRig.whole(rig), "every part still in the rig")
+	return string.format("spread %.2f, joint slack %.2f", spread, slack)
+end)
+check(okMesh, "mesh Gus poses every beat with every part attached (" .. tostring(meshInfo) .. ")")
+local santa = GusRig.build(true)
+check(
+	santa.model:FindFirstChild("Gus_SantaHat") ~= nil and santa.model:FindFirstChild("Gus_Cap") == nil,
+	"Gus wears the Santa hat (no cap) on the Christmas layer (" .. santa.kind .. ")"
+)
+santa.model:Destroy()
+local box = GusRig.build(false, false)
+check(box.kind == "box" and #box.parts == 18, "the box Gus fallback builds the same 18 joints")
+box.model:Destroy()
+
+-- GusView on L4: patrol head lead, then each beat from the guard attributes.
 local l4 = HeistInstance.levelData(Protocol.catalogIndex("cs4_night_clerk") :: number)
-local gst = { origin = Vector3.zero, folder = scratch, level = l4, crew = {}, dressing = true, phase = "Run" }
+local gusFolder = Instance.new("Folder")
+gusFolder.Name = "FakeGusInstance"
+gusFolder.Parent = scratch
+gusFolder:SetAttribute("G1Mode", "Patrol")
+gusFolder:SetAttribute("G1Offset", 0)
+local gst = {
+	origin = Vector3.new(-9000, 0, 600),
+	folder = gusFolder,
+	level = l4,
+	crew = {},
+	dressing = false,
+	phase = "Run",
+	run = { actors = {}, actorById = {} },
+}
 local gus = GusView.new(gst)
 gus.setLevel(l4)
-local gusFolder = workspace:FindFirstChild("HeistGus")
-local hat = gusFolder and gusFolder:FindFirstChild("HatPom", true)
-local cap = gusFolder and gusFolder:FindFirstChild("Cap", true)
-check(hat ~= nil and cap == nil, "Gus wears the Santa hat (no cap) when the dressing layer is on")
+local okView, viewInfo = pcall(function()
+	local route = l4.guards[1].route
+	local leg = route.legs[1]
+	local turnAt = leg.tEnd - require(shared:WaitForChild("Config")).Sim.GUARD_TURN_SECONDS
+	local dt = 1 / 60
+	local clock = os.clock()
+	local t = turnAt - 0.6
+	while t < turnAt - 0.08 do
+		t += dt
+		clock += dt
+		gus.update(t, clock, dt)
+	end
+	local _, _, bodyYaw = gus.poseOf(1)
+	local look = gus.lookOf(1)
+	assert(math.abs(bodyYaw - leg.yawDwell) < 1e-6, "body has not turned yet")
+	assert(math.abs(look) > math.rad(8), string.format("head leads the turn (%.1f deg)", math.deg(look)))
+	local rig = gus.rigOf(1) :: any
+	local beats = {}
+	local function stepFor(seconds: number)
+		local n = math.floor(seconds / dt)
+		for _ = 1, n do
+			t += dt
+			clock += dt
+			gus.update(t, clock, dt)
+			assert(GusRig.spread(gus.rigOf(1) :: any) < 6.5, "attached")
+		end
+	end
+	local _, _, yawNow = gus.poseOf(1)
+	gusFolder:SetAttribute("G1X", leg.x1)
+	gusFolder:SetAttribute("G1Z", leg.z1)
+	gusFolder:SetAttribute("G1Yaw", yawNow)
+	gusFolder:SetAttribute("G1Mode", "Suspicious")
+	gusFolder:SetAttribute("G1Stage", 2)
+	stepFor(0.3)
+	table.insert(beats, gus.beatOf(1))
+	gus.bang(1, clock, "catch", Vector3.new(-9000, 3, 590))
+	stepFor(0.3)
+	table.insert(beats, gus.beatOf(1))
+	gusFolder:SetAttribute("G1Stage", 0)
+	gusFolder:SetAttribute("G1Mode", "Huh")
+	stepFor(GusConfig.CATCH_SECONDS)
+	table.insert(beats, gus.beatOf(1))
+	gusFolder:SetAttribute("G1Mode", "Chase")
+	stepFor(1.0)
+	table.insert(beats, gus.beatOf(1))
+	local want = { GB.DoubleTake, GB.Catch, GB.WrongOne, GB.Chase }
+	for i, b in want do
+		assert(beats[i] == b, "beat " .. i .. ": " .. tostring(beats[i]) .. " (want " .. b .. ")")
+	end
+	return string.format("%s rig, look %.1f deg, %s", rig.kind, math.deg(look), table.concat(beats, " > "))
+end)
+check(okView, "GusView: head leads the patrol turn; ? / catch / huh / chase beats (" .. tostring(viewInfo) .. ")")
 gus.clear()
 
 -- E. Line-up figures: a copy of a character keeps its look, anchored root, no scripts; cheer loads
