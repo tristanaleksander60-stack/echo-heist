@@ -11,6 +11,7 @@ local DailyVaults = require("../../src/shared/Levels/DailyVaults")
 local KitPlan = require("../../src/server/Heist/KitPlan")
 local LevelDress = require("../../src/server/Heist/LevelDress")
 local LevelSpec = require("../../src/shared/Sim/LevelSpec")
+local MomentPlan = require("../../src/shared/Heist/MomentPlan")
 local Assert = require("./Assert")
 
 local P = Config.Perf
@@ -298,4 +299,42 @@ return function(test)
 		Assert.falsy(Budget.lineupLight(2, 1, 100, false), "tier 2: textured")
 		Assert.falsy(Budget.lineupLight(4, 1, 100, true), "you / your newest clone: textured")
 	end)
+	test(
+		"one particle budget: snow + every burst of the worst moment through one ledger stays under the cap",
+		function()
+			local M = Config.Moments
+			Assert.eq(Budget.particleCap(1, true), M.PARTICLE_CAP_TOUCH, "tier 1 touch: the moments' old touch cap")
+			Assert.eq(Budget.particleCap(1, false), M.PARTICLE_CAP, "tier 1 keyboard: the moments' old cap")
+			local bases = Budget.burstBases()
+			for tier = 1, #P.TIERS do
+				for _, touch in { true, false } do
+					local cap = Budget.particleCap(tier, touch)
+					Assert.le(cap, if touch then Budget.forTier(tier).liveParticles else M.PARTICLE_CAP, "cap")
+					local steady = Budget.forTier(tier).snowAlive -- the snow at its tier maximum
+					local ledger = {}
+					local got, total = 0, steady
+					-- the worst moment twice over in the same second (two crews' clones busted at once, say)
+					for _ = 1, 2 do
+						for _, name in P.WORST_MOMENT do
+							local want = Budget.burst(tier, bases[name])
+							local n = MomentPlan.grantParticles(ledger, 10, want, math.max(0, cap - steady), 1.5)
+							got += n
+							total += n
+						end
+					end
+					Assert.le(
+						total,
+						cap,
+						string.format("tier %d touch %s: live %d <= cap %d", tier, tostring(touch), total, cap)
+					)
+					if touch then
+						Assert.truthy(
+							got >= Budget.worstParticles(tier) - steady,
+							"tier " .. tier .. ": the worst moment itself is granted in full"
+						)
+					end
+				end
+			end
+		end
+	)
 end

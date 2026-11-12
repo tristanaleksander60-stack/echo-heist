@@ -656,6 +656,7 @@ check(cloneActor ~= nil, "a recorded clone to replay (L1 run " .. tostring(l1.si
 
 local six = instances[6] and instances[6].inst
 local Rigs = require(clientHeist:WaitForChild("Rigs"))
+local Particles = require(clientHeist:WaitForChild("Particles"))
 local EchoView = require(clientHeist:WaitForChild("EchoView"))
 local GusView = require(clientHeist:WaitForChild("GusView"))
 local WorldView = require(clientHeist:WaitForChild("WorldView"))
@@ -962,6 +963,27 @@ if cloneActor and six then
 			snow + bursts <= b.liveParticles,
 			string.format("tier %d: worst particle moment %.0f <= %d", tier, snow + bursts, b.liveParticles)
 		)
+		-- The one shared budget (Heist/Particles): the measured snow reports in, then the worst moment fires twice
+		-- through it (two crews' busts at once); steady + live bursts never pass the tier's cap.
+		do
+			Particles.setTier(tier)
+			Particles.reset()
+			Particles.setSteady("snow", snowOf)
+			local bases = Budget.burstBases()
+			local tNow = os.clock()
+			for _ = 1, 2 do
+				for _, name in P.WORST_MOMENT do
+					Particles.grant(Budget.burst(tier, bases[name] or 0), 1.5, tNow)
+				end
+			end
+			local live = Particles.live(tNow) + Particles.steadyCount()
+			check(
+				live <= Particles.cap() + 0.5,
+				string.format("tier %d: one particle budget, worst moment x2: %.0f <= %d", tier, live, Particles.cap())
+			)
+			Particles.reset()
+			Particles.setSteady("snow", nil)
+		end
 		check(instTotal <= 25000, string.format("tier %d: live client instances %d <= 25k (§6.8)", tier, instTotal))
 		if tris > b.tris then
 			warnLine(

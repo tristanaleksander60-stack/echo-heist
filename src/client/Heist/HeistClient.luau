@@ -63,6 +63,7 @@ local Hud = require(Heist:WaitForChild("Hud"))
 local Settings = require(Heist:WaitForChild("Settings"))
 local FirstTime = require(Heist:WaitForChild("FirstTime"))
 local Sound = require(Heist:WaitForChild("Sound"))
+local Particles = require(Heist:WaitForChild("Particles"))
 local Telemetry = require(Heist:WaitForChild("Telemetry"))
 local Ui = require(Heist:WaitForChild("Ui"))
 local Loading = require(Heist:WaitForChild("Loading"))
@@ -302,8 +303,22 @@ function HeistClient.start()
 	Telemetry.setCloneCounter(echo.visibleCount)
 	-- Budgets per tier: Shared/Heist/Budget (Config.Perf, docs/PERF.md). LightDirector owns the Lighting service
 	-- (recipe C "Soft Toybox" from tier 3, incl. GlobalShadows off).
+	-- One particle budget for every effect (Heist/Particles): the backdrop's snow reports what it keeps alive
+	-- (rate x lifetime, capped per tier by Budget.snow), so the bursts get only what is left of the tier's cap.
+	local snowEmitter: ParticleEmitter? = nil
+	Particles.setSteady("snow", function(): number
+		local e = snowEmitter
+		if not (e and e.Parent) then
+			local bd = workspace:FindFirstChild("EH_Backdrop")
+			local found = bd and bd:FindFirstChild("Snow", true)
+			e = if found and found:IsA("ParticleEmitter") then found else nil
+			snowEmitter = e
+		end
+		return if e and e.Enabled then e.Rate * e.Lifetime.Max else 0
+	end)
 	Telemetry.onTier(function(tier: number)
 		state.perfTier = tier
+		Particles.setTier(tier)
 		state.particleScale = Budget.particleScale(tier)
 		director.setBlurAllowed(tier < 2)
 		director.setTier(tier)

@@ -31,7 +31,8 @@
 --     NEAR (hysteresis). The mannequin is built once per pooled entry when the tier first asks for it.
 --     Never on your newest clone in the L1 tutorial ("YOU, 10 SEC AGO").
 --   * One BulkMoveTo per frame for every rig part, glow and band. Nothing is created per frame:
---     rigs, pills, bubbles, glows, bands and emitters are pooled with the rig.
+--     rigs, pills, bubbles, glows, bands and emitters are pooled with the rig. Every burst asks the one
+--     shared particle budget first (Heist/Particles).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -49,6 +50,7 @@ local Protocol = require(HeistShared:WaitForChild("Protocol"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
 local Icons = require(script.Parent:WaitForChild("Icons"))
+local Particles = require(script.Parent:WaitForChild("Particles"))
 local PlayerHalo = require(script.Parent:WaitForChild("PlayerHalo"))
 local Rigs = require(script.Parent:WaitForChild("Rigs"))
 local Telemetry = require(script.Parent:WaitForChild("Telemetry"))
@@ -718,7 +720,7 @@ function EchoView.new(state: any): any
 			say(entry, words.Busted, Palette.alarm, 1.2, now)
 		elseif kind == "Zapped" then
 			entry.emitter.Color = ColorSequence.new(Palette.ink)
-			entry.emitter:Emit(Budget.burst(tierNow, C.ZAP_SPARKS))
+			Particles.emit(entry.emitter, Budget.burst(tierNow, C.ZAP_SPARKS))
 			entry.emitter.Color = ColorSequence.new(entry.hue)
 			say(entry, words.Zapped, Palette.alarm, 1.0, now)
 		elseif kind == "Stuck" then
@@ -844,9 +846,9 @@ function EchoView.new(state: any): any
 			if entry.burstAt and now >= entry.burstAt then
 				entry.burstAt = nil
 				if not state.reduced then
-					entry.ribbons:Emit(Budget.burst(tierNow, C.RIBBON_COUNT))
+					Particles.emit(entry.ribbons, Budget.burst(tierNow, C.RIBBON_COUNT))
 				end
-				entry.emitter:Emit(Budget.burst(tierNow, C.SPARK_COUNT))
+				Particles.emit(entry.emitter, Budget.burst(tierNow, C.SPARK_COUNT))
 			end
 			-- Gone (busted / zapped, vanished): nothing to sample or pose until the reel.
 			local goneFor = if fx and fx.gone and not reelT then now - (fx.goneAtLocal or now) else -1

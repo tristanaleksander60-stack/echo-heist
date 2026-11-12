@@ -248,6 +248,18 @@ function Budget.probeTier(tier: number, probe: Probe?): number
 	return math.max(start, math.min(start + lower, S.MAX))
 end
 
+-- The one live-particle cap (Heist/Particles) at `tier`: the tier's liveParticles on touch devices (phones and
+-- tablets without a keyboard, MASTERPLAN §6.8), scaled by Config.Moments PARTICLE_CAP / PARTICLE_CAP_TOUCH on
+-- keyboard / pad devices (900 at tiers 1-2).
+function Budget.particleCap(tier: number, touch: boolean): number
+	local live = Budget.forTier(tier).liveParticles
+	if touch then
+		return live
+	end
+	local M = Config.Moments
+	return math.floor(live * M.PARTICLE_CAP / M.PARTICLE_CAP_TOUCH + 0.5)
+end
+
 -- Measured view counts against a tier: a list of "what: measured > budget" lines (empty = within budget).
 -- `m` holds any of: drawCalls, tris, lights, shadowed, liveParticles, highlights.
 function Budget.over(tier: number, m: { [string]: number }): { string }

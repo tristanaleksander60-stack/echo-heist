@@ -26,7 +26,8 @@
 --       complete), HIT_STOP_SECONDS each: filter() holds the view time and the local character's
 --       animation tracks pause (AdjustSpeed 0, restored). None under reduced motion.
 --   Juice governor: MomentDirector.allowFlash (<= 3 full-screen flashes a second, RewindDirector too),
---       MomentDirector.particles (the live particle cap: 360 on touch), a low-tier substitute for every
+--       MomentDirector.particles (Heist/Particles: the one live particle budget every effect shares, the
+--       tier's cap, 360 on touch at tiers 1-2), a low-tier substitute for every
 --       effect from Config.Moments.LOW_TIER (fewer rain particles, no outline flash, a coarse rewind
 --       path), camera shake only through the shake setting (HeistClient's fovKick wrapper).
 -- Reduced motion: no hit-stop, no camera moves, no hops or flights; dims, stamps, pills and the replay stay.
@@ -48,6 +49,7 @@ local EventLog = require(Shared:WaitForChild("Sim"):WaitForChild("EventLog"))
 
 local Icons = require(script.Parent:WaitForChild("Icons"))
 local Motion = require(script.Parent:WaitForChild("Motion"))
+local Particles = require(script.Parent:WaitForChild("Particles"))
 local Sound = require(script.Parent:WaitForChild("Sound"))
 local Theme = require(script.Parent:WaitForChild("Theme"))
 local Ui = require(script.Parent:WaitForChild("Ui"))
@@ -62,18 +64,16 @@ local MomentDirector = {}
 -- The juice governor (module-wide: every director shares one flash limit and one particle budget)
 ---------------------------------------------------------------------------
 local flashLog: { number } = {}
-local particleLedger: { MomentPlan.Burst } = {}
-local touch = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
 -- May a full-screen flash play now? (<= Config.Moments.FLASH_MAX per FLASH_WINDOW s; logs it if so.)
 function MomentDirector.allowFlash(now: number?): boolean
 	return MomentPlan.flashAllowed(flashLog, now or os.clock(), M.FLASH_MAX, M.FLASH_WINDOW)
 end
 
--- Particles granted for a burst of `want` living `lifetime` s, under the live cap (360 on touch).
+-- Particles granted for a burst of `want` living `lifetime` s, under the one shared live budget (Heist/Particles:
+-- the snow, the world's and the clones' bursts count against the same cap).
 function MomentDirector.particles(want: number, lifetime: number, now: number?): number
-	local cap = if touch then M.PARTICLE_CAP_TOUCH else M.PARTICLE_CAP
-	return MomentPlan.grantParticles(particleLedger, now or os.clock(), want, cap, lifetime)
+	return Particles.grant(want, lifetime, now)
 end
 
 local function v3(t: { number }): Vector3
