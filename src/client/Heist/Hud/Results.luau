@@ -506,7 +506,9 @@ function Results.build(ctx: any): any
 			local tiers = over.tiers or {}
 			local met = st.tiers or {}
 			for i = 1, 3 do
-				stampText[i] = Strings.stamp(Ui.money(tonumber(tiers[i]) or 0), met[i] == true)
+				if tiers[i] ~= nil then -- a level with fewer tiers shows fewer stamps
+					stampText[i] = Strings.stamp(Ui.money(tonumber(tiers[i]) or 0), met[i] == true)
+				end
 				stampOn[i] = met[i] == true and tiers[i] ~= nil
 			end
 		else
