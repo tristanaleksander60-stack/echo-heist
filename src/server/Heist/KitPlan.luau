@@ -762,34 +762,62 @@ function KitPlan.poolPeak(stepped: { { size: number, alpha: number } }, soft: an
 	return math.min(mean * (soft.exponent + 1), soft.peakMax)
 end
 
--- The floor a lamp's pool may cover (level space): its square, cut at every wall line that crosses it, on the far
--- side from the lamp, so a pool never shines through a wall onto the next room or, for a street lamp, through the
--- shop front onto the interior (the levels are roofless: the diorama camera sees it). Doorway gaps are cut too
--- (a sliver of light through a doorway is not worth a second shape). LevelBuilder sizes the pool part to this rect
--- and keeps the disc centred on the lamp inside it.
+-- The floor a lamp's pool may cover (level space): its square, cut at the wall lines between the lamp and the
+-- square's edge, so a pool never shines through a wall onto the next room or, for a street lamp, through the shop
+-- front onto the roofless interior (the diorama camera sees it). First the walls the lamp faces square on (the
+-- wall's run covers the lamp's own X or Z), then any wall still inside what is left (a partition beside a doorway),
+-- until nothing changes. LevelBuilder sizes the pool part to this rect and keeps the disc centred on the lamp in it.
 export type Rect = { minX: number, maxX: number, minZ: number, maxZ: number }
 function KitPlan.poolRect(level: any, x: number, z: number, diameter: number): Rect
 	local r = diameter / 2
 	local out = { minX = x - r, maxX = x + r, minZ = z - r, maxZ = z + r }
+	local walls: { Wall } = {}
 	for i, s in level.spec.solids or {} do
 		local w = wallOf(i, s.box)
 		if w then
-			local half = w.thick / 2
-			if w.axis == "X" then
-				if w.line > z - r and w.line < z + r and w.b > x - r and w.a < x + r then
-					if z > w.line then
-						out.minZ = math.max(out.minZ, w.line + half)
-					else
-						out.maxZ = math.min(out.maxZ, w.line - half)
-					end
-				end
-			elseif w.line > x - r and w.line < x + r and w.b > z - r and w.a < z + r then
-				if x > w.line then
-					out.minX = math.max(out.minX, w.line + half)
-				else
-					out.maxX = math.min(out.maxX, w.line - half)
-				end
+			table.insert(walls, w)
+		end
+	end
+	local function cut(w: Wall)
+		local half = w.thick / 2
+		if w.axis == "X" then
+			if z > w.line then
+				out.minZ = math.max(out.minZ, w.line + half)
+			else
+				out.maxZ = math.min(out.maxZ, w.line - half)
 			end
+		elseif x > w.line then
+			out.minX = math.max(out.minX, w.line + half)
+		else
+			out.maxX = math.min(out.maxX, w.line - half)
+		end
+	end
+	-- a wall line strictly inside the rect, whose run reaches into it (or, square on, covers the lamp)
+	local function crosses(w: Wall, squareOn: boolean): boolean
+		if w.axis == "X" then
+			local inLine = w.line > out.minZ + EPS and w.line < out.maxZ - EPS
+			local run = if squareOn then w.a <= x and w.b >= x else w.b > out.minX + EPS and w.a < out.maxX - EPS
+			return inLine and run
+		end
+		local inLine = w.line > out.minX + EPS and w.line < out.maxX - EPS
+		local run = if squareOn then w.a <= z and w.b >= z else w.b > out.minZ + EPS and w.a < out.maxZ - EPS
+		return inLine and run
+	end
+	for _, w in walls do
+		if crosses(w, true) then
+			cut(w)
+		end
+	end
+	for _ = 1, 4 do
+		local changed = false
+		for _, w in walls do
+			if crosses(w, false) then
+				cut(w)
+				changed = true
+			end
+		end
+		if not changed then
+			break
 		end
 	end
 	return out
