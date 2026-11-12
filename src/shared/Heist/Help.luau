@@ -20,6 +20,8 @@
 --   * Failure counterplay: one line per cause, a level's own line first (Strings.FAIL_ADVICE*).
 --   * Unlocks: the daily vault after DAILY_UNLOCK_LEVEL; the free first catch (detection x2) for
 --     the first GRACE_GUARD_HEISTS heists that have a guard.
+--   * First visits: a profile with no play of a level sees its first look (Heist/LevelIntro), so the
+--     server lengthens that run 1's intro (Help.firstRunIntro; never L1, never a daily vault).
 
 local Config = require("../Config")
 local Strings = require("./Strings")
@@ -305,6 +307,31 @@ end
 -- Only a level with a guard, for the first GRACE_GUARD_HEISTS guarded heists (P1-6).
 function Help.graceFor(spec: any, levels: { [string]: any }?): boolean
 	return spec ~= nil and spec.guards ~= nil and #spec.guards > 0 and Help.guardPlays(levels) < O.GRACE_GUARD_HEISTS
+end
+
+-- Has a profile never played this level (no record with a play; Data Schema heist.levels)? The same
+-- "seen" data the client's FirstTime "intro:<data key>" is seeded from (Heist/PresentPlan.seenKinds).
+function Help.firstVisit(dataKey: string?, levels: { [string]: any }?): boolean
+	if type(dataKey) ~= "string" or type(levels) ~= "table" then
+		return false -- no level key (a daily vault) or no profile: nothing to go on
+	end
+	local rec = levels[dataKey]
+	return not (type(rec) == "table" and (tonumber(rec.plays) or 0) > 0)
+end
+
+-- Run 1's intro (s, the server's wall-clock wait before the run clock starts): Config.Heist.FIRST_RUN_INTRO,
+-- plus FIRST_VISIT_INTRO_EXTRA when `firstVisitors` crew members see this level for the first time, on a
+-- story or party level only (never the L1 tutorial, whose first look is the title beat; never a daily vault).
+function Help.firstRunIntro(level: any, daily: boolean, firstVisitors: number): number
+	local H = Config.Heist
+	local base = H.FIRST_RUN_INTRO
+	if daily or firstVisitors <= 0 or type(level) ~= "table" then
+		return base
+	end
+	if level.id == H.FTUE_L1_LEVEL or level.tutorial ~= nil or H.LEVEL_DATA_KEYS[level.id] == nil then
+		return base
+	end
+	return base + H.FIRST_VISIT_INTRO_EXTRA
 end
 
 return table.freeze(Help)

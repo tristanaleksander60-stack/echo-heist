@@ -197,6 +197,10 @@ Config.Heist = {
 	REWIND_TRANSITION = { 1.8, 1.0, 0.8 },
 	QUICK_REWIND_FROM_RUN = 4, -- quick rewinds automatically from the 4th rewind (run 5 starts)
 	FIRST_RUN_INTRO = 1.0, -- run 1: "RUN 1" stamp, teleport settles
+	-- run 1 on someone's FIRST visit to a story / party level (never L1, never a daily vault, Help.firstRunIntro):
+	-- this much longer, so Heist/LevelIntro shows every plate -> door pair (L2's five stops at full hops). Wall
+	-- clock only: the run clock starts later, the sim's ticks are the same (tests/sim/FirstVisitIntro.spec.luau).
+	FIRST_VISIT_INTRO_EXTRA = 2.0,
 	TUTORIAL_BETWEEN_SECONDS = 0.4, -- L1 (deck locked): the next run starts by itself
 	BETWEEN_MAX_SECONDS = 25, -- between runs: the next run starts when all are ready, or after this
 	PARTY_BETWEEN_SECONDS = 10, -- party levels (deck locked: every clone stays for "8 OF ME"): auto-start

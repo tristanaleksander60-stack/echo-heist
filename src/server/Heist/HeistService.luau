@@ -674,6 +674,7 @@ function HeistService.createInstance(
 			left = false,
 			fake = m.fake,
 			ftue = {},
+			firstVisit = m.firstVisit == true and levelIndex ~= Protocol.DAILY_INDEX,
 		})
 	end
 	local inst = HeistInstance.new({
@@ -761,9 +762,17 @@ local function startHeist(crew: Crew, levelIndex: number, daily: HeistInstance.D
 	-- The free first catch (detection x2) goes to the first heists that HAVE a guard (WALKTHROUGH
 	-- P1-6: it used to be spent on L1, which has none): Help.graceFor.
 	local levelSpec = Protocol.levelSpec(levelIndex, daily and daily.day)
+	local dataKey = if daily or not levelSpec then nil else H.LEVEL_DATA_KEYS[levelSpec.id]
 	for _, p in crew.members do
-		table.insert(members, { userId = p.UserId, player = p, name = p.DisplayName, friends = friendsIn(crew, p) })
 		local snap = snapshotOf(p)
+		local levels = snap and snap.heist and snap.heist.levels
+		table.insert(members, {
+			userId = p.UserId,
+			player = p,
+			name = p.DisplayName,
+			friends = friendsIn(crew, p),
+			firstVisit = Help.firstVisit(dataKey, levels), -- run 1's longer intro (HeistInstance)
+		})
 		if snap and snap.heist and Help.graceFor(levelSpec, snap.heist.levels) then
 			firstHeist = true
 		end

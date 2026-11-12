@@ -43,6 +43,7 @@ local Rec = Shared:WaitForChild("Rec")
 local Codec = require(Rec:WaitForChild("Codec"))
 local Validator = require(Rec:WaitForChild("Validator"))
 local Catalog = require(Shared:WaitForChild("Levels"):WaitForChild("Catalog"))
+local Help = require(Shared:WaitForChild("Heist"):WaitForChild("Help"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 
 local LevelBuilder = require(script.Parent:WaitForChild("LevelBuilder"))
@@ -68,6 +69,7 @@ export type Member = {
 	fake: { x: number, y: number, z: number, yaw: number }?,
 	ftue: { [string]: boolean },
 	ownMax: number?, -- party levels: most of this member's own clones in one run
+	firstVisit: boolean?, -- their profile has no play of this level yet (Help.firstVisit: run 1's longer intro)
 }
 
 -- LiveFlags tuning read at heist start (HeistService.tuning); nil fields = Config defaults.
@@ -859,7 +861,15 @@ local function chooseTransition(inst: any): (number, string)
 	local nextRun = inst.sim.runIndex + 1
 	local T = H.REWIND_TRANSITION
 	if nextRun == 1 then
-		return H.FIRST_RUN_INTRO, Protocol.TRANSITION.Intro
+		-- a first visit has room for the level's first look (Help.firstRunIntro); wall clock only, the run
+		-- clock simply starts later (the sim's ticks do not change)
+		local firstVisitors = 0
+		for _, m in inst.members do
+			if not m.left and m.firstVisit then
+				firstVisitors += 1
+			end
+		end
+		return Help.firstRunIntro(inst.level, inst.daily ~= nil, firstVisitors), Protocol.TRANSITION.Intro
 	end
 	local allReduced, any = true, false
 	for _, m in inst.members do
