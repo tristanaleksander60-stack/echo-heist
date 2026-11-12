@@ -28,14 +28,13 @@ function Garage.build(ctx: any): any
 	local root = ctx.root
 	local garageUi = {}
 
-	local garage = Ui.frame(root, {
+	local garage = Ui.panel(root, {
 		Name = "Garage",
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
 		Size = UDim2.fromOffset(700, 326),
 		Visible = false,
 	})
-	Ui.corner(garage, 18)
 	garageUi.frame = garage
 	local garageTitle = Ui.label(garage, {
 		Position = UDim2.fromOffset(16, 6),
@@ -370,15 +369,15 @@ function Garage.build(ctx: any): any
 		end
 		local wasOpen = garageOpen
 		garageOpen = true
-		garage.Visible = true
+		Ui.show(garage)
 		ctx.setInHeist(false)
 		ctx.runHud.Visible = false
-		ctx.deck.panel.Visible = false
-		ctx.results.card.Visible = false
-		ctx.deck.readyWait.Visible = false
+		Ui.hide(ctx.deck.panel)
+		Ui.hide(ctx.results.card)
+		Ui.hide(ctx.deck.readyWait)
 		ctx.msg.pauseChip.Visible = false
-		ctx.msg.menuSheet.Visible = false
-		ctx.msg.preparing.Visible = false
+		Ui.hide(ctx.msg.menuSheet)
+		Ui.hide(ctx.msg.preparing)
 		clearTapes()
 		local leader = g.leader == localPlayer.UserId
 		local catchUps = g.daily and g.daily.catchUp and #g.daily.catchUp or 0
@@ -399,13 +398,13 @@ function Garage.build(ctx: any): any
 	end
 
 	function hud.hideGarage()
-		garage.Visible = false
+		Ui.hide(garage)
 		garageOpen = false
 	end
 
 	-- A run starts: the garage closes (it opens fresh, with its sleigh bells, next time).
 	function garageUi.close()
-		garage.Visible = false
+		Ui.hide(garage)
 		garageOpen = false
 	end
 

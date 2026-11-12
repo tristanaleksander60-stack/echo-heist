@@ -11,6 +11,7 @@
 local Config = require("../Config")
 
 local H = Config.Heist
+local U = Config.Ui
 local TAP = H.TAP_MIN
 
 export type Box = { ax: number, ay: number, sx: number, ox: number, sy: number, oy: number, w: number, h: number }
@@ -38,8 +39,9 @@ HudLayout.FAST_FORWARD = box(0, 0, 0, 88, 0, 58, 74, TAP)
 HudLayout.OBJECTIVE = box(0.5, 0, 0.5, 0, 0, 98, 360, 28)
 HudLayout.ALARM = box(0.5, 0, 0.5, 0, 0, 98, 360, 30)
 HudLayout.HIDDEN = box(0, 0, 0, 8, 0, 138, 150, 30)
--- Right edge
-HudLayout.END_RUN = box(1, 0.5, 1, -10, H.END_RUN_Y, 0, H.END_RUN_BUTTON + 24, H.END_RUN_BUTTON)
+-- Right edge. REWIND (the END RUN action) is large, lower right, above the touch jump button
+-- (PLAN_STEAM_PLUS §4.3 U3; Config.Ui.REWIND_*).
+HudLayout.END_RUN = box(1, 1, 1, -U.REWIND_RIGHT, 1, -U.REWIND_BOTTOM, U.REWIND_SIZE, U.REWIND_SIZE)
 HudLayout.READY_WAIT = box(1, 0.5, 1, -10, H.END_RUN_Y, 0, 160, TAP)
 -- Bottom row: Interact left of the jump button; the message rail above it (or above the
 -- Clone Deck between runs, when the run box and strip step aside).

@@ -13,12 +13,15 @@ local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
+local Icons = require(script.Parent.Parent:WaitForChild("Icons"))
 local Sound = require(script.Parent.Parent:WaitForChild("Sound"))
+local Theme = require(script.Parent.Parent:WaitForChild("Theme"))
 local Ui = require(script.Parent.Parent:WaitForChild("Ui"))
 local Common = require(script.Parent:WaitForChild("Common"))
 
 local AU = Config.Audio
 local H = Config.Heist
+local U = Config.Ui
 local RED = Common.RED
 
 local TopBar = {}
@@ -28,9 +31,8 @@ function TopBar.build(ctx: any): any
 	local runHud = ctx.runHud
 	local bar = {}
 
-	local top = Ui.frame(runHud, { Name = "Top" })
+	local top = Ui.panel(runHud, { Name = "Top" })
 	Common.place(top, HudLayout.TOP)
-	Ui.corner(top, 14)
 	bar.runLabel = Ui.label(top, {
 		Position = UDim2.fromOffset(14, 3),
 		Size = UDim2.fromOffset(150, 30),
@@ -39,42 +41,62 @@ function TopBar.build(ctx: any): any
 		TextColor3 = Palette.CLONE_HUES[1],
 		Text = Strings.run(1),
 	})
-	local timerLabel = Ui.label(top, {
+	-- The tape counter: fixed-width digit slots (D1), so the digits never jitter.
+	local timer = Ui.digits(top, {
+		Name = "Timer",
 		AnchorPoint = Vector2.new(1, 0),
 		Position = UDim2.new(1, -14, 0, 3),
 		Size = UDim2.fromOffset(110, 30),
-		TextXAlignment = Enum.TextXAlignment.Right,
-		TextSize = 28,
-		Text = Ui.clock(30),
-	})
-	bar.timerLabel = timerLabel
-	local timerScale = Instance.new("UIScale")
-	timerScale.Parent = timerLabel
-	bar.timerScale = timerScale
+	}, U.TIMER_SIZE)
+	timer.set(Ui.clock(30))
+	bar.timer = timer
+	local timerColor = Palette.white
+	-- "0:27" in white, Alarm Red in the last seconds; pops 1.12 -> 1 on each whole second near the end.
+	function bar.setTimer(text: string, color: Color3)
+		timer.set(text)
+		if color ~= timerColor then
+			timerColor = color
+			timer.setColor(color)
+		end
+	end
+	function bar.popTimer()
+		Ui.pop(timer.frame)
+	end
 	local runBar = Ui.frame(top, {
 		Name = "RunBar",
-		Position = UDim2.new(0, 14, 1, -12),
+		Position = UDim2.new(0, 14, 1, -13),
 		Size = UDim2.new(1, -28, 0, 6),
-		BackgroundColor3 = Palette.plumHi,
+		BackgroundColor3 = Palette.plumDeep,
 		BackgroundTransparency = 0,
 	})
-	Ui.corner(runBar, 3)
+	Ui.pill(runBar)
 	local barFill = Ui.frame(runBar, {
 		Name = "Fill",
 		Size = UDim2.fromScale(0, 1),
 		BackgroundColor3 = Palette.white,
 		BackgroundTransparency = 0,
 	})
-	Ui.corner(barFill, 3)
+	Ui.pill(barFill)
+	local fillShade = Instance.new("UIGradient")
+	fillShade.Color = ColorSequence.new(Palette.white, Palette.CLONE_HUES[1])
+	fillShade.Parent = barFill
 	bar.barFill = barFill
+	function bar.setSeatHue(hue: Color3)
+		fillShade.Color = ColorSequence.new(Palette.white, hue)
+	end
+	-- World events under the bar (Gus's turns, laser on-spans), your clones' events on it.
+	local world = Ui.frame(runBar, {
+		Name = "World",
+		Position = UDim2.fromScale(0, 1),
+		Size = UDim2.new(1, 0, 0, 4),
+		BackgroundTransparency = 1,
+	})
 	local markers = Ui.frame(runBar, { Name = "Markers", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1) })
 
 	-- Alarm Run counter (§7.3): "VAN LEAVES 0:14 · DOORS LOCK 0:04" in Alarm Red; it
 	-- takes the objective line's place while it runs.
-	local alarmPill = Ui.frame(runHud, { Name = "Alarm", Visible = false })
+	local alarmPill = Ui.panel(runHud, { Name = "Alarm", Visible = false }, Palette.alarm)
 	Common.place(alarmPill, HudLayout.ALARM)
-	Ui.corner(alarmPill, 12)
-	Ui.stroke(alarmPill, Palette.alarm, 2)
 	bar.alarmPill = alarmPill
 	local alarmLabel = Ui.label(alarmPill, {
 		Position = UDim2.fromOffset(8, 0),
@@ -83,20 +105,19 @@ function TopBar.build(ctx: any): any
 		Text = "",
 	})
 	Ui.fit(alarmLabel, 22, H.UI_TEXT_MIN)
+	Ui.iconWord(alarmLabel, "alarm", "left", U.ICON_SMALL)
 	bar.alarmLabel = alarmLabel
 
 	local objective = Ui.label(runHud, {
 		Name = "Objective",
-		TextStrokeTransparency = 0.2,
 		Text = "",
 	})
 	Common.place(objective, HudLayout.OBJECTIVE)
 	Ui.fit(objective, 22, H.UI_TEXT_MIN)
 	bar.objective = objective
 
-	local lootBox = Ui.frame(runHud, { Name = "Loot" })
+	local lootBox = Ui.panel(runHud, { Name = "Loot" })
 	Common.place(lootBox, HudLayout.LOOT)
-	Ui.corner(lootBox, 12)
 	local lootLabel = Ui.label(lootBox, {
 		Position = UDim2.fromOffset(8, 0),
 		Size = UDim2.new(1, -16, 1, 0),
@@ -104,9 +125,7 @@ function TopBar.build(ctx: any): any
 		Text = Strings.lootOfGoal(Ui.money(0), Ui.money(100)),
 	})
 	Ui.fit(lootLabel, 22, H.UI_TEXT_MIN)
-	local lootPop = Instance.new("UIScale")
-	lootPop.Name = "Pop"
-	lootPop.Parent = lootBox
+	Ui.iconWord(lootLabel, "coin", "left", U.ICON_SMALL)
 	bar.lootBox = lootBox
 
 	-- Clone strip, centred under the timer (PLAN S8: never under the top-right CoreGui).
@@ -136,9 +155,13 @@ function TopBar.build(ctx: any): any
 		for _, c in markers:GetChildren() do
 			c:Destroy()
 		end
+		for _, c in world:GetChildren() do
+			c:Destroy()
+		end
 	end
 
-	function bar.marker(t: number, length: number, color: Color3, text: string)
+	-- A clone event on the bar: its icon (coin, bolt, cross), or the word until the sheet is known.
+	function bar.marker(t: number, length: number, color: Color3, text: string, icon: string?)
 		local m = Ui.label(markers, {
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(math.clamp(t / math.max(length, 0.01), 0, 1), 0.5),
@@ -147,27 +170,82 @@ function TopBar.build(ctx: any): any
 			TextColor3 = color,
 			Text = text,
 		})
-		m.TextStrokeTransparency = 0.2
+		if icon then
+			Icons.attach(m, icon, { Size = UDim2.fromScale(1, 1), ImageColor3 = color }, function()
+				m.Text = ""
+			end)
+		end
+	end
+
+	-- Next-event markers (Shared/Heist/RunMarkers): Gus's turn points as amber ticks, the lasers'
+	-- on-spans as red segments under the bar (the gaps are the windows your clones open).
+	function bar.worldMarkers(m: any, length: number)
+		for _, c in world:GetChildren() do
+			c:Destroy()
+		end
+		local len = math.max(length, 0.01)
+		for _, laser in m.lasers do
+			for _, span in laser.on do
+				local seg = Ui.frame(world, {
+					Position = UDim2.new(math.clamp(span.t0 / len, 0, 1), 0, 0, 1),
+					Size = UDim2.new(math.clamp((span.t1 - span.t0) / len, 0, 1), 0, 0, 3),
+					BackgroundColor3 = Palette.alarm,
+					BackgroundTransparency = 0.1,
+				})
+				Ui.pill(seg)
+			end
+		end
+		for _, t in m.gus do
+			Ui.frame(world, {
+				AnchorPoint = Vector2.new(0.5, 1),
+				Position = UDim2.new(math.clamp(t / len, 0, 1), 0, 0, -4),
+				Size = UDim2.fromOffset(2, 14),
+				BackgroundColor3 = Palette.amber,
+				BackgroundTransparency = 0,
+				ZIndex = 2,
+			})
+		end
 	end
 
 	---------------------------------------------------------------------------
 	-- Clone strip: one pill per clone of yours, in your seat's colour with its number
 	-- (PLAN S4: the seat glyphs were text glyphs). Red-flagged: grey, number struck out.
 	---------------------------------------------------------------------------
-	local function chip(text: string, color: Color3, order: number)
+	-- Numbered pills; a new one enters with the tape-print stagger (Ui.show), a busted one greys
+	-- with a cross icon over its struck-out number.
+	local shownChips = 0
+	local function chip(text: string, color: Color3, order: number, busted: boolean, fresh: boolean)
 		local size = HudLayout.STRIP_CHIP
 		local c = Ui.label(strip, {
-			Size = UDim2.fromOffset(size, size),
+			Size = UDim2.fromOffset(U.CHIP_W, size),
 			TextSize = 16,
 			TextColor3 = Palette.ink,
-			TextStrokeTransparency = 1,
 			RichText = true,
 			Text = text,
 			LayoutOrder = order,
+			Visible = not fresh,
 		})
 		c.BackgroundColor3 = color
 		c.BackgroundTransparency = 0
-		Ui.corner(c, size // 2)
+		Ui.pill(c)
+		Ui.stroke(c, Palette.ink, Theme.STROKE)
+		if busted then
+			Icons.attach(c, "cross", {
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(0.5, 0.5),
+				Size = UDim2.fromOffset(size - 4, size - 4),
+				ImageColor3 = Palette.alarm,
+				ImageTransparency = 0.15,
+			})
+		end
+		if fresh then
+			local wait = math.min((order - 1 - shownChips) * U.CHIP_STAGGER, U.STAGGER_CAP)
+			task.delay(math.max(0, wait), function()
+				if c.Parent then
+					Ui.show(c)
+				end
+			end)
+		end
 	end
 
 	function bar.renderStrip()
@@ -189,12 +267,15 @@ function TopBar.build(ctx: any): any
 			chip(
 				if red then Strings.cloneNumberBusted(i) else Strings.cloneNumber(i),
 				if red then Palette.tapeGrey else hue,
-				i
+				i,
+				red,
+				i > shownChips
 			)
 		end
 		if n > shown then
-			chip(Strings.moreClones(n - shown), Palette.steelHi, max)
+			chip(Strings.moreClones(n - shown), Palette.steelHi, max, false, false)
 		end
+		shownChips = shown
 		strip.Visible = runBoxShown
 	end
 

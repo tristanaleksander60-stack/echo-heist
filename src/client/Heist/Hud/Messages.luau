@@ -5,7 +5,6 @@
 -- the "preparing" card, the red vignette and the diamond dim.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
@@ -14,11 +13,13 @@ local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
+local Motion = require(script.Parent.Parent:WaitForChild("Motion"))
 local Sound = require(script.Parent.Parent:WaitForChild("Sound"))
 local Ui = require(script.Parent.Parent:WaitForChild("Ui"))
 local Common = require(script.Parent:WaitForChild("Common"))
 
 local H = Config.Heist
+local U = Config.Ui
 local TAP = Ui.TAP
 
 local Messages = {}
@@ -78,7 +79,6 @@ function Messages.build(ctx: any): any
 		TextSize = 18,
 		TextWrapped = true,
 		TextYAlignment = Enum.TextYAlignment.Bottom,
-		TextStrokeTransparency = 0.2,
 		Text = "",
 		Visible = false,
 		LayoutOrder = 1,
@@ -189,8 +189,9 @@ function Messages.build(ctx: any): any
 		hud.openMenu()
 	end, "UIToggle")
 	Common.place(pauseChip, HudLayout.MENU)
+	Ui.iconWord(pauseChip, "menu", "top", U.ICON_SMALL)
 	msg.pauseChip = pauseChip
-	local menuSheet = Ui.frame(root, {
+	local menuSheet = Ui.panel(root, {
 		Name = "MenuSheet",
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
@@ -198,7 +199,6 @@ function Messages.build(ctx: any): any
 		Visible = false,
 		ZIndex = 30,
 	})
-	Ui.corner(menuSheet, 18)
 	msg.menuSheet = menuSheet
 	Ui.label(menuSheet, {
 		Position = UDim2.fromOffset(0, 14),
@@ -227,7 +227,7 @@ function Messages.build(ctx: any): any
 		LayoutOrder = 1,
 		ZIndex = 32,
 	}, function()
-		menuSheet.Visible = false
+		Ui.hide(menuSheet)
 	end, "UIBack")
 	Ui.button(menuButtons, {
 		Size = UDim2.fromOffset(180, TAP),
@@ -236,11 +236,11 @@ function Messages.build(ctx: any): any
 		LayoutOrder = 2,
 		ZIndex = 32,
 	}, function()
-		menuSheet.Visible = false
+		Ui.hide(menuSheet)
 		actions.leave()
 	end, "UIConfirm")
 	function hud.openMenu()
-		menuSheet.Visible = true
+		Ui.show(menuSheet)
 		Common.selectFor(keepBtn)
 	end
 
@@ -248,21 +248,20 @@ function Messages.build(ctx: any): any
 	-- HIDDEN (L4's main verb): a pill with the word while your own actor hides,
 	-- the screen edges dimmed a little (hud.onEvent Hidden / Unhidden).
 	---------------------------------------------------------------------------
-	local hiddenPill = Ui.frame(runHud, {
+	local hiddenPill = Ui.panel(runHud, {
 		Name = "Hidden",
 		BackgroundColor3 = Palette.ink,
 		Visible = false,
-	})
+	}, Palette.steelHi)
 	Common.place(hiddenPill, HudLayout.HIDDEN)
-	Ui.corner(hiddenPill, 12)
-	Ui.stroke(hiddenPill, Palette.steelHi, 2)
 	msg.hiddenPill = hiddenPill
-	Ui.label(hiddenPill, {
+	local hiddenLabel = Ui.label(hiddenPill, {
 		Size = UDim2.fromScale(1, 1),
 		TextSize = 20,
 		TextColor3 = Palette.steelHi,
 		Text = Strings.HIDDEN,
 	})
+	Ui.iconWord(hiddenLabel, "hidden", "left", U.ICON_SMALL)
 	-- The edges darken: four bars fading inwards (UIGradient), no motion.
 	local hiddenEdge = Ui.frame(fxGui, {
 		Name = "HiddenEdge",
@@ -286,21 +285,20 @@ function Messages.build(ctx: any): any
 		g.Parent = edgeBar
 	end
 	function msg.setHidden(on: boolean)
-		hiddenPill.Visible = on
+		Ui.setShown(hiddenPill, on)
 		hiddenEdge.Visible = on
 	end
 
 	---------------------------------------------------------------------------
 	-- A new account's first seconds (§7.5: they spawn at the open van door, never in a menu).
 	---------------------------------------------------------------------------
-	local preparing = Ui.frame(root, {
+	local preparing = Ui.panel(root, {
 		Name = "Preparing",
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
 		Size = UDim2.fromOffset(440, 120),
 		Visible = false,
 	})
-	Ui.corner(preparing, 18)
 	Ui.label(preparing, {
 		Size = UDim2.fromScale(1, 1),
 		TextSize = 28,
@@ -309,10 +307,10 @@ function Messages.build(ctx: any): any
 	})
 	msg.preparing = preparing
 	function hud.showPreparing()
-		preparing.Visible = true
+		Ui.show(preparing)
 	end
 	function hud.hidePreparing()
-		preparing.Visible = false
+		Ui.hide(preparing)
 	end
 
 	---------------------------------------------------------------------------
@@ -323,13 +321,13 @@ function Messages.build(ctx: any): any
 			return
 		end
 		vignette.BackgroundTransparency = 0.7
-		TweenService:Create(vignette, TweenInfo.new(0.5), { BackgroundTransparency = 1 }):Play()
+		Motion.timed(vignette, U.FLASH_RED_SECONDS, { BackgroundTransparency = 1 })
 	end
 
 	-- The alarm's red pulse (once per ALARM_PULSE_SECONDS, ≤ 3 flashes/s).
 	function msg.alarmPulse()
 		vignette.BackgroundTransparency = 0.82
-		TweenService:Create(vignette, TweenInfo.new(H.ALARM_PULSE_SECONDS * 0.6), { BackgroundTransparency = 1 }):Play()
+		Motion.timed(vignette, H.ALARM_PULSE_SECONDS * 0.6, { BackgroundTransparency = 1 })
 	end
 
 	function msg.diamondMoment()
@@ -337,11 +335,10 @@ function Messages.build(ctx: any): any
 		placeDim()
 		dim.Enabled = true
 		dim.Brightness = -H.DIAMOND_DIM
-		local tw = TweenService:Create(dim, TweenInfo.new(H.DIAMOND_DIM_SECONDS), { Brightness = 0 })
+		local tw = Motion.timed(dim, H.DIAMOND_DIM_SECONDS, { Brightness = 0 })
 		tw.Completed:Once(function()
 			dim.Enabled = false
 		end)
-		tw:Play()
 	end
 
 	return msg

@@ -907,6 +907,7 @@ Config.Ui = {
 	ENTER_FROM = 0.86, -- panel enter: UIScale from this to 1
 	EXIT_TO = 0.92, -- panel exit: UIScale to this, then hidden
 	POP_SCALE = 1.12, -- feedback pops (timer digits in the last 10 s, the loot meter)
+	FLASH_RED_SECONDS = 0.5, -- the red vignette fades out over this (caught, zapped)
 	CHIP_STAGGER = 0.06, -- s between new clone chips (the tape-print rhythm) ...
 	STAGGER_CAP = 0.4, -- ... never wider than this in all (D5)
 

@@ -20,6 +20,7 @@ local Ui = require(script.Parent.Parent:WaitForChild("Ui"))
 local Common = require(script.Parent:WaitForChild("Common"))
 
 local H = Config.Heist
+local U = Config.Ui
 
 local Controls = {}
 
@@ -38,12 +39,13 @@ function Controls.build(ctx: any): any
 		Visible = false,
 	}, function() end, "")
 	Common.place(ffPill, HudLayout.FAST_FORWARD)
+	Ui.iconWord(ffPill, "fast_forward", "top", U.ICON_SMALL)
 	controls.ffPill = ffPill
 
 	local endBtn = Ui.button(runHud, {
 		Name = "EndRun",
 		BackgroundColor3 = Palette.CLONE_HUES[1],
-		TextSize = 18,
+		TextSize = 16,
 		TextWrapped = true,
 		Text = Strings.REWIND,
 	}, function()
@@ -54,18 +56,10 @@ function Controls.build(ctx: any): any
 	end, "")
 	Common.place(endBtn, HudLayout.END_RUN)
 	controls.endBtn = endBtn
-	local lockRing = Ui.frame(endBtn, {
-		Name = "Lock",
-		AnchorPoint = Vector2.new(0, 1),
-		Position = UDim2.fromScale(0, 1),
-		Size = UDim2.fromScale(1, 1),
-		BackgroundColor3 = Palette.ink,
-		BackgroundTransparency = 0.45,
-		ZIndex = 3,
-		Active = false,
-	})
-	Ui.corner(lockRing, 12)
-	controls.lockRing = lockRing
+	-- REWIND keeps its word under the ◀◀ icon (U2); the ring lock is a circle of dots around it
+	-- that go out over the 1.5 s lock (Run.update).
+	controls.endIcon = Ui.iconWord(endBtn, "rewind", "top", U.ICON_SIZE + 8)
+	controls.lock = Ui.lockRing(endBtn, HudLayout.END_RUN.h - 8, Palette.ink)
 
 	-- Interact sits where touch players expect a contextual action: lower right, left of
 	-- the jump button, well away from REWIND (a thumb slipping off GRAB must not end the
@@ -82,6 +76,7 @@ function Controls.build(ctx: any): any
 	end, "")
 	Common.place(interactBtn, HudLayout.INTERACT)
 	controls.interactBtn = interactBtn
+	controls.interactIcon = Ui.iconWord(interactBtn, "coin", "left", U.ICON_SIZE)
 
 	-- Fast-forward pill: hold to skip.
 	ffPill.InputBegan:Connect(function(input: InputObject)

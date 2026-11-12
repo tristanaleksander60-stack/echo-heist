@@ -34,7 +34,11 @@ for _, name in
 	{
 		"Sound",
 		"LineupPlan",
+		"Motion",
+		"Theme",
+		"Icons",
 		"Ui",
+		"TypeSpecimen",
 		"Rigs",
 		"EchoView",
 		"GusView",
@@ -320,6 +324,55 @@ workspace:BulkMoveTo(parts, cfs, Enum.BulkMoveMode.FireCFrameChanged)
 local arm = mq.model:FindFirstChild("LeftArm")
 local armY = if arm and arm:IsA("BasePart") then arm.Position.Y else nil
 check(armY ~= nil and armY > 53.5, "mannequin cheer raises the arms (" .. tostring(armY) .. ")")
+
+-- F. UI kit v2 (PLAN_STEAM_PLUS §4.3 U1-U3): the kit builds in the engine, the display faces exist,
+-- the UI Decals resolve to image ids, the run-bar markers compute on a real level
+local okKit, kitErr = pcall(function()
+	local Ui = require(clientHeist:WaitForChild("Ui"))
+	local Theme = require(clientHeist:WaitForChild("Theme"))
+	local gui = Instance.new("ScreenGui")
+	gui.Parent = scratch
+	local panel = Ui.panel(gui, { Size = UDim2.fromOffset(200, 100), Visible = false })
+	Ui.show(panel)
+	assert(Ui.isShown(panel), "panel shown")
+	Ui.hide(panel)
+	assert(not Ui.isShown(panel), "panel hidden")
+	local b = Ui.button(gui, { Size = UDim2.fromOffset(120, 72), Text = "GO" }, function() end)
+	assert(b:FindFirstChild("Outline") and b:FindFirstChild("Lip") and b:FindFirstChild("TextStroke"), "raised button")
+	Ui.iconWord(b, "rewind", "top")
+	local l = Ui.label(gui, { TextSize = 18, Text = "x" })
+	assert(l.TextSize == 20, "type scale snap 18 -> 20")
+	local digits = Ui.digits(gui, {}, 24)
+	digits.set("0:27")
+	Ui.lockRing(b, 64, Color3.new()).set(0.5)
+	for _, face in { "LuckiestGuy", "FredokaOne" } do
+		local f = Theme.displayFont(face)
+		assert(string.find(f.Family, face, 1, true), face .. " family " .. f.Family)
+	end
+	return true
+end)
+check(
+	okKit and kitErr == true,
+	"UI kit builds: panel, raised button, label snap, digits, ring, display faces (" .. tostring(kitErr) .. ")"
+)
+local UiAssets = require(shared:WaitForChild("Heist"):WaitForChild("UiAssets"))
+for stem, entry in UiAssets do
+	local okLoad, loaded = pcall(function()
+		return game:GetService("InsertService"):LoadAsset(entry.decal)
+	end)
+	local decal = okLoad and loaded and loaded:FindFirstChildWhichIsA("Decal", true)
+	local texture = if decal and decal:IsA("Decal") then decal.Texture else ""
+	-- the integrator records it: python3 tools/kit_upload.py --set-ui-image <stem> <id>
+	check(string.match(texture, "%d+") ~= nil, string.format("UI Decal %s %d -> image %s", stem, entry.decal, texture))
+end
+local okMarkers, markersErr = pcall(function()
+	local RunMarkers = require(shared:WaitForChild("Heist"):WaitForChild("RunMarkers"))
+	local LevelSpec = require(shared:WaitForChild("Sim"):WaitForChild("LevelSpec"))
+	local level = LevelSpec.compile(Protocol.levelSpec(6))
+	local m = RunMarkers.compute(level, {}, 60)
+	return #m.gus
+end)
+check(okMarkers, "run-bar markers on L6 (" .. tostring(markersErr) .. " Gus ticks)")
 
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))

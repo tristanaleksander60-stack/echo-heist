@@ -32,7 +32,7 @@ function Results.build(ctx: any): any
 	local root = ctx.root
 	local res = {}
 
-	local results = Ui.frame(root, {
+	local results = Ui.panel(root, {
 		Name = "Results",
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
@@ -40,12 +40,12 @@ function Results.build(ctx: any): any
 		Visible = false,
 		ZIndex = 10,
 	})
-	Ui.corner(results, 18)
 	res.card = results
 	local resTitle = Ui.label(results, {
 		Position = UDim2.fromOffset(0, 10),
 		Size = UDim2.new(1, 0, 0, 44),
 		TextSize = 34,
+		FontFace = Ui.FONT_DISPLAY,
 		Text = Strings.HEIST_COMPLETE,
 		ZIndex = 11,
 	})
@@ -74,6 +74,7 @@ function Results.build(ctx: any): any
 		local s = Ui.label(stampRow, {
 			Size = UDim2.fromOffset(136, 46),
 			TextSize = 20,
+			FontFace = Ui.FONT_DISPLAY,
 			RichText = true,
 			Text = "",
 			LayoutOrder = i,
@@ -81,10 +82,7 @@ function Results.build(ctx: any): any
 		})
 		s.BackgroundColor3 = Palette.inkHi
 		s.BackgroundTransparency = 0
-		Ui.corner(s, 10)
-		local sc = Instance.new("UIScale")
-		sc.Name = "Pop"
-		sc.Parent = s
+		Ui.corner(s)
 		stamps[i] = s
 	end
 	local resLine = Ui.label(results, {
@@ -152,6 +150,7 @@ function Results.build(ctx: any): any
 		end,
 		"UIConfirm"
 	)
+	Ui.iconWord(replayBtn, "replay", "left")
 	local nextBtn = Ui.button(resButtons, {
 		Size = UDim2.fromOffset(136, TAP),
 		Text = Strings.NEXT,
@@ -172,6 +171,8 @@ function Results.build(ctx: any): any
 		end,
 		"UIBack"
 	)
+	Ui.iconWord(nextBtn, "play", "left")
+	Ui.iconWord(garageBtn, "van", "left")
 	local resWait = Ui.label(results, {
 		AnchorPoint = Vector2.new(0.5, 1),
 		Position = UDim2.new(0.5, 0, 1, -(TAP + 14)),
@@ -245,12 +246,12 @@ function Results.build(ctx: any): any
 		state.overNext = payload.next
 		ctx.setInHeist(true)
 		ctx.msg.setSpectate("")
-		results.Visible = true
-		ctx.deck.panel.Visible = false
-		ctx.deck.readyWait.Visible = false
+		Ui.show(results)
+		Ui.hide(ctx.deck.panel)
+		Ui.hide(ctx.deck.readyWait)
 		ctx.runHud.Visible = false
 		ctx.msg.pauseChip.Visible = false
-		ctx.msg.menuSheet.Visible = false
+		Ui.hide(ctx.msg.menuSheet)
 		ctx.msg.setHidden(false)
 		local kind = over.kind or "story"
 		local st = over.stars or {}

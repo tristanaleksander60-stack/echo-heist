@@ -30,6 +30,7 @@ local StarterGui = game:GetService("StarterGui")
 local HudLayout = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Heist"):WaitForChild("HudLayout"))
 
 local Ui = require(script.Parent:WaitForChild("Ui"))
+local TypeSpecimen = require(script.Parent:WaitForChild("TypeSpecimen"))
 local Controls = require(script:WaitForChild("Controls"))
 local Deck = require(script:WaitForChild("Deck"))
 local Garage = require(script:WaitForChild("Garage"))
@@ -67,6 +68,7 @@ function Hud.new(state: any, actions: Actions): any
 	gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	gui.Parent = playerGui
+	TypeSpecimen.watch(playerGui) -- Studio only: EH_Scenario = "TYPE" (D8)
 
 	-- Edge-to-edge layer (rewind overlay, vignette, Line-up caption): no insets, nothing interactive.
 	local fxGui = Instance.new("ScreenGui")

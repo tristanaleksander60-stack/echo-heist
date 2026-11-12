@@ -77,6 +77,9 @@ jobs:
       - name: No text glyphs in UI strings (docs/PLAN_STEAM_PLUS.md §1 S4)
         run: lune run tests/glyph_check.luau
 
+      - name: UI kit (UIStroke text, motion tokens only, no default fonts, panels enter with motion; PLAN_STEAM_PLUS §4.3)
+        run: lune run tests/ui_kit_check.luau
+
       - name: Unit tests (L1)
         run: |
           if [ -f tests/run_unit.luau ]; then lune run tests/run_unit.luau; else echo "no unit tests yet"; fi

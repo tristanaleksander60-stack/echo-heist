@@ -29,7 +29,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
-local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -39,6 +38,7 @@ local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local Strings = require(Shared:WaitForChild("Heist"):WaitForChild("Strings"))
 
 local LineupPlan = require(script.Parent:WaitForChild("LineupPlan"))
+local Motion = require(script.Parent:WaitForChild("Motion"))
 local Rigs = require(script.Parent:WaitForChild("Rigs"))
 local Sound = require(script.Parent:WaitForChild("Sound"))
 local Ui = require(script.Parent:WaitForChild("Ui"))
@@ -115,8 +115,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 	caption.FontFace = FONT
 	caption.TextScaled = true
 	caption.TextColor3 = Palette.exit
-	caption.TextStrokeColor3 = Palette.ink
-	caption.TextStrokeTransparency = 0
+	Ui.textStroke(caption)
 	caption.RichText = true
 	caption.Text = ""
 	caption.Visible = false
@@ -610,8 +609,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 				t.FontFace = FONT
 				t.TextScaled = true
 				t.TextColor3 = Palette.exit
-				t.TextStrokeColor3 = Palette.ink
-				t.TextStrokeTransparency = 0
+				Ui.textStroke(t)
 				t.RichText = true
 				-- True age at the walk-off (CLIPS §1.2), from HeistClient.
 				t.Text = Ui.agoLabel(Strings.ME, age, Palette.CLONE_HUES[1])
@@ -752,7 +750,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 				caption.Visible = true
 				captionScale.Scale = if reduced then 1 else 1.15
 				if not reduced then
-					TweenService:Create(captionScale, TweenInfo.new(0.1), { Scale = 1 }):Play()
+					Motion.tween(captionScale, "feedback", { Scale = 1 })
 				end
 			end
 			-- "ME, N SEC AGO": in at 0.0, hold to 1.5 s, fade out by 1.8 s (CLIPS §1.2).
@@ -762,7 +760,10 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 				labelGui.Enabled = le >= 0 and le < out
 				local a = if le <= hold then 0 else math.clamp((le - hold) / (out - hold), 0, 1)
 				labelText.TextTransparency = a
-				labelText.TextStrokeTransparency = a
+				local labelStroke = labelText:FindFirstChild("TextStroke")
+				if labelStroke and labelStroke:IsA("UIStroke") then
+					labelStroke.Transparency = a
+				end
 				if labelScale then
 					-- pop 115 % -> 100 % over 0.10 s
 					labelScale.Scale = if reduced then 1 else 1 + 0.15 * (1 - math.clamp(le / 0.1, 0, 1))
