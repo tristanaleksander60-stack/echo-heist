@@ -7,8 +7,11 @@
 -- Config.Ui.DISPLAY_FACE. Never shown in a live game (RunService:IsStudio()); a dev screen, so its
 -- sample words live here and not in Strings.
 
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+
+local Wordmark = require(ReplicatedFirst:WaitForChild("Wordmark"))
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
@@ -23,7 +26,6 @@ local U = Config.Ui
 local TypeSpecimen = {}
 
 local FACES = { "LuckiestGuy", "FredokaOne" }
-local WORDMARK = "HEIST YOURSELF"
 local STAMP = "BUSTED!"
 local BUTTON = "NEXT JOB"
 local RESULT = "HAUL: $1,000 STOLEN"
@@ -67,15 +69,10 @@ local function build(playerGui: Instance): ScreenGui
 	end
 	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
 
-	-- The wordmark: a cyan copy offset behind the white one (the double exposure).
-	local off = U.WORDMARK_OFFSET
-	local markFace = U.DISPLAY_FACE
-	text(page, {
-		Position = UDim2.fromOffset(40 + off[1] * 2, 24 + off[2] * 2),
-		TextColor3 = Palette.CLONE_HUES[1],
-		Text = WORDMARK,
-	}, markFace, 110)
-	text(page, { Position = UDim2.fromOffset(40, 24), Text = WORDMARK }, markFace, 110)
+	-- The wordmark: a cyan copy offset behind the white one (the double exposure), drawn by the one
+	-- builder the loading card and the title beat use (ReplicatedFirst/Wordmark).
+	local mark = Wordmark.build(page, { size = 110, width = 1400, face = U.DISPLAY_FACE, align = "Left" })
+	mark.root.Position = UDim2.fromOffset(40, 24)
 	Ui.label(page, {
 		Position = UDim2.fromOffset(40, 160),
 		Size = UDim2.fromOffset(1400, 24),

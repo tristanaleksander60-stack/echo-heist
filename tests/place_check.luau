@@ -355,6 +355,45 @@ expect(
 local client = sps and sps:FindFirstChild("Client")
 expect(client ~= nil and client.ClassName == "LocalScript", "StarterPlayerScripts.Client is a LocalScript")
 
+-- ReplicatedFirst (POLISH §4.6, PLAN_STEAM_PLUS §4.1 W7): the branded loading card replaces the default
+-- screen on the first frame. Its LocalScript and the modules it (and Heist/Title, Heist/Loading,
+-- Heist/TypeSpecimen) requires sit directly in ReplicatedFirst; the card waits on nothing else.
+do
+	local rf = game:GetService("ReplicatedFirst")
+	local loading = rf:FindFirstChild("Loading")
+	expect(loading ~= nil and loading.ClassName == "LocalScript", "ReplicatedFirst.Loading is a LocalScript")
+	local src = if loading then loading.Source else ""
+	expect(
+		string.find(src, "RemoveDefaultLoadingScreen", 1, true) ~= nil,
+		"ReplicatedFirst.Loading removes the default loading screen"
+	)
+	for _, name in { "Brand", "Wordmark", "LoadingCard" } do
+		local m = rf:FindFirstChild(name)
+		expect(m ~= nil and m.ClassName == "ModuleScript", "ReplicatedFirst." .. name .. " is a ModuleScript")
+	end
+	local waits = {}
+	for _, m in rf:GetDescendants() do
+		if m:IsA("LuaSourceContainer") then
+			for name in string.gmatch(m.Source, 'require%(script%.Parent:WaitForChild%("([%w_]+)"%)%)') do
+				local target = rf:FindFirstChild(name)
+				expect(
+					target ~= nil and target:IsA("ModuleScript"),
+					"ReplicatedFirst." .. m.Name .. " require resolves: " .. name
+				)
+			end
+			if string.find(m.Source, 'GetService("ReplicatedStorage")', 1, true) then
+				table.insert(waits, m.Name)
+			end
+		end
+	end
+	expect(#waits == 0, "ReplicatedFirst never waits on ReplicatedStorage (" .. table.concat(waits, ", ") .. ")")
+	local heistClient = client and client:FindFirstChild("Heist")
+	for _, name in { "Loading", "Title", "Transition", "LevelIntro", "PresentPlan" } do
+		local m = heistClient and heistClient:FindFirstChild(name)
+		expect(m ~= nil and m.ClassName == "ModuleScript", "Client.Heist." .. name .. " is a ModuleScript")
+	end
+end
+
 -- Every require(script...:WaitForChild("X")) in the server script must resolve to a child.
 if server then
 	local main = server:FindFirstChild("Main")

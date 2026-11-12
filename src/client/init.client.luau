@@ -252,6 +252,15 @@ notify.OnClientEvent:Connect(function(msg)
 	end
 end)
 
+-- The branded loading card (ReplicatedFirst/Loading) fades now that this HUD is built.
+do
+	local Brand = require(game:GetService("ReplicatedFirst"):WaitForChild("Brand"))
+	local card = player:WaitForChild("PlayerGui"):FindFirstChild(Brand.GUI_NAME)
+	if card then
+		card:SetAttribute(Brand.ATTR.DISMISS, "fade")
+	end
+end
+
 -- Per-frame HUD refresh ------------------------------------------------------------
 RunService.RenderStepped:Connect(function()
 	local endsAt = ReplicatedStorage:GetAttribute("LoopEndsAt") or 0

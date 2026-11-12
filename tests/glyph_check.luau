@@ -1,13 +1,13 @@
 -- Glyph check (docs/PLAN_STEAM_PLUS.md §1 S4): no non-ASCII characters in UI strings.
 -- Text glyphs used as icons (❚❚ ◐ ⏩ ⚡ ▶ ◀ ★ ✕ ● ...) render as empty boxes or as emoji
 -- on phones; phase 1 uses words, phase 2 images. Scans every string literal (comments
--- are ignored) in src/client and in src/shared/Heist/Strings.luau.
+-- are ignored) in src/client, src/first and in src/shared/Heist/Strings.luau.
 -- Run from the repo root: lune run tests/glyph_check.luau
 
 local fs = require("@lune/fs")
 local process = require("@lune/process")
 
-local ROOTS = { "src/client" }
+local ROOTS = { "src/client", "src/first" } -- src/first: the loading card (ReplicatedFirst)
 local FILES = { "src/shared/Heist/Strings.luau" }
 
 -- Allowed anywhere: U+00B7 MIDDLE DOT, Strings.SEP (" · "). It is Latin-1, in every UI
