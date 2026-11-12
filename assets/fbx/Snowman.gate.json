@@ -1,0 +1,108 @@
+{
+ "asset": "Snowman",
+ "objects": [
+  {
+   "name": "Snowman",
+   "class": "small",
+   "tris": 724,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    4.005,
+    2.568,
+    6.24
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.9991,
+     -1.2839,
+     0.01
+    ],
+    "local_max": [
+     2.006,
+     1.2839,
+     6.25
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "ribbon",
+    "ribbon_hi",
+    "snow",
+    "wood",
+    "wood_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 321,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "the town's snowman (storytelling prop, client backdrop only); visual only",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 724,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "29290c3a915e8332af1d",
+ "fbx": {
+  "path": "assets/fbx/Snowman.fbx",
+  "bytes": 33292,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Snowman"
+  ],
+  "geometry_extents": [
+   [
+    2.568,
+    4.005,
+    6.24
+   ]
+  ]
+ },
+ "spec": "assets/blender/town.py",
+ "notes": "Snowman 2.7 x 2.7 x 6.2: three snowballs, top hat, burgundy scarf, stick arms (WORLD 2.0 town).",
+ "turntable": "docs/art/turntables/Snowman.png",
+ "seconds": 39.4
+}

@@ -1,0 +1,197 @@
+{
+ "asset": "Car_Parked",
+ "objects": [
+  {
+   "name": "Car_Parked",
+   "class": "small",
+   "tris": 476,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    4.1,
+    9.44,
+    3.743
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -2.05,
+     -4.72,
+     0.0367
+    ],
+    "local_max": [
+     2.05,
+     4.72,
+     3.78
+    ]
+   },
+   "swatches": [
+    "ink",
+    "marble_hi",
+    "ribbon",
+    "snow",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "parked car: wheels, glass, lamps, bumpers and the snow on it; the paint is Car_Parked_Paint",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Car_Parked_Paint",
+   "class": "small",
+   "tris": 88,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    4.2,
+    9.0,
+    2.6
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -2.1,
+     -4.5,
+     0.75
+    ],
+    "local_max": [
+     2.1,
+     4.5,
+     3.35
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 8,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "car paint: a mid value by MeshPart.Color (Config.Backdrop.TOWN.CAR.colors)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "the body and cabin as one runtime-coloured part (no atlas)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 564,
+ "seats": [
+  {
+   "name": "Car_Parked_Paint",
+   "gap": 0.0,
+   "penetration": 0.02,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Car_Parked",
+   "gap": 0.0,
+   "penetration": 0.58671,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "741bfdefd3eae0e96405",
+ "fbx": {
+  "path": "assets/fbx/Car_Parked.fbx",
+  "bytes": 30332,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Car_Parked",
+   "Car_Parked_Paint"
+  ],
+  "geometry_extents": [
+   [
+    2.6,
+    4.2,
+    9.0
+   ],
+   [
+    3.743,
+    4.1,
+    9.44
+   ]
+  ]
+ },
+ "spec": "assets/blender/town.py",
+ "notes": "Parked hatchback 4.2 x 9 x 3.8 with snow on the roof, bonnet and boot (WORLD 2.0 town).",
+ "turntable": "docs/art/turntables/Car_Parked.png",
+ "seconds": 24.6
+}

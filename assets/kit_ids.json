@@ -111,6 +111,19 @@
    "sha256": "8afcd973124c39dc70ac91844f9448eefdf7063c6db87af7570f23aa5da75f19",
    "uploaded": "2026-11-12T11:21:15Z"
   },
+  "Car_Parked": {
+   "assetId": 76821634204314,
+   "file": "assets/fbx/Car_Parked.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Car_Parked",
+    "Car_Parked_Paint"
+   ],
+   "revisionId": "1",
+   "sha256": "a1c4271eadea8f58e89fffb64993b9201e66bb123a88d74fd78a92544c44be1c",
+   "uploaded": "2026-11-12T23:13:45Z"
+  },
   "CashBag": {
    "assetId": 120803856698199,
    "file": "assets/fbx/CashBag.fbx",
@@ -499,6 +512,18 @@
    "sha256": "8544f1dba37274d5c2ffe6315db9362b78cd41bfc5043d01e1ff02e512767069",
    "uploaded": "2026-11-12T11:26:49Z"
   },
+  "Roof_Gable": {
+   "assetId": 120853282152490,
+   "file": "assets/fbx/Roof_Gable.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Roof_Gable"
+   ],
+   "revisionId": "1",
+   "sha256": "7cbd99f8889a98d927bcbae175b829fdec7828bb9e64038bd648e541f30a9f40",
+   "uploaded": "2026-11-12T23:14:02Z"
+  },
   "Rug_8x6": {
    "assetId": 125310774976762,
    "file": "assets/fbx/Rug_8x6.fbx",
@@ -585,6 +610,18 @@
    "revisionId": "1",
    "sha256": "e5573a0c22c1d637665250e9259bba8061461e8ac39434fa479ed59653ecab9e",
    "uploaded": "2026-11-12T17:19:14Z"
+  },
+  "Snowman": {
+   "assetId": 133411357677588,
+   "file": "assets/fbx/Snowman.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Snowman"
+   ],
+   "revisionId": "1",
+   "sha256": "204beda0bcc691562739af8ed4d279bd19a03e70375026c65e9a1a5becf5cbbb",
+   "uploaded": "2026-11-12T23:14:26Z"
   },
   "Storefront_24x12": {
    "assetId": 94915564343762,

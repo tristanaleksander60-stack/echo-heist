@@ -120,6 +120,77 @@
    ],
    "sim": "loot point (LevelSpec loot x, y, z)"
   },
+  "Car_Parked": {
+   "model": "Car_Parked",
+   "size": [
+    4.1,
+    3.743,
+    9.44
+   ],
+   "tris": 476,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.05,
+    0.037,
+    -4.72
+   ],
+   "boundsMax": [
+    2.05,
+    3.78,
+    4.72
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Car_Parked_Paint": {
+   "model": "Car_Parked",
+   "size": [
+    4.2,
+    2.6,
+    9.0
+   ],
+   "tris": 88,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.1,
+    0.75,
+    -4.5
+   ],
+   "boundsMax": [
+    2.1,
+    3.35,
+    4.5
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tint": "car paint: a mid value by MeshPart.Color (Config.Backdrop.TOWN.CAR.colors)",
+   "tintable": true
+  },
   "CashBag": {
    "model": "CashBag",
    "size": [
@@ -2417,6 +2488,41 @@
    ],
    "sim": "loot point (LevelSpec loot x, y, z)"
   },
+  "Roof_Gable": {
+   "model": "Roof_Gable",
+   "size": [
+    10.4,
+    3.62,
+    8.6
+   ],
+   "tris": 32,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "xmas",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -5.2,
+    0.0,
+    -4.3
+   ],
+   "boundsMax": [
+    5.2,
+    3.62,
+    4.3
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
   "Rug_8x6": {
    "model": "Rug_8x6",
    "size": [
@@ -2778,6 +2884,41 @@
     0.0
    ],
    "tint": "Bulb Warm #F6C0A2"
+  },
+  "Snowman": {
+   "model": "Snowman",
+   "size": [
+    4.005,
+    6.24,
+    2.568
+   ],
+   "tris": 724,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.006,
+    0.01,
+    -1.284
+   ],
+   "boundsMax": [
+    1.999,
+    6.25,
+    1.284
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
   },
   "Storefront_24x12": {
    "model": "Storefront_24x12",
