@@ -763,6 +763,67 @@ do
 				okL6 and b6.kit and b6.dressing and skins == 1 and xmas >= 10,
 				string.format("kit: L6 with the Christmas layer (%d Christmas pieces, %d vault skin)", xmas, skins)
 			)
+			-- Light and levels (PLAN_STEAM_PLUS W2, LEVELS P0): real Light objects within the per-view
+			-- budget (<= MAX_LIGHTS_PER_VIEW lit, <= MAX_SHADOWED_PER_VIEW shadowed), a Lamp_Ceiling over
+			-- each, an unlit floor pool, and the plate letters moved onto the kit plates.
+			if okL6 then
+				local LIGHT = Config.Lighting
+				local lights: { Light } = {}
+				local shades, pools = 0, 0
+				for _, dsc in b6.model:GetDescendants() do
+					if dsc:IsA("Light") then
+						table.insert(lights, dsc)
+					elseif dsc:GetAttribute("KitPiece") == "Lamp_Ceiling" then
+						shades += 1
+					elseif dsc:GetAttribute("EH_Kind") == "lightPool" and dsc:FindFirstChildOfClass("SurfaceGui") then
+						pools += 1
+					end
+				end
+				local worstLit, worstShadow = 0, 0
+				for _, a in lights do
+					local lit, shadowed = 0, 0
+					local pa = (a.Parent :: Attachment).WorldPosition
+					for _, l in lights do
+						local pb = (l.Parent :: Attachment).WorldPosition
+						if Vector3.new(pa.X - pb.X, 0, pa.Z - pb.Z).Magnitude <= LIGHT.VIEW_RADIUS then
+							lit += 1
+							if l.Shadows then
+								shadowed += 1
+							end
+						end
+					end
+					worstLit, worstShadow = math.max(worstLit, lit), math.max(worstShadow, shadowed)
+				end
+				check(
+					#lights >= 6
+						and worstLit <= LIGHT.MAX_LIGHTS_PER_VIEW
+						and worstShadow <= LIGHT.MAX_SHADOWED_PER_VIEW,
+					string.format(
+						"light: L6 has %d lamps; worst view %d lit / %d shadowed (<= %d / %d)",
+						#lights,
+						worstLit,
+						worstShadow,
+						LIGHT.MAX_LIGHTS_PER_VIEW,
+						LIGHT.MAX_SHADOWED_PER_VIEW
+					)
+				)
+				check(
+					shades == #lights and pools == #lights,
+					string.format("light: a Lamp_Ceiling (%d) and a floor pool (%d) per lamp", shades, pools)
+				)
+				local lettered = 0
+				for _, plate in b6.plates do
+					for _, c in plate:GetChildren() do
+						if c:GetAttribute("EH_Kind") == "plateLetter" and c:FindFirstChildOfClass("SurfaceGui") then
+							lettered += 1
+						end
+					end
+				end
+				check(
+					lettered == #b6.plates,
+					string.format("light: %d/%d kit plates carry their letter", lettered, #b6.plates)
+				)
+			end
 			scratch:Destroy()
 		elseif instK then
 			check(instK.folder:GetAttribute("Kit") == false, "kit: not ready, level stays greybox (fallback)")

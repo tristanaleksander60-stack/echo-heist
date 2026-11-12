@@ -6,7 +6,8 @@
 -- It keeps one state table fed by the server's Heist.Msg push (and Heist.Sync at
 -- boot), and once per frame samples the replicated LoopClock and draws:
 --   EchoView (clones from Rec/Sampler), GusView (Guards.patrol + pose attributes),
---   WorldView (doors/lasers/plates/loot/alarm from attributes, kit door skins),
+--   WorldView (doors/lasers/plates/loot/alarm from attributes, kit door skins), LightDirector
+--   (lamp shadows and floor pools by performance tier),
 --   RewindDirector, Hud, and at heist end the LineupDirector (Crew Line-up cut).
 -- Sound goes through Heist/Sound (AudioDirector): every live sim event plays its cues
 -- (Audio/EventCues), music follows garage / heist / alarm / results, ambience follows
@@ -37,6 +38,7 @@ local GusView = require(Heist:WaitForChild("GusView"))
 local WorldView = require(Heist:WaitForChild("WorldView"))
 local RewindDirector = require(Heist:WaitForChild("RewindDirector"))
 local LineupDirector = require(Heist:WaitForChild("LineupDirector"))
+local LightDirector = require(Heist:WaitForChild("LightDirector"))
 local Hud = require(Heist:WaitForChild("Hud"))
 local Sound = require(Heist:WaitForChild("Sound"))
 local Telemetry = require(Heist:WaitForChild("Telemetry"))
@@ -118,6 +120,7 @@ function HeistClient.start()
 	local echo = EchoView.new(state)
 	local gus = GusView.new(state)
 	local world = WorldView.new(state, echo.positionOf)
+	local lights = LightDirector.new()
 	local ffOn = false
 
 	local actions = {
@@ -179,6 +182,7 @@ function HeistClient.start()
 		director.setBlurAllowed(tier < 2)
 		echo.setTier(tier)
 		lineup.setTier(tier)
+		lights.setTier(tier)
 		state.particleScale = if tier >= 3 then 0.5 else 1
 		Lighting.GlobalShadows = if tier >= 3 then false else shadowsWere
 	end)
@@ -390,6 +394,7 @@ function HeistClient.start()
 		end
 		if levelModel then
 			world.bind(levelModel)
+			lights.bind(levelModel)
 		end
 		if state.level then
 			gus.setLevel(state.level)
@@ -418,6 +423,7 @@ function HeistClient.start()
 		echo.clear()
 		gus.clear()
 		world.clear()
+		lights.clear()
 		director.stop()
 		hud.hideAll()
 		hud.hidePreparing()

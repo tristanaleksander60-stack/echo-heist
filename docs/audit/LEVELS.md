@@ -332,3 +332,17 @@ For L6, floor the alley with a street cell and use a low fence piece instead of 
 - L5's gold loot rows seen through the door.
 - The laser grid's red against the indigo.
 - Placement maths: every kit piece lands within 0.0005 studs of KitPlan's frame, with no gaps or z-fighting in any render.
+
+---
+
+## 6. After phase 1 (light and levels track, 2026-11-12)
+
+Re-rendered with `python3 tools/blender/level_shots.py --only L1|L2|L5 --samples 12 --out docs/audit/levels/after` (R2: Blender, not Studio). The tool now draws recipe A "Moonlit Diorama" (default.project.json), every `KitPlan.lamps` light with its unlit floor pool and `Lamp_Ceiling`, idle plates in Bulb Warm with their letter, the device letter discs, `KitPlan.cables`, pocketed doors and rolled-up shutters, the dim van zone with arrows, the goal sparkle, the L2 `Safe` display and L1's partition windows. Plan views hide the ceiling fixtures (a planning camera fades them). Overview: [`levels/after/contact_sheet.png`](levels/after/contact_sheet.png).
+
+| Level | Spawn-view luminance, median (before → after) | What changed on screen | Score before → after |
+|---|---|---|---|
+| L1 Back Room | 0.086 → 0.170 | Van slab gone (dim zone + arrow); plate A glows with its letter in a warm pool; the cash glints through the new windows beside the door, under the hero lamp; door pocketed (no slab over the wall); "A" disc by the door lamp | **3 → 5.5** |
+| L2 Two Doors | 0.086 → 0.170 | Two separate cables, B visibly passing the first door (no T); A/B letters on plates and doors; the goal sits on a `Safe` under the hero lamp; middle room and tip jar lit | **2.5 → 5.5** |
+| L5 Clone Party | 0.083 → 0.178 | No floating shutter in the street shot; aisle and office lamps with pools; the till under its hero lamp; van zone no longer the brightest thing | **5.5 → 6.5** |
+
+Still open (needs sim level data or later phases): spawn framing and the camera (P0-6, C0), the till on its counter and loot on the shelves (P1-4), every Corner Shop level's own first room (P1-1), street dressing and the backdrop (P1-6, W4), and the sky faces upload (the renders show the plain night sky the Sky node gets once `assets/sky/` is uploaded; Studio draws Roblox's day faces until then).

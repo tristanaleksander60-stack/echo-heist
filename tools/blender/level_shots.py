@@ -2,7 +2,7 @@
 player's point of view (docs/audit/LEVELS.md, the level readability and visual quality audit).
 
     python3 tools/blender/level_shots.py [--only L1|..|L6|DV01..DV12] [--daily] [--plain] [--size 1280]
-                                         [--samples 32] [--no-sheet]
+                                         [--samples 32] [--no-sheet] [--out docs/audit/levels/after]
 
 What is rebuilt, and from where (nothing is hand-placed):
   * `lune run tools/blender/level_plan.luau` compiles every level with Sim/LevelSpec and runs the server's own pure
@@ -23,9 +23,15 @@ What is rebuilt, and from where (nothing is hand-placed):
     in Clone Cyan with the solo age ramp (12 % dimmer and up to 25 deg toward violet per older run) and a glyph badge.
   * The player: the Rookie stand-in at spawn 1. Clones stand where the placeholder golden solution
     (tests/sim/Solutions.luau) leaves them: on the plates, or (Clone Party) at their shelf items.
-  * Heist Night approximation in Eevee: world = OutdoorAmbient (75,80,130) (the levels have no roofs), one dim moon
-    tinted by ColorShift_Top, ExposureCompensation 0.2, NO local lights (the game places none: no Lamp_Ceiling, no
-    PointLight), then Bloom (threshold 1.0) and ColorCorrection in 2D (marketing_renders.finish).
+  * Recipe A "Moonlit Diorama" approximation in Eevee (default.project.json, roblox_quality 1.2): world =
+    OutdoorAmbient (115,110,165) (the levels have no roofs), a moon key at about 50 deg tinted by ColorShift_Top
+    (150,175,255), ExposureCompensation 0.3; the night sky colour behind; every lamp of KitPlan.lamps as a real light
+    (PointLight / the hero SpotLight with shadows, Config.Lighting) with its unlit floor pool and the kit Lamp_Ceiling;
+    then Bloom and ColorCorrection in 2D (marketing_renders.finish).
+  * Light-and-levels P0 state (LEVELS.md 4): idle plates glow Bulb Warm with their letter, letter discs on the
+    devices, KitPlan.cables (0.5 wide Vault Steel, near jamb), open doors pocketed (hidden) and shutters rolled up,
+    the van zone dim with arrows, the goal sparkle (2D, like finish's "sparkle" note), goal displays and L1's
+    windows from Heist/LevelDress.
 What is NOT reproduced: Roblox's exact moon direction, ambient occlusion and tone mapping; Highlight outlines are a
 solidify shell; the HUD. The Roblox default camera (no zoom is set in src/client: 12.5 studs, FOV 70) with Poppercam
 approximated by a ray test against the greybox colliders. These are audit renders, not captures.
@@ -45,14 +51,14 @@ import kit_preview as K  # noqa: E402
 import marketing_renders as MR  # noqa: E402
 
 REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
-OUT = os.path.join(REPO, "docs", "audit", "levels")
+OUT = os.path.join(REPO, "docs", "audit", "levels")   # --out changes it (after-renders: docs/audit/levels/after)
 TMP = os.path.join(tempfile.gettempdir(), "eh_level_shots")
 FBX = os.path.join(REPO, "assets", "fbx")
 
 # Heist/Palette (LevelBuilder greybox colours)
 PAL = {"ink": "#1C1F3B", "plumDeep": "#2E2A50", "plum": "#3A3560", "plumHi": "#4D4778", "marble": "#D8C8A8",
        "steelLo": "#4E5675", "steel": "#7C86A6", "white": "#FFFFFF", "alarm": "#FF3838", "amber": "#FFD27A",
-       "exit": "#F4F7FF", "ok": "#2FBF71", "gold": "#FFC21F"}
+       "exit": "#F4F7FF", "ok": "#2FBF71", "gold": "#FFC21F", "floor": "#3A365C", "bulb": "#F6C0A2"}
 CYAN = "#3DE8FF"
 VISION = (30.0, 45.0)        # Config.Sim GUARD_VISION_RANGE, GUARD_VISION_HALF_ANGLE
 EYE = 1.5                    # Config.Sim GUARD_EYE_HEIGHT above the root
@@ -192,20 +198,25 @@ def build(level, solved, lib):
     loc = level["location"]
     fy = level["floorY"]
     b = level["bounds"]
-    # Floor: the whole lot in Plum Slate deep (LevelBuilder), 2 thick under y = 0
-    gbox("Floor", [b[0], fy - 2, b[2], b[3], fy, b[5]], PAL["plumDeep"])
+    # Floor: the whole lot in the lit `floor` swatch (LevelBuilder, W3), 2 thick under y = 0
+    gbox("Floor", [b[0], fy - 2, b[2], b[3], fy, b[5]], PAL["floor"])
     covered = set(level["covered"])
     for i, s in enumerate(level["solids"], 1):
         if i not in covered:
             gbox(f"Solid{i}", s["box"], PAL["plum"] if s["sight"] else PAL["marble"])
 
-    till_loot = {it.get("index") for it in level["kit"] if it["role"] == "till"}
+    till_loot = {it.get("index") for it in level["kit"] if it["role"] in ("till", "display")}
     for it in level["kit"]:
         role, idx = it["role"], it.get("index")
         extra = None
         if role == "door" and doors.get(idx):
             d = level["doors"][idx - 1]["box"]
-            extra = Matrix.Translation((0, 0, (d[4] - d[1]) - 0.4))   # WorldView: slides up height - 0.4
+            if it["pieces"][0]["name"] == "Shutter_8x10":    # WorldView: rolled up into the header, top pinned
+                top = d[4]
+                k = 0.35 / 10.35
+                extra = Matrix.Translation((0, 0, top)) @ Matrix.Diagonal((1, 1, k, 1)) @ Matrix.Translation((0, 0, -top))
+            else:
+                continue                                       # WorldView: pocketed into the wall, hidden
         if role == "vaultSkin" and doors.get(idx):
             spec = K.MANIFEST["VaultDoor_Door"]
             px, py, pz, yaw = it["pivot"]
@@ -223,14 +234,17 @@ def build(level, solved, lib):
                 if idx in held:
                     tint(o, CYAN, emit=2.5)
                 else:
-                    tint(o, PAL["steelLo"], 0, 0.6)      # idle: SmoothPlastic, Vault Steel shade
+                    o.data = o.data.copy()                # idle: Neon Bulb Warm at 50 % (LEVELS P0-1)
+                    o.data.materials.clear()
+                    o.data.materials.append(MR.mat(PAL["bulb"], 0.4, emit=2.0, alpha=0.5))
             elif n == "LaserEmitter_Lens":
                 tint(o, PAL["alarm"] if lasers.get(idx) else PAL["steelLo"], emit=2.2 if lasers.get(idx) else 0)
             elif n == "Switch_Wall_Lamp":
                 tint(o, PAL["steelLo"])
             elif n == "VaultDoor_DialRing":
                 tint(o, CYAN if doors.get(idx) else "#A8987A", emit=3.0)
-    # cables
+    # cables (KitPlan.cables: near jamb, 0.5 wide, idle Vault Steel)
+    cw = level["lighting"]["CABLE_WIDTH"]
     for cb in level["cables"]:
         on = cb["plate"] in held
         for ax, az, bx, bz in cb["legs"]:
@@ -239,9 +253,31 @@ def build(level, solved, lib):
                 continue
             cx, cz = (ax + bx) / 2, (az + bz) / 2
             alongX = abs(bx - ax) > abs(bz - az)
-            w = (L + 0.3, 0.3) if alongX else (0.3, L + 0.3)
+            w = (L + cw, cw) if alongX else (cw, L + cw)
             gbox("Cable", [cx - w[0] / 2, fy + 0.0, cz - w[1] / 2, cx + w[0] / 2, fy + 0.06, cz + w[1] / 2],
-                 CYAN if on else PAL["steelLo"], emit=2.5 if on else 0.0, shadow=False)
+                 CYAN if on else PAL["steel"], emit=2.5 if on else 0.0, shadow=False)
+    # plate letters (top face, white) and the letter discs on the devices they drive
+    for i, p in enumerate(level["plates"], 1):
+        x, z = centre2(p["box"])
+        text3(p["letter"], 2.2, PAL["exit"], 1.5, rb(x, fy + 0.4, z), (0, 0, math.pi))
+    for i, d in enumerate(level["doors"], 1):
+        if not d.get("letters"):
+            continue
+        bx = d["box"]
+        if (bx[3] - bx[0]) < (bx[5] - bx[2]):
+            continue
+        cx, cz = centre2(bx)
+        plaque(d["letters"], rb(cx + 2, fy + 10.8, cz), (bx[5] - bx[2]) / 2 + 0.1)
+    for i, l in enumerate(level["lasers"], 1):
+        if not l.get("letters") or not l["offBy"]:
+            continue
+        bx = l["box"]
+        px, _pz = centre2(level["plates"][l["offBy"][0] - 1]["box"])
+        cx, cz = centre2(bx)
+        plaque(l["letters"], rb(bx[0] if px < cx else bx[3], fy + 7, cz), 0.5)
+    # lamps: real lights (Config.Lighting) and the unlit floor pools
+    for lp in level["lamps"]:
+        lamp_light(level, lp)
     # door lamps (LevelBuilder: above the leaf, on its +Z face)
     for i, d in enumerate(level["doors"], 1):
         bx = d["box"]
@@ -270,15 +306,80 @@ def build(level, solved, lib):
             continue
         hgt = max(it["y"] - fy - 1, 0.2)
         gbox("Stand", [it["x"] - 0.9, fy, it["z"] - 0.9, it["x"] + 0.9, fy + hgt, it["z"] + 0.9], PAL["ink"])
-    # van zone + WedgePart chevrons (Getaway White Neon)
+    # van zone: dim (nobody carries loot in these shots) with arrows toward the van (LevelBuilder.arrow)
     v = level["van"]
-    gbox("VanZone", [v[0], fy, v[2], v[3], fy + 0.1, v[5]], PAL["exit"], emit=0.45, alpha=0.4, shadow=False)
+    LG = level["lighting"]
+    gbox("VanZone", [v[0], fy, v[2], v[3], fy + 0.1, v[5]], PAL["exit"], alpha=1 - LG["VAN_IDLE_ALPHA"], shadow=False)
     vx = (v[0] + v[3]) / 2
-    for k in range(3):
-        z = v[2] + 1.5 + k * 2.2
-        gbox("Chevron", [vx - 1.2, fy + 0.08, z - 0.6, vx + 1.2, fy + 0.16, z + 0.6], PAL["exit"], emit=1.2,
-             shadow=False)
+    hw, hl = LG["ARROW_HEAD"]
+    sw, sl = LG["ARROW_SHAFT"]
+    n = LG["ARROW_COUNT"]
+    z0 = v[2] + ((v[5] - v[2]) - ((n - 1) * LG["ARROW_STEP"] + sl + hl)) / 2
+    am = MR.mat(PAL["exit"], 0.5, alpha=1 - LG["ARROW_IDLE_ALPHA"])
+    for k in range(n):
+        za = z0 + k * LG["ARROW_STEP"]
+        gbox("ArrowShaft", [vx - sw / 2, fy + 0.08, za, vx + sw / 2, fy + 0.16, za + sl], PAL["exit"],
+             alpha=1 - LG["ARROW_IDLE_ALPHA"], shadow=False)
+        bm = bmesh.new()
+        y = fy + 0.16
+        vs = [bm.verts.new(rb(vx - hw / 2, y, za + sl)), bm.verts.new(rb(vx + hw / 2, y, za + sl)),
+              bm.verts.new(rb(vx, y, za + sl + hl))]
+        bm.faces.new(vs)
+        MR._obj("ArrowHead", bm, am).visible_shadow = False
     return held, doors, lasers
+
+
+def text3(s, size, hexc, emit, loc, rot):
+    cu = bpy.data.curves.new("txt", "FONT")
+    cu.body = s
+    cu.size = size
+    cu.align_x = "CENTER"
+    cu.align_y = "CENTER"
+    cu.extrude = 0.01
+    o = bpy.data.objects.new("txt", cu)
+    bpy.context.scene.collection.objects.link(o)
+    o.data.materials.append(MR.mat(hexc, 0.5, emit=emit))
+    o.location = loc
+    o.rotation_euler = rot
+    o.visible_shadow = False
+    return o
+
+
+def plaque(letters, c, half):
+    """LevelBuilder.plaque: a steel disc with ink letters on both faces of a wall line (Roblox +-Z = Blender +-Y)."""
+    w = 1.6 * max(1.0, 0.55 * len(letters) + 0.45)
+    for side in (1, -1):
+        loc = c + Vector((0, side * half, 0))
+        disc = MR.cyl("plaque", 0.8, 0.8, 0.04, MR.mat(PAL["steel"], 0.5, emit=0.6), None, tuple(loc),
+                      (90, 0, 0), seg=24, scale=(w / 1.6, 1, 1))
+        disc.visible_shadow = False
+        text3(letters, 1.1, PAL["ink"], 0.0, loc + Vector((0, side * 0.03, 0)),
+              (math.pi / 2, 0, math.pi if side > 0 else 0))
+
+
+LAMP_W = 520.0   # Eevee watts per unit of Roblox Brightness (calibrated by eye against the pools)
+
+
+def lamp_light(level, lp):
+    """A KitPlan lamp: the Light (Config.Lighting; only the hero shadows) and its unlit SurfaceGui pool."""
+    fy = level["floorY"]
+    LG = level["lighting"]
+    col = "#%02X%02X%02X" % tuple(lp["color"])
+    pos = rb(lp["x"], fy + LG["LIGHT_Y"], lp["z"])
+    if lp["kind"] == "hero":
+        o = MR.light("SPOT", tuple(pos), tuple(rb(lp["x"], fy, lp["z"])), col, lp["brightness"] * LAMP_W,
+                     size=0.3, spot=lp["angle"] * 1.6, blend=0.7, shadow=lp["shadows"])
+    else:
+        o = MR.light("POINT", tuple(pos), None, col, lp["brightness"] * LAMP_W, size=0.3, shadow=lp["shadows"])
+    o.data.use_custom_distance = True
+    o.data.cutoff_distance = lp["range"]
+    P = LG["POOL"]
+    pc = "#%02X%02X%02X" % tuple(P["color"])
+    for k, rg in enumerate(P["rings"]):
+        r = lp["pool"] * rg["size"] / 2
+        d = MR.cyl("pool", r, r, 0.01, MR.mat(pc, 0.9, emit=P["brightness"] * 0.6, alpha=1 - rg["alpha"]), None,
+                   tuple(rb(lp["x"], fy + P["lift"] + 0.005 * k, lp["z"])), seg=40)
+        d.visible_shadow = False
 
 
 # ------------------------------------------------------------------ actors
@@ -384,13 +485,13 @@ def move(J, level, x, z, yaw):
 def lighting(s):
     w = s.world
     bg = next(n for n in w.node_tree.nodes if n.type == "BACKGROUND")
-    bg.inputs["Color"].default_value = MR.lin("#4B5082")       # OutdoorAmbient (75,80,130): no roofs
+    bg.inputs["Color"].default_value = MR.lin("#736EA5")       # recipe A OutdoorAmbient (115,110,165): no roofs
     bg.inputs["Strength"].default_value = 1.0
-    # What the camera sees past the lot: the night sky through the Atmosphere haze (Color (70,60,120), Decay
-    # (35,30,75)), darker than the ambient light it gives.
+    # What the camera sees past the lot: the plain night sky (assets/sky, horizon in the Atmosphere colour
+    # (90,80,150)), darker than the ambient light it gives.
     nt = w.node_tree
     sky = nt.nodes.new("ShaderNodeBackground")
-    sky.inputs["Color"].default_value = MR.lin("#231F45")
+    sky.inputs["Color"].default_value = MR.lin("#3A3470")
     path = nt.nodes.new("ShaderNodeLightPath")
     mix = nt.nodes.new("ShaderNodeMixShader")
     outn = next(n for n in nt.nodes if n.type == "OUTPUT_WORLD")
@@ -399,12 +500,12 @@ def lighting(s):
     nt.links.new(sky.outputs[0], mix.inputs[2])
     nt.links.new(mix.outputs[0], outn.inputs["Surface"])
     ld = bpy.data.lights.new("moon", "SUN")
-    ld.color = MR.lin("#FFE3C4")[:3]                            # moonlight warmed by ColorShift_Top (255,210,160)
-    ld.energy = 0.9
-    ld.angle = math.radians(3)
+    ld.color = MR.lin("#B4C6FF")[:3]                            # the ClockTime 15 sun as moonlight: ColorShift_Top
+    ld.energy = 2.4                                             # Brightness 1.4 (was 0.5 at 0.9)
+    ld.angle = math.radians(6)                                  # ShadowSoftness 0.3
     o = bpy.data.objects.new("moon", ld)
     s.collection.objects.link(o)
-    o.rotation_euler = (math.radians(38), 0, math.radians(-35))
+    o.rotation_euler = (math.radians(42), 0, math.radians(-35))   # about 48 deg up, to one side of the spawn view
 
 
 def boxes_for_popper(level, doors):
@@ -471,12 +572,27 @@ def render(s, cam, path):
     bpy.ops.render.render(write_still=True)
 
 
-def notes_for(s, cam, figs, gus_list):
+def notes_for(s, cam, figs, gus_list, level=None):
     bpy.context.view_layer.update()
     W, Hh = s.render.resolution_x, s.render.resolution_y
     out = []
     cpos = cam.matrix_world.translation
     dg = bpy.context.evaluated_depsgraph_get()
+    # WorldView goal sparkle (LEVELS P0-4): the goal and items worth >= SPARKLE_MIN_VALUE, at home, unoccluded
+    if level is not None:
+        lo = level["lighting"]["SPARKLE_MIN_VALUE"]
+        for it in level["loot"]:
+            if not (it["top"] or it["value"] >= lo):
+                continue
+            p = rb(it["x"], level["floorY"] + it["y"] + 1.2, it["z"])
+            d = p - cpos
+            hit, _l, _n, _i, obj, _m = s.ray_cast(dg, cpos, d.normalized(), distance=max(d.length - 1.5, 0.1))
+            if hit:
+                continue
+            v = world_to_camera_view(s, cam, p)
+            if 0 <= v.x <= 1 and 0 <= v.y <= 1 and v.z > 0:
+                out.append({"kind": "sparkle", "x": v.x * W, "y": (1 - v.y) * Hh, "depth": v.z,
+                            "r": max(0.008, min(0.03, 0.3 / v.z)), "small": [(0.02, 0.015, 0.45), (-0.015, -0.02, 0.35)]})
     for J, k, hue in figs:
         top = MR.head_top(J, 0.6)
         if (top - cpos).length > BADGE_MAX:
@@ -525,7 +641,7 @@ def shoot(level, W, Hh, samples, only=None):
     made = {}
     for solved in (False, True):
         s = MR.reset(samples)
-        s.view_settings.exposure = 0.2
+        s.view_settings.exposure = 0.3                           # recipe A ExposureCompensation
         lib = Lib(loc)
         ERR[0] = 0.0
         held, doors, lasers = build(level, solved, lib)
@@ -566,6 +682,10 @@ def shoot(level, W, Hh, samples, only=None):
             shots = [sh for sh in shots if sh[0] in only]
         for name, pos, tgt, fov, used, stand in shots:
             move(me, level, *stand)
+            # plan views look down through the ceiling fixtures (a planning camera fades them, P2-4)
+            for ob in bpy.data.objects:
+                if ob.name.startswith("Lamp_Ceiling"):
+                    ob.hide_render = name.startswith("3")
             cam.location = pos
             if name.startswith("3"):
                 cam.rotation_euler = (0, 0, math.pi)
@@ -574,7 +694,7 @@ def shoot(level, W, Hh, samples, only=None):
             cd.angle_y = math.radians(fov)
             raw = os.path.join(TMP, f"{stem}_{name}_raw.png")
             render(s, cam, raw)
-            notes = notes_for(s, cam, figs, gl) if not name.startswith("3") else []
+            notes = notes_for(s, cam, figs, gl, level if not solved else None) if not name.startswith("3") else []
             out = os.path.join(OUT, f"{stem}_{name}.png")
             MR.finish(raw, out, notes, tag=False, vignette=0.12, truecolor=True)   # 256 colours lose the small lamps
             if name.startswith("3"):
@@ -634,7 +754,11 @@ def main(argv):
     ap.add_argument("--no-sheet", action="store_true")
     ap.add_argument("--shots", help="comma list of shot names to render (default: all)")
     ap.add_argument("--sheet-only", action="store_true")
+    ap.add_argument("--out", help="output folder (default docs/audit/levels)")
     a = ap.parse_args(argv)
+    global OUT
+    if a.out:
+        OUT = os.path.abspath(a.out)
     plan = load_plan(not a.plain, a.daily)
     levels = plan["levels"]
     W, Hh = a.size, a.size * 9 // 16
@@ -648,6 +772,7 @@ def main(argv):
     for lv in levels:   # one Blender process per level (factory resets + Eevee renders in one process are flaky)
         cmd = [sys.executable, os.path.abspath(__file__), "--only", lv["id"], "--size", str(a.size),
                "--samples", str(a.samples)] + (["--daily"] if a.daily else []) + (["--plain"] if a.plain else []) + \
+              (["--out", a.out] if a.out else []) + \
               (["--shots", a.shots] if a.shots else [])
         subprocess.run(cmd, check=True)
     if not a.no_sheet:

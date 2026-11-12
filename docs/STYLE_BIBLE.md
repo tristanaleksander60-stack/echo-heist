@@ -146,19 +146,23 @@ One mesh set for every location. Code sets `MeshPart.TextureID` to the location'
 
 ---
 
-## 3. Lighting: "Heist Night" v1 (reference; the values live in `default.project.json`)
+## 3. Lighting: recipe A "Moonlit Diorama" (reference; the values live in `default.project.json`)
+
+Replaced "Heist Night" v1 on 2026-11-12 (PLAN_STEAM_PLUS §4.1 W1, `docs/research/roblox_quality.md` §1.2): night is shown by **hue**, not darkness. A daytime sun recoloured as moonlight gives a real key light at every quality level.
 
 | Node | Values |
 |---|---|
-| Lighting | LightingStyle Realistic, PrioritizeLightingQuality on, GlobalShadows on, ClockTime 0, Brightness 0.5, Ambient (55,55,95), OutdoorAmbient (75,80,130), ColorShift_Top (255,210,160), EnvironmentDiffuseScale 0.25, EnvironmentSpecularScale 0.35, ExposureCompensation 0.2 |
-| Atmosphere (streets only) | Density 0.3, Color (70,60,120), Decay (35,30,75), Haze 0.8 |
-| Bloom | Intensity 0.8, Size 28, **Threshold 1.0**: Warm Marble stays below the threshold, Neon and clone outlines glow |
-| ColorCorrection | Contrast 0.12, Saturation 0.1, Tint (235,230,255) |
+| Lighting | LightingStyle Realistic, PrioritizeLightingQuality on, GlobalShadows on, **ClockTime 15, GeographicLatitude 20**, Brightness 1.4, ColorShift_Top (150,175,255), ColorShift_Bottom (40,30,70), Ambient (95,90,140), OutdoorAmbient (115,110,165) (Ambient ≤ OutdoorAmbient in every channel), EnvironmentDiffuseScale 0.30, EnvironmentSpecularScale 0.40, ExposureCompensation 0.30, ShadowSoftness 0.3 |
+| Sky | CelestialBodiesShown, SunTextureId `rbxasset://sky/moon.jpg` (the key light drawn as a moon), SunAngularSize 9, MoonAngularSize 0, StarCount 0. **Faces: Roblox's default (a day sky) until the plain night faces (`assets/sky/`, `tools/blender/sky_faces.py`) are uploaded and pasted in**; the Heist City cubemap is phase 2 (W4) |
+| Atmosphere | Density 0.28, Offset 0.12, Color (90,80,150), Decay (55,45,105), Glare 0, Haze 1.3 |
+| Bloom | Intensity 0.6, Size 24, **Threshold 1.15**: lit marble stays below it; Neon and over-bright effects glow |
+| ColorCorrection | Brightness 0, Contrast 0.12, Saturation 0.08, Tint (240,240,255) (mild: the night lives in the Lighting values) |
 | Never | SunRays; DepthOfField or Blur in play (menus, planning camera and reel only) |
 
-- Local lights: `Shadows = false` by default. At most **4** shadow-casting hero lights per view. Sleep lights beyond **120 studs**.
-- Light pools are faked with a floor decal or a transparent Warm Marble disc, never with extra real lights. Loot inside a pool still sits on a dark display (§1.3 display rule).
-- The Blender turntable "mood" tile and `tools/blender/kit_preview.py` approximate this recipe in Eevee (indigo world (55,55,95), warm key (255,210,160), cool rim). They are previews; Studio screenshots decide.
+- **Local lights (W2):** every level gets lamps from `Heist/KitPlan.lamps`: one over each plate, one **hero** SpotLight over the goal (the only shadowed light), and room centres (`Heist/LevelDress`, else automatic). Each is a `Lamp_Ceiling` with a warm light (Config.Lighting.LAMP, about 60 % warm area inside) and an **unlit floor pool** (SurfaceGui, LightInfluence 0, concentric Warm Marble discs). Never a plain Decal: decals are lit and darken at night. Budget per view: ≤ 9 lights, ≤ 2 shadowed (unit spec + engine_smoke). The client `LightDirector` drops hero shadows at tier ≥ 3 and pools at tier 4.
+- Light pools are faked (pools, emissive, Neon), never with extra real lights. Loot inside a pool still sits on a dark display (§1.3 display rule).
+- **Floors (W3):** the greybox floor uses the runtime `floor` swatch `#3A365C` (Heist/Palette; audited in `eh_palette.py` RUNTIME), a value step above Ink, which is black under any night light. Ink stays for the table edge, display stands and the outer void. The kit's floor checker cells (`floor_a` / `floor_b`) are unchanged in this pass: lifting them is an atlas re-upload (see PROJECT_STATE).
+- The Blender previews (`tools/blender/level_shots.py`, `kit_preview.py`) approximate this recipe in Eevee. They are previews; Studio screenshots decide.
 
 ---
 

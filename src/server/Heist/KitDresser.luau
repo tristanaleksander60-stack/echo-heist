@@ -23,6 +23,7 @@ local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 
 local KitPlan = require(script.Parent:WaitForChild("KitPlan"))
+local LevelDress = require(script.Parent:WaitForChild("LevelDress"))
 
 local KitDresser = {}
 
@@ -137,6 +138,8 @@ function KitDresser.dress(level: any, built: any, origin: Vector3, kit: any, opt
 		floor = o.floor,
 		floorLift = o.floorLift,
 		avoid = avoid,
+		dress = LevelDress[level.id],
+		lighting = Config.Lighting,
 	})
 	result.items = #plan.items
 	local atlas = o.location
@@ -234,11 +237,22 @@ function KitDresser.dress(level: any, built: any, origin: Vector3, kit: any, opt
 						for k = 2, #parts do
 							local ring = parts[k] :: BasePart
 							ring:SetAttribute("EH_Kind", "rim")
-							ring.Color = Palette.steelLo
+							ring.Color = Palette.bulbWarm -- idle glow (WorldView breathes it, LEVELS P0-1)
 							ring.Parent = first
 						end
 						for _, cable in childrenOfKind(old, { "cable" }) do
 							cable.Parent = first
+						end
+						-- The plate's letter moves onto the kit plate's top face (the greybox pad and
+						-- its icon go; LEVELS P0-1).
+						local top = first.Position.Y + first.Size.Y / 2
+						for _, letter in childrenOfKind(old, { "plateLetter" }) do
+							if letter:IsA("BasePart") then
+								local p = letter.Position
+								letter.CFrame = letter.CFrame
+									+ Vector3.new(0, top + 0.01 - (p.Y - letter.Size.Y / 2), 0)
+							end
+							letter.Parent = first
 						end
 						built.plates[index] = first
 					elseif ref == "door" then
@@ -293,12 +307,15 @@ function KitDresser.dress(level: any, built: any, origin: Vector3, kit: any, opt
 				for _, p in parts do
 					p.Parent = container
 				end
-				if item.role == "till" and index then
+				if (item.role == "till" or item.role == "display") and index then
 					for _, stand in childrenOfKind(model, { "stand" }) do
 						if stand:GetAttribute("EH_Index") == index then
 							stand:Destroy()
 						end
 					end
+				elseif item.role == "lamp" and index and built.lamps and built.lamps[index] then
+					-- the kit lamp has its own Neon bulb; the greybox bulb keeps the light, unseen
+					hideGreybox(built.lamps[index])
 				elseif item.role == "switch" and index and built.switches[index] then
 					hideGreybox(built.switches[index])
 				elseif item.role == "van" then

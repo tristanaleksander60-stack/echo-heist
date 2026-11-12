@@ -3,14 +3,17 @@
 -- tools/blender/level_shots.py (the level readability audit, docs/audit/LEVELS.md). Read-only: it compiles the
 -- level data with Sim/LevelSpec and runs the same pure Heist/KitPlan the server runs (KitDresser), with the
 -- kit specs from Kit/KitData, so the Blender reconstruction places every kit piece where the game does.
--- Also: the greybox cables (LevelBuilder.deviceCenters + the L-shaped cable), Gus's pose at t = 0
--- (Sim/Guards.patrol) and which greybox solids the kit covers (those turn into invisible colliders).
+-- Also: the greybox cables (KitPlan.cables, as LevelBuilder lays them), the lamps (KitPlan.lamps with
+-- Heist/LevelDress and Config.Lighting: lights, pools, Lamp_Ceiling), the plate / device letters, Gus's pose at
+-- t = 0 (Sim/Guards.patrol) and which greybox solids the kit covers (those turn into invisible colliders).
 --   lune run tools/blender/level_plan.luau [xmas|plain] [daily] > level_plan.json
 
 local process = require("@lune/process")
 local serde = require("@lune/serde")
 
 local Catalog = require("../../src/shared/Levels/Catalog")
+local Config = require("../../src/shared/Config")
+local LevelDress = require("../../src/server/Heist/LevelDress")
 local DailyVaults = require("../../src/shared/Levels/DailyVaults")
 local Guards = require("../../src/shared/Sim/Guards")
 local KitData = require("../../src/server/Kit/KitData")
@@ -41,32 +44,36 @@ local function sourcesOf(list: { any }): { number }
 	return out
 end
 
--- LevelBuilder.deviceCenters + cable(): one L-shaped floor cable per (plate, device) pair.
+-- KitPlan.cables (what LevelBuilder lays): one polyline per (plate, device) pair, as legs.
 local function cables(level: any): { any }
 	local out = {}
-	for i, p in level.plates do
-		local px, pz = centre(p.box)
-		local targets = {}
-		for _, d in level.doors do
-			for _, src in d.openBy do
-				if src.kind == "plate" and src.index == i then
-					local dx, dz = centre(d.box)
-					table.insert(targets, { dx, dz })
-				end
-			end
+	for _, cb in KitPlan.cables(level, Config.Lighting) do
+		local legs = {}
+		for k = 1, #cb.points - 1 do
+			local a, b = cb.points[k], cb.points[k + 1]
+			table.insert(legs, { a[1], a[2], b[1], b[2] })
 		end
-		for _, l in level.lasers do
-			for _, src in l.offBy do
-				if src.kind == "plate" and src.index == i then
-					local _, lz = centre(l.box)
-					table.insert(targets, { l.box.maxX + 0.5, lz })
-				end
-			end
-		end
-		for _, t in targets do
-			-- corner = (to.X, from.Z): first along X at the plate's Z, then along Z
-			table.insert(out, { plate = i, legs = { { px, pz, t[1], pz }, { t[1], pz, t[1], t[2] } } })
-		end
+		table.insert(out, { plate = cb.plate, legs = legs })
+	end
+	return out
+end
+
+local function lamps(level: any): { any }
+	local L = Config.Lighting
+	local out = {}
+	for _, l in KitPlan.lamps(level, LevelDress[level.id], L) do
+		local spec = L.LAMP[l.kind]
+		table.insert(out, {
+			x = l.x,
+			z = l.z,
+			kind = l.kind,
+			range = spec.range,
+			brightness = spec.brightness,
+			angle = spec.angle,
+			color = spec.color,
+			shadows = spec.shadows == true,
+			pool = if l.kind == "hero" then L.POOL.heroDiameter else L.POOL.diameter,
+		})
 	end
 	return out
 end
@@ -77,7 +84,12 @@ local function dump(spec: any): any
 	if dressing and level.kind == "party" and location == "CornerShop" then
 		location = "ToyShop" -- LevelBuilder: Clone Party is the Toy Shop in Christmas dressing
 	end
-	local plan = KitPlan.plan(level, specs, { dressing = dressing, location = location })
+	local plan = KitPlan.plan(level, specs, {
+		dressing = dressing,
+		location = location,
+		dress = LevelDress[level.id],
+		lighting = Config.Lighting,
+	})
 
 	local kit = {}
 	for _, item in plan.items do
@@ -109,7 +121,7 @@ local function dump(spec: any): any
 	end
 	local plates = {}
 	for i, p in level.plates do
-		plates[i] = { id = p.id, box = box(p.box) }
+		plates[i] = { id = p.id, box = box(p.box), letter = KitPlan.letter(level, i) }
 	end
 	local doors = {}
 	for i, d in level.doors do
@@ -119,11 +131,17 @@ local function dump(spec: any): any
 			openBy = sourcesOf(d.openBy),
 			need = d.need,
 			alarmLock = d.alarmLock,
+			letters = KitPlan.deviceLetters(level, d.openBy),
 		}
 	end
 	local lasers = {}
 	for i, l in level.lasers do
-		lasers[i] = { id = l.id, box = box(l.box), offBy = sourcesOf(l.offBy) }
+		lasers[i] = {
+			id = l.id,
+			box = box(l.box),
+			offBy = sourcesOf(l.offBy),
+			letters = KitPlan.deviceLetters(level, l.offBy),
+		}
 	end
 	local hides = {}
 	for i, h in level.hides do
@@ -184,6 +202,8 @@ local function dump(spec: any): any
 		switches = switches,
 		guards = guards,
 		cables = cables(level),
+		lamps = lamps(level),
+		lighting = Config.Lighting,
 		kit = kit,
 		warnings = plan.warnings,
 	}

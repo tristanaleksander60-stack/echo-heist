@@ -1,7 +1,9 @@
 -- L1: Heist/KitPlan, where the art kit goes on a level (docs/art/KIT_IMPORT.md). The kit is the
 -- look, never the collision: these specs check the placement maths and, on every launch level
 -- and daily vault, that wall pieces stay inside their sim walls, door leaves are exactly the
--- door boxes, nothing covers a doorway, and the Christmas layer appears only when asked for.
+-- door boxes, nothing covers a doorway, and the Christmas layer appears only when asked for. Light and
+-- levels (LEVELS.md §4 P0): lamps over plates / goal / rooms within the per-view light budget, honest
+-- cables (L2's two never touch), L1's partition windows and the goal displays.
 
 local KitPlan = require("../../src/server/Heist/KitPlan")
 local KitData = require("../../src/server/Kit/KitData")
@@ -9,6 +11,10 @@ local LevelSpec = require("../../src/shared/Sim/LevelSpec")
 local Catalog = require("../../src/shared/Levels/Catalog")
 local DailyVaults = require("../../src/shared/Levels/DailyVaults")
 local Assert = require("./Assert")
+local Config = require("../../src/shared/Config")
+local LevelDress = require("../../src/server/Heist/LevelDress")
+
+local LIGHT = Config.Lighting
 
 local specs: { [string]: any } = (KitData :: any).parts
 local TOL = 1e-4
@@ -99,7 +105,12 @@ return function(test)
 	test("every level: walls stay inside their sim walls and never cover a doorway", function()
 		for _, level in levels() do
 			for _, dressing in { false, true } do
-				local plan = KitPlan.plan(level, specs, { dressing = dressing, location = location(level) })
+				local plan = KitPlan.plan(level, specs, {
+					dressing = dressing,
+					location = location(level),
+					dress = LevelDress[level.id],
+					lighting = LIGHT,
+				})
 				for _, item in plan.items do
 					for _, name in item.pieces do
 						Assert.truthy(specs[name], level.id .. ": unknown piece " .. name)
@@ -309,6 +320,193 @@ return function(test)
 					math.abs(cx - (v.minX + v.maxX) / 2) < 0.01 and math.abs(cz - (v.maxZ + 4.5)) < 0.01,
 					level.id .. ": kit van centred on the van body"
 				)
+			end
+		end
+	end)
+
+	test("lamps: one over each plate, a hero over the goal, rooms; within the per-view budget", function()
+		for _, level in levels() do
+			local lamps = KitPlan.lamps(level, LevelDress[level.id], LIGHT)
+			Assert.truthy(#lamps >= 2, level.id .. ": at least two lamps (" .. #lamps .. ")")
+			for i, p in level.plates do
+				local cx, cz = (p.box.minX + p.box.maxX) / 2, (p.box.minZ + p.box.maxZ) / 2
+				local found = false
+				for _, l in lamps do
+					found = found or (l.kind == "plate" and l.index == i and l.x == cx and l.z == cz)
+				end
+				Assert.truthy(found, level.id .. ": a lamp over plate " .. p.id)
+			end
+			local heroes = 0
+			for _, l in lamps do
+				if l.kind == "hero" then
+					heroes += 1
+					local g = level.loot[KitPlan.goal(level) :: number]
+					Assert.truthy(l.x == g.x and l.z == g.z, level.id .. ": the hero lamp is over the goal")
+				end
+			end
+			Assert.eq(heroes, 1, level.id .. ": one hero lamp")
+			for _, a in lamps do
+				local lit, shadowed = 0, 0
+				for _, b in lamps do
+					local dx, dz = a.x - b.x, a.z - b.z
+					if dx * dx + dz * dz <= LIGHT.VIEW_RADIUS * LIGHT.VIEW_RADIUS then
+						lit += 1
+						if LIGHT.LAMP[b.kind].shadows then
+							shadowed += 1
+						end
+					end
+				end
+				Assert.le(lit, LIGHT.MAX_LIGHTS_PER_VIEW, level.id .. ": lights in one view")
+				Assert.le(shadowed, LIGHT.MAX_SHADOWED_PER_VIEW, level.id .. ": shadowed lights in one view")
+			end
+		end
+	end)
+
+	test("lamps: L1, L2 and Clone Party at the LEVELS.md §4 P0-3 spots", function()
+		local want = {
+			cs1_back_room = { { 10, -8, "plate" }, { 0, -28, "hero" }, { -10, -2, "room" } },
+			cs2_two_doors = { { -10, -8, "plate" }, { 10, -8, "plate" }, { 0, -26, "room" }, { 0, -40, "hero" } },
+			cs5_clone_party = { { -4, -14, "room" }, { 4, -14, "room" }, { -8.5, -1, "hero" }, { 0, -34, "room" } },
+		}
+		for _, spec in Catalog do
+			local list = want[spec.id]
+			if list then
+				local level = LevelSpec.compile(spec)
+				local lamps = KitPlan.lamps(level, LevelDress[level.id], LIGHT)
+				for _, w in list do
+					local found = false
+					for _, l in lamps do
+						found = found
+							or (math.abs(l.x - w[1]) < 1e-6 and math.abs(l.z - w[2]) < 1e-6 and l.kind == w[3])
+					end
+					Assert.truthy(found, string.format("%s: %s lamp at (%g, %g)", spec.id, w[3], w[1], w[2]))
+				end
+			end
+		end
+	end)
+
+	test("cables: L1 and L2 run to the near jamb, L2's two never touch, none crosses a wall", function()
+		local function segs(cb: any): { any }
+			local out = {}
+			for k = 1, #cb.points - 1 do
+				table.insert(out, { cb.points[k], cb.points[k + 1] })
+			end
+			return out
+		end
+		-- distance between two axis-aligned segments (cables only run along X or Z)
+		local function gap(s1: any, s2: any): number
+			local ax0, ax1 = math.min(s1[1][1], s1[2][1]), math.max(s1[1][1], s1[2][1])
+			local az0, az1 = math.min(s1[1][2], s1[2][2]), math.max(s1[1][2], s1[2][2])
+			local bx0, bx1 = math.min(s2[1][1], s2[2][1]), math.max(s2[1][1], s2[2][1])
+			local bz0, bz1 = math.min(s2[1][2], s2[2][2]), math.max(s2[1][2], s2[2][2])
+			local dx = math.max(0, bx0 - ax1, ax0 - bx1)
+			local dz = math.max(0, bz0 - az1, az0 - bz1)
+			return math.sqrt(dx * dx + dz * dz)
+		end
+		for _, spec in Catalog do
+			local level = LevelSpec.compile(spec)
+			local cables = KitPlan.cables(level, LIGHT)
+			if spec.id == "cs1_back_room" then
+				local last = cables[1].points[#cables[1].points]
+				Assert.truthy(last[1] == 2.5 and last[2] == -19, "L1: A ends at the east jamb (2.5, -19)")
+			elseif spec.id == "cs2_two_doors" then
+				Assert.eq(#cables, 2, "L2: two cables")
+				local a, b = cables[1], cables[2]
+				local ea, eb = a.points[#a.points], b.points[#b.points]
+				Assert.truthy(ea[1] == -2.5 and ea[2] == -19, "L2: A ends at the BackRoom's west jamb")
+				Assert.truthy(eb[1] == 2.5 and eb[2] == -31, "L2: B ends at the Stockroom's east jamb")
+				for _, s1 in segs(a) do
+					for _, s2 in segs(b) do
+						Assert.truthy(gap(s1, s2) >= 2 * LIGHT.CABLE_WIDTH, "L2: the two cables never touch")
+					end
+				end
+			end
+			-- no cable point sits inside a tall solid (it would vanish into a wall); L1-L5
+			if spec.id ~= "bk1_big_score" then
+				for _, cb in cables do
+					for _, sg in segs(cb) do
+						for t = 0, 20 do
+							local x = sg[1][1] + (sg[2][1] - sg[1][1]) * t / 20
+							local z = sg[1][2] + (sg[2][2] - sg[1][2]) * t / 20
+							for _, s in level.spec.solids or {} do
+								local bx = s.box
+								local tall = bx.maxY - bx.minY > 5
+								Assert.falsy(
+									tall and x > bx.minX and x < bx.maxX and z > bx.minZ and z < bx.maxZ,
+									string.format(
+										"%s: cable of plate %d inside a wall at (%.1f, %.1f)",
+										spec.id,
+										cb.plate,
+										x,
+										z
+									)
+								)
+							end
+						end
+					end
+				end
+			end
+		end
+	end)
+
+	test("letters: plates and the devices they drive share one", function()
+		for _, spec in Catalog do
+			local level = LevelSpec.compile(spec)
+			for i, p in level.plates do
+				Assert.eq(KitPlan.letter(level, i), p.id, spec.id .. ": plate letter")
+			end
+			for _, d in level.doors do
+				for _, src in d.openBy do
+					if src.kind == "plate" then
+						local letters = KitPlan.deviceLetters(level, d.openBy)
+						Assert.truthy(
+							string.find(letters, KitPlan.letter(level, src.index), 1, true) ~= nil,
+							spec.id .. ": door " .. d.id .. " carries its plate's letter"
+						)
+					end
+				end
+			end
+		end
+	end)
+
+	test("L1 windows beside the back-room door; L2 safe and L5 till displays; lamps dressed", function()
+		for _, spec in Catalog do
+			local level = LevelSpec.compile(spec)
+			local plan = KitPlan.plan(level, specs, {
+				location = location(level),
+				dress = LevelDress[level.id],
+				lighting = LIGHT,
+			})
+			local windows, displays, lamps = {}, {}, 0
+			for _, item in plan.items do
+				if item.pieces[1] == "Wall_Window_8x12" then
+					table.insert(windows, KitPlan.itemBox(item, specs))
+				elseif item.role == "display" then
+					table.insert(displays, item)
+				elseif item.role == "lamp" then
+					lamps += 1
+				end
+			end
+			Assert.eq(lamps, #KitPlan.lamps(level, LevelDress[level.id], LIGHT), spec.id .. ": a Lamp_Ceiling per lamp")
+			if spec.id == "cs1_back_room" then
+				Assert.eq(#windows, 2, "L1: two partition windows")
+				for _, b in windows do
+					Assert.near((b.minZ + b.maxZ) / 2, -20, 1e-3, "L1: on the z -20 partition")
+					local inner = math.min(math.abs(b.minX), math.abs(b.maxX))
+					Assert.near(inner, 4, 1e-3, "L1: the window starts at the door frame")
+				end
+			elseif spec.id == "cs2_two_doors" then
+				Assert.eq(#displays, 1, "L2: one display")
+				Assert.eq(displays[1].pieces[1], "Safe", "L2: the safe is a Safe")
+				for _, item in plan.items do
+					if item.role == "loot" and level.loot[item.index].id == "Safe" then
+						local b = KitPlan.itemBox(item, specs)
+						local d = KitPlan.itemBox(displays[1], specs)
+						Assert.near(b.minY, d.maxY, 0.05, "L2: the cash sits on the safe")
+					end
+				end
+			else
+				Assert.eq(#windows, 0, spec.id .. ": no windows")
 			end
 		end
 	end)

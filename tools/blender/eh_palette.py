@@ -118,6 +118,12 @@ NEON = {
 }
 GLASS_TINT = "#A9B2CC"
 
+# Runtime ground colours that are not atlas cells (Heist/Palette.luau; no mesh UV points at them, so adding one
+# never changes an atlas or an uploaded asset). Audited as ground like the floor cells (rule set "RUNTIME").
+# floor: the greybox / runtime floor (W3, roblox_quality §0): a value step above Ink, which is black under any
+# night light. Kit floors are the location cells floor_a / floor_b (never Ink).
+RUNTIME = {"floor": "#3A365C"}
+
 # Advent ornaments (Christmas layer trophies, Config.Data.Trophies Orn_Advent<year>_<day>): which mesh and which
 # MeshPart.Color each advent day gets. Ornament_Bauble / _Bell / _Star are drawn on the tint cell (one colour family,
 # the Color multiplies it); _VaultDoor / _Donut / _Van are fixed-colour (Color white). 22 days, 22 distinct looks.
@@ -259,7 +265,10 @@ def _audit_cols(cols, tag):
     """The colour rules for one atlas (cols: key -> hex). Returns (ok, lines)."""
     lines, ok = [], True
     env = [(k, cols[k]) for k, _h, _n, r in SWATCHES if r == "env"]
-    ground = ["ink", "plum_deep", "plum", "floor_a", "floor_b"]   # floors and walls
+    cols = dict(cols)
+    for k, h in RUNTIME.items():
+        cols.setdefault(k, h)
+    ground = ["ink", "plum_deep", "plum", "floor_a", "floor_b"] + list(RUNTIME)   # floors and walls
     metal = ["steel_lo", "steel"]                  # frames and doors: warning only (laser cores carry value)
     for ck, chex, cname, _g in CLONES:
         L, C, H = oklch(chex)
@@ -375,6 +384,9 @@ def audit(verbose=True):
         for k, h, _n, r in SWATCHES:
             L, C, H = oklch(h)
             lines.append(f"{k:<12} {h}  {L:.3f} {C:.3f} {H:6.1f}  {luma(h):.2f}  [{r}]" + ("  (location cell)" if k in LOCATION_CELLS else ""))
+        for k, h in RUNTIME.items():
+            L, C, H = oklch(h)
+            lines.append(f"{k:<12} {h}  {L:.3f} {C:.3f} {H:6.1f}  {luma(h):.2f}  [runtime ground]")
         for ck, h, n, g in CLONES:
             L, C, H = oklch(h)
             lines.append(f"{ck:<12} {h}  {L:.3f} {C:.3f} {H:6.1f}  {luma(h):.2f}  [clone {g}]")

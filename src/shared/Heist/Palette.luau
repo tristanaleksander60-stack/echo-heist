@@ -14,6 +14,9 @@ Palette.inkHi = hex("#2A2D52")
 Palette.plumDeep = hex("#2E2A50")
 Palette.plum = hex("#3A3560")
 Palette.plumHi = hex("#4D4778")
+-- Floor (W3, roblox_quality §0): floors are lit at night, so they sit a value step above Ink (Ink stays
+-- for the table edge, stands and the outer void). Audited in tools/blender/eh_palette.py (RUNTIME).
+Palette.floor = hex("#3A365C")
 Palette.marbleLo = hex("#A8987A")
 Palette.marble = hex("#D8C8A8")
 Palette.marbleHi = hex("#EDE2C8")
@@ -27,6 +30,7 @@ Palette.white = hex("#FFFFFF")
 Palette.alarm = hex("#FF3838") -- Alarm Red (owner-confirmed 2026-11-12; the plan's #FF3348 was too close to Magenta)
 Palette.amber = hex("#FFD27A")
 Palette.exit = hex("#F4F7FF")
+Palette.bulbWarm = hex("#F6C0A2") -- Bulb Warm: lamps, idle plate rims, fairy lights (rule N1 vs every clone hue)
 Palette.tapeGrey = hex("#8A8FA8")
 Palette.ok = hex("#2FBF71") -- Holly Green, used only as a UI "done" state with a word
 -- Christmas layer (STYLE_BIBLE: Santa hats and berries are Ribbon Burgundy, never Alarm Red)

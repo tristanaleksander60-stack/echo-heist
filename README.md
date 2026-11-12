@@ -49,7 +49,7 @@ next heist. Code: `src/server/Heist/`, `src/client/Heist/`, `src/shared/Heist/`.
 
 ## Clone phone bench (spike S1)
 
-A separate small place that measures how many avatar clones a real phone can draw, and which clone look (MASTERPLAN §6.5) to ship. It uses the same "Heist Night" Lighting as the game. Code: `src/bench/` (tuning in `src/bench/shared/BenchConfig.luau`), project: `bench.project.json`.
+A separate small place that measures how many avatar clones a real phone can draw, and which clone look (MASTERPLAN §6.5) to ship. It uses the same lighting recipe A ("Moonlit Diorama") as the game. Code: `src/bench/` (tuning in `src/bench/shared/BenchConfig.luau`), project: `bench.project.json`.
 
 ### Build and run
 ```bash
@@ -75,7 +75,7 @@ Pass bar (MASTERPLAN §8.11 S1): at **N=12**, ≥ 30 fps (≤ 33 ms) on a low An
 
 ## Spike S3: video capture
 
-A small separate place that checks whether `CaptureService` can record, save and share a ~12 s clip on the owner's phone and PC (MASTERPLAN §8.11 S3, used by SAVE CLIP in §9.3). Code: `src/spikes/capture/` (tuning in `src/spikes/capture/shared/CaptureConfig.luau`), project: `spikes/capture.project.json`. Same "Heist Night" Lighting as the game.
+A small separate place that checks whether `CaptureService` can record, save and share a ~12 s clip on the owner's phone and PC (MASTERPLAN §8.11 S3, used by SAVE CLIP in §9.3). Code: `src/spikes/capture/` (tuning in `src/spikes/capture/shared/CaptureConfig.luau`), project: `spikes/capture.project.json`. Same lighting recipe A as the game.
 
 ### Build and run
 ```bash
@@ -168,7 +168,7 @@ Banked loot survives loops. Each player can have up to 4 echoes; when you rewind
 ## Code layout
 | File | Role |
 |---|---|
-| `default.project.json` | Rojo tree, plus the "Heist Night" Lighting recipe (Lighting is set only here) |
+| `default.project.json` | Rojo tree, plus lighting recipe A "Moonlit Diorama" (Lighting, Sky and post effects are set only here; `tests/place_check.luau` asserts them). The Sky keeps Roblox's faces until the plain night faces (`python3 tools/blender/sky_faces.py` → `assets/sky/`) are uploaded and their image ids pasted as `SkyboxBk/Dn/Ft/Lf/Rt/Up` in every project file; the Heist City cubemap replaces them in phase 2 (W4) |
 | `src/shared/Config.luau` | All tuning numbers |
 | `src/server/init.server.luau` | Loop coordinator: start/end loop, rewind votes, catching, banking |
 | `src/server/Echoes.luau` | Recording (15 Hz) and replaying echoes |
