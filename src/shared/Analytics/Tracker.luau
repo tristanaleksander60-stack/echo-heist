@@ -1122,4 +1122,10 @@ function Tracker.perfStepDown(t: Tracker, pid: number, tier: string)
 	custom(t, pid, "PerfStepDown", { if p and p.device then p.device else "other", tier })
 end
 
+-- The client's CloneHealth check swapped a broken avatar rig for the mannequin.
+function Tracker.cloneBroken(t: Tracker, pid: number, fault: string)
+	local p = t.players[pid]
+	custom(t, pid, "CloneBroken", { if p and p.device then p.device else "other", fault })
+end
+
 return table.freeze(Tracker)

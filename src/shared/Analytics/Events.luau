@@ -149,6 +149,7 @@ local RAW_DOMAINS: { [string]: { values: { string }, other: string, edges: { num
 	invite = { values = list("invite", "referral", "party", "follow", "share", "other"), other = "other" },
 	hint = { values = list("plate", "beam", "mentor", "ghost", "other"), other = "other" },
 	perfTier = { values = list("quality", "balanced", "performance", "minimum", "other"), other = "other" },
+	rigFault = { values = list("head", "limbs", "joints", "other"), other = "other" },
 	entry = { values = list("van", "results", "garage", "other"), other = "other" },
 	category = {
 		values = list("style", "paint", "trail", "hat", "bundle", "trophy", "bag", "other"),
@@ -262,6 +263,7 @@ Events.CUSTOM = table.freeze({
 	InviteSent = { fields = { "invite" }, value = COUNT, batch = true, ref = "§9.3 (prompt opened)" },
 	PerfDetail = { fields = { "device", "quality", "mem" }, value = num(0, 1000, "median ms"), ref = "§8.6" },
 	PerfStepDown = { fields = { "device", "perfTier" }, value = COUNT, ref = "§6.3, §8.6" },
+	CloneBroken = { fields = { "device", "rigFault" }, value = COUNT, ref = "PLAN_STEAM_PLUS §1 S1 CloneHealth" },
 	DailyVaultPlayed = { fields = { "vault", "dailyResult", "cohort" }, value = COUNT, ref = "§5.3" },
 	RelaxedChosen = { fields = { "level", "cohort" }, value = COUNT, ref = "§3.1 Relaxed" },
 	RsvpPrompted = { fields = { "yesno" }, value = COUNT, ref = "§9.5 step 6" },

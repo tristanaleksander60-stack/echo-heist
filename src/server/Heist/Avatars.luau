@@ -13,6 +13,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
+local RigJoints = require(Shared:WaitForChild("Heist"):WaitForChild("RigJoints"))
 
 local Avatars = {}
 
@@ -41,41 +42,63 @@ local function getFolder(): Folder
 	return nf
 end
 
--- Strips a rig in place (also used by the engine smoke test on a default rig).
+-- Strips a rig in place (also used by the engine tests on real rigs).
+-- Safe strip only (PLAN_STEAM_PLUS §1 S1): the joints, every attachment a joint uses, the rig
+-- attachments and the scale values all stay, and the Humanoid never rescales or rebuilds the
+-- rig in a client's workspace (AutomaticScalingEnabled off). Stripping the rig attachments is
+-- what made every v23 clone fall apart: the joints lost their ends, only the invisible
+-- anchored root moved. Removed: scripts, layered clothing (and the cages it needs), ragdoll
+-- sockets and no-collision pairs (physics work a posed, non-colliding clone never needs), the
+-- HumanoidDescription, attachments nothing hangs from, and the looks Config turns off.
 function Avatars.strip(rig: Model)
+	local H = Config.Heist
+	local hum = rig:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum.AutomaticScalingEnabled = false
+		hum.RequiresNeck = false
+		hum.BreakJointsOnDeath = false
+		hum.EvaluateStateMachine = false
+		hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+		hum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
+		if not hum:FindFirstChildOfClass("Animator") then
+			local animator = Instance.new("Animator")
+			animator.Parent = hum
+		end
+	end
 	local kept = 0
 	for _, child in rig:GetChildren() do
 		if child:IsA("Accessory") then
 			local handle = child:FindFirstChild("Handle")
 			local layered = handle ~= nil and handle:FindFirstChildOfClass("WrapLayer") ~= nil
-			if layered or not KEEP_ACCESSORY[child.AccessoryType] or kept >= Config.Heist.MAX_CLONE_ACCESSORIES then
+			if layered or not KEEP_ACCESSORY[child.AccessoryType] or kept >= H.MAX_CLONE_ACCESSORIES then
 				child:Destroy()
 			else
 				kept += 1
 			end
-		elseif
-			child:IsA("Shirt")
-			or child:IsA("Pants")
-			or child:IsA("ShirtGraphic")
-			or child:IsA("BodyColors")
-			or child:IsA("Script")
-			or child:IsA("LocalScript")
-		then
-			child:Destroy()
+		elseif child:IsA("Shirt") or child:IsA("Pants") or child:IsA("ShirtGraphic") then
+			if not H.CLONE_KEEP_CLOTHING then
+				child:Destroy()
+			end
+		elseif child:IsA("BodyColors") or child:IsA("BaseScript") then
+			child:Destroy() -- the client tints the body in the crew hue
 		end
 	end
 	for _, d in rig:GetDescendants() do
 		if
-			d:IsA("SurfaceAppearance")
-			or d:IsA("Decal")
-			or d:IsA("Texture")
+			d:IsA("BaseScript")
 			or d:IsA("WrapLayer")
-			or d:IsA("Script")
-			or d:IsA("LocalScript")
+			or d:IsA("WrapTarget")
+			or d:IsA("NoCollisionConstraint")
+			or d:IsA("BallSocketConstraint")
+			or d:IsA("HumanoidDescription")
+			or (d:IsA("SurfaceAppearance") and not H.CLONE_KEEP_SURFACE_APPEARANCE)
+			or ((d:IsA("Decal") or d:IsA("Texture")) and not H.CLONE_KEEP_TEXTURES)
 		then
 			d:Destroy()
 		elseif d:IsA("SpecialMesh") then
-			d.TextureId = ""
+			if not H.CLONE_KEEP_TEXTURES then
+				d.TextureId = ""
+			end
 		elseif d:IsA("BasePart") then
 			d.CanCollide = false
 			d.CanTouch = false
@@ -83,41 +106,39 @@ function Avatars.strip(rig: Model)
 			d.Massless = true
 			d.CastShadow = false
 			d.Material = Enum.Material.SmoothPlastic
-			if d:IsA("MeshPart") then
+			if d:IsA("MeshPart") and not H.CLONE_KEEP_TEXTURES then
 				d.TextureID = ""
 			end
 		end
 	end
-	-- Instances that never render on a posed clone (every rig copies them: 12 active, the
-	-- pool, up to 16 Line-up figures): body-scale and OriginalSize values, the
-	-- HumanoidDescription, and rig attachments no kept accessory hangs from. Motor6Ds stay.
-	local used: { [string]: boolean } = {}
-	for _, child in rig:GetChildren() do
-		if child:IsA("Accessory") then
-			for _, a in child:GetDescendants() do
-				if a:IsA("Attachment") then
-					used[a.Name] = true
-				end
+	-- Attachments: keep every one a remaining joint or constraint uses, every rig attachment
+	-- (by name) and the ones a kept accessory hangs from; drop the rest (with their
+	-- OriginalPosition values). Scale values (BodyHeightScale..., OriginalSize) stay.
+	local keep: { [Instance]: boolean } = {}
+	local usedName: { [string]: boolean } = {}
+	for _, d in rig:GetDescendants() do
+		if d:IsA("Constraint") then
+			local a0, a1 = d.Attachment0, d.Attachment1
+			if a0 then
+				keep[a0] = true
 			end
+			if a1 then
+				keep[a1] = true
+			end
+		elseif d:IsA("Attachment") and d:FindFirstAncestorOfClass("Accessory") ~= nil then
+			usedName[d.Name] = true
 		end
 	end
 	for _, d in rig:GetDescendants() do
-		local unusedAttachment = d:IsA("Attachment")
-			and not used[d.Name]
+		if
+			d:IsA("Attachment")
+			and not keep[d]
+			and not usedName[d.Name]
+			and not string.find(d.Name, "RigAttachment", 1, true)
+			and d.Name ~= "RootAttachment"
 			and d:FindFirstAncestorOfClass("Accessory") == nil
-		if d:IsA("ValueBase") or d:IsA("HumanoidDescription") or unusedAttachment then
+		then
 			d:Destroy()
-		end
-	end
-	local hum = rig:FindFirstChildOfClass("Humanoid")
-	if hum then
-		hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-		hum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
-		hum.EvaluateStateMachine = false
-		hum.BreakJointsOnDeath = false
-		if not hum:FindFirstChildOfClass("Animator") then
-			local animator = Instance.new("Animator")
-			animator.Parent = hum
 		end
 	end
 	local root = rig:FindFirstChild("HumanoidRootPart")
@@ -151,6 +172,13 @@ function Avatars.prepare(player: Player)
 		return
 	end
 	Avatars.strip(rig)
+	local joints = RigJoints.whole(rig)
+	if joints < Config.Heist.CLONE_MIN_JOINTS then
+		-- a rig that cannot hold together never ships: the client keeps the mannequin
+		warn("[Avatars] clone template for " .. tostring(userId) .. " has " .. joints .. " joints: mannequin")
+		rig:Destroy()
+		return
+	end
 	rig.Name = tostring(userId)
 	rig.Parent = getFolder()
 end

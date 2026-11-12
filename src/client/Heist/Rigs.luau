@@ -2,7 +2,9 @@
 -- Heist/Rigs: client rigs for clones and Gus (MASTERPLAN §6.5).
 --   * Avatar rig: a clone of the owner's stripped template (server-built, §6.5 #1),
 --     tinted in the owner hue, anchored root moved with BulkMoveTo, walk clip on its
---     Animator. Look B (opaque glow): the owner group's Highlight draws the outline.
+--     Animator; its joints (AnimationConstraints or Motor6Ds) carry the limbs. The owner
+--     group's Highlight draws a crew-hue fill and outline. A template without its joints
+--     never builds (mannequin instead); Rigs.health finds a rig that broke at runtime.
 --   * Mannequin: a few rigid parts posed by hand; the placeholder until the owner's
 --     template arrives (and the fallback when it cannot be built).
 --   * Gus: a rigid-part rig with R15 proportions (no skinning), posed like the
@@ -18,6 +20,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
+local RigJoints = require(Shared:WaitForChild("Heist"):WaitForChild("RigJoints"))
 
 local Rigs = {}
 
@@ -36,6 +39,8 @@ export type Rig = {
 	parts: { BasePart }?, -- every BasePart, cached on first use (setFade)
 	speedBucket: number?, -- last walk-speed bucket sent to AdjustSpeed
 	fadeShown: number?, -- last alpha setFade wrote
+	joints: number?, -- avatar: whole joints when built (CloneHealth compares against it)
+	scale: number?, -- avatar: rig size relative to a default R15 (CloneHealth limb distance)
 }
 
 local walkAnim = Instance.new("Animation")
@@ -57,7 +62,8 @@ end
 function Rigs.buildAvatar(template: Model): Rig?
 	local model = template:Clone()
 	local root = model:FindFirstChild("HumanoidRootPart")
-	if not root or not root:IsA("BasePart") then
+	local joints = RigJoints.whole(model)
+	if not root or not root:IsA("BasePart") or joints < Config.Heist.CLONE_MIN_JOINTS then
 		model:Destroy()
 		return nil
 	end
@@ -83,7 +89,38 @@ function Rigs.buildAvatar(template: Model): Rig?
 		limbs = {},
 		tinted = tinted,
 		head = if head and head:IsA("BasePart") then head else nil,
+		joints = joints,
+		scale = math.max(1, rootHeight / 3),
 	}
+end
+
+-- CloneHealth (PLAN_STEAM_PLUS §1 S1): nil while an avatar rig is whole, else what broke:
+-- "head" (gone), "limbs" (a part left the rig or drifted from its root), "joints" (a joint
+-- lost an end). Rigid rigs (mannequin, Gus) are always whole.
+function Rigs.health(rig: Rig): string?
+	local root = rig.root
+	if rig.kind ~= "avatar" or not root then
+		return nil
+	end
+	local model = rig.model
+	local head = rig.head
+	if not head or not head:IsDescendantOf(model) then
+		return "head"
+	end
+	if not root:IsDescendantOf(model) then
+		return "limbs"
+	end
+	local maxD = Config.Heist.CLONE_HEALTH_MAX_LIMB * (rig.scale or 1)
+	local rp = root.Position
+	for _, p in Rigs.partsOf(rig) do
+		if p ~= root and (not p:IsDescendantOf(model) or (p.Position - rp).Magnitude > maxD) then
+			return "limbs"
+		end
+	end
+	if RigJoints.whole(model) < (rig.joints or 0) then
+		return "joints"
+	end
+	return nil
 end
 
 -- name, size, pivot (feet space), offset from pivot, swing sign, trim (neon), colour role

@@ -8,7 +8,8 @@
 --                               the perfSampling kill switch is on
 --   * Analytics.Ui(kind, arg)   UI facts only the client sees: stuck hints, PerfStepDown
 -- The PerfSample governor steps the runtime performance tier down (quality -> balanced ->
--- performance -> minimum) when frames stay slow; `onTier` listeners apply it. Works in
+-- performance -> minimum) when frames stay slow, and back up one step after a sustained good
+-- stretch (PerfSample.stepUp, with hysteresis); `onTier` listeners apply it. Works in
 -- both GAME_MODEs. Never in the way: if the remotes do not arrive, every call is a no-op.
 
 local GuiService = game:GetService("GuiService")
@@ -153,6 +154,8 @@ local function startPerf()
 		if PerfSample.govern(gov, dt) and tier < #H.PERF_TIERS then
 			setTier(tier + 1)
 			Telemetry.ui("PerfStepDown", Telemetry.tierName())
+		elseif tier > 1 and PerfSample.stepUp(gov) then
+			setTier(tier - 1) -- a sustained good stretch: back up one step (hysteresis in PerfSample)
 		end
 		since += dt
 		local interval = flag("perfIntervalSeconds")

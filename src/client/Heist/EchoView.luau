@@ -6,7 +6,11 @@
 --   * Pools per owner, never destroyed on rewind; an owner's pool switches from
 --     mannequins to their avatar template once it arrives in ReplicatedStorage.
 --   * Identity: owner hue + glyph + number badge (§0 C5), hidden beyond 40 studs;
---     one Highlight per owner group (look B: opaque glow, outline only).
+--     one Highlight per owner group: crew-hue fill + outline. Your own clones keep it at
+--     every performance tier (never invisible by design, PLAN_STEAM_PLUS §1 S1).
+--   * CloneHealth: about once a second every drawn avatar rig is checked (head alive,
+--     limbs near the root, joints whole); a broken one is swapped for the mannequin in
+--     place and reported once per owner (Telemetry.ui "CloneBroken").
 --   * Age ramp: each older run 12% dimmer; solo: older runs drift toward violet.
 --     Other players' clones at 70% brightness; orphan tapes in Tape Grey.
 --   * "Tape print": clones form 60 ms apart in record order with a floor ring.
@@ -25,15 +29,10 @@ local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 
 local Rigs = require(script.Parent:WaitForChild("Rigs"))
+local Telemetry = require(script.Parent:WaitForChild("Telemetry"))
 local Ui = require(script.Parent:WaitForChild("Ui"))
 
 local H = Config.Heist
--- The viewer (nil when the engine smoke test runs these views on the server).
-local function myId(): number
-	local lp = Players.LocalPlayer
-	return if lp then lp.UserId else 0
-end
-
 local EchoView = {}
 
 type Pool = { kind: string, free: { any }, group: Model, highlight: Highlight }
@@ -100,6 +99,16 @@ local function burst(parent: BasePart, color: Color3): ParticleEmitter
 end
 
 function EchoView.new(state: any): any
+	-- The viewer: the local player (the engine tests run these views on the server and name
+	-- the viewer in state.viewerId).
+	local function myId(): number
+		if type(state.viewerId) == "number" then
+			return state.viewerId
+		end
+		local lp = Players.LocalPlayer
+		return if lp then lp.UserId else 0
+	end
+
 	local folder = Instance.new("Folder")
 	folder.Name = "HeistClones"
 	folder.Parent = workspace
@@ -115,6 +124,10 @@ function EchoView.new(state: any): any
 	local trailsOn = true
 	local tierNow = 1
 	local newestOwnId = 0
+	-- Owners whose avatar rig broke at runtime: their clones draw as mannequins from then on.
+	local brokenOwners: { [number]: string } = {}
+	local healthAt = 0
+	local lastHealthy = 0
 
 	local function templateOf(ownerId: number): Model?
 		local f = ReplicatedStorage:FindFirstChild(Protocol.AVATARS)
@@ -125,10 +138,16 @@ function EchoView.new(state: any): any
 		return nil
 	end
 
+	-- §6.8: tier 4 drops the Highlights, except on your own clones (never invisible by design).
+	local function highlightOn(ownerId: number): boolean
+		return tierNow < 4 or ownerId == myId()
+	end
+
 	local function poolFor(ownerId: number, hue: Color3): Pool
-		local want = if templateOf(ownerId) then "avatar" else "mannequin"
+		local want = if templateOf(ownerId) and not brokenOwners[ownerId] then "avatar" else "mannequin"
 		local pool = pools[ownerId]
 		if pool and pool.kind ~= want then
+			pool.group.Name = "Retired_" .. tostring(ownerId)
 			table.insert(retiring, pool)
 			pools[ownerId] = nil
 			pool = nil
@@ -137,10 +156,10 @@ function EchoView.new(state: any): any
 			local group = Instance.new("Model")
 			group.Name = "Owner_" .. tostring(ownerId)
 			local hl = Instance.new("Highlight")
-			hl.FillTransparency = 1
+			hl.FillTransparency = H.CLONE_FILL_TRANSPARENCY
 			hl.OutlineTransparency = 0
 			hl.DepthMode = Enum.HighlightDepthMode.Occluded
-			hl.Enabled = tierNow < 4 -- the current performance tier (§6.8: 4 drops Highlights)
+			hl.Enabled = highlightOn(ownerId)
 			hl.Adornee = group
 			hl.Parent = group
 			group.Parent = folder
@@ -149,6 +168,7 @@ function EchoView.new(state: any): any
 		end
 		local p = pool :: Pool
 		p.highlight.OutlineColor = hue
+		p.highlight.FillColor = hue
 		return p
 	end
 
@@ -501,6 +521,81 @@ function EchoView.new(state: any): any
 		if #parts > 0 then
 			workspace:BulkMoveTo(parts, cframes, Enum.BulkMoveMode.FireCFrameChanged)
 		end
+		if now - healthAt >= H.CLONE_HEALTH_INTERVAL then
+			healthAt = now
+			view.checkHealth()
+		end
+	end
+
+	-- Swaps one drawn clone's rig for a fresh entry from the owner's (now mannequin) pool,
+	-- keeping its actor, recording, timing and look; the old rig hides until its pool retires.
+	local function swapEntry(old: any, ownerId: number)
+		local a = old.actor
+		local pool = poolFor(ownerId, Palette.hueFor(a.seat))
+		local entry = table.remove(pool.free) or newEntry(pool, ownerId)
+		Rigs.setFade(old.rig, 1)
+		Rigs.setSpeed(old.rig, 0)
+		old.badge.Enabled = false
+		old.trail.Enabled = false
+		old.bubble.Enabled = false
+		if old.label then
+			old.label:Destroy()
+			old.label = nil
+		end
+		Rigs.tint(entry.rig, old.hue)
+		entry.actor = a
+		entry.rec = old.rec
+		entry.hue = old.hue
+		entry.badgeText.Text = old.badgeText.Text
+		entry.badgeText.TextColor3 = old.badgeText.TextColor3
+		entry.trail.Color = ColorSequence.new(old.hue)
+		entry.emitter.Color = ColorSequence.new(old.hue)
+		entry.visibleAt = old.visibleAt
+		entry.printed = true
+		entry.fade = -1 -- the next update writes the fade
+		entry.goneShown = old.goneShown
+		entry.phase = old.phase
+		entry.near = old.near
+		entry.lastPos = old.lastPos
+		entry.lastFeet = old.lastFeet
+		active[a.id] = entry
+		local i = table.find(order, old)
+		if i then
+			order[i] = entry
+		end
+	end
+
+	-- CloneHealth: every drawn avatar rig whole? A broken owner's clones become mannequins
+	-- (reported once per owner and session). Returns "healthy/drawn" (tests, DebugChip).
+	function view.checkHealth(): string
+		local drawn, healthy = 0, 0
+		local broken: { [number]: string } = {}
+		for _, entry in order do
+			if entry.fade >= 1 then
+				continue
+			end
+			drawn += 1
+			local fault = Rigs.health(entry.rig)
+			if fault then
+				broken[entry.actor.owner] = fault
+			else
+				healthy += 1
+			end
+		end
+		for ownerId, fault in broken do
+			if not brokenOwners[ownerId] then
+				brokenOwners[ownerId] = fault
+				Telemetry.ui("CloneBroken", fault)
+				warn("[EchoView] clone rig of " .. tostring(ownerId) .. " broke (" .. fault .. "): mannequin")
+			end
+			for _, entry in table.clone(order) do
+				if entry.actor.owner == ownerId and entry.rig.kind == "avatar" then
+					swapEntry(entry, ownerId)
+				end
+			end
+		end
+		lastHealthy = healthy
+		return string.format("%d/%d", healthy, drawn)
 	end
 
 	function view.clear()
@@ -566,13 +661,27 @@ function EchoView.new(state: any): any
 		table.clear(order)
 	end
 
-	-- Runtime performance tier (§6.3): 2+ drops trails, 4 drops the owner Highlights.
+	-- Runtime performance tier (§6.3): 2+ drops trails, 4 drops the owner Highlights of other
+	-- players' clones (yours keep theirs).
 	function view.setTier(tier: number)
 		tierNow = tier
 		trailsOn = tier < 2
-		for _, pool in pools do
-			pool.highlight.Enabled = tier < 4
+		for ownerId, pool in pools do
+			pool.highlight.Enabled = highlightOn(ownerId)
 		end
+	end
+
+	-- The rig drawing an actor (tests, diagnostics).
+	function view.rigOf(actorId: number): any
+		local entry = active[actorId]
+		return entry and entry.rig
+	end
+
+	-- Studio diagnostic chip: clones drawn, healthy at the last check, and what your own
+	-- clones draw as ("avatar" | "mannequin" | "-" before your first clone).
+	function view.stats(): (number, number, string)
+		local own = pools[myId()]
+		return view.visibleCount(), lastHealthy, if own then own.kind else "-"
 	end
 
 	-- Between runs: makes sure each crew member's pool has a rig for every clone the next

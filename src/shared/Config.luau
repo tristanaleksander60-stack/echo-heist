@@ -273,6 +273,15 @@ Config.Heist = {
 	CLONE_NEAR_UNFADE = 7.5, -- near-camera fade hysteresis: fade under CLONE_NEAR_FADE, back over this
 	CLONE_NEAR_FADE = 6, -- clones this close to the camera fade
 	MAX_CLONE_ACCESSORIES = 2,
+	-- Clone visibility (PLAN_STEAM_PLUS §1 S1, §4.4 A1): never invisible by design.
+	CLONE_FILL_TRANSPARENCY = 0.55, -- owner Highlight fill in the crew hue (your own clones keep it at every tier)
+	CLONE_MIN_JOINTS = 15, -- an avatar template with fewer whole joints (R15 has 15) draws as the mannequin
+	CLONE_HEALTH_INTERVAL = 1, -- s between CloneHealth checks of the drawn avatar rigs
+	CLONE_HEALTH_MAX_LIMB = 10, -- a part farther than this from its root (studs, x rig scale) = broken rig
+	CLONE_KEEP_TEXTURES = true, -- keep face decals and mesh textures (shared per asset: cheap)
+	CLONE_KEEP_CLOTHING = true, -- keep classic Shirt / Pants / T-shirt (composited once per rig)
+	CLONE_KEEP_SURFACE_APPEARANCE = false, -- PBR maps: per-pixel cost x 28 figures on phones; hides the tint
+	DEBUG_CHIP_HZ = 2, -- Studio-only clone diagnostic chip refresh rate
 	WALK_ANIM_BASE_SPEED = 16, -- studs/s at which the walk clip plays at speed 1
 	EVENT_BLEND = 0.15, -- server-decided clone changes blend in over this long
 	DOOR_SLIDE_SECONDS = 0.35,
@@ -655,6 +664,11 @@ Config.Analytics = {
 		-- governor stops (lowering quality cannot beat an OS frame cap or a CPU-bound device)
 		STEP_MIN_GAIN = 0.1,
 		STEP_COOLDOWN_SECONDS = 30, -- after a step down, wait this long before judging again
+		-- step back up (hysteresis): this many good seconds in a row (at most STEP_UP_SHARE slow frames
+		-- each) raise the tier one step; each step up doubles the wait for the next (no oscillation)
+		STEP_UP_SECONDS = 60,
+		STEP_UP_SHARE = 0.01,
+		STEP_UP_BACKOFF = 2,
 		MIN_FRAMES_PER_SECOND = 10, -- a second with fewer frames is not judged (loading hitch)
 		TABLET_MIN_SIDE = 600, -- viewport short side (px) from which a touch device counts as a tablet
 	},
