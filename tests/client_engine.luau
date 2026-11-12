@@ -1,7 +1,7 @@
 -- Client views in a real Roblox server (Open Cloud Luau Execution): the client wiring.
 -- Run: ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960 \
 --      --place 70772627070328 --script tests/client_engine.luau   (add --version N to skip publishing)
--- 2026-11-12, place v21: 22 checks, 0 failed. Section F (camera track) not yet run in the engine.
+-- 2026-11-12, place v21: 22 checks, 0 failed. Section F (camera track) and H (presentation shell) not yet run in the engine.
 -- Loads every client module, builds L6 with the uploaded kit + Christmas layer and runs
 -- WorldView on it (vault door skin swing + dial, alarm beacons), the L5 till lock label,
 -- Gus on his mesh (every beat attached, head lead, Santa hat), the Line-up arrangement against the real van body, and
@@ -51,6 +51,11 @@ for _, name in
 		"LineupDirector",
 		"Hud",
 		"Telemetry",
+		"PresentPlan",
+		"Transition",
+		"Title",
+		"LevelIntro",
+		"Loading",
 		"HeistClient",
 	}
 do
@@ -648,6 +653,115 @@ if okL5 and b5c then
 else
 	check(false, "L5 builds with the kit for the Line-up shot")
 end
+
+-- H. Presentation shell (PLAN_STEAM_PLUS §3.4, §4.1 W7, §4.2 C4; POLISH §4.6): the ReplicatedFirst
+-- loading card and the title card build in the engine (no images, no ReplicatedStorage), the reel and
+-- the stage hint step by hand (Luau Execution servers render nothing: RenderStepped never fires, so
+-- spin / setStage are called directly), and the van doors cover / open. Title.play and Loading.reel
+-- bind RenderStepped and only run on a client, so they are not called here.
+local okShell, shellErr = pcall(function()
+	local rf = game:GetService("ReplicatedFirst")
+	local loadingScript = rf:WaitForChild("Loading", 5)
+	assert(loadingScript and loadingScript:IsA("LocalScript"), "ReplicatedFirst.Loading is a LocalScript")
+	local Brand = require(rf:WaitForChild("Brand"))
+	local LoadingCard = require(rf:WaitForChild("LoadingCard"))
+	local holder = Instance.new("Folder")
+	holder.Parent = scratch
+
+	local t0 = os.clock()
+	local card = LoadingCard.build(holder)
+	local buildMs = (os.clock() - t0) * 1000
+	assert(buildMs < 50, string.format("the first frame builds in %.1f ms (< 50)", buildMs))
+	local gui = card.gui
+	assert(gui:IsA("ScreenGui") and gui.Name == Brand.GUI_NAME, "card ScreenGui")
+	assert(gui.DisplayOrder == Brand.LOADING.ORDER and gui.IgnoreGuiInset and not gui.ResetOnSpawn, "card layer")
+	assert(card.bg.BackgroundColor3:ToHex():upper() == string.sub(Brand.COLOR.ink, 2):upper(), "ink background")
+	local mark = card.mark
+	assert(mark.main.Text == Brand.WORDMARK, "wordmark text")
+	assert(string.find(mark.main.FontFace.Family, Brand.FACE, 1, true), "display face " .. mark.main.FontFace.Family)
+	assert(#mark.copies == 1 and mark.copies[1].TextTransparency == 0, "one cyan double-exposure copy")
+	assert(mark.copies[1].ZIndex < mark.main.ZIndex, "the copy draws behind the white mark")
+	assert(mark.copies[1].Position.X.Offset > 0 and mark.copies[1].Position.Y.Offset > 0, "offset down-right")
+	assert(mark.strap and mark.strap.Text == Brand.STRAP, "strap")
+	assert(mark.main:FindFirstChildOfClass("UIStroke"), "ink stroke on the mark")
+	for k = 1, 3 do
+		assert(card.reel:FindFirstChild("Hole" .. k), "reel hole " .. k)
+	end
+	for _, d in gui:GetDescendants() do
+		if d:IsA("ImageLabel") or d:IsA("ImageButton") then
+			error("the card uses no images (it draws before any asset): " .. d:GetFullName())
+		end
+	end
+	-- Step by hand: the reel turns with the clock, stands still under reduced motion.
+	LoadingCard.spin(card.reel, 0.3, false)
+	local a = card.reel.Rotation
+	LoadingCard.spin(card.reel, 0.6, false)
+	assert(math.abs(card.reel.Rotation - a - 90) < 1e-3, "a quarter turn in 0.3 s at 1.2 s a turn")
+	LoadingCard.spin(card.reel, 0.6, true)
+	assert(card.reel.Rotation == 0, "reduced motion: still")
+	-- The quiet progress hint: one line and one more pip per real stage.
+	for index, stage in Brand.STAGES do
+		LoadingCard.setStage(card, stage)
+		assert(card.hint.Text == Brand.HINTS[stage], "hint " .. stage)
+		local lit = 0
+		for _, pip in card.pips do
+			if pip.BackgroundColor3 == Color3.fromHex(Brand.COLOR.white) then
+				lit += 1
+			end
+		end
+		assert(lit == index, stage .. ": " .. lit .. " pips lit")
+		assert(not string.find(string.lower(card.hint.Text), "loading", 1, true), "never a bare Loading")
+	end
+	local goals = LoadingCard.fadeGoals(gui)
+	local fadesInk = false
+	for _, pair in goals do
+		fadesInk = fadesInk or (pair[1] == card.bg and pair[2].BackgroundTransparency == 1)
+	end
+	assert(#goals > 10 and fadesInk, "the fade reaches the ink and every label")
+	-- The dismissal attributes the client sets are plain attributes on the card.
+	gui:SetAttribute(Brand.ATTR.HOLD, true)
+	assert(gui:GetAttribute(Brand.ATTR.HOLD) == true, "hold attribute")
+
+	-- The title card: the same frame one layer up, with three copies (2 and 3 hidden in copy 1's place).
+	local titleCard = LoadingCard.build(holder, { name = "EH_Title", order = Brand.LOADING.ORDER + 1, copies = 3 })
+	local tm = titleCard.mark
+	assert(#tm.copies == 3, "three copies")
+	assert(tm.copies[2].TextTransparency == 1 and tm.copies[3].TextTransparency == 1, "copies 2, 3 start hidden")
+	assert(tm.copies[3].Position == mark.copies[1].Position, "stacked on the double exposure")
+	assert(tm.root.Position == mark.root.Position and tm.main.Size == mark.main.Size, "same frame as the card")
+	assert(titleCard.reel.Position == card.reel.Position, "the reel in the same place")
+	assert(tm.copies[2].TextColor3 ~= tm.copies[1].TextColor3, "copy 2 in another clone hue")
+
+	-- The van doors in a stand-in fx layer.
+	local Transition = require(clientHeist:WaitForChild("Transition"))
+	local layer = Instance.new("ScreenGui")
+	layer.Parent = holder
+	local reduced = false
+	local doors = Transition.new(layer, function()
+		return reduced
+	end)
+	local left = layer:WaitForChild("VanDoorLeft", 1) :: Frame
+	local right = layer:WaitForChild("VanDoorRight", 1) :: Frame
+	assert(left and right and not left.Visible, "doors start open (hidden)")
+	doors.cover()
+	assert(doors.isClosed() and left.Visible and right.Visible, "cover: closed at once")
+	assert(left.Position.X.Scale == 0.5 and right.Position.X.Scale == 0.5, "the panels meet in the middle")
+	doors.open()
+	assert(not doors.isClosed(), "open: no longer closed")
+	reduced = true
+	doors.cover()
+	local veil = layer:WaitForChild("VanDoorVeil", 1) :: Frame
+	assert(veil and veil.Visible and veil.BackgroundTransparency == 0 and not left.Visible, "reduced: an ink veil")
+	assert(doors.openSeconds() == 0.15, "reduced: a 0.15 s crossfade")
+	doors.open()
+
+	local Wordmark = require(rf:WaitForChild("Wordmark"))
+	local big = Wordmark.offset(110)
+	assert(math.abs(big.X - Brand.WORDMARK_OFFSET[1] * 2) < 1e-6, "the specimen's 110 px mark: offset x2")
+	holder:Destroy()
+	return string.format("card built in %.1f ms", buildMs)
+end)
+check(okShell, "presentation shell: loading card, title card, reel, hint, van doors (" .. tostring(shellErr) .. ")")
 
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))

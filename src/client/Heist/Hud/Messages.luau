@@ -13,6 +13,7 @@ local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
+local Loading = require(script.Parent.Parent:WaitForChild("Loading"))
 local Motion = require(script.Parent.Parent:WaitForChild("Motion"))
 local Sound = require(script.Parent.Parent:WaitForChild("Sound"))
 local Ui = require(script.Parent.Parent:WaitForChild("Ui"))
@@ -301,20 +302,26 @@ function Messages.build(ctx: any): any
 	end
 
 	---------------------------------------------------------------------------
-	-- A new account's first seconds (§7.5: they spawn at the open van door, never in a menu).
+	-- A new account's first seconds (§7.5: they spawn at the open van door, never in a menu). The
+	-- loading card (Heist/Loading) or the title beat covers the server's wait; this is the fallback
+	-- when neither is up: the card's turning reel and its hint, never a silent text card.
 	---------------------------------------------------------------------------
 	local preparing = Ui.panel(root, {
 		Name = "Preparing",
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.fromOffset(440, 120),
+		Size = UDim2.fromOffset(320, 120),
 		Visible = false,
 	})
+	local reel = Loading.reel(preparing, 40)
+	reel.Position = UDim2.fromScale(0.5, 0.36)
 	Ui.label(preparing, {
-		Size = UDim2.fromScale(1, 1),
-		TextSize = 28,
-		TextColor3 = Palette.gold,
-		Text = Strings.PREPARING,
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.fromScale(0.5, 0.62),
+		Size = UDim2.new(1, -24, 0, 28),
+		TextSize = 20,
+		TextColor3 = Palette.steelHi,
+		Text = Strings.LOADING_HINTS.server,
 	})
 	msg.preparing = preparing
 	function hud.showPreparing()

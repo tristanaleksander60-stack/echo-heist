@@ -315,6 +315,15 @@ function CameraDirector.new(state: any): any
 		return beat ~= nil
 	end
 
+	-- The framing in use (yaw and pitch in degrees, distance, FOV), so a shot that hands back to the
+	-- run-start beat (Heist/LevelIntro) frames its last stop exactly as the beat's first frame does.
+	function director.framing(): (number, number, number, number)
+		if mode == "classic" then
+			return yaw, CL.PITCH, CL.ZOOM, CL.FOV
+		end
+		return yaw, pitch, distance, D.FOV
+	end
+
 	-- Golden-frame staging (Studio only, Heist/Scenario): fn returns the shot's CFrame and FOV
 	-- every frame (nil = the gameplay camera this frame); nil fn clears it.
 	function director.setShot(fn: (() -> (CFrame?, number?))?)
