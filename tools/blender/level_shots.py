@@ -30,7 +30,8 @@ What is NOT reproduced: Roblox's exact moon direction, ambient occlusion and ton
 solidify shell; the HUD. The Roblox default camera (no zoom is set in src/client: 12.5 studs, FOV 70) with Poppercam
 approximated by a ray test against the greybox colliders. These are audit renders, not captures.
 
-Writes docs/audit/levels/<L>_<id>_{1_spawn,1b_spawn_clones,2_objective,3_plan,4_thumb}.png and contact_sheet.png.
+Writes docs/audit/levels/<L>_<id>_{1_spawn,1b_spawn_clones,2_objective,3_plan,3b_plan_solved,4_thumb}.png (1 and 3:
+run 1, nothing held; 1b, 2 and 3b: the solution's clones on their spots, their plates held) and contact_sheet.png.
 """
 import argparse, json, math, os, subprocess, sys, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -219,11 +220,11 @@ def build(level, solved, lib):
             n = piece["name"]
             if n == "Plate_4x4_Ring":
                 if idx in held:
-                    tint(o, CYAN, emit=4.0)
+                    tint(o, CYAN, emit=2.5)
                 else:
                     tint(o, PAL["steelLo"], 0, 0.6)      # idle: SmoothPlastic, Vault Steel shade
             elif n == "LaserEmitter_Lens":
-                tint(o, PAL["alarm"] if lasers.get(idx) else PAL["steelLo"], emit=4.0 if lasers.get(idx) else 0)
+                tint(o, PAL["alarm"] if lasers.get(idx) else PAL["steelLo"], emit=2.2 if lasers.get(idx) else 0)
             elif n == "Switch_Wall_Lamp":
                 tint(o, PAL["steelLo"])
             elif n == "VaultDoor_DialRing":
@@ -239,12 +240,12 @@ def build(level, solved, lib):
             alongX = abs(bx - ax) > abs(bz - az)
             w = (L + 0.3, 0.3) if alongX else (0.3, L + 0.3)
             gbox("Cable", [cx - w[0] / 2, fy + 0.0, cz - w[1] / 2, cx + w[0] / 2, fy + 0.06, cz + w[1] / 2],
-                 CYAN if on else PAL["steelLo"], emit=4.0 if on else 0.0, shadow=False)
+                 CYAN if on else PAL["steelLo"], emit=2.5 if on else 0.0, shadow=False)
     # door lamps (LevelBuilder: above the leaf, on its +Z face)
     for i, d in enumerate(level["doors"], 1):
         bx = d["box"]
         cx = (bx[0] + bx[3]) / 2
-        o = MR.ball("Lamp", 0.4, MR.mat(PAL["ok"] if doors[i] else PAL["alarm"], 0.4, emit=5.0), None,
+        o = MR.ball("Lamp", 0.4, MR.mat(PAL["ok"] if doors[i] else PAL["alarm"], 0.4, emit=1.6), None,
                     tuple(rb(cx, bx[4] + 0.8, bx[5] + 0.2)))
         o.visible_shadow = False
         vault = any(k["role"] == "vaultSkin" and k.get("index") == i for k in level["kit"])
@@ -260,7 +261,7 @@ def build(level, solved, lib):
         rows = max(2, int(h // 2))
         for r in range(rows):
             y = bx[1] + (r + 0.5) * h / rows
-            for t, col, em in ((0.25, PAL["alarm"], 5.0), (0.08, PAL["white"], 8.0)):
+            for t, col, em in ((0.25, PAL["alarm"], 2.2), (0.08, PAL["white"], 4.0)):
                 gbox("Beam", [bx[0], y - t / 2, cz - t / 2, bx[3], y + t / 2, cz + t / 2], col, emit=em, shadow=False)
     # loot stands (dark display; the till's stand is removed)
     for i, it in enumerate(level["loot"], 1):
@@ -270,11 +271,11 @@ def build(level, solved, lib):
         gbox("Stand", [it["x"] - 0.9, fy, it["z"] - 0.9, it["x"] + 0.9, fy + hgt, it["z"] + 0.9], PAL["ink"])
     # van zone + WedgePart chevrons (Getaway White Neon)
     v = level["van"]
-    gbox("VanZone", [v[0], fy, v[2], v[3], fy + 0.1, v[5]], PAL["exit"], emit=0.6, alpha=0.4, shadow=False)
+    gbox("VanZone", [v[0], fy, v[2], v[3], fy + 0.1, v[5]], PAL["exit"], emit=0.45, alpha=0.4, shadow=False)
     vx = (v[0] + v[3]) / 2
     for k in range(3):
         z = v[2] + 1.5 + k * 2.2
-        gbox("Chevron", [vx - 1.2, fy + 0.08, z - 0.6, vx + 1.2, fy + 0.16, z + 0.6], PAL["exit"], emit=2.0,
+        gbox("Chevron", [vx - 1.2, fy + 0.08, z - 0.6, vx + 1.2, fy + 0.16, z + 0.6], PAL["exit"], emit=1.2,
              shadow=False)
     return held, doors, lasers
 
@@ -552,23 +553,26 @@ def shoot(level, W, Hh, samples):
             yaw = math.atan2(-(g["x"] - ex), -(g["z"] - ez))
             pos, tgt, used = tp_camera(level, doors, ex, ez, yaw, zoom=DEFAULT_ZOOM, pitch=20.0)
             shots.append(("2_objective", pos, tgt, FOV, used, (ex, ez, yaw)))
-            # 3: top-down plan (B3: FOV 30)
+            pos, tgt = plan_camera(level)
+            shots.append(("3b_plan_solved", pos, tgt, 30.0, None, (sp["x"], sp["z"], sp["yaw"])))
+        else:
+            # 3: top-down plan (B3: FOV 30), run 1 (nothing held, lasers on); 3b: with the solution's clones
             pos, tgt = plan_camera(level)
             shots.append(("3_plan", pos, tgt, 30.0, None, (sp["x"], sp["z"], sp["yaw"])))
         for name, pos, tgt, fov, used, stand in shots:
             move(me, level, *stand)
             cam.location = pos
-            if name == "3_plan":
+            if name.startswith("3"):
                 cam.rotation_euler = (0, 0, math.pi)
             else:
                 cam.rotation_euler = (tgt - pos).to_track_quat("-Z", "Y").to_euler()
             cd.angle_y = math.radians(fov)
             raw = os.path.join(TMP, f"{stem}_{name}_raw.png")
             render(s, cam, raw)
-            notes = notes_for(s, cam, figs, gl) if name != "3_plan" else []
+            notes = notes_for(s, cam, figs, gl) if not name.startswith("3") else []
             out = os.path.join(OUT, f"{stem}_{name}.png")
-            MR.finish(raw, out, notes, tag=False, vignette=0.12)
-            if name == "3_plan":
+            MR.finish(raw, out, notes, tag=False, vignette=0.12, truecolor=True)   # 256 colours lose the small lamps
+            if name.startswith("3"):
                 plan_ticks(out, s, cam, level)
             made[name] = (out, used)
             print("wrote", out, "" if used is None else f"(camera distance {used:.1f} studs)")
@@ -586,7 +590,7 @@ def shoot(level, W, Hh, samples):
 
 def contact_sheet(levels):
     from PIL import Image, ImageDraw
-    cols = ("1_spawn", "1b_spawn_clones", "2_objective", "3_plan", "4_thumb")
+    cols = ("1_spawn", "1b_spawn_clones", "2_objective", "3_plan", "3b_plan_solved", "4_thumb")
     tw, th = 384, 216
     rows = []
     for lv in levels:
@@ -597,7 +601,7 @@ def contact_sheet(levels):
     d = ImageDraw.Draw(sheet)
     f, _ = MR._font(15)
     d.text((8, 7), "Heist Yourself level audit: spawn (run 1) | spawn with the solution's clones | toward the goal | "
-           "plan | 160x90 thumbnail (x2.4 nearest)", font=f, fill=(230, 232, 245))
+           "plan (run 1) | plan (solved) | 160x90 thumbnail (x2.4 nearest)", font=f, fill=(230, 232, 245))
     for r, (stem, name) in enumerate(rows):
         y = 30 + r * (th + 24)
         d.text((8, y + 3), f"{stem}  {name}", font=f, fill=(230, 232, 245))
@@ -609,7 +613,7 @@ def contact_sheet(levels):
             im = im.resize((tw, th), Image.NEAREST if col == "4_thumb" else Image.LANCZOS)
             sheet.paste(im, (c * tw, y + 24))
     out = os.path.join(OUT, "contact_sheet.png")
-    sheet.quantize(colors=256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.FLOYDSTEINBERG).save(out, optimize=True)
+    sheet.save(out, optimize=True)
     print("wrote", out)
 
 
