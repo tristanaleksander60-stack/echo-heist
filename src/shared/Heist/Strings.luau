@@ -97,7 +97,16 @@ Strings.CAMERA_MODE = table.freeze({
 function Strings.cameraMode(mode: string?): string
 	return Strings.CAMERA_MODE[mode or "diorama"] or Strings.CAMERA_MODE.diorama
 end
-Strings.PREPARING = "The van door opens..."
+-- The brand (MASTERPLAN §2.2) and the loading card's quiet progress hint, one line per real stage
+-- (never a bare "Loading"). ReplicatedFirst/Brand draws the first frame with copies of these
+-- (tests/unit/HeistPresent.spec.luau keeps them equal); the HUD's wait card uses LOADING_HINTS.server.
+Strings.WORDMARK = "HEIST YOURSELF"
+Strings.WORDMARK_STRAP = "Rob With Your Clones"
+Strings.LOADING_HINTS = table.freeze({
+	boot = "Packing the van",
+	client = "Waking up the crew",
+	server = "Finding your van",
+})
 -- Settings (U7): the panel from MENU and the garage. Labels by Schema settings key.
 Strings.SETTINGS_TITLE = "SETTINGS"
 Strings.DONE = "DONE"

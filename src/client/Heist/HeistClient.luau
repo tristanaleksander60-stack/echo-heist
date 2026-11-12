@@ -19,6 +19,9 @@
 -- Settings (Heist/Settings, U7) apply here: music and SFX volume, captions, camera shake (the rewind's
 -- FOV kick), reduced motion (the device setting OR the player's), colour-blind shapes and the guard
 -- path (state flags the views read).
+-- Presentation shell (PLAN_STEAM_PLUS §4.1 W7, §4.2 C2 + C4): Heist/Loading hands the first frame off
+-- (the ReplicatedFirst card, or the first-join title beat), Heist/Transition is the van-door wipe
+-- between garage, heist and results, Heist/LevelIntro the first-visit camera inside run 1's transition.
 -- The bank moment: a live Bank event calls hud.onBank(amount, vanPos) (the HUD half: "+$100!" flies
 -- to the loot meter); WorldView plays the world half itself (coins, the van bounce).
 -- Signature moments (Heist/MomentDirector): every applied event and run goes to it (8 OF ME, the
@@ -62,6 +65,9 @@ local FirstTime = require(Heist:WaitForChild("FirstTime"))
 local Sound = require(Heist:WaitForChild("Sound"))
 local Telemetry = require(Heist:WaitForChild("Telemetry"))
 local Ui = require(Heist:WaitForChild("Ui"))
+local Loading = require(Heist:WaitForChild("Loading"))
+local Transition = require(Heist:WaitForChild("Transition"))
+local LevelIntro = require(Heist:WaitForChild("LevelIntro"))
 
 local EV = EventLog.EV
 local R = Protocol.REMOTE
@@ -156,6 +162,14 @@ function HeistClient.start()
 	backdropRef = backdrop
 	backdrop.setReducedMotion(state.reduced == true)
 	local ffOn = false
+	local doors: any = nil -- Heist/Transition, once the HUD's fx layer exists
+	-- A level pick: the doors start closing at once and hold while the server builds the heist
+	-- (they open again by themselves, or on the refusal toast, if no heist comes).
+	local function pickWipe()
+		if doors then
+			doors.closeFor(Config.Presentation.DOORS.HOLD_MAX_SECONDS)
+		end
+	end
 
 	local actions = {
 		endRun = function()
@@ -179,6 +193,7 @@ function HeistClient.start()
 		end,
 		-- relaxed = true: the "Try Relaxed?" card (the server checks the offer, Protocol).
 		selectLevel = function(index: number, relaxed: boolean?)
+			pickWipe()
 			if relaxed then
 				Net.Send(R.SelectLevel, index, true)
 			else
@@ -186,6 +201,7 @@ function HeistClient.start()
 			end
 		end,
 		selectDaily = function(day: number?)
+			pickWipe()
 			Net.Send(R.SelectDaily, day)
 		end,
 		joinFriend = function(userId: number)
@@ -233,6 +249,23 @@ function HeistClient.start()
 		fovKick = fovKick,
 	})
 	hud.catchView = moments.catchView
+	local isReduced = function(): boolean
+		return state.reduced == true
+	end
+	doors = Transition.new(hud.fxGui, isReduced)
+	local boot = Loading.boot(doors, isReduced)
+	local intro = LevelIntro.new(camera, state)
+	local revealPending = false
+	-- The doors (or, at boot, the card / the title) open onto what was just built; controlAt: when the
+	-- server gives control (the doors are open by then).
+	local function reveal(controlAt: number?)
+		revealPending = false
+		if boot.active() then
+			boot.landed(controlAt)
+		else
+			doors.open()
+		end
+	end
 
 	-- Settings (U7): volumes now and on every change; reduced motion; the flags the views read.
 	local function applySetting(key: string, value: any)
@@ -458,6 +491,18 @@ function HeistClient.start()
 			local spawns = state.level and state.level.spawns
 			local spawn = spawns and spawns[((state.mySeat or 1) - 1) % #spawns + 1]
 			camera.frameRunStart(CameraDirector.objectiveOf(state.level), transition, spawn and spawn.yaw)
+			if msg.run == 1 then
+				-- C2: the level's first look, inside this transition (once per level, never on L1)
+				local info = state.levelInfo
+				intro.play(state.level, info, transition, info ~= nil and info.kind == Protocol.KIND.Party)
+			end
+			if revealPending then
+				local controlAt = os.clock() + transition
+				if boot.active() then
+					boot.noteControl(controlAt) -- the first frame -> control rule (G1), FTUE path
+				end
+				reveal(controlAt)
+			end
 			local kind = msg.kind or "Standard"
 			if state.reduced and kind ~= "Intro" then
 				kind = "Reduced"
@@ -572,22 +617,42 @@ function HeistClient.start()
 		if kind == "Sync" then
 			syncSeen = true
 			if p.where == "garage" then
-				toGarage(p)
+				intro.stop()
+				if boot.active() then
+					boot.arrive("garage")
+					toGarage(p)
+					reveal(nil) -- the card fades on the garage's first built frame
+				else
+					doors.close() -- results / heist -> garage behind the van doors (C4)
+					toGarage(p)
+					doors.open()
+				end
 				return
 			end
 			if p.where == "preparing" then
-				-- A new account while the server starts the first heist: the van door, never
-				-- the garage (no tapes, no daily vault) until the server decides (§7.5).
+				-- A new account while the server starts the first heist: the loading card's reel
+				-- or the title beat, never the garage (no tapes, no daily vault) and never a silent
+				-- text card, until the server decides (§7.5, WALKTHROUGH §2.0).
 				state.where = "preparing"
 				hud.hideAll()
 				hud.hideGarage()
-				hud.showPreparing()
+				if not boot.preparing() then
+					hud.showPreparing()
+				end
 				return
 			end
 			if p.where ~= "heist" then
 				return
 			end
 			moments.stop()
+			intro.stop()
+			if boot.active() then
+				local info = p.level
+				local ftue = type(info) == "table" and info.id == H.FTUE_L1_LEVEL
+				boot.arrive(if ftue then "heistFtue" else "heist")
+			else
+				doors.close() -- garage / results -> heist: the level binds behind the doors
+			end
 			lineup.stop()
 			hud.hideGarage()
 			hud.hidePreparing()
@@ -595,6 +660,7 @@ function HeistClient.start()
 			table.clear(state.runEndedAtByRun)
 			state.lastRunT = 0
 			if not setupInstance(p) then
+				reveal(nil)
 				return
 			end
 			state.where = "heist"
@@ -617,9 +683,23 @@ function HeistClient.start()
 				Sound.music("Results")
 				hud.onOver({ result = p.over })
 			end
+			if p.run or p.phase == "Between" or p.phase == "Over" then
+				reveal(os.clock()) -- joined in progress: control is already there
+			else
+				-- run 1 is on its way: the doors open with it (reveal in applyRun), or by themselves
+				revealPending = true
+				task.delay(Config.Presentation.DOORS.HOLD_MAX_SECONDS, function()
+					if revealPending then
+						reveal(nil)
+					end
+				end)
+			end
 		elseif state.where ~= "heist" then
 			if kind == "Toast" then
 				hud.toast(tostring(p.text))
+				if not boot.active() and doors.isClosed() and not revealPending then
+					doors.open() -- a refused pick ("all the vans are out"): back to the garage view
+				end
 			end
 			return
 		elseif kind == "Rec" then
@@ -677,6 +757,9 @@ function HeistClient.start()
 				end
 				return over0 - endedAt + H.LINEUP_START_DELAY
 			end
+			-- C4: the van doors close on the heist and open on the Line-up / results (no cut).
+			intro.stop()
+			doors.close()
 			if type(over) == "table" then
 				-- The blooper cut first when a clone failed in the final run (MASTERPLAN §9.2 #2).
 				moments.blooper(over, function()
@@ -691,6 +774,7 @@ function HeistClient.start()
 			else
 				hud.onOver(p)
 			end
+			doors.open()
 		elseif kind == "Leader" then
 			-- The crew leader left while the results card is up: the new one gets REPLAY / NEXT.
 			local over = state.over
@@ -700,6 +784,9 @@ function HeistClient.start()
 			end
 		elseif kind == "Toast" then
 			hud.toast(tostring(p.text))
+			if doors.isClosed() and not revealPending then
+				doors.open() -- a refused pick (REPLAY / NEXT, Relaxed): back to where you were
+			end
 		end
 	end
 

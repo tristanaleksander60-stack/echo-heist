@@ -12,7 +12,13 @@
 --   FirstTime.init()                       once, from HeistClient: seeds from the profile
 --
 -- Kinds: "step", "plate", "rewind", "clone", "bank" (the first five actions), "pointRewind",
--- "pointGrab" (the finger pointer), "gusDoze" (the Party intro line).
+-- "pointGrab" (the finger pointer), "gusDoze" (the Party intro line); the presentation shell's
+-- "title" (the first-join title beat) and "intro:<data key>" (each level's first-look camera,
+-- Heist/LevelIntro), both seeded by Heist/PresentPlan.seenKinds.
+--   FirstTime.status() -> "pending" | "seeded" | "none"   the profile seeding (none: no data)
+--   FirstTime.onStatus(fn)                                fn(status) when it leaves "pending"
+-- Data.Snapshot answers NotReady while the profile loads: it is asked again
+-- (Config.Presentation.SNAPSHOT_TRIES, 1/s: the remote's rate) before giving up.
 -- Persistence: no new data. The profile's existing FTUE funnel index (heist.ftueStep, saved by the
 -- server as each step happens: Heist/Protocol.FTUE_STEPS) and level records (heist.levels) seed it
 -- through the existing Data.Snapshot remote: a returning player never sees a first-time beat
@@ -22,13 +28,17 @@
 -- without clearing it.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local Net = require(ReplicatedStorage:WaitForChild("LihFolk"):WaitForChild("Net"))
+local PresentPlan = require(script.Parent:WaitForChild("PresentPlan"))
 
 local O = Config.Onboarding
+local P = Config.Presentation
+local TITLE_STEP = "FirstMove" -- the title beat plays before the first move in L1
 local REMOTES = "LihFolkRemotes"
 local SNAPSHOT = "Data.Snapshot"
 
@@ -57,6 +67,19 @@ end)())
 local seenSet: { [string]: boolean } = {}
 local firstAt: { [string]: number } = {}
 local started = false
+local status = "pending"
+local statusListeners: { (string) -> () } = {}
+
+local function setStatus(s: string)
+	if status ~= "pending" then
+		return
+	end
+	status = s
+	for _, fn in statusListeners do
+		task.spawn(fn, s)
+	end
+	table.clear(statusListeners)
+end
 
 -- Seeds from a Data snapshot ({ heist = { ftueStep, levels } }); pure apart from the tables above.
 function FirstTime.seed(snapshot: any)
@@ -79,6 +102,11 @@ function FirstTime.seed(snapshot: any)
 			seenSet[kind] = true
 		end
 	end
+	for kind in PresentPlan.seenKinds(snapshot, Protocol.FTUE_STEPS, TITLE_STEP) do
+		if firstAt[kind] == nil then
+			seenSet[kind] = true
+		end
+	end
 end
 
 function FirstTime.init()
@@ -89,13 +117,36 @@ function FirstTime.init()
 	task.spawn(function()
 		local folder = ReplicatedStorage:WaitForChild(REMOTES, 10)
 		if not folder or not folder:WaitForChild(SNAPSHOT, 10) then
+			setStatus("none")
 			return -- no data service (offline Studio): per session
 		end
-		local ok, res = pcall(Net.Request, SNAPSHOT)
-		if ok and type(res) == "table" and res.ok then
-			FirstTime.seed(res.data)
+		-- Studio without API access answers NotReady for good: one try there.
+		local tries = if RunService:IsStudio() then 1 else P.SNAPSHOT_TRIES
+		for try = 1, tries do
+			local ok, res = pcall(Net.Request, SNAPSHOT)
+			if ok and type(res) == "table" and res.ok then
+				FirstTime.seed(res.data)
+				setStatus("seeded")
+				return
+			end
+			if try < tries then
+				task.wait(P.SNAPSHOT_RETRY_SECONDS)
+			end
 		end
+		setStatus("none")
 	end)
+end
+
+function FirstTime.status(): string
+	return status
+end
+
+function FirstTime.onStatus(fn: (string) -> ())
+	if status ~= "pending" then
+		task.spawn(fn, status)
+	else
+		table.insert(statusListeners, fn)
+	end
 end
 
 function FirstTime.seen(kind: string): boolean

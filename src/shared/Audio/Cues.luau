@@ -605,6 +605,16 @@ Cues.cues = {
 		rolloff = "far",
 		note = "a cheerful double toot when loot is banked (WorldView bank moment), not the VanHorn warning",
 	},
+	VanDoor = {
+		ids = {},
+		search = "van sliding door close slam",
+		bus = "UI",
+		volume = 0.5,
+		maxVoices = 1,
+		cooldown = 0.2,
+		priority = 3,
+		note = "the van-door wipe closing (Heist/Transition): a sliding-door roll and a soft slam, toy-like, not a crash",
+	},
 	VanEngine = {
 		ids = { 9125657802 },
 		search = "car engine start drive away",

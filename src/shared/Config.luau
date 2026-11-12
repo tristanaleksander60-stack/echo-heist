@@ -1698,6 +1698,59 @@ Config.Clone = {
 	HALO_RAY = 12, -- studs down to find the floor under you
 }
 
+-- Presentation shell (PLAN_STEAM_PLUS §3.4, §4.1 W7, §4.2 C2 + C4, §5; premium G1, H1, H4; POLISH §4.6):
+-- the branded loading card (ReplicatedFirst), the first-join title beat, the van-door wipe between
+-- garage, heist and results, and the first-visit level intro. Pure timing in Heist/PresentPlan
+-- (tests/unit/HeistPresent.spec.luau). The loading card runs before ReplicatedStorage arrives, so
+-- its own numbers live in ReplicatedFirst/Brand; LOADING mirrors them and the spec asserts they match.
+Config.Presentation = {
+	LOADING = {
+		REEL_PERIOD = 1.2, -- s per turn of the reel (static under reduced motion)
+		FADE_SECONDS = 0.3, -- the card fades out over this on the first built frame (garage)
+		MAX_SECONDS = 12, -- watchdog: the card goes after this unless the client holds it ...
+		HOLD_MAX_SECONDS = 30, -- ... and after this even when held (a stuck server never traps anyone)
+		ORDER = 200, -- ScreenGui.DisplayOrder (above every game gui)
+	},
+	PRELOAD_MAX_SECONDS = 1.5, -- the client preloads the HUD's first-frame images and fonts for this long at most
+	CONTROL_LIMIT_SECONDS = 10, -- premium G1 / MASTERPLAN §7.5: control within 10 s of the first frame
+	-- Heist/FirstTime asks Data.Snapshot again while the profile is still loading (the remote allows 1/s).
+	SNAPSHOT_TRIES = 8,
+	SNAPSHOT_RETRY_SECONDS = 1,
+	-- §3.4 title beat (first join only, any input skips it): the wordmark splits into three offset
+	-- copies on the clone arpeggio, then the van doors open onto L1. It never delays control: the
+	-- doors are open when the run's transition ends, cutting the beat short if the server is fast.
+	TITLE = {
+		SECONDS = 3, -- the whole beat
+		SPLITS = { 0.45, 0.8, 1.15 }, -- s: copy k leaves the stack (one arpeggio note each)
+		SPLIT_SECONDS = 0.35, -- each copy's slide (the emphasis curve)
+		STEP = { 11, 8 }, -- design px per copy: copy k rests at k * STEP behind the white mark
+		NOTES = { 0, 2, 3 }, -- the arpeggio steps (Config.Audio.ARPEGGIO_STEPS, 0-based) per split: C, E, G
+		FADE_SECONDS = 0.15, -- the title fades off the closed doors, then they open
+		ORDER = 201, -- just above the loading card it replaces
+	},
+	-- §4.1 W7 / C4 van-door wipe: two ink panels. Close + open = 0.55 s (<= 0.6, premium H4).
+	DOORS = {
+		OPEN_SECONDS = 0.3,
+		CLOSE_SECONDS = 0.25,
+		FADE_SECONDS = 0.15, -- reduced motion: a crossfade instead of the slide
+		HOLD_MAX_SECONDS = 6, -- closed doors waiting for a heist that never came open again by themselves
+		ZINDEX = 30, -- in the HUD's fx layer: above the HUD, under the Line-up caption (40) and the stamps (54)
+		SEAM = 4, -- px: the lighter seam where the two panels meet
+		HANDLE = { 10, 64 }, -- px: each panel's handle bar (width, height)
+	},
+	-- §4.2 C2 level intro (first entry to each level, once per account; never on L1): the camera
+	-- glides plates -> doors -> loot (the Party: Gus dozing) inside the run's transition, then the
+	-- run-start beat eases back to you. Budget-driven: with a short transition it keeps fewer stops.
+	INTRO = {
+		HOLD = 0.15, -- s on the first stop while the doors part
+		HOP = 0.6, -- s per hop when the transition has room
+		HOP_MIN = 0.3, -- a hop is never faster than this (stops are dropped instead)
+		EASE_BACK = 0.4, -- the run-start beat's ease from the last stop to you
+		MAX_STOPS = 6,
+		FOCUS_LIFT = 1.5, -- studs above a plate or door base the camera looks at
+	},
+}
+
 -- Onboarding and help (PLAN_STEAM_PLUS §6, §8.4; WALKTHROUGH P0-2, P0-4, P1-6, P1-7; premium
 -- G2, G4). The rules live in Shared/Heist/Help (pure, so the sim bots check them); the client
 -- side in Hud/Hints and Heist/FirstTime; Relaxed in Levels/Relaxed + Sim/HeistSim.

@@ -2,10 +2,10 @@
 
 _Audio track, 2026-11-12. MASTERPLAN §7.1-7.3, docs/research/feel.md D2-D5, lihfolk-sfx._
 
-**Status.** 60 cues and 7 music sets. **47 of 60 cues have real, Roblox-licensed ids** and every
-music set has real tracks; 13 cues wait for the owner (GusStep, Heartbeat, RewindStinger, Gus's six beat
-cues added by the Gus track, and the world feedback track's PlateHum, LaserWhine, LootTinkle and VanToot: see
-"Missing" under the Gus cue sheet). 100 distinct ids in
+**Status.** 61 cues and 7 music sets. **47 of 61 cues have real, Roblox-licensed ids** and every
+music set has real tracks; 14 cues wait for the owner (GusStep, Heartbeat, RewindStinger, Gus's six beat
+cues added by the Gus track, the world feedback track's PlateHum, LaserWhine, LootTinkle and VanToot, and the
+presentation track's VanDoor: see "Missing" under the Gus cue sheet). 100 distinct ids in
 `src/shared/Audio/Manifest.luau` (89 used + 11 audition alternates), every one returned by the Creator Store
 API and every one **loaded in a real Roblox server** (live load check, place version 19: 100/100 ready, store
 and engine lengths agree). The AudioDirector built its graph in the same server (77 wires, all connected,
@@ -209,6 +209,17 @@ cues and `RunStamp`; heist complete adds `VaultSlam` to the existing fanfare; th
 | SnareRoll | a 0.6 s snare roll whose last hit lands on the Line-up pose | 1-2 |
 | VaultSlam | a heavy metal door slam / vault clang as every door slams shut at heist complete | 2 |
 
+#### Missing (presentation shell)
+
+Presentation track, 2026-11-12 (PLAN_STEAM_PLUS §3.4, §4.1 W7): `Heist/Transition` plays `VanDoor` each time the
+van-door wipe closes (garage → heist, heist → results, results → garage). It is in `Cues.luau` with empty `ids`
+and plays nothing until the owner pastes a licensed id. The title beat's sound logo is the existing clone arpeggio
+(`CloneChime`, one pentatonic step per wordmark copy), so it needs no new cue.
+
+| Cue | What | Takes wanted |
+|---|---|---|
+| VanDoor | a toy-like sliding-door roll ending in a soft slam (UI bus, 2D), under 0.4 s | 2 |
+
 ### Loot and bank
 
 | Cue | Bus | Takes (id "title" (creator, s)) | Alternates | Vol | Jitter | Voices | Cooldown | Notes |
@@ -229,6 +240,7 @@ cues and `RunStamp`; heist complete adds `VaultSlam` to the existing fanfare; th
 | AlarmBell | Warnings | 9125544264 "Elevator Alarm Bell Emergency Several Rings  (SFX)" (ProSoundEffects, 8 s) | 9125544285 "Elevator Alarm Bell Emergency Several Rings  (SFX)" (ProSoundEffects, 12 s) | 0.35 | 0 | 1 | default | loop, caption [Alarm!] |
 | VanHorn | SFX | 9113018513 "2007 Dodge Charger Horn Honking 2 (SFX)" (ProSoundEffects, 1 s); 9113019386 "2007 Dodge Charger Horn Honking 9 (SFX)" (ProSoundEffects, 1 s) |  | 0.70 | default | 2 | 0.4 | 3D far, caption [Van horn] |
 | VanEngine | SFX | 9125657802 "Mercedes- Benz 280 Sl Failed Starts Engine S (SFX)" (ProSoundEffects, 3 s) |  | 0.70 | 0 | 1 | default | 3D far, caption [Van leaving] |
+| VanDoor | UI | **missing**: search "van sliding door close slam" |  | 0.50 | default | 1 | 0.2 | the van-door wipe closing (Heist/Transition) |
 
 ### Complete
 
