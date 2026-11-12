@@ -1458,15 +1458,26 @@ Config.Backdrop = {
 		COLORS = {
 			roofSnow = { 196, 200, 226 }, -- fresh snow on roofs and cornices (the diorama sees roofs from above)
 			yard = { 140, 142, 180 }, -- packed snow on the lot's outdoor floor (V 71 %)
-			pave = { 128, 126, 162 }, -- swept pavement under a dusting (V 64 %)
+			pave = { 158, 140, 138 }, -- swept warm stone paving under a dusting (V 62 %: warm under the lamps)
 			road = { 152, 154, 190 }, -- packed snow on the road (V 75 %)
-			track = { 96, 92, 124 }, -- slushy tyre tracks (V 49 %)
+			track = { 104, 94, 110 }, -- slushy tyre tracks (V 43 %)
 			kerb = { 172, 164, 152 }, -- warm kerb stone
 			plaza = { 170, 164, 176 }, -- the Bank plaza's snow-dusted paving
 			trim = { 226, 214, 190 }, -- cornices and sills (Warm Marble light)
 			door = { { 140, 47, 75 }, { 36, 112, 74 }, { 44, 58, 104 }, { 120, 78, 52 } },
 		},
-		WINDOW = { w = 2.2, h = 2.8, floorH = 5, colPitch = 4.5, sill = 3.4, lit = 0.75, depth = 0.2, out = 0.06 },
+		-- maxPerFace: lit windows on one face at most (tall civic fronts would cost 30+ instances each)
+		WINDOW = {
+			w = 2.2,
+			h = 2.8,
+			floorH = 5,
+			colPitch = 4.5,
+			sill = 3.4,
+			lit = 0.75,
+			depth = 0.2,
+			out = 0.06,
+			maxPerFace = 10,
+		},
 		SHOP = { paneH = 4.2, paneSill = 1.3, awningY = 6.4, awningDepth = 2.6, doorW = 2.8, doorH = 5.2 },
 		HOUSE = { doorW = 2.4, doorH = 4.6 },
 		ROOF = { rise = 0.42, overhang = 0.6 }, -- gable height per stud of depth; eaves past the walls
@@ -1553,7 +1564,7 @@ Config.Backdrop = {
 		-- (the town never collides).
 		LOT_FENCE = { height = 24, thickness = 2 },
 		-- The whole backdrop at tier 1 (unit spec on every site; engine_smoke / perf_engine count the real build).
-		BUDGET = { instances = 600, draws = 45, tris = 70000, lights = 0 },
+		BUDGET = { instances = 650, draws = 45, tris = 70000, lights = 0 },
 	},
 	WINDOW_COLOR = { 246, 192, 162 }, -- Bulb Warm #F6C0A2 (eh_palette.NEON, rule N1): the only glow allowed
 	SNOW_COLOR = { 192, 195, 213 }, -- Snow #C0C3D5 (small areas only, STYLE_BIBLE §1.3)
@@ -1566,7 +1577,13 @@ Config.Backdrop = {
 	-- `color`: the body is drawn flat in this colour (TextureID cleared on the client): a light haze silhouette, not
 	-- the atlas's dark Ink faces (WORLD 2.0: the rings read black under the old recipe).
 	RINGS = {
-		{ name = "near", piece = "Skyline_Near", windows = "Skyline_Near_Windows", yaw0 = 0, color = { 112, 114, 166 } },
+		{
+			name = "near",
+			piece = "Skyline_Near",
+			windows = "Skyline_Near_Windows",
+			yaw0 = 0,
+			color = { 112, 114, 166 },
+		},
 		{ name = "far", piece = "Skyline_Far", windows = "Skyline_Far_Windows", yaw0 = 45, color = { 134, 136, 186 } },
 	},
 	KIT_FOLDER = "BackdropKit", -- ReplicatedStorage/<KIT_FOLDER>: the ring and town kit templates
@@ -1999,17 +2016,20 @@ Config.Perf = {
 		Lighting = {
 			LightingStyle = "Soft",
 			PrioritizeLightingQuality = true,
-			Brightness = 1.6,
+			Brightness = 1.7, -- WORLD 2.0: recipe A + 0.2 (was 1.6 on the old 1.4)
 			ColorShift_Top = { 170, 190, 255 },
-			Ambient = { 120, 110, 170 },
-			OutdoorAmbient = { 135, 125, 185 },
-			EnvironmentDiffuseScale = 0.2,
+			Ambient = { 138, 130, 178 },
+			OutdoorAmbient = { 172, 162, 210 },
+			EnvironmentDiffuseScale = 0.3,
 			EnvironmentSpecularScale = 0,
-			ExposureCompensation = 0.2,
+			ExposureCompensation = 0.45, -- WORLD 2.0: recipe A's 0.5 less the Soft style's flatter fill
 			GlobalShadows = false, -- no sun shadow pass on low phones (was HeistClient's tier >= 3 rule)
 		},
 		Bloom = { Intensity = 0.9, Size = 24, Threshold = 1.0 }, -- Lighting.Bloom (the project file's)
 		ColorCorrection = { Contrast = 0.15, Saturation = 0.12 }, -- Lighting.ColorCorrection
+		-- Lighting.Atmosphere: thinner haze on low phones (a "black fog" is reported at the lowest quality levels,
+		-- roblox_quality §1.1; WORLD 2.0 keeps the distance a light haze there too)
+		Atmosphere = { Density = 0.2, Haze = 1.4 },
 		LIGHT_RANGE_MAX = 24, -- studs: every level light's Range is clamped to this ("Range 16-24")
 	},
 	BLOOM_OFF_TIER = 4, -- roblox_quality §6.4: Bloom off on the lowest phones (ColorCorrection stays)

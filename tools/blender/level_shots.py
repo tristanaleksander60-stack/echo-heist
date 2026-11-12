@@ -856,7 +856,7 @@ def golden(level, W, Hh, samples, out_dir=None):
     lib = Lib(loc)
     held, doors, lasers = build(level, False, lib)
     gl = gus_and_cone(level, doors, loc, dressing)
-    BS.backdrop(level, lib, put)
+    BS.backdrop(level, lib, put, soft_pool_mat)
     lighting(s)
     BS.world_sky(s, TMP)
     cd = bpy.data.cameras.new("cam")
@@ -985,7 +985,7 @@ def garage(g, W, Hh, samples, out_dir=None):
     lib = Lib(g["location"])
     garage_scene(g, lib)
     BS.backdrop({"backdrop": g["backdrop"], "backdropConfig": g["backdropConfig"], "kit": [], "location": g["location"],
-                 "lighting": g["lighting"]}, lib, put)
+                 "lighting": g["lighting"]}, lib, put, soft_pool_mat)
     lighting(s)
     BS.world_sky(s, TMP)
     cd = bpy.data.cameras.new("cam")
@@ -1145,6 +1145,9 @@ def _classic(x, y, z, yaw, zoom, pitch):
 def _w2_shoot(s, cam, name, pos, tgt, fov, snow_at, cfg, gdir, figs=(), level=None, gl=()):
     import backdrop_shots as BS
     import frame_grade as FG
+    only = os.environ.get("EH_W2_SHOTS")   # e.g. "diorama_mid,classic": render just these shots (experiments)
+    if only and not any(name.endswith("_" + k) for k in only.split(",")):
+        return
     flakes = None
     if snow_at is not None:
         flakes = BS.snowfall(snow_at, cfg, pos)
@@ -1154,12 +1157,16 @@ def _w2_shoot(s, cam, name, pos, tgt, fov, snow_at, cfg, gdir, figs=(), level=No
     cam.data.angle_y = math.radians(fov)
     raw = os.path.join(TMP, f"w2_{name}_raw.png")
     render(s, cam, raw)
-    raw = BS.tonemap(raw, os.path.join(TMP, f"w2_{name}_tm.png"))
     depth = os.path.join(TMP, f"w2_{name}_depth.png")
     BS.depth_pass(s, cam, depth)
+    notes = notes_for(s, cam, list(figs), list(gl), level) if level is not None else []
+    # the same frame under Blender's Standard view (no toe), graded for comparison only
+    std = os.path.join(TMP, f"w2_{name}_std.png")
+    BS.haze(raw, depth, std + ".haze.png")
+    MR.finish(std + ".haze.png", std, notes, tag=False, vignette=0.12, truecolor=True)
+    raw = BS.tonemap(raw, os.path.join(TMP, f"w2_{name}_tm.png"))
     hazed = os.path.join(TMP, f"w2_{name}_haze.png")
     BS.haze(raw, depth, hazed)
-    notes = notes_for(s, cam, list(figs), list(gl), level) if level is not None else []
     out = os.path.join(gdir, f"{name}.png")
     MR.finish(hazed, out, notes, tag=False, vignette=0.12, truecolor=True)
     ids = os.path.join(TMP, f"w2_{name}_ids.png")
@@ -1168,7 +1175,10 @@ def _w2_shoot(s, cam, name, pos, tgt, fov, snow_at, cfg, gdir, figs=(), level=No
     src_mask(s, cam, srcp)
     if flakes is not None:
         bpy.data.objects.remove(flakes, do_unlink=True)
-    record_grade(gdir, FG.grade(out, ids, srcp))
+    g = FG.grade(out, ids, srcp)
+    gs = FG.grade(std)
+    g["standard_view"] = {k: gs[k] for k in ("near_black", "dark_share", "median_luma", "warm_share")}
+    record_grade(gdir, g)
     print("wrote", os.path.relpath(out, REPO))
 
 
@@ -1193,7 +1203,7 @@ def world2_level(level, samples, out_dir):
         lib = Lib(level["location"])
         held, doors, lasers = build(level, solved, lib)
         gl = gus_and_cone(level, doors, level["location"], level["dressing"])
-        BS.backdrop(level, lib, put)
+        BS.backdrop(level, lib, put, soft_pool_mat)
         lighting(s)
         BS.world_sky(s, TMP)
         cam = _w2_camera(s, W, Hh)
@@ -1229,7 +1239,7 @@ def world2_garage(g, samples, out_dir):
     lib = Lib(g["location"])
     garage_scene(g, lib)
     BS.backdrop({"backdrop": g["backdrop"], "backdropConfig": g["backdropConfig"], "kit": [], "location": g["location"],
-                 "lighting": g["lighting"]}, lib, put)
+                 "lighting": g["lighting"]}, lib, put, soft_pool_mat)
     lighting(s)
     BS.world_sky(s, TMP)
     cam = _w2_camera(s, W, Hh)

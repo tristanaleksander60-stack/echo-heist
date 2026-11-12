@@ -25,7 +25,7 @@ local Theme = require(script.Parent:WaitForChild("Theme"))
 
 local L = Config.Lighting
 local SOFT = Config.Perf.SOFT_TOYBOX
-local GROUPS = { "Lighting", "Bloom", "ColorCorrection" } -- SOFT_TOYBOX tables applied to instances
+local GROUPS = { "Lighting", "Bloom", "ColorCorrection", "Atmosphere" } -- SOFT_TOYBOX tables applied to instances
 
 -- A Config value as the property wants it: { r, g, b } -> Color3, the LightingStyle name -> its EnumItem.
 local function value(prop: string, v: any): any

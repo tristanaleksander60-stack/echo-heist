@@ -1,57 +1,69 @@
 {
  "EH_SkyCity_Bk": {
-  "decalId": 80099577125952,
+  "decalId": 113628028360867,
   "file": "assets/sky/EH_SkyCity_Bk.png",
-  "history": [],
-  "imageId": 114578209970893,
+  "history": [
+   80099577125952
+  ],
+  "imageId": 137271080477181,
   "moderation": "Approved",
-  "sha256": "dc8634bc9d825219f4ddd18c87258f670b584abf4b2efcec41a48ced9489dc87",
-  "uploaded": "2026-11-12T17:16:32Z"
+  "sha256": "d7544b802512f6ec2abd81e9158c5f2a4a05b91f34841ec568dff76bad0e5fd3",
+  "uploaded": "2026-11-12T23:28:07Z"
  },
  "EH_SkyCity_Dn": {
-  "decalId": 126189046841051,
+  "decalId": 88879393755130,
   "file": "assets/sky/EH_SkyCity_Dn.png",
-  "history": [],
-  "imageId": 112476800416247,
+  "history": [
+   126189046841051
+  ],
+  "imageId": 135733299930606,
   "moderation": "Approved",
-  "sha256": "2c9551097143c3a5413f90e4f27434be2abdf1c67c9228cb72364e5644a683a4",
-  "uploaded": "2026-11-12T17:16:37Z"
+  "sha256": "29bbb6935667959ed058fd0fb9de4fba9f20b9ca4ae882ce846aa0404ff9de17",
+  "uploaded": "2026-11-12T23:28:12Z"
  },
  "EH_SkyCity_Ft": {
-  "decalId": 119596872713814,
+  "decalId": 105719956193866,
   "file": "assets/sky/EH_SkyCity_Ft.png",
-  "history": [],
-  "imageId": 91381259330056,
+  "history": [
+   119596872713814
+  ],
+  "imageId": 100391383090194,
   "moderation": "Approved",
-  "sha256": "485ff5f4505c909522b65f216766f29b4b3d6e51f6f7258b7c0b9e21979f8d38",
-  "uploaded": "2026-11-12T17:16:43Z"
+  "sha256": "fa9d27f63bf0cbe458c2a610431c280837b6d07c329167ec2c6f900210a0ffee",
+  "uploaded": "2026-11-12T23:28:17Z"
  },
  "EH_SkyCity_Lf": {
-  "decalId": 129138748056354,
+  "decalId": 75154146872232,
   "file": "assets/sky/EH_SkyCity_Lf.png",
-  "history": [],
-  "imageId": 84047859203780,
+  "history": [
+   129138748056354
+  ],
+  "imageId": 113791996532689,
   "moderation": "Approved",
-  "sha256": "7d39a340b00561ec4697b9ab8ceeae4a5d0e2abac7b2d4481e7502915226b306",
-  "uploaded": "2026-11-12T17:16:48Z"
+  "sha256": "434ff451c75a6eb31336360d1d0c53a604c59e6d26cfa4ec0329abfd4e8e6925",
+  "uploaded": "2026-11-12T23:28:23Z"
  },
  "EH_SkyCity_Rt": {
-  "decalId": 134155554815593,
+  "decalId": 135331276804272,
   "file": "assets/sky/EH_SkyCity_Rt.png",
-  "history": [],
-  "imageId": 114886531757479,
+  "history": [
+   134155554815593
+  ],
+  "imageId": 121085743997015,
   "moderation": "Approved",
-  "sha256": "51dfb3403b4adbeb36154563794d618ebffe99ce4983ce82568995b899cb01fa",
-  "uploaded": "2026-11-12T17:16:54Z"
+  "sha256": "c937393d0c73c997604103f3b98e1806464b3706341645548f7be86d05c0a0d4",
+  "uploaded": "2026-11-12T23:28:28Z"
  },
  "EH_SkyCity_Up": {
-  "decalId": 131198418724825,
+  "decalId": 76556409183742,
   "file": "assets/sky/EH_SkyCity_Up.png",
-  "history": [],
-  "imageId": 70988655158940,
+  "history": [
+   131198418724825
+  ],
+  "imageId": 103960632337061,
   "moderation": "Approved",
-  "sha256": "393c8859678cd6a9e49dbf0921618afc72531bf3540a2f678eb82db18da42bb9",
-  "uploaded": "2026-11-12T17:16:59Z"
+  "sha256": "8347efd902f8297e1871f28903c68f5def05f33d2ba48dc49b009be343b1fde2",
+  "uploaded": "2026-11-12T23:28:33Z"
  },
  "EH_SnowFlake": {
   "decalId": 129054745472075,

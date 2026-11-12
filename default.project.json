@@ -11,14 +11,14 @@
         "GlobalShadows": true,
         "ClockTime": 15,
         "GeographicLatitude": 20,
-        "Brightness": 1.4,
+        "Brightness": 1.5,
         "ColorShift_Top": [0.588235, 0.686275, 1.0],
         "ColorShift_Bottom": [0.156863, 0.117647, 0.27451],
-        "Ambient": [0.372549, 0.352941, 0.54902],
-        "OutdoorAmbient": [0.45098, 0.431373, 0.647059],
-        "EnvironmentDiffuseScale": 0.3,
+        "Ambient": [0.494118, 0.462745, 0.643137],
+        "OutdoorAmbient": [0.627451, 0.588235, 0.784314],
+        "EnvironmentDiffuseScale": 0.36,
         "EnvironmentSpecularScale": 0.4,
-        "ExposureCompensation": 0.3,
+        "ExposureCompensation": 0.5,
         "ShadowSoftness": 0.3
       },
       "Sky": {
@@ -29,23 +29,23 @@
           "SunAngularSize": 9,
           "MoonAngularSize": 0,
           "StarCount": 0,
-          "SkyboxBk": "rbxassetid://114578209970893",
-          "SkyboxDn": "rbxassetid://112476800416247",
-          "SkyboxFt": "rbxassetid://91381259330056",
-          "SkyboxLf": "rbxassetid://84047859203780",
-          "SkyboxRt": "rbxassetid://114886531757479",
-          "SkyboxUp": "rbxassetid://70988655158940"
+          "SkyboxBk": "rbxassetid://137271080477181",
+          "SkyboxDn": "rbxassetid://135733299930606",
+          "SkyboxFt": "rbxassetid://100391383090194",
+          "SkyboxLf": "rbxassetid://113791996532689",
+          "SkyboxRt": "rbxassetid://121085743997015",
+          "SkyboxUp": "rbxassetid://103960632337061"
         }
       },
       "Atmosphere": {
         "$className": "Atmosphere",
         "$properties": {
-          "Density": 0.28,
+          "Density": 0.24,
           "Offset": 0.12,
-          "Color": [0.352941, 0.313725, 0.588235],
-          "Decay": [0.215686, 0.176471, 0.411765],
+          "Color": [0.619608, 0.619608, 0.839216],
+          "Decay": [0.486275, 0.470588, 0.721569],
           "Glare": 0,
-          "Haze": 1.3
+          "Haze": 1.6
         }
       },
       "Bloom": {

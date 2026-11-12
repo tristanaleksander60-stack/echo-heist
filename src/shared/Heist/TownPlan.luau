@@ -38,6 +38,7 @@ export type Kit = {
 	pos: { number }, -- the model's pivot (its origin)
 	yaw: number, -- degrees about +Y (0: the piece's front looks toward -Z)
 	scale: number?, -- uniform scale about the pivot
+	span: number?, -- a wall-module piece: studs it runs along its local -X from the pivot (garlands, light strings)
 	size: { number }?, -- or: the piece's bounding-box size (per axis, in its own frame)
 	color: { number }?, -- MeshPart.Color (runtime-coloured pieces: Car_Parked_Paint)
 	layer: string,
@@ -99,7 +100,18 @@ function TownPlan.build(input: Input): Town
 		return p
 	end
 	-- an axis-aligned slab whose top is at `y`
-	local function slab(name: string, x0: number, x1: number, z0: number, z1: number, y: number, h: number, color, layer, src)
+	local function slab(
+		name: string,
+		x0: number,
+		x1: number,
+		z0: number,
+		z1: number,
+		y: number,
+		h: number,
+		color,
+		layer,
+		src
+	)
 		if x1 - x0 < 0.05 or z1 - z0 < 0.05 then
 			return
 		end
@@ -136,11 +148,12 @@ function TownPlan.build(input: Input): Town
 			local z = mid + lane * (R / 22) + side * T.TRACKS.gauge / 2
 			local z0, z1 = z - T.TRACKS.width / 2, z + T.TRACKS.width / 2
 			local y = y0 + T.TRACK_LIFT
-			local inLot = z1 < lot.maxZ
-			if inLot then
-				slab("Track", X0, lot.minX, z0, z1, y, 0.2, C.track, "ground", "ground")
-				slab("Track", lot.minX, lot.maxX, z0, z1, y, 0.2, C.track, "lot", "lot")
-				slab("Track", lot.maxX, X1, z0, z1, y, 0.2, C.track, "ground", "ground")
+			if z0 < lot.maxZ then
+				local zc = math.min(z1, lot.maxZ)
+				slab("Track", X0, lot.minX, z0, zc, y, 0.2, C.track, "ground", "ground")
+				slab("Track", lot.minX, lot.maxX, z0, zc, y, 0.2, C.track, "lot", "lot")
+				slab("Track", lot.maxX, X1, z0, zc, y, 0.2, C.track, "ground", "ground")
+				slab("Track", X0, X1, zc, z1, y, 0.2, C.track, "ground", "ground")
 			else
 				slab("Track", X0, X1, z0, z1, y, 0.2, C.track, "ground", "ground")
 			end
@@ -201,16 +214,35 @@ function TownPlan.build(input: Input): Town
 	end
 
 	-- lit windows on one face (floors from `fromV`, columns across `width`, a door gap at u = doorU)
-	local function windows(fx: number, fz: number, nx: number, nz: number, width: number, height: number, fromV: number, doorU: number?, doorW: number?)
+	local function windows(
+		fx: number,
+		fz: number,
+		nx: number,
+		nz: number,
+		width: number,
+		height: number,
+		fromV: number,
+		doorU: number?,
+		doorW: number?
+	)
 		local at, size = frame(fx, fz, nx, nz)
 		local cols = math.max(1, math.floor((width - 2) / W.colPitch))
 		local v = fromV
-		while v + W.h + 0.8 <= height do
+		local lit = 0
+		while v + W.h + 0.8 <= height and lit < W.maxPerFace do
 			for c = 0, cols - 1 do
 				local u = (c - (cols - 1) / 2) * W.colPitch
 				local blocked = doorU ~= nil and v < 5 and math.abs(u - doorU) < ((doorW or 0) / 2 + W.w / 2 + 0.3)
-				if not blocked and rnd() < W.lit then
-					part("Window", size(W.w, W.h, W.depth), at(u, v + W.h / 2, W.out), B.WINDOW_COLOR, "windows", "building").neon =
+				if not blocked and lit < W.maxPerFace and rnd() < W.lit then
+					lit += 1
+					part(
+						"Window",
+						size(W.w, W.h, W.depth),
+						at(u, v + W.h / 2, W.out),
+						B.WINDOW_COLOR,
+						"windows",
+						"building"
+					).neon =
 						true
 				end
 			end
@@ -223,7 +255,16 @@ function TownPlan.build(input: Input): Town
 	end
 
 	-- One building. kind: shop | house | townhouse | civic | warehouse. sides: extra lit faces ("left" / "right").
-	local function building(kind: string, fx: number, fz: number, nx: number, nz: number, w: number, d: number, sides: { string }?)
+	local function building(
+		kind: string,
+		fx: number,
+		fz: number,
+		nx: number,
+		nz: number,
+		w: number,
+		d: number,
+		sides: { string }?
+	)
 		buildings += 1
 		colourTurn += 1
 		local body = pick(theme.bodies, colourTurn)
@@ -245,7 +286,7 @@ function TownPlan.build(input: Input): Town
 				layer = "building",
 				src = "building",
 				fallback = {
-					name = "RoofSnow",
+					name = "RoofFallback",
 					size = size(w + 1, 0.5, d + 1),
 					pos = at(0, h + 0.25, -d / 2),
 					color = C.roofSnow,
@@ -255,7 +296,14 @@ function TownPlan.build(input: Input): Town
 			})
 		else
 			part("Cornice", size(w + 0.6, 0.9, 1.3), at(0, h - 0.45, 0.25), C.trim, "building", "building")
-			part("RoofSnow", size(w + 0.5, 0.45, d + 0.9), at(0, h + 0.22, -d / 2 + 0.45), C.roofSnow, "building", "building")
+			part(
+				"RoofSnow",
+				size(w + 0.5, 0.45, d + 0.9),
+				at(0, h + 0.22, -d / 2 + 0.45),
+				C.roofSnow,
+				"building",
+				"building"
+			)
 		end
 		local topV = if gable then h - 0.3 else h - 0.9
 		if kind == "shop" then
@@ -275,13 +323,34 @@ function TownPlan.build(input: Input): Town
 			door(at, size, 0, SH.doorW, SH.doorH, doorColour)
 			local ad = SH.awningDepth
 			part("Awning", size(w - 1, 0.35, ad), at(0, SH.awningY, ad / 2), awning, "building", "building")
-			part("AwningSnow", size(w - 1.3, 0.25, ad - 0.3), at(0, SH.awningY + 0.3, ad / 2 - 0.1), C.roofSnow, "building", "building")
+			part(
+				"AwningSnow",
+				size(w - 1.3, 0.25, ad - 0.3),
+				at(0, SH.awningY + 0.3, ad / 2 - 0.1),
+				C.roofSnow,
+				"building",
+				"building"
+			)
 			windows(fx, fz, nx, nz, w, topV, SH.awningY + 1.4, nil, nil)
 			if input.xmas and theme.signature == "lights" then
 				for k = 0, math.floor((w - 1) / 8) - 1 do
-					local mu = -w / 2 + 0.5 + (k + 1) * 8 -- module's right end
-					addKit({ piece = "Xmas_Lights_8", pos = at(mu, SH.awningY - 9.2, -0.3), yaw = yaw, layer = "decor", src = "building" })
-					addKit({ piece = "Xmas_Lights_8_Bulbs", pos = at(mu, SH.awningY - 9.2, -0.3), yaw = yaw, layer = "decor", src = "building" })
+					local mu = -w / 2 + 0.5 + k * 8 -- the module's left end seen from the street (its local X runs 0..-8)
+					addKit({
+						piece = "Xmas_Lights_8",
+						pos = at(mu, SH.awningY - 9.2, -0.3),
+						yaw = yaw,
+						layer = "decor",
+						src = "building",
+						span = 8,
+					})
+					addKit({
+						piece = "Xmas_Lights_8_Bulbs",
+						pos = at(mu, SH.awningY - 9.2, -0.3),
+						yaw = yaw,
+						layer = "decor",
+						src = "building",
+						span = 8,
+					})
 				end
 			end
 		elseif kind == "civic" then
@@ -296,7 +365,14 @@ function TownPlan.build(input: Input): Town
 			door(at, size, 0, 3.2, 6, doorColour)
 			windows(fx, fz, nx, nz, w, topV, 11.6, nil, nil)
 			for _, s in { -1, 1 } do
-				part("Window", size(1.6, 4.5, W.depth), at(s * cw / 3 * 1.0, 4.2, W.out), B.WINDOW_COLOR, "windows", "building").neon =
+				part(
+					"Window",
+					size(1.6, 4.5, W.depth),
+					at(s * cw / 3 * 1.0, 4.2, W.out),
+					B.WINDOW_COLOR,
+					"windows",
+					"building"
+				).neon =
 					true
 			end
 		else
@@ -307,15 +383,32 @@ function TownPlan.build(input: Input): Town
 			windows(fx, fz, nx, nz, w, topV, if kind == "warehouse" then 8.4 else W.sill - 2, du, dw)
 			if input.xmas and kind ~= "warehouse" then
 				-- the wreath's origin is its back centre: on the door leaf's face
-				addKit({ piece = "Xmas_Wreath", pos = at(du, dh - 1.3, 0.26), yaw = yaw, layer = "decor", src = "building" })
+				addKit({
+					piece = "Xmas_Wreath",
+					pos = at(du, dh - 1.3, 0.26),
+					yaw = yaw,
+					layer = "decor",
+					src = "building",
+				})
 			end
 		end
-		if input.xmas and (kind == "shop" or kind == "townhouse" or kind == "civic") and theme.signature ~= "lights" then
-			-- a garland run under the cornice (wall-module coordinates: the module's right end, its face at -0.3)
-			local n = math.min(3, math.floor((w - 1) / 8))
+		if
+			input.xmas
+			and (kind == "shop" or kind == "townhouse" or kind == "civic")
+			and theme.signature ~= "lights"
+		then
+			-- a garland run under the cornice (wall-module coordinates: the left end seen from the street, face at -0.3)
+			local n = math.min(2, math.floor((w - 1) / 8))
 			for k = 0, n - 1 do
-				local mu = -n * 4 + (k + 1) * 8
-				addKit({ piece = "Xmas_Garland_8", pos = at(mu, topV - 11.0, -0.3), yaw = yaw, layer = "decor", src = "building" })
+				local mu = -n * 4 + k * 8
+				addKit({
+					piece = "Xmas_Garland_8",
+					pos = at(mu, topV - 11.0, -0.3),
+					yaw = yaw,
+					layer = "decor",
+					src = "building",
+					span = 8,
+				})
 			end
 		end
 		for _, side in sides or {} do
@@ -328,7 +421,16 @@ function TownPlan.build(input: Input): Town
 	end
 
 	-- A row of buildings along X (fronts on z = line, facing nz) from x = start toward dir until `stop`.
-	local function row(kinds: { string }, line: number, nz: number, start: number, dir: number, stop: number, depth: { number }, k0: number)
+	local function row(
+		kinds: { string },
+		line: number,
+		nz: number,
+		start: number,
+		dir: number,
+		stop: number,
+		depth: { number },
+		k0: number
+	)
 		local x = start
 		local k = k0
 		while (stop - x) * dir > 8 do
@@ -404,7 +506,7 @@ function TownPlan.build(input: Input): Town
 			size = LP.pool,
 			color = LP.poolColor,
 			alpha = LP.poolAlpha,
-			layer = "props",
+			layer = "pools",
 		})
 	end
 	-- near pavement, outside the lot (the level's own lamps light the lot's front)
@@ -454,7 +556,14 @@ function TownPlan.build(input: Input): Town
 	local function tree(x: number, z: number, scale: number)
 		addKit({ piece = "Xmas_Tree", pos = { x, top, z }, yaw = 0, scale = scale, layer = "building", src = "props" })
 		if input.xmas then
-			addKit({ piece = "Xmas_Tree_Lights", pos = { x, top, z }, yaw = 0, scale = scale, layer = "decor", src = "props" })
+			addKit({
+				piece = "Xmas_Tree_Lights",
+				pos = { x, top, z },
+				yaw = 0,
+				scale = scale,
+				layer = "decor",
+				src = "props",
+			})
 		end
 	end
 	local function snowman(x: number, z: number, yaw: number)
@@ -469,7 +578,7 @@ function TownPlan.build(input: Input): Town
 			size = 30,
 			color = LP.poolColor,
 			alpha = LP.poolAlpha,
-			layer = "props",
+			layer = "pools",
 		})
 		for k = 0, plaza.lamps - 1 do
 			local a = math.rad(45 + 90 * k)
@@ -492,9 +601,21 @@ function TownPlan.build(input: Input): Town
 	-- snow piles where the kerbs end at the lot, and by the lamps
 	for _, s in { -1, 1 } do
 		local edge = if s > 0 then lot.maxX else lot.minX
-		addKit({ piece = "Xmas_SnowPile", pos = { edge + s * 2.6, top, kerbZ - 1.6 }, yaw = 0, layer = "props", src = "props" })
+		addKit({
+			piece = "Xmas_SnowPile",
+			pos = { edge + s * 2.6, top, kerbZ - 1.6 },
+			yaw = 0,
+			layer = "props",
+			src = "props",
+		})
 	end
-	addKit({ piece = "Xmas_SnowPile", pos = { cx + side * 30, top, roadEnd + 1.5 }, yaw = 180, layer = "props", src = "props" })
+	addKit({
+		piece = "Xmas_SnowPile",
+		pos = { cx + side * 30, top, roadEnd + 1.5 },
+		yaw = 180,
+		layer = "props",
+		src = "props",
+	})
 
 	-- Out of the canonical frame -------------------------------------------------------------------------------
 	if input.mirror then
@@ -503,6 +624,14 @@ function TownPlan.build(input: Input): Town
 		end
 		for _, k in kit do
 			k.pos[3] = -k.pos[3]
+			-- a turn cannot mirror a mesh: a piece that runs along its local -X now runs the other way, so its pivot
+			-- moves to the run's far end (the run keeps the mirrored span)
+			local span = k.span
+			if span then
+				local a = math.rad(k.yaw)
+				k.pos[1] -= span * math.cos(a)
+				k.pos[3] -= span * math.sin(a)
+			end
 			k.yaw = (180 - k.yaw) % 360
 			local fb = k.fallback
 			if fb then

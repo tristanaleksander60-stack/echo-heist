@@ -33,7 +33,13 @@ def _recipe():
     """Recipe A as the game ships it: the Lighting and Atmosphere values of default.project.json (0-1 colours)."""
     import json
     tree = json.load(open(os.path.join(REPO, "default.project.json")))["tree"]["Lighting"]
-    return tree["$properties"], tree["Atmosphere"]["$properties"]
+    lt, at = dict(tree["$properties"]), dict(tree["Atmosphere"]["$properties"])
+    # EH_RECIPE='{"OutdoorAmbient": [r, g, b], "Density": 0.2, ...}' (0-255 colours): try a retune before writing it
+    over = json.loads(os.environ.get("EH_RECIPE", "{}"))
+    for k, v in over.items():
+        v = [c / 255 for c in v] if isinstance(v, list) else v
+        (at if k in at else lt)[k] = v
+    return lt, at
 
 
 LIGHTING, ATMOSPHERE = _recipe()
@@ -161,8 +167,11 @@ def _local(pivot, x, y, z):
     return (px + x * c + z * s, py + y, pz - x * s + z * c)
 
 
-def backdrop(level, lib, put):
-    """Draws the plan BackdropPlan made for this level, the rings and the client's front dressing."""
+def backdrop(level, lib, put, pool_mat=None):
+    """Draws the plan BackdropPlan made for this level (the snowfield, the town's parts, kit pieces and unlit pools,
+    the rings in their flat haze colour) and the client's front dressing. pool_mat(hex, peak, exponent, radius,
+    emit): level_shots.soft_pool_mat (the engine's soft pool image)."""
+    import kit_preview as K
     bp = level["backdrop"]
     cfg = level["backdropConfig"]
     mats = {}
@@ -172,14 +181,51 @@ def backdrop(level, lib, put):
         if k not in mats:
             mats[k] = MR.mat(hexc(col), 0.7, emit=emit)
         return mats[k]
-    for p in bp["parts"]:
+
+    def part(p):
         (sx, sy, sz), (cx, cy, cz) = p["size"], p["pos"]
-        if p["name"] == "Ground":
-            pass   # the real 2048-stud plane: its far edge is part of what the classic camera sees
-        neon = p.get("neon")
         o = _box(p["name"], (cx - sx / 2, cy - sy / 2, cz - sz / 2), (cx + sx / 2, cy + sy / 2, cz + sz / 2),
-                 mat(p["color"], NEON_EMIT if neon else 0.0), shadow=p["name"] == "Facade")
-        o["eh_src"] = "ground" if p["layer"] == "ground" else "building"
+                 mat(p["color"], NEON_EMIT if p.get("neon") else 0.0), shadow=p["layer"] == "building")
+        o["eh_src"] = p.get("src") or ("ground" if p["layer"] == "ground" else "building")
+        return o
+    for p in bp["parts"]:
+        if p["layer"] == "fence":
+            continue   # invisible colliders
+        part(p)
+    # the town's kit pieces (Heist/Backdrop.kitPiece: the pivot, a yaw, a uniform scale or a target size)
+    for k in bp.get("kit") or []:
+        spec = K.MANIFEST.get(k["piece"])
+        o = None
+        if spec is not None:
+            if k.get("size"):
+                sc = tuple(k["size"][i] / spec["size"][i] for i in range(3))
+            else:
+                sc = (k.get("scale") or 1.0,) * 3
+            o = put(lib, {"model": spec["model"], "name": k["piece"], "c": None},
+                    (k["pos"][0], k["pos"][1], k["pos"][2], k["yaw"]), sc, Matrix.Identity(4))
+        if o is None:
+            if k.get("fallback"):
+                part(k["fallback"])
+            continue
+        o.visible_shadow = False
+        o["eh_src"] = k["src"]
+        if spec["material"] == "Neon":
+            o.data = o.data.copy()
+            o.data.materials.clear()
+            o.data.materials.append(MR.mat(hexc(cfg["WINDOW_COLOR"]), 0.4, emit=NEON_EMIT))
+        elif k.get("color"):
+            o.data = o.data.copy()
+            o.data.materials.clear()
+            o.data.materials.append(MR.mat(hexc(k["color"]), 0.5))
+    # the unlit warm pools (SurfaceGui, LightInfluence 0: the soft pool image at ImageTransparency 1 - alpha)
+    for pl in bp.get("pools") or []:
+        r = pl["size"] / 2
+        if pool_mat is not None:
+            m = pool_mat(hexc(pl["color"]), pl["alpha"], 1.0, r, 0.8)
+        else:
+            m = MR.mat(hexc(pl["color"]), 0.9, emit=0.8, alpha=pl["alpha"] * 0.5)
+        d = MR.cyl("TownPool", r, r, 0.01, m, None, tuple(rb(*pl["pos"])), seg=48)
+        d.visible_shadow = False
     for ring in bp["rings"]:
         for piece in (ring["piece"], ring["windows"]):
             for yaw in ring["yaws"]:
@@ -193,6 +239,10 @@ def backdrop(level, lib, put):
                     o.data = o.data.copy()
                     o.data.materials.clear()
                     o.data.materials.append(MR.mat(hexc(cfg["WINDOW_COLOR"]), 0.4, emit=NEON_EMIT))
+                elif ring.get("color"):   # Heist/Backdrop: TextureID cleared, the flat haze colour
+                    o.data = o.data.copy()
+                    o.data.materials.clear()
+                    o.data.materials.append(mat(ring["color"]))
     # the kit fronts: snow on the awnings' upper share and the sills, warm window spill on the pavement
     snow = mat(cfg["SNOW_COLOR"], 0.15)
     t = cfg["SNOW_CAPS"]["thickness"]

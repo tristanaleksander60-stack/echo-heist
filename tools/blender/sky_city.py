@@ -41,10 +41,10 @@ OUT = os.path.join(REPO, "assets", "sky")
 PREVIEW = os.path.join(REPO, "docs", "art", "sky_city_preview.png")
 TMP = os.path.join("/tmp", "eh_sky_city")
 
-HORIZON = np.array((90, 80, 150), float)      # Atmosphere.Color (recipe A): the haze meets the sky without a band
-ZENITH = np.array((22, 21, 50), float)
-GROUND = np.array((30, 27, 52), float)
-GLOW = np.array((150, 96, 138), float)        # a warm plum glow low on the horizon (the city's light in the haze)
+HORIZON = np.array((158, 158, 214), float)    # Atmosphere.Color (recipe A, WORLD 2.0): a light snowy haze, no band
+ZENITH = np.array((34, 48, 116), float)        # a deep but clearly blue night (WORLD 2.0; was (22,21,50), read black)
+GROUND = np.array((150, 152, 204), float)     # below the horizon: the haze, never dark (was (30,27,52))
+GLOW = np.array((222, 170, 172), float)       # a warm rose glow low on the horizon (the town lights in the snow haze)
 HALO = np.array((214, 170, 150), float)      # the globe's floodlit haze
 STAR_MIN_ELEV = 14.0
 
@@ -140,8 +140,8 @@ def rotate_z(vs, ang, about=(0, 0, 0)):
 def city(rng):
     """Three rings of building silhouettes on the horizon (1-5.5 degrees), lit windows on the faces that look at
     the centre. Nearer rings are darker; the farthest melts into the haze colour. Blender: the centre at the origin."""
-    rings = [(1500.0, "#36325D", 0.09, (1.0, 4.6)), (2300.0, "#433E70", 0.06, (0.8, 3.6)),
-             (3300.0, "#4E4881", 0.035, (0.6, 2.8))]
+    rings = [(1500.0, "#605E98", 0.09, (1.0, 4.6)), (2300.0, "#7472AA", 0.06, (0.8, 3.6)),
+             (3300.0, "#8886BC", 0.035, (0.6, 2.8))]   # WORLD 2.0: lighter silhouettes melting into the haze
     tower_az = -math.pi / 2   # Blender -Y = Roblox -Z
     for r, col, lit, elev in rings:
         bm = bmesh.new()
