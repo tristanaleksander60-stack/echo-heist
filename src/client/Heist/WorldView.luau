@@ -156,6 +156,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 	local skins: { [number]: any } = {}
 	local tagged: { [string]: { [number]: Instance } } = {}
 	local beacons: { any } = {}
+	local slamming = false -- heist complete (Heist/MomentDirector): every door slams shut, visual only
 	local fxFolder: Folder? = nil
 	local vanBody: BasePart? = nil
 	local vanZone: BasePart? = nil
@@ -232,6 +233,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 		table.clear(skins)
 		table.clear(tagged)
 		table.clear(beacons)
+		slamming = false
 		vanBody = nil
 		vanZone = nil
 		vanLit = nil
@@ -878,6 +880,11 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 			d.seen = true
 			local target = if v == "open" then d.travel else 0
 			local rate = d.travel / H.DOOR_SLIDE_SECONDS
+			if slamming then
+				-- heist complete: the vault door (L6) or the shop door slams shut (the run is over)
+				target = 0
+				rate = d.travel / Config.Moments.COMPLETE.SLAM_DOOR_SECONDS
+			end
 			if d.lift < target then
 				d.lift = math.min(target, d.lift + rate * dt)
 			elseif d.lift > target then
@@ -1362,6 +1369,20 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 	-- Stops looping sounds (between runs, at heist end).
 	function view.quiet()
 		stopHums()
+	end
+
+	-- Heist complete (Heist/MomentDirector): every door slams shut in Config.Moments.COMPLETE.SLAM_DOOR_SECONDS
+	-- and stays shut until the next level binds. Visual only: the heist is already over on the server.
+	-- Returns the door part that was open the widest (where the slam sounds), or nil.
+	function view.slamDoors(): BasePart?
+		slamming = true
+		local best, open = nil, 0
+		for _, d in doors do
+			if d.lift > open then
+				best, open = d.part, d.lift
+			end
+		end
+		return best
 	end
 
 	return view
