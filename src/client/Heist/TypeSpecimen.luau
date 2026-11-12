@@ -13,6 +13,7 @@ local RunService = game:GetService("RunService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
+local Scenario = require(Shared:WaitForChild("Heist"):WaitForChild("Scenario"))
 
 local Theme = require(script.Parent:WaitForChild("Theme"))
 local Ui = require(script.Parent:WaitForChild("Ui"))
@@ -144,7 +145,7 @@ function TypeSpecimen.watch(playerGui: Instance)
 	end
 	local gui: ScreenGui? = nil
 	local function refresh()
-		local on = workspace:GetAttribute("EH_Scenario") == "TYPE"
+		local on = Scenario.resolve(RunService:IsStudio(), workspace:GetAttribute(Scenario.ATTRIBUTE)) == "TYPE"
 		if on and not gui then
 			gui = build(playerGui)
 		elseif not on and gui then
@@ -152,7 +153,7 @@ function TypeSpecimen.watch(playerGui: Instance)
 			gui = nil
 		end
 	end
-	workspace:GetAttributeChangedSignal("EH_Scenario"):Connect(refresh)
+	workspace:GetAttributeChangedSignal(Scenario.ATTRIBUTE):Connect(refresh)
 	refresh()
 end
 

@@ -17,7 +17,6 @@ local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
-local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 local Scenario = require(Shared:WaitForChild("Heist"):WaitForChild("Scenario"))
 
 local CameraMath = require(script.Parent:WaitForChild("CameraMath"))
@@ -37,49 +36,9 @@ function GoldenShots.active(): string?
 	return Scenario.resolve(RunService:IsStudio(), workspace:GetAttribute(Scenario.ATTRIBUTE))
 end
 
--- Type specimen (decision D8): the wordmark and the two candidate display faces at 14, 24, 36
--- and 64 px, each as a stamp, a button label and a results line, over the G1 frame.
-local function specimen()
-	local player = Players.LocalPlayer
-	if not player then
-		return
-	end
-	local gui = Instance.new("ScreenGui")
-	gui.Name = "EH_TypeSpecimen"
-	gui.ResetOnSpawn = false
-	gui.DisplayOrder = 90
-	local list = Instance.new("Frame")
-	list.BackgroundTransparency = 1
-	list.Position = UDim2.fromOffset(24, 24)
-	list.Size = UDim2.new(1, -48, 1, -48)
-	list.Parent = gui
-	local layout = Instance.new("UIListLayout")
-	layout.Padding = UDim.new(0, 6)
-	layout.Parent = list
-	local function line(text: string, face: Font, size: number, color: Color3)
-		local l = Instance.new("TextLabel")
-		l.BackgroundTransparency = 1
-		l.AutomaticSize = Enum.AutomaticSize.XY
-		l.FontFace = face
-		l.TextSize = size
-		l.TextColor3 = color
-		l.TextStrokeColor3 = Palette.ink
-		l.TextStrokeTransparency = 0.2
-		l.Text = text
-		l.Parent = list
-	end
-	local luckiest = Font.fromEnum(Enum.Font.LuckiestGuy)
-	local fredoka = Font.fromEnum(Enum.Font.FredokaOne)
-	line("HEIST YOURSELF", luckiest, 64, Palette.white)
-	for _, face in { luckiest, fredoka } do
-		for _, size in { 14, 24, 36, 64 } do
-			line(string.format("8 OF ME   REWIND   $1,000 BANKED (%d)", size), face, size, Palette.gold)
-		end
-	end
-	gui.Parent = player:WaitForChild("PlayerGui")
-end
+-- TYPE: the specimen itself is drawn by Heist/TypeSpecimen (UI kit), which watches the same
+-- scenario through Scenario.resolve; this module only places the camera.
 
--- camera: Heist/CameraDirector; state: HeistClient's state; echo: Heist/EchoView.
 function GoldenShots.start(camera: any, state: any, echo: any)
 	local name = GoldenShots.active()
 	local spec = Scenario.spec(name)
@@ -156,9 +115,7 @@ function GoldenShots.start(camera: any, state: any, echo: any)
 			return CFrame.lookAt(v3(pos), v3(lookAt)), G.G3.FOV
 		end)
 	end
-	if spec.specimen then
-		task.spawn(specimen)
-	end
+	-- TYPE (spec.specimen): Heist/TypeSpecimen draws the specimen.
 end
 
 return GoldenShots
