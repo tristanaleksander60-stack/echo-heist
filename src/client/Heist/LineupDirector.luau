@@ -8,11 +8,11 @@
 --           reduced motion); HUD, CoreGui, nameplates and the real characters hide;
 --           the run's clones are replaced by Line-up figures where they stood
 --   0.8 s   figures walk to their spots in record order, LINEUP_STAGGER apart; the
---           burned caption "RUN 6 · 8 OF ME · $1,000" pops in; "◀ ME, 20 SEC AGO" sits
+--           burned caption "RUN 6 · 8 OF ME · $1,000" pops in; "ME, 20 SEC AGO" sits
 --           on your newest clone for 1.5 s (always the true number, CLIPS §1.2)
 --   arrive  each figure turns to the camera; after the last arrival they pose (cheer
 --           clip on avatars, arms up on mannequins, one hop) rippling 60 ms apart
---   +2.4 s  done: the results card shows over the held shot. A SKIP ▶▶ chip skips from 1 s;
+--   +2.4 s  done: the results card shows over the held shot. A SKIP chip skips from 1 s;
 --           a tap anywhere (or a key) skips once the crew has posed (the first cut of a
 --           session; later cuts from 1 s), so a kid still mashing GRAB keeps the payoff.
 -- Cost on low-end phones: figure rigs are built a few per frame during the start delay
@@ -36,6 +36,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
+local Strings = require(Shared:WaitForChild("Heist"):WaitForChild("Strings"))
 
 local LineupPlan = require(script.Parent:WaitForChild("LineupPlan"))
 local Rigs = require(script.Parent:WaitForChild("Rigs"))
@@ -127,7 +128,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 	local captionScale = Instance.new("UIScale")
 	captionScale.Parent = caption
 
-	-- SKIP ▶▶: a deliberate skip (a tap anywhere skips only once the crew has posed).
+	-- SKIP: a deliberate skip (a tap anywhere skips only once the crew has posed).
 	local skipChip = Instance.new("TextButton")
 	skipChip.Name = "LineupSkip"
 	skipChip.AnchorPoint = Vector2.new(1, 1)
@@ -138,7 +139,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 	skipChip.FontFace = FONT
 	skipChip.TextSize = 24
 	skipChip.TextColor3 = Palette.white
-	skipChip.Text = "SKIP ▶▶"
+	skipChip.Text = Strings.SKIP
 	skipChip.Visible = false
 	skipChip.ZIndex = 41
 	skipChip.Parent = fxGui
@@ -375,7 +376,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 		return moved, newYaw
 	end
 
-	-- The newest clone of the local player in the line-up (the "◀ ME" label).
+	-- The newest clone of the local player in the line-up (the "ME" label).
 	local function newestMine(entries: { any }): any
 		local lp = Players.LocalPlayer
 		local best: any = nil
@@ -390,13 +391,13 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 	end
 
 	local function captionText(over: any): string
-		local parts = { "RUN " .. tostring(over.runs or 0) }
+		local parts = { Strings.run(over.runs or 0) }
 		local ofMe = tonumber(over.ofMe) or 0
 		if ofMe >= Config.Sim.SWARM_OF_ME then
-			table.insert(parts, string.format("%d OF ME", ofMe))
+			table.insert(parts, Strings.ofMe(ofMe))
 		end
 		table.insert(parts, Ui.money(tonumber(over.banked) or 0))
-		return table.concat(parts, " · ")
+		return table.concat(parts, Strings.SEP)
 	end
 
 	-- Camera shot for a row (world): centre, the way it faces, its width. The camera
@@ -478,7 +479,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 	-- Plays the cut for an Over result (result.lineup). `done` runs when the results
 	-- card should show (after the cut, or at once when there is nothing to line up).
 	-- `ageOf(entry)` gives a clone's true age in seconds at the start of the walk (the
-	-- "◀ ME, N SEC AGO" label), or nil when it is not known (no label then).
+	-- "ME, N SEC AGO" label), or nil when it is not known (no label then).
 	function director.play(over: any, done: () -> (), ageOf: ((entry: any) -> number?)?)
 		director.stop()
 		local entries = over.lineup
@@ -613,7 +614,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 				t.TextStrokeTransparency = 0
 				t.RichText = true
 				-- True age at the walk-off (CLIPS §1.2), from HeistClient.
-				t.Text = Ui.agoLabel("ME", age, Palette.CLONE_HUES[1])
+				t.Text = Ui.agoLabel(Strings.ME, age, Palette.CLONE_HUES[1])
 				t.Parent = gui
 				local scale = Instance.new("UIScale")
 				scale.Parent = t
@@ -754,7 +755,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 					TweenService:Create(captionScale, TweenInfo.new(0.1), { Scale = 1 }):Play()
 				end
 			end
-			-- "◀ ME, N SEC AGO": in at 0.0, hold to 1.5 s, fade out by 1.8 s (CLIPS §1.2).
+			-- "ME, N SEC AGO": in at 0.0, hold to 1.5 s, fade out by 1.8 s (CLIPS §1.2).
 			if labelText and labelGui then
 				local hold, out = H.LINEUP_LABEL_SECONDS[1], H.LINEUP_LABEL_SECONDS[2]
 				local le = e - H.LINEUP_START_DELAY

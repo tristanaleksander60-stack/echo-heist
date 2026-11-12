@@ -5,6 +5,7 @@
 -- every wall, after LineupPlan.arrange.
 
 local LineupPlan = require("../../src/client/Heist/LineupPlan")
+local Strings = require("../../src/shared/Heist/Strings")
 local HeistSim = require("../../src/shared/Sim/HeistSim")
 local LevelSpec = require("../../src/shared/Sim/LevelSpec")
 local Catalog = require("../../src/shared/Levels/Catalog")
@@ -57,14 +58,18 @@ end
 
 return function(test)
 	test("ago: always the true number, nearest 10 s, minutes from 55 s (CLIPS §1.2)", function()
-		Assert.eq(LineupPlan.ago(19.8), "20 SEC AGO", "18 s run + 1.8 s rewind")
-		Assert.eq(LineupPlan.ago(13.1), "10 SEC AGO", "13 s")
-		Assert.eq(LineupPlan.ago(23.9), "20 SEC AGO", "23.9 s")
-		Assert.eq(LineupPlan.ago(25), "30 SEC AGO", "25 s rounds up")
-		Assert.eq(LineupPlan.ago(2), "10 SEC AGO", "never 0 SEC AGO")
-		Assert.eq(LineupPlan.ago(54), "50 SEC AGO", "54 s")
-		Assert.eq(LineupPlan.ago(55), "1 MIN AGO", "55 s")
-		Assert.eq(LineupPlan.ago(95), "2 MIN AGO", "95 s")
+		-- the label as Ui.ago builds it: LineupPlan's number, Strings' words
+		local function ago(seconds: number): string
+			return Strings.ago(LineupPlan.agoRound(seconds))
+		end
+		Assert.eq(ago(19.8), Strings.ago(20, false), "18 s run + 1.8 s rewind")
+		Assert.eq(ago(13.1), Strings.ago(10, false), "13 s")
+		Assert.eq(ago(23.9), Strings.ago(20, false), "23.9 s")
+		Assert.eq(ago(25), Strings.ago(30, false), "25 s rounds up")
+		Assert.eq(ago(2), Strings.ago(10, false), "never 0 SEC AGO")
+		Assert.eq(ago(54), Strings.ago(50, false), "54 s")
+		Assert.eq(ago(55), Strings.ago(1, true), "55 s")
+		Assert.eq(ago(95), Strings.ago(2, true), "95 s")
 	end)
 
 	test("arrange: a row already clear of the van is left alone", function()

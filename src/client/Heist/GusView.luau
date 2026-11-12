@@ -22,6 +22,7 @@ local Sim = Shared:WaitForChild("Sim")
 local Guards = require(Sim:WaitForChild("Guards"))
 local Mechanisms = require(Sim:WaitForChild("Mechanisms"))
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
+local Strings = require(Shared:WaitForChild("Heist"):WaitForChild("Strings"))
 
 local Rigs = require(script.Parent:WaitForChild("Rigs"))
 local Sound = require(script.Parent:WaitForChild("Sound"))
@@ -396,13 +397,13 @@ function GusView.new(state: any): any
 			end
 			-- Bubble: "!" on a catch, "?" while suspicious, "huh?" when confused.
 			if banging then
-				g.label.Text = "!"
+				g.label.Text = Strings.GUS_SPOTTED
 				g.label.TextColor3 = Palette.alarm
 			elseif mode == "Huh" then
-				g.label.Text = "huh?"
+				g.label.Text = Strings.GUS_HUH
 				g.label.TextColor3 = Palette.white
 			elseif stage >= 2 or mode == "Suspicious" then
-				g.label.Text = "?"
+				g.label.Text = Strings.GUS_SUSPICIOUS
 				g.label.TextColor3 = Palette.amber
 			else
 				g.label.Text = ""

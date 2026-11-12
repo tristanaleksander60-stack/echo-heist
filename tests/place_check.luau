@@ -239,7 +239,7 @@ if heistServer then
 	end
 end
 local heistShared = shared and shared:FindFirstChild("Heist")
-for _, name in { "Protocol", "Palette" } do
+for _, name in { "Protocol", "Palette", "Strings", "HudLayout" } do
 	local m = heistShared and heistShared:FindFirstChild(name)
 	expect(m ~= nil and m.ClassName == "ModuleScript", "Shared.Heist." .. name .. " is a ModuleScript")
 end
@@ -249,6 +249,12 @@ do
 	for _, name in { "HeistClient", "EchoView", "GusView", "WorldView", "RewindDirector", "Hud", "Rigs", "Ui" } do
 		local m = heistClient and heistClient:FindFirstChild(name)
 		expect(m ~= nil and m.ClassName == "ModuleScript", "Client.Heist." .. name .. " is a ModuleScript")
+	end
+	-- Hud is a ModuleScript (Hud/init.luau) with its parts as children.
+	local hud = heistClient and heistClient:FindFirstChild("Hud")
+	for _, name in { "Common", "TopBar", "Controls", "Messages", "Deck", "Results", "Garage", "Hints", "Run" } do
+		local m = hud and hud:FindFirstChild(name)
+		expect(m ~= nil and m.ClassName == "ModuleScript", "Client.Heist.Hud." .. name .. " is a ModuleScript")
 	end
 end
 -- The default game is the sim path (the owner finished the fun test on 2026-11-12).

@@ -142,13 +142,13 @@ rewindBtn.BackgroundColor3 = ECHO_BLUE
 rewindBtn.Font = FONT
 rewindBtn.TextScaled = true
 rewindBtn.TextColor3 = Color3.fromRGB(10, 20, 40)
-rewindBtn.Text = "⏪ REWIND (R)"
+rewindBtn.Text = "REWIND (R)"
 rewindBtn.Parent = gui
 corner(rewindBtn, 16)
 
 local function doRewind()
 	requestRewind:FireServer()
-	rewindBtn.Text = "⏪ WAITING..."
+	rewindBtn.Text = "WAITING..."
 end
 rewindBtn.Activated:Connect(doRewind)
 ContextActionService:BindAction("EchoRewind", function(_, inputState)
@@ -218,9 +218,9 @@ notify.OnClientEvent:Connect(function(msg)
 	end
 	if msg.type == "rewind" then
 		rewindEffect()
-		flash("⏪ REWIND", "Your past self will repeat everything you just did", ECHO_BLUE, 1)
+		flash("REWIND", "Your past self will repeat everything you just did", ECHO_BLUE, 1)
 	elseif msg.type == "loop" then
-		rewindBtn.Text = "⏪ REWIND (R)"
+		rewindBtn.Text = "REWIND (R)"
 		local echoes = tonumber(msg.echoes) or 0
 		flash(
 			"LOOP " .. tostring(msg.index),
@@ -241,7 +241,7 @@ notify.OnClientEvent:Connect(function(msg)
 		local who = msg.by == "echo" and ("an echo of " .. tostring(msg.owner)) or tostring(msg.owner)
 		flash("+$" .. tostring(msg.value), "Banked by " .. who, Color3.fromRGB(255, 205, 60), 1.2)
 	elseif msg.type == "votes" then
-		rewindBtn.Text = string.format("⏪ %d/%d READY", msg.n, msg.total)
+		rewindBtn.Text = string.format("%d/%d READY", msg.n, msg.total)
 	elseif msg.type == "complete" then
 		flash(
 			"HEIST COMPLETE!",

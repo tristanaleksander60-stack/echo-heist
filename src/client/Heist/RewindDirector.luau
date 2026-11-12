@@ -6,7 +6,7 @@
 --
 -- Standard (1.8 s):  0.00 clack + 0.06 s white flash at 25%
 --                    0.10-1.35 tape scrub: saturation -0.8, cyan tint, Blur 6, VHS bands,
---                    "◀◀", every clone's path reels backwards (onReel), FOV 70 -> 64
+--                    "REWIND", every clone's path reels backwards (onReel), FOV 70 -> 64
 --                    1.35-1.55 grade snaps back, clones "tape print" in; clunk + arpeggio
 --                    1.55-1.80 "RUN n" stamps in (scale 1.25 -> 1.0, Back Out)
 -- Quick (1.0 s):     the same scaled, without the path reel (from the 4th rewind, and L1).
@@ -23,6 +23,7 @@ local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
+local Strings = require(Shared:WaitForChild("Heist"):WaitForChild("Strings"))
 
 local Sound = require(script.Parent:WaitForChild("Sound"))
 
@@ -108,12 +109,13 @@ function RewindDirector.new(gui: ScreenGui): any
 	arrows.BackgroundTransparency = 1
 	arrows.AnchorPoint = Vector2.new(0, 0)
 	arrows.Position = UDim2.fromOffset(24, 24)
-	arrows.Size = UDim2.fromOffset(160, 64)
+	arrows.Size = UDim2.fromOffset(280, 64)
 	arrows.FontFace = font
-	arrows.TextSize = 56
+	arrows.TextSize = 48
+	arrows.TextXAlignment = Enum.TextXAlignment.Left
 	arrows.TextColor3 = Palette.white
 	arrows.TextStrokeTransparency = 0.3
-	arrows.Text = "◀◀"
+	arrows.Text = Strings.REWIND_BANNER
 	arrows.ZIndex = 53
 	arrows.Visible = false
 	arrows.Parent = overlay
@@ -174,7 +176,7 @@ function RewindDirector.new(gui: ScreenGui): any
 		stage = 0
 		playing = true
 		overlay.Visible = true
-		stamp.Text = "RUN " .. tostring(runIndex)
+		stamp.Text = Strings.run(runIndex)
 		stamp.TextColor3 = Palette.white
 		stamp.Visible = false
 		local cam = workspace.CurrentCamera

@@ -306,6 +306,7 @@ Config.Heist = {
 	UI_SCALE_MIN = 0.9,
 	UI_SCALE_MAX = 1.5,
 	TAP_MIN = 72, -- px at 1x (72 x 0.9 = 64.8 px on the smallest phone)
+	UI_TEXT_MIN = 16, -- px at 1x: text that shrinks to fit stops here (16 x 0.9 = 14.4 px, §7.4 ">= 14 px")
 	TOAST_SECONDS = 3,
 	END_RUN_GRAB_GUARD = 0.3, -- s: an END RUN tap this soon after a GRAB tap is ignored (thumb slip)
 	BLINK_HZ_MAX = 3, -- §7.3: nothing on screen flashes faster than 3 times a second

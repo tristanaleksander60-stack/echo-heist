@@ -10,8 +10,9 @@
 --     until every spot clears the body: the crew lines up in front of their van.
 --   * fitDistance: how far a camera stands to fit a row of `width` studs in `fitWidth` of
 --     the frame width and a figure in `fitHeight` of the frame height.
---   * ago: "20 SEC AGO" (docs/marketing/CLIPS.md §1.2: always the true number, rounded to
---     the nearest 10 s, at least 10; whole minutes from 55 s).
+--   * agoRound: the number for the "20 SEC AGO" label (docs/marketing/CLIPS.md §1.2:
+--     always the true number, rounded to the nearest 10 s, at least 10; whole minutes
+--     from 55 s). The words are Strings.ago.
 
 local LineupPlan = {}
 
@@ -121,13 +122,14 @@ function LineupPlan.fovFor(
 	return to
 end
 
--- "20 SEC AGO" / "1 MIN AGO" (CLIPS §1.2).
-function LineupPlan.ago(seconds: number): string
+-- The age label's number and unit (CLIPS §1.2): (20, false) = "20 SEC AGO",
+-- (1, true) = "1 MIN AGO" (Strings.ago).
+function LineupPlan.agoRound(seconds: number): (number, boolean)
 	local s = math.max(0, seconds)
 	if s >= 55 then
-		return string.format("%d MIN AGO", math.max(1, math.floor(s / 60 + 0.5)))
+		return math.max(1, math.floor(s / 60 + 0.5)), true
 	end
-	return string.format("%d SEC AGO", math.max(10, math.floor(s / 10 + 0.5) * 10))
+	return math.max(10, math.floor(s / 10 + 0.5) * 10), false
 end
 
 -- The cut's timeline: each figure walks after `startDelay + delay`, for `walk` seconds
