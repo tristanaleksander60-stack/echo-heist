@@ -178,10 +178,14 @@ def gbox(name, b, hexc, emit=0.0, alpha=1.0, shadow=True):
     return o
 
 
+HELD = None   # golden(): a plate-id list held for one frame (L6's vault row at "VAULT 2/4")
+
+
 def state_for(level, solved):
     """Plates held, doors open, lasers off for the cold open (run 1) or the solved state (clones on their spots)."""
     sol = SOLUTION.get(level["id"], {}) if solved else {}
-    held = {i + 1 for i, p in enumerate(level["plates"]) if p["id"] in sol.get("plates", [])}
+    ids = HELD if HELD is not None else sol.get("plates", [])
+    held = {i + 1 for i, p in enumerate(level["plates"]) if p["id"] in ids}
     doors = {}
     for i, d in enumerate(level["doors"], 1):
         if d["alarmLock"] and not d["openBy"]:
@@ -264,8 +268,9 @@ def build(level, solved, lib):
     for i, p in enumerate(level["plates"], 1):
         x, z = centre2(p["box"])
         text3(p["letter"], 2.2, PAL["exit"], 1.5, rb(x, fy + 0.4, z), (0, 0, math.pi))
+    row_doors = {r["door"] for r in (level.get("vaultRows") or [])}
     for i, d in enumerate(level["doors"], 1):
-        if not d.get("letters"):
+        if not d.get("letters") or i in row_doors:
             continue
         bx = d["box"]
         if (bx[3] - bx[0]) < (bx[5] - bx[2]):
@@ -279,6 +284,31 @@ def build(level, solved, lib):
         px, _pz = centre2(level["plates"][l["offBy"][0] - 1]["box"])
         cx, cz = centre2(bx)
         plaque(l["letters"], rb(bx[0] if px < cx else bx[3], fy + 7, cz), 0.5)
+    # need-all rows (LevelBuilder: a lettered Neon disc per plate on the door's face, dim Bulb Warm until held,
+    # then the presser's hue) and the "VAULT n/4" count over them
+    VR = level["lighting"]["VAULT_ROW"]
+    for row in level.get("vaultRows") or []:
+        n_held = 0
+        for rl in row["lamps"]:
+            on = rl["plate"] in held
+            n_held += 1 if on else 0
+            pos = rb(rl["x"], rl["y"], rl["z"])
+            disc = MR.cyl("RowLamp", VR["size"] / 2, VR["size"] / 2, VR["depth"],
+                          MR.mat(CYAN if on else PAL["bulb"], 0.4, emit=3.0 if on else 1.6,
+                                 alpha=1.0 if on else 1 - VR["idleAlpha"]), None, tuple(pos), (90, 0, 0), seg=24)
+            disc.visible_shadow = False
+            side = 1 if row["nz"] >= 0 else -1
+            text3(rl["letter"], VR["size"] * 0.8, PAL["ink"], 0.0, pos + Vector((0, side * (VR["depth"] / 2 + 0.02), 0)),
+                  (math.pi / 2, 0, math.pi if side > 0 else 0))
+        cx = sum(l["x"] for l in row["lamps"]) / len(row["lamps"])
+        cz = sum(l["z"] for l in row["lamps"]) / len(row["lamps"])
+        side = 1 if row["nz"] >= 0 else -1
+        text3("VAULT %d/%d" % (n_held, len(row["lamps"])), 0.9, PAL["ok"] if n_held == len(row["lamps"]) else PAL["bulb"],
+              1.2, rb(cx, row["lamps"][0]["y"] + VR["labelOffset"], cz + side * 0.2),
+              (math.pi / 2, 0, math.pi if side > 0 else 0))
+    # plates inside hides: their letter on a disc over the hide (LevelBuilder.plaque, read from both sides)
+    for hp in level.get("hidePlates") or []:
+        plaque(hp["letters"], rb(hp["x"], hp["top"] + level["lighting"]["HIDE_PLAQUE_Y"], hp["z"]), 0.1)
     # lamps: real lights (Config.Lighting) and the unlit floor pools
     for lp in level["lamps"]:
         lamp_light(level, lp)
@@ -302,6 +332,11 @@ def build(level, solved, lib):
         rows = max(2, int(h // 2))
         for r in range(rows):
             y = bx[1] + (r + 0.5) * h / rows
+            ink = level["worldFx"]["LASER_INK"] if level.get("worldFx") else None
+            if ink:   # the ink sleeve (LevelBuilder: Palette.ink, Transparency LASER_INK.alpha)
+                t = ink["width"]
+                gbox("BeamInk", [bx[0], y - t / 2, cz - t / 2, bx[3], y + t / 2, cz + t / 2], PAL["ink"],
+                     alpha=1 - ink["alpha"], shadow=False)
             for t, col, em in ((0.25, PAL["alarm"], 2.2), (0.08, PAL["white"], 4.0)):
                 gbox("Beam", [bx[0], y - t / 2, cz - t / 2, bx[3], y + t / 2, cz + t / 2], col, emit=em, shadow=False)
     # loot stands (dark display; the till's stand is removed)
@@ -362,6 +397,56 @@ def plaque(letters, c, half):
 
 
 LAMP_W = 520.0   # Eevee watts per unit of Roblox Brightness (calibrated by eye against the pools)
+STEPPED = False  # --stepped: draw the pools as the old hard discs (for the before / after comparison)
+_SOFT = {}
+
+
+def soft_pool_mat(hexc, peak, exponent, radius, emit):
+    """The soft pool (Config.Lighting.POOL_SOFT, assets/ui/EH_FX_Pool.png): alpha = peak * (1 - u^2)^exponent with
+    u = r / radius, on one disc (object space, so it follows the disc's own radius)."""
+    key = (hexc, round(peak, 4), exponent, round(radius, 3), emit)
+    if key in _SOFT:
+        try:
+            _SOFT[key].name          # a scene reset (MR.reset) removes the materials
+            return _SOFT[key]
+        except ReferenceError:
+            _SOFT.clear()
+    m = bpy.data.materials.new("SoftPool_%d" % len(_SOFT))
+    m.use_nodes = True
+    nt = m.node_tree
+    b = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+    b.inputs["Base Color"].default_value = MR.lin(hexc)
+    b.inputs["Roughness"].default_value = 0.9
+    b.inputs["Emission Color"].default_value = MR.lin(hexc)
+    b.inputs["Emission Strength"].default_value = emit
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    ln = nt.nodes.new("ShaderNodeVectorMath")
+    ln.operation = "LENGTH"
+    nt.links.new(tc.outputs["Object"], ln.inputs[0])
+
+    def math_node(op, a=None, bval=None, clamp=False):
+        n = nt.nodes.new("ShaderNodeMath")
+        n.operation = op
+        n.use_clamp = clamp
+        if bval is not None:
+            n.inputs[1].default_value = bval
+        if a is not None:
+            nt.links.new(a, n.inputs[0])
+        return n
+
+    u = math_node("DIVIDE", ln.outputs["Value"], radius)
+    u2 = math_node("MULTIPLY", u.outputs[0], None)
+    nt.links.new(u.outputs[0], u2.inputs[1])
+    one_minus = math_node("SUBTRACT", None, None, clamp=True)
+    one_minus.inputs[0].default_value = 1.0
+    nt.links.new(u2.outputs[0], one_minus.inputs[1])
+    pw = math_node("POWER", one_minus.outputs[0], exponent)
+    a = math_node("MULTIPLY", pw.outputs[0], peak)
+    nt.links.new(a.outputs[0], b.inputs["Alpha"])
+    m.surface_render_method = "BLENDED"
+    m.diffuse_color = MR.lin(hexc)
+    _SOFT[key] = m
+    return m
 
 
 def lamp_light(level, lp):
@@ -381,6 +466,23 @@ def lamp_light(level, lp):
     if not lp.get("pool"):
         return
     pc = "#%02X%02X%02X" % tuple(lp.get("poolColor") or P["color"])
+    if not STEPPED and lp.get("peak"):
+        # the engine's soft pool: the radial gradient image (one ImageLabel), ImageTransparency = 1 - peak
+        r = lp["pool"] / 2
+        soft = LG["POOL_SOFT"]
+        m = soft_pool_mat(pc, lp["peak"], soft["exponent"], r, P["brightness"] * 0.6)
+        rc = lp.get("rect")
+        if rc:   # KitPlan.poolRect: the pool part stops at the walls it would cross; the disc stays on the lamp
+            bm = bmesh.new()
+            x0, x1, z0, z1 = rc[0] - lp["x"], rc[1] - lp["x"], rc[2] - lp["z"], rc[3] - lp["z"]
+            vs = [bm.verts.new((-x, z, 0.0)) for x, z in ((x0, z0), (x1, z0), (x1, z1), (x0, z1))]
+            bm.faces.new(vs)
+            d = MR._obj("pool", bm, m)
+            d.location = tuple(rb(lp["x"], fy + P["lift"], lp["z"]))
+        else:
+            d = MR.cyl("pool", r, r, 0.01, m, None, tuple(rb(lp["x"], fy + P["lift"], lp["z"])), seg=64)
+        d.visible_shadow = False
+        return
     for k, rg in enumerate(lp.get("rings") or P["rings"]):
         r = lp["pool"] * rg["size"] / 2
         d = MR.cyl("pool", r, r, 0.01, MR.mat(pc, 0.9, emit=P["brightness"] * 0.6, alpha=1 - rg["alpha"]), None,
@@ -732,6 +834,10 @@ def golden(level, W, Hh, samples, out_dir=None):
     import backdrop_shots as BS
     import frame_grade as FG
     from PIL import Image, ImageDraw
+    global HELD
+    # L6's frames show the scale held: all four plates, "VAULT 4/4", the vault door open on the lit gold (the other
+    # levels: run 1, nothing held)
+    HELD = ["A", "B", "C", "D"] if level["id"] == "bk1_big_score" else None
     gdir = out_dir or GOLDEN
     os.makedirs(gdir, exist_ok=True)
     os.makedirs(TMP, exist_ok=True)
@@ -789,14 +895,32 @@ def golden(level, W, Hh, samples, out_dir=None):
         ahead = (focus[0] - math.sin(yaw) * lead, focus[1], focus[2] - math.cos(yaw) * lead)
         dio = (ahead[0] + math.sin(yaw) * math.cos(p) * D["DISTANCE"], ahead[1] + math.sin(p) * D["DISTANCE"],
                ahead[2] + math.cos(yaw) * math.cos(p) * D["DISTANCE"])
-        shots.append(("G1a_diorama", rb(*dio), rb(*ahead), float(D["FOV"]), focus))
+        # L1 is GOLDEN_FRAMES G1; the warm pass's other levels get the same two frames under their own names
+        pre = {"cs1_back_room": "G1"}.get(level["id"], short(level) + "_")
+        shots.append((pre + "a_diorama" if pre == "G1" else pre + "diorama", rb(*dio), rb(*ahead), float(D["FOV"]),
+                      focus))
         # classic follow: 16 studs back at 15 degrees (GOLDEN_FRAMES G1b; no Poppercam pull-in: the camera track
         # moves the van collider out of the way, C0)
         # 30 degrees right of the spawn's axis so the van sits at frame left instead of under the lens
         p, yo = math.radians(15), math.radians(30)
         cls = (focus[0] + 16 * math.cos(p) * math.sin(yo), focus[1] + 16 * math.sin(p),
                focus[2] + 16 * math.cos(p) * math.cos(yo))
-        shots.append(("G1b_classic", rb(*cls), rb(*focus), 70.0, focus))
+        if level["id"] in ("cs1_back_room", "bk1_big_score"):
+            shots.append((pre + "b_classic" if pre == "G1" else pre + "classic", rb(*cls), rb(*focus), 70.0, focus))
+        if level["id"] == "cs3_lights_out":
+            # L3's own room (L1-L4 share the street front): plate B under its lamp, its cable to the grid's east
+            # post, the three-layer grid, the register on its till behind it (a diorama-height view)
+            shots.append(("L3_grid", rb(-2.0, fy + 26.0, -16.0), rb(5.0, fy, -30.0), 55.0, None))
+        if level["id"] == "cs4_night_clerk":
+            # L4's back room: Gus on his patrol, the coat rack with plate B's letter over it, the rug at his post
+            shots.append(("L4_backroom", rb(6.0, fy + 26.0, -18.0), rb(-3.0, fy, -29.0), 55.0, None))
+        if level["id"] == "bk1_big_score":
+            # the vault from over the scale room's arch (a diorama-height view: from eye height in the classic
+            # camera the scale-room lamp hangs in front of the row's middle): the A-D lamp row over the open vault
+            # door at "VAULT 4/4", the lit gold and the warm accents behind it, the scale-room rug
+            vf = (0.0, fy + 6.0, -50.0)
+            vc = (0.0, fy + 15.0, -33.0)
+            shots.append(("L6_vault", rb(*vc), rb(*vf), 70.0, None))
     flakes = None
     for name, pos, tgt, fov, snow_at in shots:
         if flakes is not None:
@@ -1029,10 +1153,13 @@ def main(argv):
     ap.add_argument("--golden", action="store_true",
                     help="GOLDEN_FRAMES G1 (L1) and G2 (L5) with the backdrop, sky, snow and haze into "
                          "docs/audit/levels/golden/ (one process per level; --only L1 or L5)")
+    ap.add_argument("--stepped", action="store_true",
+                    help="draw the light pools as the old hard stepped discs (before / after comparison)")
     ap.add_argument("--garage", action="store_true",
                     help="GOLDEN_FRAMES G3 (the garage v1, Heist/LobbyPlan) into docs/audit/levels/golden/")
     a = ap.parse_args(argv)
-    global OUT
+    global OUT, STEPPED
+    STEPPED = a.stepped
     if a.out:
         OUT = os.path.abspath(a.out)
     plan = load_plan(not a.plain, a.daily)
@@ -1044,10 +1171,10 @@ def main(argv):
         garage(g, W, Hh, a.samples, os.path.abspath(a.out) if a.out else None)
         return
     if a.golden and not a.only:
-        for tag in ("L1", "L5"):
+        for tag in ("L1", "L5", "L3", "L4", "L6"):
             subprocess.run([sys.executable, os.path.abspath(__file__), "--golden", "--only", tag, "--size",
-                            str(a.size), "--samples", str(a.samples)] + (["--out", a.out] if a.out else []),
-                           check=True)
+                            str(a.size), "--samples", str(a.samples)] + (["--out", a.out] if a.out else []) +
+                           (["--stepped"] if a.stepped else []), check=True)
         return
     if a.only:
         lv = next(lv for lv in levels if short(lv).upper() == a.only.upper() or lv["id"] == a.only)
@@ -1063,7 +1190,7 @@ def main(argv):
         cmd = [sys.executable, os.path.abspath(__file__), "--only", lv["id"], "--size", str(a.size),
                "--samples", str(a.samples)] + (["--daily"] if a.daily else []) + (["--plain"] if a.plain else []) + \
               (["--out", a.out] if a.out else []) + \
-              (["--shots", a.shots] if a.shots else [])
+              (["--shots", a.shots] if a.shots else []) + (["--stepped"] if a.stepped else [])
         subprocess.run(cmd, check=True)
     if not a.no_sheet:
         contact_sheet(levels)

@@ -2,9 +2,10 @@
 
 _Audio track, 2026-11-12. MASTERPLAN §7.1-7.3, docs/research/feel.md D2-D5, lihfolk-sfx._
 
-**Status.** 56 cues and 7 music sets. **47 of 56 cues have real, Roblox-licensed ids** and every
-music set has real tracks; 9 cues wait for the owner (GusStep, Heartbeat, RewindStinger, and Gus's six beat
-cues added by the Gus track: see "Missing" under the Gus cue sheet). 100 distinct ids in
+**Status.** 60 cues and 7 music sets. **47 of 60 cues have real, Roblox-licensed ids** and every
+music set has real tracks; 13 cues wait for the owner (GusStep, Heartbeat, RewindStinger, Gus's six beat
+cues added by the Gus track, and the world feedback track's PlateHum, LaserWhine, LootTinkle and VanToot: see
+"Missing" under the Gus cue sheet). 100 distinct ids in
 `src/shared/Audio/Manifest.luau` (89 used + 11 audition alternates), every one returned by the Creator Store
 API and every one **loaded in a real Roblox server** (live load check, place version 19: 100/100 ready, store
 and engine lengths agree). The AudioDirector built its graph in the same server (77 wires, all connected,
@@ -175,6 +176,19 @@ puffed-out night guard, funny not scary.
 | GusBarkHm | "Hm?" (two notes, curious) | 2 |
 | GusBarkGotcha | "Gotcha!" | 2 |
 | GusBarkWrongOne | "Wrong one?!" (baffled) | 1-2 |
+
+#### Missing (world feedback)
+
+Levels and world feedback track, 2026-11-12 (docs/FEEDBACK_TABLE.md): `Heist/WorldView` calls these cues; they are
+in `Cues.luau` with empty `ids` and play nothing until the owner pastes licensed ids. Everything else the table asks
+for already had a cue (PlatePress, DoorOpen, LaserFlicker, Grab, DropThud, BankKaching, BankCoins).
+
+| Cue | What | Takes wanted |
+|---|---|---|
+| PlateHum | a soft low hum loop under a held plate (stops on release; the toy click is PlatePress) | 1 loop |
+| LaserWhine | a 0.5 s rising whine as a laser starts its flicker, before it re-arms (Warnings bus) | 1-2 |
+| LootTinkle | a tiny bell tinkle with a loot glint, when you are within 8 studs | 3 |
+| VanToot | a cheerful double toot as loot is banked (not the VanHorn "van leaves" warning) | 2 |
 
 ### Loot and bank
 

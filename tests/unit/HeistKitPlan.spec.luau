@@ -421,8 +421,8 @@ return function(test)
 					end
 				end
 			end
-			-- no cable point sits inside a tall solid (it would vanish into a wall); L1-L5
-			if spec.id ~= "bk1_big_score" then
+			-- no cable point sits inside a tall solid (it would vanish into a wall); every launch level
+			do
 				for _, cb in cables do
 					for _, sg in segs(cb) do
 						for t = 0, 20 do
@@ -636,9 +636,15 @@ return function(test)
 					Assert.eq(item.mode, "visual", what .. ": visual only")
 					local b = KitPlan.itemBox(item, specs)
 					local cx, cz = (b.minX + b.maxX) / 2, (b.minZ + b.maxZ) / 2
+					local building = KitPlan.buildingBox(level)
 					Assert.truthy(
-						footprint == nil or cz > footprint.maxZ,
-						what .. ": on the pavement, outside the building"
+						footprint == nil
+							or cz > footprint.maxZ
+							or (
+								building ~= nil
+								and (cx < building.minX - 1.5 or cx > building.maxX + 1.5 or cz < building.minZ - 1.5)
+							),
+						what .. ": on the pavement or in a lot's alley, outside the building"
 					)
 					for _, sp in level.spawns do
 						local dx, dz = sp.x - cx, sp.z - cz
@@ -680,8 +686,8 @@ return function(test)
 				end
 			end
 		end
-		Assert.eq(streets, 6, "street lamps on L1, L2 and Clone Party (two each)")
-		Assert.truthy(rugCount >= 10, "rugs on L1, L2 and Clone Party (" .. rugCount .. ")")
+		Assert.eq(streets, 16, "street lamps: two on L1-L5 each, six on L6 (front, service alley, side alleys)")
+		Assert.truthy(rugCount >= 20, "rugs on L1-L6 (" .. rugCount .. ")")
 	end)
 
 	test("van paint: a mid value, never Getaway White", function()
@@ -700,5 +706,379 @@ return function(test)
 			Assert.truthy(item.pieces[1] ~= "Wall_Door_8x12_Leaf", "avoided leaf")
 		end
 		Assert.eq(next(plan.solids) ~= nil, true, "counters still dressed")
+	end)
+
+	-- Levels and world feedback track: the warm pass on L3, L4 and L6, L6's lamp row, lobby, cables and alley,
+	-- the soft pools, the hide plates.
+	local function byId(id: string): any
+		for _, spec in Catalog do
+			if spec.id == id then
+				return LevelSpec.compile(spec)
+			end
+		end
+		error("no level " .. id)
+	end
+
+	local function viewBudget(lamps: { any }): (number, number)
+		local worstLit, worstShadow = 0, 0
+		for _, a in lamps do
+			local lit, shadowed = 0, 0
+			for _, b in lamps do
+				local dx, dz = a.x - b.x, a.z - b.z
+				if dx * dx + dz * dz <= LIGHT.VIEW_RADIUS * LIGHT.VIEW_RADIUS then
+					lit += 1
+					if LIGHT.LAMP[b.kind].shadows then
+						shadowed += 1
+					end
+				end
+			end
+			worstLit, worstShadow = math.max(worstLit, lit), math.max(worstShadow, shadowed)
+		end
+		return worstLit, worstShadow
+	end
+
+	test("light budget: L3, L4 and L6 after the warm pass (street lamps, rooms, accents)", function()
+		local want = {
+			cs3_lights_out = {
+				{ 10, -8, "plate" },
+				{ 12, -26, "plate" },
+				{ 0, -40, "hero" },
+				{ -8, -2, "room" },
+				{ -4, -27, "room" },
+				{ -12.5, 12.5, "street" },
+				{ 12.5, 12.5, "street" },
+			},
+			cs4_night_clerk = {
+				{ 10, -8, "plate" },
+				{ -12, -23, "plate" },
+				{ 0, -42, "hero" },
+				{ -8, -2, "room" },
+				{ 13, -30, "room" },
+				{ -12.5, 12.5, "street" },
+				{ 12.5, 12.5, "street" },
+			},
+			bk1_big_score = {
+				{ -12, -10, "plate" },
+				{ -16, -18, "plate" },
+				{ -13, -42, "plate" },
+				{ 13, -42, "plate" },
+				{ 0, -55, "hero" },
+				{ 0, -6, "room" },
+				{ 0, -24, "room" },
+				{ -6, -39, "room" },
+				{ 6, -39, "room" },
+				{ 12, -54, "accent" },
+				{ -15, 12.5, "street" },
+				{ 15, 12.5, "street" },
+				{ -12, -71, "street" },
+				{ 12, -71, "street" },
+			},
+		}
+		for id, list in want do
+			local level = byId(id)
+			local lamps = KitPlan.lamps(level, LevelDress[id], LIGHT)
+			for _, w in list do
+				local found = false
+				for _, l in lamps do
+					found = found or (math.abs(l.x - w[1]) < 1e-6 and math.abs(l.z - w[2]) < 1e-6 and l.kind == w[3])
+				end
+				Assert.truthy(found, string.format("%s: %s lamp at (%g, %g)", id, w[3], w[1], w[2]))
+			end
+			local lit, shadowed = viewBudget(lamps)
+			Assert.le(lit, LIGHT.MAX_LIGHTS_PER_VIEW, id .. ": lights in one view (" .. lit .. ")")
+			Assert.le(shadowed, LIGHT.MAX_SHADOWED_PER_VIEW, id .. ": shadowed lights in one view")
+			-- the accents keep their warm gold (never the Bank's green), the room lamps take the location colour
+			local looks = KitPlan.lampLooks(lamps, KitPlan.location(level, true), LIGHT)
+			for k, l in lamps do
+				if l.kind == "accent" then
+					Assert.eq(looks[k].color, LIGHT.LAMP.accent.color, id .. ": accent keeps its gold")
+					Assert.truthy(not LIGHT.LAMP.accent.shadows, id .. ": accents never shadow")
+				end
+			end
+		end
+	end)
+
+	test("daily vaults: the readability bar (room lamps, a lamp and a letter per plate, budget)", function()
+		for _, spec in DailyVaults.designs do
+			local level = LevelSpec.compile(spec)
+			local lamps = KitPlan.lamps(level, LevelDress[level.id], LIGHT)
+			local rooms, plates = 0, 0
+			for _, l in lamps do
+				rooms += if l.kind == "room" then 1 else 0
+				plates += if l.kind == "plate" then 1 else 0
+			end
+			Assert.truthy(rooms >= 1, level.id .. ": at least one room lamp")
+			Assert.eq(plates, #level.plates, level.id .. ": a lamp over every plate")
+			for i in level.plates do
+				Assert.truthy(string.match(KitPlan.letter(level, i), "^%u$") ~= nil, level.id .. ": plate letter")
+			end
+			for _, d in level.doors do
+				if #d.openBy > 0 and d.openBy[1].kind == "plate" then
+					Assert.truthy(
+						KitPlan.deviceLetters(level, d.openBy) ~= "",
+						level.id .. ": door " .. d.id .. " lettered"
+					)
+				end
+			end
+			local lit, shadowed = viewBudget(lamps)
+			Assert.le(lit, LIGHT.MAX_LIGHTS_PER_VIEW, level.id .. ": lights in one view")
+			Assert.le(shadowed, LIGHT.MAX_SHADOWED_PER_VIEW, level.id .. ": shadowed lights in one view")
+		end
+	end)
+
+	test("L6 vault row: A-D left to right from the scale room, on the frame's face, clear of the door lamp", function()
+		local level = byId("bk1_big_score")
+		local rows = KitPlan.vaultRows(level, LIGHT)
+		Assert.eq(#rows, 1, "one need-all door")
+		local row = rows[1]
+		Assert.eq(level.doors[row.door].id, "VaultDoor", "the vault door")
+		Assert.eq(#row.lamps, 4, "four lamps")
+		Assert.truthy(row.nz == 1 and row.nx == 0, "on the scale-room (+Z) face, toward the plates")
+		local letters = ""
+		local lastX = -math.huge
+		for _, l in row.lamps do
+			letters ..= l.letter
+			Assert.truthy(l.x > lastX, "left to right as you face the vault")
+			lastX = l.x
+			Assert.near(l.y, LIGHT.VAULT_ROW.y, 1e-6, "row height")
+			Assert.truthy(l.y + LIGHT.VAULT_ROW.size / 2 < 12, "under the wall top (nothing pokes above the cut-away)")
+			Assert.truthy(l.y - LIGHT.VAULT_ROW.size / 2 > 10, "over the door opening")
+			Assert.truthy(math.abs(l.x) >= 0.4 + LIGHT.VAULT_ROW.size / 2, "clear of the door lamp in the middle")
+			Assert.truthy(math.abs(l.x) <= 8, "inside the vault frame's width")
+			Assert.truthy(l.z > -47.5 and l.z < -46.5, "proud of the vault wall's scale-room face")
+		end
+		Assert.eq(letters, "ABCD", "lettered A-D")
+		-- every need-all daily door gets a row, an odd row clears the middle too
+		for _, spec in DailyVaults.designs do
+			local lv = LevelSpec.compile(spec)
+			for _, r in KitPlan.vaultRows(lv, LIGHT) do
+				local d = lv.doors[r.door]
+				Assert.eq(d.need, "all", lv.id .. ": rows only on need-all doors")
+				Assert.eq(#r.lamps, #d.openBy, lv.id .. ": a lamp per plate")
+				local cx = (d.box.minX + d.box.maxX) / 2
+				for _, l in r.lamps do
+					Assert.truthy(
+						math.abs(l.x - cx) >= 0.4 + LIGHT.VAULT_ROW.size / 2,
+						lv.id .. ": clear of the door lamp"
+					)
+				end
+			end
+		end
+	end)
+
+	test("L6 lobby: teller counters on the sim counters; shops keep their counters", function()
+		local level = byId("bk1_big_score")
+		local plan = KitPlan.plan(level, specs, { location = "Bank", dressing = true })
+		local tellers = 0
+		for _, item in plan.items do
+			if item.role == "counter" then
+				Assert.eq(item.pieces[1], "TellerCounter_8x4", "L6 counters are teller counters")
+				tellers += 1
+				local b = KitPlan.itemBox(item, specs)
+				Assert.truthy(
+					b.minZ >= -6.15 and b.maxZ <= -3.85,
+					"inside the sim counter's depth (trim 0.15): " .. boxText(b)
+				)
+				Assert.truthy(b.maxY <= 8, "screen under 8 studs")
+				for _, def in level.loot do
+					local onTop = def.x > b.minX and def.x < b.maxX and def.z > b.minZ and def.z < b.maxZ
+					Assert.falsy(onTop, "no loot on a teller counter (its glass screen)")
+				end
+			end
+		end
+		Assert.eq(tellers, 4, "two 8-stud modules either side of the gate")
+		for _, id in { "cs1_back_room", "cs3_lights_out", "cs4_night_clerk" } do
+			local lv = byId(id)
+			for _, item in KitPlan.plan(lv, specs, { dressing = true }).items do
+				Assert.truthy(item.pieces[1] ~= "TellerCounter_8x4", id .. ": no teller counter in a shop")
+			end
+		end
+	end)
+
+	test("L6 cables: B to the grid's west post, vault trunks C B A D west to east, no two cables touch", function()
+		local level = byId("bk1_big_score")
+		local cables = KitPlan.cables(level, LIGHT)
+		local function segs(cb: any): { any }
+			local out = {}
+			for k = 1, #cb.points - 1 do
+				table.insert(out, { cb.points[k], cb.points[k + 1] })
+			end
+			return out
+		end
+		local function gap(s1: any, s2: any): number
+			local ax0, ax1 = math.min(s1[1][1], s1[2][1]), math.max(s1[1][1], s1[2][1])
+			local az0, az1 = math.min(s1[1][2], s1[2][2]), math.max(s1[1][2], s1[2][2])
+			local bx0, bx1 = math.min(s2[1][1], s2[2][1]), math.max(s2[1][1], s2[2][1])
+			local bz0, bz1 = math.min(s2[1][2], s2[2][2]), math.max(s2[1][2], s2[2][2])
+			local dx = math.max(0, bx0 - ax1, ax0 - bx1)
+			local dz = math.max(0, bz0 - az1, az0 - bz1)
+			return math.sqrt(dx * dx + dz * dz)
+		end
+		local trunkX: { [string]: number } = {}
+		local laserEnd = nil
+		for _, cb in cables do
+			local last = cb.points[#cb.points]
+			local letter = KitPlan.letter(level, cb.plate)
+			if math.abs(last[2] - -47) < 1e-6 then
+				trunkX[letter] = last[1]
+			elseif math.abs(last[2] - -31.5) < 1e-6 then
+				laserEnd = { letter, last[1] }
+			end
+		end
+		Assert.truthy(laserEnd ~= nil and laserEnd[1] == "B" and laserEnd[2] == -19, "B ends at the grid's west post")
+		Assert.truthy(
+			trunkX.C < trunkX.B and trunkX.B < trunkX.A and trunkX.A < trunkX.D,
+			"vault trunks west to east: C, B, A, D"
+		)
+		for i, c1 in cables do
+			for j, c2 in cables do
+				if j > i and c1.plate ~= c2.plate then
+					for _, s1 in segs(c1) do
+						for _, s2 in segs(c2) do
+							Assert.truthy(
+								gap(s1, s2) >= LIGHT.CABLE_WIDTH - 1e-6,
+								string.format("plates %d and %d: cables never cross or touch", c1.plate, c2.plate)
+							)
+						end
+					end
+				end
+			end
+		end
+	end)
+
+	test("L6 alley: outside the building (no kit floor, snow falls), the shops unchanged", function()
+		local BackdropPlan = require("../../src/shared/Heist/BackdropPlan")
+		for _, level in levels() do
+			local b = KitPlan.buildingBox(level)
+			local site = BackdropPlan.levelSite(level)
+			if b and site.footprint then
+				local f = site.footprint :: any
+				Assert.truthy(
+					math.abs(f.minX - b.minX) < 1e-6
+						and math.abs(f.maxX - b.maxX) < 1e-6
+						and math.abs(f.minZ - b.minZ) < 1e-6
+						and math.abs(f.maxZ - b.maxZ) < 1e-6,
+					level.id .. ": BackdropPlan's footprint is KitPlan's building"
+				)
+			end
+		end
+		local l6 = byId("bk1_big_score")
+		local b = KitPlan.buildingBox(l6) :: any
+		Assert.truthy(b.minX > -21 and b.maxX < 21 and b.minZ > -61, "L6 building: the bank, not the fenced lot")
+		local plan = KitPlan.plan(l6, specs, { location = "Bank", dressing = true })
+		for _, item in plan.items do
+			if item.role == "floor" then
+				local fb = KitPlan.itemBox(item, specs)
+				Assert.truthy(fb.minX >= b.minX - 1e-3 and fb.maxX <= b.maxX + 1e-3, "no kit floor in the side alleys")
+				Assert.truthy(fb.minZ >= b.minZ - 1e-3, "no kit floor in the service alley")
+			end
+		end
+		local l1 = byId("cs1_back_room")
+		local b1 = KitPlan.buildingBox(l1) :: any
+		Assert.truthy(b1.minX < -16 and b1.maxX > 16 and b1.maxZ > 10, "L1 building: the whole shop")
+	end)
+
+	test("soft pools: a smooth falloff with each kind's old brightness (x gain)", function()
+		local soft = LIGHT.POOL_SOFT
+		for kind, spec in LIGHT.LAMP do
+			local stepped = spec.poolRings or LIGHT.POOL.rings
+			local rings = KitPlan.poolRings(stepped, soft)
+			Assert.eq(#rings, soft.rings, kind .. ": ring count")
+			-- stacked opacity at each band's middle follows peak * (1 - u^2)^exponent
+			local peak = KitPlan.poolPeak(stepped, soft)
+			Assert.truthy(peak > 0.3 and peak <= soft.peakMax, kind .. ": peak " .. peak)
+			local through = 1
+			local last = -1
+			for k, r in rings do
+				through *= r.alpha
+				local inner = if rings[k + 1] then rings[k + 1].size else 0
+				local u = (r.size + inner) / 2
+				local want = peak * (1 - u * u) ^ soft.exponent
+				Assert.near(1 - through, want, 1e-3, kind .. ": opacity at u " .. u)
+				Assert.truthy(1 - through >= last - 1e-9, kind .. ": brighter toward the centre")
+				last = 1 - through
+				Assert.truthy(r.alpha >= 0 and r.alpha <= 1, kind .. ": a valid transparency")
+			end
+			Assert.truthy(1 - rings[1].alpha < 0.12, kind .. ": the outermost disc is faint (no hard rim)")
+			-- the area-weighted brightness matches the old discs (unless capped)
+			local function mean(list: { any }): number
+				local sorted = table.clone(list)
+				table.sort(sorted, function(a: any, b: any): boolean
+					return a.size > b.size
+				end)
+				local m, t = 0, 1
+				for k, r in sorted do
+					t *= r.alpha
+					local inner = if sorted[k + 1] then sorted[k + 1].size else 0
+					m += (1 - t) * (r.size * r.size - inner * inner)
+				end
+				return m
+			end
+			if peak < soft.peakMax - 1e-6 then
+				Assert.near(
+					mean(rings),
+					mean(stepped) * (soft.gain or 1),
+					0.03,
+					kind .. ": the old mean brightness x gain"
+				)
+			end
+		end
+	end)
+
+	test(
+		"pool rects: no pool crosses a wall (street pools stop at the shop front, the vault's at its walls)",
+		function()
+			local cut = 0
+			for _, level in levels() do
+				local walls = {}
+				for _, sd in level.spec.solids or {} do
+					local bx = sd.box
+					if bx.maxY - bx.minY >= 8 and math.min(bx.maxX - bx.minX, bx.maxZ - bx.minZ) <= 1.5 then
+						table.insert(walls, bx)
+					end
+				end
+				for _, l in KitPlan.lamps(level, LevelDress[level.id], LIGHT) do
+					local spec = LIGHT.LAMP[l.kind]
+					local d = spec.pool or (if l.kind == "hero" then LIGHT.POOL.heroDiameter else LIGHT.POOL.diameter)
+					local r = KitPlan.poolRect(level, l.x, l.z, d)
+					local what = string.format("%s: %s pool at (%g, %g)", level.id, l.kind, l.x, l.z)
+					Assert.truthy(
+						r.minX <= l.x and r.maxX >= l.x and r.minZ <= l.z and r.maxZ >= l.z,
+						what .. ": lamp inside"
+					)
+					Assert.truthy(r.maxX - r.minX <= d + 1e-9 and r.maxZ - r.minZ <= d + 1e-9, what .. ": never bigger")
+					cut += if r.maxX - r.minX < d - 1e-9 or r.maxZ - r.minZ < d - 1e-9 then 1 else 0
+					for _, bx in walls do
+						-- a wall line strictly inside the rect would mean light on both sides of it
+						local alongX = bx.maxX - bx.minX >= bx.maxZ - bx.minZ
+						local line = if alongX then (bx.minZ + bx.maxZ) / 2 else (bx.minX + bx.maxX) / 2
+						local crosses = if alongX
+							then line > r.minZ + 1e-6 and line < r.maxZ - 1e-6 and bx.maxX > r.minX and bx.minX < r.maxX
+							else line > r.minX + 1e-6 and line < r.maxX - 1e-6 and bx.maxZ > r.minZ and bx.minZ < r.maxZ
+						Assert.falsy(crosses, what .. " crosses the wall " .. boxText(bx))
+					end
+				end
+			end
+			Assert.truthy(cut >= 16, "the street pools (and more) are cut (" .. cut .. ")")
+		end
+	)
+
+	test("hide plates: L4's B under the coat rack, L6's A-D under the desk, fern and stacks", function()
+		local function letters(id: string): { [string]: string }
+			local out = {}
+			local level = byId(id)
+			for _, hp in KitPlan.hidePlates(level) do
+				out[level.hides[hp.hide].id] = hp.letters
+			end
+			return out
+		end
+		local l4 = letters("cs4_night_clerk")
+		Assert.eq(l4.CoatRack, "B", "L4: B under the coat rack")
+		Assert.eq(l4.Crate, nil, "L4: no plate in the crate")
+		local l6 = letters("bk1_big_score")
+		Assert.eq(l6.TellerDesk, "A", "L6: A at the teller desk")
+		Assert.eq(l6.Fern, "B", "L6: B under the fern")
+		Assert.eq(l6.WestStack, "C", "L6: C under the west stack")
+		Assert.eq(l6.EastStack, "D", "L6: D under the east stack")
 	end)
 end

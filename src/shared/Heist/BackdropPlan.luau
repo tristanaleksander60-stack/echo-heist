@@ -44,11 +44,29 @@ function BackdropPlan.levelSite(level: any): Site
 	local b = level.bounds
 	local fp: Rect? = nil
 	local front: number? = nil
+	-- The building is the walls inside the street front's X extent; walls past it are a lot's fence (L6's service
+	-- alley stays outdoors: snow falls there). Heist/KitPlan.buildingBox uses the same rule for the floor tiles.
+	local walls = {}
+	local frontLine = -math.huge
 	for _, s in level.spec.solids or {} do
 		local box = s.box
 		local h = box.maxY - box.minY
 		local thin = math.min(box.maxX - box.minX, box.maxZ - box.minZ)
 		if h >= 8 and thin <= 1.5 then
+			table.insert(walls, box)
+			if box.maxX - box.minX > box.maxZ - box.minZ then
+				frontLine = math.max(frontLine, (box.minZ + box.maxZ) / 2)
+			end
+		end
+	end
+	local fx0, fx1 = math.huge, -math.huge
+	for _, box in walls do
+		if box.maxX - box.minX > box.maxZ - box.minZ and math.abs((box.minZ + box.maxZ) / 2 - frontLine) < 0.01 then
+			fx0, fx1 = math.min(fx0, box.minX), math.max(fx1, box.maxX)
+		end
+	end
+	for _, box in walls do
+		if fx0 > fx1 or (box.minX >= fx0 - 0.01 and box.maxX <= fx1 + 0.01) then
 			if fp == nil then
 				fp = rect(box.minX, box.maxX, box.minZ, box.maxZ)
 			else

@@ -324,6 +324,10 @@ function KitDresser.dress(level: any, built: any, origin: Vector3, kit: any, opt
 				elseif item.role == "van" then
 					-- The kit van is visual only; the greybox van body keeps its size and
 					-- place as the collider (collision never changes, HeistKitPlan spec).
+					-- Tagged so the client can bounce it when loot is banked (WorldView, FEEDBACK_TABLE "Van").
+					for _, p in parts do
+						p:SetAttribute("EH_Kind", "vanKit")
+					end
 					local body = built.vanBody
 					local vb = plan.vanBox
 					if body then

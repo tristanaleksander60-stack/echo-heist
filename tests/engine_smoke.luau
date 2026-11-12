@@ -1186,5 +1186,162 @@ do
 	end
 end
 
+-- 9. L6 "need all 4" lamp row and the teller lobby (levels and world feedback track, LEVELS P1-3, PLAN §7): the
+-- server builds a lettered lamp per vault plate on the vault frame's scale-room face (A-D west to east) and the
+-- "VAULT n/4" count; the client's WorldView colours each lamp in its presser's hue from the plate attributes and
+-- counts; the lobby counters are TellerCounter_8x4 (with their glass screen) on the sim counters; the pools carry
+-- the soft image label and soft discs; plates inside hides hang their letter over the hide.
+do
+	local Config = GameConfig :: any
+	local LIGHT = Config.Lighting
+	local heistServer = server:WaitForChild("Heist")
+	local Palette = require(sharedFolder:WaitForChild("Heist"):WaitForChild("Palette"))
+	local okReq, err = pcall(function()
+		local LevelBuilder = require(heistServer:WaitForChild("LevelBuilder"))
+		local HeistService = require(heistServer:WaitForChild("HeistService"))
+		local HeistInstance = require(heistServer:WaitForChild("HeistInstance"))
+		local okKit, KitService = pcall(require, server:WaitForChild("Kit"):WaitForChild("KitService"))
+		local kitReady = okKit and KitService.isReady()
+		local l6 = HeistInstance.levelData(HeistService.indexOf("bk1_big_score") :: number)
+		local scratch = Instance.new("Folder")
+		scratch.Name = "RowScratch"
+		scratch.Parent = workspace
+		local origin = Vector3.new(-9000, 0, 0)
+		local b6 = LevelBuilder.build(l6, origin, scratch, {
+			kit = if kitReady then KitService else nil,
+			dressing = true,
+		})
+		local lamps: { BasePart } = {}
+		local count: BasePart? = nil
+		local tellers, glass, pools, softPools, hidePlaques = 0, 0, 0, 0, 0
+		for _, d in b6.model:GetDescendants() do
+			local kind = d:GetAttribute("EH_Kind")
+			if kind == "vaultLamp" and d:IsA("BasePart") then
+				table.insert(lamps, d)
+			elseif kind == "vaultCount" and d:IsA("BasePart") then
+				count = d
+			elseif kind == "lightPool" then
+				pools += 1
+				local gui = d:FindFirstChildOfClass("SurfaceGui")
+				local rings = 0
+				for _, c in (if gui then gui:GetDescendants() else {}) do
+					rings += if c:IsA("Frame") and c.Name == "Ring" then 1 else 0
+				end
+				local soft = gui and gui:FindFirstChild("Soft", true)
+				if soft and soft:IsA("ImageLabel") and rings == LIGHT.POOL_SOFT.rings then
+					softPools += 1
+				end
+			elseif kind == "plaque" and d.Parent and d.Parent:GetAttribute("EH_Kind") == "hide" then
+				hidePlaques += 1
+			end
+			local piece = d:GetAttribute("KitPiece")
+			if piece == "TellerCounter_8x4" then
+				tellers += 1
+			elseif piece == "TellerCounter_8x4_Glass" then
+				glass += 1
+			end
+		end
+		table.sort(lamps, function(a: BasePart, b: BasePart): boolean
+			return a.Position.X < b.Position.X
+		end)
+		local letters = ""
+		local placed = 0
+		for _, l in lamps do
+			local gui = l:FindFirstChildOfClass("SurfaceGui")
+			local label = gui and gui:FindFirstChildWhichIsA("TextLabel", true)
+			letters ..= if label then label.Text else "?"
+			local rel = l.Position - origin
+			if math.abs(rel.Y - LIGHT.VAULT_ROW.y) < 0.01 and rel.Z > -47.5 and rel.Z < -46.5 then
+				placed += 1
+			end
+		end
+		check(
+			#lamps == 4 and letters == "ABCD",
+			string.format("L6 row: 4 lamps lettered A-D west to east (%s)", letters)
+		)
+		check(placed == 4, string.format("L6 row: over the vault door on the scale-room face (%d/4)", placed))
+		local countLabel = count and count:FindFirstChildWhichIsA("TextLabel", true)
+		check(
+			countLabel ~= nil and countLabel.Text == "VAULT 0/4",
+			"L6 row: the VAULT 0/4 count (" .. (if countLabel then countLabel.Text else "missing") .. ")"
+		)
+		check(
+			pools >= 10 and softPools == pools,
+			string.format(
+				"soft pools: every pool has its soft label and %d discs (%d/%d)",
+				LIGHT.POOL_SOFT.rings,
+				softPools,
+				pools
+			)
+		)
+		check(
+			hidePlaques == 4,
+			string.format("L6: the letters of the four hidden plates over their hides (%d)", hidePlaques)
+		)
+		if kitReady then
+			check(
+				tellers == 4 and glass == 4,
+				string.format("L6 lobby: 4 teller counters with their glass screens (%d, %d glass)", tellers, glass)
+			)
+		else
+			check(false, "L6 lobby: kit ready for the teller counters")
+		end
+		-- The client view drives the row from the plate attributes (no remote): A and B held by seat 1.
+		local clientHeist = game:GetService("StarterPlayer")
+			:WaitForChild("StarterPlayerScripts")
+			:WaitForChild("Client")
+			:WaitForChild("Heist")
+		local WorldView = require(clientHeist:WaitForChild("WorldView"))
+		local folder = Instance.new("Folder")
+		folder.Name = "RowState"
+		folder.Parent = scratch
+		local vstate = {
+			origin = origin,
+			folder = folder,
+			level = l6,
+			levelIndex = HeistService.indexOf("bk1_big_score"),
+			crew = {},
+			actorFx = {},
+			phase = "Run",
+			run = { actorById = { [7] = { id = 7, kind = "clone", seat = 1, owner = -1 } } },
+		}
+		local view = WorldView.new(vstate, function(): Vector3?
+			return nil
+		end)
+		view.bind(b6.model)
+		for i = 1, 4 do
+			folder:SetAttribute("P" .. i .. "Held", i <= 2)
+			folder:SetAttribute("P" .. i .. "By", if i <= 2 then 7 else 0)
+		end
+		view.update(0, os.clock(), 1 / 60)
+		local hue = Palette.hueFor(1)
+		local lit, idle = 0, 0
+		for k, l in lamps do
+			if k <= 2 and l.Color == hue and l.Transparency == 0 then
+				lit += 1
+			elseif k > 2 and l.Color == Palette.bulbWarm and l.Transparency == LIGHT.VAULT_ROW.idleAlpha then
+				idle += 1
+			end
+		end
+		check(
+			lit == 2 and idle == 2,
+			string.format("L6 row: A, B in the presser's hue, C, D idle (%d lit, %d idle)", lit, idle)
+		)
+		check(
+			countLabel ~= nil and countLabel.Text == "VAULT 2/4",
+			"L6 row: WorldView counts VAULT 2/4 (" .. (if countLabel then countLabel.Text else "missing") .. ")"
+		)
+		local bankCalls = 0
+		local off = view.onBank(function()
+			bankCalls += 1
+		end)
+		off()
+		check(bankCalls == 0 and type(off) == "function", "WorldView.onBank: a hook the HUD can add and remove")
+		view.clear()
+		scratch:Destroy()
+	end)
+	check(okReq, "L6 row and lobby section ran" .. (if okReq then "" else ": " .. tostring(err)))
+end
+
 table.insert(results, string.format("%d failure(s)", failures))
 return table.concat(results, "\n")

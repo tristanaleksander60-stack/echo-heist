@@ -28,9 +28,7 @@ local function check(ok: boolean, msg: string)
 end
 
 -- Files owned by other tracks (not edited by the UI track), each with its reason.
-local ALLOW_STROKE: { [string]: string } = {
-	["src/client/Heist/WorldView.luau"] = "world track (WorldView): moves to Ui.textStroke with its next change",
-}
+local ALLOW_STROKE: { [string]: string } = {}
 local ALLOW_TWEEN: { [string]: string } = {
 	["src/client/Heist/Motion.luau"] = "the motion module",
 }
