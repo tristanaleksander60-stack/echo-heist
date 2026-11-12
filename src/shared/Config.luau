@@ -455,11 +455,11 @@ Config.Gus = {
 	RUN_STRIDE = 3.5,
 	RUN_SPEED = 14,
 	RUN_HIP_SWING = 42,
-	RUN_KNEE_LIFT = 75,
-	RUN_ARM_SWING = 45,
+	RUN_KNEE_LIFT = 85,
+	RUN_ARM_SWING = 55,
 	RUN_ELBOW = 80,
 	RUN_BOB = 0.3,
-	RUN_LEAN = 14,
+	RUN_LEAN = 18,
 	RUN_WADDLE = 7, -- side-to-side roll
 	RUN_HEAD_BOB = 8, -- neck pitch per step
 	-- Secondary motion (C5): torch sway, head/moustache and cap lag behind the step bob.
