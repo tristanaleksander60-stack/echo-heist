@@ -411,6 +411,22 @@ local function styleNow(): string
 end
 local styleAtBoot = styleNow()
 info("Lighting.LightingStyle at boot (the project file's recipe A): " .. styleAtBoot)
+-- The project's pair must survive the load: LightingStyle Realistic + PrioritizeLightingQuality on. A file without
+-- Lighting.Technology loads it as Voxel, which the engine maps to Soft + off (tests/place_check.luau, PERF.md §4);
+-- this fails until default.project.json's Lighting lists "Technology": "Future".
+do
+	local okP, prio = pcall(function()
+		return Lighting.PrioritizeLightingQuality
+	end)
+	check(
+		styleAtBoot == "Enum.LightingStyle.Realistic" and okP and prio == true,
+		string.format(
+			"Lighting at boot is the project's: LightingStyle %s, PrioritizeLightingQuality %s (want Realistic, true)",
+			styleAtBoot,
+			if okP then tostring(prio) else "unreadable"
+		)
+	)
+end
 pcall(function()
 	Config.Heist.XMAS_DRESSING = "on" -- the launch edition is the Christmas one: measure with its layer
 end)
