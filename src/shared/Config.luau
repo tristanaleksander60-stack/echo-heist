@@ -738,6 +738,77 @@ Config.LiveFlags = {
 	},
 }
 
+-- Light and levels (PLAN_STEAM_PLUS §4.1 W1-W3, docs/research/roblox_quality.md §1.2, docs/audit/LEVELS.md
+-- §4 P0). The global recipe A "Moonlit Diorama" lives in default.project.json (place_check asserts it); the
+-- Sky keeps Roblox's faces until the plain night faces (assets/textures/EH_SkyNight_*.png,
+-- tools/blender/sky_faces.py) are uploaded and pasted into the project's Sky node; the city cubemap is phase 2.
+-- Lamps: Heist/KitPlan.lamps (one over each plate, a hero over the goal, room centres from Heist/LevelDress),
+-- built by Heist/LevelBuilder (light + unlit floor pool) and dressed with Lamp_Ceiling by Heist/KitDresser.
+Config.Lighting = {
+	-- Per lamp kind: PointLight (room, plate) or a downward SpotLight (hero, the only shadowed one).
+	LAMP = {
+		room = { range = 20, brightness = 1.2, color = { 255, 205, 150 }, shadows = false },
+		plate = { range = 18, brightness = 1.3, color = { 255, 205, 150 }, shadows = false },
+		hero = { range = 36, brightness = 3, angle = 60, color = { 255, 214, 160 }, shadows = true },
+	},
+	LAMP_HANG_Y = 12, -- studs above the floor: Lamp_Ceiling hangs from the wall tops (its pivot)
+	LIGHT_Y = 8.2, -- the light's attachment, under the shade (a shadowed light inside its lamp is shadowed by it)
+	BULB_Y = 8.95, -- the greybox bulb (Lamp_Ceiling_Bulb's centre)
+	BULB_SIZE = 0.84,
+	BULB_COLOR = { 246, 192, 162 }, -- Bulb Warm #F6C0A2 (eh_palette.NEON, rule N1)
+	-- Unlit floor pool under every lamp (SurfaceGui, LightInfluence 0: decals are lit and darken at night):
+	-- concentric discs, outermost first; size = share of the diameter, alpha = transparency.
+	POOL = {
+		diameter = 14,
+		heroDiameter = 11,
+		lift = 0.06, -- studs above the floor (kit floor tiles sit at +0.02, cables at +0.03..0.06)
+		brightness = 1.2,
+		color = { 216, 200, 168 }, -- Warm Marble #D8C8A8
+		rings = { { size = 1, alpha = 0.88 }, { size = 0.7, alpha = 0.8 }, { size = 0.42, alpha = 0.72 } },
+		pixelsPerStud = 8,
+	},
+	MIN_LAMP_GAP = 7, -- studs: a room lamp this close to a plate or hero lamp is skipped
+	AUTO_ROOM_WIDE = 24, -- studs: an auto room wider than this gets two lamps (daily vaults without LevelDress)
+	VIEW_RADIUS = 24, -- studs: "one view" for the light budget (a 32 x 24 room)
+	MAX_LIGHTS_PER_VIEW = 9, -- roblox_quality §1.2 / §6.4: 6-9 lights per view ...
+	MAX_SHADOWED_PER_VIEW = 2, -- ... at most 2 shadowed
+	-- Client LightDirector by performance tier (Config.Heist.PERF_TIERS): shadows off from this tier, pools
+	-- off from this tier (roblox_quality §6.4: T3 phones get 6 lights, 0 shadowed).
+	SHADOWS_OFF_TIER = 3,
+	POOLS_OFF_TIER = 4,
+
+	-- Plates (LEVELS P0-1): the idle rim glows in Bulb Warm and breathes; the letter sits on the top face.
+	PLATE_IDLE_ALPHA = 0.5,
+	PLATE_BREATHE = 0.15, -- +- transparency
+	PLATE_BREATHE_HZ = 0.5, -- far under Config.Heist.BLINK_HZ_MAX; steady under reduced motion
+	PLATE_LETTER_SIZE = 2.6, -- studs: the letter's square on the plate
+	PLATE_LETTER_YAW = 0, -- degrees: turns the top-face letter (180 if it reads upside down from the street)
+	PLAQUE_SIZE = 1.6, -- studs: the letter disc on each device a plate drives
+	PLAQUE_DOOR_DX = 2, -- studs beside the door lamp on the header
+	PLAQUE_DOOR_Y = 10.8,
+	PLAQUE_LASER_Y = 7, -- on the laser's near post
+	CABLE_WIDTH = 0.5, -- idle cables in Vault Steel, 0.5 wide (LEVELS P0-2)
+	CABLE_JAMB_INSET = 0.5, -- a door cable ends this far inside its near jamb
+	CABLE_TRUNK_GAP = 1, -- several plates into one device: parallel trunks this far apart
+
+	-- Doors (LEVELS P0-5, STYLE_BIBLE §5.2): leaves pocket-slide sideways, shutters roll up into the header.
+	SHUTTER_ROLLED = 0.35, -- Size.Y of a rolled-up shutter (top pinned)
+
+	-- Goal sparkle (LEVELS P0-4): items worth at least this, and top items, sparkle while at home.
+	SPARKLE_MIN_VALUE = 100,
+	SPARKLE_RATE = 2.5, -- particles a second (<= BLINK_HZ_MAX flashes)
+	SPARKLE_COLOR = { 255, 230, 156 }, -- Heist Gold light
+
+	-- Van zone (LEVELS P0-6): dim until you carry loot, then lit with arrows that point at the van.
+	VAN_IDLE_ALPHA = 0.85,
+	VAN_CARRY_ALPHA = 0.6,
+	ARROW_IDLE_ALPHA = 0.75,
+	ARROW_COUNT = 3,
+	ARROW_STEP = 2.4, -- studs between arrows along the zone
+	ARROW_HEAD = { 2.4, 1.2 }, -- studs: head width, length
+	ARROW_SHAFT = { 0.7, 1.0 }, -- studs: shaft width, length
+}
+
 -- Art kit (spike S2, automated path: docs/art/KIT_IMPORT.md "Automated path"). The asset ids and the
 -- manifest live in the generated src/server/Kit/KitData.luau (python3 tools/kit_upload.py); these are
 -- the boot knobs of src/server/Kit/KitService.luau.

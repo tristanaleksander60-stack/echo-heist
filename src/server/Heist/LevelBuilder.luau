@@ -25,6 +25,11 @@ local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 
 local KitDresser = require(script.Parent:WaitForChild("KitDresser"))
+local KitPlan = require(script.Parent:WaitForChild("KitPlan"))
+local LevelDress = require(script.Parent:WaitForChild("LevelDress"))
+
+local LIGHT = Config.Lighting
+local FONT = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
 
 local LevelBuilder = {}
 
@@ -41,6 +46,8 @@ export type Built = {
 	hides: { Model },
 	van: BasePart,
 	vanBody: BasePart,
+	lamps: { BasePart }, -- greybox bulbs (EH_Kind "ceilingLamp"), each holding its Light; KitPlan.lamps order
+	pools: { BasePart }, -- unlit floor pools (EH_Kind "lightPool")
 	kit: boolean, -- dressed with the art kit
 	dressing: boolean, -- Christmas layer placed
 	kitResult: any?, -- KitDresser.Result (pieces, failures, why)
@@ -88,27 +95,25 @@ local function tag(inst: Instance, kind: string, index: number, id: string?)
 	end
 end
 
--- An L-shaped floor cable from a plate to the device it drives (§7.3).
-local function cable(
-	parent: Instance,
-	origin: Vector3,
-	y: number,
-	from: Vector3,
-	to: Vector3,
-	plate: number
-): { BasePart }
+local function rgb(t: { number }): Color3
+	return Color3.fromRGB(t[1], t[2], t[3])
+end
+
+-- A floor cable from a plate to the device it drives (§7.3): KitPlan.cables' polyline, legs overlapping
+-- by half a width so the corners close. Idle in Vault Steel (LEVELS P0-2); WorldView lights it.
+local function cable(parent: Instance, origin: Vector3, y: number, points: { { number } }, plate: number): { BasePart }
 	local out = {}
-	local corner = Vector3.new(to.X, y, from.Z)
-	local legs = { { Vector3.new(from.X, y, from.Z), corner }, { corner, Vector3.new(to.X, y, to.Z) } }
-	for _, leg in legs do
-		local a, b = leg[1], leg[2]
+	local w = LIGHT.CABLE_WIDTH
+	for k = 1, #points - 1 do
+		local a = Vector3.new(points[k][1], y, points[k][2])
+		local b = Vector3.new(points[k + 1][1], y, points[k + 1][2])
 		local len = (b - a).Magnitude
 		if len > 0.1 then
 			local c = part({
 				Name = "Cable",
-				Size = Vector3.new(0.3, 0.06, len + 0.3),
+				Size = Vector3.new(w, 0.06, len + w),
 				CFrame = CFrame.lookAt(origin + (a + b) / 2, origin + b),
-				Color = Palette.steelLo,
+				Color = Palette.steel,
 				CanCollide = false,
 				CanQuery = false,
 				CanTouch = false,
@@ -122,23 +127,184 @@ local function cable(
 	return out
 end
 
-local function deviceCenters(level: any, plateIndex: number): { Vector3 }
-	local out = {}
-	for _, d in level.doors do
-		for _, src in d.openBy do
-			if src.kind == "plate" and src.index == plateIndex then
-				local c = boxCenter(d.box)
-				table.insert(out, Vector3.new(c.X, 0, c.Z))
-			end
-		end
+-- Unlit letter on one face of a part (LightInfluence 0: readable at night without a light).
+local function letterGui(host: BasePart, face: Enum.NormalId, text: string, textColor: Color3, disc: Color3?)
+	local gui = Instance.new("SurfaceGui")
+	gui.Name = "Letter" .. face.Name
+	gui.Face = face
+	gui.LightInfluence = 0
+	gui.Brightness = 1
+	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+	gui.PixelsPerStud = 40
+	gui.MaxDistance = 250
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.fromScale(1, 1)
+	label.BackgroundTransparency = 1
+	label.Text = text
+	label.TextScaled = true
+	label.FontFace = FONT
+	label.TextColor3 = textColor
+	if disc then
+		local f = Instance.new("Frame")
+		f.Size = UDim2.fromScale(1, 1)
+		f.BackgroundColor3 = disc
+		f.BorderSizePixel = 0
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0.5, 0)
+		corner.Parent = f
+		f.Parent = gui
+		label.Parent = f
+	else
+		label.Parent = gui
 	end
-	for _, l in level.lasers do
-		for _, src in l.offBy do
-			if src.kind == "plate" and src.index == plateIndex then
-				local c = boxCenter(l.box)
-				table.insert(out, Vector3.new(l.box.maxX + 0.5, 0, c.Z))
-			end
-		end
+	gui.Parent = host
+end
+
+-- A letter disc on a device (LEVELS P0-1): readable from both sides of its wall line.
+local function plaque(parent: Instance, at: Vector3, alongX: boolean, depth: number, letters: string): BasePart
+	local h = LIGHT.PLAQUE_SIZE
+	local w = h * math.max(1, 0.55 * #letters + 0.45)
+	local p = part({
+		Name = "Plaque",
+		Size = Vector3.new(w, h, depth),
+		CFrame = CFrame.new(at) * (if alongX then CFrame.identity else CFrame.Angles(0, math.pi / 2, 0)),
+		Transparency = 1,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		CastShadow = false,
+	}, parent)
+	p:SetAttribute("EH_Kind", "plaque")
+	for _, face in { Enum.NormalId.Front, Enum.NormalId.Back } do
+		letterGui(p, face, letters, Palette.ink, Palette.steel)
+	end
+	return p
+end
+
+-- A ceiling lamp's light and its unlit floor pool (roblox_quality §1.2: one light per lamp, a SurfaceGui pool
+-- with LightInfluence 0, never a plain Decal). The bulb is the greybox look; KitDresser hangs Lamp_Ceiling
+-- over it and hides it. Only the hero lamp casts shadows (tagged EH_HeroShadow for LightDirector).
+local function ceilingLamp(
+	parent: Instance,
+	origin: Vector3,
+	floorY: number,
+	l: any,
+	index: number
+): (BasePart, BasePart)
+	local spec = LIGHT.LAMP[l.kind] or LIGHT.LAMP.room
+	local bulb = part({
+		Name = "CeilingLamp",
+		Shape = Enum.PartType.Ball,
+		Size = Vector3.one * LIGHT.BULB_SIZE,
+		CFrame = CFrame.new(origin + Vector3.new(l.x, floorY + LIGHT.BULB_Y, l.z)),
+		Color = rgb(LIGHT.BULB_COLOR),
+		Material = Enum.Material.Neon,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		CastShadow = false,
+	}, parent)
+	bulb:SetAttribute("EH_Kind", "ceilingLamp")
+	bulb:SetAttribute("EH_Index", index)
+	bulb:SetAttribute("EH_LampKind", l.kind)
+	local at = Instance.new("Attachment")
+	at.Name = "LightAt"
+	at.Position = Vector3.new(0, LIGHT.LIGHT_Y - LIGHT.BULB_Y, 0)
+	at.Parent = bulb
+	local light: Light
+	if l.kind == "hero" then
+		local spot = Instance.new("SpotLight")
+		spot.Angle = spec.angle
+		spot.Face = Enum.NormalId.Bottom
+		light = spot
+	else
+		light = Instance.new("PointLight")
+	end
+	light.Range = spec.range
+	light.Brightness = spec.brightness
+	light.Color = rgb(spec.color)
+	light.Shadows = spec.shadows == true
+	if spec.shadows then
+		light:SetAttribute("EH_HeroShadow", true)
+	end
+	light.Parent = at
+
+	local pc = LIGHT.POOL
+	local d = if l.kind == "hero" then pc.heroDiameter else pc.diameter
+	local pool = part({
+		Name = "LightPool",
+		Size = Vector3.new(d, 0.05, d),
+		CFrame = CFrame.new(origin + Vector3.new(l.x, floorY + pc.lift, l.z)),
+		Transparency = 1,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		CastShadow = false,
+	}, parent)
+	pool:SetAttribute("EH_Kind", "lightPool")
+	pool:SetAttribute("EH_Index", index)
+	local gui = Instance.new("SurfaceGui")
+	gui.Name = "Pool"
+	gui.Face = Enum.NormalId.Top
+	gui.LightInfluence = 0
+	gui.Brightness = pc.brightness
+	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+	gui.PixelsPerStud = pc.pixelsPerStud
+	gui.MaxDistance = 250
+	for _, ring in pc.rings do
+		local f = Instance.new("Frame")
+		f.AnchorPoint = Vector2.new(0.5, 0.5)
+		f.Position = UDim2.fromScale(0.5, 0.5)
+		f.Size = UDim2.fromScale(ring.size, ring.size)
+		f.BackgroundColor3 = rgb(pc.color)
+		f.BackgroundTransparency = ring.alpha
+		f.BorderSizePixel = 0
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0.5, 0)
+		corner.Parent = f
+		f.Parent = gui
+	end
+	gui.Parent = pool
+	return bulb, pool
+end
+
+-- Getaway arrows pointing at the van (+Z), flat on the zone (LEVELS P0-6): a shaft and a triangle head made
+-- of two flat WedgeParts (each wedge's right-angled section laid in the floor plane by CFrame.fromMatrix:
+-- local Y, its base leg, runs to world +-X; local -Z, its other leg, runs to world +Z, the van).
+local function arrow(parent: Instance, origin: Vector3, y: number, cx: number, z0: number): { BasePart }
+	local headW, headL = LIGHT.ARROW_HEAD[1], LIGHT.ARROW_HEAD[2]
+	local shaftW, shaftL = LIGHT.ARROW_SHAFT[1], LIGHT.ARROW_SHAFT[2]
+	local zBase = z0 + shaftL
+	local t = 0.08
+	local out = {}
+	local shaft = part({
+		Name = "ArrowShaft",
+		Size = Vector3.new(shaftW, t, shaftL),
+		CFrame = CFrame.new(origin + Vector3.new(cx, y, z0 + shaftL / 2)),
+		Color = Palette.exit,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		CastShadow = false,
+	}, parent)
+	table.insert(out, shaft)
+	for _, side in { 1, -1 } do
+		local vy = Vector3.new(side, 0, 0)
+		local vz = Vector3.new(0, 0, -1)
+		local vx = vy:Cross(vz)
+		local pos = origin + Vector3.new(cx + side * headW / 4, y, zBase + headL / 2)
+		local w = part({
+			ClassName = "WedgePart",
+			Name = "ArrowHead",
+			Size = Vector3.new(t, headW / 2, headL),
+			CFrame = CFrame.fromMatrix(pos, vx, vy, vz),
+			Color = Palette.exit,
+			CanCollide = false,
+			CanQuery = false,
+			CanTouch = false,
+			CastShadow = false,
+		}, parent)
+		table.insert(out, w)
 	end
 	return out
 end
@@ -155,12 +321,13 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 	local floorY = level.floorY
 	local b = level.bounds
 
-	-- Floor: street side in Ink Indigo light, shop side in Plum Slate deep.
+	-- Floor: the lit `floor` swatch (W3: floors sit a value step above Ink, which is black under any night
+	-- light); the kit's checker tiles cover it inside the building.
 	local floor = part({
 		Name = "Floor",
 		Size = Vector3.new(b.maxX - b.minX, 2, b.maxZ - b.minZ),
 		CFrame = CFrame.new(origin + Vector3.new((b.minX + b.maxX) / 2, floorY - 1, (b.minZ + b.maxZ) / 2)),
-		Color = Palette.plumDeep,
+		Color = Palette.floor,
 	}, model)
 
 	local solids: { BasePart } = {}
@@ -193,7 +360,9 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 		)
 	end
 
-	-- Plates: steel pad with a white icon; the rim takes the presser's hue (client).
+	-- Plates: steel pad with its letter on top; the rim glows Bulb Warm idle and takes the presser's hue
+	-- (client, WorldView). The letter moves onto the kit plate when KitDresser swaps the pad.
+	local cables = KitPlan.cables(level, LIGHT)
 	local plates: { BasePart } = {}
 	for i, def in level.plates do
 		local c = boxCenter(def.box)
@@ -209,22 +378,31 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 			Name = "Rim",
 			Size = Vector3.new(4.6, 0.14, 4.6),
 			CFrame = CFrame.new(origin + Vector3.new(c.X, floorY + 0.07, c.Z)),
-			Color = Palette.steelLo,
+			Color = Palette.bulbWarm,
+			Material = Enum.Material.Neon,
+			Transparency = LIGHT.PLATE_IDLE_ALPHA,
 			CanCollide = false,
 			CastShadow = false,
 		}, pad)
 		rim:SetAttribute("EH_Kind", "rim")
-		part({
-			Name = "Icon",
-			Size = Vector3.new(1.2, 0.05, 1.2),
-			CFrame = CFrame.new(origin + Vector3.new(c.X, floorY + 0.22, c.Z)),
-			Color = Palette.white,
-			Material = Enum.Material.Neon,
+		local ls = LIGHT.PLATE_LETTER_SIZE
+		local letter = part({
+			Name = "Letter",
+			Size = Vector3.new(ls, 0.05, ls),
+			CFrame = CFrame.new(origin + Vector3.new(c.X, floorY + 0.2 + 0.035, c.Z))
+				* CFrame.Angles(0, math.rad(LIGHT.PLATE_LETTER_YAW), 0),
+			Transparency = 1,
 			CanCollide = false,
+			CanQuery = false,
+			CanTouch = false,
 			CastShadow = false,
 		}, pad)
-		for _, target in deviceCenters(level, i) do
-			cable(pad, origin, floorY + 0.03, Vector3.new(c.X, 0, c.Z), target, i)
+		letter:SetAttribute("EH_Kind", "plateLetter")
+		letterGui(letter, Enum.NormalId.Top, KitPlan.letter(level, i), Palette.exit, nil)
+		for _, cb in cables do
+			if cb.plate == i then
+				cable(pad, origin, floorY + 0.03, cb.points, i)
+			end
 		end
 		table.insert(plates, pad)
 	end
@@ -266,6 +444,23 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 		}, model)
 		lamp:SetAttribute("EH_Kind", "lamp")
 		lamp:SetAttribute("EH_Index", i)
+		-- The letter of every plate that opens it, beside the lamp on both faces of the header.
+		local letters = KitPlan.deviceLetters(level, def.openBy)
+		if letters ~= "" then
+			local bx = def.box
+			local alongX = (bx.maxX - bx.minX) >= (bx.maxZ - bx.minZ)
+			local thick = if alongX then bx.maxZ - bx.minZ else bx.maxX - bx.minX
+			local off = if alongX
+				then Vector3.new(LIGHT.PLAQUE_DOOR_DX, 0, 0)
+				else Vector3.new(0, 0, LIGHT.PLAQUE_DOOR_DX)
+			plaque(
+				model,
+				origin + Vector3.new(c.X, floorY + LIGHT.PLAQUE_DOOR_Y, c.Z) + off,
+				alongX,
+				thick + 0.2,
+				letters
+			)
+		end
 		table.insert(doors, leaf)
 	end
 
@@ -315,6 +510,24 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 				CanCollide = false,
 			}, grid)
 			post:SetAttribute("EH_Kind", "post")
+		end
+		-- The letter of the plate that turns it off, on the post nearer that plate.
+		local letters = KitPlan.deviceLetters(level, def.offBy)
+		local first = nil
+		for _, src in def.offBy or {} do
+			if src.kind == "plate" and level.plates[src.index] then
+				first = level.plates[src.index]
+				break
+			end
+		end
+		if letters ~= "" and first then
+			local pc = boxCenter(first.box)
+			local alongX = (box.maxX - box.minX) >= (box.maxZ - box.minZ)
+			local cx = (box.minX + box.maxX) / 2
+			local at = if alongX
+				then Vector3.new(if pc.X < cx then box.minX else box.maxX, floorY + LIGHT.PLAQUE_LASER_Y, cz)
+				else Vector3.new(cx, floorY + LIGHT.PLAQUE_LASER_Y, if pc.Z < cz then box.minZ else box.maxZ)
+			plaque(grid, origin + at, alongX, 1, letters)
 		end
 		grid.Parent = model
 		table.insert(lasers, grid)
@@ -391,33 +604,38 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 		table.insert(hides, m)
 	end
 
-	-- The van: a bank zone in Getaway White with chevrons, the body parked behind it.
+	-- Lamps (W2): one over each plate, a hero over the goal, room centres (KitPlan.lamps, Heist/LevelDress).
+	local lamps: { BasePart } = {}
+	local pools: { BasePart } = {}
+	for k, l in KitPlan.lamps(level, LevelDress[level.id], LIGHT) do
+		local bulb, pool = ceilingLamp(model, origin, floorY, l, k)
+		lamps[k] = bulb
+		pools[k] = pool
+	end
+
+	-- The van: a bank zone in Getaway White, dim until you carry loot (WorldView lights it then), with
+	-- arrows pointing at the van; the body parked behind it.
 	local v = level.van
 	local zone = part({
 		Name = "VanZone",
 		Size = Vector3.new(v.maxX - v.minX, 0.1, v.maxZ - v.minZ),
 		CFrame = CFrame.new(origin + Vector3.new((v.minX + v.maxX) / 2, floorY + 0.05, (v.minZ + v.maxZ) / 2)),
 		Color = Palette.exit,
-		Material = Enum.Material.Neon,
-		Transparency = 0.6,
+		Transparency = LIGHT.VAN_IDLE_ALPHA,
 		CanCollide = false,
 		CastShadow = false,
 	}, model)
 	zone:SetAttribute("EH_Kind", "van")
-	for k = 0, 2 do
-		local z = v.minZ + 1.5 + k * 2.2
-		local chevron = part({
-			ClassName = "WedgePart",
-			Name = "Chevron",
-			Size = Vector3.new(2.4, 0.08, 1.2),
-			CFrame = CFrame.new(origin + Vector3.new((v.minX + v.maxX) / 2, floorY + 0.12, z))
-				* CFrame.Angles(0, math.pi, 0),
-			Color = Palette.exit,
-			Material = Enum.Material.Neon,
-			CanCollide = false,
-			CastShadow = false,
-		}, zone)
-		chevron:SetAttribute("EH_Kind", "chevron")
+	do
+		local n = LIGHT.ARROW_COUNT
+		local length = LIGHT.ARROW_SHAFT[2] + LIGHT.ARROW_HEAD[2]
+		local z0 = v.minZ + ((v.maxZ - v.minZ) - ((n - 1) * LIGHT.ARROW_STEP + length)) / 2
+		for k = 0, n - 1 do
+			for _, p in arrow(zone, origin, floorY + 0.12, (v.minX + v.maxX) / 2, z0 + k * LIGHT.ARROW_STEP) do
+				p.Transparency = LIGHT.ARROW_IDLE_ALPHA
+				p:SetAttribute("EH_Kind", "chevron")
+			end
+		end
 	end
 	local body = part({
 		Name = "VanBody",
@@ -455,6 +673,8 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 		hides = hides,
 		van = zone,
 		vanBody = body,
+		lamps = lamps,
+		pools = pools,
 		kit = false,
 		dressing = false,
 		kitResult = nil,
