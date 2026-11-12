@@ -15,10 +15,12 @@
 -- Poses append to (parts, cframes) so each view does one BulkMoveTo per frame; the
 -- Line-up adds a cheer pose (arms up on rigid rigs, the cheer clip on avatars).
 -- Clones act (PLAN_STEAM_PLUS §4.4 A3): avatar rigs load the owner's catalog pack (idle, walk,
--- run, jump, fall: Rigs.loadPack / Rigs.locomote, speeds from Shared/Heist/CloneGait); custom
--- poses (Shared/Heist/ClonePose) are written to the joints' Transform (Rigs.writePose, from a
--- PreSimulation hook: writes in RenderStepped or Heartbeat are overwritten by the animator);
--- mannequins take the same arm and head angles on their rigid limbs. Rigs.setPrint builds a rig
+-- run, jump, fall: Rigs.loadPack / Rigs.locomote, speeds from Shared/Heist/CloneGait) and the custom
+-- pose clips (Shared/Heist/ClonePose baked into Animation assets, Shared/Heist/CloneClips: Rigs.setPose
+-- at Action priority), plus an IKControl for the plate glance (Rigs.lookAt). All of it goes through
+-- the Animator, never Lua joint writes (engine finding 2026-11-12: Transform writes are not a
+-- dependable path on the 2026 AnimationConstraint rigs, and the Animator path is the one the engine
+-- tests can step). Mannequins take the same arm angles on their rigid limbs. Rigs.setPrint builds a rig
 -- up from the feet (the tape print) by hiding parts above a height.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -27,6 +29,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 local RigJoints = require(Shared:WaitForChild("Heist"):WaitForChild("RigJoints"))
+local CloneClips = require(Shared:WaitForChild("Heist"):WaitForChild("CloneClips"))
 
 local Rigs = {}
 
@@ -49,8 +52,10 @@ export type Rig = {
 	scale: number?, -- avatar: rig size relative to a default R15 (CloneHealth limb distance)
 	tracks: { [string]: AnimationTrack }?, -- catalog pack by slot (idle, walk, run, jump, fall)
 	loco: string?, -- the locomotion clip set playing ("idle" | "move" | "jump" | "fall" | "none")
-	jointMap: { [string]: any }?, -- child part name -> Motor6D or AnimationConstraint
-	posed: { [string]: boolean }?, -- joints a custom pose wrote last frame
+	poseTracks: { [string]: AnimationTrack }?, -- custom pose clips by name (carry, plate, stuck, busted)
+	poseName: string?, -- the pose clip playing (nil = none)
+	ik: IKControl?, -- head look-at (plate glance), built on first use
+	lookTarget: Attachment?,
 	heights: { number }?, -- per partsOf entry: rest height of the part's bottom above the feet
 	printShown: number?, -- last print height written (setPrint)
 }
@@ -406,7 +411,7 @@ local MANNEQUIN_JOINT = { LeftArm = "LeftUpperArm", RightArm = "RightUpperArm" }
 -- Appends this rig's parts and target CFrames for one BulkMoveTo call.
 -- `feet` is the floor point under the rig facing its yaw; `phase` drives the limb swing.
 -- `custom` (optional, ClonePose joints): rigid rigs pose their arms with it; avatar rigs
--- get it through Rigs.writePose instead.
+-- play it as an Animation clip instead (Rigs.setPose).
 function Rigs.pose(
 	rig: Rig,
 	feet: CFrame,
@@ -484,6 +489,18 @@ function Rigs.loadPack(rig: Rig, ids: { [string]: string })
 	end
 	rig.tracks = tracks
 	rig.loco = "none"
+	local poses: { [string]: AnimationTrack } = {}
+	for name, id in CloneClips do
+		local ok, track = pcall(function()
+			return animator:LoadAnimation(animation(id))
+		end)
+		if ok and track then
+			track.Looped = name ~= "busted"
+			track.Priority = Enum.AnimationPriority.Action
+			poses[name] = track
+		end
+	end
+	rig.poseTracks = poses
 end
 
 local LOCO_SLOTS: { [string]: { string } } = {
@@ -556,76 +573,76 @@ function Rigs.locomote(
 	end
 end
 
--- Child part name -> the joint that moves it (Motor6D, or the 2026 rigs' AnimationConstraint).
-function Rigs.jointMap(rig: Rig): { [string]: any }
-	local map = rig.jointMap
-	if map then
-		return map
-	end
-	local out: { [string]: any } = {}
-	for _, d in rig.model:GetDescendants() do
-		if d:IsA("Motor6D") then
-			local p1 = d.Part1
-			if p1 then
-				out[p1.Name] = d
-			end
-		elseif d:IsA("AnimationConstraint") then
-			local a1 = d.Attachment1
-			local p1 = a1 and a1.Parent
-			if p1 then
-				out[p1.Name] = d
-			end
-		end
-	end
-	rig.jointMap = out
-	return out
-end
-
--- Writes a custom pose (ClonePose joints: Euler x, y, z) as absolute joint Transforms. Joints the
--- last pose set and this one does not go back to identity once (the animator takes them again).
--- Call from RunService.PreSimulation (after the animator's step, before the joints are solved).
-function Rigs.writePose(rig: Rig, joints: { [string]: { number } })
-	if rig.kind ~= "avatar" then
+-- Custom poses (ClonePose baked into Animation clips by tools/clone_clips.luau, ids in
+-- Shared/Heist/CloneClips): "carry", "plate", "stuck", "busted" at Action priority. They key only the
+-- joints the pose sets, so the walk or idle clip keeps the rest of the body. Plays `name` (nil = none),
+-- cross-fading from the last one; a no-op when nothing changes.
+function Rigs.setPose(rig: Rig, name: string?)
+	local tracks = rig.poseTracks
+	if not tracks or name == rig.poseName then
 		return
 	end
-	local map = Rigs.jointMap(rig)
-	local posed = rig.posed
-	if not posed then
-		posed = {}
-		rig.posed = posed
+	local C = Config.Clone
+	local old = rig.poseName and tracks[rig.poseName]
+	if old then
+		old:Stop(C.POSE_BLEND)
 	end
-	for name in posed do
-		if not joints[name] then
-			local j = map[name]
-			if j then
-				j.Transform = CFrame.identity
-			end
-			posed[name] = nil
-		end
+	local new = name and tracks[name]
+	if new then
+		new:Play(if name == "busted" then C.BUSTED_FADE_IN else C.POSE_BLEND)
 	end
-	for name, a in joints do
-		local j = map[name]
-		if j then
-			j.Transform = CFrame.fromEulerAnglesYXZ(a[1], a[2], a[3])
-			posed[name] = true
-		end
-	end
+	rig.poseName = name
 end
 
--- Hands every custom-posed joint back to the animator (identity Transform once).
-function Rigs.clearPose(rig: Rig)
-	local posed = rig.posed
-	if not posed or next(posed) == nil then
-		return
-	end
-	local map = Rigs.jointMap(rig)
-	for name in posed do
-		local j = map[name]
-		if j then
-			j.Transform = CFrame.identity
+-- Seconds into the custom pose clip playing now (0 when none): the carried loot bobs with the arms.
+function Rigs.poseTime(rig: Rig): number
+	local tracks = rig.poseTracks
+	local t = tracks and rig.poseName and tracks[rig.poseName]
+	return if t then t.TimePosition else 0
+end
+
+-- Head look-at (roblox_quality §4.3): an IKControl (LookAt, Head from UpperTorso) toward `point` with
+-- `weight` (0 = off; the weight fades, Enabled never toggles). Built on first use; the target is an
+-- Attachment on Terrain that goes with the rig.
+function Rigs.lookAt(rig: Rig, point: Vector3?, weight: number)
+	local ik = rig.ik
+	if not ik then
+		if weight <= 0 or not point then
+			return
 		end
+		local model = rig.model
+		local hum = model:FindFirstChildOfClass("Humanoid")
+		local head = model:FindFirstChild("Head")
+		local torso = model:FindFirstChild("UpperTorso")
+		if not hum or not head or not torso then
+			return
+		end
+		local target = Instance.new("Attachment")
+		target.Name = "EH_LookTarget"
+		target.Parent = workspace.Terrain
+		model.Destroying:Once(function()
+			target:Destroy()
+		end)
+		local made = Instance.new("IKControl")
+		made.Name = "EH_Look"
+		made.Type = Enum.IKControlType.LookAt
+		made.EndEffector = head
+		made.ChainRoot = torso
+		made.Target = target
+		made.SmoothTime = Config.Clone.LOOK_SMOOTH
+		made.Weight = 0
+		made.Parent = hum
+		rig.ik = made
+		rig.lookTarget = target
+		ik = made
 	end
-	table.clear(posed)
+	local w = if point then math.clamp(weight, 0, 1) else 0
+	if point and rig.lookTarget then
+		rig.lookTarget.WorldPosition = point
+	end
+	if (ik :: IKControl).Weight ~= w then
+		(ik :: IKControl).Weight = w
+	end
 end
 
 -- The part a badge or bubble hangs from.

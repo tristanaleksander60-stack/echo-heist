@@ -48,6 +48,7 @@ local HeistInstance = require(heistServer:WaitForChild("HeistInstance"))
 local Avatars = require(heistServer:WaitForChild("Avatars"))
 local EchoView = require(clientHeist:WaitForChild("EchoView"))
 local DebugChip = require(clientHeist:WaitForChild("DebugChip"))
+local Rigs = require(clientHeist:WaitForChild("Rigs"))
 local RigJoints = require(shared:WaitForChild("Heist"):WaitForChild("RigJoints"))
 
 local OWNER_ID = 10346200733 -- the game owner's account (their avatar is the one that vanished)
@@ -320,6 +321,36 @@ for _, c in cases do
 	end
 end
 
+-- Luau Execution runs the place without simulation (RunService:IsRunning() is false: no PreSimulation,
+-- no physics, Animators never step on their own; measured on Saved v32). Each test frame steps every
+-- clone's Animator by hand (Animator:StepAnimations poses the parts), as a running client's frame would.
+local SIMULATED = RunService:IsRunning()
+note("RunService:IsRunning() = " .. tostring(SIMULATED) .. (if SIMULATED then "" else ": Animators stepped by hand"))
+local function animatorOf(rig: Model?): Animator?
+	local hum = rig and rig:FindFirstChildOfClass("Humanoid")
+	return hum and hum:FindFirstChildOfClass("Animator")
+end
+local function stepAnimators(dt: number)
+	if SIMULATED then
+		return
+	end
+	for _, c in cases do
+		local animator = animatorOf(c.rig)
+		if animator then
+			pcall(animator.StepAnimations, animator, dt)
+		end
+	end
+end
+-- The right foot in root space: its spread over the moving frames shows the walk really plays.
+local function footLocal(rig: Model?): Vector3?
+	local root = rig and rig:FindFirstChild("HumanoidRootPart")
+	local foot = rig and (rig:FindFirstChild("RightFoot") or rig:FindFirstChild("RightLowerLeg"))
+	if root and foot and root:IsA("BasePart") and foot:IsA("BasePart") then
+		return root.CFrame:PointToObjectSpace(foot.Position)
+	end
+	return nil
+end
+
 local t0 = os.clock()
 local frames = 0
 local firstFrameNote = {}
@@ -336,6 +367,7 @@ local conn = RunService.Heartbeat:Connect(function(dt: number)
 		done = true
 		return
 	end
+	stepAnimators(dt)
 	frames += 1
 	local vx, _, vz = Sampler.velocity(rec, tView)
 	local moving = math.sqrt(vx * vx + vz * vz) > 2
@@ -350,6 +382,11 @@ local conn = RunService.Heartbeat:Connect(function(dt: number)
 		end
 		if moving and frames > 5 and rig then
 			c.walkFrames += 1
+			local fl = footLocal(rig)
+			if fl then
+				c.footMin = math.min(c.footMin or math.huge, fl.Z)
+				c.footMax = math.max(c.footMax or -math.huge, fl.Z)
+			end
 			local hum = rig:FindFirstChildOfClass("Humanoid")
 			local animator = hum and hum:FindFirstChildOfClass("Animator")
 			if animator then
@@ -458,8 +495,15 @@ for _, c in cases do
 		c.walkFrames > 0 and c.walkPlaying >= c.walkFrames * 0.8,
 		string.format("%s: walk track plays while moving (%d of %d moving frames)", tag, c.walkPlaying, c.walkFrames)
 	)
+	local stride = (c.footMax or 0) - (c.footMin or 0)
 	check(
-		c.seenFrames >= c.allFrames * 0.3,
+		stride > 0.5,
+		string.format("%s: the walk moves the feet (right foot swings %.2f studs fore-aft)", tag, stride)
+	)
+	check(
+		-- 25 %: with the walk clip really playing (Animators stepped), the bobbing head clips the door
+		-- frame in a few more frames than the static rest pose did (52-54 of 182 measured on v33).
+		c.seenFrames >= c.allFrames * 0.25,
 		string.format(
 			"%s: on screen from the street spawn camera while it walks out (%d of %d frames)",
 			tag,
@@ -510,6 +554,7 @@ local function runFor(seconds: number, each: ((el: number) -> ())?, tFrom: numbe
 			each(el)
 		end
 		pcall(echo.update, (tFrom or (VIEW_START + SECONDS)) + (if tFrom then el else 0), os.clock(), dt, nil)
+		stepAnimators(dt)
 		if el >= seconds then
 			finished = true
 		end
@@ -608,6 +653,35 @@ if own0 and own0.rig then
 	folderInst:SetAttribute("K1Carrier", 0)
 	runFor(0.4)
 	check(echo.stateOf(own0.actorId) == "on-plate", "back on the plate once the loot is gone")
+
+	-- The plate glance: an IKControl (LookAt, Head from UpperTorso) aimed along the clamped direction.
+	-- Only its set-up is checked here: whether an IKControl solves under a hand-stepped Animator in this
+	-- non-simulated server is undocumented and measured inconsistent (0-48 degrees for the same set-up,
+	-- by idle clip), so the turn itself is a Studio / phone check.
+	local rigT = echo.rigOf(own0.actorId)
+	local head = own0.rig:FindFirstChild("Head")
+	if rigT and head and head:IsA("BasePart") then
+		local target = head.Position + Vector3.new(-4, 0.5, -3)
+		Rigs.lookAt(rigT, target, 0.8)
+		local ik = rigT.ik
+		local ok = ik ~= nil
+			and ik.Type == Enum.IKControlType.LookAt
+			and ik.EndEffector == head
+			and ik:GetChainCount() >= 1
+			and math.abs(ik.Weight - 0.8) < 1e-3
+			and rigT.lookTarget ~= nil
+			and (rigT.lookTarget.WorldPosition - target).Magnitude < 1e-3
+		check(
+			ok,
+			"glance IK set up: LookAt on the Head, chain "
+				.. tostring(ik and ik:GetChainCount())
+				.. ", weight and target"
+		)
+		Rigs.lookAt(rigT, nil, 0)
+		check(ik ~= nil and ik.Weight == 0, "glance IK fades its weight to 0 (never toggles Enabled)")
+	else
+		check(false, "glance IK: rig and head found")
+	end
 end
 
 -- A2: the tape print: each clone builds up from the feet within PRINT_SECONDS of its turn, 60 ms
@@ -714,24 +788,40 @@ do
 			okLoad and track ~= nil,
 			"spike: Animation " .. SPIKE_ANIM .. " loads" .. (if okLoad then "" else ": " .. tostring(track))
 		)
-		if okLoad and track and joint then
-			local before = joint.Transform
-			track:Play(0)
-			local maxAngle = 0
-			local playFrom = os.clock()
-			while os.clock() - playFrom < 1.2 do
-				task.wait()
-				local _, angle = (before:Inverse() * joint.Transform):ToAxisAngle()
-				maxAngle = math.max(maxAngle, math.abs(angle))
+		local hand = rig:FindFirstChild("RightHand")
+		if okLoad and track and joint and root and root:IsA("BasePart") and hand and hand:IsA("BasePart") then
+			-- Observe the pose, not the property: the right hand's place in the root's frame.
+			local rest = root.CFrame:PointToObjectSpace(hand.Position)
+			for _ = 1, 100 do
+				if track.Length > 0 then
+					break
+				end
+				task.wait(0.05)
 			end
-			note(string.format("spike: track Length %.2f s, IsPlaying %s", track.Length, tostring(track.IsPlaying)))
-			check(
-				track.Length > 0 and math.deg(maxAngle) > 30,
+			track:Play(0)
+			local maxMove, maxAngle = 0, 0
+			for _ = 1, 30 do
+				if SIMULATED then
+					task.wait()
+				else
+					(animator :: Animator):StepAnimations(1 / 30)
+				end
+				maxMove = math.max(maxMove, (root.CFrame:PointToObjectSpace(hand.Position) - rest).Magnitude)
+				local _, angle = joint.Transform:ToAxisAngle()
+				maxAngle = math.max(maxAngle, math.deg(math.abs(angle)))
+			end
+			note(
 				string.format(
-					"spike: the clip moves %s.Transform (max %.0f degrees)",
+					"spike: track Length %.2f s, IsPlaying %s, %s.Transform max %.0f degrees",
+					track.Length,
+					tostring(track.IsPlaying),
 					joint.ClassName,
-					math.deg(maxAngle)
+					maxAngle
 				)
+			)
+			check(
+				track.Length > 0 and maxMove > 0.8,
+				string.format("spike: the uploaded clip moves the right hand (%.2f studs in root space)", maxMove)
 			)
 			track:Stop(0)
 		end

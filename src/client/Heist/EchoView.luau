@@ -16,8 +16,9 @@
 --   * Clones act (A3): a per-frame state from the recording (Shared/Heist/CloneState: moving, idle,
 --     on-plate, carry, stuck, busted, jump, fall) drives the owner's catalog pack (idle, walk, run,
 --     jump, fall; clip speeds locked to the recording by Shared/Heist/CloneGait, so feet do not
---     slide at 1x or 3x) and the custom Lua poses (Shared/Heist/ClonePose: plate stance with one
---     glance back at you, carry, stuck, busted), written to the joints in PreSimulation.
+--     slide at 1x or 3x) and the custom poses (Shared/Heist/ClonePose: plate stance with one
+--     glance back at you, carry, stuck, busted), played as Animation clips baked from ClonePose
+--     (Shared/Heist/CloneClips) with an IKControl for the glance; mannequins pose their arms in Lua.
 --   * Server-decided outcomes arrive as events: Busted (hands up, glitch slices, then a tape-ribbon
 --     burst), Zapped (sparks), Stuck (taps the wall, shrugs), Shrug ("?").
 --   * CloneHealth: about once a second every drawn avatar rig is checked (head alive,
@@ -29,7 +30,6 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local HeistShared = Shared:WaitForChild("Heist")
@@ -53,6 +53,8 @@ local H = Config.Heist
 local C = Config.Clone
 local TAU = 2 * math.pi
 local RIBBON_IMAGE = "EH_FX_Ribbon"
+-- Clone state -> its custom pose clip (Shared/Heist/CloneClips).
+local CLIP_OF = { carry = "carry", ["on-plate"] = "plate", stuck = "stuck", busted = "busted" }
 
 local EchoView = {}
 
@@ -464,7 +466,8 @@ function EchoView.new(state: any): any
 		local rig = entry.rig
 		Rigs.setFade(rig, 1)
 		Rigs.locomote(rig, "none", 0, 1, 0, false, false)
-		Rigs.clearPose(rig)
+		Rigs.setPose(rig, nil)
+		Rigs.lookAt(rig, nil, 0)
 		entry.pose.busy = false
 		hideFx(entry)
 		entry.fade = 1
@@ -677,7 +680,7 @@ function EchoView.new(state: any): any
 		local s = entry.rig.scale or 1
 		local hands = C.CARRY_HANDS
 		local at = entry.lastFeet
-			* CFrame.new(hands[1] * s, entry.rig.rootHeight + hands[2] * s + entry.pose.bob, hands[3] * s)
+			* CFrame.new(hands[1] * s, entry.rig.rootHeight + hands[2] * s + (entry.bob or 0), hands[3] * s)
 		return at.Position - Vector3.new(0, C.CARRY_LIFT, 0)
 	end
 
@@ -806,9 +809,13 @@ function EchoView.new(state: any): any
 				since = now - entry.outFrom
 				weight = 1 - (now - entry.outAt) / C.POSE_BLEND
 			end
-			if poseName and camDist < C.POSE_DISTANCE then
+			local near = camDist < C.POSE_DISTANCE
+			local lookPoint: Vector3? = nil
+			local lookWeight = 0
+			if poseName and near then
 				local yawL, pitchL = 0, 0
-				if poseName == CloneState.PLATE and ClonePose.glance(since) > 0 then
+				local g = if poseName == CloneState.PLATE then ClonePose.glance(since) else 0
+				if g > 0 then
 					local target = ownerHead(a.owner)
 					if target then
 						local head = feet.Position + Vector3.new(0, rig.rootHeight * 1.5, 0)
@@ -816,12 +823,38 @@ function EchoView.new(state: any): any
 						local y, p, ok = ClonePose.look(d.X, d.Y, d.Z, f.yaw)
 						if ok then
 							yawL, pitchL = y, p
+							-- the IK target sits along the clamped direction, so the limits hold
+							local dir = feet:VectorToWorldSpace(
+								Vector3.new(-math.sin(y) * math.cos(p), math.sin(p), -math.cos(y) * math.cos(p))
+							)
+							lookPoint = head + dir * C.LOOK_REACH
+							lookWeight = g * weight
 						end
 					end
 				end
 				ClonePose.compute(pose, poseName, since, now, walkPhase, f.loco == "move", yawL, pitchL, weight)
 			else
 				ClonePose.compute(pose, "", 0, now, 0, false, 0, 0, 0)
+			end
+			-- Avatars: the pose clip (Animator, Action priority) and the glance IK; the clip's own fade
+			-- blends in and out. Mannequins: the Lua arm angles below.
+			if rig.kind == "avatar" then
+				local clip = if ClonePose.CUSTOM[f.state]
+						and not zapped
+						and near
+						and entry.fade < 1
+					then CLIP_OF[f.state]
+					else nil
+				Rigs.setPose(rig, clip)
+				Rigs.lookAt(rig, lookPoint, lookWeight)
+				if clip == "carry" then
+					local tp = Rigs.poseTime(rig)
+					entry.bob = math.sin(tp * TAU * C.CARRY_BOB_IDLE_HZ) * C.CARRY_BOB * 0.5
+				else
+					entry.bob = 0
+				end
+			else
+				entry.bob = pose.bob
 			end
 			if pose.glitchX ~= 0 and not state.reduced then
 				feet *= CFrame.new(pose.glitchX, 0, 0)
@@ -966,22 +999,6 @@ function EchoView.new(state: any): any
 		end
 	end
 
-	-- Custom poses go to avatar joints after the animator's step (RenderStepped / Heartbeat writes
-	-- would be overwritten). Joints a pose no longer sets go back to the animator.
-	RunService.PreSimulation:Connect(function()
-		for _, entry in order do
-			local rig = entry.rig
-			if rig.kind ~= "avatar" then
-				continue
-			end
-			if entry.pose.busy and entry.fade < 1 then
-				Rigs.writePose(rig, entry.pose.joints)
-			else
-				Rigs.clearPose(rig)
-			end
-		end
-	end)
-
 	-- Swaps one drawn clone's rig for a fresh entry from the owner's (now mannequin) pool,
 	-- keeping its actor, recording, timing and look; the old rig hides until its pool retires.
 	local function swapEntry(old: any, ownerId: number)
@@ -990,6 +1007,8 @@ function EchoView.new(state: any): any
 		local entry = table.remove(pool.free) or newEntry(pool, ownerId)
 		Rigs.setFade(old.rig, 1)
 		Rigs.locomote(old.rig, "none", 0, 1, 0, false, false)
+		Rigs.setPose(old.rig, nil)
+		Rigs.lookAt(old.rig, nil, 0)
 		old.pose.busy = false
 		local hadLabel = old.youLabel
 		hideFx(old)
@@ -1106,8 +1125,9 @@ function EchoView.new(state: any): any
 			entry.fade = 1
 			Rigs.setFade(entry.rig, 1)
 			Rigs.locomote(entry.rig, "none", 0, 1, 0, false, false)
+			Rigs.setPose(entry.rig, nil)
+			Rigs.lookAt(entry.rig, nil, 0)
 			entry.pose.busy = false
-			Rigs.clearPose(entry.rig)
 			hideFx(entry)
 		end
 		table.clear(order)

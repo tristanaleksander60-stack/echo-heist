@@ -1,7 +1,27 @@
 {
+  "EH_Clone_busted": {
+    "assetId": 121120836512193,
+    "moderation": "Approved",
+    "sha256": "2f60cf0dd950d9b447f86e363c9704dc133dcf7788f3fe59d4b71909b6ef6d69"
+  },
+  "EH_Clone_carry": {
+    "assetId": 128713857008626,
+    "moderation": "Approved",
+    "sha256": "48cdb2e561d02a1c4c4fc51ebbea4edfd57bb04b5be8dd1349527e3d2694d149"
+  },
+  "EH_Clone_plate": {
+    "assetId": 90835773333202,
+    "moderation": "Approved",
+    "sha256": "d31a41924c68c519d1d25685a7c510c4a80ac2a987d0513ab5f49489034f17d9"
+  },
+  "EH_Clone_stuck": {
+    "assetId": 115308666786361,
+    "moderation": "Approved",
+    "sha256": "d9f688d783b6ddf4bb75ecc2fd4037538e0ecfde1140f4283157d68e90b5451a"
+  },
   "anim_spike": {
     "assetId": 83859875506228,
-    "sha256": "4a2684d1d855cbfd45ec050402e2e56e5dce2de2f40733adee39c2a01732c3ac",
-    "moderation": "Approved"
+    "moderation": "Approved",
+    "sha256": "4a2684d1d855cbfd45ec050402e2e56e5dce2de2f40733adee39c2a01732c3ac"
   }
 }
