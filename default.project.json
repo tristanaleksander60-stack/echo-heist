@@ -90,6 +90,17 @@
           "$path": "src/client"
         }
       }
+    },
+    "Workspace": {
+      "$className": "Workspace",
+      "$properties": {
+        "StreamingEnabled": true,
+        "StreamingMinRadius": 128,
+        "StreamingTargetRadius": 512,
+        "StreamOutBehavior": "Opportunistic",
+        "ModelStreamingBehavior": "Improved",
+        "StreamingIntegrityMode": "PauseOutsideLoadedArea"
+      }
     }
   }
 }

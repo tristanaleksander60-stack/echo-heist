@@ -1742,7 +1742,7 @@ Config.Perf = {
 		{ -- 1 quality
 			drawCalls = 450, -- busiest view (Big Score, 4 players, 12 clones, 2 guards)
 			tris = 450000,
-			lights = 9, -- local lights affecting one view (Config.Lighting.VIEW_RADIUS)
+			lights = 10, -- local lights in one view (Config.Lighting.VIEW_RADIUS): the level's 9 + your halo (PC: 12)
 			shadowed = 2,
 			liveParticles = 360, -- MASTERPLAN §6.8 (touch)
 			highlights = 10, -- 4 clone groups + your rim + 5 others
@@ -1750,6 +1750,7 @@ Config.Perf = {
 			pillDistance = 40, -- studs: the clone pill's BillboardGui.MaxDistance
 			lineupLabels = 1, -- Line-up BillboardGuis (LineupDirector's "◀ ME" label)
 			trails = true,
+			haloLight = true, -- Heist/PlayerHalo's warm PointLight on your character (no shadows)
 			particleScale = 1, -- bursts (ribbons, sparks, coins, gold rain, dust) x this
 			snowAlive = 240, -- falling snow alive at once (rate x lifetime)
 			lightKindsOff = {}, -- KitPlan lamp kinds switched off (LightDirector)
@@ -1765,9 +1766,10 @@ Config.Perf = {
 			pillDistance = 40,
 			lineupLabels = 1,
 			trails = false,
+			haloLight = true,
 			particleScale = 1,
 			snowAlive = 240,
-			lightKindsOff = {},
+			lightKindsOff = { "street" }, -- the Big Score's busiest view: 8 + your halo = 9
 		},
 		{ -- 3 performance: recipe C "Soft Toybox"
 			drawCalls = 250,
@@ -1782,6 +1784,7 @@ Config.Perf = {
 			pillDistance = 28,
 			lineupLabels = 1,
 			trails = false,
+			haloLight = false,
 			particleScale = 0.5,
 			snowAlive = 60,
 			lightKindsOff = { "street", "accent" }, -- their bulbs and floor pools stay (unlit, no light object)
@@ -1797,6 +1800,7 @@ Config.Perf = {
 			pillDistance = 20,
 			lineupLabels = 1,
 			trails = false,
+			haloLight = false,
 			particleScale = 0.35,
 			snowAlive = 40,
 			lightKindsOff = { "street", "accent", "room" },
@@ -1829,6 +1833,7 @@ Config.Perf = {
 	GOLD_RAIN = 40,
 	BURST_MIN = 2, -- a scaled burst never drops below this (it must still read)
 	GLOW_RECHECK_SECONDS = 0.5, -- EchoView re-picks which clones keep their floor glow (Budget.glowSet)
+	GARAGE_WAIT_SECONDS = 15, -- JobBoard waits this long for a garage that has not streamed in yet
 	-- The worst moment the particle budget is checked against (Budget.worstParticles): snow + these at once.
 	WORST_MOMENT = { "ribbons", "sparks", "coins", "goldRain", "doorDust", "laserSparks" },
 	-- Measured / estimated costs (docs/PERF.md; tests/perf_engine.luau prints the measured ones).

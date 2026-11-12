@@ -13,6 +13,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
+local Budget = require(Shared:WaitForChild("Heist"):WaitForChild("Budget"))
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 
 local C = Config.Clone
@@ -167,7 +168,7 @@ function PlayerHalo.new(folder: Instance): any
 
 	-- Perf tier (§6.3): the light only on tiers 1-2; the rim and ring stay (they are the readability).
 	function halo.setTier(tier: number)
-		lightOk = tier <= 2
+		lightOk = Budget.haloLight(tier)
 		if not lightOk then
 			light.Enabled = false
 		end

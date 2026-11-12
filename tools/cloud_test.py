@@ -39,6 +39,7 @@ def main():
     ap.add_argument("--script", default="tests/engine_smoke.luau")
     ap.add_argument("--publish-type", default="Saved", choices=["Saved", "Published"])
     ap.add_argument("--version", type=int, help="skip publishing and test this existing version")
+    ap.add_argument("--timeout", type=int, default=120, help="Luau task timeout in seconds (Open Cloud allows up to 300)")
     ap.add_argument("--no-build", action="store_true",
                     help="publish --place-file as it is (default: rebuild it with Rojo first, so a stale file never goes up)")
     a = ap.parse_args()
@@ -58,10 +59,10 @@ def main():
 
     script = open(a.script, encoding="utf-8").read()
     task = call("POST", f"{BASE}/cloud/v2/universes/{a.universe}/places/{a.place}/versions/{version}/luau-execution-session-tasks",
-                key, {"script": script, "timeout": "120s"})
+                key, {"script": script, "timeout": f"{a.timeout}s"})
     path = task.get("path")
     print("Task:", path)
-    for _ in range(90):
+    for _ in range(a.timeout // 3 + 30):
         time.sleep(3)
         t = call("GET", f"{BASE}/cloud/v2/{path}", key)
         state = t.get("state")

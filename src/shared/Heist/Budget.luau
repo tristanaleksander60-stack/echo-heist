@@ -21,6 +21,7 @@ export type Tier = {
 	pillDistance: number,
 	lineupLabels: number,
 	trails: boolean,
+	haloLight: boolean,
 	particleScale: number,
 	snowAlive: number,
 	lightKindsOff: { string },
@@ -53,6 +54,11 @@ function Budget.lampOn(tier: number, kind: string?): boolean
 		return true
 	end
 	return table.find(Budget.forTier(tier).lightKindsOff, kind) == nil
+end
+
+-- Whether your live character's halo PointLight (Heist/PlayerHalo) is on at `tier`; it counts in every view.
+function Budget.haloLight(tier: number): boolean
+	return Budget.forTier(tier).haloLight
 end
 
 -- A level light's Range at `tier` (recipe C clamps every range).

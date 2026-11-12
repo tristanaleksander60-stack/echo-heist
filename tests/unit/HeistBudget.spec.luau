@@ -127,22 +127,31 @@ return function(test)
 		Assert.eq(l0, 6, "lifetime untouched indoors")
 	end)
 
-	test("lights: the kinds a tier switches off bring every level's busiest view under its budget", function()
-		for _, level in levels() do
-			local lamps = KitPlan.lamps(level, LevelDress[level.id], LIGHT)
-			for tier = 1, #P.TIERS do
-				local lit, shadowed = busiestView(lamps, tier)
-				local t = Budget.forTier(tier)
-				Assert.le(lit, t.lights, level.id .. " tier " .. tier .. ": lights in one view")
-				Assert.le(shadowed, t.shadowed, level.id .. " tier " .. tier .. ": shadowed lights")
+	test(
+		"lights: the kinds a tier switches off bring every level's busiest view (+ your halo) under its budget",
+		function()
+			for _, level in levels() do
+				local lamps = KitPlan.lamps(level, LevelDress[level.id], LIGHT)
+				for tier = 1, #P.TIERS do
+					local lit, shadowed = busiestView(lamps, tier)
+					local t = Budget.forTier(tier)
+					-- your halo PointLight is in every view while it is on (Heist/PlayerHalo)
+					local halo = if Budget.haloLight(tier) and Config.Clone.HALO_LIGHT_BRIGHTNESS > 0 then 1 else 0
+					Assert.le(
+						lit + halo,
+						t.lights,
+						level.id .. " tier " .. tier .. ": lights in one view (+ your halo)"
+					)
+					Assert.le(shadowed, t.shadowed, level.id .. " tier " .. tier .. ": shadowed lights")
+				end
+				-- the signals never go dark: plate and hero lamps stay at every tier
+				for tier = 1, #P.TIERS do
+					Assert.truthy(Budget.lampOn(tier, "plate") and Budget.lampOn(tier, "hero"), "signals stay lit")
+				end
 			end
-			-- the signals never go dark: plate and hero lamps stay at every tier
-			for tier = 1, #P.TIERS do
-				Assert.truthy(Budget.lampOn(tier, "plate") and Budget.lampOn(tier, "hero"), "signals stay lit")
-			end
+			Assert.truthy(Budget.lampOn(4, nil), "a light with no lamp kind (garage, halo) is never switched off")
 		end
-		Assert.truthy(Budget.lampOn(4, nil), "a light with no lamp kind (garage, halo) is never switched off")
-	end)
+	)
 
 	test("recipe C 'Soft Toybox' from tier 3 (roblox_quality §1.4); ranges clamped; Bloom off at tier 4", function()
 		Assert.truthy(not Budget.softToybox(2) and Budget.softToybox(3) and Budget.softToybox(4), "tier 3+")

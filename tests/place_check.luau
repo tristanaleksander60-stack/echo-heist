@@ -414,31 +414,50 @@ if server then
 	expect(not assigns, "LevelBuilder does not assign Lighting properties (project file owns them)")
 end
 
--- StreamingEnabled (MASTERPLAN §3.3, §8.6): off until the Nov 16 fun gate (v0.1 was never
--- checked under streaming). Once the project file turns it on, its settings must match.
+-- StreamingEnabled (MASTERPLAN §3.3, §8.6; decided in docs/PERF.md): ON in the game place, so a phone holds the
+-- garage and its own crew's level, not all 8 heist instances. Its settings must match; the spike and bench places
+-- (no heist server) may leave it off.
 do
 	local ws = game:GetService("Workspace")
+	local heist = server and server:FindFirstChild("Heist")
+	local isGame = heist ~= nil and heist:FindFirstChild("HeistService") ~= nil
 	local okOn, on = pcall(function()
 		return (ws :: any).StreamingEnabled
 	end)
+	if isGame then
+		expect(okOn and on == true, "Workspace.StreamingEnabled is on in the game place (docs/PERF.md)")
+	end
 	if okOn and on == true then
 		expectProps(ws, "Workspace", {
 			StreamingMinRadius = 128,
 			StreamingTargetRadius = 512,
+			StreamOutBehavior = "Opportunistic",
+			ModelStreamingBehavior = "Improved",
+			StreamingIntegrityMode = "PauseOutsideLoadedArea",
 		})
-		local okMode, mode = pcall(function()
-			return tostring((ws :: any).StreamOutBehavior)
-		end)
-		expect(
-			okMode and string.find(mode, "Opportunistic", 1, true) ~= nil,
-			"Workspace.StreamOutBehavior Opportunistic"
-		)
 		expect(
 			Config.Heist.INSTANCE_SPACING > 2 * 512,
 			"instance spacing is wider than twice the streaming target radius"
 		)
+		-- the code the streaming decision relies on (docs/PERF.md "Streaming")
+		local function src(parent: any, name: string): string
+			local m = parent and parent:FindFirstChild(name)
+			return if m then m.Source else ""
+		end
+		expect(
+			string.find(src(heist, "LevelBuilder"), "ModelStreamingMode.PersistentPerPlayer", 1, true) ~= nil,
+			"LevelBuilder makes each level PersistentPerPlayer"
+		)
+		expect(
+			string.find(src(heist, "HeistInstance"), "AddPersistentPlayer", 1, true) ~= nil,
+			"HeistInstance adds the crew with AddPersistentPlayer"
+		)
+		expect(
+			string.find(src(heist, "Lobby"), "ModelStreamingMode.Persistent", 1, true) ~= nil,
+			"Lobby makes the garage Persistent"
+		)
 	else
-		print("info  Workspace.StreamingEnabled is off (flip after the fun gate: MASTERPLAN §3.3)")
+		print("info  Workspace.StreamingEnabled is off (spike / bench place)")
 	end
 end
 
