@@ -590,10 +590,19 @@ def move(J, level, x, z, yaw):
 
 
 # ------------------------------------------------------------------ light + camera
+def _hex01(c):
+    return "#%02X%02X%02X" % tuple(round(v * 255) for v in c[:3])
+
+
 def lighting(s):
+    """Recipe A from default.project.json: OutdoorAmbient as the world light (the levels have no roofs), the
+    ClockTime 15 sun as moonlight (ColorShift_Top, Brightness), ExposureCompensation."""
+    import backdrop_shots as BS
+    LT = BS.LIGHTING
+    s.view_settings.exposure = LT["ExposureCompensation"]
     w = s.world
     bg = next(n for n in w.node_tree.nodes if n.type == "BACKGROUND")
-    bg.inputs["Color"].default_value = MR.lin("#736EA5")       # recipe A OutdoorAmbient (115,110,165): no roofs
+    bg.inputs["Color"].default_value = MR.lin(_hex01(LT["OutdoorAmbient"]))
     bg.inputs["Strength"].default_value = 1.0
     # What the camera sees past the lot: the plain night sky (assets/sky, horizon in the Atmosphere colour
     # (90,80,150)), darker than the ambient light it gives.
@@ -609,7 +618,7 @@ def lighting(s):
     nt.links.new(mix.outputs[0], outn.inputs["Surface"])
     ld = bpy.data.lights.new("moon", "SUN")
     ld.color = MR.lin("#B4C6FF")[:3]                            # the ClockTime 15 sun as moonlight: ColorShift_Top
-    ld.energy = 2.4                                             # Brightness 1.4 (was 0.5 at 0.9)
+    ld.energy = 2.4 * LT["Brightness"] / 1.4                    # 2.4 calibrated at Brightness 1.4 (was 0.5 at 0.9)
     ld.angle = math.radians(6)                                  # ShadowSoftness 0.3
     o = bpy.data.objects.new("moon", ld)
     s.collection.objects.link(o)
@@ -974,6 +983,46 @@ def garage(g, W, Hh, samples, out_dir=None):
     s = MR.reset(samples)
     s.view_settings.exposure = 0.3
     lib = Lib(g["location"])
+    garage_scene(g, lib)
+    BS.backdrop({"backdrop": g["backdrop"], "backdropConfig": g["backdropConfig"], "kit": [], "location": g["location"],
+                 "lighting": g["lighting"]}, lib, put)
+    lighting(s)
+    BS.world_sky(s, TMP)
+    cd = bpy.data.cameras.new("cam")
+    cam = bpy.data.objects.new("cam", cd)
+    s.collection.objects.link(cam)
+    cd.sensor_fit = "VERTICAL"
+    cd.clip_start = 0.1
+    cd.clip_end = 5000
+    s.render.resolution_x, s.render.resolution_y = W, Hh
+    s.render.resolution_percentage = 100
+    G3 = g["camera"]["GOLDEN"]["G3"]
+    v = g["bays"][0]["collider"]
+    focus = ((v[0] + v[3]) / 2, (v[1] + v[4]) / 2, (v[2] + v[5]) / 2)
+    yw, p = math.radians(G3["YAW"]), math.radians(G3["PITCH"])
+    look = (-math.sin(yw) * math.cos(p), -math.sin(p), -math.cos(yw) * math.cos(p))   # CameraMath.look
+    pos = tuple(focus[k] - look[k] * G3["DISTANCE"] for k in range(3))
+    cam.location = rb(*pos)
+    cam.rotation_euler = (rb(*focus) - rb(*pos)).to_track_quat("-Z", "Y").to_euler()
+    cd.angle_y = math.radians(G3["FOV"])
+    name = "G3_garage"
+    raw = os.path.join(TMP, f"golden_{name}_raw.png")
+    render(s, cam, raw)
+    depth = os.path.join(TMP, f"golden_{name}_depth.png")
+    BS.depth_pass(s, cam, depth)
+    hazed = os.path.join(TMP, f"golden_{name}_haze.png")
+    BS.haze(raw, depth, hazed)
+    out = os.path.join(gdir, f"{name}.png")
+    MR.finish(hazed, out, [], tag=False, vignette=0.12, truecolor=True)
+    Image.open(out).convert("RGB").resize((160, 90), Image.LANCZOS).save(os.path.join(gdir, f"{name}_160x90.png"))
+    ids = os.path.join(TMP, f"golden_{name}_ids.png")
+    id_mask(s, cam, ids)
+    record_grade(gdir, FG.grade(out, ids))
+    print("wrote", os.path.relpath(out, REPO))
+
+
+def garage_scene(g, lib):
+    """The garage v1 as server Heist/Lobby builds it (kit, van paints, bay lines and numbers, lamps, the NEXT card)."""
     LG = g["lighting"]
     gbox("Floor", g["floor"], PAL["floor"])
     for it in g["kit"]:
@@ -1013,10 +1062,55 @@ def garage(g, W, Hh, samples, out_dir=None):
         if t.dimensions.x > wide:
             k = wide / t.dimensions.x
             t.scale = (k, k, k)
-    BS.backdrop({"backdrop": g["backdrop"], "backdropConfig": g["backdropConfig"], "kit": [], "location": g["location"],
-                 "lighting": LG}, lib, put)
-    lighting(s)
-    BS.world_sky(s, TMP)
+
+
+# ------------------------------------------------------------------ WORLD 2.0: the full frame, both cameras
+WORLD2 = os.path.join(REPO, "docs", "audit", "levels", "world2")
+W2_SIZE = (1280, 592)   # 19.5:9, a phone's full frame (Roblox FOV is vertical: a wide frame sees the most backdrop)
+W2_SITES = ("L1", "L2", "L3", "L4", "L5", "L6", "DV01", "DV10", "garage")
+# Source mask (frame_grade.SRC_COLOURS): which layer of the world each pixel belongs to. Backdrop objects carry the
+# custom property eh_src (tools/blender/backdrop_shots.py); clones are named clone*; the rest is the level.
+SRC_HIDE = ("Snowfall", "pool", "WindowSpill", "cone", "TownPool")
+
+
+def src_mask(s, cam, path):
+    """A Workbench pass with every object in its source colour (sky transparent), for frame_grade's breakdown of
+    where the dark pixels come from."""
+    import frame_grade as FG
+    keep = (s.render.engine, s.render.film_transparent, s.view_settings.view_transform, s.view_settings.exposure)
+    colours, hidden = {}, []
+    for o in bpy.data.objects:
+        if o.type not in ("MESH", "FONT", "CURVE"):
+            continue
+        colours[o.name] = tuple(o.color)
+        if o.name.startswith(SRC_HIDE) and not o.hide_render:
+            o.hide_render = True
+            hidden.append(o)
+            continue
+        src = o.get("eh_src")
+        if src is None:
+            src = "clone" if o.name.startswith("clone") else "level"
+        o.color = (*(c / 255 for c in FG.SRC_COLOURS[src]), 1.0)
+    s.render.engine = "BLENDER_WORKBENCH"
+    sh = s.display.shading
+    sh.light = "FLAT"
+    sh.color_type = "OBJECT"
+    s.display.render_aa = "OFF"
+    s.render.film_transparent = True
+    s.view_settings.view_transform = "Standard"
+    s.view_settings.exposure = 0.0
+    s.camera = cam
+    s.render.filepath = path
+    bpy.ops.render.render(write_still=True)
+    for o in bpy.data.objects:
+        if o.name in colours:
+            o.color = colours[o.name]
+    for o in hidden:
+        o.hide_render = False
+    s.render.engine, s.render.film_transparent, s.view_settings.view_transform, s.view_settings.exposure = keep
+
+
+def _w2_camera(s, W, Hh):
     cd = bpy.data.cameras.new("cam")
     cam = bpy.data.objects.new("cam", cd)
     s.collection.objects.link(cam)
@@ -1025,29 +1119,179 @@ def garage(g, W, Hh, samples, out_dir=None):
     cd.clip_end = 5000
     s.render.resolution_x, s.render.resolution_y = W, Hh
     s.render.resolution_percentage = 100
-    G3 = g["camera"]["GOLDEN"]["G3"]
-    v = g["bays"][0]["collider"]
-    focus = ((v[0] + v[3]) / 2, (v[1] + v[4]) / 2, (v[2] + v[5]) / 2)
-    yw, p = math.radians(G3["YAW"]), math.radians(G3["PITCH"])
-    look = (-math.sin(yw) * math.cos(p), -math.sin(p), -math.cos(yw) * math.cos(p))   # CameraMath.look
-    pos = tuple(focus[k] - look[k] * G3["DISTANCE"] for k in range(3))
-    cam.location = rb(*pos)
-    cam.rotation_euler = (rb(*focus) - rb(*pos)).to_track_quat("-Z", "Y").to_euler()
-    cd.angle_y = math.radians(G3["FOV"])
-    name = "G3_garage"
-    raw = os.path.join(TMP, f"golden_{name}_raw.png")
+    return cam
+
+
+def _diorama(level_cam, x, y, z, yaw):
+    """The game's diorama camera on a subject at (x, y, z) facing `yaw` (Config.Heist.CAMERA.DIORAMA, CameraMath):
+    returns Roblox (camera, look-at)."""
+    D = level_cam["DIORAMA"]
+    p = math.radians(D["PITCH"])
+    t = -D["SUBJECT_SCREEN_Y"] * math.tan(math.radians(D["FOV"]) / 2)
+    lead = t * D["DISTANCE"] / (math.sin(p) + t * math.cos(p))
+    ahead = (x - math.sin(yaw) * lead, y, z - math.cos(yaw) * lead)
+    pos = (ahead[0] + math.sin(yaw) * math.cos(p) * D["DISTANCE"], ahead[1] + math.sin(p) * D["DISTANCE"],
+           ahead[2] + math.cos(yaw) * math.cos(p) * D["DISTANCE"])
+    return pos, ahead
+
+
+def _classic(x, y, z, yaw, zoom, pitch):
+    """The classic follow camera behind a subject facing `yaw` (no Poppercam: the camera track fades walls)."""
+    p = math.radians(pitch)
+    pos = (x + math.sin(yaw) * math.cos(p) * zoom, y + math.sin(p) * zoom, z + math.cos(yaw) * math.cos(p) * zoom)
+    return pos, (x, y, z)
+
+
+def _w2_shoot(s, cam, name, pos, tgt, fov, snow_at, cfg, gdir, figs=(), level=None, gl=()):
+    import backdrop_shots as BS
+    import frame_grade as FG
+    flakes = None
+    if snow_at is not None:
+        flakes = BS.snowfall(snow_at, cfg, pos)
+    bp, bt = rb(*pos), rb(*tgt)
+    cam.location = bp
+    cam.rotation_euler = (bt - bp).to_track_quat("-Z", "Y").to_euler()
+    cam.data.angle_y = math.radians(fov)
+    raw = os.path.join(TMP, f"w2_{name}_raw.png")
     render(s, cam, raw)
-    depth = os.path.join(TMP, f"golden_{name}_depth.png")
+    raw = BS.tonemap(raw, os.path.join(TMP, f"w2_{name}_tm.png"))
+    depth = os.path.join(TMP, f"w2_{name}_depth.png")
     BS.depth_pass(s, cam, depth)
-    hazed = os.path.join(TMP, f"golden_{name}_haze.png")
+    hazed = os.path.join(TMP, f"w2_{name}_haze.png")
     BS.haze(raw, depth, hazed)
+    notes = notes_for(s, cam, list(figs), list(gl), level) if level is not None else []
     out = os.path.join(gdir, f"{name}.png")
-    MR.finish(hazed, out, [], tag=False, vignette=0.12, truecolor=True)
-    Image.open(out).convert("RGB").resize((160, 90), Image.LANCZOS).save(os.path.join(gdir, f"{name}_160x90.png"))
-    ids = os.path.join(TMP, f"golden_{name}_ids.png")
+    MR.finish(hazed, out, notes, tag=False, vignette=0.12, truecolor=True)
+    ids = os.path.join(TMP, f"w2_{name}_ids.png")
     id_mask(s, cam, ids)
-    record_grade(gdir, FG.grade(out, ids))
+    srcp = os.path.join(TMP, f"w2_{name}_src.png")
+    src_mask(s, cam, srcp)
+    if flakes is not None:
+        bpy.data.objects.remove(flakes, do_unlink=True)
+    record_grade(gdir, FG.grade(out, ids, srcp))
     print("wrote", os.path.relpath(out, REPO))
+
+
+def world2_level(level, samples, out_dir):
+    """WORLD 2.0 (LEVELS.md section 10): one site in both cameras at the full phone frame, graded for the share of
+    near-black pixels and where they come from. Shots: diorama at the spawn (run 1), diorama mid-run (you in the
+    building, the solution's clones on their plates), classic at the spawn toward the building, classic turned
+    round in the street (across the street and the sky)."""
+    import backdrop_shots as BS
+    W, Hh = W2_SIZE
+    os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(TMP, exist_ok=True)
+    tag = short(level)
+    fy = level["floorY"]
+    sp = level["spawns"][0]
+    cfg = level["backdropConfig"]
+    CC = level["camera"]["CLASSIC"]
+    DF = level["camera"]["DIORAMA"]["FOV"]
+    for solved in (False, True):
+        s = MR.reset(samples)
+        s.view_settings.exposure = 0.3
+        lib = Lib(level["location"])
+        held, doors, lasers = build(level, solved, lib)
+        gl = gus_and_cone(level, doors, level["location"], level["dressing"])
+        BS.backdrop(level, lib, put)
+        lighting(s)
+        BS.world_sky(s, TMP)
+        cam = _w2_camera(s, W, Hh)
+        J = player(level)
+        if not solved:
+            at = (sp["x"], fy + 4.5, sp["z"])
+            move(J, level, sp["x"], sp["z"], sp["yaw"])
+            pos, tgt = _diorama(level["camera"], *at, sp["yaw"])
+            _w2_shoot(s, cam, f"{tag}_diorama", pos, tgt, DF, at, cfg, out_dir, level=level, gl=gl)
+            pos, tgt = _classic(*at, sp["yaw"], CC["ZOOM"], CC["PITCH"])
+            _w2_shoot(s, cam, f"{tag}_classic", pos, tgt, CC["FOV"], at, cfg, out_dir, level=level, gl=gl)
+            # turned round in the street beside the van: across the street, the sky over the far row
+            rx, rz, ryaw = 12.0, level["bounds"][5] - 1.0, math.pi
+            move(J, level, rx, rz, ryaw)
+            at = (rx, fy + 4.5, rz)
+            pos, tgt = _classic(*at, ryaw, CC["ZOOM"], CC["PITCH"])
+            _w2_shoot(s, cam, f"{tag}_classic_rev", pos, tgt, CC["FOV"], at, cfg, out_dir, level=level, gl=gl)
+        else:
+            figs = clones(level)
+            mz = max(level["bounds"][2] + 14.0, -24.0)
+            move(J, level, 0.0, mz, 0.0)
+            pos, tgt = _diorama(level["camera"], 0.0, fy + 4.5, mz, 0.0)
+            _w2_shoot(s, cam, f"{tag}_diorama_mid", pos, tgt, DF, None, cfg, out_dir, figs=figs, level=level, gl=gl)
+
+
+def world2_garage(g, samples, out_dir):
+    import backdrop_shots as BS
+    W, Hh = W2_SIZE
+    os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(TMP, exist_ok=True)
+    s = MR.reset(samples)
+    s.view_settings.exposure = 0.3
+    lib = Lib(g["location"])
+    garage_scene(g, lib)
+    BS.backdrop({"backdrop": g["backdrop"], "backdropConfig": g["backdropConfig"], "kit": [], "location": g["location"],
+                 "lighting": g["lighting"]}, lib, put)
+    lighting(s)
+    BS.world_sky(s, TMP)
+    cam = _w2_camera(s, W, Hh)
+    cfg = g["backdropConfig"]
+    CC = g["camera"]["CLASSIC"]
+    DF = g["camera"]["DIORAMA"]["FOV"]
+    sx, sz = g["spawn"]
+    J = MR.figure("player", tuple(rb(sx, 0, sz)), 180.0, colors=MR.ROOKIE)
+    pos, tgt = _diorama(g["camera"], sx, 4.5, sz, 0.0)
+    _w2_shoot(s, cam, "GA_diorama", pos, tgt, DF, None, cfg, out_dir)
+    # at the half-open roll-up door in the back wall (-Z), looking out over the yard
+    dz = -g["lobby"]["HALF_Z"] + 3.0
+    J["root"].location = rb(0, 0, dz)
+    pos, tgt = _diorama(g["camera"], 0.0, 4.5, dz, 0.0)
+    _w2_shoot(s, cam, "GA_diorama_mid", pos, tgt, DF, None, cfg, out_dir)
+    J["root"].location = rb(sx, 0, sz)
+    pos, tgt = _classic(sx, 4.5, sz, 0.0, CC["ZOOM"], CC["PITCH"])
+    _w2_shoot(s, cam, "GA_classic", pos, tgt, CC["FOV"], None, cfg, out_dir)
+    # out in the yard, turned round toward the garage's back wall and its door
+    yz = -g["lobby"]["HALF_Z"] - g["lobby"]["WALL_T"] - g["lobby"]["STREET_DEPTH"] * 0.55
+    J["root"].location = rb(8.0, 0, yz)
+    J["root"].rotation_euler = (0, 0, math.pi)
+    pos, tgt = _classic(8.0, 4.5, yz, math.pi, CC["ZOOM"], CC["PITCH"])
+    _w2_shoot(s, cam, "GA_classic_rev", pos, tgt, CC["FOV"], (8.0, 4.5, yz), cfg, out_dir)
+
+
+W2_COLS = ("diorama", "classic", "diorama_mid", "classic_rev")
+
+
+def world2_sheet(before, after, out):
+    """Before / after contact sheet: one row per site, each shot as a before | after pair, with the near-black share
+    and the median luma under each tile."""
+    from PIL import Image, ImageDraw
+
+    def grades(folder):
+        p = os.path.join(folder, "grades.json")
+        return json.load(open(p)) if os.path.isfile(p) else {}
+    gb, ga = grades(before), grades(after)
+    tw, th = 320, 148
+    tags = [t if t != "garage" else "GA" for t in W2_SITES]
+    sheet = Image.new("RGB", (tw * 2 * len(W2_COLS) + 60, (th + 22) * len(tags) + 40), (24, 25, 36))
+    d = ImageDraw.Draw(sheet)
+    f, _ = MR._font(14)
+    for c, col in enumerate(W2_COLS):
+        d.text((60 + c * 2 * tw + 6, 12), f"{col}: before | after  (near-black %, median luma)", font=f,
+               fill=(230, 232, 245))
+    for r, tag in enumerate(tags):
+        y = 40 + r * (th + 22)
+        d.text((8, y + th // 2), tag, font=f, fill=(230, 232, 245))
+        for c, col in enumerate(W2_COLS):
+            for k, (folder, gr) in enumerate(((before, gb), (after, ga))):
+                p = os.path.join(folder, f"{tag}_{col}.png")
+                x = 60 + (2 * c + k) * tw
+                if not os.path.isfile(p):
+                    continue
+                sheet.paste(Image.open(p).convert("RGB").resize((tw - 4, th), Image.LANCZOS), (x, y))
+                g = gr.get(f"{tag}_{col}")
+                if g:
+                    d.text((x + 4, y + th + 3), "%.1f %%  %.3f" % (g["near_black"], g["median_luma"]), font=f,
+                           fill=(230, 232, 245))
+    sheet.save(out, optimize=True)
+    print("wrote", out)
 
 
 # ------------------------------------------------------------------ grading (tools/blender/frame_grade.py)
@@ -1157,11 +1401,34 @@ def main(argv):
                     help="draw the light pools as the old hard stepped discs (before / after comparison)")
     ap.add_argument("--garage", action="store_true",
                     help="GOLDEN_FRAMES G3 (the garage v1, Heist/LobbyPlan) into docs/audit/levels/golden/")
+    ap.add_argument("--world2", action="store_true",
+                    help="WORLD 2.0 (LEVELS.md 10): every site of W2_SITES (or --only one: L1..L6, DV01, DV10, garage) "
+                         "in the diorama and classic cameras at the full phone frame, graded (near-black share and its "
+                         "sources) into --out (default docs/audit/levels/world2/after)")
+    ap.add_argument("--world2-sheet", nargs=3, metavar=("BEFORE", "AFTER", "OUT"),
+                    help="the WORLD 2.0 before / after contact sheet")
     a = ap.parse_args(argv)
     global OUT, STEPPED
     STEPPED = a.stepped
     if a.out:
         OUT = os.path.abspath(a.out)
+    if a.world2_sheet:
+        world2_sheet(*(os.path.abspath(p) for p in a.world2_sheet))
+        return
+    if a.world2:
+        out = os.path.abspath(a.out) if a.out else os.path.join(WORLD2, "after")
+        if not a.only:
+            for tag in W2_SITES:   # one Blender process per site (factory resets in one process are flaky)
+                subprocess.run([sys.executable, os.path.abspath(__file__), "--world2", "--only", tag, "--samples",
+                                str(a.samples), "--out", out], check=True)
+            return
+        plan = load_plan(not a.plain, a.only.upper().startswith("DV"))
+        if a.only == "garage":
+            world2_garage(plan["garage"], a.samples, out)
+            return
+        lv = next(lv for lv in plan["levels"] if short(lv).upper() == a.only.upper() or lv["id"] == a.only)
+        world2_level(lv, a.samples, out)
+        return
     plan = load_plan(not a.plain, a.daily)
     levels = plan["levels"]
     W, Hh = a.size, a.size * 9 // 16

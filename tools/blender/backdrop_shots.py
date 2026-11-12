@@ -25,10 +25,45 @@ import marketing_renders as MR  # noqa: E402
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
 SKY = os.path.join(REPO, "assets", "sky")
-HAZE = (90, 80, 150)
-HAZE_LAMBDA = 520.0       # studs: 1 - exp(-d / L) = 18 % at 100, 44 % at 300, 69 % at 600 (Atmosphere 0.28 / 0.12)
 HAZE_MAX = 0.9
 DEPTH_SCALE = 3000.0      # the depth pass stores view distance / DEPTH_SCALE
+
+
+def _recipe():
+    """Recipe A as the game ships it: the Lighting and Atmosphere values of default.project.json (0-1 colours)."""
+    import json
+    tree = json.load(open(os.path.join(REPO, "default.project.json")))["tree"]["Lighting"]
+    return tree["$properties"], tree["Atmosphere"]["$properties"]
+
+
+LIGHTING, ATMOSPHERE = _recipe()
+HAZE = tuple(round(c * 255) for c in ATMOSPHERE["Color"])
+# studs: 1 - exp(-d / L). Calibrated as 520 at Density 0.28 (18 % at 100, 44 % at 300, 69 % at 600), inversely
+# proportional to the density
+HAZE_LAMBDA = 520.0 * 0.28 / max(ATMOSPHERE["Density"], 1e-3)
+
+# The "Roblox tone map" proxy (WORLD 2.0, LEVELS.md section 10): Blender's Standard view transform has no toe, but the
+# engine's Default tone mapper is a filmic curve that crushes dark values (assumption: the ACES fit below; a dark
+# albedo lit only by the night ambient lands in the toe and reads black in Studio, while Standard shows dark navy).
+TONEMAP = os.environ.get("EH_TONEMAP", "roblox")
+
+
+def _aces(x):
+    return (x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14)
+
+
+def tonemap(raw, out):
+    """sRGB (Standard) -> linear -> the ACES fit -> sRGB. Returns `out` (or `raw` untouched with EH_TONEMAP=standard)."""
+    if TONEMAP != "roblox":
+        return raw
+    import numpy as np
+    from PIL import Image
+    a = np.asarray(Image.open(raw).convert("RGB"), np.float32) / 255.0
+    lin = np.where(a <= 0.04045, a / 12.92, ((a + 0.055) / 1.055) ** 2.4)
+    t = np.clip(_aces(lin), 0, 1)
+    s = np.where(t <= 0.0031308, t * 12.92, 1.055 * np.power(t, 1 / 2.4) - 0.055)
+    Image.fromarray(np.clip(s * 255 + 0.5, 0, 255).astype(np.uint8)).save(out)
+    return out
 
 # Heist/Backdrop.luau (Roblox local frame of a kit front: X along the front, Y up, -Z the street)
 AWNINGS = ((-7.65, -0.35), (-23.65, -16.35))
@@ -140,10 +175,11 @@ def backdrop(level, lib, put):
     for p in bp["parts"]:
         (sx, sy, sz), (cx, cy, cz) = p["size"], p["pos"]
         if p["name"] == "Ground":
-            sx = sz = 1400.0
+            pass   # the real 2048-stud plane: its far edge is part of what the classic camera sees
         neon = p.get("neon")
-        _box(p["name"], (cx - sx / 2, cy - sy / 2, cz - sz / 2), (cx + sx / 2, cy + sy / 2, cz + sz / 2),
-             mat(p["color"], NEON_EMIT if neon else 0.0), shadow=p["name"] == "Facade")
+        o = _box(p["name"], (cx - sx / 2, cy - sy / 2, cz - sz / 2), (cx + sx / 2, cy + sy / 2, cz + sz / 2),
+                 mat(p["color"], NEON_EMIT if neon else 0.0), shadow=p["name"] == "Facade")
+        o["eh_src"] = "ground" if p["layer"] == "ground" else "building"
     for ring in bp["rings"]:
         for piece in (ring["piece"], ring["windows"]):
             for yaw in ring["yaws"]:
@@ -152,6 +188,7 @@ def backdrop(level, lib, put):
                 if o is None:
                     continue
                 o.visible_shadow = False
+                o["eh_src"] = "ring"
                 if piece == ring["windows"]:
                     o.data = o.data.copy()
                     o.data.materials.clear()
