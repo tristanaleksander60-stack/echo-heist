@@ -57,6 +57,7 @@ SRC_COLOURS = {
     "lot": (255, 255, 0),        # the client's snow over the lot's outdoor floor
     "props": (255, 0, 255),      # lamps, cars, trees, snowmen in the surroundings
     "clone": (0, 255, 255),      # the clones (signals)
+    "signal": (0, 0, 0),         # the world signals: plate rings, laser beams and lenses, need-all row lamps (opaque black)
 }
 
 
@@ -130,11 +131,14 @@ def grade(path, ids=None, src=None):
                 continue
             table[name] = {"share": round(float(mask.mean()) * 100, 1),
                            "median_luma": round(float(np.median(y[mask])), 3),
+                           "p95_luma": round(float(np.quantile(y[mask], 0.95)), 3),
                            "near_black": round(float((nb & mask).mean()) * 100, 2),
                            "dark": round(float((dk & mask).mean()) * 100, 1)}
         out["sources"] = table
         if masks["clone"].any():
             out["clone_pop"] = _pop(a, masks["clone"], a.shape[0])
+        if masks["signal"].any():
+            out["signal_pop"] = _pop(a, masks["signal"], a.shape[0])
     return out
 
 

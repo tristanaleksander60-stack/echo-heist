@@ -1071,6 +1071,7 @@ W2_SITES = ("L1", "L2", "L3", "L4", "L5", "L6", "DV01", "DV10", "garage")
 # Source mask (frame_grade.SRC_COLOURS): which layer of the world each pixel belongs to. Backdrop objects carry the
 # custom property eh_src (tools/blender/backdrop_shots.py); clones are named clone*; the rest is the level.
 SRC_HIDE = ("Snowfall", "pool", "WindowSpill", "cone", "TownPool")
+SIGNALS = ("Plate_4x4_Ring", "LaserEmitter_Lens", "Beam", "RowLamp")   # the world signals (premium A1 pop)
 
 
 def src_mask(s, cam, path):
@@ -1089,7 +1090,7 @@ def src_mask(s, cam, path):
             continue
         src = o.get("eh_src")
         if src is None:
-            p, src = o, "level"
+            p, src = o, ("signal" if o.name.startswith(SIGNALS) else "level")
             while p is not None:   # a figure's parts hang under empties named after it (clone1_root ...)
                 if p.name.startswith("clone"):
                     src = "clone"
@@ -1232,6 +1233,15 @@ def world2_level(level, samples, out_dir):
             move(J, level, 0.0, mz, 0.0)
             pos, tgt = _diorama(level["camera"], 0.0, fy + 4.5, mz, 0.0)
             _w2_shoot(s, cam, f"{tag}_diorama_mid", pos, tgt, DF, None, cfg, out_dir, figs=figs, level=level, gl=gl)
+            # the signal check (premium A1): the diorama on the crew, the solution's clones on their held plates
+            if figs:
+                pts = [J["root"].matrix_world.translation for J, _k, _h in figs]
+                cx = -sum(p.x for p in pts) / len(pts)      # Blender -> Roblox x
+                cz = sum(p.y for p in pts) / len(pts)       # Blender y -> Roblox z
+                move(J, level, cx + 2.0, cz + 6.0, 0.0)
+                pos, tgt = _diorama(level["camera"], cx, fy + 4.5, cz + 6.0, 0.0)
+                _w2_shoot(s, cam, f"{tag}_diorama_crew", pos, tgt, DF, None, cfg, out_dir, figs=figs, level=level,
+                          gl=gl)
 
 
 def world2_garage(g, samples, out_dir):
