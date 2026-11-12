@@ -14,6 +14,12 @@
 --     look untouched.
 -- Poses append to (parts, cframes) so each view does one BulkMoveTo per frame; the
 -- Line-up adds a cheer pose (arms up on rigid rigs, the cheer clip on avatars).
+-- Clones act (PLAN_STEAM_PLUS §4.4 A3): avatar rigs load the owner's catalog pack (idle, walk,
+-- run, jump, fall: Rigs.loadPack / Rigs.locomote, speeds from Shared/Heist/CloneGait); custom
+-- poses (Shared/Heist/ClonePose) are written to the joints' Transform (Rigs.writePose, from a
+-- PreSimulation hook: writes in RenderStepped or Heartbeat are overwritten by the animator);
+-- mannequins take the same arm and head angles on their rigid limbs. Rigs.setPrint builds a rig
+-- up from the feet (the tape print) by hiding parts above a height.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -41,6 +47,12 @@ export type Rig = {
 	fadeShown: number?, -- last alpha setFade wrote
 	joints: number?, -- avatar: whole joints when built (CloneHealth compares against it)
 	scale: number?, -- avatar: rig size relative to a default R15 (CloneHealth limb distance)
+	tracks: { [string]: AnimationTrack }?, -- catalog pack by slot (idle, walk, run, jump, fall)
+	loco: string?, -- the locomotion clip set playing ("idle" | "move" | "jump" | "fall" | "none")
+	jointMap: { [string]: any }?, -- child part name -> Motor6D or AnimationConstraint
+	posed: { [string]: boolean }?, -- joints a custom pose wrote last frame
+	heights: { number }?, -- per partsOf entry: rest height of the part's bottom above the feet
+	printShown: number?, -- last print height written (setPrint)
 }
 
 local walkAnim = Instance.new("Animation")
@@ -79,7 +91,7 @@ function Rigs.buildAvatar(template: Model): Rig?
 	local rootHeight = root.Size.Y / 2 + (if hum then hum.HipHeight else 2)
 	local animator = hum and hum:FindFirstChildOfClass("Animator")
 	local head = model:FindFirstChild("Head")
-	return {
+	local rig: Rig = {
 		model = model,
 		kind = "avatar",
 		root = root,
@@ -92,6 +104,14 @@ function Rigs.buildAvatar(template: Model): Rig?
 		joints = joints,
 		scale = math.max(1, rootHeight / 3),
 	}
+	-- Rest heights for the tape print, measured in the template's own pose (before any move).
+	local feetY = root.Position.Y - rootHeight
+	local heights = {}
+	for i, p in Rigs.partsOf(rig) do
+		heights[i] = p.Position.Y - p.Size.Y / 2 - feetY
+	end
+	rig.heights = heights
+	return rig
 end
 
 -- CloneHealth (PLAN_STEAM_PLUS §1 S1): nil while an avatar rig is whole, else what broke:
@@ -135,6 +155,11 @@ local MANNEQUIN = {
 	{ "RightLeg", Vector3.new(0.95, 2, 0.95), Vector3.new(0.5, 2, 0), Vector3.new(0, -1, 0), 1, false },
 }
 
+local MANNEQUIN_BY_NAME: { [string]: { any } } = {}
+for _, spec in MANNEQUIN do
+	MANNEQUIN_BY_NAME[spec[1]] = spec
+end
+
 function Rigs.buildMannequin(): Rig
 	local model = Instance.new("Model")
 	model.Name = "Mannequin"
@@ -158,7 +183,7 @@ function Rigs.buildMannequin(): Rig
 		table.insert(tinted, p)
 		table.insert(limbs, { part = p, pivot = CFrame.new(pivot), offset = CFrame.new(offset), swing = swing })
 	end
-	return {
+	local rig: Rig = {
 		model = model,
 		kind = "mannequin",
 		root = nil,
@@ -169,6 +194,13 @@ function Rigs.buildMannequin(): Rig
 		tinted = tinted,
 		head = head,
 	}
+	local heights = {}
+	for i, p in Rigs.partsOf(rig) do
+		local spec = MANNEQUIN_BY_NAME[p.Name]
+		heights[i] = if spec then spec[3].Y + spec[4].Y - spec[2].Y / 2 else 0
+	end
+	rig.heights = heights
+	return rig
 end
 
 -- Gus: navy uniform, marble face, cap, a torch in Torch Amber (the cone's colour).
@@ -291,9 +323,41 @@ function Rigs.setFade(rig: Rig, alpha: number)
 		return
 	end
 	rig.fadeShown = alpha
+	rig.printShown = nil
 	for _, p in Rigs.partsOf(rig) do
 		p.LocalTransparencyModifier = alpha
 	end
+end
+
+-- Tape print (PLAN_STEAM_PLUS §4.4 A2): shows the parts whose bottom is under `height` studs above
+-- the feet and hides the rest, so the rig builds up from the feet as the height rises. Writes only
+-- the parts that change; the next setFade takes over again.
+function Rigs.setPrint(rig: Rig, height: number)
+	local heights = rig.heights
+	if not heights then
+		Rigs.setFade(rig, if height > 0 then 0 else 1)
+		return
+	end
+	local last = rig.printShown
+	rig.fadeShown = nil
+	rig.printShown = height
+	for i, p in Rigs.partsOf(rig) do
+		local h = heights[i] or 0
+		local show = h <= height
+		if last == nil or (h <= last) ~= show then
+			p.LocalTransparencyModifier = if show then 0 else 1
+		end
+	end
+end
+
+-- The rig's height from the feet to the top of its tallest part (the print band's travel).
+function Rigs.heightOf(rig: Rig): number
+	local top = 0
+	local heights = rig.heights
+	for i, p in Rigs.partsOf(rig) do
+		top = math.max(top, (if heights then heights[i] else 0) + p.Size.Y)
+	end
+	return if top > 0 then top else rig.rootHeight * 2
 end
 
 -- Starts the walk clip once the rig is in the DataModel.
@@ -335,9 +399,23 @@ function Rigs.setSpeed(rig: Rig, speed: number)
 	end
 end
 
+-- Mannequin limbs that take a custom pose's joint angles (ClonePose keys by R15 part name). Arms
+-- only: the visor is its own part, so a turned head would leave it behind.
+local MANNEQUIN_JOINT = { LeftArm = "LeftUpperArm", RightArm = "RightUpperArm" }
+
 -- Appends this rig's parts and target CFrames for one BulkMoveTo call.
 -- `feet` is the floor point under the rig facing its yaw; `phase` drives the limb swing.
-function Rigs.pose(rig: Rig, feet: CFrame, phase: number, amount: number, parts: { BasePart }, cframes: { CFrame })
+-- `custom` (optional, ClonePose joints): rigid rigs pose their arms with it; avatar rigs
+-- get it through Rigs.writePose instead.
+function Rigs.pose(
+	rig: Rig,
+	feet: CFrame,
+	phase: number,
+	amount: number,
+	parts: { BasePart },
+	cframes: { CFrame },
+	custom: { [string]: { number } }?
+)
 	local root = rig.root
 	if root then
 		table.insert(parts, root)
@@ -347,12 +425,207 @@ function Rigs.pose(rig: Rig, feet: CFrame, phase: number, amount: number, parts:
 	local swing = math.sin(phase) * SWING * amount
 	for _, limb in rig.limbs do
 		table.insert(parts, limb.part)
-		if limb.swing ~= 0 then
+		local key = if custom then MANNEQUIN_JOINT[limb.part.Name] else nil
+		local a = if key and custom then custom[key] else nil
+		if a then
+			table.insert(cframes, feet * limb.pivot * CFrame.fromEulerAnglesYXZ(a[1], a[2], a[3]) * limb.offset)
+		elseif limb.swing ~= 0 then
 			table.insert(cframes, feet * limb.pivot * CFrame.Angles(swing * limb.swing, 0, 0) * limb.offset)
 		else
 			table.insert(cframes, feet * limb.pivot * limb.offset)
 		end
 	end
+end
+
+---------------------------------------------------------------------------
+-- Clones act (A3): the catalog pack and custom poses on avatar rigs
+---------------------------------------------------------------------------
+
+local animCache: { [string]: Animation } = {}
+local function animation(id: string): Animation
+	local a = animCache[id]
+	if not a then
+		a = Instance.new("Animation")
+		a.AnimationId = id
+		animCache[id] = a
+	end
+	return a
+end
+
+-- The animation ids for a template: its EH_Anim_<slot> attributes (the owner's Animate pack, read
+-- by the server strip), else the default R15 ids in Config.Clone.ANIM.
+function Rigs.packOf(template: Instance?): { [string]: string }
+	local C = Config.Clone
+	local ids: { [string]: string } = {}
+	for _, slot in C.ANIM_SLOTS do
+		local v = if template then template:GetAttribute("EH_Anim_" .. slot) else nil
+		ids[slot] = if type(v) == "string" and string.find(v, "%d") then v else C.ANIM[slot]
+	end
+	return ids
+end
+
+-- Loads the pack's tracks on the rig's Animator once (the rig must be in the DataModel). A slot
+-- that does not load is skipped; with no Animator nothing loads and the rig just glides.
+function Rigs.loadPack(rig: Rig, ids: { [string]: string })
+	local animator = rig.animator
+	if not animator or rig.tracks then
+		return
+	end
+	local tracks: { [string]: AnimationTrack } = {}
+	for slot, id in ids do
+		local ok, track = pcall(function()
+			return animator:LoadAnimation(animation(id))
+		end)
+		if ok and track then
+			track.Looped = slot ~= "jump"
+			track.Priority = if slot == "idle" then Enum.AnimationPriority.Idle else Enum.AnimationPriority.Movement
+			tracks[slot] = track
+		end
+	end
+	rig.tracks = tracks
+	rig.loco = "none"
+end
+
+local LOCO_SLOTS: { [string]: { string } } = {
+	none = {},
+	idle = { "idle" },
+	move = { "walk", "run" },
+	jump = { "jump" },
+	fall = { "fall" },
+}
+
+-- Plays the clip set for `loco` ("idle" | "move" | "jump" | "fall" | "none"), cross-fading from the
+-- last one. For "move": clip speed and walk/run weights (Shared/Heist/CloneGait), sent only when
+-- `sendSpeed` / `sendWeights` say they changed; `phase` (0..1) starts fresh walk clips in step.
+function Rigs.locomote(
+	rig: Rig,
+	loco: string,
+	speed: number,
+	walkW: number,
+	runW: number,
+	sendSpeed: boolean,
+	sendWeights: boolean,
+	phase: number?
+)
+	local tracks = rig.tracks
+	if not tracks then
+		return
+	end
+	local fade = Config.Clone.ANIM_FADE
+	local started = false
+	if loco ~= rig.loco then
+		local want = LOCO_SLOTS[loco] or LOCO_SLOTS.none
+		for _, slot in LOCO_SLOTS[rig.loco or "none"] or {} do
+			local t = tracks[slot]
+			if t and not table.find(want, slot) then
+				t:Stop(fade)
+			end
+		end
+		for _, slot in want do
+			local t = tracks[slot]
+			if t then
+				local w = if slot == "walk" then walkW elseif slot == "run" then runW else 1
+				t:Play(fade, math.max(w, 1e-3), if loco == "move" then speed else 1)
+				if phase and loco == "move" and t.Length > 0 then
+					t.TimePosition = phase * t.Length
+				end
+			end
+		end
+		rig.loco = loco
+		started = true
+	end
+	if loco ~= "move" or started then
+		return
+	end
+	local walk, run = tracks.walk, tracks.run
+	if sendSpeed then
+		if walk then
+			walk:AdjustSpeed(speed)
+		end
+		if run then
+			run:AdjustSpeed(speed)
+		end
+	end
+	if sendWeights then
+		if walk then
+			walk:AdjustWeight(math.max(walkW, 1e-3), fade)
+		end
+		if run then
+			run:AdjustWeight(math.max(runW, 1e-3), fade)
+		end
+	end
+end
+
+-- Child part name -> the joint that moves it (Motor6D, or the 2026 rigs' AnimationConstraint).
+function Rigs.jointMap(rig: Rig): { [string]: any }
+	local map = rig.jointMap
+	if map then
+		return map
+	end
+	local out: { [string]: any } = {}
+	for _, d in rig.model:GetDescendants() do
+		if d:IsA("Motor6D") then
+			local p1 = d.Part1
+			if p1 then
+				out[p1.Name] = d
+			end
+		elseif d:IsA("AnimationConstraint") then
+			local a1 = d.Attachment1
+			local p1 = a1 and a1.Parent
+			if p1 then
+				out[p1.Name] = d
+			end
+		end
+	end
+	rig.jointMap = out
+	return out
+end
+
+-- Writes a custom pose (ClonePose joints: Euler x, y, z) as absolute joint Transforms. Joints the
+-- last pose set and this one does not go back to identity once (the animator takes them again).
+-- Call from RunService.PreSimulation (after the animator's step, before the joints are solved).
+function Rigs.writePose(rig: Rig, joints: { [string]: { number } })
+	if rig.kind ~= "avatar" then
+		return
+	end
+	local map = Rigs.jointMap(rig)
+	local posed = rig.posed
+	if not posed then
+		posed = {}
+		rig.posed = posed
+	end
+	for name in posed do
+		if not joints[name] then
+			local j = map[name]
+			if j then
+				j.Transform = CFrame.identity
+			end
+			posed[name] = nil
+		end
+	end
+	for name, a in joints do
+		local j = map[name]
+		if j then
+			j.Transform = CFrame.fromEulerAnglesYXZ(a[1], a[2], a[3])
+			posed[name] = true
+		end
+	end
+end
+
+-- Hands every custom-posed joint back to the animator (identity Transform once).
+function Rigs.clearPose(rig: Rig)
+	local posed = rig.posed
+	if not posed or next(posed) == nil then
+		return
+	end
+	local map = Rigs.jointMap(rig)
+	for name in posed do
+		local j = map[name]
+		if j then
+			j.Transform = CFrame.identity
+		end
+	end
+	table.clear(posed)
 end
 
 -- The part a badge or bubble hangs from.

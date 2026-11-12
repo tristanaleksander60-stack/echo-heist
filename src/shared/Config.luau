@@ -1089,4 +1089,96 @@ Config.Audio = {
 	PRELOAD = { "RewindClack", "TapeStop", "RewindWhirr", "RewindClunk", "RunStamp", "CloneChime", "UIClick" },
 }
 
+-- Clone look and acting (PLAN_STEAM_PLUS §3.1, §4.4 A2 "that's me" and A3 "clones act"; client views
+-- Heist/EchoView, Heist/Rigs, Heist/PlayerHalo; pure Shared/Heist/CloneState, ClonePose, CloneGait).
+Config.Clone = {
+	-- Per-frame state from the recording (CloneState). Speeds are horizontal, studs per recording second.
+	MOVE_SPEED = 0.75, -- above this a clone walks (the R15 Animate threshold) ...
+	STOP_SPEED = 0.5, -- ... and it stands again under this (hysteresis)
+	AIR_RISE = 2.5, -- |vertical speed| above this without the GROUNDED flag = jumping / falling
+
+	-- Catalog animations (A3 default path): the owner's Animate pack (template attributes EH_Anim_<slot>,
+	-- read by Avatars.strip) or these default R15 ids. Slots: idle, walk, run, jump, fall.
+	ANIM_SLOTS = { "idle", "walk", "run", "jump", "fall" },
+	ANIM = {
+		idle = "rbxassetid://507766666",
+		walk = "rbxassetid://507777826",
+		run = "rbxassetid://507767714",
+		jump = "rbxassetid://507765000",
+		fall = "rbxassetid://507767968",
+	},
+	-- Gait (CloneGait, as the R15 Animate script): both clips play at speed 1 at GAIT_BASE studs/s of
+	-- ground speed (16 / 1.25); walk alone under WALK_ONLY, run alone over RUN_ONLY, blended between.
+	-- Ground speed = recorded speed x the view's clock rate (1x, 3x fast-forward): no foot sliding.
+	GAIT_BASE = 12.8,
+	WALK_ONLY = 4.2,
+	RUN_ONLY = 8.4,
+	GAIT_SPEED_EPS = 0.01, -- relative clip-speed change before AdjustSpeed is called again
+	GAIT_WEIGHT_STEP = 0.1, -- walk/run weights are sent in steps of this
+	STRIDE = 12.8, -- studs per clip cycle at speed 1 (GAIT_BASE x 1 s): the foot-slide unit (premium C7)
+	MAX_VIEW_RATE = 4, -- clamp of the view's measured clock rate (a seek is not a rate)
+	ANIM_FADE = 0.2, -- cross-fade between locomotion clips
+	ANIM_DISTANCE = 90, -- beyond this many studs from the camera, clips stop (the root still moves)
+	POSE_DISTANCE = 60, -- custom Lua poses (plate, carry, stuck, busted) only nearer than this
+
+	-- Custom poses (ClonePose, written to the joints' Transform in PreSimulation; radians and seconds).
+	POSE_BLEND = 0.18, -- into and out of a custom pose
+	CARRY_SHOULDER = 1.0, -- arms forward
+	CARRY_INWARD = 0.32, -- hands toward the middle
+	CARRY_ELBOW = 1.05, -- forearms up: the loot sits between both hands
+	CARRY_BOB = 0.07, -- studs of loot bob (two per walk cycle; slow breath when standing)
+	CARRY_BOB_IDLE_HZ = 0.9,
+	CARRY_HANDS = { 0, 0.2, -1.1 }, -- loot centre from the root in the clone's frame (x, y, z; -z is forward)
+	PLATE_SHIFT_HZ = 0.22, -- weight shift from foot to foot
+	PLATE_SHIFT = 0.07, -- waist sway (rad)
+	GLANCE_AT = 0.8, -- s on the plate before the one glance back at you
+	GLANCE_IN = 0.25,
+	GLANCE_HOLD = 0.9,
+	GLANCE_OUT = 0.3,
+	LOOK_YAW = math.rad(70), -- head look-at limits (elliptical), roblox_quality §4.3
+	LOOK_PITCH = math.rad(40),
+	STUCK_CYCLE = 4.0, -- s: tap the wall, then shrug, again
+	STUCK_TAP = 1.3, -- s of tapping at the start of each cycle
+	STUCK_TAP_HZ = 3,
+	STUCK_SHRUG = 1.2, -- s of shrug after the taps
+	BUSTED_HANDS_UP = 0.3, -- s: hands go up (they stay up through the glitch)
+	BUSTED_GLITCH = 0.3, -- s of glitch after the hands are up; then the tape-ribbon burst and gone
+	GLITCH_SLICES = 3, -- 2-frame slices, offset sideways
+	GLITCH_OFFSET = 0.3, -- studs
+	GLITCH_FRAME = 1 / 30, -- one slice lasts two of these
+	ZAP_FADE = 0.35, -- s: a zapped clone flickers out
+	MANNEQUIN_STRIDE = 3, -- studs per leg-swing cycle of the rigid mannequin
+
+	-- Look (A2)
+	DRIFT_DEGREES = 25, -- solo only: older runs drift this far toward violet (MASTERPLAN §6.5 #4)
+	GLOW_SIZE = 4.4, -- studs across the floor-glow canvas (the disc fills GLOW_DISC of it)
+	GLOW_DISC = 0.72,
+	GLOW_BRIGHTNESS = 1.6, -- SurfaceGui Brightness (LightInfluence 0: unlit, no light object)
+	GLOW_ALPHA = { 0.55, 0.72, 0.84 }, -- inner core, middle, outer disc
+	GLOW_RING_ALPHA = 0.45, -- the disc's rim at rest
+	PRINT_SECONDS = 0.35, -- "tape print": the clone builds up from the feet
+	PRINT_RING_FROM = 0.35, -- the floor ring grows from this share of the canvas to all of it
+	PRINT_BAND_ALPHA = 0.25, -- the scan band at the start of the print (fades to 1 at the top)
+	PILL_SIZE = { 50, 26 }, -- px: the numbered pill over the head
+	PILL_OFFSET = 2.4, -- studs above the head
+	-- Busted: tape-ribbon burst + sparks, <= 30 particles in all (roblox_quality §5.6)
+	RIBBON_COUNT = 22,
+	SPARK_COUNT = 8,
+	ZAP_SPARKS = 16,
+	RIBBON_FALLBACK = "rbxasset://textures/particles/sparkles_main.dds", -- until EH_FX_Ribbon resolves
+
+	-- Carried loot (Heist/WorldView): studs above the carrier point. A live player's point is the root
+	-- (loot rides on the head); a clone's is its hands minus this (EchoView.carryPointOf).
+	CARRY_LIFT = 2.6,
+
+	-- Your live character (G1): client-only warm rim and ground ring, so dark outfits read on dark floors.
+	HALO_RIM_ALPHA = 0.35, -- Highlight outline (fill off)
+	HALO_LIGHT_RANGE = 7, -- one warm PointLight behind and above you (tiers 1-2 only)
+	HALO_LIGHT_BRIGHTNESS = 0.8,
+	HALO_LIGHT_OFFSET = { 0, 2.5, 2 },
+	HALO_RING_SIZE = 4.2,
+	HALO_RING_ALPHA = 0.35,
+	HALO_RAY = 12, -- studs down to find the floor under you
+}
+
 return Config

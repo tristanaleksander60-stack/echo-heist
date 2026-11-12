@@ -111,6 +111,14 @@ Strings.STATUS = table.freeze({
 	Stuck = "STUCK",
 	Shrug = "?",
 })
+-- A clone's speech bubble over its head (EchoView) when the server decides its outcome; Stuck
+-- also shows the cross icon.
+Strings.CLONE_BUBBLE = table.freeze({
+	Busted = "BUSTED",
+	Zapped = "ZAP!",
+	Stuck = "STUCK",
+	Shrug = "?",
+})
 Strings.STATUS_REDO = "REDO"
 Strings.STATUS_ALARM = "ALARM"
 Strings.DECK_TITLE = "CLONES"

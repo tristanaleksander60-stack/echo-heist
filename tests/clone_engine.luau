@@ -1,4 +1,7 @@
 -- Clone visibility in a real Roblox server (Open Cloud Luau Execution; PLAN_STEAM_PLUS §1 S1, §4.4 A1).
+-- Also (PLAN_STEAM_PLUS §4.4 A2, A3): floor glow, numbered pill, no light objects, the per-frame
+-- state (on-plate, carry with the arms forward and the loot between the hands), the tape print's
+-- timing, and the animation-upload spike (an Open Cloud Animation asset moves a joint).
 -- Run: ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960 \
 --      --place 70772627070328 --script tests/clone_engine.luau   (add --version N to skip publishing)
 --
@@ -37,6 +40,7 @@ local clientHeist =
 	game:GetService("StarterPlayer"):WaitForChild("StarterPlayerScripts"):WaitForChild("Client"):WaitForChild("Heist")
 
 local Config = require(shared:WaitForChild("Config")) :: any
+local H = Config.Heist
 local Codec = require(shared:WaitForChild("Rec"):WaitForChild("Codec"))
 local Sampler = require(shared:WaitForChild("Rec"):WaitForChild("Sampler"))
 local HeistService = require(heistServer:WaitForChild("HeistService"))
@@ -485,6 +489,253 @@ for _, c in cases do
 				if head then string.format("%.1f", head.Position.Y - origin.Y) else "gone"
 			)
 		)
+	end
+end
+
+---------------------------------------------------------------------------
+-- 5. "That's me" look and acting (PLAN_STEAM_PLUS §4.4 A2, A3).
+---------------------------------------------------------------------------
+local C = Config.Clone
+
+-- Runs echo.update on real Heartbeats for `seconds` (tView frozen unless `tFrom` moves it).
+local function runFor(seconds: number, each: ((el: number) -> ())?, tFrom: number?)
+	local start = os.clock()
+	local finished = false
+	local c = RunService.Heartbeat:Connect(function(dt: number)
+		if finished then
+			return
+		end
+		local el = os.clock() - start
+		if each then
+			each(el)
+		end
+		pcall(echo.update, (tFrom or (VIEW_START + SECONDS)) + (if tFrom then el else 0), os.clock(), dt, nil)
+		if el >= seconds then
+			finished = true
+		end
+	end)
+	local waitedFor = 0
+	while not finished and waitedFor < seconds + 5 do
+		waitedFor += task.wait()
+	end
+	c:Disconnect()
+end
+
+-- A2: floor glow and numbered pill on every clone.
+for _, c in cases do
+	local fxs = echo.fxOf and echo.fxOf(c.actorId)
+	local root = c.rig and c.rig:FindFirstChild("HumanoidRootPart")
+	local glowOk = fxs ~= nil and fxs.glow.Enabled and fxs.glow.LightInfluence == 0
+	if glowOk and root and root:IsA("BasePart") then
+		local d = fxs.glowPart.Position - root.Position
+		glowOk = Vector2.new(d.X, d.Z).Magnitude < 1 and d.Y < -1
+	end
+	check(glowOk, c.name .. ": floor glow on, unlit, under the clone")
+	local pill = fxs and fxs.pill
+	local pillFrame = pill and pill:FindFirstChild("Pill")
+	local number = pillFrame and pillFrame:FindFirstChild("Number")
+	check(
+		pill ~= nil
+			and pill.Enabled
+			and number ~= nil
+			and number:IsA("TextLabel")
+			and number.Text == tostring(cloneActor.slot)
+			and pillFrame:FindFirstChildOfClass("UICorner") ~= nil,
+		c.name .. ": numbered pill badge (" .. tostring(number and (number :: any).Text) .. ")"
+	)
+end
+local lights = 0
+for _, d in (workspace:FindFirstChild("HeistClones") or workspace):GetDescendants() do
+	if d:IsA("Light") then
+		lights += 1
+	end
+end
+check(lights == 0, "no light objects on clones (" .. lights .. ")")
+
+-- A3: state from the recording. Run 1 ends on plate A: every clone stands "on-plate".
+for _, c in cases do
+	local st = echo.stateOf and echo.stateOf(c.actorId)
+	check(st == "on-plate", c.name .. ": state on-plate at the end of the run (" .. tostring(st) .. ")")
+end
+
+-- A3: a carrying clone reports "carry", holds the loot in front and raises its arms (Lua pose on the
+-- joints, PreSimulation). K1 is the L1 cash; the server attributes are set by hand here.
+local own0 = cases[1]
+local function handZ(c: any): number?
+	local rig = c.rig
+	local root = rig and rig:FindFirstChild("HumanoidRootPart")
+	local hand = rig and (rig:FindFirstChild("RightHand") or rig:FindFirstChild("RightLowerArm"))
+	if root and hand and root:IsA("BasePart") and hand:IsA("BasePart") then
+		return root.CFrame:PointToObjectSpace(hand.Position).Z
+	end
+	return nil
+end
+if own0 and own0.rig then
+	runFor(0.3)
+	local restZ = handZ(own0)
+	local folderInst = inst.folder
+	local function setCarry()
+		folderInst:SetAttribute("K1State", "Carried")
+		folderInst:SetAttribute("K1Carrier", own0.actorId)
+	end
+	runFor(0.6, setCarry)
+	setCarry()
+	pcall(echo.update, VIEW_START + SECONDS, os.clock(), 1 / 60, nil)
+	local st = echo.stateOf(own0.actorId)
+	check(st == "carry", "carrying clone reports carry (" .. tostring(st) .. ")")
+	local carryZ = handZ(own0)
+	check(
+		restZ ~= nil and carryZ ~= nil and carryZ < restZ - 0.5,
+		string.format(
+			"carry pose: right hand forward (z %s -> %s studs in root space)",
+			tostring(restZ and math.floor(restZ * 100) / 100),
+			tostring(carryZ and math.floor(carryZ * 100) / 100)
+		)
+	)
+	local rootInst = own0.rig:FindFirstChild("HumanoidRootPart")
+	local at = echo.carryPointOf(own0.actorId)
+	if at and rootInst and rootInst:IsA("BasePart") then
+		local root = rootInst
+		local lp = root.CFrame:PointToObjectSpace(at + Vector3.new(0, C.CARRY_LIFT, 0))
+		check(
+			lp.Z < -0.6 and math.abs(lp.Y) < 1.2,
+			string.format("carried loot sits between the hands, in front (%.2f, %.2f, %.2f)", lp.X, lp.Y, lp.Z)
+		)
+	else
+		check(false, "carryPointOf gives a point")
+	end
+	folderInst:SetAttribute("K1State", "Home")
+	folderInst:SetAttribute("K1Carrier", 0)
+	runFor(0.4)
+	check(echo.stateOf(own0.actorId) == "on-plate", "back on the plate once the loot is gone")
+end
+
+-- A2: the tape print: each clone builds up from the feet within PRINT_SECONDS of its turn, 60 ms
+-- apart in record order (a new run that starts now).
+local printStart = os.clock()
+local okPrint, printErr = pcall(echo.setRun, msg, recs, printStart)
+check(okPrint, "setRun for the print" .. (if okPrint then "" else ": " .. tostring(printErr)))
+local midSeen = false
+local other1 = cases[2]
+runFor(1.6, function()
+	local rig = other1 and other1.rig
+	if midSeen or not rig then
+		return
+	end
+	local from = echo.printTimes(other1.actorId)
+	local now = os.clock()
+	if from and now - from > C.PRINT_SECONDS * 0.3 and now - from < C.PRINT_SECONDS * 0.7 then
+		local shown, hidden = 0, 0
+		for _, p in rig:GetDescendants() do
+			if p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" then
+				if p.LocalTransparencyModifier >= 1 then
+					hidden += 1
+				else
+					shown += 1
+				end
+			end
+		end
+		if shown > 0 and hidden > 0 then
+			midSeen = true
+		end
+	end
+end, VIEW_START)
+check(midSeen, "mid-print: the feet are in, the head is not yet")
+local k = 0
+for _, c in cases do
+	local from, doneAt = echo.printTimes(c.actorId)
+	local tutorialOwn = c.id == OWNER_ID -- the newest own clone on a tutorial level forms a beat later
+	if not tutorialOwn then
+		check(
+			from ~= nil and math.abs(from - (printStart + k * H.CLONE_SPAWN_STAGGER)) < 1e-6,
+			string.format("%s: print starts %d ms after the first", c.name, k * 60)
+		)
+	end
+	k += 1
+	check(
+		from ~= nil and doneAt ~= nil and doneAt - from <= C.PRINT_SECONDS + 0.05,
+		string.format(
+			"%s: print finished in %s s (<= %.2f + a frame)",
+			c.name,
+			if from and doneAt then string.format("%.3f", doneAt - from) else "?",
+			C.PRINT_SECONDS
+		)
+	)
+end
+
+---------------------------------------------------------------------------
+-- 6. Animation-upload spike (PLAN_STEAM_PLUS §4.4 A3): a Lune-written 2-key KeyframeSequence uploaded
+-- through Open Cloud as an Animation asset (tools/anim_spike.luau, tools/anim_upload.py,
+-- assets/anim_ids.json) plays on a server-side R15 rig's Animator and moves the shoulder joint.
+---------------------------------------------------------------------------
+local SPIKE_ANIM = 83859875506228
+do
+	local okRig, spikeRig = pcall(function()
+		return Players:CreateHumanoidModelFromDescriptionAsync(
+			Instance.new("HumanoidDescription"),
+			Enum.HumanoidRigType.R15
+		)
+	end)
+	check(okRig and spikeRig ~= nil, "spike: R15 rig builds")
+	if okRig and spikeRig then
+		local rig = spikeRig :: Model
+		local root = rig:FindFirstChild("HumanoidRootPart")
+		if root and root:IsA("BasePart") then
+			root.Anchored = true
+		end
+		rig:PivotTo(CFrame.new(origin + Vector3.new(0, 40, 0)))
+		rig.Parent = workspace
+		local hum = rig:FindFirstChildOfClass("Humanoid")
+		local animator: Animator? = hum and hum:FindFirstChildOfClass("Animator")
+		if hum and not animator then
+			local made = Instance.new("Animator")
+			made.Parent = hum
+			animator = made
+		end
+		local joint: any = nil
+		for _, d in rig:GetDescendants() do
+			local part1: Instance? = nil
+			if d:IsA("Motor6D") then
+				part1 = d.Part1
+			elseif d:IsA("AnimationConstraint") then
+				part1 = d.Attachment1 and d.Attachment1.Parent
+			end
+			if part1 and part1.Name == "RightUpperArm" then
+				joint = d
+			end
+		end
+		check(joint ~= nil, "spike: right shoulder joint found (" .. (if joint then joint.ClassName else "none") .. ")")
+		local anim = Instance.new("Animation")
+		anim.AnimationId = "rbxassetid://" .. SPIKE_ANIM
+		local okLoad, track = pcall(function()
+			return (animator :: Animator):LoadAnimation(anim)
+		end)
+		check(
+			okLoad and track ~= nil,
+			"spike: Animation " .. SPIKE_ANIM .. " loads" .. (if okLoad then "" else ": " .. tostring(track))
+		)
+		if okLoad and track and joint then
+			local before = joint.Transform
+			track:Play(0)
+			local maxAngle = 0
+			local playFrom = os.clock()
+			while os.clock() - playFrom < 1.2 do
+				task.wait()
+				local _, angle = (before:Inverse() * joint.Transform):ToAxisAngle()
+				maxAngle = math.max(maxAngle, math.abs(angle))
+			end
+			note(string.format("spike: track Length %.2f s, IsPlaying %s", track.Length, tostring(track.IsPlaying)))
+			check(
+				track.Length > 0 and math.deg(maxAngle) > 30,
+				string.format(
+					"spike: the clip moves %s.Transform (max %.0f degrees)",
+					joint.ClassName,
+					math.deg(maxAngle)
+				)
+			)
+			track:Stop(0)
+		end
+		rig:Destroy()
 	end
 end
 
