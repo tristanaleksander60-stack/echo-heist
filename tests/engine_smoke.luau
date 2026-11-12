@@ -773,7 +773,10 @@ do
 		end
 	end
 
-	-- Clone template stripping on a real engine rig (§6.5 #2).
+	-- Clone template stripping on a real engine rig (§6.5 #2; safe strip, PLAN_STEAM_PLUS §1 S1:
+	-- the joints and their attachments stay, physics-only constraints and scripts go).
+	-- tests/clone_engine.luau replays real stripped avatars with physics running.
+	local RigJoints = require(sharedFolder:WaitForChild("Heist"):WaitForChild("RigJoints"))
 	local okRig, rig = pcall(function()
 		return Players:CreateHumanoidModelFromDescriptionAsync(
 			Instance.new("HumanoidDescription"),
@@ -784,19 +787,29 @@ do
 		Avatars.strip(rig)
 		local bad = 0
 		for _, d in rig:GetDescendants() do
-			local leftover = d:IsA("Decal") or d:IsA("SurfaceAppearance") or d:IsA("Shirt") or d:IsA("Pants")
+			local leftover = d:IsA("BaseScript")
+				or d:IsA("BallSocketConstraint")
+				or d:IsA("NoCollisionConstraint")
+				or d:IsA("WrapLayer")
+				or (d:IsA("SurfaceAppearance") and not GameConfig.Heist.CLONE_KEEP_SURFACE_APPEARANCE)
 			if leftover or (d:IsA("BasePart") and (d.CanCollide or d.CastShadow)) then
 				bad += 1
 			end
 		end
+		local joints = RigJoints.whole(rig)
 		local hum = rig:FindFirstChildOfClass("Humanoid")
 		local rootPart = rig:FindFirstChild("HumanoidRootPart")
 		local count = #rig:GetDescendants()
-		check(count <= 90, "sim: stripped clone template has " .. count .. " instances (<= 90)")
+		check(count <= 130, "sim: stripped clone template has " .. count .. " instances (<= 130)")
+		check(
+			joints >= GameConfig.Heist.CLONE_MIN_JOINTS,
+			"sim: stripped clone template keeps its joints (" .. joints .. " whole)"
+		)
 		check(
 			bad == 0
 				and hum ~= nil
 				and hum.EvaluateStateMachine == false
+				and hum.AutomaticScalingEnabled == false
 				and hum:FindFirstChildOfClass("Animator") ~= nil
 				and rootPart ~= nil
 				and (rootPart :: BasePart).Anchored,

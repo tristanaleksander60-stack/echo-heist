@@ -118,6 +118,54 @@ return function(test)
 		Assert.eq(g.steps, 2, "count kept")
 	end)
 
+	test("governor: steps back up after a sustained good stretch, with a doubling wait (hysteresis)", function()
+		local g = PerfSample.governor()
+		local downs, ups = 0, 0
+		local function second(slow: number, fast: number)
+			for _ = 1, fast + slow do
+				local dt = if slow > 0 then 0.04 else 1 / 60
+				if slow > 0 then
+					slow -= 1
+				end
+				if PerfSample.govern(g, dt) then
+					downs += 1
+				elseif PerfSample.stepUp(g) then
+					ups += 1
+				end
+			end
+		end
+		for _ = 1, P.STEP_UP_SECONDS + 5 do
+			second(0, 61)
+		end
+		Assert.eq(ups, 0, "never steps up past where it started")
+		for _ = 1, P.STEP_DOWN_SECONDS + 1 do
+			second(6, 46)
+		end
+		Assert.eq(downs, 1, "slow: one step down")
+		for _ = 1, P.STEP_UP_SECONDS - 3 do
+			second(0, 61)
+		end
+		Assert.eq(ups, 0, "not before STEP_UP_SECONDS good seconds")
+		for _ = 1, 6 do
+			second(0, 61)
+		end
+		Assert.eq(ups, 1, "a sustained good stretch steps back up")
+		-- slow again: the governor is re-armed and steps down again
+		for _ = 1, P.STEP_COOLDOWN_SECONDS + P.STEP_DOWN_SECONDS + 1 do
+			second(6, 46)
+		end
+		Assert.eq(downs, 2, "steps down again after a step up")
+		for _ = 1, P.STEP_UP_SECONDS + 5 do
+			second(0, 61)
+		end
+		Assert.eq(ups, 1, "the next step up waits longer (backoff)")
+		for _ = 1, P.STEP_UP_SECONDS * (P.STEP_UP_BACKOFF - 1) do
+			second(0, 61)
+		end
+		Assert.eq(ups, 2, "and comes after STEP_UP_SECONDS x STEP_UP_BACKOFF")
+		Assert.eq(g.ups, 2, "count kept")
+	end)
+
 	test("governor: a 30 fps cap (OS, battery saver) or a missed vsync never steps down", function()
 		local function run(seconds: number, dtOf: (i: number) -> number): number
 			local g = PerfSample.governor()

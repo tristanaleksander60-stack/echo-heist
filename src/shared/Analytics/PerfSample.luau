@@ -49,6 +49,8 @@ export type Governor = {
 	steps: number, -- step-downs so far
 	lastShare: number?, -- slow share of the streak that caused the last step
 	stalled: boolean, -- a step did not cut the slow share: no more steps this session
+	goodSeconds: number, -- good seconds in a row (at most STEP_UP_SHARE slow frames each)
+	ups: number, -- step-ups so far (each doubles the good stretch the next one needs)
 }
 
 -- What a client script can read about its device (UserInputService, GuiService, VRService, the
@@ -165,8 +167,10 @@ end
 ---------------------------------------------------------------------------
 -- Governor: p95 > SLOW_MS for STEP_DOWN_SECONDS -> step the performance tier down (§8.6).
 -- p95 > SLOW_MS is the same as "more than 5% of the frames are slower than SLOW_MS", so each
--- second is judged by its slow share without sorting. It never steps up by itself (no
--- oscillation); a player raises the preset in settings. A step that did not cut the slow share by
+-- second is judged by its slow share without sorting. Stepping back up has hysteresis
+-- (PerfSample.stepUp): STEP_UP_SECONDS good seconds in a row (at most STEP_UP_SHARE slow frames
+-- each) undo one step down, and each step up multiplies the next wait by STEP_UP_BACKOFF, so a
+-- device on the edge settles instead of oscillating. A step that did not cut the slow share by
 -- STEP_MIN_GAIN (the next slow streak is about as slow as the one before it) stops the governor:
 -- the bottleneck is something a quality tier cannot fix (an OS frame cap, a CPU-bound device), and
 -- stepping on would only ratchet quality to the minimum.
@@ -184,6 +188,8 @@ function PerfSample.governor(): Governor
 		steps = 0,
 		lastShare = nil,
 		stalled = false,
+		goodSeconds = 0,
+		ups = 0,
 	}
 end
 
@@ -206,6 +212,11 @@ function PerfSample.govern(g: Governor, dt: number): boolean
 	end
 	local frames, slow = g.secFrames, g.secSlow
 	g.secFrames, g.secSlow, g.secTime = 0, 0, 0
+	if frames >= P.MIN_FRAMES_PER_SECOND and slow / frames <= P.STEP_UP_SHARE then
+		g.goodSeconds += 1
+	elseif frames >= P.MIN_FRAMES_PER_SECOND then
+		g.goodSeconds = 0
+	end
 	if g.stalled then
 		return false
 	end
@@ -237,9 +248,30 @@ function PerfSample.govern(g: Governor, dt: number): boolean
 		g.lastShare = share
 		g.cooldown = P.STEP_COOLDOWN_SECONDS
 		g.steps += 1
+		g.goodSeconds = 0
 		return true
 	end
 	return false
+end
+
+-- Call after govern each frame. Returns true exactly when the tier should step back up one
+-- step now: only undoes earlier step-downs, after a long good stretch that doubles every time.
+-- A step up re-arms the governor (it may step down again, judged afresh).
+function PerfSample.stepUp(g: Governor): boolean
+	if g.steps <= g.ups then
+		return false
+	end
+	local need = P.STEP_UP_SECONDS * P.STEP_UP_BACKOFF ^ g.ups
+	if g.goodSeconds < need then
+		return false
+	end
+	g.goodSeconds = 0
+	g.ups += 1
+	g.stalled = false
+	g.lastShare = nil
+	g.cooldown = P.STEP_COOLDOWN_SECONDS
+	endStreak(g)
+	return true
 end
 
 ---------------------------------------------------------------------------

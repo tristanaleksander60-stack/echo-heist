@@ -380,6 +380,7 @@ local UI_KINDS: { [string]: string } = {
 	StoreOpened = "entry",
 	StoreItem = "category",
 	PerfStepDown = "perfTier",
+	CloneBroken = "rigFault",
 	Hint = "hint",
 	InviteOpened = "invite",
 	Rsvp = "yesno",
@@ -408,6 +409,8 @@ local function onUi(player: Player, kind: string, arg: string?)
 		Tracker.store(tracker, pid, "ItemViewed", value, true)
 	elseif kind == "PerfStepDown" then
 		Tracker.perfStepDown(tracker, pid, value)
+	elseif kind == "CloneBroken" then
+		Tracker.cloneBroken(tracker, pid, value)
 	elseif kind == "Hint" then
 		Tracker.hint(tracker, pid, value, nil)
 	elseif kind == "InviteOpened" then

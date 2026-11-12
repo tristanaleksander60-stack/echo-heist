@@ -1,0 +1,556 @@
+-- Clone visibility in a real Roblox server (Open Cloud Luau Execution; PLAN_STEAM_PLUS §1 S1, §4.4 A1).
+-- Run: ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960 \
+--      --place 70772627070328 --script tests/clone_engine.luau   (add --version N to skip publishing)
+--
+-- Real stripped avatar templates (the owner's avatar, a default body, Rthro scales, and a
+-- layered-clothing avatar when one of the sample accounts wears one) go into the avatars folder
+-- exactly as the server puts them there. EchoView then replays a recorded L1 run on them for
+-- about 3 s of real Heartbeats, with physics running, and every clone must still be whole,
+-- visible, animated, in frame from the default camera and not hidden by the level.
+-- Luau Execution has no client and no camera of its own: EchoView runs on the server, the way
+-- the engine smoke test runs it, against a camera placed by hand where the default follow
+-- camera sits behind a player on the L1 spawn.
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local ServerScriptService = game:GetService("ServerScriptService")
+
+local results = {}
+local failures = 0
+local function check(cond: any, msg: string)
+	if cond then
+		table.insert(results, "ok    " .. msg)
+	else
+		failures += 1
+		table.insert(results, "FAIL  " .. msg)
+	end
+end
+local function note(msg: string)
+	table.insert(results, "      " .. msg)
+end
+
+local shared = ReplicatedStorage:WaitForChild("Shared")
+local server = ServerScriptService:WaitForChild("Server")
+local heistServer = server:WaitForChild("Heist")
+local clientHeist =
+	game:GetService("StarterPlayer"):WaitForChild("StarterPlayerScripts"):WaitForChild("Client"):WaitForChild("Heist")
+
+local Config = require(shared:WaitForChild("Config")) :: any
+local Codec = require(shared:WaitForChild("Rec"):WaitForChild("Codec"))
+local Sampler = require(shared:WaitForChild("Rec"):WaitForChild("Sampler"))
+local HeistService = require(heistServer:WaitForChild("HeistService"))
+local HeistInstance = require(heistServer:WaitForChild("HeistInstance"))
+local Avatars = require(heistServer:WaitForChild("Avatars"))
+local EchoView = require(clientHeist:WaitForChild("EchoView"))
+local DebugChip = require(clientHeist:WaitForChild("DebugChip"))
+local RigJoints = require(shared:WaitForChild("Heist"):WaitForChild("RigJoints"))
+
+local OWNER_ID = 10346200733 -- the game owner's account (their avatar is the one that vanished)
+local LAYERED_CANDIDATES = { OWNER_ID, 1, 156, 261 } -- accounts searched for a layered-clothing avatar
+local SECONDS = 3
+local VIEW_START = 0.8 -- recording time at the first frame (run 1 stands still for its 1.1 s intro)
+local CAM_FOV = 70
+local CAM_ASPECT = 16 / 9
+local CAM_ZOOM = 12.5 -- the default follow camera's distance from its subject
+local CAM_PITCH = math.rad(20) -- looking down at the subject
+local MAX_LIMB_DISTANCE = 5
+
+local okHs, hsErr = pcall(HeistService.start, { lobby = false, players = false })
+check(okHs, "HeistService starts" .. (if okHs then "" else ": " .. tostring(hsErr)))
+
+---------------------------------------------------------------------------
+-- 1. A recorded L1 run (as the engine smoke test records it): run 1 walks to plate A.
+---------------------------------------------------------------------------
+local FAKE = -301
+local inst = HeistService.createInstance(1, {
+	{ userId = FAKE, name = "Fake", fake = { x = 0, y = 3, z = 14, yaw = 0 } },
+}, FAKE, false)
+assert(inst, "L1 instance")
+local simNow = 80000
+local fakeIn = inst.byId[FAKE].fake
+local function step(dt: number)
+	simNow += dt
+	HeistInstance.update(inst, simNow)
+end
+local function walkTo(x: number, z: number)
+	for _ = 1, 400 do
+		local dx, dz = x - fakeIn.x, z - fakeIn.z
+		local d = math.sqrt(dx * dx + dz * dz)
+		if d < 0.05 then
+			break
+		end
+		local s = math.min(d, 14 * 0.05)
+		HeistInstance.setFakeInput(inst, FAKE, fakeIn.x + dx / d * s, 3, fakeIn.z + dz / d * s, math.atan2(-dx, -dz))
+		step(0.05)
+	end
+end
+step(0.05)
+for _ = 1, 22 do
+	step(0.05) -- intro transition
+end
+walkTo(0, 4)
+walkTo(10, -8)
+for _ = 1, 60 do
+	if inst.sim.phase ~= "Run" then
+		break
+	end
+	step(0.05)
+end
+for _ = 1, 12 do
+	step(0.05) -- L1 starts run 2 by itself
+end
+local msg0 = inst.runMsg
+local cloneActor = nil
+for _, a in msg0 and msg0.actors or {} do
+	if a.kind == "clone" then
+		cloneActor = a
+	end
+end
+check(
+	inst.sim.runIndex == 2 and cloneActor ~= nil,
+	"L1 run 2 carries the run-1 clone (run " .. tostring(inst.sim.runIndex) .. ")"
+)
+assert(cloneActor, "no clone actor")
+local rec = Codec.decode(inst.recBufs[cloneActor.key])
+note(string.format("recording: %d samples, %.2f s", rec.n, Sampler.duration(rec)))
+
+---------------------------------------------------------------------------
+-- 2. Real templates, stripped and filed exactly as Avatars.prepare files them.
+---------------------------------------------------------------------------
+local function describe(userId: number): HumanoidDescription?
+	local ok, desc = pcall(function()
+		return Players:GetHumanoidDescriptionFromUserIdAsync(userId)
+	end)
+	return if ok then desc else nil
+end
+
+local function hasLayered(desc: HumanoidDescription): boolean
+	local ok, list = pcall(function()
+		return desc:GetAccessories(true)
+	end)
+	if not ok then
+		return false
+	end
+	for _, acc in list do
+		if acc.IsLayered then
+			return true
+		end
+	end
+	return false
+end
+
+local cases = {}
+local ownerDesc = describe(OWNER_ID)
+check(ownerDesc ~= nil, "owner's HumanoidDescription loads")
+if ownerDesc then
+	table.insert(cases, { name = "owner", id = OWNER_ID, desc = ownerDesc })
+end
+table.insert(cases, { name = "default", id = -302, desc = Instance.new("HumanoidDescription") })
+local rthro = Instance.new("HumanoidDescription")
+rthro.BodyTypeScale = 1
+rthro.ProportionScale = 1
+rthro.HeightScale = 1.05
+table.insert(cases, { name = "rthro", id = -303, desc = rthro })
+local layeredFrom = nil
+for _, uid in LAYERED_CANDIDATES do
+	local d = if uid == OWNER_ID then ownerDesc else describe(uid)
+	if d and hasLayered(d) then
+		layeredFrom = uid
+		if uid ~= OWNER_ID then
+			table.insert(cases, { name = "layered", id = -304, desc = d })
+		end
+		break
+	end
+end
+note("layered clothing sample: " .. (if layeredFrom then "account " .. layeredFrom else "none found"))
+
+local avatarsFolder = Avatars.folder()
+for _, c in cases do
+	local ok, rig = pcall(function()
+		return Players:CreateHumanoidModelFromDescriptionAsync(c.desc, Enum.HumanoidRigType.R15)
+	end)
+	if ok and rig then
+		Avatars.strip(rig)
+		rig.Name = tostring(c.id)
+		rig.Parent = avatarsFolder
+		c.template = rig
+		local motors, constraints = 0, 0
+		for _, d in rig:GetDescendants() do
+			if d:IsA("Motor6D") then
+				motors += 1
+			elseif d:IsA("AnimationConstraint") then
+				constraints += 1
+			end
+		end
+		note(
+			string.format(
+				"template %s: %d instances, %d Motor6Ds, %d AnimationConstraints, %d whole joints",
+				c.name,
+				#rig:GetDescendants(),
+				motors,
+				constraints,
+				RigJoints.whole(rig)
+			)
+		)
+	end
+	check(ok and rig ~= nil, "template builds: " .. c.name .. (if ok then "" else " (" .. tostring(rig) .. ")"))
+end
+
+---------------------------------------------------------------------------
+-- 3. EchoView replays the run on every template for SECONDS of real Heartbeats.
+---------------------------------------------------------------------------
+local origin = inst.origin
+local msg = table.clone(msg0)
+msg.actors = {}
+local crew = {}
+for i, c in cases do
+	local a = table.clone(cloneActor)
+	a.id = i
+	a.owner = c.id
+	a.seat = i
+	a.slot = 1
+	table.insert(msg.actors, a)
+	table.insert(crew, { userId = c.id, seat = i })
+	c.actorId = i
+end
+local recs = { [cloneActor.key] = rec }
+local vstate = {
+	origin = origin,
+	folder = inst.folder,
+	level = inst.level,
+	levelIndex = 1,
+	crew = crew,
+	actorFx = {},
+	run = msg,
+	viewerId = OWNER_ID, -- the owner is the local player (their clones are "yours")
+}
+
+-- The default follow camera behind a player facing the room (-Z), as Poppercam places it: a
+-- wall between the subject and the camera pulls the camera in front of that wall.
+local levelParams = RaycastParams.new()
+levelParams.FilterType = Enum.RaycastFilterType.Include
+levelParams.FilterDescendantsInstances = { inst.built.model }
+
+local function followCamera(playerRoot: Vector3): CFrame
+	local focus = origin + playerRoot + Vector3.new(0, 1.5, 0)
+	local back = Vector3.new(0, math.sin(CAM_PITCH), math.cos(CAM_PITCH)) * CAM_ZOOM
+	local hit = workspace:Raycast(focus, back, levelParams)
+	local pos = if hit then hit.Position - back.Unit * 0.5 else focus + back
+	return CFrame.lookAt(pos, focus)
+end
+local SPAWN_CAM = followCamera(Vector3.new(0, 3, 14)) -- on the street by the van (L1 spawn)
+local INSIDE_CAM = followCamera(Vector3.new(0, 3, 4)) -- a player who walked in through the door
+
+local camera = workspace.CurrentCamera
+if not camera then
+	local newCam = Instance.new("Camera")
+	newCam.Parent = workspace
+	local ws: any = workspace
+	ws.CurrentCamera = newCam
+	camera = newCam
+end
+local cam = camera :: Camera
+cam.CameraType = Enum.CameraType.Scriptable
+cam.FieldOfView = CAM_FOV
+cam.CFrame = SPAWN_CAM -- EchoView's near-camera fade reads it
+
+local function inFrustum(camCf: CFrame, p: Vector3): boolean
+	local lp = camCf:PointToObjectSpace(p)
+	local depth = -lp.Z
+	if depth < 0.1 then
+		return false
+	end
+	local halfV = math.tan(math.rad(CAM_FOV / 2))
+	return math.abs(lp.Y) <= depth * halfV and math.abs(lp.X) <= depth * halfV * CAM_ASPECT
+end
+
+local function notOccluded(camCf: CFrame, p: Vector3): (boolean, string)
+	local from = camCf.Position
+	local hit = workspace:Raycast(from, p - from, levelParams)
+	if not hit then
+		return true, "clear"
+	end
+	return (hit.Position - p).Magnitude < 0.5, hit.Instance.Name .. " at " .. tostring(hit.Position - origin)
+end
+
+local function onScreen(camCf: CFrame, p: Vector3): boolean
+	return inFrustum(camCf, p) and (notOccluded(camCf, p))
+end
+
+local echo = EchoView.new(vstate)
+local okRun, runErr = pcall(echo.setRun, msg, recs, os.clock() - 1)
+check(okRun, "EchoView.setRun" .. (if okRun then "" else ": " .. tostring(runErr)))
+
+local clonesFolder = workspace:FindFirstChild("HeistClones")
+local function rigOf(c: any): Model?
+	if echo.rigOf then
+		local r = echo.rigOf(c.actorId)
+		return r and r.model
+	end
+	local group = clonesFolder and clonesFolder:FindFirstChild("Owner_" .. tostring(c.id))
+	if not group then
+		return nil
+	end
+	for _, m in group:GetChildren() do
+		if m:IsA("Model") then
+			return m
+		end
+	end
+	return nil
+end
+
+-- What every rig looked like on its first frame (parts that later go missing still count).
+for _, c in cases do
+	local rig = rigOf(c)
+	c.rig = rig
+	c.parts = {}
+	c.walkFrames, c.walkPlaying = 0, 0
+	c.seenFrames, c.allFrames = 0, 0
+	if rig then
+		for _, d in rig:GetDescendants() do
+			if d:IsA("BasePart") then
+				table.insert(c.parts, d)
+			end
+		end
+	end
+end
+
+local t0 = os.clock()
+local frames = 0
+local firstFrameNote = {}
+local done = false
+local conn = RunService.Heartbeat:Connect(function(dt: number)
+	if done then
+		return
+	end
+	local el = os.clock() - t0
+	local tView = VIEW_START + el
+	local ok, err = pcall(echo.update, tView, os.clock(), dt, nil)
+	if not ok then
+		table.insert(firstFrameNote, "update error: " .. tostring(err))
+		done = true
+		return
+	end
+	frames += 1
+	local vx, _, vz = Sampler.velocity(rec, tView)
+	local moving = math.sqrt(vx * vx + vz * vz) > 2
+	for _, c in cases do
+		local rig = c.rig
+		local head = rig and rig:FindFirstChild("Head")
+		if head and head:IsA("BasePart") then
+			c.allFrames += 1
+			if onScreen(SPAWN_CAM, head.Position) then
+				c.seenFrames += 1
+			end
+		end
+		if moving and frames > 5 and rig then
+			c.walkFrames += 1
+			local hum = rig:FindFirstChildOfClass("Humanoid")
+			local animator = hum and hum:FindFirstChildOfClass("Animator")
+			if animator then
+				for _, track in animator:GetPlayingAnimationTracks() do
+					if track.IsPlaying then
+						c.walkPlaying += 1
+						break
+					end
+				end
+			end
+		end
+	end
+	if el >= SECONDS then
+		done = true
+	end
+end)
+local waited = 0
+while not done and waited < SECONDS + 5 do
+	waited += task.wait()
+end
+conn:Disconnect()
+for _, line in firstFrameNote do
+	note(line)
+end
+note(string.format("%d Heartbeats over %.2f s", frames, os.clock() - t0))
+
+---------------------------------------------------------------------------
+-- 4. Per clone: whole, visible, animated, on screen.
+---------------------------------------------------------------------------
+-- Joints: Motor6Ds, or the kinematic AnimationConstraints the 2026 engine builds avatars with.
+local function motorsOf(rig: Model): (number, number)
+	local all = 0
+	for _, d in rig:GetDescendants() do
+		if d:IsA("Motor6D") or d:IsA("AnimationConstraint") then
+			all += 1
+		end
+	end
+	return all, RigJoints.whole(rig)
+end
+
+for _, c in cases do
+	local rig = c.rig
+	local tag = c.name
+	if not rig then
+		check(false, tag .. ": a rig is drawn")
+		continue
+	end
+	local hum = rig:FindFirstChildOfClass("Humanoid")
+	check(rig.Name ~= "Mannequin" and hum ~= nil, tag .. ": rig.kind == avatar (" .. rig.Name .. ")")
+	local rootInst = rig:FindFirstChild("HumanoidRootPart")
+	local root: BasePart? = if rootInst and rootInst:IsA("BasePart") then rootInst else nil
+	local all, whole = motorsOf(rig)
+	check(
+		whole >= 15,
+		string.format("%s: >= 15 whole joints, Motor6D or AnimationConstraint (%d of %d)", tag, whole, all)
+	)
+	local lost, far, worst, worstName = 0, 0, 0, "-"
+	local seeThrough, seeName = 0, "-"
+	for _, p in c.parts do
+		if not p:IsDescendantOf(rig) then
+			lost += 1
+			continue
+		end
+		if root and p ~= root then
+			local d = (p.Position - root.Position).Magnitude
+			if d > worst then
+				worst, worstName = d, p.Name
+			end
+			if d > MAX_LIMB_DISTANCE then
+				far += 1
+			end
+			if p.Transparency + p.LocalTransparencyModifier >= 0.5 then
+				seeThrough += 1
+				seeName = p.Name
+			end
+		end
+	end
+	check(
+		root ~= nil and lost == 0 and far == 0,
+		string.format(
+			"%s: all %d parts still in the rig and within %d studs of the root (%d lost, %d far, worst %s %.1f studs)",
+			tag,
+			#c.parts,
+			MAX_LIMB_DISTANCE,
+			lost,
+			far,
+			worstName,
+			worst
+		)
+	)
+	local headInst = rig:FindFirstChild("Head")
+	local head: BasePart? = if headInst and headInst:IsA("BasePart") then headInst else nil
+	local badgeInst = if head then head:FindFirstChild("Badge") else nil
+	local badge: BillboardGui? = if badgeInst and badgeInst:IsA("BillboardGui") then badgeInst else nil
+	check(
+		head ~= nil and head:IsDescendantOf(workspace) and badge ~= nil and badge.Enabled,
+		tag .. ": Head and badge alive"
+	)
+	check(
+		seeThrough == 0,
+		string.format("%s: visible parts opaque (%d see-through, e.g. %s)", tag, seeThrough, seeName)
+	)
+	local hl = rig.Parent and rig.Parent:FindFirstChildOfClass("Highlight")
+	check(hl ~= nil and hl.Enabled, tag .. ": owner Highlight on")
+	check(
+		c.walkFrames > 0 and c.walkPlaying >= c.walkFrames * 0.8,
+		string.format("%s: walk track plays while moving (%d of %d moving frames)", tag, c.walkPlaying, c.walkFrames)
+	)
+	check(
+		c.seenFrames >= c.allFrames * 0.3,
+		string.format(
+			"%s: on screen from the street spawn camera while it walks out (%d of %d frames)",
+			tag,
+			c.seenFrames,
+			c.allFrames
+		)
+	)
+	if head then
+		check(
+			inFrustum(INSIDE_CAM, head.Position),
+			tag .. ": on plate A, Head in frame from inside the door " .. tostring(head.Position - origin)
+		)
+		local clear, by = notOccluded(INSIDE_CAM, head.Position)
+		check(clear, tag .. ": on plate A, Head not hidden by the level (" .. by .. ")")
+		local streetClear, streetBy = notOccluded(SPAWN_CAM, head.Position)
+		note(
+			tag .. ": on plate A from the street spawn: " .. (if streetClear then "visible" else "behind " .. streetBy)
+		)
+	end
+	if hum then
+		note(
+			string.format(
+				"%s: AutomaticScalingEnabled=%s, root y %.1f, head y %s",
+				tag,
+				tostring(hum.AutomaticScalingEnabled),
+				if root then root.Position.Y - origin.Y else -1,
+				if head then string.format("%.1f", head.Position.Y - origin.Y) else "gone"
+			)
+		)
+	end
+end
+
+-- Your own clones are never invisible by design: a fill, kept on at every performance tier.
+local own = cases[1]
+local ownGroup = own and own.rig and own.rig.Parent
+local ownHl = ownGroup and ownGroup:FindFirstChildOfClass("Highlight")
+check(
+	ownHl ~= nil and ownHl.FillTransparency <= (Config.Heist.CLONE_FILL_TRANSPARENCY or 0.6) + 0.01,
+	"own clones: Highlight has a fill (FillTransparency " .. tostring(ownHl and ownHl.FillTransparency) .. ")"
+)
+pcall(echo.setTier, 4)
+check(ownHl ~= nil and ownHl.Enabled, "own clones: Highlight stays on at tier 4")
+local other = cases[2]
+local otherHl = other and other.rig and other.rig.Parent and other.rig.Parent:FindFirstChildOfClass("Highlight")
+check(otherHl ~= nil and not otherHl.Enabled, "other players' clones: Highlight drops at tier 4")
+pcall(echo.setTier, 1)
+
+-- Studio diagnostic chip text (built only in Studio; its text and stats work anywhere).
+if echo.stats then
+	local okS, drawn, healthy, kind = pcall(echo.stats)
+	local chip = if okS then DebugChip.text(drawn, healthy, 1, kind) else tostring(drawn)
+	note("chip: " .. chip)
+	check(okS and drawn == #cases and healthy == #cases and kind == "avatar", "DebugChip stats: " .. chip)
+end
+
+-- The runtime CloneHealth check swaps a broken rig for the mannequin.
+if own and own.rig and echo.checkHealth then
+	local broke = own.rig:FindFirstChild("Head")
+	if broke then
+		broke:Destroy()
+	end
+	local okH, report = pcall(echo.checkHealth)
+	local swapped = rigOf(own)
+	local okU = pcall(echo.update, VIEW_START + SECONDS, os.clock(), 1 / 60, nil)
+	local mHead = swapped and swapped:FindFirstChild("Head")
+	check(
+		okH
+			and okU
+			and swapped ~= nil
+			and swapped.Name == "Mannequin"
+			and mHead ~= nil
+			and mHead:IsA("BasePart")
+			and inFrustum(INSIDE_CAM, mHead.Position),
+		"CloneHealth swaps a headless avatar for the mannequin in place (" .. tostring(report) .. ")"
+	)
+	local okH2, report2 = pcall(echo.checkHealth)
+	check(
+		okH2 and report2 == #cases .. "/" .. #cases,
+		"after the swap every drawn clone is healthy (" .. tostring(report2) .. ")"
+	)
+else
+	check(false, "CloneHealth: EchoView.checkHealth exists")
+end
+
+echo.clear()
+local cf = workspace:FindFirstChild("HeistClones")
+if cf then
+	cf:Destroy()
+end
+for _, c in cases do
+	if c.template then
+		c.template:Destroy()
+	end
+end
+HeistService.destroyInstance(inst)
+
+table.insert(results, string.format("%d failure(s)", failures))
+return table.concat(results, "\n")

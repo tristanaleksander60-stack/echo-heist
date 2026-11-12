@@ -32,6 +32,7 @@ local Net = require(ReplicatedStorage:WaitForChild("LihFolk"):WaitForChild("Net"
 
 local Heist = script.Parent
 local EchoView = require(Heist:WaitForChild("EchoView"))
+local DebugChip = require(Heist:WaitForChild("DebugChip"))
 local GusView = require(Heist:WaitForChild("GusView"))
 local WorldView = require(Heist:WaitForChild("WorldView"))
 local RewindDirector = require(Heist:WaitForChild("RewindDirector"))
@@ -181,6 +182,7 @@ function HeistClient.start()
 		state.particleScale = if tier >= 3 then 0.5 else 1
 		Lighting.GlobalShadows = if tier >= 3 then false else shadowsWere
 	end)
+	DebugChip.start(echo, Telemetry.tier) -- Studio only: clones drawn / healthy / tier / avatar
 
 	-- Where a sim event happened, for AudioDirector.event (docs/AUDIO.md §9 item 3).
 	local function actorOf(id: number): any

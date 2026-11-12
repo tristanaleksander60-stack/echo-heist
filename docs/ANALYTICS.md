@@ -90,6 +90,7 @@ Notes:
 | `PerfSample` | device, ms (p95 bucket: `<14`, `14-18`, `18-28`, `28-36`, `36-50`, `50+`), clones | p95 ms | Once a minute per sampled client |
 | `PerfDetail` | device, quality, mem | median ms | Same sample |
 | `PerfStepDown` | device, perfTier | 1 | The client governor lowered the runtime tier |
+| `CloneBroken` | device, rigFault | 1 | The client's CloneHealth check found a broken avatar clone rig (head gone, limbs off the root, a joint lost an end) and drew the mannequin instead; once per owner per session (`Analytics.Ui` "CloneBroken") |
 | `OutOfStorePurchase` | storeStep (PromptShown / PurchaseGranted), product, cohort | 1 | A prompt or receipt with no open `store_v1` session |
 
 **Progression** (`LogProgressionStart/Complete/FailEvent`): path `Heist` uses the level's index in `Config.Data.LEVEL_ORDER` (1-6, the play order: Clone Party is 3, Lights Out 4, Night Clerk 5) and its data key as the name. Path `Daily` uses the vault design number. Both carry the fields crew and source. Start is logged at heist start, Complete at HeistComplete, and Fail at Dawn.
