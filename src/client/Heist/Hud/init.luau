@@ -5,8 +5,8 @@
 -- the parts live in the child modules:
 --   TopBar    "RUN 3" + timer + run bar with event markers, the loot meter with its
 --             count-up, the clone strip, the Alarm Run counter, the objective line
---   Controls  END RUN (lock ring, co-op count), Interact (GRAB / LOCKED 0:07), the
---             fast-forward pill, keys and gamepad
+--   Controls  REWIND (lock ring, co-op count; the END RUN action), Interact (GRAB /
+--             LOCKED 0:07), the hold-to-skip FAST pill, keys and gamepad
 --   Messages  the bottom message rail (toast, sound caption, spectate line), the menu
 --             sheet, the HIDDEN pill, the "preparing" card, the red vignette, diamond dim
 --   Deck      the Clone Deck between runs, the RUN button and its auto-start countdown
@@ -18,11 +18,14 @@
 -- Every player-facing string is in Shared/Heist/Strings and every run-HUD box in
 -- Shared/Heist/HudLayout (checked by tests/hud_layout.luau at 7 viewports).
 -- Mobile first: every button is at least Config.Heist.TAP_MIN design px (>= 64 px on
--- screen), the HUD scales to the safe area, colour is never the only signal (glyph +
--- number), reduced motion drops the pulses.
+-- screen), the HUD scales to the safe area, colour is never the only signal (a word or
+-- a number with it; no text glyphs as icons, PLAN S4), reduced motion drops the pulses.
+-- Roblox's player list is hidden during a heist (it covered the top right, PLAN S8) and
+-- shown again in the garage.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
 
 local HudLayout = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Heist"):WaitForChild("HudLayout"))
 
@@ -110,6 +113,19 @@ function Hud.new(state: any, actions: Actions): any
 		stopsLineUntil = 0, -- L1: "Your clone stops where you stop." from the clone's press
 		noBankRuns = 0, -- runs in a row without a bank (the level line comes back)
 	}
+	-- In a heist the player list is off (LineupDirector turns all CoreGui back on after its
+	-- cut, then calls setCutscene(false), which applies this again).
+	local inHeist = false
+	local function applyPlayerList()
+		pcall(StarterGui.SetCoreGuiEnabled, StarterGui, Enum.CoreGuiType.PlayerList, not inHeist)
+	end
+	function ctx.setInHeist(on: boolean)
+		if on ~= inHeist then
+			inHeist = on
+			applyPlayerList()
+		end
+	end
+
 	ctx.top = TopBar.build(ctx)
 	ctx.controls = Controls.build(ctx)
 	ctx.msg = Messages.build(ctx)
@@ -135,6 +151,7 @@ function Hud.new(state: any, actions: Actions): any
 		ctx.msg.setSpectate("")
 		ctx.hints.clear()
 		ctx.top.resetCount()
+		ctx.setInHeist(false)
 	end
 
 	-- The end-of-heist cut hides the whole HUD (HUD, chat and nameplates hidden, §6.6).
@@ -144,6 +161,8 @@ function Hud.new(state: any, actions: Actions): any
 			ctx.hints.clear()
 			ctx.msg.menuSheet.Visible = false
 			ctx.msg.setHidden(false)
+		else
+			applyPlayerList()
 		end
 	end
 

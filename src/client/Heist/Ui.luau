@@ -78,7 +78,7 @@ end
 
 -- A raised button with a press pop (child UIScale) that fires `onActivated`. `cue` is
 -- the click sound ("UIClick" by default; "" = silent, e.g. a button whose action has
--- its own sound such as END RUN's tape clack).
+-- its own sound such as REWIND's tape clack).
 function Ui.button(parent: Instance, props: { [string]: any }, onActivated: () -> (), cue: string?): TextButton
 	local b = Instance.new("TextButton")
 	b.AutoButtonColor = false
@@ -139,6 +139,16 @@ function Ui.reducedMotion(): boolean
 	return reducedMotion
 end
 
+-- Text that must fit its box (loot meter, objective line, RUN button): it shrinks from
+-- `max` down to `min` design px instead of spilling past the box.
+function Ui.fit(obj: TextLabel | TextButton, max: number, min: number)
+	obj.TextScaled = true
+	local c = Instance.new("UITextSizeConstraint")
+	c.MaxTextSize = max
+	c.MinTextSize = min
+	c.Parent = obj
+end
+
 -- Pops an object's child UIScale (feedback within 100 ms of an input, §3.4).
 function Ui.pop(obj: Instance)
 	if reducedMotion then
@@ -171,7 +181,7 @@ function Ui.ago(seconds: number): string
 	return Strings.ago(LineupPlan.agoRound(seconds))
 end
 
--- The burned-in clone label: "◀ ME, 20 SEC AGO" with the ◀ in Clone Cyan (RichText).
+-- The burned-in clone label: "ME, 20 SEC AGO" with the name in the clone's hue (RichText).
 function Ui.agoLabel(who: string, seconds: number, arrowHue: Color3?): string
 	local hue = (arrowHue or Palette.CLONE_HUES[1]):ToHex()
 	return Strings.agoLabel(who, Ui.ago(seconds), hue)

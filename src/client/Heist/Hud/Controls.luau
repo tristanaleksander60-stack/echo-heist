@@ -1,9 +1,9 @@
 --!strict
 -- Hud/Controls: the run's buttons and keys (MASTERPLAN §3.4, one verb per button):
--- END RUN on the right edge with its 1.5 s lock ring, the contextual Interact (GRAB) lower
--- right, the hold-to-skip fast-forward pill, and the keyboard / gamepad bindings
--- (R / ButtonY END RUN or RUN n, E / ButtonX Interact, Q / ButtonL1 Clone Deck,
--- hold F / ButtonB fast-forward).
+-- REWIND on the right edge (it ends your run; the remote stays Heist.EndRun) with its
+-- 1.5 s lock ring, the contextual Interact (GRAB) lower right, the hold-to-skip FAST
+-- pill, and the keyboard / gamepad bindings (R / ButtonY REWIND or the next run,
+-- E / ButtonX Interact, Q / ButtonL1 Clone Deck, hold F / ButtonB fast-forward).
 
 local ContextActionService = game:GetService("ContextActionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -31,6 +31,8 @@ function Controls.build(ctx: any): any
 
 	local ffPill = Ui.button(runHud, {
 		Name = "FastForward",
+		TextSize = 16,
+		TextWrapped = true,
 		Text = Strings.FAST_FORWARD,
 		BackgroundColor3 = Palette.exit,
 		Visible = false,
@@ -43,7 +45,7 @@ function Controls.build(ctx: any): any
 		BackgroundColor3 = Palette.CLONE_HUES[1],
 		TextSize = 18,
 		TextWrapped = true,
-		Text = Strings.END_RUN,
+		Text = Strings.REWIND,
 	}, function()
 		if os.clock() - ctx.lastGrabTap < H.END_RUN_GRAB_GUARD then
 			return -- a thumb that slid off GRAB
@@ -66,8 +68,8 @@ function Controls.build(ctx: any): any
 	controls.lockRing = lockRing
 
 	-- Interact sits where touch players expect a contextual action: lower right, left of
-	-- the jump button, well away from END RUN (a thumb slipping off GRAB must not end the
-	-- run; END RUN also ignores taps within END_RUN_GRAB_GUARD of a GRAB).
+	-- the jump button, well away from REWIND (a thumb slipping off GRAB must not end the
+	-- run; REWIND also ignores taps within END_RUN_GRAB_GUARD of a GRAB).
 	local interactBtn = Ui.button(runHud, {
 		Name = "Interact",
 		BackgroundColor3 = Palette.gold,

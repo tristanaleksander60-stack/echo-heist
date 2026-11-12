@@ -1,8 +1,9 @@
 --!strict
 -- Hud/Run: the run's state and flow. A run starts (onRun), events react (onEvent:
--- busted / zapped / bank / alarm / swarm / tiers / hide...), the run ends (onRunEnd),
--- and every frame (update) drives the timer, the loot meter, the Alarm Run counter,
--- END RUN's lock and pulse, the objective line, the L1 stuck hints and Interact.
+-- busted / zapped / bank / alarm / swarm / tiers / hide...), the run ends (onRunEnd:
+-- the reason it ended stays up until the deck opens), and every frame (update) drives
+-- the timer, the loot meter, the Alarm Run counter, REWIND's lock and pulse, the
+-- objective line, the L1 stuck hints and Interact.
 
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
@@ -15,7 +16,6 @@ local Sim = Shared:WaitForChild("Sim")
 local EventLog = require(Sim:WaitForChild("EventLog"))
 local Interact = require(Sim:WaitForChild("Interact"))
 local HeistShared = Shared:WaitForChild("Heist")
-local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 local Mix = require(Shared:WaitForChild("Audio"):WaitForChild("Mix"))
@@ -72,6 +72,8 @@ function Run.build(ctx: any)
 		ctx.deck.readyWait.Visible = false
 		msg.preparing.Visible = false
 		ctx.runHud.Visible = true
+		ctx.setInHeist(true)
+		top.setRunBoxShown(true)
 		msg.pauseChip.Visible = true
 		ctx.waiting = false
 		endedCount = 0
@@ -86,12 +88,10 @@ function Run.build(ctx: any)
 			ctx.noBankRuns = 0
 			ctx.stopsLineUntil = 0
 		end
-		-- A redo run says so (§7.4): "REDO ●3" in the run label colour.
+		-- A redo run says so (§7.4): "REDO 3" in the run label colour.
 		local deck = state.deck
 		local redo = if deck and not deck.locked then tonumber(deck.redo) or 0 else 0
-		top.runLabel.Text = if redo > 0
-			then Strings.redoRun(Palette.badge(state.mySeat or 1, redo))
-			else Common.runName(state, n)
+		top.runLabel.Text = if redo > 0 then Strings.redoRun(redo) else Common.runName(state, n)
 		local dawn = Common.dawnRuns(state)
 		top.runLabel.TextColor3 = if dawn and n >= dawn then Palette.amber else Palette.hueFor(state.mySeat or 1)
 		runStartAt = os.clock() + (m.transition or 0)
@@ -131,9 +131,9 @@ function Run.build(ctx: any)
 		end
 		local left = dawn - n
 		if left <= 0 then
-			hud.toast(Strings.LAST_RUN_BEFORE_DAWN)
+			hud.toast(Strings.LAST_RUN_BEFORE_SUNRISE)
 		elseif left < H.DAWN_WARN_RUNS then
-			hud.toast(Strings.dawnAfter(left))
+			hud.toast(Strings.sunriseAfter(left))
 		end
 	end
 
@@ -141,7 +141,10 @@ function Run.build(ctx: any)
 		interactBtn.Visible = false
 		controls.ffPill.Visible = false
 		top.alarmPill.Visible = false
-		msg.setSpectate("")
+		top.objective.Visible = true
+		-- Passing lines go; why the run ended stays until the deck opens (WALKTHROUGH
+		-- P1-10: it used to be wiped in the same frame in solo).
+		msg.keepReason()
 		msg.setHidden(false)
 		hints.clear()
 		local nextRun = (state.run and state.run.run or 0) + 1
@@ -163,7 +166,8 @@ function Run.build(ctx: any)
 			if alarm.kind == "catch" then
 				hud.toast(Strings.GUS_RAISED_ALARM)
 			elseif alarm.kind == "clone" and alarm.ownerId == localPlayer.UserId and not hint then
-				hud.toast(Strings.cloneSetOffAlarm(Palette.badge(state.mySeat or 1, alarm.slot)))
+				local seat = state.mySeat or 1
+				hud.toast(Strings.cloneSetOffAlarm(Strings.cloneName(seat, tonumber(alarm.slot) or 0, seat)))
 			elseif alarm.kind == "live" and alarm.ownerId == localPlayer.UserId then
 				hud.toast(Strings.YOU_SET_OFF_ALARM)
 			end
@@ -204,7 +208,7 @@ function Run.build(ctx: any)
 				-- Only when others are still running (solo: the run is already over).
 				local othersRunning = (state.liveCount or 1) > endedCount
 				if e.kind == EV.Timeout then
-					msg.setSpectate(Strings.TAPE_RAN_OUT)
+					msg.setReason(Strings.TIME_UP)
 				elseif othersRunning and not isTutorial() then
 					msg.setSpectate(Strings.WAIT_FOR_CREW)
 				end
@@ -214,7 +218,7 @@ function Run.build(ctx: any)
 			endedCount += 1
 			if Common.myActor(target) then
 				myEnded = true
-				msg.setSpectate(Strings.GUARD_SPOTTED_YOU)
+				msg.setReason(Strings.CAUGHT_BY_GUS, Strings.CAPTION_CAUGHT)
 				if live then
 					hud.flashRed()
 					hud.bigStamp(Strings.STAMP_BUSTED, Palette.alarm)
@@ -225,7 +229,7 @@ function Run.build(ctx: any)
 				endedCount += 1
 				if a.owner == localPlayer.UserId then
 					myEnded = true
-					msg.setSpectate(Strings.ZAPPED_BY_LASER)
+					msg.setReason(Strings.ZAPPED_BY_LASER, Strings.CAPTION_ZAPPED)
 					if live then
 						hud.flashRed()
 						hud.bigStamp(Strings.STAMP_ZAPPED, Palette.alarm)
@@ -250,7 +254,7 @@ function Run.build(ctx: any)
 			if def then
 				value = def.value
 			end
-			local who = if a and a.kind == "clone" then Palette.badge(a.seat, a.slot) else nil
+			local who = if a and a.kind == "clone" then Strings.cloneName(a.seat, a.slot, state.mySeat or 1) else nil
 			hud.toast(Strings.banked(who, Ui.money(value)))
 			Ui.pop(top.lootBox)
 		elseif e.kind == EV.Grab and live then
@@ -289,7 +293,7 @@ function Run.build(ctx: any)
 				hud.bigStamp(Strings.STAMP_ALARM, Palette.alarm)
 				hud.flashRed()
 				if a and a.kind == "clone" then
-					hud.toast(Strings.cloneSetOffAlarmNow(Palette.badge(a.seat, a.slot)))
+					hud.toast(Strings.cloneSetOffAlarmNow(Strings.cloneName(a.seat, a.slot, state.mySeat or 1)))
 				elseif e.a == 0 then
 					hud.toast(Strings.GUS_RAISED_ALARM_RUN)
 				else
@@ -375,7 +379,7 @@ function Run.build(ctx: any)
 		local remaining = math.max(0, length - tView)
 		local red = remaining <= H.TIMER_RED_SECONDS
 		top.timerLabel.TextColor3 = if red then Palette.alarm else Palette.white
-		top.timerLabel.Text = if red then Strings.timerRed(Ui.clock(remaining)) else Ui.clock(remaining)
+		top.timerLabel.Text = Ui.clock(remaining)
 		top.timerScale.Scale = if remaining <= H.TIMER_PULSE_SECONDS and not state.reduced
 			then 1 + 0.08 * math.max(0, math.sin(now * 2 * math.pi))
 			else 1
@@ -397,17 +401,17 @@ function Run.build(ctx: any)
 		top.updateLoot(now)
 
 		-- Alarm Run counter and the red pulse (once per ALARM_PULSE_SECONDS, ≤ 3 flashes/s).
+		-- While it runs it is the objective (the line takes its place).
 		local folder = state.folder
 		local alarmOn = folder ~= nil and folder:GetAttribute("AlarmOn") == true
 		top.alarmPill.Visible = alarmOn
-		top.objective.Position = Common.position(if alarmOn then HudLayout.OBJECTIVE_ALARM else HudLayout.OBJECTIVE)
-		msg.hiddenPill.Position = Common.position(if alarmOn then HudLayout.HIDDEN_ALARM else HudLayout.HIDDEN)
+		top.objective.Visible = not alarmOn
 		if alarmOn and folder then
 			local vanAt = folder:GetAttribute("AlarmVanAt")
 			local lockAt = folder:GetAttribute("AlarmLockAt")
 			local text = Strings.alarmVan(Ui.clock(math.max(0, (if type(vanAt) == "number" then vanAt else 0) - tView)))
 			if type(lockAt) == "number" and lockAt >= 0 and lockAt > tView then
-				text ..= Strings.alarmShutter(Ui.clock(lockAt - tView))
+				text ..= Strings.alarmDoorsLock(Ui.clock(lockAt - tView))
 			end
 			top.alarmLabel.Text = text
 			local beat = math.floor(now / H.ALARM_PULSE_SECONDS)
@@ -420,14 +424,14 @@ function Run.build(ctx: any)
 			end
 		end
 
-		-- END RUN: locked ring for the first 1.5 s; co-op count; spectators lose it.
+		-- REWIND: locked ring for the first 1.5 s; co-op count; spectators lose it.
 		local started = os.clock() >= runStartAt
 		endBtn.Visible = not myEnded and started
 		local lockFrac = math.clamp(1 - tView / Config.Rec.END_RUN_LOCK_SECONDS, 0, 1)
 		controls.lockRing.Size = UDim2.fromScale(1, lockFrac)
 		controls.lockRing.Visible = lockFrac > 0
 		local crew = state.liveCount or 1
-		endBtn.Text = if crew > 1 then Strings.endRunCrew(endedCount, crew) else Strings.END_RUN
+		endBtn.Text = if crew > 1 then Strings.rewindCrew(endedCount, crew) else Strings.REWIND
 
 		local pos = myRootLevelPos()
 		local text, pulseEnd, sticky = hints.objectiveText(tView, pos)
@@ -435,7 +439,7 @@ function Run.build(ctx: any)
 			objText, objSince = text, now
 		end
 		top.objective.Text = if sticky or now - objSince < Common.OBJECTIVE_SECONDS then text else ""
-		-- L1 while the auto-end is armed: END RUN pulses only while you stand on the plate
+		-- L1 while the auto-end is armed: REWIND pulses only while you stand on the plate
 		-- (a steady glow under reduced motion) and is dimmed off it; stuck hints run in any
 		-- such run, so a kid who ended run 1 off the plate is led back (§7.5).
 		if isTutorial() and hints.autoEndArmed() then

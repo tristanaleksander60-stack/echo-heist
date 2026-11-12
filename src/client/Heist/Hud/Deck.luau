@@ -1,12 +1,14 @@
 --!strict
 -- Hud/Deck: between runs (§3.2 rule 6). The Clone Deck (from L2; read-only on L1 and
--- party levels) with REDO / REDO + LATER / DELETE / UNDO / DELETE BUSTED and the RedoAlarm
+-- party levels) with REDO / REDO FROM / DELETE / UNDO / DELETE BUSTED and the RedoAlarm
 -- hint in its title, or a plain RUN button; both count down to the auto-start
--- ("▶ RUN 3 · 0:08", co-op "2/3 READY").
+-- ("GO: RUN 3 · 0:08", co-op "2/3 READY"). After a failed run the deck title leads with
+-- why it ended (§6.1 item 8).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Config = require(Shared:WaitForChild("Config")) :: any
 local HeistShared = Shared:WaitForChild("Heist")
 local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
@@ -16,6 +18,7 @@ local Sound = require(script.Parent.Parent:WaitForChild("Sound"))
 local Ui = require(script.Parent.Parent:WaitForChild("Ui"))
 local Common = require(script.Parent:WaitForChild("Common"))
 
+local H = Config.Heist
 local TAP = Ui.TAP
 local RED = Common.RED
 
@@ -59,7 +62,7 @@ function Deck.build(ctx: any): any
 		Name = "Actions",
 		AnchorPoint = Vector2.new(0, 1),
 		Position = UDim2.new(0, 12, 1, -10),
-		Size = UDim2.fromOffset(420, TAP),
+		Size = UDim2.fromOffset(340, TAP),
 		BackgroundTransparency = 1,
 	})
 	local actLayout = Instance.new("UIListLayout")
@@ -70,7 +73,7 @@ function Deck.build(ctx: any): any
 	local selected = 0
 	local redoBtn = Ui.button(
 		actionRow,
-		{ Size = UDim2.fromOffset(118, TAP), TextSize = 16, Text = Strings.REDO, LayoutOrder = 1 },
+		{ Size = UDim2.fromOffset(96, TAP), TextSize = 16, Text = Strings.REDO, LayoutOrder = 1 },
 		function()
 			if selected > 0 then
 				actions.deck("Redo", selected)
@@ -79,7 +82,7 @@ function Deck.build(ctx: any): any
 	)
 	local fromBtn = Ui.button(
 		actionRow,
-		{ Size = UDim2.fromOffset(150, TAP), TextSize = 16, Text = Strings.REDO_FROM, LayoutOrder = 2 },
+		{ Size = UDim2.fromOffset(124, TAP), TextSize = 16, Text = Strings.REDO_FROM, LayoutOrder = 2 },
 		function()
 			if selected > 0 then
 				actions.deck("RedoFrom", selected)
@@ -88,7 +91,7 @@ function Deck.build(ctx: any): any
 	)
 	local delBtn = Ui.button(
 		actionRow,
-		{ Size = UDim2.fromOffset(118, TAP), TextSize = 16, Text = Strings.DELETE, LayoutOrder = 3 },
+		{ Size = UDim2.fromOffset(96, TAP), TextSize = 16, Text = Strings.DELETE, LayoutOrder = 3 },
 		function()
 			if selected > 0 then
 				actions.deck("Delete", selected)
@@ -99,7 +102,7 @@ function Deck.build(ctx: any): any
 	)
 	local undoBtn = Ui.button(
 		actionRow,
-		{ Size = UDim2.fromOffset(118, TAP), TextSize = 16, Text = Strings.UNDO, LayoutOrder = 4 },
+		{ Size = UDim2.fromOffset(96, TAP), TextSize = 16, Text = Strings.UNDO, LayoutOrder = 4 },
 		function()
 			actions.deck("Undo")
 		end,
@@ -107,7 +110,7 @@ function Deck.build(ctx: any): any
 	)
 	local bustedBtn = Ui.button(
 		actionRow,
-		{ Size = UDim2.fromOffset(150, TAP), TextSize = 16, Text = Strings.DELETE_BUSTED, LayoutOrder = 5 },
+		{ Size = UDim2.fromOffset(140, TAP), TextSize = 16, Text = Strings.DELETE_BUSTED, LayoutOrder = 5 },
 		function()
 			actions.deck("DeleteBusted")
 		end,
@@ -116,39 +119,39 @@ function Deck.build(ctx: any): any
 	local readyBtn = Ui.button(deckPanel, {
 		AnchorPoint = Vector2.new(1, 1),
 		Position = UDim2.new(1, -12, 1, -10),
-		Size = UDim2.fromOffset(164, TAP),
+		Size = UDim2.fromOffset(150, TAP),
 		BackgroundColor3 = Palette.CLONE_HUES[1],
-		TextSize = 22,
+		TextWrapped = true,
 		Text = Strings.startRun(Strings.run(2)),
 	}, function()
 		hud.ready()
 	end, "UIConfirm")
+	Ui.fit(readyBtn, 22, H.UI_TEXT_MIN)
 
-	-- RedoAlarm hint (§3.6): the deck's title says "◎ Clone ●3 sets off the alarm. Redo
-	-- ●3?", that card is picked and REDO turns Alarm Red (no extra banner: small phones).
+	-- RedoAlarm hint (§3.6): the deck's title says "Clone 3 sets off the alarm. Redo it?",
+	-- that card is picked and REDO turns Alarm Red (no extra banner: small phones).
 	local hintSlot = 0
 	local hintShownFor = 0
 
 	local readyWait = Ui.button(root, {
 		Name = "ReadySolo",
 		BackgroundColor3 = Palette.CLONE_HUES[1],
-		TextSize = 22,
+		TextWrapped = true,
 		Text = Strings.startRun(Strings.run(2)),
 		Visible = false,
 	}, function()
 		hud.ready()
 	end, "UIConfirm")
 	Common.place(readyWait, HudLayout.READY_WAIT)
+	Ui.fit(readyWait, 22, H.UI_TEXT_MIN)
 	deckUi.readyWait = readyWait
 
 	local deckOpen = true
 	local function selectCard(n: number)
 		selected = n
-		local seat = state.mySeat or 1
-		local badge = if n > 0 then Palette.badge(seat, n) else ""
-		redoBtn.Text = Strings.redo(badge)
-		fromBtn.Text = Strings.redoFrom(badge)
-		delBtn.Text = Strings.delete(badge)
+		redoBtn.Text = if n > 0 then Strings.redo(n) else Strings.REDO
+		fromBtn.Text = if n > 0 then Strings.redoFrom(n) else Strings.REDO_FROM
+		delBtn.Text = if n > 0 then Strings.delete(n) else Strings.DELETE
 		redoBtn.Visible = n > 0
 		fromBtn.Visible = n > 0
 		delBtn.Visible = n > 0
@@ -179,8 +182,7 @@ function Deck.build(ctx: any): any
 		local slot = if hint and hint.kind == "RedoAlarm" then tonumber(hint.slot) or 0 else 0
 		hintSlot = if deck and slot > 0 and slot <= #deck.slots then slot else 0
 		if hintSlot > 0 then
-			local badge = Palette.badge(state.mySeat or 1, hintSlot)
-			deckTitle.Text = Strings.redoAlarmHint(badge)
+			deckTitle.Text = Strings.redoAlarmHint(hintSlot)
 			deckTitle.TextColor3 = Palette.alarm
 			if hintShownFor ~= hintSlot then
 				hintShownFor = hintSlot
@@ -203,9 +205,8 @@ function Deck.build(ctx: any): any
 		if not deck then
 			return
 		end
-		local seat = state.mySeat or 1
-		local hue = Palette.hueFor(seat)
-		deckTitle.Text = Strings.deckTitle(#deck.slots, tonumber(deck.cap) or #deck.slots)
+		local hue = Palette.hueFor(state.mySeat or 1)
+		deckTitle.Text = Strings.deckTitle(#deck.slots, tonumber(deck.cap) or #deck.slots, ctx.msg.reason)
 		local hint = deck.hint
 		local alarmSlot = if hint and hint.kind == "RedoAlarm" then tonumber(hint.slot) or 0 else 0
 		for i, s in deck.slots do
@@ -214,18 +215,38 @@ function Deck.build(ctx: any): any
 			if i == alarmSlot then
 				status = Strings.STATUS_ALARM
 			end
+			-- The clone's number in a pill of your colour (grey when red-flagged), its
+			-- status under it.
 			local card = Ui.button(cards, {
 				Size = UDim2.fromOffset(TAP, 80),
 				BackgroundColor3 = Palette.inkHi,
 				TextColor3 = if red then Palette.tapeGrey else hue,
-				TextSize = 20,
+				TextSize = 16,
 				TextWrapped = true,
-				Text = Strings.card(Palette.badge(seat, i), status),
+				TextYAlignment = Enum.TextYAlignment.Bottom,
+				Text = status,
 				LayoutOrder = i,
 			}, function()
 				selectCard(if selected == i then 0 else i)
 			end, "UIToggle")
 			card:SetAttribute("Slot", i)
+			local pad = Instance.new("UIPadding")
+			pad.PaddingBottom = UDim.new(0, 8)
+			pad.Parent = card
+			local pill = Ui.label(card, {
+				AnchorPoint = Vector2.new(0.5, 0),
+				Position = UDim2.new(0.5, 0, 0, 8),
+				Size = UDim2.fromOffset(36, 30),
+				TextSize = 20,
+				TextColor3 = Palette.ink,
+				TextStrokeTransparency = 1,
+				RichText = true,
+				Text = if red then Strings.cloneNumberBusted(i) else Strings.cloneNumber(i),
+				Active = false,
+			})
+			pill.BackgroundColor3 = if red then Palette.tapeGrey else hue
+			pill.BackgroundTransparency = 0
+			Ui.corner(pill, 15)
 		end
 		if selected > #deck.slots then
 			selected = 0
@@ -246,7 +267,7 @@ function Deck.build(ctx: any): any
 		readyWait.Text = Strings.WAITING
 	end
 
-	-- The RUN button's label for the next run ("▶ RUN 3").
+	-- The RUN button's label for the next run ("GO: RUN 3").
 	function deckUi.setNextRun(nextRun: number)
 		local text = Strings.startRun(Common.runName(state, nextRun))
 		readyBtn.Text = text
@@ -260,18 +281,25 @@ function Deck.build(ctx: any): any
 		local controls = ctx.controls
 		local msg = ctx.msg
 		ctx.runHud.Visible = true
+		ctx.setInHeist(true)
 		msg.pauseChip.Visible = true
 		controls.endBtn.Visible = false
 		controls.interactBtn.Visible = false
 		top.alarmPill.Visible = false
-		msg.setSpectate("")
 		msg.setHidden(false)
 		local deck = state.deck
 		local locked = deck == nil or deck.locked == true
 		deckPanel.Visible = not locked and deckOpen
 		readyWait.Visible = not Common.isTutorial(state) and (locked or not deckOpen)
 		hud.placeRail(deckPanel.Visible)
-		top.objective.Position = Common.position(HudLayout.OBJECTIVE)
+		top.setRunBoxShown(not deckPanel.Visible)
+		-- The reason the run ended: on the rail until the deck opens, then in its title.
+		if deckPanel.Visible then
+			msg.reasonToDeck()
+		else
+			msg.keepReason()
+		end
+		top.objective.Visible = true
 		top.objective.Text = if Common.isParty(state) and deck then Strings.partyKeepsAll(#deck.slots) else ""
 		if deckPanel.Visible then
 			Common.selectFor(readyBtn)
@@ -287,12 +315,18 @@ function Deck.build(ctx: any): any
 			deckPanel.Visible = deckOpen
 			readyWait.Visible = not deckOpen
 			hud.placeRail(deckOpen)
-			renderHint()
+			ctx.top.setRunBoxShown(not deckOpen)
+			if deckOpen then
+				ctx.msg.reasonToDeck()
+			else
+				ctx.msg.keepReason()
+			end
+			renderDeck()
 			Sound.play("UIToggle")
 		end
 	end
 
-	-- Between runs: "▶ RUN 3 · 0:08" counts down to the auto-start; co-op adds "2/3 READY".
+	-- Between runs: "GO: RUN 3 · 0:08" counts down to the auto-start; co-op adds "2/3 READY".
 	function deckUi.updateBetween()
 		local folder = state.folder
 		if state.phase ~= "Between" or not folder then

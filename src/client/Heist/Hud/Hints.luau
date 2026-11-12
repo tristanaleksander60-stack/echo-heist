@@ -42,7 +42,7 @@ function Hints.build(ctx: any): any
 		return folder ~= nil and folder:GetAttribute("AutoEndArmed") == true
 	end
 
-	-- L1 FTUE lines and the generic objective. Returns the line, whether END RUN should
+	-- L1 FTUE lines and the generic objective. Returns the line, whether REWIND should
 	-- pulse, and whether the line stays up (else it shows for OBJECTIVE_SECONDS after it
 	-- changes, §7.4).
 	function hints.objectiveText(_tView: number, pos: Vector3?): (string, boolean, boolean)

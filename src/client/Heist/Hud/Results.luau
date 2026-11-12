@@ -1,10 +1,12 @@
 --!strict
 -- Hud/Results: the results card (§7.3 "heist complete", §6.6): title, haul, three
--- stamps landing 0.25 s apart, the run line, what was saved, and the leader's
+-- stamps landing 0.25 s apart, the run line, what was saved (in a Studio play test
+-- without DataStores a neutral "not saved" chip, PLAN S6), and the leader's
 -- REPLAY / NEXT / GARAGE.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
@@ -19,6 +21,7 @@ local Common = require(script.Parent:WaitForChild("Common"))
 local AU = Config.Audio
 local TAP = Ui.TAP
 local localPlayer = Players.LocalPlayer
+local IS_STUDIO = RunService:IsStudio()
 
 local Results = {}
 
@@ -71,6 +74,7 @@ function Results.build(ctx: any): any
 		local s = Ui.label(stampRow, {
 			Size = UDim2.fromOffset(136, 46),
 			TextSize = 20,
+			RichText = true,
 			Text = "",
 			LayoutOrder = i,
 			ZIndex = 12,
@@ -98,6 +102,26 @@ function Results.build(ctx: any): any
 		TextColor3 = Palette.goldHi,
 		Text = "",
 		ZIndex = 11,
+	})
+	-- Studio play tests have no DataStores (DataService goes offline): a small neutral chip
+	-- instead of "Couldn't save this one." Live servers never take this path.
+	local studioChip = Ui.frame(results, {
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, 180),
+		Size = UDim2.fromOffset(300, 28),
+		BackgroundColor3 = Palette.inkHi,
+		BackgroundTransparency = 0,
+		Visible = false,
+		ZIndex = 11,
+	})
+	Ui.corner(studioChip, 14)
+	Ui.stroke(studioChip, Palette.steel, 1)
+	Ui.label(studioChip, {
+		Size = UDim2.fromScale(1, 1),
+		TextSize = 16,
+		TextColor3 = Palette.steelHi,
+		Text = Strings.STUDIO_NOT_SAVED,
+		ZIndex = 12,
 	})
 	local resButtons = Ui.frame(results, {
 		AnchorPoint = Vector2.new(0.5, 1),
@@ -188,7 +212,7 @@ function Results.build(ctx: any): any
 					table.insert(parts, Strings.plusStars(d.starsGained))
 				end
 				if type(d.unlocked) == "table" and #d.unlocked > 0 then
-					table.insert(parts, Strings.NEW_TAPE_UNLOCKED)
+					table.insert(parts, Strings.NEW_HEIST_UNLOCKED)
 				end
 			end
 			if (tonumber(d.cash) or 0) > 0 then
@@ -201,6 +225,17 @@ function Results.build(ctx: any): any
 		return ""
 	end
 
+	-- Saving is unavailable because this is a Studio play test (DataService offline).
+	local function studioUnsaved(award: any): boolean
+		if not IS_STUDIO then
+			return false
+		end
+		if ReplicatedStorage:GetAttribute("DataOffline") == true then
+			return true
+		end
+		return type(award) == "table" and award.ok == false and award.code == "NotReady"
+	end
+
 	function hud.onOver(payload: any)
 		local over = payload.result
 		if type(over) ~= "table" then
@@ -208,6 +243,8 @@ function Results.build(ctx: any): any
 		end
 		state.over = over
 		state.overNext = payload.next
+		ctx.setInHeist(true)
+		ctx.msg.setSpectate("")
 		results.Visible = true
 		ctx.deck.panel.Visible = false
 		ctx.deck.readyWait.Visible = false
@@ -267,12 +304,14 @@ function Results.build(ctx: any): any
 		table.insert(bits, Strings.runs(over.runs or 0))
 		table.insert(bits, Ui.clock(over.totalTime or 0))
 		resLine.Text = table.concat(bits, Strings.SEP)
-		resAward.Text = awardText(kind, payload.award)
+		local unsaved = studioUnsaved(payload.award)
+		studioChip.Visible = unsaved
+		resAward.Text = if unsaved then "" else awardText(kind, payload.award)
 		hud.refreshResults()
 	end
 
 	-- Leader buttons on the results card (also when the leader changes while it is up).
-	-- NEXT only when the next tape is open for you; else why (§5.2: "2 more ★ opens it").
+	-- NEXT only when the next heist is open for you; else why (§5.2: "2 more stars").
 	function hud.refreshResults()
 		local over = state.over
 		if not over or not results.Visible then
@@ -288,7 +327,7 @@ function Results.build(ctx: any): any
 		nextBtn.Visible = leader and wantsNext and nextOpen
 		if wantsNext and not nextOpen and type(nx) == "table" then
 			local stars = tonumber(nx.starsNeeded) or 0
-			resWait.Text = if stars > 0 then Strings.starsOpenNext(stars) else Strings.CLEAR_TO_OPEN_NEXT
+			resWait.Text = if stars > 0 then Strings.starsOpenNext(stars) else Strings.WIN_TO_OPEN_NEXT
 		elseif not leader then
 			resWait.Text = Strings.LEADER_PICKS_NEXT
 		else

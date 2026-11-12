@@ -72,9 +72,10 @@ jobs:
         run: lune run tests/kit_check.luau build/EchoHeist.rbxlx
 
       - name: HUD layout (no overlaps at 7 viewports, docs/PLAN_STEAM_PLUS.md §4.0)
-        # Known red until the top-row layout fix lands (docs/audit/WALKTHROUGH.md P1-13).
-        continue-on-error: true
         run: lune run tests/hud_layout.luau
+
+      - name: No text glyphs in UI strings (docs/PLAN_STEAM_PLUS.md §1 S4)
+        run: lune run tests/glyph_check.luau
 
       - name: Unit tests (L1)
         run: |

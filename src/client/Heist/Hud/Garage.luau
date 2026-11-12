@@ -1,7 +1,8 @@
 --!strict
--- Hud/Garage: tapes in play order (the party break tagged, why a tape is locked), the
--- daily vault card with streak and modifier once the first tape is cleared, advent
--- catch-up, the crew and JOIN for friends in the server (§3.3, §5.3, §7.4).
+-- Hud/Garage: heists in play order (the party break tagged, why a heist is locked), the
+-- daily vault card with streak and modifier once the first heist is cleared, advent
+-- catch-up, the crew and JOIN for friends in the server (§3.3, §5.3, §7.4). Roblox's
+-- player list comes back here (it is hidden during heists, PLAN S8).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -41,7 +42,7 @@ function Garage.build(ctx: any): any
 		Size = UDim2.fromOffset(440, 34),
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextSize = 26,
-		Text = Strings.PICK_A_TAPE,
+		Text = Strings.PICK_A_HEIST,
 	})
 	local tapes = Instance.new("ScrollingFrame")
 	tapes.Name = "Tapes"
@@ -120,7 +121,7 @@ function Garage.build(ctx: any): any
 		if not d or d.enabled == false then
 			hud.toast(Strings.DAILY_CLOSED)
 		elseif g.leader ~= localPlayer.UserId then
-			hud.toast(Strings.LEADER_PICKS_TAPE)
+			hud.toast(Strings.LEADER_PICKS_HEIST)
 		else
 			actions.selectDaily(nil)
 		end
@@ -201,7 +202,7 @@ function Garage.build(ctx: any): any
 				elseif stars > 0 then Strings.lockStars(stars)
 				else Strings.LOCKED
 			-- A party level's medals are its haul tiers; a story level's are Haul / Crew / Clean.
-			local status = if lv.unlocked then Strings.tapeStars(#(lv.medals or {})) else lockText
+			local status = if lv.unlocked then Strings.heistStars(#(lv.medals or {})) else lockText
 			local b = Ui.button(tapes, {
 				BackgroundColor3 = if not lv.unlocked
 					then Palette.plumHi
@@ -210,18 +211,18 @@ function Garage.build(ctx: any): any
 				TextColor3 = Palette.ink,
 				TextSize = 16,
 				TextWrapped = true,
-				Text = Strings.tape(lv.index, tostring(lv.name), tag, status),
+				Text = Strings.heistCard(lv.index, tostring(lv.name), tag, status),
 				LayoutOrder = lv.index,
 			}, function()
 				if not leader then
-					hud.toast(Strings.LEADER_PICKS_TAPE)
+					hud.toast(Strings.LEADER_PICKS_HEIST)
 				elseif not lv.unlocked then
 					Sound.play("UIError")
 					hud.toast(
 						if lv.needsClear ~= nil
 							then Strings.clearFirst(tapeName(lv.needsClear))
 							elseif stars > 0 then Strings.starsToOpen(stars)
-							else Strings.TAPE_LOCKED
+							else Strings.HEIST_LOCKED
 					)
 				else
 					actions.selectLevel(lv.index)
@@ -238,7 +239,7 @@ function Garage.build(ctx: any): any
 		local back = Ui.button(tapes, {
 			BackgroundColor3 = Palette.steel,
 			TextSize = 18,
-			Text = Strings.BACK_TO_TAPES,
+			Text = Strings.BACK,
 			LayoutOrder = 0,
 		}, function()
 			catchUpMode = false
@@ -250,14 +251,14 @@ function Garage.build(ctx: any): any
 				TextColor3 = Palette.ink,
 				TextSize = 16,
 				TextWrapped = true,
-				Text = Strings.catchUpTape(
+				Text = Strings.catchUpCard(
 					if c.advent then Strings.advent(c.advent) else Common.dateText(c.day),
 					tostring(c.name)
 				),
 				LayoutOrder = i,
 			}, function()
 				if not leader then
-					hud.toast(Strings.LEADER_PICKS_TAPE)
+					hud.toast(Strings.LEADER_PICKS_HEIST)
 				else
 					actions.selectDaily(c.day)
 				end
@@ -269,7 +270,7 @@ function Garage.build(ctx: any): any
 	local function renderDaily()
 		local g = state.garage
 		local d = g and g.daily
-		-- Hidden until the first tape is cleared (the server refuses it too, §7.5).
+		-- Hidden until the first heist is cleared (the server refuses it too, §7.5).
 		if type(d) ~= "table" or d.locked == true then
 			daily.Visible = false
 			return
@@ -283,6 +284,9 @@ function Garage.build(ctx: any): any
 		if mod ~= "" then
 			table.insert(info, mod)
 		end
+		if d.clearedToday and d.enabled ~= false then
+			table.insert(info, Strings.DONE_TODAY)
+		end
 		if (tonumber(d.streak) or 0) > 0 then
 			table.insert(info, Strings.streak(d.streak))
 		end
@@ -292,12 +296,12 @@ function Garage.build(ctx: any): any
 		dailyInfo.Text = table.concat(info, Strings.SEP)
 		local catchUps = #(d.catchUp or {})
 		catchBtn.Visible = catchUps > 0
-		catchBtn.Text = if catchUpMode then Strings.BACK_TO_TAPES else Strings.catchUpCount(catchUps)
+		catchBtn.Text = if catchUpMode then Strings.BACK else Strings.catchUpCount(catchUps)
 		if d.enabled == false then
 			playDailyBtn.Text = Strings.CLOSED
 			playDailyBtn.BackgroundColor3 = Palette.steelLo
 		else
-			playDailyBtn.Text = if d.clearedToday then Strings.REPLAY_CLEARED else Strings.PLAY
+			playDailyBtn.Text = if d.clearedToday then Strings.REPLAY else Strings.PLAY
 			playDailyBtn.BackgroundColor3 = Palette.gold
 		end
 	end
@@ -316,7 +320,7 @@ function Garage.build(ctx: any): any
 				Size = UDim2.new(1, 0, 0, 24),
 				TextSize = 16,
 				TextColor3 = Palette.hueFor(m.seat),
-				Text = Strings.crewMember(Palette.glyphFor(m.seat), m.name, m.userId == g.leader),
+				Text = Strings.crewMember(m.seat, m.name, m.userId == g.leader),
 				LayoutOrder = m.seat,
 			})
 		end
@@ -367,6 +371,7 @@ function Garage.build(ctx: any): any
 		local wasOpen = garageOpen
 		garageOpen = true
 		garage.Visible = true
+		ctx.setInHeist(false)
 		ctx.runHud.Visible = false
 		ctx.deck.panel.Visible = false
 		ctx.results.card.Visible = false
@@ -380,7 +385,7 @@ function Garage.build(ctx: any): any
 		if catchUpMode and catchUps == 0 then
 			catchUpMode = false
 		end
-		garageTitle.Text = if catchUpMode then Strings.ADVENT_CATCH_UP else Strings.PICK_A_TAPE
+		garageTitle.Text = if catchUpMode then Strings.ADVENT_CATCH_UP else Strings.PICK_A_HEIST
 		local first = if catchUpMode then renderCatchUp(leader) else renderTapes(leader)
 		renderDaily()
 		renderCrew(g)

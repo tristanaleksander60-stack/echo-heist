@@ -1,7 +1,7 @@
 --!strict
 -- Hud/Messages: everything that tells the player something without being a control:
 -- the one bottom message rail (toast above the sound caption above the spectate line,
--- fixed slots, nothing overlaps), the ❚❚ menu sheet, the ◐ HIDDEN pill and edge dim,
+-- fixed slots, nothing overlaps), the MENU sheet, the HIDDEN pill and edge dim,
 -- the "preparing" card, the red vignette and the diamond dim.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -56,6 +56,8 @@ function Messages.build(ctx: any): any
 	---------------------------------------------------------------------------
 	-- Message rail: above Interact during a run, above the Clone Deck between runs
 	---------------------------------------------------------------------------
+	local slots = HudLayout.RAIL_SLOTS
+	local railW = HudLayout.RAIL.w
 	local rail = Ui.frame(root, {
 		Name = "MessageRail",
 		BackgroundTransparency = 1,
@@ -67,12 +69,15 @@ function Messages.build(ctx: any): any
 	railLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 	railLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	railLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	railLayout.Padding = UDim.new(0, 2)
+	railLayout.Padding = UDim.new(0, slots.pad)
 	railLayout.Parent = rail
+	-- Two lines, so a longer toast wraps instead of running under other boxes.
 	local toastLabel = Ui.label(rail, {
 		Name = "Toast",
-		Size = UDim2.fromOffset(440, 32),
-		TextSize = 20,
+		Size = UDim2.fromOffset(railW, slots.toast),
+		TextSize = 18,
+		TextWrapped = true,
+		TextYAlignment = Enum.TextYAlignment.Bottom,
 		TextStrokeTransparency = 0.2,
 		Text = "",
 		Visible = false,
@@ -82,7 +87,7 @@ function Messages.build(ctx: any): any
 	-- Sound captions (on by default, §7.4): "[Alarm!]".
 	local captionLabel = Ui.label(rail, {
 		Name = "Caption",
-		Size = UDim2.fromOffset(300, 26),
+		Size = UDim2.fromOffset(math.min(300, railW), slots.caption),
 		TextSize = 18,
 		BackgroundColor3 = Palette.ink,
 		BackgroundTransparency = 0.35,
@@ -93,13 +98,13 @@ function Messages.build(ctx: any): any
 	})
 	local spectate = Ui.label(rail, {
 		Name = "Spectate",
-		Size = UDim2.fromOffset(420, 28),
-		TextSize = 20,
+		Size = UDim2.fromOffset(railW, slots.spectate),
 		Text = "",
 		Visible = false,
 		LayoutOrder = 3,
 		ZIndex = 20,
 	})
+	Ui.fit(spectate, 20, H.UI_TEXT_MIN)
 	local function setRailText(label: TextLabel, text: string)
 		label.Text = text
 		label.Visible = text ~= ""
@@ -115,10 +120,20 @@ function Messages.build(ctx: any): any
 			end
 		end)
 	end
+
+	-- Why your run ended (caught, zapped, time's up; §6.1 item 8). It stays on the rail
+	-- through the run's end until the deck opens (the deck title then leads with it), or
+	-- until the next run when there is no deck. `covers` is the sound caption it already
+	-- says, so that caption does not show twice.
+	msg.reason = ""
+	local reasonCovers = ""
 	local captionToken = 0
 	function hud.caption(text: string)
-		-- the spectate line already says it ("[Guard spotted you]")
+		-- the spectate line already says it
 		if spectate.Visible and string.find(spectate.Text, text, 1, true) then
+			return
+		end
+		if msg.reason ~= "" and text == reasonCovers then
 			return
 		end
 		captionToken += 1
@@ -130,8 +145,29 @@ function Messages.build(ctx: any): any
 			end
 		end)
 	end
+	-- A passing spectate line ("Wait for your crew"); "" clears it and the reason.
 	function msg.setSpectate(text: string)
+		if text == "" then
+			msg.reason = ""
+			reasonCovers = ""
+		end
 		setRailText(spectate, text)
+	end
+	function msg.setReason(text: string, covers: string?)
+		msg.reason = text
+		reasonCovers = covers or ""
+		setRailText(spectate, text)
+		if covers and captionLabel.Text == covers then
+			setRailText(captionLabel, "")
+		end
+	end
+	-- The run ended: passing lines go, the reason stays.
+	function msg.keepReason()
+		setRailText(spectate, msg.reason)
+	end
+	-- The deck opened and its title carries the reason: off the rail, still remembered.
+	function msg.reasonToDeck()
+		setRailText(spectate, "")
 	end
 
 	function hud.placeRail(overDeck: boolean)
@@ -139,14 +175,14 @@ function Messages.build(ctx: any): any
 	end
 
 	---------------------------------------------------------------------------
-	-- ❚❚ menu: leave the heist mid-run or between runs (solo: the heist ends; co-op: you
+	-- MENU: leave the heist mid-run or between runs (solo: the heist ends; co-op: you
 	-- leave your crew's heist). The run keeps going behind the sheet: it is a loop.
 	---------------------------------------------------------------------------
 	local pauseChip = Ui.button(root, {
 		Name = "Menu",
 		BackgroundColor3 = Palette.inkHi,
 		TextColor3 = Palette.white,
-		TextSize = 26,
+		TextSize = 20,
 		Text = Strings.MENU,
 		Visible = false,
 	}, function()
@@ -209,7 +245,7 @@ function Messages.build(ctx: any): any
 	end
 
 	---------------------------------------------------------------------------
-	-- ◐ HIDDEN (L4's main verb): a pill with glyph + word while your own actor hides,
+	-- HIDDEN (L4's main verb): a pill with the word while your own actor hides,
 	-- the screen edges dimmed a little (hud.onEvent Hidden / Unhidden).
 	---------------------------------------------------------------------------
 	local hiddenPill = Ui.frame(runHud, {
