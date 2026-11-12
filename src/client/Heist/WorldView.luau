@@ -51,6 +51,7 @@ local Palette = require(SharedHeist:WaitForChild("Palette"))
 local WorldFx = require(SharedHeist:WaitForChild("WorldFx"))
 local CloneClips = require(SharedHeist:WaitForChild("CloneClips"))
 
+local Particles = require(script.Parent:WaitForChild("Particles"))
 local Sound = require(script.Parent:WaitForChild("Sound"))
 local Ui = require(script.Parent:WaitForChild("Ui"))
 
@@ -156,6 +157,17 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 	local skins: { [number]: any } = {}
 	local tagged: { [string]: { [number]: Instance } } = {}
 	local beacons: { any } = {}
+	-- The loot sparkles are steady emitters: they report what they keep alive to the shared budget.
+	Particles.setSteady("sparkles", function(): number
+		local n = 0
+		for _, k in loot do
+			local e = k.sparkle
+			if e and e.Enabled and e.Parent then
+				n += e.Rate * e.Lifetime.Max
+			end
+		end
+		return n
+	end)
 	local slamming = false -- heist complete (Heist/MomentDirector): every door slams shut, visual only
 	local fxFolder: Folder? = nil
 	local vanBody: BasePart? = nil
@@ -774,7 +786,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 		local reduced = reducedNow()
 		if coins and coinAt then
 			coinAt.WorldPosition = at + Vector3.new(0, 0.5, 0)
-			coins:Emit(WorldFx.coinCount(FX.COINS, state.particleScale))
+			Particles.emit(coins, WorldFx.coinCount(FX.COINS, state.particleScale))
 		end
 		if not reduced then
 			vanY, vanV = -FX.VAN_BOUNCE.height, 0
@@ -905,7 +917,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 			if opened and dust and dustAt and state.phase == "Run" then
 				local base: CFrame = d.base
 				dustAt.WorldPosition = base.Position - Vector3.new(0, d.size.Y / 2 - 0.4, 0)
-				dust:Emit(math.max(2, math.floor(FX.DOOR_DUST * (state.particleScale or 1))))
+				Particles.emit(dust, math.max(2, math.floor(FX.DOOR_DUST * (state.particleScale or 1))))
 			end
 			local shut = v == "shut"
 			if d.part.CanCollide ~= shut then
@@ -977,7 +989,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 				end
 			end
 			if v == "off" and l.view ~= "off" and l.sparks and state.phase == "Run" then
-				l.sparks:Emit(math.max(2, math.floor(H.LASER_SPARKS * (state.particleScale or 1))))
+				Particles.emit(l.sparks, math.max(2, math.floor(H.LASER_SPARKS * (state.particleScale or 1))))
 			end
 			-- the re-arm whine starts with the flicker, 0.5 s before the beam is back (FEEDBACK_TABLE "Laser")
 			if v == "flicker" and l.view == "off" and state.phase == "Run" then
@@ -1128,7 +1140,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 			if beat ~= k.glintBeat then
 				k.glintBeat = beat
 				if (st == "Home" or st == "Dropped") and cf ~= nil and state.phase == "Run" then
-					k.glint:Emit(1)
+					Particles.emit(k.glint, 1)
 					local at = cf.Position
 					if
 						root

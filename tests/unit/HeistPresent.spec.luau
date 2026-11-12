@@ -13,6 +13,7 @@ local Strings = require("../../src/shared/Heist/Strings")
 local Protocol = require("../../src/shared/Heist/Protocol")
 local LevelSpec = require("../../src/shared/Sim/LevelSpec")
 local Catalog = require("../../src/shared/Levels/Catalog")
+local Help = require("../../src/shared/Heist/Help")
 local Assert = require("./Assert")
 
 local P = Config.Presentation
@@ -385,5 +386,40 @@ return function(test)
 		Assert.eq(three[2][1], 3, "middle")
 		Assert.eq(#PresentPlan.pickStops(s, 9), 5, "never more than there are")
 		Assert.eq(#PresentPlan.pickStops(s, 1), 1, "one")
+	end)
+	test("first visit: run 1's intro grows so L2 shows every plate -> door pair; never L1 or a daily", function()
+		local l2 = level("cs2_two_doors")
+		local key = H.LEVEL_DATA_KEYS[l2.id]
+		Assert.truthy(Help.firstVisit(key, {}), "a new profile: first visit")
+		Assert.truthy(Help.firstVisit(key, { [key] = { plays = 0 } }), "a record without a play: first visit")
+		Assert.falsy(Help.firstVisit(key, { [key] = { plays = 1 } }), "played once: not any more")
+		Assert.falsy(Help.firstVisit(nil, {}), "a daily vault has no level key")
+		Assert.falsy(Help.firstVisit(key, nil), "no profile: no extra wait")
+		-- the server's gate and the client's ("intro:<key>" seen) read the same level records
+		local seen = PresentPlan.seenKinds({ heist = { levels = { [key] = { plays = 1 } } } }, {}, "x")
+		Assert.truthy(seen[PresentPlan.INTRO_PREFIX .. key], "the client's seen set agrees")
+
+		local long = Help.firstRunIntro(l2, false, 1)
+		Assert.near(long, H.FIRST_RUN_INTRO + H.FIRST_VISIT_INTRO_EXTRA, 1e-9, "first visit: longer")
+		Assert.le(H.FIRST_VISIT_INTRO_EXTRA, 2 + 1e-9, "by at most about 2 s")
+		Assert.eq(Help.firstRunIntro(l2, false, 0), H.FIRST_RUN_INTRO, "repeat visit: unchanged")
+		Assert.eq(Help.firstRunIntro(l2, true, 1), H.FIRST_RUN_INTRO, "daily vault: unchanged")
+		Assert.eq(Help.firstRunIntro(level(H.FTUE_L1_LEVEL), false, 1), H.FIRST_RUN_INTRO, "L1: unchanged")
+
+		local stops = PresentPlan.introStops(l2, false, I.FOCUS_LIFT, I.MAX_STOPS)
+		local short = PresentPlan.introPlan(stops, H.FIRST_RUN_INTRO, I) :: any
+		local plan = PresentPlan.introPlan(stops, long, I) :: any
+		Assert.truthy(#short.stops < #stops, "today's 1 s drops stops")
+		Assert.eq(#plan.stops, #stops, "with the first-visit intro: all " .. #stops .. " stops")
+		Assert.truthy(plan.hop >= I.HOP - 0.05, string.format("at (nearly) full hops (%.2f s)", plan.hop))
+		-- every story / party level's first look fits its first-visit intro without dropping a stop
+		for _, spec in Catalog do
+			local l = LevelSpec.compile(spec)
+			if l.id ~= H.FTUE_L1_LEVEL then
+				local st = PresentPlan.introStops(l, spec.kind == "party", I.FOCUS_LIFT, I.MAX_STOPS)
+				local p = PresentPlan.introPlan(st, Help.firstRunIntro(l, false, 1), I) :: any
+				Assert.truthy(p ~= nil and #p.stops == #st, spec.id .. ": every stop fits")
+			end
+		end
 	end)
 end

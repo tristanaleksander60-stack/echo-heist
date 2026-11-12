@@ -25,8 +25,14 @@
 --     limbs near the root, joints whole); a broken one is swapped for the mannequin in
 --     place and reported once per owner (Telemetry.ui "CloneBroken").
 --   * Your live character gets a warm rim and ground ring (Heist/PlayerHalo).
+--   * Clone LOD (Config.Perf.CLONE_LOD, Budget.cloneFar): from tier 3 an avatar clone beyond FAR studs
+--     of the camera draws as a mannequin in its crew hue (same pill, glow and owner Highlight; the hidden
+--     avatar's root still carries the pill, bubble and emitters), back to the textured avatar inside
+--     NEAR (hysteresis). The mannequin is built once per pooled entry when the tier first asks for it.
+--     Never on your newest clone in the L1 tutorial ("YOU, 10 SEC AGO").
 --   * One BulkMoveTo per frame for every rig part, glow and band. Nothing is created per frame:
---     rigs, pills, bubbles, glows, bands and emitters are pooled with the rig.
+--     rigs, pills, bubbles, glows, bands and emitters are pooled with the rig. Every burst asks the one
+--     shared particle budget first (Heist/Particles).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -44,6 +50,7 @@ local Protocol = require(HeistShared:WaitForChild("Protocol"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
 local Icons = require(script.Parent:WaitForChild("Icons"))
+local Particles = require(script.Parent:WaitForChild("Particles"))
 local PlayerHalo = require(script.Parent:WaitForChild("PlayerHalo"))
 local Rigs = require(script.Parent:WaitForChild("Rigs"))
 local Telemetry = require(script.Parent:WaitForChild("Telemetry"))
@@ -353,6 +360,50 @@ function EchoView.new(state: any): any
 		pool.fx:Destroy()
 	end
 
+	-- Clone LOD: an avatar entry's light rig, a crew-hue mannequin in the owner group (so the owner Highlight
+	-- outlines it too), built once and kept with the pooled entry.
+	local function ensureLod(entry: any)
+		if entry.lodRig or entry.rig.kind ~= "avatar" then
+			return
+		end
+		local m = Rigs.buildMannequin()
+		m.model.Name = "Lod"
+		Rigs.setFade(m, 1)
+		if entry.hue then
+			Rigs.tint(m, entry.hue)
+		end
+		m.model.Parent = entry.pool.group
+		entry.lodRig = m
+	end
+
+	-- Swaps which rig draws the clone (no allocation): the other one hides; the fade carries over.
+	local function setFar(entry: any, far: boolean)
+		local lod = entry.lodRig
+		if entry.far == far or (far and not lod) then
+			return
+		end
+		entry.far = far
+		local from = entry.drawn
+		local to = if far then lod else entry.rig
+		entry.drawn = to
+		Rigs.setFade(from, 1)
+		Rigs.setFade(to, if entry.fade >= 0 then entry.fade else 0)
+		if far then
+			Rigs.setPose(entry.rig, nil) -- the hidden avatar stops its clips; its root keeps carrying the fx
+			Rigs.lookAt(entry.rig, nil, 0)
+		end
+	end
+
+	-- Hides both rigs of an entry and puts the textured one back in charge.
+	local function hideRigs(entry: any)
+		Rigs.setFade(entry.rig, 1)
+		if entry.lodRig then
+			Rigs.setFade(entry.lodRig, 1)
+		end
+		entry.far = false
+		entry.drawn = entry.rig
+	end
+
 	local function newEntry(pool: Pool, ownerId: number): any
 		local rig: any = nil
 		local t = if pool.kind == "avatar" then templateOf(ownerId) else nil
@@ -414,7 +465,14 @@ function EchoView.new(state: any): any
 			near = false,
 			glowOk = true, -- the tier's glow budget (Budget.glowSet) lets this clone draw its floor glow
 			camDist = 0,
+			drawn = rig, -- the rig on screen: `rig`, or `lodRig` while the clone LOD draws it light
+			lodRig = nil :: any, -- avatar entries: the crew-hue mannequin (ensureLod, from CLONE_LOD.TIER)
+			far = false,
+			lodExempt = false,
 		}
+		if Budget.cloneLod(tierNow) then
+			ensureLod(entry)
+		end
 		Icons.attach(pill, "seat_circle", {
 			AnchorPoint = Vector2.new(0, 0.5),
 			Position = UDim2.new(0, 5, 0.5, 0),
@@ -469,7 +527,7 @@ function EchoView.new(state: any): any
 
 	local function release(entry: any)
 		local rig = entry.rig
-		Rigs.setFade(rig, 1)
+		hideRigs(entry)
 		Rigs.locomote(rig, "none", 0, 1, 0, false, false)
 		Rigs.setPose(rig, nil)
 		Rigs.lookAt(rig, nil, 0)
@@ -507,6 +565,9 @@ function EchoView.new(state: any): any
 	-- The clone's look: hue (rig tint, glow, trail, sparks), pill (seat colour, icon, number).
 	local function dress(entry: any, a: any, hue: Color3)
 		Rigs.tint(entry.rig, hue)
+		if entry.lodRig then
+			Rigs.tint(entry.lodRig, hue)
+		end
 		entry.hue = hue
 		local seatHue = if a.orphan then Palette.tapeGrey else Palette.hueFor(a.seat)
 		entry.pill.BackgroundColor3 = seatHue
@@ -523,7 +584,8 @@ function EchoView.new(state: any): any
 
 	-- Fresh per-run state of an entry.
 	local function restart(entry: any)
-		Rigs.setFade(entry.rig, 1) -- a fresh rig is visible until it prints
+		hideRigs(entry) -- a fresh rig is visible until it prints
+		entry.lodExempt = false
 		entry.fade = 1
 		entry.goneShown = false
 		entry.phase = 0
@@ -615,6 +677,7 @@ function EchoView.new(state: any): any
 				newestOwnId = a.id
 			end
 			if a == newestOwn and state.level and state.level.tutorial ~= nil then
+				entry.lodExempt = true -- the "YOU, 10 SEC AGO" moment is always your own avatar
 				-- "◀ YOU, 10 SEC AGO" (§6.5 #5, §7.5): the number is always true (CLIPS §1.2).
 				local duration = Sampler.duration(rec)
 				local secs = duration + (msg.transition or 0)
@@ -657,7 +720,7 @@ function EchoView.new(state: any): any
 			say(entry, words.Busted, Palette.alarm, 1.2, now)
 		elseif kind == "Zapped" then
 			entry.emitter.Color = ColorSequence.new(Palette.ink)
-			entry.emitter:Emit(Budget.burst(tierNow, C.ZAP_SPARKS))
+			Particles.emit(entry.emitter, Budget.burst(tierNow, C.ZAP_SPARKS))
 			entry.emitter.Color = ColorSequence.new(entry.hue)
 			say(entry, words.Zapped, Palette.alarm, 1.0, now)
 		elseif kind == "Stuck" then
@@ -783,9 +846,9 @@ function EchoView.new(state: any): any
 			if entry.burstAt and now >= entry.burstAt then
 				entry.burstAt = nil
 				if not state.reduced then
-					entry.ribbons:Emit(Budget.burst(tierNow, C.RIBBON_COUNT))
+					Particles.emit(entry.ribbons, Budget.burst(tierNow, C.RIBBON_COUNT))
 				end
-				entry.emitter:Emit(Budget.burst(tierNow, C.SPARK_COUNT))
+				Particles.emit(entry.emitter, Budget.burst(tierNow, C.SPARK_COUNT))
 			end
 			-- Gone (busted / zapped, vanished): nothing to sample or pose until the reel.
 			local goneFor = if fx and fx.gone and not reelT then now - (fx.goneAtLocal or now) else -1
@@ -816,6 +879,14 @@ function EchoView.new(state: any): any
 			local pos = feet.Position + Vector3.new(0, 3, 0)
 			local camDist = (pos - camPos).Magnitude
 			entry.camDist = camDist
+			-- Clone LOD (hysteresis in Budget.cloneFar): the light rig beyond FAR, the avatar again inside NEAR.
+			if entry.lodRig then
+				local wantFar = Budget.cloneFar(tierNow, camDist, entry.far, entry.lodExempt)
+				if wantFar ~= entry.far then
+					setFar(entry, wantFar)
+				end
+			end
+			local far = entry.far
 
 			-- Walk cycle locked to the recording: distance travelled, not wall time.
 			local distance = CloneGait.distanceAt(rec, entry.dist, t)
@@ -868,7 +939,7 @@ function EchoView.new(state: any): any
 			end
 			-- Avatars: the pose clip (Animator, Action priority) and the glance IK; the clip's own fade
 			-- blends in and out. Mannequins: the Lua arm angles below.
-			if rig.kind == "avatar" then
+			if rig.kind == "avatar" and not far then
 				local clip = if ClonePose.CUSTOM[f.state]
 						and not zapped
 						and near
@@ -916,6 +987,18 @@ function EchoView.new(state: any): any
 				cframes,
 				if pose.busy then pose.joints else nil
 			)
+			if far then
+				-- the light rig poses like a mannequin; the avatar's root above still carries the pill and fx
+				Rigs.pose(
+					entry.lodRig,
+					if hop ~= 0 then feet * CFrame.new(0, hop, 0) else feet,
+					entry.phase,
+					math.clamp(f.speed / 10, 0, 1),
+					parts,
+					cframes,
+					if pose.busy then pose.joints else nil
+				)
+			end
 			entry.lastPos = pos
 			entry.lastFeet = feet
 
@@ -977,7 +1060,7 @@ function EchoView.new(state: any): any
 			if printing then
 				local p = math.clamp((now - entry.visibleAt) / C.PRINT_SECONDS, 0, 1)
 				local h = p * entry.height
-				Rigs.setPrint(rig, h)
+				Rigs.setPrint(entry.drawn, h)
 				entry.fade = 0
 				entry.badge.Enabled = true
 				entry.glowGui.Enabled = entry.glowOk
@@ -1005,14 +1088,14 @@ function EchoView.new(state: any): any
 				end
 				if fade ~= entry.fade then
 					entry.fade = fade
-					Rigs.setFade(rig, fade)
+					Rigs.setFade(entry.drawn, fade)
 					entry.badge.Enabled = fade < 1
 					entry.glowGui.Enabled = fade < 1 and entry.glowOk
 				end
 			end
 
 			-- Catalog animations: off when hidden or far (the root still moves).
-			local loco = if entry.fade >= 1 or camDist > C.ANIM_DISTANCE then "none" else f.loco
+			local loco = if entry.fade >= 1 or camDist > C.ANIM_DISTANCE or far then "none" else f.loco
 			local sendSpeed, sendWeights = false, false
 			if loco == "move" then
 				sendSpeed, sendWeights = CloneGait.step(entry.gait, f.speed, rate)
@@ -1057,7 +1140,7 @@ function EchoView.new(state: any): any
 		local a = old.actor
 		local pool = poolFor(ownerId, Palette.hueFor(a.seat))
 		local entry = table.remove(pool.free) or newEntry(pool, ownerId)
-		Rigs.setFade(old.rig, 1)
+		hideRigs(old)
 		Rigs.locomote(old.rig, "none", 0, 1, 0, false, false)
 		Rigs.setPose(old.rig, nil)
 		Rigs.lookAt(old.rig, nil, 0)
@@ -1207,7 +1290,7 @@ function EchoView.new(state: any): any
 	function view.hideAll()
 		for _, entry in order do
 			entry.fade = 1
-			Rigs.setFade(entry.rig, 1)
+			hideRigs(entry)
 			Rigs.locomote(entry.rig, "none", 0, 1, 0, false, false)
 			Rigs.setPose(entry.rig, nil)
 			Rigs.lookAt(entry.rig, nil, 0)
@@ -1236,7 +1319,36 @@ function EchoView.new(state: any): any
 		for _, entry in active do
 			entry.badge.MaxDistance = pillMax
 		end
+		-- Clone LOD from CLONE_LOD.TIER: every pooled avatar entry gets its light rig now (between frames, once),
+		-- so the frame loop only swaps. Below it, the next update swaps every light rig back (Budget.cloneFar).
+		if Budget.cloneLod(tier) then
+			for _, pool in pools do
+				for _, entry in pool.free do
+					ensureLod(entry)
+				end
+			end
+			for _, entry in active do
+				ensureLod(entry)
+			end
+		end
 		applyGlowBudget()
+	end
+
+	-- Clones drawn as the light rig right now (Clone LOD; tests, perf_engine).
+	function view.lodCount(): number
+		local n = 0
+		for _, entry in order do
+			if entry.far and entry.fade < 1 then
+				n += 1
+			end
+		end
+		return n
+	end
+
+	-- The rig on screen for an actor: its avatar / mannequin rig, or the light rig while the LOD draws it far.
+	function view.drawnRigOf(actorId: number): any
+		local entry = active[actorId]
+		return entry and entry.drawn
 	end
 
 	-- Floor glows drawn right now (tests, perf_engine).

@@ -38,6 +38,7 @@ local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
 local GusRig = require(script.Parent:WaitForChild("GusRig"))
+local Particles = require(script.Parent:WaitForChild("Particles"))
 local Sound = require(script.Parent:WaitForChild("Sound"))
 local Theme = require(script.Parent:WaitForChild("Theme"))
 local Ui = require(script.Parent:WaitForChild("Ui"))
@@ -676,7 +677,7 @@ function GusView.new(state: any): any
 			end
 			if running and chasing and speed > 1 and now >= g.nextDust then
 				g.nextDust = now + H.GUS_DUST_SECONDS
-				g.dust:Emit(3)
+				Particles.emit(g.dust, 3)
 			end
 
 			-- Pose: the beat (blended from the last one for BLEND seconds)

@@ -155,6 +155,111 @@ function Budget.worstParticles(tier: number): number
 	return n
 end
 
+---------------------------------------------------------------------------
+-- Clone LOD (Config.Perf.CLONE_LOD): the textured avatar near the camera, the crew-hue mannequin beyond.
+---------------------------------------------------------------------------
+
+-- Whether the clone LOD is on at `tier` (EchoView builds the light rigs from here).
+function Budget.cloneLod(tier: number): boolean
+	return clampTier(tier) >= P.CLONE_LOD.TIER
+end
+
+-- Whether a clone draws as the light version this frame. `wasFar` is what it drew last frame (hysteresis: it
+-- turns light beyond FAR and textured again inside NEAR); `exempt` is your newest clone in the L1 tutorial.
+function Budget.cloneFar(tier: number, dist: number, wasFar: boolean, exempt: boolean): boolean
+	local L = P.CLONE_LOD
+	if exempt or clampTier(tier) < L.TIER then
+		return false
+	end
+	if wasFar then
+		return dist >= L.NEAR
+	end
+	return dist > L.FAR
+end
+
+-- Whether a Line-up figure is built as the light version: from TIER, never in the front row (`row` 0, the
+-- figures nearest the camera) and never `exempt` (you and your newest clone), beyond FAR from the shot's camera.
+-- Picked once when the figure is built (the cut is a few seconds: no swaps on screen).
+function Budget.lineupLight(tier: number, row: number, dist: number, exempt: boolean): boolean
+	local L = P.CLONE_LOD
+	return not exempt and clampTier(tier) >= L.TIER and row >= 1 and dist > L.FAR
+end
+
+---------------------------------------------------------------------------
+-- Start tier (Config.Perf.START): what a client knows at boot, then a short frame-time probe.
+---------------------------------------------------------------------------
+
+-- What Heist/Telemetry reads at boot. Quality levels are 0 when Automatic or unreadable.
+export type BootFacts = {
+	device: string, -- PerfSample.deviceClass: phone | tablet | desktop | console | vr | other
+	savedQuality: number, -- UserGameSettings.SavedQualityLevel: 0 Automatic, 1..10 manual
+	renderQuality: number, -- RenderSettings.QualityLevel: 0 Automatic / unreadable, 1..RENDER_LEVELS
+	viewportMin: number, -- px, the viewport's short side (0 = not known yet)
+}
+
+-- The probe's frame times (PerfSample.percentile over the probe window).
+export type Probe = { frames: number, medianMs: number, p95Ms: number }
+
+-- The player's quality level on a 1..10 scale, or nil when it says nothing (Automatic or unreadable).
+function Budget.qualityLevel(f: BootFacts): number?
+	local S = P.START
+	if f.savedQuality >= 1 and f.savedQuality <= 10 then
+		return math.floor(f.savedQuality)
+	end
+	if f.renderQuality >= 1 and f.renderQuality <= S.RENDER_LEVELS then
+		return math.clamp(math.ceil(f.renderQuality * 10 / S.RENDER_LEVELS), 1, 10)
+	end
+	return nil
+end
+
+-- The tier a client starts at from its boot facts (1 .. START.MAX).
+function Budget.startTier(f: BootFacts): number
+	local S = P.START
+	local tier = S.DEVICE[f.device] or S.DEVICE.other
+	local q = Budget.qualityLevel(f)
+	if q then
+		if q <= S.QUALITY_LOW_MAX then
+			tier = math.max(tier, 3)
+		elseif q <= S.QUALITY_MID_MAX then
+			tier = math.max(tier, 2)
+		elseif q >= S.QUALITY_HIGH_MIN then
+			tier = 1 -- a player who set high quality by hand has the device for it
+		end
+	elseif f.device == "phone" and f.viewportMin > 0 and f.viewportMin < S.SMALL_SCREEN_MIN then
+		tier += 1
+	end
+	return math.clamp(tier, 1, S.MAX)
+end
+
+-- The start tier after the loading-card probe. It only ever lowers quality (cheap card frames that are slow
+-- say a lot; fast ones say little about a heist view) and never past START.MAX.
+function Budget.probeTier(tier: number, probe: Probe?): number
+	local S = P.START
+	local start = clampTier(tier)
+	if not probe or probe.frames < S.PROBE_MIN_FRAMES then
+		return start
+	end
+	local lower = 0
+	if probe.medianMs > S.PROBE_VERY_SLOW_MEDIAN_MS then
+		lower = 2
+	elseif probe.medianMs > S.PROBE_SLOW_MEDIAN_MS then
+		lower = 1
+	end
+	return math.max(start, math.min(start + lower, S.MAX))
+end
+
+-- The one live-particle cap (Heist/Particles) at `tier`: the tier's liveParticles on touch devices (phones and
+-- tablets without a keyboard, MASTERPLAN §6.8), scaled by Config.Moments PARTICLE_CAP / PARTICLE_CAP_TOUCH on
+-- keyboard / pad devices (900 at tiers 1-2).
+function Budget.particleCap(tier: number, touch: boolean): number
+	local live = Budget.forTier(tier).liveParticles
+	if touch then
+		return live
+	end
+	local M = Config.Moments
+	return math.floor(live * M.PARTICLE_CAP / M.PARTICLE_CAP_TOUCH + 0.5)
+end
+
 -- Measured view counts against a tier: a list of "what: measured > budget" lines (empty = within budget).
 -- `m` holds any of: drawCalls, tris, lights, shadowed, liveParticles, highlights.
 function Budget.over(tier: number, m: { [string]: number }): { string }

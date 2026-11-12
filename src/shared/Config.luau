@@ -197,6 +197,10 @@ Config.Heist = {
 	REWIND_TRANSITION = { 1.8, 1.0, 0.8 },
 	QUICK_REWIND_FROM_RUN = 4, -- quick rewinds automatically from the 4th rewind (run 5 starts)
 	FIRST_RUN_INTRO = 1.0, -- run 1: "RUN 1" stamp, teleport settles
+	-- run 1 on someone's FIRST visit to a story / party level (never L1, never a daily vault, Help.firstRunIntro):
+	-- this much longer, so Heist/LevelIntro shows every plate -> door pair (L2's five stops at full hops). Wall
+	-- clock only: the run clock starts later, the sim's ticks are the same (tests/sim/FirstVisitIntro.spec.luau).
+	FIRST_VISIT_INTRO_EXTRA = 2.0,
 	TUTORIAL_BETWEEN_SECONDS = 0.4, -- L1 (deck locked): the next run starts by itself
 	BETWEEN_MAX_SECONDS = 25, -- between runs: the next run starts when all are ready, or after this
 	PARTY_BETWEEN_SECONDS = 10, -- party levels (deck locked: every clone stays for "8 OF ME"): auto-start
@@ -1793,8 +1797,9 @@ Config.Onboarding = {
 
 -- Performance track (PLAN_STEAM_PLUS §4.7, MASTERPLAN §6.8 / §8.6, roblox_quality §1.4 / §6.4; docs/PERF.md).
 -- Budgets per runtime tier (Config.Heist.PERF_TIERS: the PerfSample governor in Heist/Telemetry steps it down
--- when frames stay slow and back up after a sustained good stretch). Every tier starts at 1; the phone class a
--- tier is written for: 1 quality = high phone 6 GB+ / PC, 2 balanced = mid Android ~4 GB, 3 performance = low
+-- when frames stay slow and back up after a sustained good stretch). A client starts where its device suggests
+-- (START below: device class, quality level, screen, a loading-card frame probe); the phone class a tier is written
+-- for: 1 quality = high phone 6 GB+ / PC, 2 balanced = mid Android ~4 GB, 3 performance = low
 -- Android 2-3 GB at 30 fps, 4 minimum = a phone still over 33 ms at tier 3. Read through the pure
 -- Shared/Heist/Budget (tests/unit/HeistBudget.spec.luau checks the numbers against each other).
 Config.Perf = {
@@ -1899,6 +1904,44 @@ Config.Perf = {
 	-- Measured / estimated costs (docs/PERF.md; tests/perf_engine.luau prints the measured ones).
 	AVATAR_TRIS_EST = 7000, -- a catalog R15 avatar with hair and 2-3 accessories (not readable from Luau)
 	MANNEQUIN_TRIS = 216, -- 18 box parts
+
+	-- Clone LOD (roblox_quality §6.4; Budget.cloneFar / Budget.lineupLight): from TIER, a clone drawn from an
+	-- avatar template is the textured avatar within NEAR studs of the camera and the 216-tri mannequin in its crew
+	-- hue beyond FAR (same pill, glow and owner Highlight); between the two it keeps what it was (hysteresis), so
+	-- a clone walking along the edge never flickers. Never your newest clone in the L1 tutorial ("YOU, 10 SEC
+	-- AGO"). Line-up figures past the front row use the same distance from the shot's camera (picked once per cut).
+	CLONE_LOD = {
+		TIER = 3,
+		NEAR = 15,
+		FAR = 18,
+		MANNEQUIN_DRAWS = 3, -- estimate: every mannequin in view batches into a few primitive draws (perf_engine)
+	},
+
+	-- The start tier (Budget.startTier / Budget.probeTier, Heist/Telemetry): picked at boot from what a client
+	-- script can know, so a low phone is at recipe C before its first run instead of ~70 s of slow frames later.
+	-- The governor keeps its hysteresis from there (it may step back up to tier 1: PerfSample.seed).
+	START = {
+		-- by PerfSample.deviceClass: touch-only devices start balanced, keyboards / pads / headsets at quality
+		DEVICE = { desktop = 1, console = 1, vr = 1, tablet = 2, phone = 2, other = 2 },
+		-- the player's manual graphics level (UserGameSettings.SavedQualityLevel 1..10; 0 = Automatic says
+		-- nothing): <= LOW_MAX starts at least at tier 3, <= MID_MAX at least at tier 2, >= HIGH_MIN at tier 1
+		QUALITY_LOW_MAX = 3,
+		QUALITY_MID_MAX = 6,
+		QUALITY_HIGH_MIN = 8,
+		RENDER_LEVELS = 21, -- RenderSettings.QualityLevel's scale (Level01..Level21), mapped to 1..10 when read
+		-- a phone whose viewport's short side is under this (px) is an old / cheap screen: one tier lower when
+		-- the quality level says nothing
+		SMALL_SCREEN_MIN = 340,
+		MAX = 3, -- never start below this tier (tier 4 is only for a phone still slow at tier 3)
+		-- The frame-time probe while the loading card / title beat is up (cheap frames: a slow card says a lot).
+		PROBE_SKIP_SECONDS = 0.5, -- the first frames after boot are load hitches, not the device
+		PROBE_SECONDS = 2.5, -- then this long is measured
+		PROBE_MIN_FRAMES = 20, -- fewer frames than this (a backgrounded app) and the probe says nothing
+		-- judged by the median (boot hitches and texture loads spike a few frames, they do not move it): slower
+		-- than 30 fps (Analytics.Perf SLOW_MS: an OS 30 fps cap is not slow) one tier lower, under 20 fps two
+		PROBE_SLOW_MEDIAN_MS = 36,
+		PROBE_VERY_SLOW_MEDIAN_MS = 50,
+	},
 }
 
 -- Signature moments (PLAN_STEAM_PLUS §4.4 F1-F5, §4.2 C3, §5; premium F3-F7, H1, H4; POLISH items 12-15

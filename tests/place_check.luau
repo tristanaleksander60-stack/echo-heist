@@ -92,6 +92,55 @@ expectProps(lighting, "Lighting", {
 	ExposureCompensation = 0.3,
 	ShadowSoftness = 0.3,
 })
+-- Lighting.Technology must agree with the LightingStyle + PrioritizeLightingQuality pair. Rojo writes only the
+-- properties a project lists, and a Lighting service whose file has no Technology keeps the class default
+-- (Voxel); the engine still maps Technology onto the new pair when it loads a place (Voxel = Soft + off,
+-- ShadowMap = Soft + on, Future = Realistic + on), which is why a server read LightingStyle = Soft at boot
+-- from a file that says Realistic (PERF.md §4). A Studio-saved place always carries Technology; ours must too.
+-- REQUIRE_TECHNOLOGY: true once default.project.json's Lighting lists "Technology" (World 2.0 / integrator);
+-- until then a place without it gets a WARN line, and a place that lists a disagreeing one always fails.
+local REQUIRE_TECHNOLOGY = false
+do
+	local function pairOf(tech: string): (string?, boolean?)
+		if tech == "Future" then
+			return "Realistic", true
+		elseif tech == "ShadowMap" then
+			return "Soft", true
+		elseif tech == "Voxel" then
+			return "Soft", false
+		end
+		return nil, nil
+	end
+	local raw = fs.readFile(path)
+	local listed = string.find(raw, '<token name="Technology">', 1, true) ~= nil
+	local okT, tech = pcall(function()
+		return lighting.Technology
+	end)
+	local techName = if okT and typeof(tech) == "EnumItem" then tech.Name else "unreadable"
+	local style, prio = pairOf(techName)
+	local agrees = style == lighting.LightingStyle.Name and prio == lighting.PrioritizeLightingQuality
+	if listed or REQUIRE_TECHNOLOGY then
+		expect(
+			listed and agrees,
+			string.format(
+				"Lighting.Technology = %s agrees with LightingStyle %s + PrioritizeLightingQuality %s%s",
+				techName,
+				lighting.LightingStyle.Name,
+				tostring(lighting.PrioritizeLightingQuality),
+				if listed then "" else " (not in the file: the engine loads Voxel -> Soft)"
+			)
+		)
+	else
+		print(
+			string.format(
+				'WARN  Lighting.Technology is not in the file: the engine loads it as %s and maps it to LightingStyle %s, not %s. Fix: "Technology": "Future" in the project\'s Lighting $properties',
+				techName,
+				tostring(style),
+				lighting.LightingStyle.Name
+			)
+		)
+	end
+end
 -- Ambient <= OutdoorAmbient in every channel, or Ambient leaks outdoors (roblox_quality §1.2)
 do
 	local a, o = lighting.Ambient, lighting.OutdoorAmbient
