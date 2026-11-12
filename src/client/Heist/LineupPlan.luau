@@ -71,6 +71,171 @@ function LineupPlan.arrange(
 	return spots, yaw, false
 end
 
+-- C5 (PLAN_STEAM_PLUS §4.2): a row inside the van body keeps its facing (the crew faces the
+-- street camera, the lit shop front behind them) and slides back, toward the building, until
+-- every spot is `gap` studs clear of the body. Returns the spots and whether they moved.
+function LineupPlan.slide(
+	spots: { Spot },
+	yaw: number,
+	body: Box?,
+	gap: number,
+	step: number,
+	maxSteps: number
+): ({ Spot }, boolean)
+	if not body or #spots == 0 or not inside(spots, body, 0, 0) then
+		return spots, false
+	end
+	local grown = { cx = body.cx, cz = body.cz, hx = body.hx + gap, hz = body.hz + gap }
+	local fx, fz = LineupPlan.look(yaw)
+	for k = 1, maxSteps do
+		local sx, sz = -fx * k * step, -fz * k * step
+		if not inside(spots, grown, sx, sz) then
+			local out: { Spot } = {}
+			for i, p in spots do
+				out[i] = { x = p.x + sx, z = p.z + sz }
+			end
+			return out, true
+		end
+	end
+	return spots, false
+end
+
+export type ShotOpts = {
+	spots: { Spot },
+	yaw: number, -- the row's facing (radians, LineupPlan.look)
+	floorY: number,
+	fov: number, -- vertical, degrees
+	aspect: number,
+	share: number, -- every figure inside this share of the half width (0.32 = the central 32 %)
+	shareY: number, -- ... and of the half height
+	figureHeight: number,
+	figureHalfWidth: number,
+	lookHeight: number,
+	heights: { number }, -- camera heights above the floor, tried in order
+	yaws: { number }, -- degrees off the row's facing, tried at each height
+	minDistance: number,
+	maxDistance: number,
+	maxPitch: number?, -- degrees: a higher camera stands further back so it never looks down steeper than this
+	push: number, -- the shot starts this share further back (the slow push-in) and must be clear there too
+	blocked: (from: { number }, to: { number }) -> boolean,
+}
+export type Shot =
+	{ pos: { number }, look: { number }, start: { number }, distance: number, height: number, yaw: number }
+
+local function shotLook(cx: number, cz: number, o: ShotOpts): { number }
+	return { cx, o.floorY + o.lookHeight, cz }
+end
+
+-- Projects p for a camera at pos looking at `at` (no roll): normalised x, y and depth.
+local function projectAt(
+	pos: { number },
+	at: { number },
+	p: { number },
+	fov: number,
+	aspect: number
+): (number, number, number)
+	local fx, fy, fz = at[1] - pos[1], at[2] - pos[2], at[3] - pos[3]
+	local fl = math.sqrt(fx * fx + fy * fy + fz * fz)
+	fx, fy, fz = fx / fl, fy / fl, fz / fl
+	local rl = math.max(math.sqrt(fz * fz + fx * fx), 1e-9)
+	local rx, rz = -fz / rl, fx / rl -- right = forward x world up (no roll)
+	local ux, uy, uz = -rz * fy, rz * fx - rx * fz, rx * fy -- up = right x forward
+	local dx, dy, dz = p[1] - pos[1], p[2] - pos[2], p[3] - pos[3]
+	local depth = dx * fx + dy * fy + dz * fz
+	if depth <= 1e-6 then
+		return 0, 0, depth
+	end
+	local tv = math.tan(math.rad(fov) / 2)
+	local x = dx * rx + dz * rz
+	local y = dx * ux + dy * uy + dz * uz
+	return x / (depth * tv * aspect), y / (depth * tv), depth
+end
+LineupPlan.projectAt = projectAt
+
+-- The figure points a shot must hold: each spot's feet at both shoulders and its head.
+function LineupPlan.figurePoints(
+	spots: { Spot },
+	yaw: number,
+	floorY: number,
+	height: number,
+	halfWidth: number
+): { { number } }
+	local fx, fz = LineupPlan.look(yaw)
+	local ax, az = fz, -fx
+	local out = {}
+	for _, s in spots do
+		table.insert(out, { s.x + ax * halfWidth, floorY + 0.3, s.z + az * halfWidth })
+		table.insert(out, { s.x - ax * halfWidth, floorY + 0.3, s.z - az * halfWidth })
+		table.insert(out, { s.x, floorY + height, s.z })
+	end
+	return out
+end
+
+-- The Line-up camera (C5): for each height (lowest first) and yaw offset, the closest
+-- distance that keeps every figure inside `share` of the frame width, accepted when the
+-- lanes from the camera (at that distance and at the push-in start) to every figure point
+-- are clear. Nil when no candidate works (the caller pulls the camera in instead).
+function LineupPlan.shot(o: ShotOpts): Shot?
+	if #o.spots == 0 then
+		return nil
+	end
+	local cx, cz = 0, 0
+	for _, s in o.spots do
+		cx += s.x
+		cz += s.z
+	end
+	cx /= #o.spots
+	cz /= #o.spots
+	local at = shotLook(cx, cz, o)
+	local points = LineupPlan.figurePoints(o.spots, o.yaw, o.floorY, o.figureHeight, o.figureHalfWidth)
+	local function fits(pos: { number }): boolean
+		for _, p in points do
+			local nx, ny, depth = projectAt(pos, at, p, o.fov, o.aspect)
+			if depth <= 0.5 or math.abs(nx) > o.share or math.abs(ny) > o.shareY then
+				return false
+			end
+		end
+		return true
+	end
+	local function clear(pos: { number }): boolean
+		for _, p in points do
+			if o.blocked(pos, p) then
+				return false
+			end
+		end
+		return not o.blocked(pos, at)
+	end
+	for _, h in o.heights do
+		for _, off in o.yaws do
+			local fx, fz = LineupPlan.look(o.yaw + math.rad(off))
+			local function posAt(d: number): { number }
+				return { cx + fx * d, o.floorY + h, cz + fz * d }
+			end
+			local d = o.minDistance
+			if o.maxPitch then
+				d = math.max(d, (h - o.lookHeight) / math.tan(math.rad(o.maxPitch)))
+			end
+			while d <= o.maxDistance do
+				if fits(posAt(d)) then
+					break
+				end
+				d += 0.5
+			end
+			if d <= o.maxDistance and clear(posAt(d)) and clear(posAt(d * (1 + o.push))) then
+				return {
+					pos = posAt(d),
+					start = posAt(d * (1 + o.push)),
+					look = at,
+					distance = d,
+					height = h,
+					yaw = off,
+				}
+			end
+		end
+	end
+	return nil
+end
+
 -- Centre (x, z) and width across the row (studs between the outer spots + one figure).
 function LineupPlan.extent(spots: { Spot }, yaw: number, figureWidth: number): (number, number, number)
 	local fx, fz = LineupPlan.look(yaw)

@@ -66,6 +66,7 @@ export type Heist = {
 		reducedMotion: boolean,
 		relaxed: boolean,
 		colourBlindGlyphs: boolean,
+		classicCamera: boolean, -- Heist/CameraDirector: true = the classic follow cam (default: diorama)
 	},
 	ftueStep: number,
 	firstHeistDone: boolean,
@@ -96,7 +97,7 @@ function Schema.defaultHeist(): Heist
 			haulClones = 0,
 			haulTimeMs = 0,
 		},
-		settings = { reducedMotion = false, relaxed = false, colourBlindGlyphs = false },
+		settings = { reducedMotion = false, relaxed = false, colourBlindGlyphs = false, classicCamera = false },
 		ftueStep = 0,
 		firstHeistDone = false,
 		stats = { heists = 0, clears = 0 },

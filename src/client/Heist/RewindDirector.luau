@@ -42,7 +42,10 @@ local function easeBackOut(x: number): number
 	return 1 + c3 * (x - 1) ^ 3 + c1 * (x - 1) ^ 2
 end
 
-function RewindDirector.new(gui: ScreenGui): any
+-- fovKick: the camera's FOV owner (Heist/CameraDirector.setFovKick, vault "one FOV owner
+-- summing effects"); the reel's FOV dip goes through it as an offset. Without one the
+-- director writes the FOV itself around BASE_FOV.
+function RewindDirector.new(gui: ScreenGui, fovKick: ((deg: number) -> ())?): any
 	local director = {}
 	local playing = false
 	local t0 = 0
@@ -141,6 +144,17 @@ function RewindDirector.new(gui: ScreenGui): any
 	local stampScale = Instance.new("UIScale")
 	stampScale.Parent = stamp
 
+	local function setFov(kick: number)
+		if fovKick then
+			fovKick(kick)
+			return
+		end
+		local cam = workspace.CurrentCamera
+		if cam then
+			cam.FieldOfView = BASE_FOV + kick
+		end
+	end
+
 	local function reset()
 		cc.Enabled = false
 		blur.Enabled = false
@@ -153,9 +167,8 @@ function RewindDirector.new(gui: ScreenGui): any
 		end
 		stamp.Visible = false
 		overlay.Visible = false
-		local cam = workspace.CurrentCamera
-		if cam and kind ~= "Reduced" then
-			cam.FieldOfView = BASE_FOV
+		if kind ~= "Reduced" then
+			setFov(0)
 		end
 	end
 
@@ -210,7 +223,6 @@ function RewindDirector.new(gui: ScreenGui): any
 		end
 		local e = os.clock() - t0
 		local u = e / length -- 0..1 over the whole transition
-		local cam = workspace.CurrentCamera
 		local scrubFrom, scrubTo, snapTo = 0.10 / 1.8, 1.35 / 1.8, 1.55 / 1.8
 		if kind == "Intro" then
 			scrubFrom, scrubTo, snapTo = 0, 0, 0.35
@@ -247,9 +259,7 @@ function RewindDirector.new(gui: ScreenGui): any
 					local y = (s * (1.3 + i * 0.4) + i * 0.27) % 1
 					b.Position = UDim2.fromScale(0, y)
 				end
-				if cam then
-					cam.FieldOfView = BASE_FOV + (REEL_FOV - BASE_FOV) * math.sin(math.min(s, 1) * math.pi)
-				end
+				setFov((REEL_FOV - BASE_FOV) * math.sin(math.min(s, 1) * math.pi))
 				if onReel and kind == "Standard" then
 					onReel(math.clamp(s, 0, 1))
 				end
@@ -257,8 +267,8 @@ function RewindDirector.new(gui: ScreenGui): any
 				for _, b in bands do
 					b.Visible = false
 				end
-				if cam and u >= scrubTo then
-					cam.FieldOfView = BASE_FOV
+				if u >= scrubTo then
+					setFov(0)
 				end
 			end
 			if u >= scrubTo and stage < 2 then

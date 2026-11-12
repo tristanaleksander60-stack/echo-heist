@@ -9,6 +9,9 @@
 --   WorldView (doors/lasers/plates/loot/alarm from attributes, kit door skins), LightDirector
 --   (lamp shadows and floor pools by performance tier),
 --   RewindDirector, Hud, and at heist end the LineupDirector (Crew Line-up cut).
+-- The camera is CameraDirector's (diorama / classic, wall fade, run-start beat); the
+-- Line-up borrows it through state.camera (suspend / resume), the rewind's FOV dip goes
+-- through camera.setFovKick.
 -- Sound goes through Heist/Sound (AudioDirector): every live sim event plays its cues
 -- (Audio/EventCues), music follows garage / heist / alarm / results, ambience follows
 -- the room. Analytics through Heist/Telemetry (Ready, Ui hints, Perf samples).
@@ -33,6 +36,8 @@ local Net = require(ReplicatedStorage:WaitForChild("LihFolk"):WaitForChild("Net"
 
 local Heist = script.Parent
 local EchoView = require(Heist:WaitForChild("EchoView"))
+local CameraDirector = require(Heist:WaitForChild("CameraDirector"))
+local GoldenShots = require(Heist:WaitForChild("GoldenShots"))
 local DebugChip = require(Heist:WaitForChild("DebugChip"))
 local GusView = require(Heist:WaitForChild("GusView"))
 local WorldView = require(Heist:WaitForChild("WorldView"))
@@ -121,6 +126,8 @@ function HeistClient.start()
 	local gus = GusView.new(state)
 	local world = WorldView.new(state, echo.positionOf)
 	local lights = LightDirector.new()
+	local camera = CameraDirector.new(state)
+	state.camera = camera -- LineupDirector hands the camera back through it
 	local ffOn = false
 
 	local actions = {
@@ -158,9 +165,19 @@ function HeistClient.start()
 		hint = function(name: string)
 			Telemetry.ui("Hint", name)
 		end,
+		-- MENU > CAMERA: DIORAMA / CLASSIC (C0 A/B): flips and saves the mode, returns it.
+		toggleCamera = function(): string
+			return camera.toggle()
+		end,
+		cameraMode = function(): string
+			return camera.mode()
+		end,
+		onCameraMode = function(fn: (string) -> ())
+			camera.onModeChanged(fn)
+		end,
 	}
 	local hud = Hud.new(state, actions)
-	local director = RewindDirector.new(hud.fxGui)
+	local director = RewindDirector.new(hud.fxGui, camera.setFovKick)
 	hud.bigStamp = function(text: string, color: Color3, hold: number?)
 		director.stamp(text, color, hold or 1.2, not state.reduced)
 	end
@@ -187,6 +204,7 @@ function HeistClient.start()
 		Lighting.GlobalShadows = if tier >= 3 then false else shadowsWere
 	end)
 	DebugChip.start(echo, Telemetry.tier) -- Studio only: clones drawn / healthy / tier / avatar
+	GoldenShots.start(camera, state, echo) -- Studio only: golden-frame staging (EH_Scenario)
 
 	-- Where a sim event happened, for AudioDirector.event (docs/AUDIO.md §9 item 3).
 	local function actorOf(id: number): any
@@ -336,6 +354,10 @@ function HeistClient.start()
 		Telemetry.ready() -- first control (JoinToControl)
 		Sound.music("Heist", { set = musicSet() })
 		if live then
+			-- C1: the run-start beat eases from the objective to you inside the transition.
+			local spawns = state.level and state.level.spawns
+			local spawn = spawns and spawns[((state.mySeat or 1) - 1) % #spawns + 1]
+			camera.frameRunStart(CameraDirector.objectiveOf(state.level), transition, spawn and spawn.yaw)
 			local kind = msg.kind or "Standard"
 			if state.reduced and kind ~= "Intro" then
 				kind = "Reduced"
@@ -420,6 +442,7 @@ function HeistClient.start()
 		table.clear(state.runEndedAtByRun)
 		table.clear(state.recs)
 		world.quiet()
+		camera.clearFades()
 		echo.clear()
 		gus.clear()
 		world.clear()

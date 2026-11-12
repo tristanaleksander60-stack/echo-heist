@@ -13,6 +13,7 @@ local RunService = game:GetService("RunService")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")) :: any
 local Palette = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Heist"):WaitForChild("Palette"))
+local Scenario = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Heist"):WaitForChild("Scenario"))
 local Ui = require(script.Parent:WaitForChild("Ui"))
 
 local DebugChip = {}
@@ -49,6 +50,14 @@ function DebugChip.start(echo: any, tierOf: () -> number)
 		Text = "",
 	})
 	Ui.corner(label, 6)
+	-- Golden-frame staging (Shared/Heist/Scenario) hides the chip: the capture must be clean.
+	local function staged(): boolean
+		return Scenario.resolve(RunService:IsStudio(), workspace:GetAttribute(Scenario.ATTRIBUTE)) ~= nil
+	end
+	gui.Enabled = not staged()
+	workspace:GetAttributeChangedSignal(Scenario.ATTRIBUTE):Connect(function()
+		gui.Enabled = not staged()
+	end)
 	gui.Parent = player:WaitForChild("PlayerGui")
 	local period = 1 / math.max(Config.Heist.DEBUG_CHIP_HZ, 0.1)
 	task.spawn(function()
