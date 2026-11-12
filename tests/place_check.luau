@@ -99,7 +99,7 @@ expectProps(lighting, "Lighting", {
 -- from a file that says Realistic (PERF.md §4). A Studio-saved place always carries Technology; ours must too.
 -- REQUIRE_TECHNOLOGY: true once default.project.json's Lighting lists "Technology" (World 2.0 / integrator);
 -- until then a place without it gets a WARN line, and a place that lists a disagreeing one always fails.
-local REQUIRE_TECHNOLOGY = false
+local REQUIRE_TECHNOLOGY = true
 do
 	local function pairOf(tech: string): (string?, boolean?)
 		if tech == "Future" then
