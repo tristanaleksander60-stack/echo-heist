@@ -518,7 +518,8 @@ function Backdrop.new(): any
 			end)
 		end
 		f.Parent = workspace
-		stepConn = RunService.RenderStepped:Connect(follow)
+		-- (perf_engine builds this on a server, where RenderStepped does not exist: the snow just stays put there)
+		stepConn = if RunService:IsClient() then RunService.RenderStepped:Connect(follow) else nil
 		applyTier()
 	end
 

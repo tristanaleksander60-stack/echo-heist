@@ -1089,7 +1089,12 @@ def src_mask(s, cam, path):
             continue
         src = o.get("eh_src")
         if src is None:
-            src = "clone" if o.name.startswith("clone") else "level"
+            p, src = o, "level"
+            while p is not None:   # a figure's parts hang under empties named after it (clone1_root ...)
+                if p.name.startswith("clone"):
+                    src = "clone"
+                    break
+                p = p.parent
         o.color = (*(c / 255 for c in FG.SRC_COLOURS[src]), 1.0)
     s.render.engine = "BLENDER_WORKBENCH"
     sh = s.display.shading
@@ -1434,6 +1439,7 @@ def main(argv):
             return
         plan = load_plan(not a.plain, a.only.upper().startswith("DV"))
         if a.only == "garage":
+            plan["garage"]["firstJob"] = plan["levels"][0]["name"].upper()   # Heist/JobCard.first(Catalog)
             world2_garage(plan["garage"], a.samples, out)
             return
         lv = next(lv for lv in plan["levels"] if short(lv).upper() == a.only.upper() or lv["id"] == a.only)
