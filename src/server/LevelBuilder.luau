@@ -2,8 +2,6 @@
 -- needs no hand-built map. Replace with an art pass later; keep the returned
 -- table shape so the other services keep working.
 
-local Lighting = game:GetService("Lighting")
-
 local LevelBuilder = {}
 
 local FLOOR_Y = 0
@@ -210,11 +208,8 @@ function LevelBuilder.build()
 	})
 	lootSpots.Diamond = CFrame.new(129, FLOOR_Y + 5, 0)
 
-	-- Lighting: night-time heist mood, still readable on phones
-	Lighting.ClockTime = 22
-	Lighting.Brightness = 1.5
-	Lighting.Ambient = Color3.fromRGB(70, 70, 95)
-	Lighting.OutdoorAmbient = Color3.fromRGB(90, 90, 120)
+	-- Lamps only. The Lighting service itself ("Heist Night" recipe v1) lives in
+	-- default.project.json so the built place is the single source of truth.
 	for _, pos in { Vector3.new(65, 12, 0), Vector3.new(110, 12, 0), Vector3.new(0, 10, -5) } do
 		local holder = part(level, {
 			Name = "Lamp",
