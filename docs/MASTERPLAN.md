@@ -22,7 +22,7 @@ _Game director's final plan, 2026-11-12. It merges the six research reports in `
 - **Marketing.** Lead with what competitors can't do: **your own avatar** as the clone, **16 robbers with friends**, Gus as a character. Drop the claim that the tape motif is original (Rewind Robbers uses it). 1-2 clips a day from Nov 19 with a part-time editor.
 - **Calendar.** Dec 3 launch → Fri Dec 11 drop 1 (Wrapping Room) → **Fri Dec 18 finale** (Snow Globe Vault, school break starts) → Dec 24-27 freeze with a Dec 25-26 gift beat → Jan 8 New Year patch → **Jan 22 Museum** → **Feb 12 co-op update** (Hub, crew servers, Season 1).
 
-**Owner decisions needed** (full list with defaults in §11.2): name; fund expedited review; launch scope and date; weekly time commitment; Open Cloud test key (Nov 13); ad budget; freelance artist; clip editor; kid playtest recruitment; music.
+**Owner decisions needed** (full list with defaults in §11.2): name; fund expedited review; launch scope and date; weekly time commitment; extra scopes on the Open Cloud test key (Nov 13); ad budget; freelance artist; clip editor; kid playtest recruitment; music.
 
 ---
 
@@ -186,7 +186,7 @@ All through the Input Action System; every input gets a pop and a sound within 1
 ### 3.6 The Alarm Run (the chase beat)
 
 1. **Trigger:** grabbing the level's top loot (the diamond, the vault stack, the Giant Present), or Gus reaching "!" on a live player in a Big Score.
-2. **What changes, all on the server sim from actor positions:** red rotating lights and the chase stem (S5) start; the **van countdown** appears ("VAN LEAVES 0:20"); Gus switches from patrol to **chase**: each sim tick he targets the nearest actor he can see (players and clones, ties broken by actor id), else walks to the last-seen point, at `GUARD_CHASE_SPEED = 0.9 × player WalkSpeed` so a kid can outrun him but not in a straight line forever. Doors marked `alarmLock` close 10 s after the alarm.
+2. **What changes, all on the server sim from actor positions:** red rotating lights and the chase stem (stem S5) start; the **van countdown** appears ("VAN LEAVES 0:20"); Gus switches from patrol to **chase**: each sim tick he targets the nearest actor he can see (players and clones, ties broken by actor id), else walks to the last-seen point, at `GUARD_CHASE_SPEED = 0.9 × player WalkSpeed` so a kid can outrun him but not in a straight line forever. Doors marked `alarmLock` close 10 s after the alarm.
 3. **Clones matter:** Gus chases whichever actor is nearest, so an earlier clone running a different route is a **decoy**, and a clone on a plate holds the escape door. Marketing line: "outrun the guard with your clones".
 4. **Stakes:** caught during the alarm, your run ends and the loot you carry drops (it resets next loop anyway); **banked loot stays**. Van countdown at 0 ends every live run.
 5. **Determinism:** chase steering is a pure function of actor positions; with no live player moving, two loops give the same log (CI).
@@ -460,7 +460,7 @@ The key mental model, taught explicitly: **"where you stop is where your clone s
 
 ### 8.1 What changes from v0.1, and why
 
-v0.1 (3,648 lines of Luau across `src/`) has the right core (mechanisms read `Actors`; clones obey player rules) but three structural problems, confirmed in code: (1) clones are server Instances whose `root.CFrame` is written every Heartbeat (`Echoes.luau`), costing CPU, bandwidth and smoothness; (2) the world is not deterministic (`Guard.luau` uses `Humanoid:MoveTo` with `task.wait`; the recorder in `Main.luau` runs on `task.wait`); (3) recordings trust client-owned movement, so a speed hack replays forever. **Nothing has run in Studio yet** (PROJECT_STATE), so the refactor starts only after the Nov 16 fun gate; only the pure `shared/Rec` codec and sampler may start before it.
+v0.1 (3,648 lines of Luau across `src/`) has the right core (mechanisms read `Actors`; clones obey player rules) but three structural problems, confirmed in code: (1) clones are server Instances whose `root.CFrame` is written every Heartbeat (`Echoes.luau`), costing CPU, bandwidth and smoothness; (2) the world is not deterministic (`Guard.luau` uses `Humanoid:MoveTo` with `task.wait`; the recorder in `Main.luau` runs on `task.wait`); (3) recordings trust client-owned movement, so a speed hack replays forever. v0.1 already passes 20/20 checks of `tests/engine_smoke.luau` in a real Roblox server via Open Cloud Luau Execution (test universe 10776026960, place version 7, 2026-11-12, PROJECT_STATE), but **no human has played it in Studio yet**, so the refactor starts only after the Nov 16 fun gate; only the pure `shared/Rec` codec and sampler may start before it.
 
 ### 8.2 Target architecture: sim core + client view
 
@@ -561,7 +561,7 @@ StreamingEnabled on (MinRadius 128, Target 512, Opportunistic, `ModelStreamingBe
 | S2 | **Mesh pipeline:** one Blender mesh imported by the owner into `Kit.rbxm`, built by Rojo, cloned by code; size and collision checked; Content-property serialization (switched Nov 11, [DevForum](https://devforum.roblox.com/t/upcoming-changes-to-asset-properties-content-property-serialization-switch/4975546)) survives `rojo build` | Correct size and Box collision in the built place | `CreateMeshPartAsync` at server boot from uploaded mesh ids |
 | S3 | **Video capture:** `CaptureService` video on the owner's phone and PC ([reference](https://create.roblox.com/docs/reference/engine/classes/CaptureService.md)) | Records and shares a 12 s reel | SAVE CLIP = screenshot + crop-safe reel for screen recording |
 | S4 | **Stem alignment:** `AudioPlayer:Play(atTime)` with 2 stems | No audible drift over 8 loops | Start-together-at-volume-0 fallback (§7.2) |
-| S5 | **Open Cloud smoke:** `tests/engine_smoke.luau` via `tools/cloud_test.py` against the test place | Green run with logs | Fix the key scope; block L3 until green |
+| S5 | **Open Cloud smoke:** `tests/engine_smoke.luau` via `tools/cloud_test.py` against the test place | **Passed 2026-11-12** (20/20, place version 7). Remaining: confirm `asset:write` and DataStore scopes for S2 and golden recordings | Owner adds scopes (D5); publishing returns HTTP 409 while Collaborative Editing is on or Studio holds the place |
 | S6 | **Lighting in the project file:** `default.project.json` sets `LightingStyle`/`PrioritizeLightingQuality` | Built place has the right values | Set them once in a base file; CI check |
 
 ### 8.12 Hotfix and rollback
@@ -692,7 +692,7 @@ The post-holiday cliff is real (the week after Halloween 2026, Murder Mystery 2 
 | Level layouts; sim boxes; naive-kid recordings; pulling human-recorded solutions | Clears each level once in Studio (records the golden solution); imports `Kit.rbxm` per kit revision |
 | Blender assets through the gates with turntable self-review; budget audits | **Style owner:** 15-minute daily screenshot slot; signs off golden assets, clone look, icon, thumbnails |
 | Code-authored animation clips | Reviews clips by screen recording |
-| Analytics, blooper log, store copy, creator pitches, shot lists, localization keys | ID check, 2SV, fees, deposit, questionnaire, ads billing, trademark check, Open Cloud key |
+| Analytics, blooper log, store copy, creator pitches, shot lists, localization keys | ID check, 2SV, fees, deposit, questionnaire, ads billing, trademark check, Open Cloud key scopes |
 | Capture place, director and Gus-cam commands | Records raw capture; posts clips (or the editor does); creator DMs; Experience Event |
 | PROJECT_STATE, release checklists, hotfix builds | Recruits kid testers with parental consent; publishes on release tags; music/artist contracts |
 
@@ -701,7 +701,7 @@ The post-holiday cliff is real (the week after Halloween 2026, Murder Mystery 2 
 ### 10.2 Week-by-week milestones with exit criteria
 
 **W1, Thu Nov 12 - Wed Nov 18: "Prove the fun, spike the unknowns, lock identity" (M0)**
-- **Fri Nov 13 (owner):** create the test universe/place and an Open Cloud key scoped to it (`universe-places:write`, `luau-execution-sessions:write`, `asset:write`, DataStore read/write on the test universe); Claude runs `engine_smoke` the same day (S5).
+- **Fri Nov 13 (owner):** the test universe and key already work (engine smoke 20/20 on Nov 12); add `asset:write` and DataStore read/write on the test universe to the key for S2 and the golden-solution recordings, and keep Collaborative Editing off on the test place so publishes don't fail with HTTP 409.
 - **Mon Nov 16: fun gate.** Owner + 2-3 people play v0.1 for 30 minutes, solo and 2-client (`rojo build -o EchoHeist.rbxlx`), including one round with run length set to 30 s in Config. Question: "did you rewind on your own, and did you laugh?" Name confirmed; ID, 2SV and fee done; handles reserved.
 - Claude before the gate: `shared/Rec` (Codec, Sampler, LoopClock, Validator) with L1 specs; CI L0; second selene config; bpy install + turntable pipeline; bench script (S1); Lighting in the project file (S6); stem test place (S4); correct `docs/IDEA_ECHO_HEIST.md`.
 - Claude after the gate: start `HeistSim`, `Guards.patrol(t)`, the 3-stage cone, rule changes (END RUN, Undo, caught ends run, caps); golden-room look-dev slice.
@@ -783,7 +783,7 @@ Automated gates (every commit: L0-L2; main: L3) block merges. Claude cannot see 
 | D2 | Fund **expedited Kids & Select review** (refundable 50,000-100,000 R$, ≈ $450-1,000 of Robux) | **Yes**, buy by Fri Nov 27, submit at public launch Dec 3 if the Nov 30 gate passes | Fri Nov 27 |
 | D3 | Launch scope and date: 6 levels on Thu Dec 3 (gate Nov 30, fallback Thu Dec 10), with the cut list in §10.4 | **Yes** | Mon Nov 16 |
 | D4 | Weekly time commitment: ~12-16 h/week to Dec 18 (fun gate Nov 16, daily 15-min screenshot slot, 3 kid waves, golden-solution recordings) | **Yes**; if not possible, D7 and D8 become mandatory | Fri Nov 13 |
-| D5 | Create the test universe/place and an Open Cloud key scoped to it | **Yes, you create and hold it**, scoped to the test universe only | Fri Nov 13 |
+| D5 | Add `asset:write` and DataStore read/write to the existing Open Cloud key (test universe only), and keep Collaborative Editing off on the test place | **Yes**, scoped to the test universe only; a separate live-place key comes later for release publishing | Fri Nov 13 |
 | D6 | Paid spend before D1 is known | **≤ $500**: $100 Plays test + $300 Engagement backup + $100 reserve | Mon Nov 16 |
 | D7 | Freelance environment artist for the 5 golden assets | **Yes, $300-600**, original work with written rights assignment, briefed by Nov 18 | Wed Nov 18 |
 | D8 | Part-time clip editor (or a friend/sibling) so we can post 1-2 clips a day | **Yes**, from Nov 19 [cost UNVERIFIED; a helper is fine] | Thu Nov 19 |
@@ -829,7 +829,7 @@ Three independent critiques reviewed the draft: **P** = player and fun (10-14 on
 | F8 | Major | Solvability tests prove logic, not playability | **Accepted** | §8.9: human-recorded golden solutions via `_TEST` DataStore + Open Cloud; sim boxes generated from the layout with a LevelSpec assert |
 | F9 | Major | Procedural daily vaults are a research problem | **Accepted** | §5.3: 12 (then 14) hand-authored daily vaults with human solutions, date-seeded modifiers only; generation after a constraint checker (§1.3) |
 | F10 | Major | Two sources of the place file | **Accepted** | §8.5 "one source of the place"; art place; `servePlaceIds` dev only; CI Lighting check |
-| F11 | Major | Open Cloud path not set up; D6 too late | **Accepted** | D5 by Fri Nov 13; S5 engine_smoke the same day; one batched L3 task per merge |
+| F11 | Major | Open Cloud path not set up; D6 too late | **Accepted; partly resolved since the critique** | The test universe and key now work: engine smoke passed 20/20 on Nov 12 (§8.11 S5). Remaining scopes are D5 by Fri Nov 13; one batched L3 task per merge |
 | F12 | Major | Blender throughput, no rework budget | **Accepted** | §6.7: install bpy, turntable self-review, kit cut to ~12 modules + 3 hero props, daily 15-min slot, $300-600 freelance golden assets (D7) |
 | F13 | Minor | Skip-ahead breaks the client time model | **Accepted** | §8.2 loop clock `{anchorServerTime, anchorLoopT, rate}`; fast-forward equivalence test |
 | F14 | Minor | Client rig building unverified, AJU joints | **Accepted** | §6.5 #1 server-built template, client pool, mannequin placeholder, both joint types |

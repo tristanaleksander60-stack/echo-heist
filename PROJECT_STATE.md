@@ -11,6 +11,11 @@ _Last updated: 2026-11-12_
 - HUD: loop and timer, loot progress, echo count, rewind button, objective list, big messages, rewind screen effect.
 - LihFolk checker: 0 findings. Independent code review done: 8 bugs fixed (loot lost when an echo or player left or fell off the map, which locked the loop; guard reset per loop so echo replays stay in sync; partition wall so the guard can't see plate A; death records a vanish event; votes recounted when a player leaves; template leak).
 
+## Plan (2026-11-12)
+- Final master plan: `docs/MASTERPLAN.md` (the draft is deleted; research is in `docs/research/`). It applies three independent critiques (Appendix A).
+- Key calls: a fun gate on v0.1 by Mon Nov 16 before any rewrite. W1 spikes S1-S6 are decided by Wed Nov 18 (S5, Open Cloud smoke, has already passed). Launch is Thu Dec 3 (gate Nov 30, fallback Dec 10) as the Christmas edition with 6 levels: L1-L4 Corner Shop, L5 Clone Party with 8 slots, L6 Big Score: Bank. Expedited Kids & Select review is submitted at launch. A public server is a garage lobby, with one heist instance per party. Levels are data built from an owner-imported `assets/Kit.rbxm`.
+- Waiting on the owner: decisions D1-D10 in MASTERPLAN §11.2. D4 (time budget) and D5 (extra Open Cloud key scopes) are due Fri Nov 13; D1 (name) and D3 (scope) are due Mon Nov 16.
+
 ## Testing
 - Local: `lune run tests/compile_check.luau`, `rojo build -o build/EchoHeist.rbxlx`, `lune run tests/place_check.luau` (all pass).
 - Real Roblox engine: `ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960 --place 70772627070328` publishes a Saved version and runs tests/engine_smoke.luau via Open Cloud Luau Execution. 2026-11-12: version 7, 20/20 pass (level boot, loop start, plates/door, lasers, loot grab/bank rules, guard vision).
