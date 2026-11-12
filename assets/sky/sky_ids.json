@@ -1,26 +1,91 @@
 {
- "EH_SkyNight_Bk": {
-  "decalId": 96132966384481,
-  "imageId": 90458356352519
+ "EH_SkyCity_Bk": {
+  "decalId": 80099577125952,
+  "file": "assets/sky/EH_SkyCity_Bk.png",
+  "history": [],
+  "imageId": 114578209970893,
+  "moderation": "Approved",
+  "sha256": "dc8634bc9d825219f4ddd18c87258f670b584abf4b2efcec41a48ced9489dc87",
+  "uploaded": "2026-11-12T17:16:32Z"
  },
- "EH_SkyNight_Dn": {
-  "decalId": 123665406793060,
-  "imageId": 108707070296486
+ "EH_SkyCity_Dn": {
+  "decalId": 126189046841051,
+  "file": "assets/sky/EH_SkyCity_Dn.png",
+  "history": [],
+  "imageId": 112476800416247,
+  "moderation": "Approved",
+  "sha256": "2c9551097143c3a5413f90e4f27434be2abdf1c67c9228cb72364e5644a683a4",
+  "uploaded": "2026-11-12T17:16:37Z"
  },
- "EH_SkyNight_Ft": {
-  "decalId": 85396389692814,
-  "imageId": 103394177161659
+ "EH_SkyCity_Ft": {
+  "decalId": 119596872713814,
+  "file": "assets/sky/EH_SkyCity_Ft.png",
+  "history": [],
+  "imageId": 91381259330056,
+  "moderation": "Approved",
+  "sha256": "485ff5f4505c909522b65f216766f29b4b3d6e51f6f7258b7c0b9e21979f8d38",
+  "uploaded": "2026-11-12T17:16:43Z"
  },
- "EH_SkyNight_Lf": {
-  "decalId": 86399843065775,
-  "imageId": 99926702251753
+ "EH_SkyCity_Lf": {
+  "decalId": 129138748056354,
+  "file": "assets/sky/EH_SkyCity_Lf.png",
+  "history": [],
+  "imageId": 84047859203780,
+  "moderation": "Approved",
+  "sha256": "7d39a340b00561ec4697b9ab8ceeae4a5d0e2abac7b2d4481e7502915226b306",
+  "uploaded": "2026-11-12T17:16:48Z"
  },
- "EH_SkyNight_Rt": {
-  "decalId": 92415693190757,
-  "imageId": 81443795822443
+ "EH_SkyCity_Rt": {
+  "decalId": 134155554815593,
+  "file": "assets/sky/EH_SkyCity_Rt.png",
+  "history": [],
+  "imageId": 114886531757479,
+  "moderation": "Approved",
+  "sha256": "51dfb3403b4adbeb36154563794d618ebffe99ce4983ce82568995b899cb01fa",
+  "uploaded": "2026-11-12T17:16:54Z"
  },
- "EH_SkyNight_Up": {
-  "decalId": 73024588988003,
-  "imageId": 84848570083307
+ "EH_SkyCity_Up": {
+  "decalId": 131198418724825,
+  "file": "assets/sky/EH_SkyCity_Up.png",
+  "history": [],
+  "imageId": 70988655158940,
+  "moderation": "Approved",
+  "sha256": "393c8859678cd6a9e49dbf0921618afc72531bf3540a2f678eb82db18da42bb9",
+  "uploaded": "2026-11-12T17:16:59Z"
+ },
+ "EH_SnowFlake": {
+  "decalId": 129054745472075,
+  "file": "assets/sky/EH_SnowFlake.png",
+  "history": [],
+  "imageId": 117922085753809,
+  "moderation": "Approved",
+  "sha256": "f41b07532833ac21dfa0183f89312d98318b160c171505a9a923c6e8f69712d7",
+  "uploaded": "2026-11-12T17:17:03Z"
+ },
+ "retired": {
+  "EH_SkyNight_Bk": {
+   "decalId": 96132966384481,
+   "imageId": 90458356352519
+  },
+  "EH_SkyNight_Dn": {
+   "decalId": 123665406793060,
+   "imageId": 108707070296486
+  },
+  "EH_SkyNight_Ft": {
+   "decalId": 85396389692814,
+   "imageId": 103394177161659
+  },
+  "EH_SkyNight_Lf": {
+   "decalId": 86399843065775,
+   "imageId": 99926702251753
+  },
+  "EH_SkyNight_Rt": {
+   "decalId": 92415693190757,
+   "imageId": 81443795822443
+  },
+  "EH_SkyNight_Up": {
+   "decalId": 73024588988003,
+   "imageId": 84848570083307
+  }
  }
 }

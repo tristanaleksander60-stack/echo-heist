@@ -1,0 +1,182 @@
+{
+ "asset": "Skyline_Far",
+ "objects": [
+  {
+   "name": "Skyline_Far",
+   "class": "medium",
+   "tris": 352,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    604.401,
+    638.695,
+    100.949
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     30.5857,
+     -0.0,
+     0.0
+    ],
+    "local_max": [
+     634.9866,
+     638.6947,
+     100.9486
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "steel",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "backdrop skyline quarter arc, facades at radius 600 facing the centre; client places 4 copies (yaw 0/90/180/270 + the ring's yaw0); visual only",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Skyline_Far_Windows",
+   "class": "hero",
+   "tris": 1236,
+   "budget": [
+    10000,
+    20000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    561.626,
+    596.373,
+    86.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     33.9917,
+     3.7308,
+     3.0
+    ],
+    "local_max": [
+     595.6174,
+     600.1036,
+     89.0
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Bulb Warm #F6C0A2",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "lit windows (Neon, Bulb Warm; fixed). The only glow of the backdrop (PLAN 3.1 exception)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 1588,
+ "seats": [
+  {
+   "name": "Skyline_Far_Windows",
+   "gap": 0.0,
+   "penetration": 0.05006,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "cac085cd0c2f37c1545a",
+ "fbx": {
+  "path": "assets/fbx/Skyline_Far.fbx",
+  "bytes": 46284,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Skyline_Far",
+   "Skyline_Far_Windows"
+  ],
+  "geometry_extents": [
+   [
+    86.0,
+    561.626,
+    596.373
+   ],
+   [
+    100.949,
+    604.401,
+    638.695
+   ]
+  ]
+ },
+ "spec": "assets/blender/backdrop.py",
+ "notes": "Skyline Far: 16 buildings on a quarter arc, radius 600; windows 4.4x6.0.",
+ "turntable": "docs/art/turntables/Skyline_Far.png",
+ "seconds": 14.8
+}

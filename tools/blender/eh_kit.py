@@ -357,7 +357,8 @@ class Obj:
 
     def __init__(self, ob, cls, role="env", symmetric=None, pivot="corner", collision="Box", material="SmoothPlastic",
                  can_collide=True, cast_shadow=True, expect_dims=None, tint=None, notes="", layer="base", tags=(),
-                 joint=None, atlas=None, transparency=0.0, texture=None, sim=None, free_shells=False, extra=None):
+                 joint=None, atlas=None, transparency=0.0, texture=None, sim=None, free_shells=False, extra=None,
+                 on_floor=False):
         self.ob, self.cls, self.role, self.symmetric, self.pivot = ob, cls, role, symmetric, pivot
         self.collision, self.material, self.can_collide, self.cast_shadow = collision, material, can_collide, cast_shadow
         self.expect_dims, self.tint, self.notes = expect_dims, tint, notes
@@ -372,6 +373,9 @@ class Obj:
         # free_shells: an object made of separate pieces held by ANOTHER object (glass panes in a frame, bulbs on
         # a wire). Its A16 floating-shell check is replaced by an asset seat check against the holder.
         self.free_shells = free_shells
+        # on_floor: every shell stands on z = 0 (backdrop skylines: separate buildings on the ground, pivot at the
+        # ring centre); A16 treats floor contact as seated, as it does for "bottom" and "corner" pivots.
+        self.on_floor = on_floor
         self.extra = dict(extra or {})   # more manifest fields (Roblox axes): grips, hooks, light points...
 
 
@@ -483,7 +487,8 @@ def gate_asset(asset):
             loc = [k for k in used if k in P.LOCATION_CELLS]
             if loc:
                 fails.append(f"P3 role '{o.role}' may not use location cells {loc} (they change per atlas swap)")
-        fl = [] if o.free_shells else floating_shells(ob, floor_z=0.0 if o.pivot in ("bottom", "corner") else None)
+        on_floor = o.on_floor or o.pivot in ("bottom", "corner")
+        fl = [] if o.free_shells else floating_shells(ob, floor_z=0.0 if on_floor else None)
         if fl:
             fails.append(f"A16 {len(fl)} floating shell(s): {fl}")
         tgt, ceil_ = lf.BUDGETS[o.cls]

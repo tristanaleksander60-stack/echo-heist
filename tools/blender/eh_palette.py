@@ -115,6 +115,8 @@ NEON = {
     "Lamp_Ceiling_Bulb":   (WARM_BULB, "fixed (PointLight in the same colour, Shadows off)", ()),
     "Xmas_Lights_8_Bulbs": (WARM_BULB, "fixed", ()),
     "Xmas_Tree_Lights":    (WARM_BULB, "fixed (bulbs and the star)", ()),
+    "Skyline_Near_Windows": (WARM_BULB, "fixed (lit windows of the backdrop skyline, PLAN 3.1 exception)", ()),
+    "Skyline_Far_Windows":  (WARM_BULB, "fixed (lit windows of the backdrop skyline, PLAN 3.1 exception)", ()),
 }
 GLASS_TINT = "#A9B2CC"
 
@@ -159,6 +161,8 @@ ROLE_RULES = {
     "xmas":   {"env", "xmas", "tint"},
     "char":   {"env", "char", "tint"},            # Gus (rule P3: no location cells)
     "present": {"loot", "xmas", "env", "tint"},   # Giant Present: heavy loot wrapped for Christmas
+    "toy":    {"env", "xmas", "tint"},    # a location's signature toy (ToySoldier): a toy's own paint may use the
+                                          # Christmas reds and greens; never loot gold or a signal colour
 }
 
 INDEX = {k: i for i, (k, *_r) in enumerate(SWATCHES)}
