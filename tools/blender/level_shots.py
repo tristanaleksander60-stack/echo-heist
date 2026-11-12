@@ -30,8 +30,9 @@ What is NOT reproduced: Roblox's exact moon direction, ambient occlusion and ton
 solidify shell; the HUD. The Roblox default camera (no zoom is set in src/client: 12.5 studs, FOV 70) with Poppercam
 approximated by a ray test against the greybox colliders. These are audit renders, not captures.
 
-Writes docs/audit/levels/<L>_<id>_{1_spawn,1b_spawn_clones,2_objective,3_plan,3b_plan_solved,4_thumb}.png (1 and 3:
-run 1, nothing held; 1b, 2 and 3b: the solution's clones on their spots, their plates held) and contact_sheet.png.
+Writes docs/audit/levels/<L>_<id>_{1_spawn,1b_spawn_clones,2_objective,3_plan,3b_plan_solved,4_thumb,5_street}.png
+(1, 3 and 5: run 1, nothing held; 1b, 2 and 3b: the solution's clones on their spots, their plates held) and
+contact_sheet.png. --shots 5_street renders only the named shots; --sheet-only rebuilds the contact sheet.
 """
 import argparse, json, math, os, subprocess, sys, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -88,7 +89,7 @@ def centre2(b):
 # ------------------------------------------------------------------ the plan (Lune)
 def load_plan(dressing, daily):
     os.makedirs(TMP, exist_ok=True)
-    path = os.path.join(TMP, f"plan_{int(dressing)}_{int(daily)}.json")
+    path = os.path.join(TMP, f"plan_{int(dressing)}_{int(daily)}_{os.getpid()}.json")
     args = ["lune", "run", os.path.join("tools", "blender", "level_plan.luau"), "xmas" if dressing else "plain"]
     if daily:
         args.append("daily")
@@ -515,7 +516,7 @@ def plan_ticks(img_path, s, cam, level):
 
 
 # ------------------------------------------------------------------ one level
-def shoot(level, W, Hh, samples):
+def shoot(level, W, Hh, samples, only=None):
     tag = short(level)
     stem = f"{tag}_{level['id']}"
     loc, dressing = level["location"], level["dressing"]
@@ -559,6 +560,10 @@ def shoot(level, W, Hh, samples):
             # 3: top-down plan (B3: FOV 30), run 1 (nothing held, lasers on); 3b: with the solution's clones
             pos, tgt = plan_camera(level)
             shots.append(("3_plan", pos, tgt, 30.0, None, (sp["x"], sp["z"], sp["yaw"])))
+            # 5: the building from the street (silhouette, landmark, what the facade says), off the van's axis
+            shots.append(("5_street", rb(18, 10, 46), rb(0, 6, 2), 50.0, None, (sp["x"], sp["z"], sp["yaw"])))
+        if only:
+            shots = [sh for sh in shots if sh[0] in only]
         for name, pos, tgt, fov, used, stand in shots:
             move(me, level, *stand)
             cam.location = pos
@@ -578,6 +583,8 @@ def shoot(level, W, Hh, samples):
             print("wrote", out, "" if used is None else f"(camera distance {used:.1f} studs)")
     # 4: thumbnail-size view 1
     from PIL import Image
+    if "1_spawn" not in made:
+        return made
     im = Image.open(made["1_spawn"][0]).convert("RGB")
     th = os.path.join(OUT, f"{stem}_4_thumb.png")
     im.resize((160, 90), Image.LANCZOS).save(th, optimize=True)
@@ -590,7 +597,7 @@ def shoot(level, W, Hh, samples):
 
 def contact_sheet(levels):
     from PIL import Image, ImageDraw
-    cols = ("1_spawn", "1b_spawn_clones", "2_objective", "3_plan", "3b_plan_solved", "4_thumb")
+    cols = ("1_spawn", "1b_spawn_clones", "2_objective", "3_plan", "3b_plan_solved", "5_street", "4_thumb")
     tw, th = 384, 216
     rows = []
     for lv in levels:
@@ -601,7 +608,7 @@ def contact_sheet(levels):
     d = ImageDraw.Draw(sheet)
     f, _ = MR._font(15)
     d.text((8, 7), "Heist Yourself level audit: spawn (run 1) | spawn with the solution's clones | toward the goal | "
-           "plan (run 1) | plan (solved) | 160x90 thumbnail (x2.4 nearest)", font=f, fill=(230, 232, 245))
+           "plan (run 1) | plan (solved) | street | 160x90 thumbnail (x2.4 nearest)", font=f, fill=(230, 232, 245))
     for r, (stem, name) in enumerate(rows):
         y = 30 + r * (th + 24)
         d.text((8, y + 3), f"{stem}  {name}", font=f, fill=(230, 232, 245))
@@ -625,17 +632,23 @@ def main(argv):
     ap.add_argument("--size", type=int, default=1280)
     ap.add_argument("--samples", type=int, default=32)
     ap.add_argument("--no-sheet", action="store_true")
+    ap.add_argument("--shots", help="comma list of shot names to render (default: all)")
+    ap.add_argument("--sheet-only", action="store_true")
     a = ap.parse_args(argv)
     plan = load_plan(not a.plain, a.daily)
     levels = plan["levels"]
     W, Hh = a.size, a.size * 9 // 16
     if a.only:
         lv = next(lv for lv in levels if short(lv).upper() == a.only.upper() or lv["id"] == a.only)
-        shoot(lv, W, Hh, a.samples)
+        shoot(lv, W, Hh, a.samples, a.shots.split(",") if a.shots else None)
+        return
+    if a.sheet_only:
+        contact_sheet(levels)
         return
     for lv in levels:   # one Blender process per level (factory resets + Eevee renders in one process are flaky)
         cmd = [sys.executable, os.path.abspath(__file__), "--only", lv["id"], "--size", str(a.size),
-               "--samples", str(a.samples)] + (["--daily"] if a.daily else []) + (["--plain"] if a.plain else [])
+               "--samples", str(a.samples)] + (["--daily"] if a.daily else []) + (["--plain"] if a.plain else []) + \
+              (["--shots", a.shots] if a.shots else [])
         subprocess.run(cmd, check=True)
     if not a.no_sheet:
         contact_sheet(levels)
