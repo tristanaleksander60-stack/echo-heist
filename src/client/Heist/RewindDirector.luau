@@ -22,10 +22,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 local Strings = require(Shared:WaitForChild("Heist"):WaitForChild("Strings"))
 
 local Sound = require(script.Parent:WaitForChild("Sound"))
+local Theme = require(script.Parent:WaitForChild("Theme"))
+local Ui = require(script.Parent:WaitForChild("Ui"))
 
 local RewindDirector = {}
 
@@ -114,11 +117,12 @@ function RewindDirector.new(gui: ScreenGui): any
 	arrows.TextSize = 48
 	arrows.TextXAlignment = Enum.TextXAlignment.Left
 	arrows.TextColor3 = Palette.white
-	arrows.TextStrokeTransparency = 0.3
+	Ui.textStroke(arrows, 3)
 	arrows.Text = Strings.REWIND_BANNER
 	arrows.ZIndex = 53
 	arrows.Visible = false
 	arrows.Parent = overlay
+	Ui.iconWord(arrows, "rewind", "left", 48)
 
 	local stamp = Instance.new("TextLabel")
 	stamp.Name = "Stamp"
@@ -126,11 +130,10 @@ function RewindDirector.new(gui: ScreenGui): any
 	stamp.AnchorPoint = Vector2.new(0.5, 0.5)
 	stamp.Position = UDim2.fromScale(0.5, 0.42)
 	stamp.Size = UDim2.fromOffset(420, 110)
-	stamp.FontFace = font
+	stamp.FontFace = Theme.FONT_DISPLAY -- stamps of <= 3 words: the display face (PLAN §3.2, Config.Ui.DISPLAY_FACE)
 	stamp.TextSize = 88
 	stamp.TextColor3 = Palette.white
-	stamp.TextStrokeColor3 = Palette.ink
-	stamp.TextStrokeTransparency = 0
+	Ui.textStroke(stamp, math.floor(88 * Config.Ui.DISPLAY_STROKE + 0.5))
 	stamp.Text = ""
 	stamp.ZIndex = 54
 	stamp.Visible = false

@@ -19,6 +19,7 @@ local Ui = require(script.Parent.Parent:WaitForChild("Ui"))
 local Common = require(script.Parent:WaitForChild("Common"))
 
 local H = Config.Heist
+local U = Config.Ui
 local TAP = Ui.TAP
 local RED = Common.RED
 
@@ -31,9 +32,8 @@ function Deck.build(ctx: any): any
 	local root = ctx.root
 	local deckUi = {}
 
-	local deckPanel = Ui.frame(root, { Name = "Deck", Visible = false })
+	local deckPanel = Ui.panel(root, { Name = "Deck", Visible = false })
 	Common.place(deckPanel, HudLayout.DECK)
-	Ui.corner(deckPanel, 16)
 	deckUi.panel = deckPanel
 	local deckTitle = Ui.label(deckPanel, {
 		Position = UDim2.fromOffset(14, 6),
@@ -127,6 +127,13 @@ function Deck.build(ctx: any): any
 		hud.ready()
 	end, "UIConfirm")
 	Ui.fit(readyBtn, 22, H.UI_TEXT_MIN)
+	-- Icon + word (U2): the words stay; the icons join once the sheet is known.
+	Ui.iconWord(redoBtn, "replay", "top", U.ICON_SMALL)
+	Ui.iconWord(fromBtn, "replay", "top", U.ICON_SMALL)
+	Ui.iconWord(delBtn, "delete", "top", U.ICON_SMALL)
+	Ui.iconWord(undoBtn, "undo", "top", U.ICON_SMALL)
+	Ui.iconWord(bustedBtn, "delete", "top", U.ICON_SMALL)
+	Ui.iconWord(readyBtn, "play", "left", U.ICON_SMALL)
 
 	-- RedoAlarm hint (§3.6): the deck's title says "Clone 3 sets off the alarm. Redo it?",
 	-- that card is picked and REDO turns Alarm Red (no extra banner: small phones).
@@ -144,6 +151,7 @@ function Deck.build(ctx: any): any
 	end, "UIConfirm")
 	Common.place(readyWait, HudLayout.READY_WAIT)
 	Ui.fit(readyWait, 22, H.UI_TEXT_MIN)
+	Ui.iconWord(readyWait, "play", "left", U.ICON_SMALL)
 	deckUi.readyWait = readyWait
 
 	local deckOpen = true
@@ -167,8 +175,8 @@ function Deck.build(ctx: any): any
 		bustedBtn.Visible = n == 0 and anyRed
 		for _, c in cards:GetChildren() do
 			if c:IsA("TextButton") then
-				local stroke = c:FindFirstChildOfClass("UIStroke")
-				if stroke then
+				local stroke = c:FindFirstChild("Outline")
+				if stroke and stroke:IsA("UIStroke") then
 					stroke.Color = if c:GetAttribute("Slot") == n then Palette.white else Palette.ink
 					stroke.Thickness = if c:GetAttribute("Slot") == n then 3 else 2
 				end
@@ -239,14 +247,13 @@ function Deck.build(ctx: any): any
 				Size = UDim2.fromOffset(36, 30),
 				TextSize = 20,
 				TextColor3 = Palette.ink,
-				TextStrokeTransparency = 1,
 				RichText = true,
 				Text = if red then Strings.cloneNumberBusted(i) else Strings.cloneNumber(i),
 				Active = false,
 			})
 			pill.BackgroundColor3 = if red then Palette.tapeGrey else hue
 			pill.BackgroundTransparency = 0
-			Ui.corner(pill, 15)
+			Ui.pill(pill)
 		end
 		if selected > #deck.slots then
 			selected = 0
@@ -289,21 +296,23 @@ function Deck.build(ctx: any): any
 		msg.setHidden(false)
 		local deck = state.deck
 		local locked = deck == nil or deck.locked == true
-		deckPanel.Visible = not locked and deckOpen
-		readyWait.Visible = not Common.isTutorial(state) and (locked or not deckOpen)
-		hud.placeRail(deckPanel.Visible)
-		top.setRunBoxShown(not deckPanel.Visible)
+		local deckShown = not locked and deckOpen
+		local waitShown = not Common.isTutorial(state) and (locked or not deckOpen)
+		Ui.setShown(deckPanel, deckShown)
+		Ui.setShown(readyWait, waitShown)
+		hud.placeRail(deckShown)
+		top.setRunBoxShown(not deckShown)
 		-- The reason the run ended: on the rail until the deck opens, then in its title.
-		if deckPanel.Visible then
+		if deckShown then
 			msg.reasonToDeck()
 		else
 			msg.keepReason()
 		end
 		top.objective.Visible = true
 		top.objective.Text = if Common.isParty(state) and deck then Strings.partyKeepsAll(#deck.slots) else ""
-		if deckPanel.Visible then
+		if deckShown then
 			Common.selectFor(readyBtn)
-		elseif readyWait.Visible then
+		elseif waitShown then
 			Common.selectFor(readyWait)
 		end
 		renderDeck()
@@ -312,8 +321,8 @@ function Deck.build(ctx: any): any
 	function hud.toggleDeck()
 		if state.phase == "Between" and state.deck and not state.deck.locked then
 			deckOpen = not deckOpen
-			deckPanel.Visible = deckOpen
-			readyWait.Visible = not deckOpen
+			Ui.setShown(deckPanel, deckOpen)
+			Ui.setShown(readyWait, not deckOpen)
 			hud.placeRail(deckOpen)
 			ctx.top.setRunBoxShown(not deckOpen)
 			if deckOpen then

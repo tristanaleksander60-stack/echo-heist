@@ -853,6 +853,82 @@ Config.Kit = {
 	},
 }
 
+-- UI kit v2, "the Crew Board" (docs/PLAN_STEAM_PLUS.md §3.2, §4.3 U1-U3; docs/audit/POLISH.md §4.1;
+-- docs/research/premium.md D1-D12). Client Heist/Theme turns these into tokens, Heist/Motion into
+-- TweenInfos (the only place one is made in src/client/Heist: tests/ui_kit_check.luau).
+Config.Ui = {
+	-- D8: the display face for stamps of <= 3 words and the wordmark, picked from the type specimen
+	-- (Studio: workspace attribute EH_Scenario = "TYPE"). "LuckiestGuy" | "FredokaOne" (both built-in
+	-- Enum.Font families, so Font.fromName works). Builder Sans stays the UI face (D1: two families).
+	DISPLAY_FACE = "LuckiestGuy",
+	-- D2: the type scale, design px at 720 x 330 (<= 5 sizes): caption, body / button, title, display,
+	-- hero. The smallest is 16 so text never draws under 14 px at UI_SCALE_MIN (0.9). Ui.label snaps
+	-- any TextSize to the nearest step (ties round up below the body size, down above it).
+	TYPE_SCALE = { 16, 20, 24, 36, 64 },
+	SPECIMEN_SIZES = { 14, 24, 36, 64 }, -- the D8 specimen shows these (14 only there)
+	WORDMARK_OFFSET = { 5, 4 }, -- px: the cyan double exposure behind the wordmark
+
+	-- D11: one skin
+	RADIUS = 12, -- the one corner radius (chips and pills are fully round)
+	STROKE = 2, -- the ink stroke (buttons, cards) and the panel rim
+	TEXT_STROKE = 2, -- ink text stroke (UIStroke Contextual) on light text >= TEXT_STROKE_BIG px
+	TEXT_STROKE_SMALL = 1.5, -- ... and below it
+	TEXT_STROKE_BIG = 24,
+	DISPLAY_STROKE = 0.06, -- display text: stroke = 6 % of its size, round joins
+	SHADOW_OFFSET = 4, -- px: the one drop shadow (9-slice EH_UI_Shadow, ink)
+	SHADOW_TRANSPARENCY = 0.45,
+	SHADOW_SPREAD = 8, -- px the shadow image extends past the panel (its blur margin)
+	PANEL_TRANSPARENCY = 0.06,
+	PANEL_BODY_VALUE = 0.8, -- EH_UI_Panel's body grey (tools/ui/make_ui_kit.py BODY_VALUE): the tint is divided by it
+	SLICE_CENTER = { 26, 26, 70, 60 }, -- EH_UI_Panel / EH_UI_Shadow 9-slice centre (96 px images)
+	SLICE_SCALE = 0.5, -- 24 px image corners draw as RADIUS
+	BUTTON_LIP = 5, -- px: a raised button's lip (a darker band at its bottom)
+	BUTTON_LIP_SHADE = 0.58, -- the lip's value relative to the face
+	BUTTON_FACE_SHADE = 0.9, -- the face's bottom edge (a gentle top-to-bottom shade)
+	ICON_SIZE = 28, -- px: icon in an icon + word button
+	ICON_SMALL = 20, -- px: icon in pills, chips and run-bar markers
+	ICON_GAP = 6,
+
+	-- D3, D4, D10: motion tokens (seconds, easing style, direction). Enter 0.18-0.30 Out / Back Out;
+	-- Exit 0.10-0.18 Quad In; Feedback 0.06-0.12; Emphasis 0.25-0.45.
+	MOTION = {
+		enter = { 0.24, "Back", "Out" },
+		exit = { 0.12, "Quad", "In" },
+		feedback = { 0.08, "Quad", "Out" },
+		emphasis = { 0.35, "Back", "Out" },
+		fade = { 0.15, "Quad", "Out" }, -- reduced motion: crossfades and colour instead of scale
+		pressDown = { 0.04, "Quad", "Out" }, -- 0.92 "instantly" (<= 60 ms)
+		pressUp = { 0.09, "Quad", "Out" }, -- release: up to the overshoot ...
+		pressSettle = { 0.17, "Sine", "InOut" }, -- ... and settle to 1.0 (0.26 s in all)
+		pop = { 0.2, "Back", "Out" },
+	},
+	PRESS_SCALE = 0.92,
+	PRESS_OVERSHOOT = 1.04,
+	ENTER_FROM = 0.86, -- panel enter: UIScale from this to 1
+	EXIT_TO = 0.92, -- panel exit: UIScale to this, then hidden
+	POP_SCALE = 1.12, -- feedback pops (timer digits in the last 10 s, the loot meter)
+	FLASH_RED_SECONDS = 0.5, -- the red vignette fades out over this (caught, zapped)
+	CHIP_STAGGER = 0.06, -- s between new clone chips (the tape-print rhythm) ...
+	STAGGER_CAP = 0.4, -- ... never wider than this in all (D5)
+
+	-- U3 HUD
+	REWIND_SIZE = 96, -- px: REWIND, large, lower right (above the touch jump button)
+	REWIND_RIGHT = 10, -- px from the right edge
+	REWIND_BOTTOM = 136, -- px from the bottom edge to REWIND's bottom (clears the jump button: tests/hud_layout)
+	LOCK_SEGMENTS = 20, -- REWIND's ring lock: dots that go out over Config.Rec.END_RUN_LOCK_SECONDS
+	BREATH_HZ = 0.5, -- REWIND breathes with the plate pulse when it is the right move (own clock if the world gives none)
+	BREATH_SCALE = 0.06, -- 1.0 <-> 1.06
+	CHIP_W = 28, -- clone chips: numbered pills (8 x 28 + 7 x 4 = the strip's 252)
+	TIMER_DIGIT_W = 15, -- px per fixed-width timer digit slot ...
+	TIMER_COLON_W = 8, -- ... and the colon's
+	TIMER_SIZE = 24, -- the timer's type step
+	-- Run bar next-event markers (premium §6.4, MASTERPLAN §7.4 #1): Gus's turn points as amber ticks,
+	-- laser on-spans as red segments (only lasers your clones switch off: the gaps are the windows).
+	MARKER_SAMPLE_HZ = 10, -- clone recordings are sampled this often to forecast the lasers
+	GUS_TURN_DEG = 35, -- a route corner counts as a turn above this
+	MAX_GUS_TICKS = 24,
+}
+
 -- Audio: cue table and pure rules in src/shared/Audio (Cues, Manifest, CueCheck, Voices, Mix), the client
 -- player in src/client/Audio/AudioDirector (Audio API graph). MASTERPLAN §7.1-7.3, docs/research/feel.md D5,
 -- docs/AUDIO.md. Per-cue data (asset ids, level, jitter, voices, cooldown) lives in Audio/Cues like level data;

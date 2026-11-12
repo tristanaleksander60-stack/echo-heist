@@ -17,6 +17,7 @@ local EventLog = require(Sim:WaitForChild("EventLog"))
 local Interact = require(Sim:WaitForChild("Interact"))
 local HeistShared = Shared:WaitForChild("Heist")
 local Palette = require(HeistShared:WaitForChild("Palette"))
+local RunMarkers = require(HeistShared:WaitForChild("RunMarkers"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 local Mix = require(Shared:WaitForChild("Audio"):WaitForChild("Mix"))
 
@@ -25,6 +26,7 @@ local Ui = require(script.Parent.Parent:WaitForChild("Ui"))
 local Common = require(script.Parent:WaitForChild("Common"))
 
 local H = Config.Heist
+local U = Config.Ui
 local AU = Config.Audio
 local EV = EventLog.EV
 local KIND = Codec.EVENT
@@ -44,6 +46,7 @@ function Run.build(ctx: any)
 	local endBtn = controls.endBtn
 	local interactBtn = controls.interactBtn
 
+	local breath: (now: number) -> number
 	local endedCount = 0
 	local runStartAt = 0
 	local myEnded = false
@@ -67,10 +70,10 @@ function Run.build(ctx: any)
 
 	function hud.onRun(m: any)
 		ctx.garage.close()
-		ctx.results.card.Visible = false
-		ctx.deck.panel.Visible = false
-		ctx.deck.readyWait.Visible = false
-		msg.preparing.Visible = false
+		Ui.hide(ctx.results.card)
+		Ui.hide(ctx.deck.panel)
+		Ui.hide(ctx.deck.readyWait)
+		Ui.hide(msg.preparing)
 		ctx.runHud.Visible = true
 		ctx.setInHeist(true)
 		top.setRunBoxShown(true)
@@ -94,6 +97,7 @@ function Run.build(ctx: any)
 		top.runLabel.Text = if redo > 0 then Strings.redoRun(redo) else Common.runName(state, n)
 		local dawn = Common.dawnRuns(state)
 		top.runLabel.TextColor3 = if dawn and n >= dawn then Palette.amber else Palette.hueFor(state.mySeat or 1)
+		top.setSeatHue(Palette.hueFor(state.mySeat or 1))
 		runStartAt = os.clock() + (m.transition or 0)
 		hintStage = 0
 		lastWhole = -1
@@ -101,14 +105,26 @@ function Run.build(ctx: any)
 		top.clearMarkers()
 		-- Your clones' recorded events on the run bar (grabs), so you can time against them.
 		local length = if state.clock then state.clock.length else 30
+		local cloneRecs = {}
 		for _, a in m.actors do
+			local any = a.kind == "clone" and state.recs[a.key]
+			if any then
+				table.insert(cloneRecs, any)
+			end
 			local rec = a.kind == "clone" and a.owner == localPlayer.UserId and state.recs[a.key]
 			if rec then
 				for _, e in rec.events do
 					if e.kind == KIND.Grab then
-						top.marker(e.t, length, Palette.gold, Strings.MARK_GRAB)
+						top.marker(e.t, length, Palette.gold, Strings.MARK_GRAB, "coin")
 					end
 				end
+			end
+		end
+		-- Next-event markers: Gus's turns and the laser windows every clone in this run opens.
+		if state.level then
+			local ok, markers = pcall(RunMarkers.compute, state.level, cloneRecs, length)
+			if ok then
+				top.worldMarkers(markers, length)
 			end
 		end
 		-- Redo: the replaced clone's old grabs in grey, so you can see what you are redoing.
@@ -116,7 +132,7 @@ function Run.build(ctx: any)
 		if old then
 			for _, e in old.events do
 				if e.kind == KIND.Grab then
-					top.marker(e.t, length, Palette.tapeGrey, Strings.MARK_GRAB)
+					top.marker(e.t, length, Palette.tapeGrey, Strings.MARK_GRAB, "coin")
 				end
 			end
 		end
@@ -236,16 +252,16 @@ function Run.build(ctx: any)
 					end
 				end
 			elseif a and a.owner == localPlayer.UserId then
-				top.marker(e.tick / hz, length, Palette.alarm, Strings.MARK_ZAP)
+				top.marker(e.tick / hz, length, Palette.alarm, Strings.MARK_ZAP, "bolt")
 			end
 		elseif e.kind == EV.Busted then
 			local target = run.actorById[e.b]
 			if target and target.owner == localPlayer.UserId then
-				top.marker(e.tick / hz, length, Palette.alarm, Strings.MARK_BUST)
+				top.marker(e.tick / hz, length, Palette.alarm, Strings.MARK_BUST, "cross")
 			end
 		elseif e.kind == EV.Stuck then
 			if a and a.owner == localPlayer.UserId then
-				top.marker(e.tick / hz, length, Palette.alarm, Strings.MARK_BUST)
+				top.marker(e.tick / hz, length, Palette.alarm, Strings.MARK_BUST, "cross")
 			end
 		elseif e.kind == EV.Bank and live then
 			local value = 0
@@ -363,6 +379,32 @@ function Run.build(ctx: any)
 		Ui.pop(interactBtn)
 	end
 
+	-- REWIND's breath, 0..1: the world's plate pulse when it gives one (hud.setPlatePulse), else its
+	-- own clock at Config.Ui.BREATH_HZ. Reduced motion: a steady half glow.
+	breath = function(now: number): number
+		if state.reduced then
+			return 0.5
+		end
+		local pulse = ctx.platePulse
+		if pulse then
+			local ok, v = pcall(pulse)
+			if ok and type(v) == "number" then
+				return math.clamp(v, 0, 1)
+			end
+		end
+		return 0.5 - 0.5 * math.cos(now * 2 * math.pi * U.BREATH_HZ)
+	end
+
+	-- Hooks for the world track (PLAN_STEAM_PLUS §4.3 U3): REWIND breathes in sync with the plate
+	-- pulse when it is the right move. `level` returns the plate pulse's level 0..1 (nil: the HUD's
+	-- own clock); setRewindRightMove marks REWIND as the right move outside the L1 rule.
+	function hud.setPlatePulse(level: (() -> number)?)
+		ctx.platePulse = level
+	end
+	function hud.setRewindRightMove(on: boolean)
+		ctx.rewindRightMove = on
+	end
+
 	function hud.update(tView: number, now: number, _dt: number, world: any)
 		if state.where ~= "heist" then
 			return
@@ -378,13 +420,13 @@ function Run.build(ctx: any)
 		local length = clock.length
 		local remaining = math.max(0, length - tView)
 		local red = remaining <= H.TIMER_RED_SECONDS
-		top.timerLabel.TextColor3 = if red then Palette.alarm else Palette.white
-		top.timerLabel.Text = Ui.clock(remaining)
-		top.timerScale.Scale = if remaining <= H.TIMER_PULSE_SECONDS and not state.reduced
-			then 1 + 0.08 * math.max(0, math.sin(now * 2 * math.pi))
-			else 1
-		-- Countdown ticks for the last COUNTDOWN_FROM seconds (docs/AUDIO.md §9 item 19).
+		top.setTimer(Ui.clock(remaining), if red then Palette.alarm else Palette.white)
+		-- Countdown ticks for the last COUNTDOWN_FROM seconds (docs/AUDIO.md §9 item 19); in the
+		-- last TIMER_PULSE_SECONDS the digits pop 1.12 -> 1 on each whole second (POLISH §4.2).
 		local whole = math.ceil(remaining - 1e-6)
+		if whole ~= lastWhole and lastWhole >= 0 and whole <= H.TIMER_PULSE_SECONDS then
+			top.popTimer()
+		end
 		if whole ~= lastWhole and os.clock() >= runStartAt then
 			if lastWhole >= 0 then
 				local step = Mix.countdownStep(remaining, AU.COUNTDOWN_FROM)
@@ -428,8 +470,7 @@ function Run.build(ctx: any)
 		local started = os.clock() >= runStartAt
 		endBtn.Visible = not myEnded and started
 		local lockFrac = math.clamp(1 - tView / Config.Rec.END_RUN_LOCK_SECONDS, 0, 1)
-		controls.lockRing.Size = UDim2.fromScale(1, lockFrac)
-		controls.lockRing.Visible = lockFrac > 0
+		controls.lock.set(lockFrac)
 		local crew = state.liveCount or 1
 		endBtn.Text = if crew > 1 then Strings.rewindCrew(endedCount, crew) else Strings.REWIND
 
@@ -442,10 +483,10 @@ function Run.build(ctx: any)
 		-- L1 while the auto-end is armed: REWIND pulses only while you stand on the plate
 		-- (a steady glow under reduced motion) and is dimmed off it; stuck hints run in any
 		-- such run, so a kid who ended run 1 off the plate is led back (§7.5).
+		local hue = Palette.hueFor(state.mySeat or 1)
 		if isTutorial() and hints.autoEndArmed() then
-			endBtn.BackgroundColor3 = if pulseEnd and (state.reduced or math.floor(now * 3) % 2 == 0)
-				then Palette.white
-				else Palette.CLONE_HUES[1]
+			-- REWIND breathes with the plate pulse (hud.setPlatePulse; a steady glow under reduced motion).
+			endBtn.BackgroundColor3 = if pulseEnd then hue:Lerp(Palette.white, 0.6 * breath(now)) else hue
 			endBtn.BackgroundTransparency = if pulseEnd then 0 else 0.55
 			if not pulseEnd and not myEnded then
 				local hs = H.HINT_SECONDS
@@ -460,7 +501,7 @@ function Run.build(ctx: any)
 				hints.clear()
 			end
 		else
-			endBtn.BackgroundColor3 = Palette.hueFor(state.mySeat or 1)
+			endBtn.BackgroundColor3 = if ctx.rewindRightMove then hue:Lerp(Palette.white, 0.6 * breath(now)) else hue
 			endBtn.BackgroundTransparency = 0
 			if hintStage > 0 then
 				hintStage = 0
