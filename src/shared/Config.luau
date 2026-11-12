@@ -782,6 +782,24 @@ Config.Lighting = {
 		rings = { { size = 1, alpha = 0.88 }, { size = 0.7, alpha = 0.8 }, { size = 0.42, alpha = 0.72 } },
 		pixelsPerStud = 8,
 	},
+	-- Each location's dominant light colour (PLAN_STEAM_PLUS §3.1, W5): ROOM lamps take it, in turn when a
+	-- location has two (KitPlan.lampLook), and their floor pools take `pool`. Plate lamps (signals) and the hero
+	-- lamp (the focal pool) keep LAMP's warm white everywhere, so a signal never changes colour by location.
+	-- No new lights: the per-view budget below is unchanged.
+	LOCATION = {
+		CornerShop = { -- warm amber
+			room = { { 255, 186, 112 } },
+			pool = { 236, 196, 150 },
+		},
+		ToyShop = { -- candy pink and gold, alternating lamp by lamp
+			room = { { 255, 168, 204 }, { 255, 206, 120 } },
+			pool = { 240, 196, 210 },
+		},
+		Bank = { -- green banker's lamps: warm light through green glass
+			room = { { 196, 236, 158 } },
+			pool = { 206, 222, 176 },
+		},
+	},
 	MIN_LAMP_GAP = 7, -- studs: a room lamp this close to a plate or hero lamp is skipped
 	AUTO_ROOM_WIDE = 24, -- studs: an auto room wider than this gets two lamps (daily vaults without LevelDress)
 	VIEW_RADIUS = 24, -- studs: "one view" for the light budget (a 32 x 24 room)
@@ -850,6 +868,86 @@ Config.Kit = {
 		Bank = "",
 		CornerShop = "",
 		ToyShop = "",
+	},
+}
+
+-- World backdrop (PLAN_STEAM_PLUS §4.1 W4, roblox_quality §2): the town around the active heist instance and
+-- around the garage, built on the client by src/client/Heist/Backdrop.luau from the pure plan in
+-- src/shared/Heist/BackdropPlan.luau. Static decoration only: every part is Anchored with
+-- CanCollide / CanQuery / CanTouch / CastShadow off, so the sim, Poppercam and Gus's fan never see it.
+-- Budget for the whole backdrop (§2.2): about 30 draw calls and 25k triangles (BackdropPlan.budget).
+Config.Backdrop = {
+	ENABLED = true,
+	-- L0, the table: one ground Part under everything, a value step above Ink so it reads as snowy street,
+	-- dropped below the level floor so the playable lot reads as a raised diorama (a kerb, not a cliff).
+	GROUND_SIZE = 2048, -- studs (the Part size limit)
+	GROUND_DROP = 1.2, -- studs below the level floor
+	GROUND_COLOR = { 74, 72, 112 }, -- trodden snow under a night sky
+	KERB = { width = 0.8, color = { 92, 92, 132 } }, -- the lot's edge band, drawn just outside the bounds
+	-- L1, the near ring: facade cards (body, cornice, snow on the cornice, warm windows) round the lot.
+	FACADE = {
+		gapToLot = 1.5, -- studs between the lot's bounds and a facade
+		acrossStreet = 18, -- studs past the lot's street edge for the row facing the shop
+		widths = { 18, 24, 30 }, -- picked in turn (deterministic: BackdropPlan never uses math.random)
+		heights = { 16, 22, 19, 26, 14 },
+		depth = 10,
+		gap = 2, -- studs between neighbouring facades (alleys)
+		count = 16, -- facades in the whole near ring (a heist; the garage gets the same)
+		cornice = 0.8, -- studs: the marble lip on top
+		snow = 0.35, -- studs: the snow on the cornice
+		window = { w = 2.6, h = 3.4, floorH = 6, colPitch = 5, sill = 4 }, -- the first row's bottom above the ground
+		litEvery = 3, -- every 3rd window slot is lit (warm-white Neon), the rest stay dark glass
+		bodyColors = { { 60, 44, 54 }, { 46, 44, 74 }, { 66, 50, 46 }, { 52, 56, 82 } }, -- brick and slate, dark
+		corniceColor = { 168, 152, 122 }, -- Warm Marble shade
+		darkWindowColor = { 34, 36, 62 },
+	},
+	WINDOW_COLOR = { 246, 192, 162 }, -- Bulb Warm #F6C0A2 (eh_palette.NEON, rule N1): the only glow allowed
+	SNOW_COLOR = { 192, 195, 213 }, -- Snow #C0C3D5 (small areas only, STYLE_BIBLE §1.3)
+	-- L2 / L3, the skyline rings: four copies of one quarter-arc kit mesh each (body + Neon windows; kit pieces
+	-- built by assets/blender/backdrop.py, published to ReplicatedStorage by server Heist/BackdropKit).
+	RINGS = {
+		{ name = "near", piece = "Skyline_Near", windows = "Skyline_Near_Windows", yaw0 = 0 },
+		{ name = "far", piece = "Skyline_Far", windows = "Skyline_Far_Windows", yaw0 = 45 },
+	},
+	KIT_FOLDER = "BackdropKit", -- ReplicatedStorage/<KIT_FOLDER>: the ring and snow templates
+	KIT_WAIT_SECONDS = 60, -- the client builds the rest at once and adds the rings when they arrive
+	-- Performance tiers (Config.Heist.PERF_TIERS): roblox_quality §6.4, low phones keep L0, L1, L2 and the sky.
+	FAR_RING_OFF_TIER = 3,
+	FACADE_WINDOWS_OFF_TIER = 4,
+	-- The sky: the Heist City cubemap (tools/blender/sky_city.py) has Hoardsworth's tower at this yaw (degrees,
+	-- Roblox -Z = 0, turning toward -X). The client turns Lighting.Sky so the tower stands behind the building
+	-- the spawn faces (Sky.SkyboxOrientation), so every level and the garage get it in the first view.
+	SKY_LANDMARK_YAW = 0,
+	SKY_TURN = true,
+	-- Falling snow (MASTERPLAN §6.8: <= 360 live particles on touch; roblox_quality §2.1 / §5.6): one emitter on
+	-- a box that follows the camera. Exterior views only: inside a building footprint the rate is INTERIOR_SCALE.
+	SNOW = {
+		rate = 40, -- particles / s
+		lifetime = { 4.5, 6 },
+		size = { 0.16, 0.26 },
+		speed = { 2.4, 3.4 },
+		spread = 18, -- degrees off straight down
+		drift = { 0.6, 0, 0.3 }, -- studs / s^2 of wind (Acceleration)
+		rotSpeed = { -40, 40 },
+		lightInfluence = 0.3,
+		lightEmission = 0.15,
+		transparency = 0.15,
+		box = { 64, 26, 64 }, -- studs: the emitter volume around the camera
+		above = 6, -- studs: the volume's centre above the camera focus
+		maxAlive = 240, -- rate x lifetime stays under this (unit spec)
+		lowTierScale = 0.5, -- tier >= LOW_TIER: half the rate (120 alive, roblox_quality §2.1 "Q1")
+		LOW_TIER = 3,
+		reducedRate = 0.5, -- reduced motion: sparser ...
+		reducedSpeed = 0.45, -- ... and slower, never off
+		interiorScale = 0, -- inside the building footprint (the levels have no roofs)
+		texture = "rbxassetid://117922085753809", -- assets/sky/EH_SnowFlake.png (sky_ids.json); "" = the default
+		color = { 236, 240, 255 },
+	},
+	-- Snow caps on the street side of the kit fronts (client, thin parts; the Christmas layer's Xmas_SnowCap_8
+	-- covers the wall tops). Studs, in each front's local frame (STYLE_BIBLE §5.1: X along the front, -Z street).
+	SNOW_CAPS = {
+		thickness = 0.14,
+		awningShare = 0.38, -- the upper share of each awning slope (the stripes below stay visible)
 	},
 }
 

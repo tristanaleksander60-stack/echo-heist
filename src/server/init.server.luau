@@ -53,6 +53,8 @@ if Config.GAME_MODE == "sim" then
 		HeistService.configureKit(KitService)
 		if Config.Heist.KIT_LEVELS then
 			KitService.start() -- background load (~2.5 s); levels stay greybox until it is ready
+			-- the skyline ring meshes for the client backdrop (W4), once the kit is loaded
+			require(script:WaitForChild("Heist"):WaitForChild("BackdropKit")).start(KitService)
 		end
 	end)
 	if not okKit then

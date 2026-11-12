@@ -511,6 +511,93 @@ return function(test)
 		end
 	end)
 
+	test("signature props: planned where LevelDress puts them, clear of every gameplay spot", function()
+		local seen: { [string]: number } = {}
+		for _, spec in Catalog do
+			local level = LevelSpec.compile(spec)
+			local dress = LevelDress[level.id]
+			local plan = KitPlan.plan(level, specs, { dress = dress, lighting = LIGHT, dressing = true })
+			local items = {}
+			for _, item in plan.items do
+				if item.role == "signature" then
+					table.insert(items, item)
+					seen[item.pieces[1]] = (seen[item.pieces[1]] or 0) + 1
+				end
+			end
+			Assert.eq(#items, if dress and dress.props then #dress.props else 0, level.id .. ": one item per prop")
+			for _, item in items do
+				local b = KitPlan.itemBox(item, specs)
+				local what = level.id .. " " .. item.pieces[1] .. " at " .. boxText(b)
+				Assert.eq(item.mode, "visual", what .. ": visual only")
+				local flat = KitPlan.box(b.minX, -1e3, b.minZ, b.maxX, 1e3, b.maxZ)
+				local function clearOf(box: any, label: string)
+					Assert.falsy(overlap(flat, box, 0.05), what .. " overlaps " .. label)
+				end
+				local function pointClear(x: number, z: number, margin: number, label: string)
+					local inside = x > b.minX - margin
+						and x < b.maxX + margin
+						and z > b.minZ - margin
+						and z < b.maxZ + margin
+					Assert.falsy(inside, what .. " within " .. margin .. " of " .. label)
+				end
+				for i, p in level.plates do
+					clearOf(p.box, "plate " .. i)
+				end
+				for i, d in level.doors do
+					clearOf(d.box, "door " .. i)
+				end
+				for i, l in level.lasers or {} do
+					clearOf(l.box, "laser " .. i)
+				end
+				for i, h in level.hides or {} do
+					clearOf(h.box, "hide " .. i)
+				end
+				clearOf(level.van, "the van zone")
+				for _, s in level.spec.solids or {} do
+					if s.box.maxY - s.box.minY < 8 then -- counters, shelves: never inside one (a lamp sits on top)
+						Assert.falsy(overlap(b, s.box, 0.05), what .. " cuts into a low solid " .. boxText(s.box))
+					end
+				end
+				for _, def in level.loot do
+					pointClear(def.x, def.z, 1, "loot " .. tostring(def.id))
+				end
+				for _, n in level.spec.nav or {} do
+					pointClear(n.x, n.z, 1.5, string.format("nav (%g, %g)", n.x, n.z))
+				end
+				for _, sp in level.spawns do
+					pointClear(sp.x, sp.z, 3, "a spawn")
+				end
+			end
+		end
+		Assert.eq(seen.ToySoldier, 1, "one giant toy soldier (L5)")
+		Assert.eq(seen.Column_2x12, 6, "six bank columns (L6)")
+		Assert.eq(seen.BankersLamp, 2, "two banker's lamps (L6)")
+	end)
+
+	test("lamp looks: each location's room colour, signals and the hero unchanged, no light added", function()
+		for _, level in levels() do
+			local lamps = KitPlan.lamps(level, LevelDress[level.id], LIGHT)
+			for _, loc in { "CornerShop", "ToyShop", "Bank" } do
+				local looks = KitPlan.lampLooks(lamps, loc, LIGHT)
+				Assert.eq(#looks, #lamps, level.id .. ": one look per lamp")
+				local look = LIGHT.LOCATION[loc]
+				local rooms = 0
+				for k, l in lamps do
+					if l.kind == "room" then
+						rooms += 1
+						Assert.eq(looks[k].color, look.room[(rooms - 1) % #look.room + 1], level.id .. " room colour")
+						Assert.eq(looks[k].pool, look.pool, level.id .. " room pool")
+					else
+						Assert.eq(looks[k].color, LIGHT.LAMP[l.kind].color, level.id .. " " .. l.kind .. " keeps warm")
+						Assert.eq(looks[k].pool, LIGHT.POOL.color, level.id .. " " .. l.kind .. " pool")
+					end
+				end
+			end
+		end
+		Assert.eq(KitPlan.location(LevelSpec.compile(Catalog[3]), true), "ToyShop", "Clone Party dressed = Toy Shop")
+		Assert.eq(KitPlan.location(LevelSpec.compile(Catalog[3]), false), "CornerShop", "plain = Corner Shop")
+	end)
+
 	test("missing or avoided pieces fall back (nothing planned for them)", function()
 		local level = LevelSpec.compile(Catalog[1])
 		local plan = KitPlan.plan(level, specs, { avoid = { Wall_Door_8x12_Leaf = true, Wall_8x12 = true } })

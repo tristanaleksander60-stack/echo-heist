@@ -58,10 +58,12 @@ local function cables(level: any): { any }
 	return out
 end
 
-local function lamps(level: any): { any }
+local function lamps(level: any, location: string): { any }
 	local L = Config.Lighting
 	local out = {}
-	for _, l in KitPlan.lamps(level, LevelDress[level.id], L) do
+	local list = KitPlan.lamps(level, LevelDress[level.id], L)
+	local looks = KitPlan.lampLooks(list, location, L)
+	for k, l in list do
 		local spec = L.LAMP[l.kind]
 		table.insert(out, {
 			x = l.x,
@@ -70,7 +72,8 @@ local function lamps(level: any): { any }
 			range = spec.range,
 			brightness = spec.brightness,
 			angle = spec.angle,
-			color = spec.color,
+			color = looks[k].color,
+			poolColor = looks[k].pool,
 			shadows = spec.shadows == true,
 			pool = if l.kind == "hero" then L.POOL.heroDiameter else L.POOL.diameter,
 		})
@@ -80,10 +83,7 @@ end
 
 local function dump(spec: any): any
 	local level = LevelSpec.compile(spec)
-	local location = spec.location or "CornerShop"
-	if dressing and level.kind == "party" and location == "CornerShop" then
-		location = "ToyShop" -- LevelBuilder: Clone Party is the Toy Shop in Christmas dressing
-	end
+	local location = KitPlan.location(level, dressing) -- Clone Party is the Toy Shop in Christmas dressing
 	local plan = KitPlan.plan(level, specs, {
 		dressing = dressing,
 		location = location,
@@ -202,7 +202,7 @@ local function dump(spec: any): any
 		switches = switches,
 		guards = guards,
 		cables = cables(level),
-		lamps = lamps(level),
+		lamps = lamps(level, location),
 		lighting = Config.Lighting,
 		kit = kit,
 		warnings = plan.warnings,

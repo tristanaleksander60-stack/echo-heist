@@ -374,7 +374,7 @@ def lamp_light(level, lp):
     o.data.use_custom_distance = True
     o.data.cutoff_distance = lp["range"]
     P = LG["POOL"]
-    pc = "#%02X%02X%02X" % tuple(P["color"])
+    pc = "#%02X%02X%02X" % tuple(lp.get("poolColor") or P["color"])
     for k, rg in enumerate(P["rings"]):
         r = lp["pool"] * rg["size"] / 2
         d = MR.cyl("pool", r, r, 0.01, MR.mat(pc, 0.9, emit=P["brightness"] * 0.6, alpha=1 - rg["alpha"]), None,
