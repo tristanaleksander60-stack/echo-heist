@@ -1731,4 +1731,114 @@ Config.Onboarding = {
 	ADVICE_DELAY = 0.15, -- s after the failure event before its counterplay line (<= 1 s, G4)
 }
 
+-- Performance track (PLAN_STEAM_PLUS §4.7, MASTERPLAN §6.8 / §8.6, roblox_quality §1.4 / §6.4; docs/PERF.md).
+-- Budgets per runtime tier (Config.Heist.PERF_TIERS: the PerfSample governor in Heist/Telemetry steps it down
+-- when frames stay slow and back up after a sustained good stretch). Every tier starts at 1; the phone class a
+-- tier is written for: 1 quality = high phone 6 GB+ / PC, 2 balanced = mid Android ~4 GB, 3 performance = low
+-- Android 2-3 GB at 30 fps, 4 minimum = a phone still over 33 ms at tier 3. Read through the pure
+-- Shared/Heist/Budget (tests/unit/HeistBudget.spec.luau checks the numbers against each other).
+Config.Perf = {
+	TIERS = {
+		{ -- 1 quality
+			drawCalls = 450, -- busiest view (Big Score, 4 players, 12 clones, 2 guards)
+			tris = 450000,
+			lights = 10, -- local lights in one view (Config.Lighting.VIEW_RADIUS): the level's 9 + your halo (PC: 12)
+			shadowed = 2,
+			liveParticles = 360, -- MASTERPLAN §6.8 (touch)
+			highlights = 10, -- 4 clone groups + your rim + 5 others
+			cloneGlows = 12, -- clone floor glows drawn at once (your own first, then the nearest)
+			pillDistance = 40, -- studs: the clone pill's BillboardGui.MaxDistance
+			lineupLabels = 1, -- Line-up BillboardGuis (LineupDirector's "◀ ME" label)
+			trails = true,
+			haloLight = true, -- Heist/PlayerHalo's warm PointLight on your character (no shadows)
+			particleScale = 1, -- bursts (ribbons, sparks, coins, gold rain, dust) x this
+			snowAlive = 240, -- falling snow alive at once (rate x lifetime)
+			lightKindsOff = {}, -- KitPlan lamp kinds switched off (LightDirector)
+		},
+		{ -- 2 balanced
+			drawCalls = 350,
+			tris = 300000,
+			lights = 9,
+			shadowed = 2,
+			liveParticles = 360,
+			highlights = 10,
+			cloneGlows = 12,
+			pillDistance = 40,
+			lineupLabels = 1,
+			trails = false,
+			haloLight = true,
+			particleScale = 1,
+			snowAlive = 240,
+			lightKindsOff = { "street" }, -- the Big Score's busiest view: 8 + your halo = 9
+		},
+		{ -- 3 performance: recipe C "Soft Toybox"
+			drawCalls = 250,
+			tris = 150000,
+			-- roblox_quality §6.4 asks 6; recipe C (§1.4) allows 6-8. The plate signals and the hero stay, so the
+			-- Big Score's vault hall keeps 8 (every other level <= 4); tier 4 reaches 6.
+			lights = 8,
+			shadowed = 0,
+			liveParticles = 150,
+			highlights = 5, -- 4 clone groups + your rim, others off
+			cloneGlows = 6,
+			pillDistance = 28,
+			lineupLabels = 1,
+			trails = false,
+			haloLight = false,
+			particleScale = 0.5,
+			snowAlive = 60,
+			lightKindsOff = { "street", "accent" }, -- their bulbs and floor pools stay (unlit, no light object)
+		},
+		{ -- 4 minimum
+			drawCalls = 200,
+			tris = 120000,
+			lights = 6,
+			shadowed = 0,
+			liveParticles = 100,
+			highlights = 2, -- your own clones' group + your rim
+			cloneGlows = 3,
+			pillDistance = 20,
+			lineupLabels = 1,
+			trails = false,
+			haloLight = false,
+			particleScale = 0.35,
+			snowAlive = 40,
+			lightKindsOff = { "street", "accent", "room" },
+		},
+	},
+	-- Recipe C "Soft Toybox" (roblox_quality §1.4): LightDirector switches the Lighting service to it from this
+	-- tier and restores the project file's recipe A when the governor steps back up. LightingStyle is set in a
+	-- pcall (a script may not be allowed to; docs/PERF.md has what the engine said); the rest is scriptable.
+	SOFT_TOYBOX_TIER = 3,
+	SOFT_TOYBOX = {
+		Lighting = {
+			LightingStyle = "Soft",
+			PrioritizeLightingQuality = true,
+			Brightness = 1.6,
+			ColorShift_Top = { 170, 190, 255 },
+			Ambient = { 120, 110, 170 },
+			OutdoorAmbient = { 135, 125, 185 },
+			EnvironmentDiffuseScale = 0.2,
+			EnvironmentSpecularScale = 0,
+			ExposureCompensation = 0.2,
+			GlobalShadows = false, -- no sun shadow pass on low phones (was HeistClient's tier >= 3 rule)
+		},
+		Bloom = { Intensity = 0.9, Size = 24, Threshold = 1.0 }, -- Lighting.Bloom (the project file's)
+		ColorCorrection = { Contrast = 0.15, Saturation = 0.12 }, -- Lighting.ColorCorrection
+		LIGHT_RANGE_MAX = 24, -- studs: every level light's Range is clamped to this ("Range 16-24")
+	},
+	BLOOM_OFF_TIER = 4, -- roblox_quality §6.4: Bloom off on the lowest phones (ColorCorrection stays)
+	-- Bursts: base counts live with their effect (Config.Clone.RIBBON_COUNT / SPARK_COUNT / ZAP_SPARKS,
+	-- Config.WorldFx.COINS / DOOR_DUST, Config.Heist.LASER_SPARKS); this is the gold rain's (MomentDirector).
+	GOLD_RAIN = 40,
+	BURST_MIN = 2, -- a scaled burst never drops below this (it must still read)
+	GLOW_RECHECK_SECONDS = 0.5, -- EchoView re-picks which clones keep their floor glow (Budget.glowSet)
+	GARAGE_WAIT_SECONDS = 15, -- JobBoard waits this long for a garage that has not streamed in yet
+	-- The worst moment the particle budget is checked against (Budget.worstParticles): snow + these at once.
+	WORST_MOMENT = { "ribbons", "sparks", "coins", "goldRain", "doorDust", "laserSparks" },
+	-- Measured / estimated costs (docs/PERF.md; tests/perf_engine.luau prints the measured ones).
+	AVATAR_TRIS_EST = 7000, -- a catalog R15 avatar with hair and 2-3 accessories (not readable from Luau)
+	MANNEQUIN_TRIS = 216, -- 18 box parts
+}
+
 return Config

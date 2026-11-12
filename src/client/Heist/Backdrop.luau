@@ -11,7 +11,8 @@
 -- Static decoration: every part is Anchored with CanCollide / CanQuery / CanTouch / CastShadow off, so the sim,
 -- Poppercam and Gus's fan never see it. No searchlights. Tier-aware like Heist/LightDirector (Telemetry.onTier):
 -- the far ring goes from Config.Backdrop.FAR_RING_OFF_TIER, facade windows from FACADE_WINDOWS_OFF_TIER, the snow
--- halves from SNOW.LOW_TIER. Reduced motion: the snow falls slower and sparser, never off.
+-- halves from SNOW.LOW_TIER and stays under the tier's snowAlive (Shared/Heist/Budget). Reduced motion: the snow falls
+-- slower and sparser, never off.
 
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -20,6 +21,7 @@ local RunService = game:GetService("RunService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local BackdropPlan = require(Shared:WaitForChild("Heist"):WaitForChild("BackdropPlan"))
+local Budget = require(Shared:WaitForChild("Heist"):WaitForChild("Budget"))
 
 local B = Config.Backdrop
 local S = B.SNOW
@@ -98,14 +100,16 @@ function Backdrop.new(): any
 		end
 		if emitter then
 			local e = emitter :: ParticleEmitter
-			e.Rate = BackdropPlan.snowRate(tierNow, reduced, interior)
 			local k = if reduced then S.reducedSpeed else 1
+			-- slower flakes live longer to fall as far; rate x lifetime stays under the tier's snowAlive
+			-- (Shared/Heist/Budget: 240 at tiers 1-2, 60 at 3, 40 at 4)
+			local rate, life =
+				Budget.snow(tierNow, BackdropPlan.snowRate(tierNow, reduced, interior), S.lifetime[2] / k)
+			e.Rate = rate
 			e.Speed = seq(S.speed[1] * k, S.speed[2] * k)
 			e.Acceleration = Vector3.new(S.drift[1], S.drift[2], S.drift[3]) * k
 			e.RotSpeed = seq(S.rotSpeed[1] * k, S.rotSpeed[2] * k)
-			-- slower flakes live longer to fall as far; rate x lifetime stays under SNOW.maxAlive
-			local life = if reduced then math.min(S.lifetime[2] / k, S.maxAlive / math.max(e.Rate, 1)) else nil
-			e.Lifetime = if life then seq(life * 0.8, life) else seq(S.lifetime[1], S.lifetime[2])
+			e.Lifetime = if reduced then seq(life * 0.8, life) else seq(math.min(S.lifetime[1], life), life)
 		end
 	end
 

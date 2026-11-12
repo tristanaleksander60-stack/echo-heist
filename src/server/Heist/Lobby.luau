@@ -219,6 +219,10 @@ function Lobby.build(kit: any?): Model
 	local plan = LobbyPlan.plan(C, LIGHT, nil, KitPlan)
 	local model = Instance.new("Model")
 	model.Name = "Garage"
+	-- StreamingEnabled (docs/PERF.md): every player starts here and is put back here after each heist (3,000+
+	-- studs from any instance, so Opportunistic streaming may have dropped it): Persistent keeps it whole on every
+	-- client, so a return never lands on a floor that is not there and the client's Garage lookups always find it.
+	model.ModelStreamingMode = Enum.ModelStreamingMode.Persistent
 	model:SetAttribute("EH_Kind", "garage")
 	local floor = boxPart(model, "Floor", origin, plan.floor, rgb(C.FLOOR_COLOR))
 	floor.Material = Enum.Material.Concrete
