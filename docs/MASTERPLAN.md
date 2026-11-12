@@ -308,7 +308,7 @@ Chunky, bevelled low-poly sets built like a model kit, lit at night in deep indi
 | Clone P3 | Clone Indigo | `#6A5CFF` | Reserved |
 | Clone P4 | Ghost White | `#F4F7FF` | Reserved for clones as a glow; exit uses white only as solid chevrons with arrows |
 | Orphan tape | Tape Grey | `#8A8FA8` | Clones of a player who left |
-| Christmas accent | Holly Green `#2FBF71` / Ribbon Red = Alarm Red is **not** reused: ribbons use Burgundy `#8C2F4B` | — | Fairy lights warm white only, never clone hues |
+| Christmas accents | Holly Green / Ribbon Burgundy | `#2FBF71` / `#8C2F4B` | Dressing layer only; fairy lights are warm white; Alarm Red is never used as decoration |
 
 - **Reserved-hue rule:** no environment asset within ±20° of a clone hue at saturation above 40%. The v0.1 blue plate becomes a steel plate with a white icon that takes the presser's hue and glyph.
 - **Identity = glyph + number + hue.** ●1 ■2 ▲3 ◆4 badges are mandatory, not a setting.
@@ -386,3 +386,476 @@ Goal: "that's me, but a ghost from 20 seconds ago", readable at 64 px, **recogni
 Presets Auto / Performance / Balanced / Quality; clones, cones and lasers are **exempt from culling**.
 
 ---
+## 7. Game feel, audio, VFX, UI/UX and onboarding
+
+### 7.1 The Rewind (the signature moment)
+
+A client `RewindDirector` owns the sequence; the server only waits `Config.REWIND_TRANSITION` (v0.1's hard-coded `task.delay(0.9)` in `Main.luau` moves to Config).
+
+| t (s) | Picture | Sound |
+|---|---|---|
+| 0.00 (input) | Button presses in; co-op pip fills | Tape-deck "clack", played locally before any server reply |
+| 0.00 (server) | 66 ms freeze, 0.06 s white flash at 25% | Music PlaybackSpeed 1.0 → 0.25 over 0.3 s (tape-stop dive; verify pitch follows speed) |
+| 0.10-1.35 | Saturation -0.8, cyan tint, Blur 6, VHS tracking bands, "◀◀"; **every actor's path reels backwards** as owner-coloured Beams; FOV 70 → 64 | Pre-reversed 1.2 s stinger (Roblox can't play audio backwards, [DevForum](https://devforum.roblox.com/t/how-can-i-make-a-sound-play-in-reverse/1847141)) |
+| 1.35-1.55 | Grade snaps back; clones "tape print" in | "Clunk" on the bar line, then the clone arpeggio |
+| 1.55-1.80 | "RUN 4" stamps in (UIScale 1.25 → 1.0, Back Out) | Music restarts on the downbeat |
+
+Quick (1.0 s) drops the path reel; reduced motion (0.8 s) is a crossfade. Effects live under `CurrentCamera`, not `Lighting` as in v0.1.
+
+### 7.2 Audio direction: "caper night"
+
+- Upright bass, brushed kit, Rhodes/vibraphone, muted trumpet, analogue pad, light tape saturation; sleigh bells and celesta in the Christmas mix.
+- **128 BPM**, so every run is whole bars (30 s = 16, 45 s = 24, 60 s = 32); the music restarts on GO and the last 4 bars are the countdown.
+- **Crew Layers:** S0 base; S1 keys at 1+ clones; S2 lead at 3+; S3 brass at 6+; S4 full at 10+; **S5 chase** on the Alarm Run, in the last 4 bars or on Gus's "!". Primary method: all stems started sample-aligned with `AudioPlayer:Play(atTime)` on `SoundService:GetMixerTime()` (vault *Music and Adaptive Audio*), proven in spike S4. Fallback: start all stems together at volume 0 on GO and fade layers (alignment holds because they start together).
+- **Sourcing:** soft launch uses licensed library tracks in-game; **TikToks and trailers use owned or platform-licensed music only** (library music off-platform is [UNVERIFIED]). Optional commission (owner decision): 2 stemmed tracks (main theme + Christmas) with trailer rights, only if they arrive by Dec 9.
+- **The clone arpeggio** (C-major pentatonic, one step up per clone, 60 ms apart) is the sound logo.
+- **Clone bus:** lowpass 5 kHz → 90 ms echo, 4 dB under player sounds; no clone footsteps; ≤ 6 clone sounds per second, nearest 4 voiced. Buses: Music, SFX (+ Clone), UI, Ambience, Warnings (floor 25%) → compressor → limiter.
+- ~38 licensed launch SFX, 3+ variations for anything repeated, with an id manifest and live load checks (lihfolk-sfx).
+
+### 7.3 World feedback and VFX
+
+- **Plate:** sinks 0.15 studs in 0.06 s; the rim takes the presser's hue and glyph; a pulse runs along a floor **cable** to the device; on release the cable **drains over the 0.4 s grace**.
+- **Vault door:** red → green lamp, slides open in 0.35 s, amber blink while closing, **solid only when fully shut** (fixes the v0.1 push bug). **Lasers:** hum, retract with sparks, 3 flickers before re-enabling.
+- **Detection:** the cone fills amber, then "?" with Gus's head turn, then "!"; a heartbeat tick in the Warnings bus from "?".
+- **Caught:** 66 ms freeze, red vignette pulse, a short camera ease toward Gus (skipped under reduced motion), BUSTED stamp, brass "wah-wah", caption "[Guard spotted you]", then the 2 s busted-cam; no shake.
+- **Alarm Run:** rotating red lights (emissive, not extra lights), chase stem, "VAN LEAVES 0:20" counter in Alarm Red with a ring glyph, Gus's sprint dust puffs.
+- **Banking:** "ka-ching", a 24-coin burst, "+$100" flying to the loot meter, a 0.35-1.0 s count-up; clone banks show the glyph ("◆2 +$100"). The **diamond** is the only mid-heist moment that dims the world (15% for 0.6 s).
+- **Heist complete:** stamp, ≤ 120 money-rain particles, the end-of-heist cut (§6.6), then a results card stamping Haul, Crew and Clean 0.25 s apart, "x clones · y runs · m:ss", the new trophy flying to the van shelf, and Replay / Next / Save Clip.
+- VFX value rule (dark ink, body, white-hot core, one accent hue; vault *VFX Readability and Value*); flashes capped at 3 per second.
+
+### 7.4 HUD and UI
+
+Four elements during a run, everything else contextual:
+1. **Top centre:** tape counter ("0:27") + "RUN 3" + a thin **run bar** with icons for your clones' recorded events and red failure markers; during a redo, the "on time / late" strip. Last 10 s pulse; last 5 s Alarm Red with a ring glyph.
+2. **Top left:** loot meter "$400 / $1,000" (Clone Party: "$2,350 · best $3,100").
+3. **Top right:** clone strip (glyph, digit, hue per clone; busted = grey ✕); it opens the Clone Deck between runs.
+4. **Right edge, ~45% height:** 72 px END RUN button ("◀◀ END RUN"; co-op "END RUN · 2/3"), locked ring for 1.5 s.
+
+One objective line of 8 words or fewer, shown only when it changes or when stuck. Text ≥ 14 px on phones, taps ≥ 48 px, inside `CoreUISafeInsets`; tested at 7 viewports (roblox-ui-builder). Level select: tapes on a shelf in the van with medal stickers.
+
+**Accessibility at launch:** glyph + number + colour; captions on by default; a Comfort module (reduced motion, shake slider, 3/s flash cap, FOV-kick toggle, clone opacity); **Relaxed**; a photosensitivity line. **Localization:** every string a key via `FormatByKey`; auto-translation covers 16 languages but **not Danish**, which needs a manual table ([docs](https://create.roblox.com/docs/en-us/production/localization/automatic-translations.md)); Danish table ships Jan 8.
+
+### 7.5 Onboarding: Level 1 "Back Room" (first clone ≤ 30 s, first bank ≤ 45 s, ≤ 30 words)
+
+The key mental model, taught explicitly: **"where you stop is where your clone stays."**
+
+| t | Player | Game | Text |
+|---|---|---|---|
+| 0-8 s | Spawns at the open van door, facing the shop | Door shut; glowing plate with a cable to it; cash glittering through glass | "Step on the plate" |
+| 8-10 s | Steps on the plate | Door rises, the cash glitters; **REWIND pulses only while the player stands on the plate** | "Stay on it. Tap REWIND." |
+| 10-12 s | Taps REWIND, **or** stays 2.0 s on the plate | **L1 run 1 auto-ends after 2.0 s on the plate** (forced quick rewind), so run 1 always ends on the plate. If the player steps off, REWIND stops pulsing and the plate re-pulses | — |
+| 12-13 s | — | Quick rewind (1.0 s) | — |
+| 13-22 s | Walks toward the door | **The clone forms (chime), walks from the van to the plate and stays there**; the door opens and stays open | "◀ YOU, 10 SEC AGO" (label on the clone) · "Your clone stops where you stop." |
+| 22-38 s | Grabs the cash, runs | Gold chevrons to the van | "Bank it at the van" |
+| ≈ 40 s | **First reward** | Ka-ching, coins, "RUN 2 · $100" | — |
+| 40-180 s | Second room: a laser plate behind the first door needs a second clone; first Crew Line-up; first trophy (Golden Gum) | Objective only when stuck | ≤ 6 more words |
+
+- **Stuck hints** at 8, 16 and 24 s: re-pulse the plate → a beam from your feet → the **Mentor tape** ghost does the step. After 2 failed runs on any level a Ghost Hint plays the solution once (free on launch levels, 3 a day later, **never sold**). No offers during the FTUE; returning accounts can skip.
+- **Naive-kid guarantee:** L2 headless tests replay recorded "wander" runs (plate on/off, explore, door) and assert FirstBank within 2 runs on L1 and a clone + bank within 3 runs on L2-L4 (§8.9).
+- **Funnel `onb_v2`** (server-only, `LogOnboardingFunnelStepEvent`): Joined → FirstMove → FirstPlate → FirstRewind → FirstCloneSeen → FirstBank → L1Complete → ReelShown → L2Started → FirstCloneBusted → **SwarmSeen** (6+ own clones on screen) → Minute10. Targets: ≥ 90% per step to FirstBank, ≥ 70% reach L1Complete, **≥ 60% SwarmSeen by minute 10**.
+
+---
+
+## 8. Technical architecture
+
+### 8.1 What changes from v0.1, and why
+
+v0.1 (3,648 lines of Luau across `src/`) has the right core (mechanisms read `Actors`; clones obey player rules) but three structural problems, confirmed in code: (1) clones are server Instances whose `root.CFrame` is written every Heartbeat (`Echoes.luau`), costing CPU, bandwidth and smoothness; (2) the world is not deterministic (`Guard.luau` uses `Humanoid:MoveTo` with `task.wait`; the recorder in `Main.luau` runs on `task.wait`); (3) recordings trust client-owned movement, so a speed hack replays forever. **Nothing has run in Studio yet** (PROJECT_STATE), so the refactor starts only after the Nov 16 fun gate; only the pure `shared/Rec` codec and sampler may start before it.
+
+### 8.2 Target architecture: sim core + client view
+
+- **Server:** per heist instance, one fixed-step **20 Hz `HeistSim`** on loop time (Heartbeat accumulator, never `task.wait`) with mechanisms, guards, loot, banking, alarm and the timer. **Clones are pure data** on the server: `{ownerId, slot, rec, alive, state, carrying, orphan}`, position from `Sampler.at(rec, t)`. Plates use point-in-box, lasers segment tests, Gus raycasts against **sim boxes** (generated from the layout, §8.5) to sampled points. The server stays authoritative for every outcome (CLAUDE.md rule).
+- **Loop clock:** replicated as `{anchorServerTime, anchorLoopT, rate}`; every view samples `loopT = anchorLoopT + (GetServerTimeNow() - anchorServerTime) × rate`. Fast-forward changes `rate` and re-anchors; the sim takes N substeps per tick at 3x. This keeps clients in sync during fast-forward.
+- **Clients:** receive each recording **once** as a compact `buffer` over a reliable RemoteEvent and **render local rigs** from the loop clock. Server-decided changes (busted, stuck, dropped loot) arrive as reliable events stamped with t and blend in over 150 ms. Plates light from the **server** attribute.
+- **Doors, lasers, Gus** are state machines with timestamps in attributes (`DoorA_OpenUntil`); clients tween locally, the server never tweens. Late joiners get the clone store (≤ 12 × ~8 KB) plus attributes.
+- **Heist instances (§3.3):** a `HeistInstance` object owns a sim, a level copy at an offset, its party and its remotes' routing; up to 4 per server; server sim budget per instance ≤ 2 ms.
+
+### 8.3 Recording format
+
+- **20 Hz**, sampled inside the sim tick. **8 bytes per sample:** position as three `i16` at 1/16 stud relative to the level origin (±2,048 studs), yaw `u8`, flags `u8` (grounded, jumping, crouch, carrying-heavy, hidden, 3-bit pose/emote).
+- Header: version, level id, loop index, sample count, validator flags. Events: `{t_ms u16, kind u8, arg u16}`, 5 bytes each, typically < 30 per run.
+- 60 s run = 9.6 KB raw, ~5 KB delta-coded. One new clone per player per run, so ~8 KB per client per rewind. Recordings never travel unreliably (900-byte UnreliableRemoteEvent limit, [docs](https://create.roblox.com/docs/reference/engine/classes/UnreliableRemoteEvent)).
+- Playback: Catmull-Rom on position across 4 samples, shortest-arc yaw, derived velocity feeds the animation speed. **Sample by time, never by frame index** ([Messenger Mouse devlog](https://troystorygames.itch.io/messenger-mouse/devlog/945109/record-and-replay-ghost-races)).
+
+### 8.4 Module layout
+
+```
+src/shared/  Config, Types, Tags, Scoring, LoopClock
+  Sim/  HeistSim (pure step) · Actors · Mechanisms · Guards (patrol(t), chase steering, A*, vision, hide) · Loot (light + heavy grips)
+        Interact (the ONLY intent entry point) · Divergence (dynamic blockers, Stuck/Confused) · Alarm
+  Rec/  Codec (buffer, versioned) · Sampler · Validator
+  Level/LevelSpec (layout + kit metadata -> LevelData + sim boxes, asserts)
+src/server/  Main.server.luau + Services/ Lobby · Instances · Loop · Sim · Record · Level · Progress · Party · Analytics · LiveFlags
+             LihFolk/ PlayerData Net RateLimit Leaderboard Receipts Shop DailyRewards
+src/client/  Controllers/ EchoView (pool) · GusView · WorldView · RewindDirector · HUD · Input · Camera · FX · Audio · Tutorial · Comfort · PosePlayer · Perf
+assets/Kit.rbxm (owner-imported)   levels/<id>.layout.luau   levels/<id>.solution.bin (human-recorded)   levels/<id>.naive/*.bin
+tests/unit/*.spec.luau  tests/sim/*.spec.luau  tests/engine_smoke.luau  selene.toml + shared/Sim/selene.toml
+```
+
+`shared/Sim/*` must not touch engine services (it takes Vector3/CFrame, plain tables, an injected clock and `Random`), so ~80% of the logic runs in Lune. A **second `selene.toml`** for `shared/Sim` uses a std without `task`, `os` or `math.random`, plus a Lune grep check; dictionary-order bugs are caught by the event-log hash test, not by lint (Selene cannot ban `pairs` over dictionaries).
+
+### 8.5 Gameplay systems and level pipeline
+
+- **Interactions are intents:** `Interact.request(actor, kind, targetId)` validates range from the actor's **sim position**, target state and cooldown, then records the event; replaying clones call the same function (holds are `holdStart`/`holdEnd`).
+- **No physics for anything clones touch.** Loot and doors are anchored and placed by the sim. **Heavy loot** has `grips[]`: it moves only when `#grips >= N`, faster with more grips (Giant Present: 2 required, 4 max), follows the grippers' centroid at ≤ 8 studs/s, drops if a gripper is busted or leashed beyond 5 studs.
+- **Clone rig:** `Humanoid.EvaluateStateMachine = false`, physics off; Blend1D by speed plus jump/land from flags and an emote layer, ≤ 4 tracks; animation LOD (full < 40 studs, 15 Hz joints to 100, none beyond); all roots in one `BulkMoveTo` per frame; `AnimationController` fallback if the Humanoid costs too much. Rigs are **pooled per owner** and never destroyed on rewind; the reel reuses the same pool.
+- **Levels are data, not files of MeshParts:** `levels/<id>.layout.luau` lists kit piece names, transforms and tags (`EH_Plate`, `EH_Door`, `EH_Laser`, `EH_Loot`, `EH_HeavyLoot`, `EH_GuardPath`, `EH_Hide`, `EH_Spawn`, `EH_Van`, `EH_NoGo`, `EH_AlarmLock`) with attributes as wiring. At heist start the server clones kit pieces from `ServerStorage/Kit` into the instance. The **sim boxes** (blockers and Gus occluders) are generated from the same layout and kit metadata; `LevelSpec` asserts every collidable kit piece has a sim box. LevelSpec also runs in Open Cloud Luau Execution against the real kit.
+- **One source of the place:** the live place is **always `rojo build` output from git**, including Lighting `$properties`, `assets/Kit.rbxm` and the layouts. The owner's Studio art and lighting experiments happen in a separate **art place**, and come back only as exported files committed by Claude. `servePlaceIds` lists the dev place only. CI checks the built place's Lighting against `docs/STYLE_BIBLE.md`.
+
+### 8.6 Networking and performance budgets
+
+| Budget | Target | Ceiling |
+|---|---|---|
+| Server sim step per instance (20 Hz) | ≤ 2 ms | 5 ms |
+| Clone system CPU on client (sample + BulkMoveTo + anim) | ≤ 1.5 ms for 12 clones | 3 ms |
+| Server → client steady data | ≤ 20 kbps | 30 kbps (vault *Network Bandwidth Budgets*) |
+| Per-rewind burst | ≤ 40 KB | 100 KB |
+| Join to playable on 4G | ≤ 8 s | 15 s |
+
+StreamingEnabled on (MinRadius 128, Target 512, Opportunistic, `ModelStreamingBehavior = Improved`), mechanism models **Atomic**. Clients bind through tags, never by indexing level parts. Profiling labels `EH.Sim`, `EH.EchoSample`, `EH.EchoAnim`, `EH.GuardVision`; a debug-only **bench mode** spawns 12 (then 16) synthetic clones. **Telemetry from launch day:** the client `Perf` controller sends one rate-limited sample every 60 s (median and p95 frame time, device platform, memory tier, graphics quality, clone count on screen); analytics shows frame time by device tier from Dec 3, because the 12/16 cap and LOD distances depend on it. The performance tier (§6.3) steps down automatically when p95 > 33 ms for 20 s.
+
+### 8.7 Data
+
+- Install lihfolk-systems `PlayerData` (90 s session lease, token-fenced saves, 30 s dirty-gated autosave, parallel BindToClose), `Net`, `RateLimit`, `Leaderboard`, `Receipts`, `Shop`, `DailyRewards` as-is.
+- Profile slice `Heist` (< 16 KB): `schemaVersion`, `vaults[levelId] = {best = {timeMs, clones, stars, recHash}, medals}`, `haulBest`, `bagLevel`, `trophies`, `ornaments`, `cosmetics`, `cash`, `stars`, `daily = {lastDay, streak}`, `ftueStep`, `firstHeistDone`.
+- **Ghost keys** `G_<levelId>_<userId>` hold your personal-best recording (10-40 KB), written only on a new best.
+- **Boards:** daily "biggest haul" (server board at launch; global OrderedDataStore per day from Dec 11), score written on improvement and only for untainted runs; MemoryStore sorted map caches the top 100 for 60 s.
+- **LiveFlags:** a DataStore key polled every 60 s turns features off without a republish (SAVE CLIP, boards, Quick Crew, store items, dressing layer).
+- Budgets are per experience and shared with Open Cloud since 2026-07-29 ([docs](https://create.roblox.com/docs/cloud-services/data-stores/error-codes-and-limits)); `SetRateLimitForRequestType`; jobs self-throttle.
+
+### 8.8 Anti-exploit
+
+- **`RecordingValidator`** on each 20 Hz sample: horizontal speed ≤ `WalkSpeed × 1.35 + ping allowance` (leaky bucket), vertical rise ≤ jump apex + 1 stud, no segment through closed blockers or `EH_NoGo` volumes, exemption tokens for server teleports. Violations are **clamped** and the run is **tainted**: it plays but never earns medals or board entries. No kicks on movement alone ([server-side detection](https://create.roblox.com/docs/scripting/security/server-side-detection)).
+- Medals and scores are computed **only on the server**; board entries store the recording hash for headless replay in CI.
+- Clients send only validated, rate-limited intents (END RUN, Clone Deck actions, interact, ping, marker, crew/lobby actions, perf sample). This widens CLAUDE.md's "clients only send `RequestRewind`" rule; CLAUDE.md is updated when that code lands.
+- **Server Authority** (`Workspace.AuthorityMode = Server`, [DevForum](https://devforum.roblox.com/t/full-release-ship-fair-and-competitive-games-with-server-authority/4727993)): not at launch; a 2-day spike in a branch place in the Jan 11-15 window; adopt only if movement feels equal or better at 150-250 ms.
+
+### 8.9 Tests
+
+| Layer | Where | What | When |
+|---|---|---|---|
+| L0 Static | Local + CI | StyLua, Selene (two configs), luau-lsp, `rojo build`, LihFolk checker, Oklab palette audit, built-place Lighting check | Every commit |
+| L1 Unit (Lune 0.11.1) | Local + CI | Codec round trip (≤ 1/32 stud), Sampler, LoopClock, Validator fixtures (walk, jump, fall, teleport, speed hack), `Guards.patrol(t)` and chase steering, scoring, migrations, LevelSpec | Every commit |
+| L2 Sim (Lune, headless) | Local + CI | **Determinism** (identical event-log hash twice); **fast-forward equivalence** (3x loop = 1x loop log); **solvability** from **human-recorded** `solution.bin`; **naive-kid** recordings (§7.5); **latency injection** (live-player streams delayed 50-250 ms, asserting the fairness rules of §8.10); divergence (door closed early → Stuck); soak (500 loops) | Every commit |
+| L3 Engine (Open Cloud Luau Execution) | Test place | Real buffers, remotes, kit cloning, LevelSpec on real kit, DataStore `_TEST` keys. No players or physics; data-model changes are not saved; **5 task creations per minute per key owner**, so all L3 checks run as **one batched task per merge** (vault *Code Pipeline* Stage 5) | Merge to main |
+| L4 Human | Studio, phones, early testers | §10.3 | Every milestone |
+
+- **Golden solutions are human-recorded:** a debug command, after the owner (or a tester) clears a level in Studio, writes the run buffers to a `_TEST` DataStore key; Claude pulls them with the Open Cloud DataStore API into `levels/<id>.solution.bin` as CI fixtures. Hand-written recordings are only used for logic unit tests.
+- **Client regression:** no automated multi-client tests exist, so each milestone runs a scripted Studio "Clients and Servers" checklist (3 clients, Incoming Replication Lag 150 ms) and client-side assertions are logged to the server and to analytics.
+- CI: GitHub Actions, Rokit-pinned `rojo` 7.7.1, `lune`, `selene`, `stylua`, `luau-lsp`; L3 secrets `ROBLOX_API_KEY`, `TEST_UNIVERSE_ID`, `TEST_PLACE_ID`. Publishing: `rojo build` → `cloud_test.py` publishes a **Saved** version to the **test place** → tests → the live place is published from the **same built file** on a release tag.
+
+### 8.10 Lag fairness between live players and clones
+
+1. A live player's hazard checks (laser, door bonk, plate release) use the mechanism state at `t − the player's measured one-way latency`, capped at 150 ms: **the player is favoured**.
+2. Doors and lasers re-enable with a **0.2 s visual lead**: the 3-flicker telegraph ends exactly when the server window closes, so what you see is never more generous than the server.
+3. Plates count a live player as pressing from the server's receipt of their position; the 0.4 s plate grace and the 1.0 s simultaneity window absorb the rest.
+4. Remote players' clones are drawn on the same interpolation delay as remote characters, so a friend handing off to their own clone looks in sync on third screens.
+5. Gus's detection of live players uses the same latency rewind (≤ 150 ms).
+6. All of this is asserted in L2 with latency injection; the human check is §10.3 #5.
+
+### 8.11 Week-1 spikes (go/no-go Wed Nov 18; each decides architecture or art)
+
+| # | Spike | Pass | If it fails |
+|---|---|---|---|
+| S1 | **Clone phone bench:** a ~50-line client script spawns 12 and 16 stripped rigs (candidates A, B, C of §6.5) on the v0.1 map; owner reads Shift+F2 and the MicroProfiler on their phone | 12 clones ≤ 33 ms on a low Android, ≤ 16.6 ms on mid; clones ≤ 120 draw calls | Mannequin (C) beyond 15 studs or everywhere; cap stays 12 |
+| S2 | **Mesh pipeline:** one Blender mesh imported by the owner into `Kit.rbxm`, built by Rojo, cloned by code; size and collision checked; Content-property serialization (switched Nov 11, [DevForum](https://devforum.roblox.com/t/upcoming-changes-to-asset-properties-content-property-serialization-switch/4975546)) survives `rojo build` | Correct size and Box collision in the built place | `CreateMeshPartAsync` at server boot from uploaded mesh ids |
+| S3 | **Video capture:** `CaptureService` video on the owner's phone and PC ([reference](https://create.roblox.com/docs/reference/engine/classes/CaptureService.md)) | Records and shares a 12 s reel | SAVE CLIP = screenshot + crop-safe reel for screen recording |
+| S4 | **Stem alignment:** `AudioPlayer:Play(atTime)` with 2 stems | No audible drift over 8 loops | Start-together-at-volume-0 fallback (§7.2) |
+| S5 | **Open Cloud smoke:** `tests/engine_smoke.luau` via `tools/cloud_test.py` against the test place | Green run with logs | Fix the key scope; block L3 until green |
+| S6 | **Lighting in the project file:** `default.project.json` sets `LightingStyle`/`PrioritizeLightingQuality` | Built place has the right values | Set them once in a base file; CI check |
+
+### 8.12 Hotfix and rollback
+
+- **Release path:** tag → `rojo build` → test place → L3 → publish live from the same file → release annotation in analytics.
+- **Rollback:** revert the live place to the previous version in Creator Hub version history (owner, 2 minutes) or republish the previous tag (Claude via Open Cloud), then a soft shutdown of old servers only for data-schema changes.
+- **Kill switches:** LiveFlags (§8.7) for any feature that misbehaves.
+- **Content without republishing:** Christmas dressing, gift beat and chapter unlocks are pre-published and **unlocked by server time**, so the Dec 24-27 freeze needs no publish.
+- **Freeze windows:** Dec 24-27 and the 24 h before each drop (only hotfixes with a rollback ready).
+
+---
+## 9. Virality and launch
+
+### 9.1 What we sell in one second
+
+The heist headline plus the swarm payoff, made true in session 1: **"8 OF ME"** (Clone Party at about minute 8), and with friends **"16 ROBBERS"**. Live context today (rbx_search / games API, 2026-11-12): Criminal Simulator **18,687 playing** (created 2026-10-08; "sneak past residents, outrun the police... sell your loot before the deadline"), Clone Engine **2,503 playing, 417.3M visits** (people love many copies of themselves), ROB IT 1,875, Heist Evolution 1,876, and *ECHOES: Clone Puzzles* **0 playing** (puzzle framing fails). Steal An Egg (472,473 playing) owns the "steal" keyword; we don't chase it.
+
+**Positioning against Rewind Robbers and the jams:** they can't give you **your own Roblox avatar** as the clone, **4 friends × 3 clones = 16 robbers live**, **Gus** as a named character, or a **daily shared vault**. Every store line and trailer leads with those.
+
+**Search:** title "Heist Yourself: Rob With Your Clones"; the first two description lines (§1.1) honestly contain heist, rob, clone, christmas heist and past self. Claude writes the 15-30 player search queries checklist (vault *Experience Description and Search Keywords*) in W3 and checks where we rank each week.
+
+### 9.2 Eight signature clip formats (all readable with the sound off; every clip burns "◀ ME, 20 SEC AGO" on a clone in the first second)
+
+Posting order (most explainable first):
+
+| # | Hook text | What the game or the owner kit generates |
+|---|---|---|
+| 1 | **RUN 1 vs RUN 8** | Reel "Then/Now" split: one lonely robber vs the full crew |
+| 2 | **MY CLONE BETRAYED ME** | Server **blooper log** (cause-tagged failures); the results card's default cut leads with it |
+| 3 | **HE DOES IT EVERY TIME** | The blooper log stitches one clone's repeat failure at the same spot into 6 s (Dec 11) |
+| 4 | **WRONG ONE** | Gus's 2.0 s "huh?" freeze on a clone while the live player sneaks past, auto-bookmarked |
+| 5 | **8 OF ME** | Clone Party haul + Crew Line-up, burned-in caption |
+| 6 | **POV: you're the night guard and 16 of the same robber walk in** | Owner kit "Gus cam" director command |
+| 7 | **1 ME vs 4 FRIENDS** / **4 FRIENDS, 16 ROBBERS** | Reel angle with the most actors in frame; friend-group voice reactions |
+| 8 | **DEV: 4 CLONES. ME: 3** | Diamond medal card (from Jan 8) |
+
+Seasonal: **"STEALING BACK CHRISTMAS WITH 8 OF ME"**. Every zap and bust ends in a bloodless stylised flop (this month's ragdoll wave: 8 of the top 28 new Roblox games, market F4).
+
+**Clip production (the real clip source is the owner kit, not in-game sharing, because TikTok and Roblox Moments are 13+):**
+- **1-2 clips a day from Thu Nov 19**, cross-posted to TikTok, YouTube Shorts and Instagram Reels; each reel cut 3 ways (hook text variants).
+- A **part-time clip editor** (owner decision; a friend or sibling is fine). Claude produces daily shot lists and director-command scripts; the owner records 20-30 minutes of raw capture twice a week.
+- **3-5 friend groups** (16+, or kids with parental consent who don't post themselves) record voice reactions in private servers; we post with permission and no names.
+- **Owner kit:** a capture place with the live lighting, a freecam, a "director" command that replays the day's best blooper from the server log, and the Gus cam.
+
+### 9.3 Built-in replay and share
+
+1. **SAVE CLIP:** if spike S3 passed, records the end-of-heist cut with `CaptureService:StartVideoCaptureAsync` when `CanCaptureVideo()` is true; else a screenshot; then Save (`PromptSaveCapturesToGallery`) or Share (`PromptShareCapture`, launch data `v1|reel|<levelId>`). A bonus, not a pillar: device coverage is [UNVERIFIED].
+2. Clips fit **Roblox Moments** (≤ 30 s, 13+, [newsroom](https://about.roblox.com/newsroom/2025/09/roblox-moments-user-generated-discovery)); `UploadCaptureAsync` stays behind a LiveFlag. Share links (`SocialService:PromptLinkSharingAsync`) carry a whitelisted source tag per channel.
+3. **Never auto-prompt and never reward sharing or watching** ([DevForum](https://devforum.roblox.com/t/roblox-kids-and-select-new-restrictions-on-reward-driven-media-feeds/4829188)); the only social reward is a referral cosmetic after the invited friend plays 10 minutes.
+
+### 9.4 Icon and thumbnails
+
+- **Icon:** the Rookie's face (no mask) with a smug side-eye, two or three cyan copies fanned behind, Ink Indigo with a vault-door glow, a gold glint, no text; passes greyscale at 64 px. Santa hat from day one (Christmas edition), removed Jan 5.
+- **Thumbnails** (real in-game captures, staged in the capture place): T1 **8 OF ME** (hero with gold, 7 clones in a V); T2 **BETRAYED!** (hero in Gus's torchlight, a clone pressing the alarm); T3 **WRONG ONE!** (Gus holding a clone by the collar, hero tiptoeing past with the diamond); T4 **16 ROBBERS**; T5 **STEAL BACK XMAS**. ≤ 3 words in the upper third.
+- **Only 2 active until DAU passes 1,000** (personalisation gets little signal below that, growth.md F1): launch with **T5 + T3**; add T1 once SwarmSeen ≥ 60% by minute 10 is confirmed in analytics.
+- **Video thumbnail:** first real-footage version from the golden room **by Sun Nov 22** (no narration or lyrics; reviews can take weeks, ≤ 3 uploads a month, [DevForum](https://devforum.roblox.com/t/video-thumbnail-review-taking-weeks/4749618)); replace it with Clone Party footage in December.
+
+### 9.5 The under-16 gate and launch path
+
+**Facts (checked today):** a new game reaches only age-checked 16+ users until it passes the **Kids & Select evaluation** ([docs](https://create.roblox.com/docs/production/publishing/kids-and-select)). The organic threshold is **250 highly engaged plays in 60 days** since Aug 19 ([DevForum](https://devforum.roblox.com/t/highly-engaged-player-threshold-drops-to-250/4820164)); a November drop to 100 is reported only by third parties [UNVERIFIED]. **Expedited review** costs a **refundable deposit per game, about 48 hours**, restarting if a minor violation needs a fix: the docs and launch post say **100,000 R$**, the vault's reading of the publish page and a DevForum user say **50,000 R$** ([launch post](https://devforum.roblox.com/t/roblox-kids-and-select-global-launch-upcoming-updates-to-eligibility-ads-manager-and-expedited-review/4685717), [refund thread](https://devforum.roblox.com/t/roblox-select-refund-request-for-full-100k/4873550); vault *Publishing an Experience* §3). The owner checks the live amount on Creator Hub; Robux only, no USD ([DevForum](https://devforum.roblox.com/t/a-simpler-path-to-publish-plus-invite-early-testers/4930524)). [estimate] 50k-100k R$ costs about $450-1,000 to buy. One developer reports a review banner stuck for 8+ days ([DevForum](https://devforum.roblox.com/t/17k-ccu-game-stuck-at-16-with-bugged-creator-hub-message-expedited-review-pending-approval-48-hours-for-over-8-days/4913112)), so we keep a backup. **There is no creator switch that keeps a public game out of RFY**; the draft's "RFY excluded / open RFY Dec 11" is removed. The point of no return is going public.
+
+**Path:**
+1. **By Mon Nov 16 (owner):** ID/age check, 2SV, the **1,000 R$ refundable publishing fee** (or 2 months of Plus/Premium), the maturity questionnaire (target **Mild**), ad billing (18+ card or ad credits).
+2. **Nov 19 - Dec 2: private test place with early-tester invites** (up to 10 friends or group members per place, added Oct 12, 2026; parents can restrict under-16 testing, [GameBusiness.jp](https://www.gamebusiness.jp/article/2026/10/13/28297.html), [DevForum](https://devforum.roblox.com/t/a-simpler-path-to-publish-plus-invite-early-testers/4930524)). Kid waves (§10.3) and the first-session funnel run here. Early testers don't count toward the threshold.
+3. **Mon Nov 30 go/no-go** on the first-session bars measured with early testers (§10.2). If go, the owner buys the deposit Robux (D2, by Fri Nov 27 so it's ready).
+4. **Thu Dec 3, 15:00 CET: public** on the live place, rated Mild, 16+ trial, and **submit expedited review the same hour** → all ages expected **~Sat Dec 5**. Ads: **$100 Plays** (Dec 3-6, ad-creative concepts only, ad players don't count toward RFY ranking, vault *Discovery and the Algorithm*) and **$300 Engagement** as the backup path to the threshold if review is not funded or stalls ([Ads Manager](https://create.roblox.com/docs/en-us/production/promotion/ads-manager)). ≤ $500 before D1 is known.
+5. **Creators and "join now" CTAs wait for the Audience Reach dashboard to show all ages.** Before that: devlogs and teasers drive Favorites, follows and the event RSVP, never joins; early creators are ones whose audience skews 13-17 and older.
+6. **Fri Dec 4:** create the "Steal Back Christmas" **Experience Event** for the Dec 11 drop and submit it for featuring (7+ days' lead); RSVP prompt after the first heist (`SocialService:PromptRsvpToEventAsync`). RSVPs are a nice-to-have, not a KPI.
+7. **Fallbacks:** if all ages is not cleared by **Wed Dec 9**, raise Engagement spend by $200 and check the review status with support; if not cleared by **Wed Dec 16**, move the creator wave to 48 h after clearance and the finale to **Mon Dec 21**.
+
+**Market context:** **GTA 6 ships Nov 19** ([Khaleej Times](https://www.khaleejtimes.com/business/tech/gta-6-release-date-locked-take-two-ceo-shuts-down-delay-rumours)); it raises heist appetite but pulls Roblox creators' attention in late November, so **creator pitches go out by Mon Nov 23**. **ROB RUN** (free Steam crime sandbox, launched Nov 4, 238,874 CCU on our radar, [Steam](https://store.steampowered.com/app/4262460/ROB_RUN/), market.md F4) will likely spawn Roblox copies crowding "rob/heist" search in December: it joins the daily radar watchlist. No 2026 Roblox winter platform event is announced; apply if one opens.
+
+### 9.6 Creators
+
+- 20 micro (10K-200K) and 10 mid (200K-2M) Roblox duo/funny creators; no macro or drama channels until D1 is proven ([RoWatcher](https://rowatcher.com/news/why-macro-influencers-kill-small-roblox-games-and-what-works-instead)). DM pitches ≤ 150 words with a 15 s vertical clip, sent **by Nov 23**; private servers open **the day after all-ages clearance** (target Dec 6-10); **embargo lifts Fri Dec 11** with drop 1 if cleared at least 48 h before, else 48 h after clearance. Personal share link and a "creator clone" colour. No paid deals until D1 ≥ 22%.
+- **Devlog from Nov 16:** "I made a Roblox game where your past self is your teammate", owned music only, at the clip rate in §9.2.
+
+### 9.7 KPIs and kill / double-down rules
+
+Bars anchored to GameAnalytics medians over 500+ Roblox games (**D1 10.3%, D7 1.6%; top 1%: 22.2% and 9.1%**, [GameDevReports summary](https://gamedevreports.substack.com/p/gameanalytics-key-roblox-and-roblox)). **Every KPI is split by `JoinSource`** (ad / share link / search / RFY / friend / creator) and read against the Creator Analytics age bands. **Ad-sourced cohorts use bars 4 points lower** [estimate, ad cohorts usually retain worse]; kill and rework rules fire only on **organic** cohorts. The 16+ trial D1 is a floor, not proof: the funnel is re-baselined when the under-16 cohort arrives.
+
+| Metric | Kill / rework | Fix before scaling | Healthy | Double down |
+|---|---|---|---|---|
+| Join → control (mid phone) | > 20 s | 10-20 s | ≤ 10 s | — |
+| First clone seen ≤ 45 s | < 60% | 60-80% | ≥ 85% | — |
+| L1 complete / joined | < 50% | 50-70% | ≥ 70% | ≥ 80% |
+| **SwarmSeen by minute 10** | < 35% | 35-60% | ≥ 60% | ≥ 75% |
+| Bounce < 60 s (H) | > 35% | 20-35% | ≤ 20% | ≤ 12% |
+| Median first session | < 5 min | 5-10 | ≥ 12 | ≥ 18 |
+| **D1** (organic cohort ≥ 300) | **< 8%** | 8-15% | **15-22%** | **≥ 22%** |
+| **D7** | < 1.5% | 1.5-4% | 4-6% | **≥ 6%** |
+| Sessions with a friend | < 8% | 8-20% | ≥ 20% | ≥ 30% |
+| SAVE CLIP taps / heists | < 1% | 1-4% | ≥ 5% | ≥ 10% |
+| Describe it as a "heist" game (playtests) | < 50% | 50-70% | ≥ 70% | — |
+
+- **Double down** (organic D1 ≥ 22%, D7 ≥ 6%, DAU > 1,000 in week 2): scale Plays ads while CPP < $0.02, pay mid creators, pull Museum forward.
+- **Rework** (2 organic cohorts under 8% D1): stop spend, fix the first 3 minutes, new thumbnail concepts.
+- **Hard stop** (4 weeks under 10% organic D1 and PTR in the bottom quartile): change the framing (title, setting), keep the tech.
+
+Analytics: one server-only module; funnels `onb_v2` and a per-heist funnel; low-cardinality custom events (`CloneFailed{cause}`, `RedoUsed`, `UndoUsed`, `AlarmTripped`, `AlarmEscaped`, `ClipSaveTapped`, `InviteJoined`, `JoinSource`, `QuickCrewJoined`, `TaintedRun{reason}`, `PerfSample{tier}`); a release annotation on every publish.
+
+### 9.8 Live ops: first 10 weeks (drops Fridays 17:00 CET = 11:00 US Eastern, published 24 h earlier and unlocked by server time)
+
+| Week | Dates | Content | Config / ops | Marketing |
+|---|---|---|---|---|
+| L1 | Thu Dec 3 - Wed Dec 9 | **Launch, Christmas edition:** L1-L6, daily vault/advent, trophies, store; Wrapping Room teased at the van | Expedited review Dec 3; hotfixes only; ads daily; event created Dec 4 | Devlog + teasers (follows, RSVPs); creator servers after clearance |
+| L2 | Dec 10-16 | **Fri Dec 11: drop 1 "Wrapping Room"** (2 levels, heavy loot, hand-off), +2 daily vaults, global daily board, blooper stitching | "[🎄]" tag; T5 + T3 | **Embargo lift Dec 11** (if cleared); formats 1, 2, 5 |
+| L3 | Dec 17-23 | **Fri Dec 18: finale "The Snow Globe Vault"** (break starts) | Double Cash Sat-Sun; gift beat pre-published Dec 23 | Creator wave 2; format 7 "play with your cousins" |
+| L4 | Dec 24-30 | Dec 25-26 gift beat (free Gift-Wrap style, double daily Stars, bundle on the van screen) | **Publish freeze Dec 24-27** | Format 4 and seasonal |
+| L5 | Dec 31 - Jan 6 | Advent catch-up closes Dec 31; **event ends Mon Jan 4**; dressing off Tue Jan 5 | Museum teaser thumbnail | Format 1 recap "RUN 1 vs RUN 8 of 2026" |
+| L6 | Jan 7-13 | **Fri Jan 8: New Year patch** (Contracts, Diamond, dependency icons, emotes, Danish) + the funnel's top fix | Contract "Lights Out"; Server Authority spike Jan 11-15 | Format 8 |
+| L7 | Jan 14-20 | Buffer: fixes, performance by device tier | Contract "Faster Guards" | Community reposts (with permission, no names) |
+| L8 | Jan 21-27 | **Fri Jan 22: Museum** (4 levels, Noisemaker, Blueprint) | New event; "MUSEUM HEIST" thumbnail | Formats 2-3 among museum lasers |
+| L9 | Jan 28 - Feb 10 | Museum follow-ups; Hub and crew servers integration-tested | Contract "Mirror Map" | Format 6 Gus POV |
+| L10 | Feb 11-17 | **Fri Feb 12: co-op update + Season 1** | — | Format 7 headline; a paid mid creator only if D1 ≥ 22% |
+
+The post-holiday cliff is real (the week after Halloween 2026, Murder Mystery 2 fell 84% and Steal a Brainrot 70%, [RoWatcher](https://rowatcher.com/news/roblox-week-in-numbers-2026-w44)); the Jan 8 patch and Jan 22 Museum catch it. Steady state: daily vault, a weekly Contract, a location every 3-4 weeks, a seasonal event every 2-3 months.
+
+---
+
+## 10. Production plan
+
+### 10.1 Who does what, and the owner's time budget
+
+| Claude Code (cloud session) | Owner (Danish, solo) |
+|---|---|
+| All code via Rojo files; Lune tests; CI; Open Cloud engine tests | **Runs Studio**: fun gate, playtests, screenshots, clips, MicroProfiler readouts, phone bench |
+| Level layouts; sim boxes; naive-kid recordings; pulling human-recorded solutions | Clears each level once in Studio (records the golden solution); imports `Kit.rbxm` per kit revision |
+| Blender assets through the gates with turntable self-review; budget audits | **Style owner:** 15-minute daily screenshot slot; signs off golden assets, clone look, icon, thumbnails |
+| Code-authored animation clips | Reviews clips by screen recording |
+| Analytics, blooper log, store copy, creator pitches, shot lists, localization keys | ID check, 2SV, fees, deposit, questionnaire, ads billing, trademark check, Open Cloud key |
+| Capture place, director and Gus-cam commands | Records raw capture; posts clips (or the editor does); creator DMs; Experience Event |
+| PROJECT_STATE, release checklists, hotfix builds | Recruits kid testers with parental consent; publishes on release tags; music/artist contracts |
+
+**Owner time budget** [estimate, to be confirmed in D4]: W1 ~12 h (fun gate 1 h, spikes 4 h, accounts 2 h, screenshots 2 h, devlog 3 h); W2 ~14 h (kid wave 3 h, bench and ping tests 3 h, solutions 2 h, daily slot 2 h, clips 4 h); W3 ~16 h (kid wave 3 h, outsider tests 4 h, thumbnails 3 h, creator DMs 2 h, clips 4 h); launch week ~15 h; then ~10 h/week. If the owner has less, the clip editor and freelance artist are not optional.
+
+### 10.2 Week-by-week milestones with exit criteria
+
+**W1, Thu Nov 12 - Wed Nov 18: "Prove the fun, spike the unknowns, lock identity" (M0)**
+- **Fri Nov 13 (owner):** create the test universe/place and an Open Cloud key scoped to it (`universe-places:write`, `luau-execution-sessions:write`, `asset:write`, DataStore read/write on the test universe); Claude runs `engine_smoke` the same day (S5).
+- **Mon Nov 16: fun gate.** Owner + 2-3 people play v0.1 for 30 minutes, solo and 2-client (`rojo build -o EchoHeist.rbxlx`), including one round with run length set to 30 s in Config. Question: "did you rewind on your own, and did you laugh?" Name confirmed; ID, 2SV and fee done; handles reserved.
+- Claude before the gate: `shared/Rec` (Codec, Sampler, LoopClock, Validator) with L1 specs; CI L0; second selene config; bpy install + turntable pipeline; bench script (S1); Lighting in the project file (S6); stem test place (S4); correct `docs/IDEA_ECHO_HEIST.md`.
+- Claude after the gate: start `HeistSim`, `Guards.patrol(t)`, the 3-stage cone, rule changes (END RUN, Undo, caught ends run, caps); golden-room look-dev slice.
+- **Exit (Wed Nov 18):** fun gate passed (else: a design fix week, launch slips to Dec 10); S1-S6 decided; LightingStyle and clone candidate chosen; title locked; freelance artist briefed.
+
+**W2, Thu Nov 19 - Wed Nov 25: "The sim and the first four levels" (M1)**
+- Claude: clones as server data + pooled `EchoView`; Interact; Divergence; Clone Deck (Redo, Redo from, Undo, Delete busted); run bar; L2 tests incl. naive-kid and latency injection; LevelSpec + layouts; Corner Shop L1-L4; FTUE + Mentor tape + funnel; Gus (rigid rig, pose player, hide spots); heist instances; Christmas dressing hooks.
+- Owner: **kid wave 1 (Sat-Sun Nov 21-22)** on the private test place via early-tester invites (5+ kids 10-14, phones, parental consent); video thumbnail v1 by Nov 22; creator pitches by Nov 23; phone bench at 8 and 12 clones; 2-client test at 200 ms simulated ping. Clips 1-2 a day start.
+- **Exit:** L1-L4 solvable headless with human solutions; naive-kid tests green; determinism hash stable; in wave 1, 4 of 5 kids reach the first clone **without help** and rewind unprompted, and 3+ call it a heist and say "again"; 0 desyncs in 20 loops; colour-blind audit passes.
+
+**W3, Thu Nov 26 - Wed Dec 2: "Launch scope to store-ready" (M2)**
+- Claude: L5 Clone Party and L6 Big Score; Alarm Run; profile slice, medals, Cash, Stars, bag levels, trophies and van shelf; 12 daily vaults (layouts; the owner records solutions); Crew Line-up and end-of-heist cut; results card; SAVE CLIP per S3; HUD v1; SFX and library music; store (3 styles, bundle, van paints) and Receipts; analytics with JoinSource and PerfSample; LiveFlags; Quick Crew and garage lobby; localization keys; Relaxed; L3 on main; kit through the gates.
+- Owner: **kid wave 2 (Sat-Sun Nov 28-29)**; 10-20 outsider phone tests via early testers; icon, T3 and T5; questionnaire; ads drafted; deposit Robux bought by Fri Nov 27 (if D2 = yes).
+- **Go/no-go Mon Nov 30:** L1-L6 complete and solvable; ≥ 70% of outsiders reach L1Complete; median first bank ≤ 60 s; SwarmSeen ≥ 60% of testers who reach minute 10; no data loss in Play/Stop/Play and server hops; flat memory in a 30-minute 4-client soak; frame budget met on the mid phone. **If no-go: public launch Thu Dec 10** with the Wrapping Room levels inside it; the Dec 18 finale holds.
+
+**W4, Thu Dec 3 - Wed Dec 9: "Launch" (M3)**
+- Public Thu Dec 3 15:00 CET; expedited review submitted; hotfixes only; ads daily; event created Dec 4.
+- Owner: **kid wave 3 (Sat-Sun Dec 5-6)**, on the live game if all ages is cleared, else on the test place.
+- Claude in parallel: drop 1 (Gift Tag, Wrapping Room, heavy loot, conveyor), 2 daily vaults, global daily board, blooper stitching.
+- **Exit:** all ages cleared or on the fallback path; organic D1 ≥ 15% on 300+ players; bounce < 60 s ≤ 20%; 0 blocker bugs; frame-time telemetry by device tier reviewed.
+
+**W5-W14 (Dec 10 - Feb 17)** follow §9.8. Build-side exits:
+- **W5 (Dec 10-16):** drop 1 live; finale built and passing L2 with a human-recorded solution at par 4-5; crash-free sessions ≥ 99%.
+- **W6 (Dec 17-23):** finale live Dec 18; gift beat pre-published and server-time tested; D7 of the Dec 3 cohort ≥ 4%.
+- **W7-W8 (Dec 24 - Jan 6):** freeze holds with no rollback; Jan 8 patch green; Museum L2 green.
+- **W9-W11 (Jan 7-27):** Jan 8 patch and Jan 22 Museum live; D8-28 return stable after the cliff; Server Authority go/no-go.
+- **W12-W14 (Jan 28 - Feb 17):** Hub and crew servers integration-tested and live Feb 12; sessions with a friend ≥ 20%.
+
+### 10.3 Testing gates and what must be human-playtested
+
+Automated gates (every commit: L0-L2; main: L3) block merges. Claude cannot see Studio renders, so these **must** be human-tested:
+1. Movement and camera feel (jump timing, zoom, wall fade), on PC and a phone.
+2. Clone readability: "which ones are past me?" in under 0.5 s (blind 3-person check on screenshots at 160×90 and 64 px); "is that my avatar?" yes for the near clone.
+3. Gus's 3-stage cone and hiding: does getting caught feel fair **to a 10-year-old on a phone**? Tune the Config values on kid waves, not adults.
+4. The rewind: satisfying, not tiring, after 20 runs.
+5. Co-op sync at 150-250 ms ping: "it was on the plate but the door didn't open" must never happen.
+6. Phone performance at 12 clones, and thermals after 15-20 minutes on a low Android and an older iPhone.
+7. Late join, leave mid-carry (orphan tapes), Quick Crew vote, Play/Stop/Play data safety, server hop.
+8. **Kid waves (Nov 21-22, Nov 28-29, Dec 5-6):** 5+ kids aged 10-14 on phones, never seen it, parental consent, via early-tester invites. **Hard gates:** first clone without help; they call it a "heist", not a "puzzle"; a spontaneous "again!"; the END RUN button is not mis-tapped more than once per heist; "run" vs "try" wording.
+9. SAVE CLIP and Share on real iOS and Android devices (if S3 passed).
+10. Every golden asset and the icon at 64 px (style-owner sign-off).
+
+### 10.4 Written cut list (decided now, not at the Nov 30 gate)
+
+**Not in the Dec 3 launch:** gadgets (Jan 22), full Blueprint editing (Jan 22), separate advent mini-vault system (merged into the daily vault), procedural daily vaults (after a constraint checker), Free Roam (replaced by Clone Party), Giant Present grips beyond the finale, blooper stitching (Dec 11), global daily board (Dec 11), clone emotes and rewind styles (Jan), Christmas pass (one bundle instead), MessagingService presents meter, Midnight Vault, Danish table (Jan 8), Contracts (Jan 8), dependency icons (Jan 8), Hub/hideouts/crew servers (Feb 12), keycard and heavy-loot levels (Dec 11), Teller Line and Vault 101 levels (dropped; their verbs move into the Dec 11 levels).
+
+**If W3 slips, cut in this order:** SAVE CLIP video (screenshot only) → bag levels → Quick Crew (friends-only co-op) → store cosmetics beyond the bundle → daily vault count 12 → 7 → Clone Party's Alarm Run (keep the 8 slots). **Never cut:** the FTUE fixes, Clone Party's 8 slots, the Crew Line-up, heist instances, the Big Score.
+
+---
+
+## 11. Risk register and decisions
+
+### 11.1 Top risks
+
+| # | Risk | L / I | Mitigation | Trigger |
+|---|---|---|---|---|
+| 1 | **The core isn't fun** (never played in Studio) | Med / High | Fun gate Nov 16 before any rewrite; kid waves as hard gates | Gate fails → design week, launch Dec 10 |
+| 2 | **Schedule** (solo owner, 21 days) | High / High | 6-level scope, written cut list, Dec 10 fallback, owner time budget, editor and artist | Any W1-W2 exit missed |
+| 3 | **Owner bottleneck** for every human gate | High / High | 15-min daily slot, batched tests, Claude self-reviews turntables, editor | Owner < 10 h in a week |
+| 4 | **Mechanic unreadable** in a 3 s clip or the first 60 s | High / High | Auto-ending L1 run 1, "◀ YOU, 10 SEC AGO" label, glyphs, tape-print spawn | First clone ≤ 45 s for < 80% |
+| 5 | **Puzzle-game perception** | Med / High | Alarm Run, Gus chase, heist-first copy, "puzzle" banned | < 70% say "heist" |
+| 6 | **Phone cost of 12-16 avatar rigs** | Med-High / High | W1 bench, opaque glow rig, mannequin LOD, cap 12, telemetry | S1 > 33 ms |
+| 7 | **Under-16 gate late** (review stuck, deposit not funded) | Med / High | Expedited review Dec 3, Engagement ads backup, dated fallbacks | Not cleared by Dec 9 |
+| 8 | **Sim/visual desync, lag unfairness** | Med / High | One Sampler, loop clock, §8.10 rules, latency injection | Any desync report |
+| 9 | **Non-determinism creeps back** | High / High | Sim-only Selene std, event-log hash per commit | CI red |
+| 10 | **Mesh/Content pipeline breaks** (serialization switch Nov 11) | Med / Med | S2 spike, levels as data, CreateMeshPartAsync fallback | S2 fails |
+| 11 | **"Copy of Rewind Robbers"** comments | Med / Med | Lead with avatar clones, 16 robbers, Gus; no originality claim | Comments naming it |
+| 12 | **Fast-follow copies** past ~5K CCU | High / Med | Weekly drops, daily vault, saved trophies, owned art | Copy > 1K CCU |
+| 13 | **Alarm Run too hard for kids** | Med / Med | Gus at 0.9x speed, decoys, Relaxed, first-heist x2 | Alarm escape rate < 50% |
+| 14 | **Heist instance server load** (4 instances per server) | Low-Med / Med | ≤ 2 ms sim per instance, 6k instances per level copy, streaming | Server heartbeat < 50 Hz |
+| 15 | **Christmas cliff** | High / Med | Jan 8 patch, Jan 22 Museum, Feb 12 Season 1 | Week-after-event DAU |
+| 16 | **Music/IP in clips; maturity label slip** | Med / High | Owned music off-platform, no-IP list, bloodless flops, re-answer the questionnaire after changes | Takedown; label above Mild |
+
+### 11.2 Decisions needed from the owner (max 10, each with a recommended default)
+
+| # | Decision | **Recommended default** | Needed by |
+|---|---|---|---|
+| D1 | Store title, and run the trademark knock-out search (EUIPO/USPTO cl. 9/41) | **"Heist Yourself: Rob With Your Clones"**; owner runs the free knock-out search this week | Mon Nov 16 |
+| D2 | Fund **expedited Kids & Select review** (refundable 50,000-100,000 R$, ≈ $450-1,000 of Robux) | **Yes**, buy by Fri Nov 27, submit at public launch Dec 3 if the Nov 30 gate passes | Fri Nov 27 |
+| D3 | Launch scope and date: 6 levels on Thu Dec 3 (gate Nov 30, fallback Thu Dec 10), with the cut list in §10.4 | **Yes** | Mon Nov 16 |
+| D4 | Weekly time commitment: ~12-16 h/week to Dec 18 (fun gate Nov 16, daily 15-min screenshot slot, 3 kid waves, golden-solution recordings) | **Yes**; if not possible, D7 and D8 become mandatory | Fri Nov 13 |
+| D5 | Create the test universe/place and an Open Cloud key scoped to it | **Yes, you create and hold it**, scoped to the test universe only | Fri Nov 13 |
+| D6 | Paid spend before D1 is known | **≤ $500**: $100 Plays test + $300 Engagement backup + $100 reserve | Mon Nov 16 |
+| D7 | Freelance environment artist for the 5 golden assets | **Yes, $300-600**, original work with written rights assignment, briefed by Nov 18 | Wed Nov 18 |
+| D8 | Part-time clip editor (or a friend/sibling) so we can post 1-2 clips a day | **Yes**, from Nov 19 [cost UNVERIFIED; a helper is fine] | Thu Nov 19 |
+| D9 | Recruit 5+ kids aged 10-14 with parental consent for 3 waves (Nov 21-22, Nov 28-29, Dec 5-6) | **Yes**, through your network or a Danish school/club; consent form provided by Claude | Wed Nov 18 |
+| D10 | Music: commission 2 stemmed tracks with trailer rights, or library-only | **Library in-game + platform-licensed sounds for TikTok**; commission only if delivery by Dec 9 is guaranteed | Fri Nov 20 |
+
+Design rules that the draft had as owner decisions are now settled in the design: guard timings (Config, tuned on kid waves), leaver clones (orphan tapes), cap 12 → 16 (automatic if S1 passes on a low Android), Moon Base (decided after the Museum's D7), and the +1 slot pass (dropped).
+
+---
+## Appendix A. Addressed critiques
+
+Three independent critiques reviewed the draft: **P** = player and fun (10-14 on a phone, day 7), **F** = feasibility and tech, **M** = market and virality. Verdicts: **Accepted** (applied as proposed), **Accepted, changed** (applied in a different form, reason given), **Partly rejected** (reason given). Every blocker and major is listed; minors are listed too.
+
+### A.1 Player and fun (P)
+
+| # | Sev. | Issue | Verdict | Where / how |
+|---|---|---|---|---|
+| P1 | Blocker | FTUE logic broken: run 1 records "step on, step off", so the clone never holds the door | **Accepted** | §7.5: REWIND pulses only while on the plate, "Stay on it. Tap REWIND.", L1 run 1 auto-ends after 2.0 s on the plate; "your clone stops where you stop" taught explicitly; naive-kid L2 tests (§8.9) |
+| P2 | Blocker | "8 OF ME" unreachable for new players | **Accepted** | §4.2 L5 Clone Party grants 8 slots with unlimited loot (~minute 8); Big Scores and finale grant 8; owned-slot progression removed (§3.2 #7); scripted Crew Line-up every heist (§3.2 #8) and in the lobby (§6.6); SwarmSeen funnel step |
+| P3 | Major | No tension, chase or consequence | **Accepted, changed** | §3.6 Alarm Run in Clone Party, every Big Score and the finale; soft Dawn from L4 (§3.1). **Not** in L1-L3: the FTUE must stay calm and readable; from the Museum on, most levels get an alarm |
+| P4 | Major | Stranger co-op chaos, cap re-split, leavers | **Accepted, changed** | §3.3: per-party heist instances **inside** the public server instead of reserved-server teleports (a teleport would add a loading screen before the first clone); opt-in Quick Crew with a wipe vote; caps locked at heist start; late joiners seat at the next heist; orphan tapes + Eject |
+| P5 | Major | Phone control overload; tap/hold mis-tap | **Accepted** | §3.1, §3.4, §7.4: one meaning per button, END RUN locked 1.5 s and placed away from jump, Undo last run in the Deck, verbs visible only in context and unlocked when taught |
+| P6 | Major | Day-7 hooks favour optimisers | **Accepted** | §5.1-5.3: trophies and advent ornaments in the van (visible in the lobby), Clone Party personal-best haul and bag levels, "biggest haul today" board, Diamond = fewest clones for the hardcore |
+| P7 | Major | Boring co-op spectator wait | **Accepted** | §3.1 waiting squeeze (10 s once half the crew ended), co-op fast-forward when all live players stand still; §3.3 spectators drop markers, ping, fly the planning camera; busted-cam for caught players |
+| P8 | Major | Retake cascades | **Accepted, changed** | §3.2 #6: Redo from #N, Delete busted, ghost-of-the-ghost path with footprints, on-time strip at launch; **dependency icons deferred to Jan 8** (needs event-log analysis; scope) |
+| P9 | Major | 0.35 s grace too harsh for kids | **Accepted** | §3.1: 3-stage cone (amber, "?" 0.6 s, "!" 1.2 s), hiding spots, first heist x2, Relaxed offered after 3 busts; tuned on kid waves (§10.3 #3) |
+| P10 | Major | Soft-launch metrics measure 16+ only | **Accepted** | §10.3 #8 three kid waves as hard gates via early-tester invites; §9.7 16+ D1 is a floor, re-baseline with the under-16 cohort |
+| P11 | Minor | Clips need clean play; kids can't post | **Accepted** | §6.6 blooper + win default cut with Crew Line-up; §9.2 the owner kit is the main clip source; creators over in-game sharing |
+| P12 | Minor | Christmas finale too long and precise | **Accepted** | §4.3: finale par 4-5 with 8 slots granted, Giant Present 2 grips required (faster with 4); §3.3 Helper mode for cousins |
+| — | Missing items | naive-kid path; tension; 8 OF ME; collection; join/leave rules; spectators; phone layout; "where you stop" show step; kid gates; replay value; session length | **All added** | §7.5 + §8.9; §3.6; §4.2; §5.1; §3.3; §3.1/§3.3; §3.4; §7.5; §10.3; §5.3 (daily rotation with modifiers, Clone Party); §4.2 session-length estimate |
+
+### A.2 Feasibility and tech (F)
+
+| # | Sev. | Issue | Verdict | Where / how |
+|---|---|---|---|---|
+| F1 | Blocker | Schedule not credible | **Accepted** (option A + Christmas dressing, with option B as the fallback date) | §4.2 six levels; §10.4 written cut list and cut order; Dec 10 fallback; §10.1 owner time budget |
+| F2 | Blocker | Rewrite starts before the fun is proven | **Accepted** | §10.2 W1: fun gate Mon Nov 16; only `shared/Rec` before it; loop length tested on v0.1 via Config |
+| F3 | Major | Soft-lighting kill switch impossible | **Accepted** | §6.3: style chosen once from phone screenshots, Lighting in `default.project.json` (spike S6), runtime tier from scriptable controls only; C14 |
+| F4 | Major | Clone render cost measured too late | **Accepted** | §8.11 S1 bench in W1 with three candidates (translucent, opaque glow, mannequin); §6.5; clone draw-call sub-budget in §6.8 |
+| F5 | Major | File-authored MeshParts collide with MeshPart/Content internals | **Accepted, changed** | §6.7/§8.5: levels as data; **primary** is an owner-imported `Kit.rbxm` that code only clones (simplest and gets InitialSize and collision right); `CreateMeshPartAsync` at server boot is the fallback; spike S2 |
+| F6 | Major | No animation pipeline | **Accepted** | §6.7: rigid-part Gus, procedural fail states, 3 code-authored clips via a client pose player, owner review by screen recording, emotes only from catalog/post-launch |
+| F7 | Major | No lag-fairness model | **Accepted** | §8.10 six rules; latency injection in L2 (§8.9) |
+| F8 | Major | Solvability tests prove logic, not playability | **Accepted** | §8.9: human-recorded golden solutions via `_TEST` DataStore + Open Cloud; sim boxes generated from the layout with a LevelSpec assert |
+| F9 | Major | Procedural daily vaults are a research problem | **Accepted** | §5.3: 12 (then 14) hand-authored daily vaults with human solutions, date-seeded modifiers only; generation after a constraint checker (§1.3) |
+| F10 | Major | Two sources of the place file | **Accepted** | §8.5 "one source of the place"; art place; `servePlaceIds` dev only; CI Lighting check |
+| F11 | Major | Open Cloud path not set up; D6 too late | **Accepted** | D5 by Fri Nov 13; S5 engine_smoke the same day; one batched L3 task per merge |
+| F12 | Major | Blender throughput, no rework budget | **Accepted** | §6.7: install bpy, turntable self-review, kit cut to ~12 modules + 3 hero props, daily 15-min slot, $300-600 freelance golden assets (D7) |
+| F13 | Minor | Skip-ahead breaks the client time model | **Accepted** | §8.2 loop clock `{anchorServerTime, anchorLoopT, rate}`; fast-forward equivalence test |
+| F14 | Minor | Client rig building unverified, AJU joints | **Accepted** | §6.5 #1 server-built template, client pool, mannequin placeholder, both joint types |
+| F15 | Minor | Over-promised tooling | **Accepted** | §8.4 second Selene std + grep + hash test; §6.7 Clip/Blend1D only; S3/S4 spikes before SAVE CLIP and Crew Layers |
+| — | Missing items | spike list; animation pipeline; lag spec; human golden solutions; client regression; memory/pooling; owner time; Lighting location; rollback/hotfix; frame-time telemetry at launch | **All added** | §8.11; §6.7; §8.10; §8.9; §8.9; §6.8 + §8.5; §10.1; §6.3 + §8.5; §8.12; §8.6 |
+| — | Option A "no video capture" and "one clone style" | **Partly rejected** | Video capture ships **only if** S3 passes in W1 (it is a small amount of code when the API works); the store has 3 clone styles because they are code-only colour/material presets (hours, not days) and give the store something at launch |
+
+### A.3 Market and virality (M)
+
+| # | Sev. | Issue | Verdict | Where / how |
+|---|---|---|---|---|
+| M1 | Blocker | Gate plan ignores expedited review; stale threshold | **Accepted** | §9.5: expedited review submitted at public launch Dec 3, deposit decision D2, threshold "250 official, 100 reported [UNVERIFIED], dashboard is truth", Engagement ads as backup, dated fallbacks |
+| M2 | Blocker | Schedule for a 10-person studio | **Accepted** | (a) launch is the Christmas edition on one kit + dressing layer (§4.3); (b) 6 levels; (c) daily vault = advent; (d) Midnight Vault, presents meter and pass dropped, one bundle; (e) finale Fri Dec 18; (f) Museum Jan 22, Hub Feb 12; (g) gate: fun gate Nov 16 (owner + 2-3 people) and kid wave 1 Nov 21-22 instead of "3 outside testers by Nov 18", slip to Dec 10 if it fails |
+| M3 | Major | "RFY excluded" and "open RFY Dec 11" don't exist | **Accepted** | §9.5: removed; private early-tester phase before public; going public is the point of no return, gated on first-session bars; Dec 11 = drop + embargo lift |
+| M4 | Major | Tape/take motif belongs to Rewind Robbers | **Accepted** | §2.2 tape as dressing only, no originality claim; "run" in UI (C2); store line one rewritten (§1.1); positioning in §9.1 |
+| M5 | Major | Hero promise vs first session | **Accepted** | Same fix as P2; SwarmSeen ≥ 60% by minute 10; T1 thumbnail only after SwarmSeen is confirmed (§9.4) |
+| M6 | Major | Marketing timeline ignores the gate | **Accepted** | §9.5 #5 and §9.6: embargo and every "join now" CTA tied to all-ages clearance; pre-clearance content drives follows and RSVPs |
+| M7 | Major | Clip production underpowered | **Accepted** | §9.2: 1-2 clips a day from Nov 19, 3 platforms, 3 cuts each, part-time editor (D8), "◀ ME, 20 SEC AGO" label, explainable formats first, Gus POV and friends formats, friend-group voice reactions, SAVE CLIP as a bonus |
+| M8 | Minor | Name risks brainrot adjacency | **Accepted** | §2.1 "Heist Yourself: Rob With Your Clones" (D1) |
+| M9 | Minor | Holiday behaviour ignored | **Accepted** | §4.3 finale Dec 18, Dec 25-26 gift beat, RSVPs not a KPI |
+| M10 | Minor | Bars measured on the wrong cohort | **Accepted** | §9.7 JoinSource split, ad bars 4 points lower, kill rules on organic only; §9.4 two thumbnails until 1,000 DAU |
+| M11 | Minor | Kid tests impossible in the 16+ trial | **Accepted** | §9.5 #2 and §10.3 #8 early-tester invites on the private test place |
+| M12 | Minor | Thin market context (GTA 6, ROB RUN, keywords) | **Accepted** | §9.5 market context: pitches by Nov 23, ROB RUN on the radar, keyword checklist (§9.1) |
+| M13 | Minor | Video thumbnail too late | **Accepted** | §9.4 first version by Sun Nov 22 |
+| — | Missing items | expedited review; threshold drop; early testers; Rewind Robbers overlap; swarm moment; gate-aware creator timeline; clip staffing; Christmas-edition scope; Dec 25-26 beat; search queries; invite prompts at "need 2"; KPI split; fallback if not cleared by Dec 18 | **All added** | §9.5; §9.5; §9.5 + §10.3; §2.2 + §9.1; §4.2; §9.6; §9.2; §4.3; §4.3; §9.1; §3.3; §9.7; §9.5 #7 (dated Dec 9 and Dec 16 fallbacks) |
+
+### A.4 Changes against the draft, in short
+
+Title, "run" wording, owned slots, hold-to-scrap, all-player co-op servers, "no fail state" in story heists, 8-level launch, Free Roam, 12 advent vaults, presents meter, Christmas pass, Midnight Vault, Lighting kill switch, file-authored MeshPart levels, hand-written golden solutions, "RFY off/on", Museum Jan 8 and Hub Jan 22 were all changed as above. Unchanged: the server-authoritative sim with clones as data, the 20 Hz recording format, the palette and Neon-Noir look, the rewind sequence, the medal structure, the monetization rules and the location ladder.

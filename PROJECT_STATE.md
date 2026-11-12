@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-_Last updated: 2026-11-11_
+_Last updated: 2026-11-12_
 
 ## Done (v0.1 prototype)
 - Rojo project, greybox bank level built from code (street, van, lobby, vault door, blue/red plates, laser grid, gold table, diamond pedestal).
@@ -17,8 +17,8 @@ _Last updated: 2026-11-11_
 - Publishing fails with HTTP 409 while Collaborative Editing is on or Studio holds the place: turn it off and close Studio.
 - Still needs a human playtest in Studio: feel, echo smoothness, animations, 2-player flow.
 
-## Next
-1. Studio test and fix (user runs `rojo build`, or `rojo serve` + Connect).
+## Next (see MASTERPLAN §10.2 for the full W1 list)
+1. Fun gate: owner plays v0.1 in Studio with 2-3 people by Mon Nov 16 (`rojo build -o EchoHeist.rbxlx`), solo and 2-client, once with 30 s loops via Config.
 2. Feel pass: echo smoothness (consider client-side replay), guard readability (vision cone visual), sounds.
 3. Second level and level select; time medals (fewest echoes / fastest) = replay value and a TikTok format.
 4. Data: save best medals and unlocks (lihfolk-systems PlayerData).
