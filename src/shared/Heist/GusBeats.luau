@@ -497,10 +497,10 @@ end
 
 -- Arms folded over the belly (doze).
 local function foldArms(p: Pose, weight: number)
-	rot(p, "RightShoulder", 35 * weight, 0, -10 * weight)
-	rot(p, "RightElbow", 80 * weight, 35 * weight, 0)
-	rot(p, "LeftShoulder", 35 * weight, 0, 10 * weight)
-	rot(p, "LeftElbow", 80 * weight, -35 * weight, 0)
+	rot(p, "RightShoulder", 75 * weight, 0, -8 * weight)
+	rot(p, "RightElbow", 45 * weight, 30 * weight, 0)
+	rot(p, "LeftShoulder", 75 * weight, 0, 8 * weight)
+	rot(p, "LeftElbow", 45 * weight, -30 * weight, 0)
 end
 
 -- Left hand scratching the back of the cap (WrongOne, Scratch).
