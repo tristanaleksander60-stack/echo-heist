@@ -1189,11 +1189,28 @@ local function onPlayerAdded(player: Player)
 		-- The boot Sync shows "preparing" (the van door), not the garage, until the server
 		-- has decided: a new account goes straight into the FTUE level (§7.5).
 		preparing[player] = true
-		if DataService ~= nil and DataService.status() ~= "offline" then
-			DataService.waitForData(player, H.DATA_WAIT_SECONDS)
+		-- The profile, the first LiveFlags read (kill switches apply before the first heist) and the
+		-- art kit are awaited side by side: a cold server costs the longest wait, not the sum (premium
+		-- G1: control within 10 s of the first frame; PresentPlan.serverWait).
+		local kitDone = false
+		task.spawn(function()
+			pcall(waitForKit)
+			kitDone = true
+		end)
+		local pending = 2
+		task.spawn(function()
+			if DataService ~= nil and DataService.status() ~= "offline" then
+				pcall(DataService.waitForData, player, H.DATA_WAIT_SECONDS)
+			end
+			pending -= 1
+		end)
+		task.spawn(function()
+			pcall(LiveFlags.waitForFirstRead, H.FLAGS_WAIT_SECONDS)
+			pending -= 1
+		end)
+		while pending > 0 do
+			task.wait()
 		end
-		-- Kill switches set in the LiveFlags DataStore apply before the first heist here.
-		pcall(LiveFlags.waitForFirstRead, H.FLAGS_WAIT_SECONDS)
 		if player.Parent ~= Players then
 			preparing[player] = nil
 			return
@@ -1213,7 +1230,9 @@ local function onPlayerAdded(player: Player)
 			and not crew.instance
 			and isNewAccount(player)
 		then
-			waitForKit()
+			while not kitDone do -- started at join, so at most KIT_WAIT_SECONDS from then
+				task.wait()
+			end
 			if tryFtueStart(player) then
 				return
 			end
