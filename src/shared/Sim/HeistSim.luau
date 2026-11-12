@@ -597,6 +597,16 @@ local function fireCloneEvents(sim: any, a: any, t: number)
 	a.cursor = last
 end
 
+-- Tutorial (L1): a live run that ends on the armed auto-end plate, by END RUN or by
+-- the timeout, counts as auto-ended, so its clone holds the plate and the tutorial
+-- does not re-arm (WALKTHROUGH P0-1). Only the timer logs EV.AutoEnd.
+local function markOnArmedPlate(sim: any, a: any)
+	local ae = HeistSim.autoEndArmed(sim)
+	if ae and a.present and Geom.contains(sim.level.plates[ae.plate].box, a.x, a.y, a.z) then
+		a.autoEnded = true
+	end
+end
+
 local function liveIntents(sim: any, a: any)
 	local p = a.player
 	for _, req in p.queue do
@@ -611,6 +621,7 @@ local function liveIntents(sim: any, a: any)
 	table.clear(p.queue)
 	if p.endRequested and a.present then
 		p.endRequested = false
+		markOnArmedPlate(sim, a)
 		endLive(sim, a, "Ended", END.EndRun, EV.EndRun)
 	end
 end
@@ -688,6 +699,9 @@ local function finishRun(sim: any, reason: number)
 	local endReason = if reason == HeistSim.RUN_END.Timeout then END.Timeout else END.Left
 	for _, a in sim.actors do
 		if a.kind == "live" and a.state == "Active" then
+			if reason == HeistSim.RUN_END.Timeout then
+				markOnArmedPlate(sim, a)
+			end
 			endLive(sim, a, "Ended", endReason, if reason == HeistSim.RUN_END.Timeout then EV.Timeout else nil)
 		end
 		if a.kind == "clone" and Validator.isTainted(a.rec) then

@@ -153,6 +153,20 @@ return function(test)
 		Assert.eq(runs[3].reason, RUN_END.Timeout, "run 3 times out")
 	end)
 
+	test("L1 tutorial: END RUN tapped on the armed plate counts as the auto-end (P0-1)", function()
+		local level = Harness.level(1)
+		local sim, runs = Harness.play(level, {
+			runs = {
+				{ [1] = { { goPlate = "A" }, { endRun = true } } },
+				{ [1] = { { goPlate = "A" }, { stay = true } } },
+			},
+		})
+		Assert.eq(runs[1].reason ~= RUN_END.Timeout, true, "run 1 ended by the player, not the timer")
+		Assert.truthy(sim.players[1].deck.slots[1].auto, "the clone from run 1 holds the tutorial plate")
+		Assert.eq(EventLog.count(runs[2].log, EV.AutoEnd), 0, "run 2 is not re-armed")
+		Assert.eq(runs[2].reason, RUN_END.Timeout, "run 2 times out")
+	end)
+
 	test("L1 tutorial: when the plate clone is replaced at the cap, the auto-end re-arms", function()
 		local level = Harness.level(1)
 		local cap = level.cap
