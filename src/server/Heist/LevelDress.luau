@@ -20,6 +20,9 @@
 --              warm pools outside the shop front and the facade washed warm (GOLDEN_FRAMES G1).
 --   rugs     = { { x, z, yaw?, sx?, sz? } }: Rug_8x6 laid flat inside the light pools (sx / sz stretch it: a
 --              doormat). The unit spec keeps them off plates, doors, lasers, hides, the van zone and low solids.
+--   accents  = { { x, z } }: warm gold floods that ignore the location colour (KitPlan lamp kind "accent",
+--              Config.Lighting.LAMP.accent): the L6 vault, so the gold room reads warm from the scale room.
+--   Street lamps may also stand in a lot's alley (L6): anywhere outside KitPlan.buildingBox.
 
 export type Dress = {
 	rooms: { { number } }?,
@@ -29,6 +32,7 @@ export type Dress = {
 	props: { { piece: string, x: number, z: number, y: number?, yaw: number? } }?,
 	street: { { number } }?,
 	rugs: { { x: number, z: number, yaw: number?, sx: number?, sz: number? } }?,
+	accents: { { number } }?,
 }
 
 -- The Corner Shop street front (Levels/Shop: front wall at z = 10, the entrance x -4..4, the crew seats at
@@ -55,15 +59,23 @@ local LevelDress: { [string]: Dress } = {
 		-- the entrance (clear of the tip jar at (-8, 4)), the middle room's pool, under the safe's hero pool
 		rugs = { { x = 0, z = 5 }, { x = 0, z = -26 }, { x = 0, z = -39 }, DOORMAT },
 	},
-	-- L3: plates (10, -8) and (12, -26), hero (0, -40); the grid keeps its own glow.
+	-- L3: plates (10, -8) and (12, -26), hero (0, -40); the grid keeps its own glow. Warm pass (the L1 recipe): the
+	-- street lamps, a room lamp in the grid room's west half (plate B's east half has its own), rugs in the pools.
 	cs3_lights_out = {
-		rooms = { { -8, -2 } },
+		rooms = { { -8, -2 }, { -4, -27 } },
 		displays = { Register = "CashRegister" },
+		street = SHOP_STREET,
+		-- the entrance (clear of the tip jar at (-8, 4)), the grid room west of plate B, under the register's
+		-- hero pool (behind the grid), the doormat
+		rugs = { { x = 0, z = 5 }, { x = -4, z = -27 }, { x = 0, z = -41 }, DOORMAT },
 	},
-	-- L4: plates (10, -8) and (-12, -23), Gus's post (13, -30), hero (0, -42).
+	-- L4: plates (10, -8) and (-12, -23), Gus's post (13, -30), hero (0, -42). Warm pass: the street lamps, rugs in
+	-- the entrance, under Gus's post lamp (his patrol end) and under the night deposit's hero pool.
 	cs4_night_clerk = {
 		rooms = { { -8, -2 }, { 13, -30 } },
 		displays = { NightDeposit = "Safe" },
+		street = SHOP_STREET,
+		rugs = { { x = 0, z = 5 }, { x = 11.5, z = -30, yaw = 90, sx = 0.9 }, { x = 0, z = -41 }, DOORMAT },
 	},
 	-- L5 Clone Party: the two aisles (-4, -14) and (4, -14), the till hero (over the till at (-8.5, -1)), the
 	-- office desk lamp (0, -34).
@@ -102,6 +114,20 @@ local LevelDress: { [string]: Dress } = {
 			{ piece = "BankersLamp", x = -15, z = -5, y = 3.5, yaw = 180 },
 			{ piece = "BankersLamp", x = 15, z = -5, y = 3.5, yaw = 180 },
 		},
+		-- Warm pass: the vault's gold floods either side of the gold's hero spot (over the coins and the west
+		-- shelf), street lamps flanking the bank front, and lamps in the service alley behind the bank and in the
+		-- two side alleys (outdoors: no kit floor, snow falls there; LEVELS L6 "the alley reads as outdoors").
+		accents = { { -12, -54 }, { 12, -54 } },
+		street = {
+			{ -15, 12.5 },
+			{ 15, 12.5 },
+			{ -12, -71 },
+			{ 12, -71 },
+			{ -25.5, -40 },
+			{ 25.5, -40 },
+		},
+		-- the public lobby, a runner down the hall from the staff door, the scale room, the doormat
+		rugs = { { x = 0, z = 2 }, { x = 0, z = -27, yaw = 90 }, { x = 0, z = -41.5 }, DOORMAT },
 	},
 }
 

@@ -10,6 +10,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")) :: any
 
+local Theme = require(script.Parent:WaitForChild("Theme"))
+
 local L = Config.Lighting
 
 local LightDirector = {}
@@ -20,6 +22,28 @@ function LightDirector.new(): any
 	local heroLights: { Light } = {}
 	local pools: { SurfaceGui } = {}
 	local addedConn: RBXScriptConnection? = nil
+	local poolImage: string? = nil
+
+	-- One pool onto the gradient image (no-op until it is known, or when the pool has no "Soft" label).
+	local function soften(gui: SurfaceGui)
+		local img = gui:FindFirstChild("Soft")
+		if not poolImage or not img or not img:IsA("ImageLabel") then
+			return
+		end
+		img.Image = poolImage
+		img.Visible = true
+		for _, c in gui:GetChildren() do
+			if c:IsA("Frame") and c.Name == "Ring" then
+				c.Visible = false
+			end
+		end
+	end
+	Theme.onImage(L.POOL_SOFT.image, function(uri: string)
+		poolImage = uri
+		for _, gui in pools do
+			soften(gui)
+		end
+	end)
 
 	local function apply()
 		local shadows = tierNow < L.SHADOWS_OFF_TIER
@@ -43,6 +67,7 @@ function LightDirector.new(): any
 			local host = d.Parent
 			if host and host:GetAttribute("EH_Kind") == "lightPool" then
 				table.insert(pools, d)
+				task.defer(soften, d) -- its children may replicate a frame after it
 			end
 		end
 	end

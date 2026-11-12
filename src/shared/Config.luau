@@ -928,6 +928,17 @@ Config.Lighting = {
 			},
 		},
 		plate = { range = 18, brightness = 1.3, color = { 255, 205, 150 }, shadows = false },
+		-- accent: a warm gold flood that ignores the location colour (LevelDress `accents`: the L6 vault, so the gold
+		-- room reads warm and lit from the scale room, LEVELS L6 "lit vault and gold")
+		accent = {
+			range = 20,
+			brightness = 1.5,
+			color = { 255, 206, 128 },
+			shadows = false,
+			pool = 14,
+			poolColor = { 246, 204, 132 },
+			poolRings = { { size = 1, alpha = 0.86 }, { size = 0.66, alpha = 0.8 }, { size = 0.36, alpha = 0.76 } },
+		},
 		hero = { range = 36, brightness = 3, angle = 60, color = { 255, 214, 160 }, shadows = true },
 		-- Golden-frame warm pass (GOLDEN_FRAMES G1, PLAN_STEAM_PLUS §3.1): street lamps (LevelDress `street`) on the
 		-- pavement: a warm PointLight at the StreetLamp lantern (lightY / bulbY: the manifest light point) that
@@ -1031,6 +1042,84 @@ Config.Lighting = {
 	ARROW_STEP = 2.4, -- studs between arrows along the zone
 	ARROW_HEAD = { 2.4, 1.2 }, -- studs: head width, length
 	ARROW_SHAFT = { 0.7, 1.0 }, -- studs: shaft width, length
+
+	-- Soft light pools (levels-and-world-feedback track): the pools were drawn as 3-5 hard stepped discs. Now a
+	-- smooth radial falloff: opacity(r) = peak * (1 - (r / R)^2)^exponent. In the engine an uploaded radial
+	-- gradient image (assets/ui/EH_FX_Pool.png, alpha = (1 - u^2)^exponent; resolved at boot by Heist/UiImages)
+	-- draws it in one ImageLabel; until the image resolves, `rings` thin discs approximate the same curve
+	-- (KitPlan.poolRings). The peak keeps each kind's old area-weighted brightness (warm share unchanged):
+	-- peak = old mean opacity x (exponent + 1), capped at peakMax.
+	POOL_SOFT = {
+		image = "EH_FX_Pool", -- UiAssets stem
+		exponent = 1.5,
+		rings = 10, -- fallback discs per pool
+		peakMax = 0.82,
+	},
+
+	-- Hide spots (FEEDBACK_TABLE "Hide spot", LEVELS P1-2): a soft Warm Marble outline of the hide's footprint
+	-- that fades in while your character is within `near` studs of it (WorldView), and the letter of a plate
+	-- hidden inside a hide on a disc over the hide (L4 coat rack, L6 teller desk / fern / deposit stacks).
+	HIDE_OUTLINE = {
+		width = 0.22,
+		lift = 0.07, -- over the pools (+0.06)
+		near = 6,
+		alpha = 0.25, -- shown transparency (1 = hidden)
+		fadeSeconds = 0.25,
+		color = { 216, 200, 168 }, -- Warm Marble #D8C8A8
+	},
+	HIDE_PLAQUE_Y = 1.1, -- studs over the hide's top: the letter disc of a plate inside it
+
+	-- "Need all 4" (LEVELS P1-3, PLAN §7 "VAULT 2/4"): a row of lettered lamps on the face of every need-all door,
+	-- toward its plates; each takes its presser's hue while its plate is held (WorldView, from the plate
+	-- attributes), and a "VAULT n/4" count rides over the row. KitPlan.vaultRows places them.
+	VAULT_ROW = {
+		gap = 1.8, -- studs between lamp centres (the single door lamp keeps the middle)
+		y = 11.1, -- above the floor (the door is 10 tall, the wall 12)
+		size = 0.95, -- lamp disc diameter
+		depth = 0.3,
+		face = 0.35, -- studs proud of the wall band
+		idleAlpha = 0.55, -- unheld: a dim Bulb Warm disc with its letter
+		labelOffset = 1.7, -- the count's height over the row
+		labelDistance = 90,
+	},
+}
+
+-- World-side feedback (docs/FEEDBACK_TABLE.md, PLAN_STEAM_PLUS §4.5): what the client's Heist/WorldView adds on top
+-- of the server's state (no sim changes; everything here is cosmetic and local). Springs are exact
+-- (Shared/Heist/WorldFx.spring): `hz` is the natural frequency, `damping` the ratio (under 1 overshoots). Reduced
+-- motion: no overshoot, no bounce, no squash, no shake; the state change itself always shows.
+Config.WorldFx = {
+	-- Plate: sinks Config.Heist.PLATE_SINK (0.15 studs) and settles with a ~0.1 s overshoot.
+	PLATE_SPRING = { hz = 11, damping = 0.45 },
+	-- Door: pocket leaves slide with a small overshoot (shutters and the vault skin keep their exact ease);
+	-- a dust puff at the sill as it opens.
+	DOOR_SPRING = { hz = 2.2, damping = 0.6 },
+	DOOR_DUST = 10, -- particles per puff (x the tier's particle scale)
+	DOOR_DUST_TEXTURE = "rbxasset://textures/particles/smoke_main.dds",
+	-- Laser: an ink sleeve around the red body and the white-hot core (LevelBuilder), so the beam reads on light
+	-- floors too; the re-arm whine starts with the flicker (Config.Sim LASER_FLICKER_SECONDS + VISUAL_LEAD = 0.5 s).
+	LASER_INK = { width = 0.42, alpha = 0.55 },
+	-- Loot: a glint every 2 s (staggered per item), a tinkle within 8 studs, squash on grab, bounce on drop.
+	GLINT_PERIOD = 2,
+	GLINT_SIZE = 1.1,
+	TINKLE_RANGE = 8,
+	SQUASH = { amount = 0.32, hz = 5, damping = 0.4 }, -- scale Y down by `amount`, X/Z up by half of it
+	BOUNCE = { height = 0.9, seconds = 0.55, hops = 2 }, -- a dropped item hops in place
+	-- Your live character carries loot in both hands, in front of the chest (Config.Clone.CARRY_HANDS in your
+	-- root's frame, the clones' carry point), playing the clones' uploaded carry clip on its arms.
+	LIVE_CARRY_CLIP = true,
+	-- The van bank moment (visual only; the HUD's "+$100 flies to the meter" hooks world.onBank)
+	COINS = 24, -- the burst's particles (never more; x the tier's particle scale)
+	COIN_TEXTURE = "rbxasset://textures/particles/sparkles_main.dds",
+	VAN_BOUNCE = { height = 0.5, hz = 3.2, damping = 0.35 },
+	BANK_POP_SECONDS = 1.1,
+	BANK_POP_RISE = 3.5, -- studs
+	BANK_POP_SIZE = { 170, 56 }, -- px
+	-- Haptics on the three key verbs (plate, grab, bank): phones only, off under reduced motion and when the
+	-- player turned them off (player attribute Setting_Haptics == false, once the settings track adds the key).
+	HAPTICS = true,
+	HAPTIC_TYPES = { plate = "GameplayCollision", grab = "UIClick", bank = "UINotification" },
+	HAPTIC_MIN_GAP = 0.12, -- s between two pulses (<= 8 a second, vault "Haptics")
 }
 
 -- Garage v1 (PLAN_STEAM_PLUS §4.1 W6, docs/GOLDEN_FRAMES.md G3): the shared lobby every crew starts in, built from

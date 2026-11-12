@@ -7,6 +7,7 @@
 export type Entry = { decal: number, image: number }
 
 local UiAssets: { [string]: Entry } = {
+	EH_FX_Pool = { decal = 109210182981793, image = 0 },
 	EH_FX_Ribbon = { decal = 70453856807003, image = 0 },
 	EH_UI_Icons = { decal = 83898292746311, image = 118088258199093 },
 	EH_UI_Panel = { decal = 83942129498789, image = 75734528180174 },

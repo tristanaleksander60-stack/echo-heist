@@ -91,6 +91,7 @@ local BODY: { [string]: { Vec } } = {
 	Counter_8x4 = { { -8, 0, 0 }, { 0, 3.5, 4 } },
 	Counter_4x4 = { { -4, 0, 0 }, { 0, 3.5, 4 } },
 	Counter_8x2 = { { -8, 0, 0 }, { 0, 3.5, 2 } },
+	TellerCounter_8x4 = { { -8, 0, 0 }, { 0, 4, 4 } }, -- the counter to 4 (the glass screen rides above, scaled with it)
 	Shelf_8x2 = { { -8, 0, 0 }, { 0, 7.85, 2 } },
 	Shelf_Gondola_8x2 = { { -8, 0, 0 }, { 0, 7.85, 2 } },
 	Pillar_2x12 = { { -2, 0, 0 }, { 0, 12, 2 } },
@@ -338,6 +339,47 @@ local function wallOf(i: number, box: Box): Wall?
 	}
 end
 
+-- The building's own walls: every wall inside the street front's X extent (the front is the street-most X-axis
+-- wall line). Walls past it are lot walls (L6's fence and service alley): outdoors, so the kit floor tiles stop at
+-- the building and the client's snow falls there (Shared/Heist/BackdropPlan.levelSite uses the same rule).
+-- Returns the building's walls' extent, or nil without walls.
+function KitPlan.buildingBox(level: any): Box?
+	local walls: { Wall } = {}
+	local front = -math.huge
+	for i, s in level.spec.solids or {} do
+		local w = wallOf(i, s.box)
+		if w then
+			table.insert(walls, w)
+			if w.axis == "X" then
+				front = math.max(front, w.line)
+			end
+		end
+	end
+	if #walls == 0 then
+		return nil
+	end
+	local fx0, fx1 = math.huge, -math.huge
+	for _, w in walls do
+		if w.axis == "X" and math.abs(w.line - front) < 0.01 then
+			fx0, fx1 = math.min(fx0, w.box.minX), math.max(fx1, w.box.maxX)
+		end
+	end
+	local out: Box? = nil
+	for _, w in walls do
+		local b = w.box
+		if fx0 > fx1 or (b.minX >= fx0 - 0.01 and b.maxX <= fx1 + 0.01) then
+			if out == nil then
+				out = KitPlan.box(b.minX, b.minY, b.minZ, b.maxX, b.maxY, b.maxZ)
+			else
+				local o = out :: Box
+				o.minX, o.maxX = math.min(o.minX, b.minX), math.max(o.maxX, b.maxX)
+				o.minZ, o.maxZ = math.min(o.minZ, b.minZ), math.max(o.maxZ, b.maxZ)
+			end
+		end
+	end
+	return out
+end
+
 -- A box along a wall line: [s0, s1] along the run, the wall band across it.
 local function lineBox(w: Wall, s0: number, s1: number, y0: number?, y1: number?): Box
 	local lo, hi = w.line - w.thick / 2, w.line + w.thick / 2
@@ -426,7 +468,7 @@ end
 -- did not dress is lit and signposted the same way). LEVELS.md §4 P0-1..P0-3, PLAN_STEAM_PLUS §4.1 W2.
 ---------------------------------------------------------------------------
 
-export type Lamp = { x: number, z: number, kind: string, index: number? } -- kind: plate | hero | room | street
+export type Lamp = { x: number, z: number, kind: string, index: number? } -- kind: plate | hero | room | accent | street
 
 local function insideTall(level: any, x: number, z: number): boolean
 	for _, s in level.spec.solids or {} do
@@ -496,7 +538,7 @@ end
 
 -- Every lamp of a level: one over each plate, the hero over the goal (the only shadowed light), then the
 -- room centres (LevelDress `rooms`, else automatic), skipping any within cfg.MIN_LAMP_GAP of a lamp, then the
--- street lamps on the pavement (LevelDress `street`: warm pools outside, PLAN_STEAM_PLUS §3.1, GOLDEN G1).
+-- warm accents (LevelDress `accents`: the Bank vault's gold light), then the street lamps on the pavement (LevelDress `street`: warm pools outside, PLAN_STEAM_PLUS §3.1, GOLDEN G1).
 function KitPlan.lamps(level: any, dress: any?, cfg: any): { Lamp }
 	local out: { Lamp } = {}
 	for i, p in level.plates do
@@ -525,6 +567,11 @@ function KitPlan.lamps(level: any, dress: any?, cfg: any): { Lamp }
 		end
 		if free then
 			table.insert(out, { x = r[1], z = r[2], kind = "room" })
+		end
+	end
+	if cfg.LAMP.accent then
+		for _, a in (dress and dress.accents) or {} do
+			table.insert(out, { x = a[1], z = a[2], kind = "accent" })
 		end
 	end
 	if cfg.LAMP.street then
@@ -604,6 +651,36 @@ local function sign(v: number): number
 	return if v > EPS then 1 elseif v < -EPS then -1 else 0
 end
 
+-- Trunk slots of a door several plates open (1 = the lowest run coordinate): plates on the low side of the
+-- doorway take the low slots, the one nearest the door's line outermost, and the high side the same from the other
+-- end, so no plate's cross run (at its own Z) ever crosses another plate's trunk (L6's vault: C, B, A, D from
+-- west to east; tests/unit/HeistKitPlan.spec "L6 cables never cross"). Returns { [plate index] = slot }.
+local function trunkSlots(level: any, srcs: { number }, alongX: boolean, cu: number, line: number): { [number]: number }
+	local low, high = {}, {}
+	for _, i in srcs do
+		local p = level.plates[i]
+		local px, pz = (p.box.minX + p.box.maxX) / 2, (p.box.minZ + p.box.maxZ) / 2
+		local pu, pv = if alongX then px else pz, if alongX then pz else px
+		table.insert(if pu < cu - EPS then low else high, { i = i, d = math.abs(pv - line) })
+	end
+	local function near(a: any, b: any): boolean
+		if math.abs(a.d - b.d) > EPS then
+			return a.d < b.d
+		end
+		return a.i < b.i
+	end
+	table.sort(low, near)
+	table.sort(high, near)
+	local out = {}
+	for k, e in low do
+		out[e.i] = k
+	end
+	for k, e in high do
+		out[e.i] = #srcs + 1 - k
+	end
+	return out
+end
+
 export type Cable = { plate: number, points: { { number } } } -- level-space (x, z) polyline
 
 -- Floor cables (LEVELS P0-2): a door cable runs along X at the plate's Z, then along Z to the device's near
@@ -632,7 +709,8 @@ function KitPlan.cables(level: any, cfg: any): { Cable }
 					local side = sign(pu - cu)
 					tu = cu + (if side == 0 then 0 else side * (half - cfg.CABLE_JAMB_INSET))
 				else
-					tu = cu + (k - (#srcs + 1) / 2) * cfg.CABLE_TRUNK_GAP
+					local slot = trunkSlots(level, srcs, alongX, cu, line)[i] or k
+					tu = cu + (slot - (#srcs + 1) / 2) * cfg.CABLE_TRUNK_GAP
 				end
 				local tv = line + (if sign(pv - line) >= 0 then 1 else -1)
 				local pts = if alongX
@@ -659,6 +737,128 @@ function KitPlan.cables(level: any, cfg: any): { Cable }
 				end
 				table.insert(out, { plate = i, points = pts })
 			end
+		end
+	end
+	return out
+end
+
+-- Soft floor-pool discs (Config.Lighting.POOL_SOFT): `rings` concentric discs, outermost first, whose stacked
+-- opacity follows opacity(r) = peak * (1 - (r / R)^2)^exponent, the falloff the uploaded radial image draws in
+-- one piece. The peak keeps the kind's old stepped discs' area-weighted opacity (warm share unchanged), capped
+-- at peakMax. Returns { size = share of the diameter, alpha = transparency } like Config's rings, and the peak.
+function KitPlan.poolPeak(stepped: { { size: number, alpha: number } }, soft: any): number
+	-- the stepped discs' mean opacity over the pool's area: each ring adds its opacity to everything inside it
+	local sorted = table.clone(stepped)
+	table.sort(sorted, function(a: any, b: any): boolean
+		return a.size > b.size
+	end)
+	local mean, through = 0, 1
+	for k, ring in sorted do
+		through *= ring.alpha
+		local outer = ring.size
+		local inner = if sorted[k + 1] then sorted[k + 1].size else 0
+		mean += (1 - through) * (outer * outer - inner * inner)
+	end
+	return math.min(mean * (soft.exponent + 1), soft.peakMax)
+end
+
+function KitPlan.poolRings(stepped: { { size: number, alpha: number } }, soft: any): { { size: number, alpha: number } }
+	local peak = KitPlan.poolPeak(stepped, soft)
+	local n = math.max(2, math.floor(soft.rings))
+	local function opacity(u: number): number
+		return peak * math.max(0, 1 - u * u) ^ soft.exponent
+	end
+	local out = {}
+	local through = 1 -- transmittance of the rings laid so far
+	for k = 1, n do
+		local outer = (n - k + 1) / n
+		local inner = (n - k) / n
+		-- the band (inner, outer) shows the falloff at its middle
+		local want = opacity((outer + inner) / 2)
+		local a = 1 - (1 - want) / through
+		a = math.clamp(a, 0, 1)
+		through *= 1 - a
+		table.insert(out, { size = outer, alpha = 1 - a })
+	end
+	return out
+end
+
+-- "Need all n" readout (LEVELS P1-3, PLAN §7): for every door that needs all of its 2+ plates, a row of lettered
+-- lamps on the face of its frame toward its plates, in letter order from the viewer's left, centred on the door's
+-- own lamp (which keeps the middle). cfg = Config.Lighting (VAULT_ROW). Positions are level space.
+export type RowLamp = { x: number, y: number, z: number, plate: number, letter: string }
+export type VaultRow = { door: number, lamps: { RowLamp }, nx: number, nz: number, alongX: boolean }
+function KitPlan.vaultRows(level: any, cfg: any): { VaultRow }
+	local out: { VaultRow } = {}
+	local r = cfg.VAULT_ROW
+	for di, d in level.doors do
+		local srcs = platesOf(d.openBy)
+		if d.need ~= "all" or #srcs < 2 then
+			continue
+		end
+		local b = d.box
+		local alongX = (b.maxX - b.minX) >= (b.maxZ - b.minZ)
+		local cu = if alongX then (b.minX + b.maxX) / 2 else (b.minZ + b.maxZ) / 2
+		local line = if alongX then (b.minZ + b.maxZ) / 2 else (b.minX + b.maxX) / 2
+		local half = (if alongX then b.maxZ - b.minZ else b.maxX - b.minX) / 2
+		-- the face toward the plates (their mean, across the line)
+		local sum = 0
+		for _, i in srcs do
+			local p = level.plates[i]
+			sum += if alongX then (p.box.minZ + p.box.maxZ) / 2 - line else (p.box.minX + p.box.maxX) / 2 - line
+		end
+		local side = if sum >= 0 then 1 else -1
+		local v = line + side * (half + r.face)
+		-- seen from that face, "left" runs toward -u when the face looks +Z / -X (a viewer facing the door)
+		local leftToRight = if alongX then (if side > 0 then 1 else -1) else (if side > 0 then -1 else 1)
+		local n = #srcs
+		local lamps: { RowLamp } = {}
+		for k, i in srcs do
+			-- slots skip the middle (the door lamp keeps it): the gap is doubled across the centre; an odd row
+			-- shifts half a slot to the right so no lamp sits on the door lamp
+			local slot = k - (n + 1) / 2 + (if n % 2 == 1 then 0.5 else 0)
+			local u = cu + leftToRight * (slot + (if slot < 0 then -0.5 else 0.5)) * r.gap
+			table.insert(lamps, {
+				x = if alongX then u else v,
+				y = level.floorY + r.y,
+				z = if alongX then v else u,
+				plate = i,
+				letter = KitPlan.letter(level, i),
+			})
+		end
+		table.insert(out, {
+			door = di,
+			lamps = lamps,
+			nx = if alongX then 0 else side,
+			nz = if alongX then side else 0,
+			alongX = alongX,
+		})
+	end
+	return out
+end
+
+-- Plates inside hide spots (L4's plate B under the coat rack, L6's A / B / C / D): their letters, to hang on a disc
+-- over the hide so "the plate is in there" reads from the room (FEEDBACK_TABLE "Hide spot", LEVELS P1-2).
+export type HidePlate = { hide: number, letters: string, x: number, z: number, top: number }
+function KitPlan.hidePlates(level: any): { HidePlate }
+	local out: { HidePlate } = {}
+	for hi, h in level.hides or {} do
+		local hb = h.box
+		local letters = ""
+		for pi, p in level.plates do
+			local cx, cz = (p.box.minX + p.box.maxX) / 2, (p.box.minZ + p.box.maxZ) / 2
+			if cx > hb.minX and cx < hb.maxX and cz > hb.minZ and cz < hb.maxZ then
+				letters ..= KitPlan.letter(level, pi)
+			end
+		end
+		if letters ~= "" then
+			table.insert(out, {
+				hide = hi,
+				letters = letters,
+				x = (hb.minX + hb.maxX) / 2,
+				z = (hb.minZ + hb.maxZ) / 2,
+				top = hb.maxY,
+			})
 		end
 	end
 	return out
@@ -1003,6 +1203,10 @@ function KitPlan.plan(level: any, specs: { [string]: PartSpec }, opts: Options?)
 			add(item("pillar", "visual", { "Pillar_2x12" }, pivot, scale, "solid", i))
 		elseif s.sight == false and h <= COUNTER_MAX_H + EPS then
 			local name = if short <= 2.5 then "Counter_8x2" elseif long <= 5 then "Counter_4x4" else "Counter_8x4"
+			-- The Bank's counters are teller counters (marble top, glass screen; LEVELS P1-3): the real lobby
+			if location == "Bank" and not party and long > 5 and has("TellerCounter_8x4") then
+				name = "TellerCounter_8x4"
+			end
 			if not has(name) then
 				continue
 			end
@@ -1040,8 +1244,10 @@ function KitPlan.plan(level: any, specs: { [string]: PartSpec }, opts: Options?)
 	if o.floor ~= false and has("Floor_8x8") and #walls > 0 then
 		local lift = o.floorLift or 0.02
 		local bmin, bmax = body("Floor_8x8")
-		for _, tx in KitPlan.tiles(footprint.minX, footprint.maxX) do
-			for _, tz in KitPlan.tiles(footprint.minZ, footprint.maxZ) do
+		-- inside the building only: a lot's alley stays the street floor (outdoors, LEVELS L6 "the alley")
+		local fb = KitPlan.buildingBox(level) or footprint
+		for _, tx in KitPlan.tiles(fb.minX, fb.maxX) do
+			for _, tz in KitPlan.tiles(fb.minZ, fb.maxZ) do
 				local box = KitPlan.box(tx[1], floorY - 0.5 + lift, tz[1], tx[2], floorY + lift, tz[2])
 				local pivot, scale = KitPlan.fit(bmin, bmax, box, 0)
 				add(item("floor", "visual", { "Floor_8x8" }, pivot, scale))

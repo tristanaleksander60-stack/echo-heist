@@ -267,19 +267,37 @@ local function ceilingLamp(
 	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
 	gui.PixelsPerStud = pc.pixelsPerStud
 	gui.MaxDistance = 250
-	for _, ring in spec.poolRings or pc.rings do
+	-- A smooth radial falloff (Config.Lighting.POOL_SOFT): the uploaded gradient image in one ImageLabel once its
+	-- id is known (Heist/UiImages publishes it at boot; the client's LightDirector swaps late pools over), and
+	-- until then thin discs that follow the same curve (KitPlan.poolRings), never the old hard steps.
+	local soft = LIGHT.POOL_SOFT
+	local stepped = spec.poolRings or pc.rings
+	local uri = ReplicatedStorage:GetAttribute("EH_UiImage_" .. soft.image)
+	local hasImage = type(uri) == "string" and uri ~= ""
+	for _, ring in KitPlan.poolRings(stepped, soft) do
 		local f = Instance.new("Frame")
+		f.Name = "Ring"
 		f.AnchorPoint = Vector2.new(0.5, 0.5)
 		f.Position = UDim2.fromScale(0.5, 0.5)
 		f.Size = UDim2.fromScale(ring.size, ring.size)
 		f.BackgroundColor3 = rgb(look.pool)
 		f.BackgroundTransparency = ring.alpha
 		f.BorderSizePixel = 0
+		f.Visible = not hasImage
 		local corner = Instance.new("UICorner")
 		corner.CornerRadius = UDim.new(0.5, 0)
 		corner.Parent = f
 		f.Parent = gui
 	end
+	local img = Instance.new("ImageLabel")
+	img.Name = "Soft"
+	img.Size = UDim2.fromScale(1, 1)
+	img.BackgroundTransparency = 1
+	img.Image = if hasImage then uri :: string else ""
+	img.ImageColor3 = rgb(look.pool)
+	img.ImageTransparency = 1 - KitPlan.poolPeak(stepped, soft)
+	img.Visible = hasImage
+	img.Parent = gui
 	gui.Parent = pool
 	return bulb, pool
 end
@@ -440,6 +458,11 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 
 	-- Doors: the solid leaf when shut + a lamp above it (red shut, green open).
 	local doors: { BasePart } = {}
+	local vaultRows = KitPlan.vaultRows(level, LIGHT)
+	local rowDoor: { [number]: boolean } = {}
+	for _, row in vaultRows do
+		rowDoor[row.door] = true
+	end
 	for i, def in level.doors do
 		local leaf = part({
 			Name = "Door_" .. def.id,
@@ -464,7 +487,7 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 		lamp:SetAttribute("EH_Index", i)
 		-- The letter of every plate that opens it, beside the lamp on both faces of the header.
 		local letters = KitPlan.deviceLetters(level, def.openBy)
-		if letters ~= "" then
+		if letters ~= "" and not rowDoor[i] then -- a need-all door's letters are on its lamp row
 			local bx = def.box
 			local alongX = (bx.maxX - bx.minX) >= (bx.maxZ - bx.minZ)
 			local thick = if alongX then bx.maxZ - bx.minZ else bx.maxX - bx.minX
@@ -481,6 +504,68 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 		end
 		table.insert(doors, leaf)
 	end
+	-- "Need all n" rows (LEVELS P1-3): a lettered lamp per plate on the door's face toward its plates, dim Bulb Warm
+	-- until its plate is held (WorldView colours it), and the "VAULT n/4" count over the row.
+	local vr = LIGHT.VAULT_ROW
+	for _, row in vaultRows do
+		local normal = Vector3.new(row.nx, 0, row.nz)
+		local sx, sy, sz = 0, 0, 0
+		for _, rl in row.lamps do
+			local at = origin + Vector3.new(rl.x, rl.y, rl.z)
+			sx, sy, sz = sx + at.X, sy + at.Y, sz + at.Z
+			local lampPart = part({
+				Name = "RowLamp_" .. rl.letter,
+				Shape = Enum.PartType.Cylinder,
+				Size = Vector3.new(vr.depth, vr.size, vr.size),
+				CFrame = CFrame.fromMatrix(at, normal, Vector3.yAxis),
+				Color = Palette.bulbWarm,
+				Material = Enum.Material.Neon,
+				Transparency = vr.idleAlpha,
+				CanCollide = false,
+				CanQuery = false,
+				CanTouch = false,
+				CastShadow = false,
+			}, model)
+			lampPart:SetAttribute("EH_Kind", "vaultLamp")
+			lampPart:SetAttribute("EH_Index", rl.plate)
+			lampPart:SetAttribute("EH_Door", row.door)
+			letterGui(lampPart, Enum.NormalId.Right, rl.letter, Palette.ink, nil)
+		end
+		local n = #row.lamps
+		local anchor = part({
+			Name = "VaultCount",
+			Size = Vector3.new(0.2, 0.2, 0.2),
+			CFrame = CFrame.new(Vector3.new(sx / n, sy / n + vr.labelOffset, sz / n)),
+			Transparency = 1,
+			CanCollide = false,
+			CanQuery = false,
+			CanTouch = false,
+			CastShadow = false,
+		}, model)
+		anchor:SetAttribute("EH_Kind", "vaultCount")
+		anchor:SetAttribute("EH_Index", row.door)
+		anchor:SetAttribute("EH_Total", n)
+		local gui = Instance.new("BillboardGui")
+		gui.Name = "Count"
+		gui.Size = UDim2.fromOffset(150, 40)
+		gui.LightInfluence = 0
+		gui.MaxDistance = vr.labelDistance
+		gui.Adornee = anchor
+		local label = Instance.new("TextLabel")
+		label.Name = "Text"
+		label.Size = UDim2.fromScale(1, 1)
+		label.BackgroundTransparency = 1
+		label.FontFace = FONT
+		label.TextScaled = true
+		label.TextColor3 = Palette.bulbWarm
+		label.Text = string.format("VAULT 0/%d", n)
+		local stroke = Instance.new("UIStroke")
+		stroke.Color = Palette.ink
+		stroke.Thickness = 2
+		stroke.Parent = label
+		label.Parent = gui
+		gui.Parent = anchor
+	end
 
 	-- Lasers: a grid of thin beams (dark ink posts, red body, white-hot core, §6.5).
 	local lasers: { Model } = {}
@@ -492,8 +577,24 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 		local cz = (box.minZ + box.maxZ) / 2
 		local width = box.maxX - box.minX
 		local rows = math.max(2, math.floor((box.maxY - box.minY) / 2))
+		local ink = Config.WorldFx.LASER_INK
 		for r = 1, rows do
 			local y = box.minY + (r - 0.5) * (box.maxY - box.minY) / rows
+			-- three layers (FEEDBACK_TABLE "Laser"): a dark ink sleeve, the red body, the white-hot core
+			local sleeve = part({
+				Name = "Ink",
+				Size = Vector3.new(width, ink.width, ink.width),
+				CFrame = CFrame.new(origin + Vector3.new((box.minX + box.maxX) / 2, y, cz)),
+				Color = Palette.ink,
+				Material = Enum.Material.SmoothPlastic,
+				Transparency = ink.alpha,
+				CanCollide = false,
+				CanQuery = false,
+				CanTouch = false,
+				CastShadow = false,
+			}, grid)
+			sleeve:SetAttribute("EH_Kind", "beam")
+			sleeve:SetAttribute("EH_Layer", "ink")
 			local beam = part({
 				Name = "Beam",
 				Size = Vector3.new(width, 0.25, 0.25),
@@ -506,6 +607,7 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 				CastShadow = false,
 			}, grid)
 			beam:SetAttribute("EH_Kind", "beam")
+			beam:SetAttribute("EH_Layer", "body")
 			local core = part({
 				Name = "Core",
 				Size = Vector3.new(width, 0.08, 0.08),
@@ -518,6 +620,7 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 				CastShadow = false,
 			}, grid)
 			core:SetAttribute("EH_Kind", "beam")
+			core:SetAttribute("EH_Layer", "core")
 		end
 		for _, x in { box.minX - 0.4, box.maxX + 0.4 } do
 			local post = part({
@@ -618,8 +721,46 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 			CastShadow = false,
 		}, m)
 		cover:SetAttribute("EH_Kind", "hideFrame")
+		-- The soft outline of the hide's footprint (FEEDBACK_TABLE "Hide spot"): hidden until your character is
+		-- within HIDE_OUTLINE.near studs (WorldView fades it in); kept when the kit dresses the hide.
+		local ho = LIGHT.HIDE_OUTLINE
+		local w = ho.width
+		local sx, sz = hb.maxX - hb.minX, hb.maxZ - hb.minZ
+		local cx, cz = (hb.minX + hb.maxX) / 2, (hb.minZ + hb.maxZ) / 2
+		local y = level.floorY + ho.lift
+		for _, e in
+			{
+				{ cx, hb.minZ + w / 2, sx, w },
+				{ cx, hb.maxZ - w / 2, sx, w },
+				{ hb.minX + w / 2, cz, w, sz - 2 * w },
+				{ hb.maxX - w / 2, cz, w, sz - 2 * w },
+			}
+		do
+			local edge = part({
+				Name = "Outline",
+				Size = Vector3.new(e[3], 0.04, e[4]),
+				CFrame = CFrame.new(origin + Vector3.new(e[1], y, e[2])),
+				Color = rgb(ho.color),
+				Material = Enum.Material.Neon,
+				Transparency = 1,
+				CanCollide = false,
+				CanQuery = false,
+				CanTouch = false,
+				CastShadow = false,
+			}, m)
+			edge:SetAttribute("EH_Kind", "hideOutline")
+			edge:SetAttribute("EH_Hide", i)
+		end
 		m.Parent = model
 		table.insert(hides, m)
+	end
+	-- The letter of a plate inside a hide, on a disc over the hide (L4's coat rack, L6's desk / fern / stacks):
+	-- "the plate is in there" reads from the room (LEVELS P1-2).
+	for _, hp in KitPlan.hidePlates(level) do
+		local host = hides[hp.hide]
+		if host then
+			plaque(host, origin + Vector3.new(hp.x, hp.top + LIGHT.HIDE_PLAQUE_Y, hp.z), true, 0.2, hp.letters)
+		end
 	end
 
 	-- Lamps (W2): one over each plate, a hero over the goal, room centres (KitPlan.lamps, Heist/LevelDress).
