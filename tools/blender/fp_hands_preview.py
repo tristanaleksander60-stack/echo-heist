@@ -215,10 +215,11 @@ def l1_scene(samples, W, Hh, spot):
     fz1, fz0 = lines[0], lines[1]
     g = LS.goal_of(level)
     if spot == "back":       # in the back room by the cash, looking across it (dimmer, away from the lamps)
-        x, z, yaw, pitch = g["x"] - 3.0, g["z"] + 3.0, math.radians(-35), -4.0
+        side = 1.0 if g["x"] >= 0 else -1.0    # beside the cash, looking across its room (the interiors fp_loot_round)
+        x, z, yaw, pitch = g["x"] - 2.0 * side, g["z"], side * math.pi / 2, 2.0
     elif spot == "lamp":     # under the front room's ceiling lamp, looking down the shop
         lp = min(level["lamps"], key=lambda l: abs(l["z"] - (fz1 - 6.0)) + abs(l["x"]))
-        x, z, yaw, pitch = lp["x"], lp["z"] + 0.5, 0.0, -2.0
+        x, z, yaw, pitch = lp["x"], lp["z"] + 0.5, math.pi, -2.0
     else:                    # the shop floor looking at the back partition (the interiors audit's fp_front)
         x, z, yaw, pitch = 0.0, fz1 - 3.0, 0.0, 0.0
     pos, tgt = LS._fp(x, z, fy, yaw, pitch)
