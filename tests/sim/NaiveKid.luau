@@ -21,10 +21,142 @@
 -- These are synthetic stand-ins; real "naive" recordings from kid wave 1 replace
 -- them (levels/<id>.naive/*.bin, §8.4).
 
+local Bot = require("./Bot")
+local Config = require("../../src/shared/Config")
 local Geom = require("../../src/shared/Sim/Geom")
 local HeistSim = require("../../src/shared/Sim/HeistSim")
+local Mechanisms = require("../../src/shared/Sim/Mechanisms")
 
 local NaiveKid = {}
+
+-- A kid walks to what it sees, around walls: when a wall stands between it and the spot (seen
+-- through a window, L1's cash), it takes the shortest way round on a 1-stud grid (BFS over the
+-- level's solids grown by the body's radius; a shut door in `view` at `t` is a wall, `view` nil
+-- counts every doorway as open), then cuts the corners it can see past. Waypoints { {x, z} }, the
+-- spot last; just the spot when the way is clear or there is no way round.
+local CELL = 1
+local DIRS = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }
+
+function NaiveKid.route(
+	level: any,
+	view: any,
+	t: number,
+	x0: number,
+	z0: number,
+	tx: number,
+	tz: number
+): { { number } }
+	local function clear(ax: number, az: number, bx: number, bz: number): boolean
+		return not Bot.blocked(level, view, t, ax, az, bx, bz)
+	end
+	if clear(x0, z0, tx, tz) then
+		return { { tx, tz } }
+	end
+	local r = Config.Sim.ACTOR_RADIUS
+	local walls = {}
+	for _, b in level.solids do
+		table.insert(walls, Geom.expand(b, r, 0))
+	end
+	for i, d in level.doors do
+		if view and Mechanisms.doorViewOf(view.doors[i], t) == "shut" then
+			table.insert(walls, Geom.expand(d.box, r, 0))
+		end
+	end
+	local b = level.bounds
+	local w = math.ceil((b.maxX - b.minX) / CELL)
+	local h = math.ceil((b.maxZ - b.minZ) / CELL)
+	local y = level.rootY
+	local function cellOf(x: number, z: number): number
+		local i = math.clamp(math.floor((x - b.minX) / CELL), 0, w - 1)
+		local j = math.clamp(math.floor((z - b.minZ) / CELL), 0, h - 1)
+		return j * w + i
+	end
+	local function centre(id: number): (number, number)
+		return b.minX + (id % w + 0.5) * CELL, b.minZ + (math.floor(id / w) + 0.5) * CELL
+	end
+	local function free(x: number, z: number): boolean
+		for _, box in walls do
+			if Geom.inside(box, x, y, z) then
+				return false
+			end
+		end
+		return true
+	end
+	-- Distances from the spot outward, until the kid's cell is reached.
+	local goal, start = cellOf(tx, tz), cellOf(x0, z0)
+	local dist: { [number]: number } = { [goal] = 0 }
+	local queue, head = { goal }, 1
+	while head <= #queue and dist[start] == nil do
+		local id = queue[head]
+		head += 1
+		local i, j = id % w, math.floor(id / w)
+		for _, d in DIRS do
+			local ni, nj = i + d[1], j + d[2]
+			local nid = nj * w + ni
+			if ni >= 0 and ni < w and nj >= 0 and nj < h and dist[nid] == nil then
+				local cx, cz = centre(nid)
+				if nid == start or free(cx, cz) then
+					dist[nid] = dist[id] + 1
+					table.insert(queue, nid)
+				end
+			end
+		end
+	end
+	if dist[start] == nil then
+		return { { tx, tz } }
+	end
+	-- Downhill to the spot, then keep only the corners (each waypoint is the farthest path point in sight).
+	local path: { { number } } = {}
+	local id = start
+	while id ~= goal do
+		local i, j = id % w, math.floor(id / w)
+		for _, d in DIRS do
+			local ni, nj = i + d[1], j + d[2]
+			local nid = nj * w + ni
+			if ni >= 0 and ni < w and nj >= 0 and nj < h and dist[nid] == dist[id] - 1 then
+				id = nid
+				break
+			end
+		end
+		local cx, cz = centre(id)
+		table.insert(path, { cx, cz })
+	end
+	path[#path] = { tx, tz }
+	local out: { { number } } = {}
+	local px, pz = x0, z0
+	local k = 1
+	while k <= #path do
+		local far = k
+		for m = #path, k, -1 do
+			if clear(px, pz, path[m][1], path[m][2]) then
+				far = m
+				break
+			end
+		end
+		table.insert(out, path[far])
+		px, pz = path[far][1], path[far][2]
+		k = far + 1
+	end
+	return out
+end
+
+-- `go` steps along NaiveKid.route; timeout and giveUp apply to each leg.
+local function walkTo(
+	level: any,
+	bot: any,
+	view: any,
+	t: number,
+	tx: number,
+	tz: number,
+	timeout: number?,
+	giveUp: number?
+): { any }
+	local steps = {}
+	for _, p in NaiveKid.route(level, view, t, bot.x, bot.z, tx, tz) do
+		table.insert(steps, { go = p, timeout = timeout, giveUp = giveUp })
+	end
+	return steps
+end
 
 -- Where a kid's random "let's look over there" spots fall, per location (x0, x1, z0, z1).
 NaiveKid.AREAS = {
@@ -85,12 +217,15 @@ function NaiveKid.brain(level: any, seed: number, run: number, opts: any?): any
 	local hinted = false
 	local area = NaiveKid.AREAS[level.spec.location] or NaiveKid.AREAS.CornerShop
 	local decide
-	decide = function(bot: any, sim: any, _view: any, t: number): { any }
+	decide = function(bot: any, sim: any, view: any, t: number): { any }
 		local a = HeistSim.liveActor(sim, bot.id)
 		if first then
 			first = false
 			local top = topLoot(level)
-			return { { go = { top.x, top.z }, timeout = 6, giveUp = 1 }, { grab = top.id }, { decide = decide } }
+			local steps = walkTo(level, bot, view, t, top.x, top.z, 6, 1)
+			table.insert(steps, { grab = top.id })
+			table.insert(steps, { decide = decide })
+			return steps
 		end
 		if a and a.carrying ~= 0 then
 			return { { goVan = true, timeout = 8 }, { wait = rnd(0.2, 1) }, { decide = decide } }
@@ -104,10 +239,17 @@ function NaiveKid.brain(level: any, seed: number, run: number, opts: any?): any
 			-- until a clone stands on the plate: LevelSpec untilDone).
 			if HeistSim.autoEndArmed(sim) then
 				local x, _, z = Geom.center(level.plates[hint.plate].box)
-				return { { go = { x, z } }, { stay = true } }
+				local steps = walkTo(level, bot, view, t, x, z)
+				table.insert(steps, { stay = true })
+				return steps
 			end
+			-- The way to the cash leads through the back-room door, shut or not: the kid waits at it
+			-- until its clone opens it (view nil: every doorway counts).
 			local cash = level.loot[1]
-			return { { go = { cash.x, cash.z } }, { grab = cash.id }, { decide = decide } }
+			local steps = walkTo(level, bot, nil, t, cash.x, cash.z)
+			table.insert(steps, { grab = cash.id })
+			table.insert(steps, { decide = decide })
+			return steps
 		end
 		-- Random END RUN taps (not on L1, where END RUN only pulses on the plate).
 		if not hint and t > 3 and rnd(0, 1) < END_TAP then
@@ -129,7 +271,12 @@ function NaiveKid.brain(level: any, seed: number, run: number, opts: any?): any
 			tx = tx or spots[1].x
 			tz = tz or spots[1].z
 		end
-		local steps: { any } = { { go = { tx, tz }, timeout = rnd(2, 5), giveUp = 1 } }
+		-- L1 shows its cash through the partition window: the kid walks round to it through an open
+		-- doorway. Elsewhere (and to other spots) it walks in a line, as the specs were tuned.
+		local timeout = rnd(2, 5)
+		local steps: { any } = if lootId and level.tutorial
+			then walkTo(level, bot, view, t, tx, tz, timeout, 1)
+			else { { go = { tx, tz }, timeout = timeout, giveUp = 1 } }
 		if lootId then
 			table.insert(steps, { grab = lootId })
 		end

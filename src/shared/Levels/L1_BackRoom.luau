@@ -41,7 +41,11 @@ return {
 		{ id = "BackRoom", box = Shop.doorAt(-20, -3, 3), openBy = { "A" } },
 	},
 	loot = {
-		{ id = "Cash", x = 0, y = 3, z = -28, value = 100, kind = "Cash" },
+		-- Off the door's axis, behind the right partition window (KitPlan: glass x 5.5..10.5 at z -20), so the
+		-- cash shows through the glass from every spawn seat in first person and classic (MASTERPLAN §7.5
+		-- "cash glittering through glass"; at (0, -28) the shut door hid it, LEVELS.md §9). It sits on a safe
+		-- (Heist/LevelDress), so it clears the window's sill from the Rookie's eyes.
+		{ id = "Cash", x = 10, y = 3, z = -26, value = 100, kind = "Cash" },
 	},
 	-- untilDone: a kid who taps END RUN off the plate (or lets run 1 time out) gets the
 	-- auto-end again in the next run, until a clone stands on the plate.
