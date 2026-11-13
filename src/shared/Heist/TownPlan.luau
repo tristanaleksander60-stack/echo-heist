@@ -32,6 +32,8 @@ export type Part = {
 	layer: string, -- ground | lot | building | windows | decor | props | fence
 	src: string, -- the source-mask layer for tools/blender (ground | lot | building | props | none)
 	collide: boolean?, -- the lot fence only
+	bld: number?, -- the building it belongs to (the client's cut-away fades buildings whole)
+	skin: { normal: { number }, tileU: number, tileV: number }?, -- the window-grid Texture's face and tiling
 }
 export type Kit = {
 	piece: string, -- a kit piece published by server Heist/BackdropKit
@@ -44,6 +46,7 @@ export type Kit = {
 	layer: string,
 	src: string,
 	fallback: Part?, -- drawn instead while (or if) the kit piece is missing
+	bld: number?,
 }
 export type Pool = { pos: { number }, size: number, color: { number }, alpha: number, layer: string }
 export type Town = {
@@ -120,6 +123,9 @@ function TownPlan.build(input: Input): Town
 	local function addKit(k: Kit)
 		table.insert(kit, k)
 	end
+	-- the far rows and the towers (BIG): seen over roofs and across the street, never up close, so no rooftop props
+	-- and no Christmas decor on them (their garlands and tanks would cost triangles nobody sees)
+	local plainNow = false
 
 	-- The street ----------------------------------------------------------------------------------------------
 	local P, R = T.PAVEMENT, T.ROAD
@@ -215,7 +221,10 @@ function TownPlan.build(input: Input): Town
 		return at, size, yaw
 	end
 
-	-- lit windows on one face (floors from `fromV`, columns across `width`, a door gap at u = doorU)
+	-- The upper storeys of one face (BIG, PLAN_FIRST_PERSON §5): a thin "Skin" part over the storeys from `fromV` to
+	-- `height` carries the window-grid Texture (T.SKIN: every window, frames and dark panes, one instance per face;
+	-- the client applies the uploaded image), and a few lit Bulb Warm Neon panes sit exactly on its grid cells.
+	local SK = T.SKIN
 	local function windows(
 		fx: number,
 		fz: number,
@@ -225,22 +234,34 @@ function TownPlan.build(input: Input): Town
 		height: number,
 		fromV: number,
 		doorU: number?,
-		doorW: number?
+		doorW: number?,
+		wall: { number }
 	)
 		local at, size = frame(fx, fz, nx, nz)
-		local cols = math.max(1, math.floor((width - 2) / W.colPitch))
-		local v = fromV
+		local cols = math.max(1, math.floor((width - 2 * SK.inset) / W.colPitch))
+		local rows = math.floor((height - fromV - 0.6) / T.STOREY)
+		if rows < 1 then
+			return
+		end
+		local sw, sh = cols * W.colPitch, rows * T.STOREY
+		local gridTop = fromV + sh
+		-- the skin is the wall's own colour: the Texture's transparent wall shows it, so the face reads as one wall
+		local skin = part("Skin", size(sw, sh, 0.05), at(0, fromV + sh / 2, SK.out), wall, "building", "building")
+		skin.skin = { normal = { nx, nz }, tileU = SK.cols * W.colPitch, tileV = SK.rows * T.STOREY }
 		local lit = 0
-		while v + W.h + 0.8 <= height and lit < W.maxPerFace do
+		for r = 0, rows - 1 do
+			local v = gridTop - (r + SK.winTop) * T.STOREY -- the window's top on this storey (from the skin's top)
 			for c = 0, cols - 1 do
-				local u = (c - (cols - 1) / 2) * W.colPitch
-				local blocked = doorU ~= nil and v < 5 and math.abs(u - doorU) < ((doorW or 0) / 2 + W.w / 2 + 0.3)
-				if not blocked and lit < W.maxPerFace and rnd() < W.lit then
+				local u = -sw / 2 + (c + 0.5) * W.colPitch
+				local blocked = doorU ~= nil
+					and v - W.h < 6
+					and math.abs(u - doorU) < ((doorW or 0) / 2 + W.w / 2 + 0.3)
+				if not blocked and lit < W.maxPerFace and rnd() < W.lit / math.max(1, rows / 2) then
 					lit += 1
 					part(
 						"Window",
 						size(W.w, W.h, W.depth),
-						at(u, v + W.h / 2, W.out),
+						at(u, v - W.h / 2, W.out),
 						B.WINDOW_COLOR,
 						"windows",
 						"building"
@@ -248,7 +269,6 @@ function TownPlan.build(input: Input): Town
 						true
 				end
 			end
-			v += W.floorH
 		end
 	end
 
@@ -270,13 +290,95 @@ function TownPlan.build(input: Input): Town
 		buildings += 1
 		colourTurn += 1
 		local body = pick(theme.bodies, colourTurn)
-		local hr = theme.heights[kind] or theme.heights.house
-		local h = hr[1] + rnd() * (hr[2] - hr[1])
-		h = math.floor(h * 2 + 0.5) / 2
+		-- BIG: a ground floor and 3-8 upper storeys (theme.storeys per kind; landmark towers more)
+		local sr = if kind == "tower" then T.TOWER_STOREYS else theme.storeys[kind] or theme.storeys.house
+		local storeys = sr[1] + math.floor(rnd() * (sr[2] - sr[1] + 1))
+		local h = T.GROUND + storeys * T.STOREY + 0.9
 		local at, size, yaw = frame(fx, fz, nx, nz)
+		local first, firstKit = #parts + 1, #kit + 1
 		part("Body", size(w, h, d), at(0, h / 2, -d / 2), body, "building", "building")
 		local doorColour = pick(C.door, buildings + input.seed)
 		local gable = kind == "house" or kind == "warehouse"
+		-- the roofline: setbacks, water tanks, chimneys and antennas on the flat roofs (varied skyline)
+		if not gable then
+			local RT = T.ROOFTOP
+			local roll = rnd()
+			if kind == "tower" then
+				-- a stepped crown and a spire: the landmark read against the sky
+				local sw, sd = w * 0.7, d * 0.7
+				part("Crown", size(sw, 6, sd), at(0, h + 3, -d / 2), body, "building", "building")
+				part(
+					"CrownSnow",
+					size(sw + 0.4, 0.4, sd + 0.4),
+					at(0, h + 6.2, -d / 2),
+					C.roofSnow,
+					"building",
+					"building"
+				)
+				part("CrownTop", size(sw * 0.55, 5, sd * 0.55), at(0, h + 8.5, -d / 2), C.trim, "building", "building")
+				part(
+					"Spire",
+					size(0.8, RT.spire, 0.8),
+					at(0, h + 11 + RT.spire / 2, -d / 2),
+					C.trim,
+					"props",
+					"building"
+				)
+				part(
+					"CrownLights",
+					size(sw + 0.2, 0.35, sd + 0.2),
+					at(0, h + 5.6, -d / 2),
+					B.WINDOW_COLOR,
+					"building",
+					"building"
+				).neon =
+					true
+			elseif roll < RT.setback then
+				local sw, sd = w * 0.55, d * 0.5
+				part(
+					"Setback",
+					size(sw, RT.setbackH, sd),
+					at(0, h + RT.setbackH / 2, -d * 0.55),
+					body,
+					"building",
+					"building"
+				)
+				part(
+					"SetbackSnow",
+					size(sw + 0.4, 0.4, sd + 0.4),
+					at(0, h + RT.setbackH + 0.2, -d * 0.55),
+					C.roofSnow,
+					"building",
+					"building"
+				)
+			elseif roll < RT.setback + RT.tank and not plainNow then
+				addKit({
+					piece = "Roof_WaterTank",
+					pos = at(w * 0.22, h, -d * 0.6),
+					yaw = yaw,
+					layer = "props",
+					src = "props",
+				})
+			end
+			if rnd() < RT.chimney and not plainNow then
+				addKit({
+					piece = "Roof_Chimney",
+					pos = at(-w * 0.3, h, -d * 0.3),
+					yaw = yaw,
+					layer = "props",
+					src = "props",
+				})
+			end
+			if rnd() < RT.antenna and not plainNow then
+				addKit({
+					piece = "Roof_Antenna",
+					pos = at(w * 0.3, h, -d * 0.25),
+					yaw = yaw + 30,
+					layer = "props",
+					src = "props",
+				})
+			end
+		end
 		if gable then
 			local RF = T.ROOF
 			local rise = RF.rise * (d + 2 * RF.overhang) / 2
@@ -333,8 +435,8 @@ function TownPlan.build(input: Input): Town
 				"building",
 				"building"
 			)
-			windows(fx, fz, nx, nz, w, topV, SH.awningY + 1.4, nil, nil)
-			if input.xmas and theme.signature == "lights" then
+			windows(fx, fz, nx, nz, w, topV, T.GROUND, nil, nil, body)
+			if input.xmas and not plainNow and theme.signature == "lights" then
 				for k = 0, math.floor((w - 1) / 8) - 1 do
 					local mu = -w / 2 + 0.5 + k * 8 -- the module's left end seen from the street (its local X runs 0..-8)
 					addKit({
@@ -365,7 +467,7 @@ function TownPlan.build(input: Input): Town
 			part("Lintel", size(cw + 2, 1.2, 2.6), at(0, 9.6, 1.4), C.trim, "building", "building")
 			part("LintelSnow", size(cw + 1.6, 0.35, 2.3), at(0, 10.35, 1.4), C.roofSnow, "building", "building")
 			door(at, size, 0, 3.2, 6, doorColour)
-			windows(fx, fz, nx, nz, w, topV, 11.6, nil, nil)
+			windows(fx, fz, nx, nz, w, topV, T.GROUND, nil, nil, body)
 			for _, s in { -1, 1 } do
 				part(
 					"Window",
@@ -382,8 +484,8 @@ function TownPlan.build(input: Input): Town
 			local dw = if kind == "warehouse" then math.min(10, w - 6) else T.HOUSE.doorW
 			local dh = if kind == "warehouse" then 7.5 else T.HOUSE.doorH
 			door(at, size, du, dw, dh, if kind == "warehouse" then C.trim else doorColour)
-			windows(fx, fz, nx, nz, w, topV, if kind == "warehouse" then 8.4 else W.sill - 2, du, dw)
-			if input.xmas and kind ~= "warehouse" then
+			windows(fx, fz, nx, nz, w, topV, T.GROUND, du, dw, body)
+			if input.xmas and not plainNow and kind ~= "warehouse" then
 				-- the wreath's origin is its back centre: on the door leaf's face
 				addKit({
 					piece = "Xmas_Wreath",
@@ -396,6 +498,7 @@ function TownPlan.build(input: Input): Town
 		end
 		if
 			input.xmas
+			and not plainNow
 			and (kind == "shop" or kind == "townhouse" or kind == "civic")
 			and theme.signature ~= "lights"
 		then
@@ -417,7 +520,15 @@ function TownPlan.build(input: Input): Town
 			local s = if side == "right" then 1 else -1
 			local rx, rz = nz, -nx
 			local sx, sz = fx + rx * s * w / 2 + nx * (-d / 2), fz + rz * s * w / 2 + nz * (-d / 2)
-			windows(sx, sz, rx * s, rz * s, d, topV, W.sill, nil, nil)
+			windows(sx, sz, rx * s, rz * s, d, topV, T.GROUND, nil, nil, body)
+		end
+		-- every piece of this building carries its index: the client's cut-away fades a whole building that stands
+		-- between the camera and you (Heist/CutAway occluders)
+		for i = first, #parts do
+			parts[i].bld = buildings
+		end
+		for i = firstKit, #kit do
+			kit[i].bld = buildings
 		end
 		return h
 	end
@@ -482,6 +593,18 @@ function TownPlan.build(input: Input): Town
 	end
 	row(theme.across, acrossZ, -1, cx - gapHalf - 1, -1, cx - T.SPAN * 0.85, { 14, 20 }, 11)
 	row(theme.across, acrossZ, -1, cx + gapHalf + 1, 1, cx + T.SPAN * 0.85, { 14, 20 }, 17)
+	-- streets with depth (BIG): a second, taller row behind the back row and behind the across row, and the landmark
+	-- towers either side of Hoardsworth's (the sky's landmark stands straight ahead of the spawn view, toward -Z)
+	local DP = T.DEPTH
+	plainNow = true
+	local deepBack = backZ - DP.back
+	row(DP.kinds, deepBack, 1, lot.minX - DP.overhang, 1, lot.maxX + DP.overhang, { 14, 18 }, 23)
+	local deepAcross = acrossZ + DP.across + (if plaza then plaza.depth else 0)
+	row(DP.kinds, deepAcross, -1, cx - T.SPAN * 0.55, 1, cx + T.SPAN * 0.55, { 14, 18 }, 29)
+	for _, tw in T.TOWERS do
+		building("tower", cx + tw.x, deepBack - tw.back, 0, 1, tw.w, tw.d, nil)
+	end
+	plainNow = false
 
 	-- Props --------------------------------------------------------------------------------------------------
 	local LP = T.LAMP
@@ -623,6 +746,10 @@ function TownPlan.build(input: Input): Town
 	if input.mirror then
 		for _, p in parts do
 			p.pos[3] = -p.pos[3]
+			local sk = p.skin
+			if sk then
+				sk.normal[2] = -sk.normal[2]
+			end
 		end
 		for _, k in kit do
 			k.pos[3] = -k.pos[3]

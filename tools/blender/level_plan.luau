@@ -21,6 +21,8 @@ local KitData = require("../../src/server/Kit/KitData")
 local KitPlan = require("../../src/server/Heist/KitPlan")
 local LevelSpec = require("../../src/shared/Sim/LevelSpec")
 local LobbyPlan = require("../../src/server/Heist/LobbyPlan")
+local Strings = require("../../src/shared/Heist/Strings")
+local TowerPlan = require("../../src/server/Heist/TowerPlan")
 
 type Box = { minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number }
 
@@ -91,6 +93,52 @@ local function lamps(level: any, location: string): { any }
 		})
 	end
 	return out
+end
+
+-- The BIG building (Heist/TowerPlan, what Heist/Overhead builds): kit pieces with their part frames, plain parts,
+-- the cut-away groups.
+local function tower(level: any, location: string): any
+	local plan = TowerPlan.plan(
+		level,
+		specs,
+		{ location = location, dressing = dressing },
+		{ cfg = Config.Big, KP = KitPlan, signs = Strings.BIG_SIGN }
+	)
+	if plan == nil then
+		return nil
+	end
+	local items = {}
+	for _, it in plan.items do
+		local pieces = {}
+		for _, name in it.pieces do
+			local c, size = KitPlan.partFrame(specs[name], it.pivot, it.scale)
+			table.insert(pieces, { name = name, model = specs[name].model, c = c, size = size })
+		end
+		table.insert(items, {
+			pieces = pieces,
+			pivot = { it.pivot.x, it.pivot.y, it.pivot.z, it.pivot.yaw },
+			scale = it.scale,
+			group = it.group,
+			layer = it.layer,
+			color = it.color,
+			role = it.role,
+		})
+	end
+	local groups = {}
+	for _, g in plan.groups do
+		table.insert(groups, { name = g.name, kind = g.kind, box = box(g.box), normal = g.normal, plane = g.plane })
+	end
+	return {
+		style = plan.style,
+		storeys = plan.storeys,
+		ceilY = plan.ceilY,
+		topY = plan.topY,
+		outer = { plan.outer.minX, plan.outer.maxX, plan.outer.minZ, plan.outer.maxZ },
+		items = items,
+		parts = plan.parts,
+		groups = groups,
+		cut = Config.Big.CUT,
+	}
 end
 
 local function dump(spec: any): any
@@ -236,6 +284,7 @@ local function dump(spec: any): any
 		worldFx = Config.WorldFx, -- the laser's ink sleeve
 		camera = Config.Heist.CAMERA, -- the golden frames use the game's own diorama / golden numbers
 		kit = kit,
+		tower = tower(level, location),
 		warnings = plan.warnings,
 	}
 end
@@ -243,7 +292,7 @@ end
 -- The garage v1 (server Heist/Lobby from Heist/LobbyPlan, Config.Lobby): kit items with their part frames, the
 -- lamps, the greybox floor and walls, bay lines and numbers, the NEXT card, and the backdrop round the garage site.
 local function garage(): any
-	local plan = LobbyPlan.plan(Config.Lobby, Config.Lighting, specs, KitPlan)
+	local plan = LobbyPlan.plan(Config.Lobby, Config.Lighting, specs, KitPlan, Strings)
 	local items = {}
 	for _, item in plan.items do
 		local pieces = {}
@@ -255,6 +304,7 @@ local function garage(): any
 			role = item.role,
 			index = item.index,
 			color = item.color,
+			group = item.group,
 			pivot = { item.pivot.x, item.pivot.y, item.pivot.z, item.pivot.yaw },
 			scale = item.scale,
 			pieces = pieces,
@@ -302,6 +352,23 @@ local function garage(): any
 		lighting = Config.Lighting,
 		lobby = Config.Lobby,
 		camera = Config.Heist.CAMERA,
+		-- the warehouse (LobbyPlan.warehouse): its plain parts, cut-away groups and anchors
+		parts = plan.parts,
+		tower = (function(): any
+			local groups = {}
+			for _, g in plan.groups do
+				table.insert(groups, { name = g.name, kind = g.kind, box = box(g.box), normal = g.normal, plane = g.plane })
+			end
+			local hx, hz, t = Config.Lobby.HALF_X, Config.Lobby.HALF_Z, Config.Lobby.WALL_T
+			return {
+				groups = groups,
+				ceilY = plan.ceilY,
+				topY = plan.topY,
+				outer = { -hx - t, hx + t, -hz - t, hz + t },
+				cut = Config.Big.CUT,
+			}
+		end)(),
+		anchors = plan.anchors,
 	}
 end
 

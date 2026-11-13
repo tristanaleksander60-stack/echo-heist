@@ -1039,13 +1039,43 @@ def garage_scene(g, lib):
     """The garage v1 as server Heist/Lobby builds it (kit, van paints, bay lines and numbers, lamps, the NEXT card)."""
     LG = g["lighting"]
     gbox("Floor", g["floor"], PAL["floor"])
+    groups = {}
     for it in g["kit"]:
         for piece in it["pieces"]:
             o = put(lib, piece, it["pivot"], it["scale"])
             if o is None:
                 continue
-            if piece["name"] == "Van_Paint" and it.get("color"):
+            if piece["name"] in ("Van_Paint", "Facade_8x10_Body") and it.get("color"):
                 tint(o, "#%02X%02X%02X" % tuple(it["color"]), rough=0.5)
+            if it.get("group"):
+                o.visible_shadow = False
+                groups.setdefault(it["group"], []).append(o)
+    # the warehouse's plain parts (LobbyPlan.warehouse): shell, roof, skylights, mezzanine, the stations' dressing
+    for p in g.get("parts") or []:
+        if (p.get("alpha") or 0) >= 1:
+            continue   # invisible colliders
+        s, c = p["size"], p["pos"]
+        if abs((p.get("yaw") or 0) % 180 - 90) < 1e-6:
+            s = (s[2], s[1], s[0])
+        b = [c[0] - s[0] / 2, c[1] - s[1] / 2, c[2] - s[2] / 2, c[0] + s[0] / 2, c[1] + s[1] / 2, c[2] + s[2] / 2]
+        mat = p.get("material")
+        o = gbox("Ware" + p["name"], b, _hexc(p["color"]), emit=2.2 if mat == "Neon" else 0.0,
+                 alpha=1 - (p.get("alpha") or 0), shadow=False)
+        gui = p.get("gui")
+        if gui:
+            face = {"Front": (0, -1), "Back": (0, 1), "Left": (-1, 0), "Right": (1, 0)}[gui["face"]]
+            yaw = math.radians(p.get("yaw") or 0)
+            fx = face[0] * math.cos(yaw) + face[1] * math.sin(yaw)
+            fz = -face[0] * math.sin(yaw) + face[1] * math.cos(yaw)
+            half = (s[0] / 2 if abs(fx) > 0.5 else s[2] / 2) + 0.04
+            ang = math.atan2(-fx, -fz)   # the text's Roblox facing (0 = toward -Z)
+            size = min(s[1] * 0.45, (s[2] if abs(fx) > 0.5 else s[0]) / max(1, len(gui["text"])) * 1.6)
+            t = text3(gui["text"], size, _hexc(gui["color"]), 2.2, rb(c[0] + fx * half, c[1], c[2] + fz * half),
+                      (math.pi / 2, 0, ang))
+            if p.get("group"):
+                groups.setdefault(p["group"], []).append(t)
+        if p.get("group"):
+            groups.setdefault(p["group"], []).append(o)
     L = g["lobby"]
     for b in g["lines"]:
         gbox("BayLine", b, "#%02X%02X%02X" % tuple(L["BAY_LINE"]["color"]), shadow=False)
@@ -1076,6 +1106,7 @@ def garage_scene(g, lib):
         if t.dimensions.x > wide:
             k = wide / t.dimensions.x
             t.scale = (k, k, k)
+    return groups
 
 
 # ------------------------------------------------------------------ WORLD 2.0: the full frame, both cameras
@@ -1300,6 +1331,251 @@ def world2_garage(g, samples, out_dir):
     _w2_shoot(s, cam, "GA_classic_rev", pos, tgt, CC["FOV"], (8.0, 4.5, yz), cfg, out_dir)
 
 
+# ------------------------------------------------------------------ BIG buildings (PLAN_FIRST_PERSON 5 "BIG")
+BIG = os.path.join(REPO, "docs", "audit", "levels", "big")
+BIG_SITES = ("L1", "L5", "L6", "DV10", "garage")
+EYE_H = 3.8          # the Rookie's first-person eye over the floor (CameraDirector fp, Config.FirstPerson)
+FP_FOV = 70.0
+
+
+def _hexc(c):
+    return "#%02X%02X%02X" % tuple(int(v) for v in c[:3])
+
+
+def tower(t, lib):
+    """Heist/TowerPlan as Heist/Overhead builds it: kit pieces (the facade bodies in their runtime colour), plain
+    parts (Neon panes glow), sign text; CastShadow off like the game (the ground floor keeps its moonlight).
+    Returns {group: [objects]} for the cut-away."""
+    groups = {}
+
+    def file(o, g):
+        if o is None:
+            return
+        o.visible_shadow = False
+        o["eh_src"] = "building"
+        groups.setdefault(g, []).append(o)
+
+    for it in t["items"]:
+        for piece in it["pieces"]:
+            o = put(lib, piece, it["pivot"], it["scale"])
+            if o is not None and it.get("color") and piece["name"].endswith("_Body"):
+                tint(o, _hexc(it["color"]), rough=0.75)
+            file(o, it["group"])
+    for p in t["parts"]:
+        s, c = p["size"], p["pos"]
+        b = [c[0] - s[0] / 2, c[1] - s[1] / 2, c[2] - s[2] / 2, c[0] + s[0] / 2, c[1] + s[1] / 2, c[2] + s[2] / 2]
+        neon = p["material"] == "Neon"
+        o = gbox("Tower" + p["name"], b, _hexc(p["color"]), emit=2.2 if neon else 0.0, shadow=False)
+        file(o, p["group"])
+        sg = p.get("sign")
+        if sg:
+            col = _hexc(sg["color"])
+            if sg.get("vertical"):
+                letters = "\n".join(ch for ch in sg["text"] if ch != " ")
+                for side in (1, -1):
+                    x = c[0] + side * (s[0] / 2 + 0.03)
+                    o2 = text3(letters, 0.95, col, 2.5, rb(x, c[1], c[2]), (math.pi / 2, 0, -side * math.pi / 2))
+                    o2.data.space_line = 0.95
+                    file(o2, p["group"])
+            else:
+                size = min(s[1] * 0.62, s[0] / max(1, len(sg["text"])) * 1.4)   # TextScaled fits it in game
+                o2 = text3(sg["text"], size, col, 2.5 if col != "#3C3246" else 0.0,
+                           rb(c[0], c[1], c[2] + s[2] / 2 + 0.03), (math.pi / 2, 0, math.pi))
+                file(o2, p["group"])
+    return groups
+
+
+def cut(t, groups, cam, subjects):
+    """Shared/Heist/CutMath.decide on the planned groups (Roblox coordinates): hides what the game hides."""
+    C = t["cut"]
+    ceil_y = t["ceilY"]
+    ox0, ox1, oz0, oz1 = t["outer"]
+    above = cam[1] > ceil_y + C["MARGIN"]
+    pad = C["INSIDE_PAD"]
+    inside = any(s[1] < ceil_y and ox0 - pad < s[0] < ox1 + pad and oz0 - pad < s[2] < oz1 + pad for s in subjects)
+    over = ox0 < cam[0] < ox1 and oz0 < cam[2] < oz1
+    hidden = set()
+    for g in t["groups"]:
+        hide = False
+        if above and inside:
+            if g["kind"] in ("ceiling", "roof"):
+                hide = True
+            elif g["kind"] == "face":
+                n = g["normal"]
+                side = (cam[0] - g["plane"]) * n[0] if n[0] != 0 else (cam[2] - g["plane"]) * n[1]
+                hide = over or side > 0
+        if not hide:
+            for sp in subjects:
+                d = tuple(sp[k] - cam[k] for k in range(3))
+                if ray_box(cam, d, g["box"]) is not None:
+                    hide = True
+                    break
+        if hide:
+            hidden.add(g["name"])
+    for name, objs in groups.items():
+        for o in objs:
+            o.hide_render = name in hidden
+    return hidden
+
+
+def _look(pos, tgt, fy):
+    """Heist/CutAway's look subject: where the camera's look ray meets the floor + CUT.LOOK_HEIGHT (3)."""
+    d = tuple(tgt[k] - pos[k] for k in range(3))
+    if d[1] >= -1e-3:
+        return []
+    t = (fy + 3.0 - pos[1]) / d[1]
+    return [tuple(pos[k] + d[k] * t for k in range(3))] if t > 0 else []
+
+
+def _fp(x, z, fy, yaw, pitch):
+    """The first-person eye at (x, z) looking along yaw (0 = -Z) and pitch (up positive): Roblox (pos, target)."""
+    p = math.radians(pitch)
+    pos = (x, fy + EYE_H, z)
+    d = (-math.sin(yaw) * math.cos(p), math.sin(p), -math.cos(yaw) * math.cos(p))
+    return pos, tuple(pos[k] + d[k] * 20 for k in range(3))
+
+
+def big_level(level, samples, out_dir):
+    """BIG (LEVELS.md 11): the tall building from the first-person eye (the shop from the street, looking up the
+    facade, inside looking up at the ceiling and its lamps, inside looking round) and from the diorama and classic
+    cameras with the game's cut-away, graded like WORLD 2.0."""
+    import backdrop_shots as BS
+    W, Hh = W2_SIZE
+    os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(TMP, exist_ok=True)
+    tag = short(level)
+    fy = level["floorY"]
+    sp = level["spawns"][0]
+    cfg = level["backdropConfig"]
+    CC = level["camera"]["CLASSIC"]
+    DF = level["camera"]["DIORAMA"]["FOV"]
+    t = level["tower"]
+    s = MR.reset(samples)
+    s.view_settings.exposure = 0.3
+    lib = Lib(level["location"])
+    _held, doors, _lasers = build(level, False, lib)
+    gus_and_cone(level, doors, level["location"], level["dressing"])
+    groups = tower(t, lib)
+    BS.backdrop(level, lib, put, soft_pool_mat)
+    lighting(s)
+    BS.world_sky(s, TMP)
+    cam = _w2_camera(s, W, Hh)
+    J = player(level)
+    ox0, ox1, oz0, oz1 = t["outer"]
+    mid_z = max(oz0 + 14.0, -24.0)
+    shots = [
+        # first person: the shop from the street spawn, up the facade from the van, inside up at the ceiling and round
+        ("fp_street", _fp(sp["x"] - 9.0, oz1 + 15.0, fy, -0.33, 14.0), FP_FOV, (sp["x"] - 9.0, oz1 + 15.0), True),
+        ("fp_up", _fp(sp["x"] + 14.0, oz1 + 21.0, fy, 0.38, 29.0), FP_FOV, (sp["x"] + 14.0, oz1 + 21.0), True),
+        ("fp_ceiling", _fp(4.0, oz1 - 12.0, fy, 0.0, 50.0), FP_FOV, (4.0, oz1 - 12.0), False),
+        ("fp_inside", _fp(0.0, oz1 - 6.0, fy, 0.0, 6.0), FP_FOV, (0.0, oz1 - 6.0), False),
+        ("fp_corner", _fp(ox1 + 9.0, oz1 + 13.0, fy, math.radians(30), 26.0), FP_FOV, (ox1 + 9.0, oz1 + 13.0), True),
+    ]
+    for name, (pos, tgt), fov, (px, pz), outdoors in shots:
+        move(J, level, px, pz + 30.0, 0.0)          # out of the eye's way (first person hides your body)
+        cut(t, groups, pos, [])                     # first person never cuts
+        _w2_shoot(s, cam, f"{tag}_{name}", pos, tgt, fov, pos if outdoors else None, cfg, out_dir, level=level)
+    # the diorama and classic cameras at the spawn (you on the street: the tall front stands behind you)
+    at = (sp["x"], fy + 4.5, sp["z"])
+    move(J, level, sp["x"], sp["z"], sp["yaw"])
+    you = [(sp["x"], fy + 4.5, sp["z"]), (sp["x"], fy + 0.8, sp["z"])]
+    pos, tgt = _diorama(level["camera"], *at, sp["yaw"])
+    print("cut", tag, "diorama", sorted(cut(t, groups, pos, you + _look(pos, tgt, fy))))
+    _w2_shoot(s, cam, f"{tag}_diorama", pos, tgt, DF, at, cfg, out_dir, level=level)
+    pos, tgt = _classic(*at, sp["yaw"], CC["ZOOM"], CC["PITCH"])
+    print("cut", tag, "classic", sorted(cut(t, groups, pos, you + _look(pos, tgt, fy))))
+    _w2_shoot(s, cam, f"{tag}_classic", pos, tgt, CC["FOV"], at, cfg, out_dir, level=level)
+    # the diorama with you inside: the dollhouse opens (ceiling, roof and the storeys on the camera's side)
+    move(J, level, 0.0, mid_z, 0.0)
+    you = [(0.0, fy + 4.5, mid_z), (0.0, fy + 0.8, mid_z)]
+    pos, tgt = _diorama(level["camera"], 0.0, fy + 4.5, mid_z, 0.0)
+    print("cut", tag, "diorama_mid", sorted(cut(t, groups, pos, you + _look(pos, tgt, fy))))
+    _w2_shoot(s, cam, f"{tag}_diorama_mid", pos, tgt, DF, None, cfg, out_dir, level=level)
+    # a high establishing view of the block from across the street (presentation height, nothing cut)
+    cut(t, groups, (0, 999, 999), [])
+    pos = (ox1 + 6.0, fy + 20.0, oz1 + 25.0)     # a drone over the road: the block, its neighbours, the towers behind
+    tgt = ((ox0 + ox1) / 2, fy + 28.0, oz0 + 6.0)
+    _w2_shoot(s, cam, f"{tag}_street_wide", pos, tgt, 60.0, pos, cfg, out_dir, level=level)
+
+
+def big_garage(g, samples, out_dir):
+    """BIG: the warehouse hideout from the first-person eye (the spawn view down the aisle, up at the trusses and
+    skylights, the mezzanine and the stations) and the diorama with the cut-away."""
+    import backdrop_shots as BS
+    W, Hh = W2_SIZE
+    os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(TMP, exist_ok=True)
+    s = MR.reset(samples)
+    s.view_settings.exposure = 0.3
+    lib = Lib(g["location"])
+    groups = garage_scene(g, lib)
+    BS.backdrop({"backdrop": g["backdrop"], "backdropConfig": g["backdropConfig"], "kit": [], "location": g["location"],
+                 "lighting": g["lighting"]}, lib, put, soft_pool_mat)
+    lighting(s)
+    BS.world_sky(s, TMP)
+    cam = _w2_camera(s, W, Hh)
+    cfg = g["backdropConfig"]
+    DF = g["camera"]["DIORAMA"]["FOV"]
+    t = g["tower"]
+    sx, sz = g["spawn"]
+    J = MR.figure("player", tuple(rb(sx, 0, sz + 30)), 180.0, colors=MR.ROOKIE)
+    shots = [
+        ("GA_fp_spawn", _fp(sx, sz, 0.0, math.radians(-38), 6.0)),          # toward your van, the board, the door
+        ("GA_fp_up", _fp(sx, sz - 6, 0.0, math.radians(-30), 48.0)),        # the trusses and the skylights
+        ("GA_fp_mezzanine", _fp(-10.0, -8.0, 0.0, math.radians(185), 14.0)),  # the mezzanine, the TV, the stair
+        ("GA_fp_stations", _fp(10.0, 2.0, 0.0, math.radians(-56), 4.0)),     # the laptop, the crew sign, the stair
+        ("GA_fp_wardrobe", _fp(-20.0, 4.0, 0.0, math.radians(100), 6.0)),    # the wardrobe corner and the tree
+    ]
+    for name, (pos, tgt) in shots:
+        cut(t, groups, pos, [])
+        _w2_shoot(s, cam, name, pos, tgt, FP_FOV, None, cfg, out_dir)
+    J["root"].location = rb(sx, 0, sz)
+    pos, tgt = _diorama(g["camera"], sx, 4.5, sz, 0.0)
+    print("cut GA diorama", sorted(cut(t, groups, pos, [(sx, 4.5, sz), (sx, 0.8, sz)] + _look(pos, tgt, 0.0))))
+    _w2_shoot(s, cam, "GA_diorama", pos, tgt, DF, None, cfg, out_dir)
+    # out in the snowy yard, looking back at the warehouse and its big roll-up door
+    yz = -g["lobby"]["HALF_Z"] - g["lobby"]["WALL_T"] - g["lobby"]["STREET_DEPTH"] * 0.8
+    pos, tgt = _fp(6.0, yz, 0.0, math.pi, 22.0)
+    cut(t, groups, pos, [])
+    _w2_shoot(s, cam, "GA_fp_yard", pos, tgt, FP_FOV, pos, cfg, out_dir)
+
+
+BIG_COLS = ("fp_street", "fp_up", "fp_corner", "fp_ceiling", "fp_inside", "diorama", "classic", "diorama_mid",
+            "street_wide")
+GA_COLS = ("GA_fp_spawn", "GA_fp_up", "GA_fp_mezzanine", "GA_fp_stations", "GA_fp_wardrobe", "GA_diorama",
+           "GA_fp_yard")
+
+
+def big_sheet(folder):
+    """The BIG contact sheet: one row per site, each frame with its near-black share, median luma, value spread and
+    pink cast (frame_grade)."""
+    from PIL import Image, ImageDraw
+    g = json.load(open(os.path.join(folder, "grades.json")))
+    tw, th = 320, 148
+    rows = [(tag, [f"{tag}_{c}" for c in BIG_COLS]) for tag in BIG_SITES if tag != "garage"] + [("garage", list(GA_COLS))]
+    rows = [(t, cols) for t, cols in rows if any(os.path.isfile(os.path.join(folder, c + ".png")) for c in cols)]
+    sheet = Image.new("RGB", (tw * len(BIG_COLS), (th + 40) * len(rows) + 30), (24, 25, 36))
+    d = ImageDraw.Draw(sheet)
+    f, _ = MR._font(13)
+    d.text((8, 7), "BIG buildings (LEVELS.md 12): first person (eye 3.8), diorama and classic with the cut-away; "
+           "near-black % / median luma / value spread / pink cast", font=f, fill=(230, 232, 245))
+    for r, (tag, cols) in enumerate(rows):
+        y = 30 + r * (th + 40)
+        for c, name in enumerate(cols):
+            p = os.path.join(folder, name + ".png")
+            if not os.path.isfile(p):
+                continue
+            sheet.paste(Image.open(p).convert("RGB").resize((tw, th), Image.LANCZOS), (c * tw, y))
+            q = g.get(name, {})
+            d.text((c * tw + 4, y + th + 3), name, font=f, fill=(230, 232, 245))
+            d.text((c * tw + 4, y + th + 19), "%.1f%% / %.2f / %.2f / %+.3f" % (
+                q.get("near_black", -1), q.get("median_luma", -1), q.get("value_spread", -1), q.get("pink_cast", 0)),
+                font=f, fill=(200, 205, 225))
+    out = os.path.join(folder, "contact_sheet.png")
+    sheet.save(out, optimize=True)
+    print("wrote", out)
+
+
 W2_COLS = ("diorama", "classic", "diorama_mid", "classic_rev")
 
 
@@ -1451,6 +1727,10 @@ def main(argv):
                          "sources) into --out (default docs/audit/levels/world2/after)")
     ap.add_argument("--world2-sheet", nargs=3, metavar=("BEFORE", "AFTER", "OUT"),
                     help="the WORLD 2.0 before / after contact sheet")
+    ap.add_argument("--big-sheet", action="store_true", help="the BIG contact sheet from --out (default big/)")
+    ap.add_argument("--big", action="store_true",
+                    help="BIG buildings (LEVELS.md 11): BIG_SITES (or --only one) from the first-person eye and the "
+                         "diorama / classic cameras with the cut-away, graded into --out (default docs/audit/levels/big)")
     a = ap.parse_args(argv)
     global OUT, STEPPED
     STEPPED = a.stepped
@@ -1458,6 +1738,25 @@ def main(argv):
         OUT = os.path.abspath(a.out)
     if a.world2_sheet:
         world2_sheet(*(os.path.abspath(p) for p in a.world2_sheet))
+        return
+    if a.big_sheet:
+        big_sheet(os.path.abspath(a.out) if a.out else BIG)
+        return
+    if a.big:
+        out = os.path.abspath(a.out) if a.out else BIG
+        if not a.only:
+            for tag in BIG_SITES:   # one Blender process per site
+                subprocess.run([sys.executable, os.path.abspath(__file__), "--big", "--only", tag, "--samples",
+                                str(a.samples), "--out", out], check=True)
+            big_sheet(out)
+            return
+        plan = load_plan(not a.plain, a.only.upper().startswith("DV"))
+        if a.only == "garage":
+            plan["garage"]["firstJob"] = plan["levels"][0]["name"].upper()
+            big_garage(plan["garage"], a.samples, out)
+            return
+        lv = next(lv for lv in plan["levels"] if short(lv).upper() == a.only.upper() or lv["id"] == a.only)
+        big_level(lv, a.samples, out)
         return
     if a.world2:
         out = os.path.abspath(a.out) if a.out else os.path.join(WORLD2, "after")

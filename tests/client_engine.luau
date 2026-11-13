@@ -43,6 +43,7 @@ for _, name in
 		"Icons",
 		"CameraMath",
 		"CameraDirector",
+		"CutAway",
 		"GoldenShots",
 		"Ui",
 		"TypeSpecimen",
@@ -559,6 +560,119 @@ local okMarkers, markersErr = pcall(function()
 end)
 check(okMarkers, "run-bar markers on L6 (" .. tostring(markersErr) .. " Gus ticks)")
 
+-- BIG buildings (PLAN_FIRST_PERSON §5): a shot still sees its subjects through the tall building. The level's
+-- Overhead (ceiling, storeys, roof: CanQuery off in the game) is made queryable for the check; the cut-away's rule
+-- (Shared/Heist/CutMath, what client Heist/CutAway runs on the built groups' attributes) decides for the camera,
+-- your feet and head and the shot's look point; every Overhead part a ray from the camera to a subject meets must be
+-- in a group the cut-away hides. Returns ok and the first blocker (or "clear") and the hidden groups.
+local CutMath = require(shared:WaitForChild("Heist"):WaitForChild("CutMath"))
+local PresentPlanBig = require(clientHeist:WaitForChild("PresentPlan"))
+local BIGCFG = (require(shared:WaitForChild("Config")) :: any).Big
+local function cutSees(levelModel: Instance, cam: Vector3, look: Vector3, you: Vector3?, subjects: { Vector3 })
+	local over = levelModel:FindFirstChild("Overhead")
+	if not over then
+		return false, "no Overhead", ""
+	end
+	local groups: { CutMath.Group } = {}
+	local names: { string } = {}
+	for _, g in over:GetChildren() do
+		local lo, hi = g:GetAttribute("EH_CutMin"), g:GetAttribute("EH_CutMax")
+		local nrm = g:GetAttribute("EH_CutNormal")
+		if typeof(lo) == "Vector3" and typeof(hi) == "Vector3" then
+			table.insert(groups, {
+				kind = g:GetAttribute("EH_CutKind") :: string,
+				minX = lo.X,
+				minY = lo.Y,
+				minZ = lo.Z,
+				maxX = hi.X,
+				maxY = hi.Y,
+				maxZ = hi.Z,
+				nx = if typeof(nrm) == "Vector3" then nrm.X else 0,
+				nz = if typeof(nrm) == "Vector3" then nrm.Z else 0,
+				plane = (g:GetAttribute("EH_CutPlane") :: number?) or 0,
+			})
+			table.insert(names, g.Name)
+		end
+	end
+	local omin, omax = over:GetAttribute("OuterMin") :: Vector3, over:GetAttribute("OuterMax") :: Vector3
+	local b = {
+		ceilY = over:GetAttribute("CeilY") :: number,
+		minX = omin.X,
+		maxX = omax.X,
+		minZ = omin.Z,
+		maxZ = omax.Z,
+	}
+	-- CutAway's subjects: you (head, feet), then the look ray's floor point
+	local subj, n = {}, 0
+	local function add(p: Vector3)
+		subj[3 * n + 1], subj[3 * n + 2], subj[3 * n + 3] = p.X, p.Y, p.Z
+		n += 1
+	end
+	if you then
+		add(you + Vector3.new(0, 1.5, 0))
+		add(you - Vector3.new(0, 2.2, 0))
+	end
+	local dir = (look - cam).Unit
+	local floorY = (over:GetAttribute("FloorY") :: number?) or 0
+	local lx, ly, lz = CutMath.lookPoint(
+		cam.X,
+		cam.Y,
+		cam.Z,
+		dir.X,
+		dir.Y,
+		dir.Z,
+		floorY + BIGCFG.CUT.LOOK_HEIGHT,
+		BIGCFG.CUT.LOOK_MAX
+	)
+	if lx and ly and lz then
+		add(Vector3.new(lx, ly, lz))
+	end
+	local hide = {}
+	CutMath.decide(b, groups, cam.X, cam.Y, cam.Z, subj, n, BIGCFG.CUT.MARGIN, BIGCFG.CUT.INSIDE_PAD, hide)
+	local hidden: { [string]: boolean } = {}
+	local hiddenList = {}
+	for i, nm in names do
+		hidden[nm] = hide[i] == true
+		if hide[i] then
+			table.insert(hiddenList, nm)
+		end
+	end
+	local saved = {}
+	for _, d in over:GetDescendants() do
+		if d:IsA("BasePart") then
+			saved[d] = d.CanQuery
+			d.CanQuery = true
+		end
+	end
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Include
+	params.FilterDescendantsInstances = { over }
+	local blocker = "clear"
+	for _, target in subjects do
+		local from = cam
+		local hit = workspace:Raycast(from, target - from, params)
+		while hit do
+			local g = hit.Instance
+			while g.Parent ~= over do
+				g = g.Parent :: Instance
+			end
+			if not hidden[g.Name] then
+				blocker = hit.Instance:GetFullName()
+				break
+			end
+			from = hit.Position + (target - cam).Unit * 0.05
+			hit = workspace:Raycast(from, target - from, params)
+		end
+		if blocker ~= "clear" then
+			break
+		end
+	end
+	for p, q in saved do
+		p.CanQuery = q
+	end
+	return blocker == "clear", blocker, table.concat(hiddenList, ",")
+end
+
 -- G. Camera track (PLAN_STEAM_PLUS §4.2 C0, C5): on the real kit L1, the diorama camera at the
 -- street spawn sees plate A and a clone standing on it (workspace raycasts against the built
 -- level, Christmas layer on); the classic follow cam is reported (the old finding); the wall
@@ -607,6 +721,22 @@ if okL1 and b1 then
 		check(ok, "diorama camera at the L1 spawn sees " .. t[1] .. " (" .. by .. ")")
 		local okC, byC = seen(clPos, t[2])
 		table.insert(results, "      classic camera: " .. t[1] .. (if okC then " visible" else " behind " .. byC))
+	end
+	-- BIG: the tall Corner Shop stands between the spawn's diorama and plate A: the cut-away opens it
+	do
+		local _, lookL = CameraMath.orbit(CameraMath.ahead(you, yaw, lead), yaw, D.PITCH, D.DISTANCE)
+		local cam = origin1 + Vector3.new(dioPos[1], dioPos[2], dioPos[3])
+		local ok, by, hid = cutSees(
+			b1.model,
+			cam,
+			origin1 + Vector3.new(lookL[1], lookL[2], lookL[3]),
+			origin1 + Vector3.new(spawn.x, spawn.y, spawn.z),
+			{ origin1 + Vector3.new(px, 0.45, pz), origin1 + Vector3.new(px, 5.2, pz) }
+		)
+		check(
+			ok,
+			"BIG: the diorama at the L1 spawn sees plate A through the cut-away (" .. by .. "; hides " .. hid .. ")"
+		)
 	end
 	local cam = workspace.CurrentCamera
 	if cam then
@@ -687,6 +817,37 @@ if okL5 and b5c then
 		then string.format(" (height %.0f, yaw %d, %.1f studs)", shot.height, shot.yaw, shot.distance)
 		else ""
 	check(shot ~= nil, "L5 kit: a clear 9:16-safe Line-up shot" .. how)
+	if shot then
+		-- BIG: the tall Toy Shop never stands between the Line-up camera and the crew (the cut-away clears it)
+		local targets = {}
+		for _, sp in out do
+			table.insert(targets, origin5c + Vector3.new(sp.x, l5c.floorY + 3, sp.z))
+		end
+		local ok, by, hid = cutSees(
+			b5c.model,
+			origin5c + Vector3.new(shot.pos[1], shot.pos[2], shot.pos[3]),
+			origin5c + Vector3.new(shot.look[1], shot.look[2], shot.look[3]),
+			nil,
+			targets
+		)
+		check(
+			ok,
+			"BIG: the Line-up shot sees the whole crew past the tall building (" .. by .. "; hides " .. hid .. ")"
+		)
+		-- the level intro (diorama framing) on each of L5's stops: Gus in the back office through the opened roof
+		local stops = PresentPlanBig.introStops(l5c, true, 0, 4)
+		local okI, byI = true, "clear"
+		for _, st in stops do
+			local stop = origin5c + Vector3.new(st[1], st[2], st[3])
+			local D2 = camCfg.DIORAMA
+			local posL = CameraMath.orbit({ st[1], st[2], st[3] }, 0, D2.PITCH, D2.DISTANCE)
+			local o2, b2 = cutSees(b5c.model, origin5c + Vector3.new(posL[1], posL[2], posL[3]), stop, nil, { stop })
+			if not o2 then
+				okI, byI = false, b2
+			end
+		end
+		check(okI and #stops > 0, "BIG: the level intro sees its stops through the opened roof (" .. byI .. ")")
+	end
 else
 	check(false, "L5 builds with the kit for the Line-up shot")
 end
@@ -1046,6 +1207,27 @@ local okMoment, momentInfo = pcall(function()
 	end
 	check8(youRig.model)
 	assert(worst <= SHARE + 0.02, string.format("all 8 inside the central 32 %% (widest %.3f)", worst))
+	-- BIG: the tall Toy Shop over the swarm: the pull-back sees all 8 through the cut-away
+	do
+		local partyBuilt = LevelBuilder.build(party, originM, scratch, {
+			kit = if KitService.isReady() then KitService else nil,
+			dressing = true,
+		})
+		local targets = {}
+		for i = 1, 7 do
+			local rig = echo.rigOf(i)
+			table.insert(targets, (rig.model:GetBoundingBox()).Position)
+		end
+		local ok8, by8, hid8 = cutSees(
+			partyBuilt.model,
+			framed.cf.Position,
+			framed.cf.Position + framed.cf.LookVector * 30,
+			originM + Vector3.new(spawn.x, spawn.y, spawn.z),
+			targets
+		)
+		assert(ok8, "the pull-back sees all 8 through the tall Toy Shop (" .. by8 .. "; hides " .. hid8 .. ")")
+		partyBuilt.model:Destroy()
+	end
 
 	-- hit-stop: only the four heavy beats; the filter holds the view time through it
 	assert(not moments.hitStop("plate", clock), "no hit-stop on a routine beat")

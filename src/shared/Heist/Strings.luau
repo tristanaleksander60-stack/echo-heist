@@ -335,6 +335,16 @@ Strings.LEAVE = "LEAVE"
 ---------------------------------------------------------------------------
 Strings.PICK_A_HEIST = "PICK A HEIST"
 -- The 3D job board at your van (garage v1, Heist/Lobby + client Heist/JobBoard): the NEXT card.
+-- BIG buildings (server Heist/TowerPlan): the sign on each location's building (glowing SurfaceGui text).
+Strings.BIG_SIGN = table.freeze({
+	CornerShop = "CORNER SHOP",
+	ToyShop = "HOARDSWORTH'S TOYS",
+	Bank = "HOARDSWORTH BANK",
+} :: { [string]: string })
+-- The warehouse garage's crew sign (server Heist/LobbyPlan, anchor CrewSign).
+Strings.GARAGE_CREW_SIGN = "THE CREW"
+Strings.GARAGE_LAPTOP = "DAILY VAULT" -- the laptop's screen (anchor LaptopSpot)
+Strings.GARAGE_TV = "HEIST YOURSELF" -- the TV under the mezzanine (anchor TVSpot: the intro rewatch)
 Strings.JOB_BOARD_NEXT = "NEXT JOB"
 Strings.JOB_BOARD_ALL_DONE = "ANY JOB!"
 -- The job board (U6, level select): pinned job photos; the NEXT one glows (Strings.JOB_BOARD_NEXT).

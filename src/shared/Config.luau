@@ -1329,7 +1329,8 @@ Config.Lobby = {
 	WALL_T = 2, -- the wall band outside the interior (the kit wall body is 2 deep)
 	STREET_DEPTH = 26, -- the street apron behind the back wall, under the half-open roll-up door
 	DOOR_X = 0, -- the GarageDoor_16x12 in the back wall
-	DOOR_W = 16,
+	DOOR_W = 20, -- the big roll-up door onto the snowy yard (the warehouse: 20 wide, DOOR_H tall)
+	DOOR_H = 18,
 	-- 8 van bays, bay 1 first (GoldenShots G3 frames the part named "Van": bay 1's collider). Back row against the
 	-- back wall (doors face +Z, the aisle), front row against the front wall (doors face -Z). x of each van. Your bay
 	-- (1) stands right of the roll-up door with the trophy shelf and the job board between them, so the G3 camera
@@ -1337,7 +1338,7 @@ Config.Lobby = {
 	BAYS = {
 		{ row = "back", x = 26 },
 		{ row = "front", x = 17.6 },
-		{ row = "back", x = -17 },
+		{ row = "back", x = -18.5 },
 		{ row = "back", x = -34 },
 		{ row = "front", x = -17.6 },
 		{ row = "front", x = 35.2 },
@@ -1398,14 +1399,14 @@ Config.Lobby = {
 	-- The trophy shelf: a Counter_8x2 against the back wall between the roll-up door and your van, with ornament
 	-- stands on top (Ornament_Stand; the ornament hangs from the arm tip, TROPHY_HANG in the stand's local axes). The
 	-- first trophy is lit (TROPHY_LIGHT over it); an empty stand waits for the next one.
-	TROPHY_SHELF = { x = 13, z = -26.8, yaw = 180 },
+	TROPHY_SHELF = { x = 14, z = -26.8, yaw = 180 },
 	TROPHY_HANG = { -0.45, 1.98, 0 },
 	TROPHIES = {
-		{ x = 10.6, ornament = "Ornament_VaultDoor" },
-		{ x = 13, ornament = "Ornament_Star" },
-		{ x = 15.4 },
+		{ x = 11.6, ornament = "Ornament_VaultDoor" },
+		{ x = 14, ornament = "Ornament_Star" },
+		{ x = 16.4 },
 	},
-	TROPHY_LIGHT_AT = { 12.5, 8.5, -21 }, -- between the board and the shelf behind it
+	TROPHY_LIGHT_AT = { 13.5, 8.5, -21 }, -- between the board and the shelf behind it
 	-- Snow drifting in at the door, and on the street (Xmas_SnowPile: x, z, yaw).
 	SNOW_PILES = { { -5, -25.2, 160 }, { 5.5, -25.6, 20 }, { -14, -36, 0 }, { 20, -47, 90 } },
 	BAY_LINE = { width = 0.3, color = { 168, 152, 122 } }, -- painted bay lines (Warm Marble shade)
@@ -1415,6 +1416,42 @@ Config.Lobby = {
 	LOCATION = "CornerShop", -- kit atlas: warm brick walls, pine, the warm checker floor
 	SPAWN = { 0, 10 }, -- the GarageSpawn centre (Lobby.spawnFor spreads crews round it)
 	KIT_WAIT_SECONDS = 90, -- the garage waits this long for the kit in the background (greybox until then)
+	-- The warehouse hideout (PLAN_FIRST_PERSON §5 "BIG": a big first-person lobby). Over the 12-stud brick ground
+	-- course: a band, a clerestory of Facade_8x10 bays (dark night panes), a frieze up to the roof; steel roof trusses
+	-- (Truss_8) across the depth every TRUSS_EVERY studs; a roof deck with skylights (the aurora above); a mezzanine
+	-- over the front row of vans with a stair up the right wall; dressing for the LOBBY track's stations, which are
+	-- exposed as named anchors (Garage/Anchors). Everything over the ground course is visual only and in the garage's
+	-- "Overhead" model (Heist/CutAway: the diorama sees in; first person never cuts). The mezzanine deck, its posts,
+	-- its rail and the stair collide (greybox colliders, the kit never collides).
+	WAREHOUSE = {
+		BAND = 2, -- 12 - 14
+		CLERESTORY = 10, -- 14 - 24: one storey of window bays
+		ROOF_Y = 28.6, -- the roof deck's underside (the trusses hang under it)
+		TRUSS_H = 4, -- Truss_8 depth: bottom chord at ROOF_Y - 0.6 - TRUSS_H
+		TRUSS_EVERY = 11, -- studs between trusses along X (8 trusses)
+		DECK = 0.6, -- roof deck thickness
+		SKYLIGHTS = { { -22, 0, 12, 16 }, { 0, 0, 12, 16 }, { 22, 0, 12, 16 } }, -- x, z, width, depth
+		SKYLIGHT_GLASS = { 150, 190, 220 },
+		SKYLIGHT_ALPHA = 0.55,
+		BODY = { 132, 70, 56 }, -- the upper brick (a value step over the ground course)
+		BAND_COLOR = { 104, 60, 50 },
+		ROOF_SNOW = { 196, 200, 226 },
+		ROOF_UNDER = { 92, 74, 70 }, -- the deck's underside: warm timber boards (seen from the floor in first person)
+		STEEL = { 78, 86, 117 }, -- posts, rails, stair stringers (Vault Steel shade)
+		TIMBER = { 123, 82, 68 }, -- the mezzanine deck and stair treads (Wood)
+		CABLE = { 42, 45, 82 }, -- the work lamps' drop cables to the trusses
+		MEZZANINE = { z0 = 16, deckY = 12, thick = 0.6, guard = 8 }, -- over the front row (z0 .. the front wall)
+		POSTS = { -43, -26.4, -8.8, 8.8, 26.4, 43 }, -- mezzanine posts along its aisle edge (between the vans)
+		STAIR = { x0 = 40, x1 = 44, z0 = -4, z1 = 16, steps = 16 }, -- up the right wall onto the deck
+		-- the stations (dressing; the LOBBY track builds the interaction on the anchors)
+		LAPTOP = { x = 39, z = -26.8, yaw = 180 }, -- a desk (Counter_8x2) in the back right corner
+		WARDROBE = { x = -41.6, z = 6, yaw = -90 }, -- the wardrobe and mirror corner on the left wall
+		TV = { x = 0, y = 9.2, z = 15.75, w = 10, h = 5.4 }, -- a big screen hung under the mezzanine's edge
+		CREW_SIGN = { x = 43.6, y = 9, z = -12, w = 10, h = 3 }, -- "THE CREW" on the right wall
+		CRATES = { { -36, 24, 0 }, { -30, 25, 20 }, { 30, 24.5, -10 }, { -12, 25.5, 0 } }, -- on the deck: x, z, yaw
+		SHELVES = { { -43, -6, -90 }, { -43, -14, -90 } }, -- Shelf_8x2 against the left wall
+		TREE = { -40, 13 }, -- a Christmas tree beside the wardrobe corner
+	},
 }
 
 -- Art kit (spike S2, automated path: docs/art/KIT_IMPORT.md "Automated path"). The asset ids and the
@@ -1650,18 +1687,35 @@ Config.Backdrop = {
 			trim = { 226, 214, 190 }, -- cornices and sills (Warm Marble light)
 			door = { { 140, 47, 75 }, { 36, 112, 74 }, { 44, 58, 104 }, { 120, 78, 52 } },
 		},
-		-- maxPerFace: lit windows on one face at most (tall civic fronts would cost 30+ instances each)
+		-- maxPerFace: lit windows on one face at most (tall civic fronts would cost 30+ instances each). BIG: the window
+		-- grid itself is a Texture on one "Skin" part per face (SKIN); the lit panes (Neon) sit on its cells, so w / h /
+		-- SKIN.winTop must match tools/ui/make_window_fx.py (WIN_W, WIN_H, WIN_TOP).
 		WINDOW = {
-			w = 2.2,
-			h = 2.8,
-			floorH = 5,
-			colPitch = 4.5,
-			sill = 3.4,
+			w = 2.4,
+			h = 4.6,
+			colPitch = 4.5, -- one window bay
 			lit = 0.75,
 			depth = 0.2,
-			out = 0.06,
-			maxPerFace = 10,
+			out = 0.14,
+			maxPerFace = 6,
 		},
+		-- BIG (PLAN_FIRST_PERSON §5): the town scales up to 4-8 storey blocks with varied rooflines, a deeper street and
+		-- landmark towers either side of Hoardsworth's. A storey is STOREY studs over a GROUND-stud ground floor.
+		GROUND = 12,
+		STOREY = 9,
+		SKIN = {
+			image = "EH_FX_Windows", -- assets/ui/EH_FX_Windows.png (tools/ui/make_window_fx.py), uploaded with the UI kit
+			cols = 4, -- the image is 4 bays x 4 storeys
+			rows = 4,
+			inset = 1.2, -- studs of plain wall either side of the grid
+			out = 0.03, -- studs in front of the body
+			winTop = 0.2, -- a window's top under its storey's top (share of a storey)
+			color = { 255, 255, 255 },
+		},
+		ROOFTOP = { setback = 0.3, setbackH = 7, tank = 0.3, chimney = 0.35, antenna = 0.3, spire = 14 },
+		DEPTH = { back = 26, across = 26, overhang = 30, kinds = { "townhouse", "civic", "townhouse", "shop" } },
+		TOWERS = { { x = -58, back = 34, w = 24, d = 22 }, { x = 64, back = 46, w = 22, d = 22 } },
+		TOWER_STOREYS = { 11, 14 },
 		SHOP = { paneH = 4.2, paneSill = 1.3, awningY = 6.4, awningDepth = 2.6, doorW = 2.8, doorH = 5.2 },
 		HOUSE = { doorW = 2.4, doorH = 4.6 },
 		ROOF = { rise = 0.42, overhang = 0.6 }, -- gable height per stud of depth; eaves past the walls
@@ -1684,7 +1738,7 @@ Config.Backdrop = {
 					{ 168, 118, 96 },
 				},
 				awnings = { { 140, 47, 75 }, { 36, 112, 74 }, { 44, 58, 104 } },
-				heights = { shop = { 13, 15 }, house = { 10, 12 }, townhouse = { 16, 19 }, civic = { 18, 20 } },
+				storeys = { shop = { 4, 6 }, house = { 3, 4 }, townhouse = { 4, 7 }, civic = { 5, 7 } }, -- upper storeys
 				widths = { 16, 20, 18, 24 },
 				signature = "tree", -- a decorated tree on the far pavement
 			},
@@ -1701,7 +1755,7 @@ Config.Backdrop = {
 					{ 238, 214, 168 }, -- vanilla
 				},
 				awnings = { { 236, 96, 140 }, { 64, 170, 140 }, { 236, 190, 70 }, { 130, 100, 200 } },
-				heights = { shop = { 13, 16 }, house = { 10, 12 }, townhouse = { 17, 21 }, civic = { 18, 20 } },
+				storeys = { shop = { 4, 6 }, house = { 3, 4 }, townhouse = { 5, 7 }, civic = { 5, 7 } },
 				widths = { 16, 18, 20, 16 },
 				signature = "lights", -- fairy-light strings on every front, two trees
 				pave = { 192, 142, 128 }, -- rose sandstone paving (the lot and the pavements: warm under the pink lamps)
@@ -1719,7 +1773,7 @@ Config.Backdrop = {
 					{ 222, 206, 172 },
 				},
 				awnings = { { 36, 112, 74 }, { 140, 47, 75 } },
-				heights = { shop = { 14, 16 }, house = { 11, 12 }, townhouse = { 18, 22 }, civic = { 20, 24 } },
+				storeys = { shop = { 4, 5 }, house = { 3, 4 }, townhouse = { 5, 7 }, civic = { 6, 8 } },
 				widths = { 22, 26, 20 },
 				signature = "plaza", -- PLAZA: the paving, the big tree, its lamps
 				PLAZA = { width = 64, depth = 40, treeScale = 4.4, lamps = 4 },
@@ -1736,7 +1790,7 @@ Config.Backdrop = {
 					{ 206, 186, 146 },
 				},
 				awnings = { { 44, 58, 104 }, { 140, 47, 75 } },
-				heights = { shop = { 12, 14 }, house = { 10, 12 }, townhouse = { 15, 17 }, warehouse = { 11, 13 } },
+				storeys = { shop = { 3, 4 }, house = { 3, 4 }, townhouse = { 4, 6 }, warehouse = { 2, 3 } },
 				widths = { 22, 18, 26 },
 				signature = "yard", -- cars and a tree round the yard
 			},
@@ -1750,7 +1804,9 @@ Config.Backdrop = {
 		-- (the town never collides).
 		LOT_FENCE = { height = 24, thickness = 2 },
 		-- The whole backdrop at tier 1 (unit spec on every site; engine_smoke / perf_engine count the real build).
-		BUDGET = { instances = 650, draws = 45, tris = 70000, lights = 0 },
+		-- BIG: 4-8 storey blocks, a deeper street and two towers (the window grids are one Texture per face; rooftop
+		-- props are the "props" layer, gone from tier 3, which keeps the town near 12k triangles there)
+		BUDGET = { instances = 950, draws = 45, tris = 100000, lights = 0 },
 	},
 	WINDOW_COLOR = { 246, 192, 162 }, -- Bulb Warm #F6C0A2 (eh_palette.NEON, rule N1): the only glow allowed
 	SNOW_COLOR = { 192, 195, 213 }, -- Snow #C0C3D5 (small areas only, STYLE_BIBLE §1.3)
@@ -1789,10 +1845,13 @@ Config.Backdrop = {
 		"Xmas_Lights_8",
 		"Xmas_Lights_8_Bulbs",
 		"Xmas_SnowPile",
+		"Roof_WaterTank", -- BIG: the town's rooflines
+		"Roof_Chimney",
+		"Roof_Antenna",
 	},
 	-- Performance tiers (Config.Heist.PERF_TIERS): roblox_quality §6.4. Low phones keep the snowfield, the
 	-- streets, every building and its lit windows, the near ring and the sky: the frame is never black.
-	FAR_RING_OFF_TIER = 3,
+	FAR_RING_OFF_TIER = 2, -- BIG: the taller town and its towers hide most of the far ring; phones (tier 2+) skip it
 	-- The sky: the Heist City cubemap (tools/blender/sky_city.py) has Hoardsworth's tower at this yaw (degrees,
 	-- Roblox -Z = 0, turning toward -X). The client turns Lighting.Sky so the tower stands behind the building
 	-- the spawn faces (Sky.SkyboxOrientation), so every level and the garage get it in the first view.
@@ -2367,17 +2426,17 @@ Config.Perf = {
 		Lighting = {
 			LightingStyle = "Soft",
 			PrioritizeLightingQuality = true,
-			Brightness = 1.7, -- WORLD 2.0: recipe A + 0.2 (was 1.6 on the old 1.4)
+			Brightness = 1.8, -- recipe A + 0.2 (BIG: A is 1.6)
 			ColorShift_Top = { 170, 190, 255 },
-			Ambient = { 146, 134, 160 },
-			OutdoorAmbient = { 184, 170, 196 },
+			Ambient = { 128, 132, 162 }, -- BIG: recipe A's bluer, less pink fill (+10)
+			OutdoorAmbient = { 160, 170, 204 },
 			EnvironmentDiffuseScale = 0.3,
 			EnvironmentSpecularScale = 0,
 			ExposureCompensation = 0.35, -- WORLD 2.0: recipe A's 0.4 less the Soft style's flatter fill
 			GlobalShadows = false, -- no sun shadow pass on low phones (was HeistClient's tier >= 3 rule)
 		},
 		Bloom = { Intensity = 0.9, Size = 24, Threshold = 1.0 }, -- Lighting.Bloom (the project file's)
-		ColorCorrection = { Contrast = 0.15, Saturation = 0.12 }, -- Lighting.ColorCorrection
+		ColorCorrection = { Contrast = 0.22, Saturation = 0.12 }, -- Lighting.ColorCorrection (BIG: A + 0.02)
 		-- Lighting.Atmosphere: thinner haze on low phones (a "black fog" is reported at the lowest quality levels,
 		-- roblox_quality §1.1; WORLD 2.0 keeps the distance a light haze there too)
 		Atmosphere = { Density = 0.2, Haze = 1.4 },
@@ -2660,6 +2719,91 @@ Config.Rookie = {
 		LIFT = 0.15, -- studs: aim a little above the head centre (the cap)
 		YAW = 18, -- degrees: a 3/4 turn
 	},
+}
+
+-- BIG buildings (PLAN_FIRST_PERSON §5 "BIG", 2026-11-13; docs/audit/LEVELS.md §11): every heist building is a 3-5
+-- storey block over its playable ground floor, with a real ceiling over the playable rooms and a roof, and a
+-- camera-aware cut-away (client Heist/CutAway) so the diorama, classic and presentation shots still see in. The plan
+-- is the pure server Heist/TowerPlan; server Heist/Overhead builds it into the level's "Overhead" model. Visual only:
+-- CanCollide, CanTouch, CanQuery and CastShadow off (the sim, the server's collisions, the cameras' raycasts and the
+-- ground floor's light stay exactly as they were). The playable footprint, walls, doors and plates never change.
+Config.Big = {
+	ENABLED = true,
+	CEIL_Y = 12, -- studs above the floor: the ceiling plane = the kit walls' top = Lamp_Ceiling's pivot (LAMP_HANG_Y)
+	CEIL_DEPTH = 0.55, -- Ceiling_8x8's depth (its coffered underside is the ceiling plane)
+	BAND = 2, -- the band over the wall tops (12 - 14) between the shop and the flats (covers BankFront's 13.9 top)
+	STOREY = 10, -- one upper storey (Facade_8x10); storey 10-12 with a ~5-stud character (worldbuilding brief)
+	WALL_DEPTH = 1.3, -- Facade_8x10_Body: its outer face 0.3 in from the module's front plane, 1.0 thick
+	PARAPET = 1.4, -- studs of parapet over the crown cornice (the roof's snow sits behind it)
+	ROOF_LIFT = 0.9, -- the roof's snow over the top storey's line (inside the parapet)
+	CORNICE_H = 1.98, -- Cornice_8 with its snow
+	GLASS = {
+		lit = { 246, 192, 162 }, -- Bulb Warm Neon (eh_palette.NEON): a lit flat behind its curtains
+		dark = { 74, 84, 130 }, -- an unlit window: a blue-night pane (V 51 %: dark, never near-black)
+		litShare = 0.58, -- of the windows (seeded per building)
+		curtainShare = 0.55, -- of the lit windows
+		inset = 1.0, -- studs from the module's front plane to the pane (behind the mullions)
+	},
+	SNOW = { 196, 200, 226 }, -- roof snow (Config.Backdrop.TOWN.COLORS.roofSnow)
+	TRIM = { 226, 214, 190 }, -- parapet coping (Warm Marble light)
+	-- Per location (KitPlan.location: Clone Party builds as the Toy Shop in its Christmas dressing). body: the facade
+	-- slab colours (one per level, seeded), mid-to-high values: a 40-stud face must never fall into the filmic toe.
+	-- roof: rooftop pieces at fractions of the roof's half extents (x, z; +z = the street side).
+	STYLES = {
+		CornerShop = { -- a brick tenement: fire escapes, a water tank, chimneys and an antenna on the roof
+			kind = "tenement",
+			storeys = 4,
+			body = { { 150, 76, 60 }, { 164, 92, 70 }, { 140, 70, 66 } },
+			band = { 120, 62, 54 },
+			fireEscape = true,
+			roof = {
+				{ piece = "Roof_WaterTank", at = { 0.35, -0.35 }, yaw = 0 },
+				{ piece = "Roof_Chimney", at = { -0.62, -0.25 }, yaw = 0 },
+				{ piece = "Roof_Chimney", at = { 0.62, 0.45 }, yaw = 90 },
+				{ piece = "Roof_Antenna", at = { -0.3, 0.55 }, yaw = 30 },
+			},
+			sign = { kind = "blade", w = 3.2, h = 11, color = { 140, 47, 75 }, text = { 255, 226, 150 } },
+		},
+		ToyShop = { -- a grand department store: cream and raspberry, a big lit sign, the giant toy soldier on its roof
+			kind = "store",
+			storeys = 4,
+			body = { { 236, 210, 168 } },
+			band = { 200, 92, 132 },
+			soldier = { scale = 2.4, at = { 0.7, 0.75 }, yaw = 180 }, -- ToySoldier on the roof edge (street side)
+			roof = { { piece = "Roof_Chimney", at = { -0.6, -0.5 }, yaw = 0 } },
+			sign = { kind = "board", w = 30, h = 6, color = { 140, 47, 75 }, text = { 255, 226, 150 } },
+		},
+		Bank = { -- a stone neoclassical block: a giant order of columns, a pediment with a clock
+			kind = "bank",
+			storeys = 3,
+			body = { { 214, 196, 160 } },
+			band = { 186, 168, 140 },
+			columns = 6, -- Column_2x12 scaled into a giant order over the street front's centre
+			columnScale = { 1.5, 2.5, 1.5 },
+			roof = { { piece = "Roof_Chimney", at = { 0.6, -0.6 }, yaw = 0 } },
+			sign = { kind = "frieze", w = 24, h = 2.2, color = { 186, 168, 140 }, text = { 60, 50, 70 } },
+		},
+	},
+	-- Client Heist/CutAway: roofs, ceilings and upper floors between the camera and its subject hide locally
+	-- (LocalTransparencyModifier) in diorama, classic and presentation shots once the camera is above the ceiling.
+	-- First person never hides them.
+	CUT = {
+		MARGIN = 0.5, -- studs: the camera counts as above the ceiling past CEIL_Y + MARGIN
+		INSIDE_PAD = 1.5, -- studs: a subject this close outside the footprint still counts as inside
+		SECONDS = 0.18, -- fade time (in and out)
+		HZ = 30, -- decisions a second (the fades step every frame)
+		EYE_WITHIN = 1.5, -- studs: the camera this close to the first-person eye is "in your eyes" (never cut)
+		LOOK_HEIGHT = 3, -- studs above the floor: a presentation shot's subject = its look ray at this height
+		LOOK_MAX = 400, -- studs along the look ray
+		SUBJECT_HEIGHTS = { 0.5, 4.5 }, -- studs above the subject's floor: the occluder test casts to feet and head
+	},
+	-- Per building at tier 1 (unit spec on every level; perf_engine counts the real build). Tier >= DETAIL_OFF_TIER
+	-- hides the "detail" layer (the back and side faces' trims and crowns, the curtains: a phone starts at tier 2) and
+	-- from FINE_OFF_TIER the "fine" and "xmas" layers (coffered ceiling tiles: a flat slab takes over; fire escapes,
+	-- rooftop props, light strings) on the client (Heist/CutAway).
+	BUDGET = { instances = 560, draws = 26, tris = 72000, lights = 0 },
+	DETAIL_OFF_TIER = 2,
+	FINE_OFF_TIER = 3,
 }
 
 -- The story intro (docs/PLAN_FIRST_PERSON.md §5 "INTRO", docs/art/intro/STORYBOARD.md; MASTERPLAN §4.3): a

@@ -82,11 +82,11 @@ expectProps(lighting, "Lighting", {
 	GlobalShadows = true,
 	ClockTime = 15,
 	GeographicLatitude = 20,
-	Brightness = 1.5,
+	Brightness = 1.6, -- BIG: value contrast back (LEVELS.md §11)
 	ColorShift_Top = { 150, 175, 255 },
 	ColorShift_Bottom = { 40, 30, 70 },
-	Ambient = { 136, 124, 150 },
-	OutdoorAmbient = { 174, 160, 186 },
+	Ambient = { 118, 122, 152 }, -- BIG: less pink (blue night by hue), more contrast
+	OutdoorAmbient = { 150, 160, 194 },
 	EnvironmentDiffuseScale = 0.36,
 	EnvironmentSpecularScale = 0.4,
 	ExposureCompensation = 0.4,
@@ -159,8 +159,8 @@ local LIGHTING_CHILDREN: { [string]: { class: string, props: { [string]: any } }
 		props = {
 			Density = 0.24,
 			Offset = 0.12,
-			Color = { 158, 158, 214 }, -- WORLD 2.0: a light snowy haze, never darkness
-			Decay = { 124, 120, 184 },
+			Color = { 148, 160, 208 }, -- WORLD 2.0: a light snowy haze, never darkness (BIG: bluer)
+			Decay = { 112, 122, 178 },
 			Glare = 0,
 			Haze = 1.6,
 		},
@@ -168,7 +168,7 @@ local LIGHTING_CHILDREN: { [string]: { class: string, props: { [string]: any } }
 	Bloom = { class = "BloomEffect", props = { Intensity = 0.6, Size = 24, Threshold = 1.15 } },
 	ColorCorrection = {
 		class = "ColorCorrectionEffect",
-		props = { Brightness = 0, Contrast = 0.12, Saturation = 0.08, TintColor = { 240, 240, 255 } },
+		props = { Brightness = 0, Contrast = 0.2, Saturation = 0.1, TintColor = { 238, 242, 255 } },
 	},
 	ColorGrading = { class = "ColorGradingEffect", props = { TonemapperPreset = "Default" } },
 }

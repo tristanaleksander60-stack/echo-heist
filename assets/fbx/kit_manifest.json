@@ -302,6 +302,76 @@
     "EH_Loot"
    ]
   },
+  "Ceiling_8x8": {
+   "model": "Ceiling_8x8",
+   "size": [
+    8.0,
+    0.55,
+    8.0
+   ],
+   "tris": 168,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.0,
+    -0.55,
+    0.0
+   ],
+   "boundsMax": [
+    0.0,
+    0.0,
+    8.0
+   ],
+   "origin": [
+    0.0,
+    0.55,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Clock_6": {
+   "model": "Clock_6",
+   "size": [
+    6.7,
+    6.7,
+    0.86
+   ],
+   "tris": 400,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -3.35,
+    -3.35,
+    -0.86
+   ],
+   "boundsMax": [
+    3.35,
+    3.35,
+    0.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
   "Column_2x12": {
    "model": "Column_2x12",
    "size": [
@@ -335,6 +405,41 @@
     0.0,
     0.0
    ]
+  },
+  "Cornice_8": {
+   "model": "Cornice_8",
+   "size": [
+    8.0,
+    1.98,
+    2.8
+   ],
+   "tris": 152,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.0,
+    0.0,
+    -1.5
+   ],
+   "boundsMax": [
+    0.0,
+    1.98,
+    1.3
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
   },
   "Counter_4x4": {
    "model": "Counter_4x4",
@@ -483,6 +588,148 @@
     0.875,
     0.0
    ]
+  },
+  "Facade_8x10": {
+   "model": "Facade_8x10",
+   "size": [
+    8.0,
+    9.15,
+    1.4
+   ],
+   "tris": 360,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.0,
+    0.0,
+    -0.35
+   ],
+   "boundsMax": [
+    0.0,
+    9.15,
+    1.05
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Facade_8x10_Body": {
+   "model": "Facade_8x10",
+   "size": [
+    8.0,
+    10.0,
+    1.0
+   ],
+   "tris": 48,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.0,
+    0.0,
+    0.3
+   ],
+   "boundsMax": [
+    0.0,
+    10.0,
+    1.3
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none",
+   "tint": "facade body: Config.Big.STYLES[location].body (runtime colour, a mid-to-high value)",
+   "tintable": true
+  },
+  "Facade_Curtain": {
+   "model": "Facade_Curtain",
+   "size": [
+    3.4,
+    5.26,
+    0.2
+   ],
+   "tris": 132,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -5.7,
+    2.8,
+    0.64
+   ],
+   "boundsMax": [
+    -2.3,
+    8.06,
+    0.84
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "FireEscape_8x10": {
+   "model": "FireEscape_8x10",
+   "size": [
+    7.4,
+    11.473,
+    3.0
+   ],
+   "tris": 296,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.7,
+    -1.4,
+    -3.0
+   ],
+   "boundsMax": [
+    -0.3,
+    10.073,
+    0.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
   },
   "Floor_8x8": {
    "model": "Floor_8x8",
@@ -3785,6 +4032,41 @@
    "transparency": 0.7,
    "tint": "Vault Steel light #A9B2CC"
   },
+  "Pediment_24": {
+   "model": "Pediment_24",
+   "size": [
+    24.893,
+    6.531,
+    2.45
+   ],
+   "tris": 228,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -12.447,
+    0.0,
+    -0.8
+   ],
+   "boundsMax": [
+    12.447,
+    6.531,
+    1.65
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
   "Pillar_2x12": {
    "model": "Pillar_2x12",
    "size": [
@@ -3934,6 +4216,111 @@
    ],
    "sim": "loot point (LevelSpec loot x, y, z)"
   },
+  "Railing_8": {
+   "model": "Railing_8",
+   "size": [
+    8.0,
+    3.6,
+    0.24
+   ],
+   "tris": 60,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.0,
+    0.0,
+    -0.12
+   ],
+   "boundsMax": [
+    0.0,
+    3.6,
+    0.12
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Roof_Antenna": {
+   "model": "Roof_Antenna",
+   "size": [
+    4.4,
+    9.0,
+    1.0
+   ],
+   "tris": 72,
+   "class": "tiny",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.2,
+    0.0,
+    -0.5
+   ],
+   "boundsMax": [
+    2.2,
+    9.0,
+    0.5
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Roof_Chimney": {
+   "model": "Roof_Chimney",
+   "size": [
+    2.9,
+    6.2,
+    2.9
+   ],
+   "tris": 204,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "xmas",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.45,
+    0.0,
+    -1.45
+   ],
+   "boundsMax": [
+    1.45,
+    6.2,
+    1.45
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
   "Roof_Gable": {
    "model": "Roof_Gable",
    "size": [
@@ -3961,6 +4348,41 @@
     5.2,
     3.62,
     4.3
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Roof_WaterTank": {
+   "model": "Roof_WaterTank",
+   "size": [
+    6.3,
+    11.8,
+    6.3
+   ],
+   "tris": 412,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "xmas",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -3.15,
+    0.0,
+    -3.15
+   ],
+   "boundsMax": [
+    3.15,
+    11.8,
+    3.15
    ],
    "origin": [
     0.0,
@@ -6739,6 +7161,41 @@
     0.0,
     0.0
    ]
+  },
+  "Truss_8": {
+   "model": "Truss_8",
+   "size": [
+    8.187,
+    4.0,
+    0.7
+   ],
+   "tris": 60,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.094,
+    0.0,
+    -0.35
+   ],
+   "boundsMax": [
+    0.094,
+    4.0,
+    0.35
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
   },
   "Van": {
    "model": "Van",

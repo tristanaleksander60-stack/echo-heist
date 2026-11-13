@@ -1,0 +1,109 @@
+{
+ "asset": "Roof_WaterTank",
+ "objects": [
+  {
+   "name": "Roof_WaterTank",
+   "class": "small",
+   "tris": 412,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    6.3,
+    6.3,
+    11.8
+   ],
+   "pivot": {
+    "rule": "bottom",
+    "local_min": [
+     -3.15,
+     -3.15,
+     0.0
+    ],
+    "local_max": [
+     3.15,
+     3.15,
+     11.8
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "snow",
+    "steel_lo",
+    "wood",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 268,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "xmas",
+   "notes": "rooftop water tank on legs with a snowy conical roof (the tenement roofline)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 412,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "34c6d5074ad3c419a754",
+ "fbx": {
+  "path": "assets/fbx/Roof_WaterTank.fbx",
+  "bytes": 26428,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Roof_WaterTank"
+  ],
+  "geometry_extents": [
+   [
+    6.3,
+    6.3,
+    11.8
+   ]
+  ]
+ },
+ "spec": "assets/blender/tower.py",
+ "notes": "Water tank 6.4 x 6.4 x 11.8 (BIG buildings rooftop).",
+ "turntable": "docs/art/turntables/Roof_WaterTank.png",
+ "seconds": 35.3
+}

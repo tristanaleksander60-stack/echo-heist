@@ -1,0 +1,109 @@
+{
+ "asset": "Roof_Chimney",
+ "objects": [
+  {
+   "name": "Roof_Chimney",
+   "class": "small",
+   "tris": 204,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.9,
+    2.9,
+    6.2
+   ],
+   "pivot": {
+    "rule": "bottom",
+    "local_min": [
+     -1.45,
+     -1.45,
+     0.0
+    ],
+    "local_max": [
+     1.45,
+     1.45,
+     6.2
+    ]
+   },
+   "swatches": [
+    "ink",
+    "marble",
+    "marble_lo",
+    "plum_hi",
+    "snow",
+    "steel"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 68,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "xmas",
+   "notes": "brick chimney stack with a marble cap, snow and two pots",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 204,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "1f120d09718dd5d819cb",
+ "fbx": {
+  "path": "assets/fbx/Roof_Chimney.fbx",
+  "bytes": 22732,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Roof_Chimney"
+  ],
+  "geometry_extents": [
+   [
+    2.9,
+    2.9,
+    6.2
+   ]
+  ]
+ },
+ "spec": "assets/blender/tower.py",
+ "notes": "Chimney 2.9 x 2.9 x 6.2 (BIG buildings rooftop; brick = the location's light wall cell).",
+ "turntable": "docs/art/turntables/Roof_Chimney.png",
+ "seconds": 45.1
+}

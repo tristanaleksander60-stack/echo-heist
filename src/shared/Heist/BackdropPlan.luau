@@ -249,6 +249,12 @@ function BackdropPlan.budget(plan: Plan, tier: number, kitTris: { [string]: numb
 		end
 		tris += 12
 		batches[if p.neon then "neon" else "plastic"] = true
+		if p.skin then
+			-- the window grid: one Texture per face, all one image (estimated as one batch, like an instanced mesh)
+			instances += 1
+			tris += 2
+			batches["texture:skin"] = true
+		end
 	end
 	for _, k in plan.kit do
 		instances += 1

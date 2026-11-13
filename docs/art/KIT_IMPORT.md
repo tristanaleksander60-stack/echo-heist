@@ -25,11 +25,18 @@ The table below shows what Studio must show after the import (generated from `as
 | CashBag.fbx | CashBag | 1.9 x 2.02 x 1.97 | 600 | Box | SmoothPlastic | on | off | base |
 | CashRegister.fbx | CashRegister | 4.14 x 3.95 x 3.2 | 1032 | Box | SmoothPlastic | off | on | base |
 | CashRegister.fbx | CashRegister_Drawer | 2.97 x 0.67 x 2.77 | 488 | Box | SmoothPlastic | off | off | base |
+| Ceiling_8x8.fbx | Ceiling_8x8 | 8 x 0.55 x 8 | 168 | Box | SmoothPlastic | off | off | base |
+| Clock_6.fbx | Clock_6 | 6.7 x 6.7 x 0.86 | 400 | Box | SmoothPlastic | off | off | base |
 | Column_2x12.fbx | Column_2x12 | 2 x 12 x 2 | 600 | Box | SmoothPlastic | off | on | base |
+| Cornice_8.fbx | Cornice_8 | 8 x 1.98 x 2.8 | 152 | Box | SmoothPlastic | off | off | base |
 | Counter_4x4.fbx | Counter_4x4 | 4.3 x 3.5 x 4.3 | 208 | Box | SmoothPlastic | on | on | base |
 | Counter_8x2.fbx | Counter_8x2 | 8.3 x 3.5 x 2.3 | 244 | Box | SmoothPlastic | on | on | base |
 | Counter_8x4.fbx | Counter_8x4 | 8.3 x 3.5 x 4.3 | 316 | Box | SmoothPlastic | on | on | base |
 | Diamond.fbx | Diamond | 2 x 1.75 x 2 | 94 | Box | SmoothPlastic | off | off | base |
+| Facade_8x10.fbx | Facade_8x10 | 8 x 9.15 x 1.4 | 360 | Box | SmoothPlastic | off | off | base |
+| Facade_8x10.fbx | Facade_8x10_Body | 8 x 10 x 1 | 48 | Box | SmoothPlastic | off | off | base |
+| Facade_Curtain.fbx | Facade_Curtain | 3.4 x 5.26 x 0.2 | 132 | Box | SmoothPlastic | off | off | base |
+| FireEscape_8x10.fbx | FireEscape_8x10 | 7.4 x 11.473 x 3 | 296 | Box | SmoothPlastic | off | off | base |
 | Floor_8x8.fbx | Floor_8x8 | 8 x 0.5 x 8 | 144 | Box | SmoothPlastic | on | on | base |
 | GarageDoor_16x12.fbx | GarageDoor_16x12 | 16 x 12 x 2.36 | 364 | Box | SmoothPlastic | off | on | base |
 | GiantPresent.fbx | GiantPresent | 7.2 x 6.794 x 7.2 | 1380 | Box | SmoothPlastic | on | on | base |
@@ -112,11 +119,16 @@ The table below shows what Studio must show after the import (generated from `as
 | Ornaments.fbx | Ornament_VaultDoor | 1.04 x 1.435 x 0.33 | 472 | Box | SmoothPlastic | off | off | xmas |
 | Pedestal_Diamond.fbx | Pedestal_Diamond | 3.2 x 3.4 x 3.28 | 528 | Box | SmoothPlastic | on | on | base |
 | Pedestal_Diamond.fbx | Pedestal_Diamond_Case | 2.6 x 2.7 x 2.6 | 60 | Box | Glass (T 0.7) | off | off | base |
+| Pediment_24.fbx | Pediment_24 | 24.893 x 6.531 x 2.45 | 228 | Box | SmoothPlastic | off | off | base |
 | Pillar_2x12.fbx | Pillar_2x12 | 2.3 x 12 x 2.3 | 324 | Box | SmoothPlastic | on | on | base |
 | Plate_4x4.fbx | Plate_4x4 | 4 x 0.36 x 4 | 484 | Box | SmoothPlastic | on | off | base |
 | Plate_4x4.fbx | Plate_4x4_Ring | 3.3 x 0.14 x 3.3 | 288 | Box | Neon | off | off | base |
 | Present.fbx | Present | 2.101 x 2.021 x 1.9 | 388 | Box | SmoothPlastic | on | off | base |
+| Railing_8.fbx | Railing_8 | 8 x 3.6 x 0.24 | 60 | Box | SmoothPlastic | off | off | base |
+| Roof_Antenna.fbx | Roof_Antenna | 4.4 x 9 x 1 | 72 | Box | SmoothPlastic | off | off | base |
+| Roof_Chimney.fbx | Roof_Chimney | 2.9 x 6.2 x 2.9 | 204 | Box | SmoothPlastic | off | off | base |
 | Roof_Gable.fbx | Roof_Gable | 10.4 x 3.62 x 8.6 | 32 | Box | SmoothPlastic | off | off | base |
+| Roof_WaterTank.fbx | Roof_WaterTank | 6.3 x 11.8 x 6.3 | 412 | Box | SmoothPlastic | off | off | base |
 | Rookie.fbx | Rookie_Face_Idle | 1.119 x 0.775 x 0.273 | 544 | Box | SmoothPlastic | off | off | base |
 | Rookie.fbx | Rookie_Head | 2.097 x 1.66 x 1.89 | 644 | Box | SmoothPlastic | off | on | base |
 | Rookie.fbx | Rookie_LeftFoot | 0.76 x 0.66 x 1.3 | 152 | Box | SmoothPlastic | off | on | base |
@@ -182,6 +194,7 @@ The table below shows what Studio must show after the import (generated from `as
 | TellerCounter_8x4.fbx | TellerCounter_8x4_Glass | 7.1 x 3.2 x 0.06 | 24 | Box | Glass (T 0.6) | off | off | base |
 | Toy.fbx | Toy | 1.586 x 2.8 x 1.19 | 580 | Box | SmoothPlastic | on | off | base |
 | ToySoldier.fbx | ToySoldier | 3.5 x 11.32 x 4.02 | 2736 | Box | SmoothPlastic | off | on | base |
+| Truss_8.fbx | Truss_8 | 8.187 x 4 x 0.7 | 60 | Box | SmoothPlastic | off | off | base |
 | Van.fbx | Van | 14.9 x 7.689 x 7.08 | 1704 | PreciseConvexDecomposition | SmoothPlastic | on | on | base |
 | Van.fbx | Van_Paint | 14 x 5.7 x 6.8 | 164 | Box | SmoothPlastic | off | on | base |
 | Van.fbx | Van_Shelf | 6 x 4.06 x 0.98 | 124 | Box | SmoothPlastic | off | on | base |
@@ -205,7 +218,7 @@ The table below shows what Studio must show after the import (generated from `as
 | Xmas_Tree.fbx | Xmas_Tree_Lights | 4.119 x 5.64 x 4.033 | 400 | Box | Neon | off | off | xmas |
 | Xmas_Wreath.fbx | Xmas_Wreath | 2.826 x 3.56 x 1.135 | 548 | Box | SmoothPlastic | off | off | xmas |
 
-**77 FBX files, 187 MeshParts, 93,878 triangles in all.** Christmas layer: 17 parts.
+**89 FBX files, 200 MeshParts, 96,470 triangles in all.** Christmas layer: 17 parts.
 <!-- kit-table:end -->
 
 ---
@@ -506,5 +519,5 @@ Use this if the meshes, sizes or collision do not survive `rojo build`. Then we 
    ```
    Then it sets Size, TextureID, Material, PivotOffset and the other flags from the manifest. Each heist clones the cached parts.
 <!-- fallback-cost:start -->
-4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 187 MeshParts and 93,878 triangles about **4.1 s** at boot (generated by kit_docs.py). Boot only, never per heist.
+4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 200 MeshParts and 96,470 triangles about **4.4 s** at boot (generated by kit_docs.py). Boot only, never per heist.
 <!-- fallback-cost:end -->

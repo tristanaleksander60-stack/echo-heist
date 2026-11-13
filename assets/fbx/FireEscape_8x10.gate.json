@@ -1,0 +1,104 @@
+{
+ "asset": "FireEscape_8x10",
+ "objects": [
+  {
+   "name": "FireEscape_8x10",
+   "class": "module",
+   "tris": 296,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    7.4,
+    3.0,
+    11.473
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.3,
+     -3.0,
+     -1.4
+    ],
+    "local_max": [
+     7.7,
+     0.0,
+     10.0727
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "steel",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 194,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "one storey of a fire escape on the facade: landing, brackets, railings, a stair up",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 296,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "8b80e7212ccd4443f80e",
+ "fbx": {
+  "path": "assets/fbx/FireEscape_8x10.fbx",
+  "bytes": 23436,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "FireEscape_8x10"
+  ],
+  "geometry_extents": [
+   [
+    3.0,
+    7.4,
+    11.473
+   ]
+  ]
+ },
+ "spec": "assets/blender/tower.py",
+ "notes": "Fire escape storey 8 x 3 x 10 (BIG buildings, the Corner Shop tenement).",
+ "turntable": "docs/art/turntables/FireEscape_8x10.png",
+ "seconds": 25.7
+}

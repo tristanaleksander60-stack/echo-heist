@@ -1,0 +1,107 @@
+{
+ "asset": "Ceiling_8x8",
+ "objects": [
+  {
+   "name": "Ceiling_8x8",
+   "class": "module",
+   "tris": 168,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.0,
+    8.0,
+    0.55
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.0,
+     0.0,
+     -0.55
+    ],
+    "local_max": [
+     8.0,
+     8.0,
+     0.0
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_hi",
+    "marble_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.55
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 68,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "pressed-tin ceiling tile: the underside is the ceiling plane on the wall tops (y 12)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 168,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "f23ce3a166645b12578d",
+ "fbx": {
+  "path": "assets/fbx/Ceiling_8x8.fbx",
+  "bytes": 21468,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Ceiling_8x8"
+  ],
+  "geometry_extents": [
+   [
+    0.55,
+    8.0,
+    8.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/tower.py",
+ "notes": "Ceiling tile 8 x 8 x 0.55, coffered underside (BIG buildings: first person never sees sky indoors).",
+ "turntable": "docs/art/turntables/Ceiling_8x8.png",
+ "seconds": 4.3
+}

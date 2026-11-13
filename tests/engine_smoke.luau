@@ -838,7 +838,12 @@ do
 				local columns, bankers, solidSig = 0, 0, 0
 				for _, dsc in b6.model:GetDescendants() do
 					local piece = dsc:GetAttribute("KitPiece")
-					if dsc:IsA("BasePart") and (piece == "Column_2x12" or piece == "BankersLamp") then
+					-- (the BIG building's giant order over the street front is the Overhead's, counted in section 11)
+					if
+						dsc:IsA("BasePart")
+						and (piece == "Column_2x12" or piece == "BankersLamp")
+						and dsc:FindFirstAncestor("Overhead") == nil
+					then
 						if piece == "Column_2x12" then
 							columns += 1
 						else
@@ -1133,6 +1138,67 @@ do
 				end
 			end
 			check(#bad == 0, "garage: no default grey or white blocks (" .. table.concat(bad, ", ") .. ")")
+			-- the warehouse (Config.Lobby.WAREHOUSE): the high roof and its cut-away groups, the anchors the LOBBY
+			-- track builds on, the mezzanine's stair rising from the floor to the deck
+			local W = C.WAREHOUSE
+			local over = garage:FindFirstChild("Overhead")
+			local groupsOk = over ~= nil
+				and over:FindFirstChild("roof") ~= nil
+				and over:FindFirstChild("trusses") ~= nil
+				and over:FindFirstChild("front") ~= nil
+				and over:FindFirstChild("mezzanine") ~= nil
+			local strays = 0
+			for _, d in (over and over:GetDescendants()) or {} do
+				if
+					d:IsA("BasePart")
+					and (d.CanCollide or d.CastShadow)
+					and d:GetAttribute("EH_Kind") ~= "garageCollider"
+				then
+					strays += 1
+				end
+			end
+			check(
+				groupsOk and strays == 0 and (over :: any):GetAttribute("CeilY") > C.WALL_H + 8,
+				string.format("garage: the warehouse roof, trusses, faces, mezzanine (%d stray colliders)", strays)
+			)
+			local anchors = garage:FindFirstChild("Anchors")
+			local missing = {}
+			local names = { "JobBoardSpot", "LaptopSpot", "WardrobeSpot", "TVSpot", "CrewSign" }
+			for i = 1, 8 do
+				table.insert(names, "VanBay" .. i)
+			end
+			for _, n in names do
+				local a = anchors and anchors:FindFirstChild(n)
+				if not (a and a:IsA("BasePart") and not a.CanCollide and not a.CanQuery and a.Transparency == 1) then
+					table.insert(missing, n)
+				end
+			end
+			check(#missing == 0, "garage: the LOBBY anchors are there (" .. table.concat(missing, ", ") .. ")")
+			local st = W.STAIR
+			local origin2 = Vector3.new(table.unpack(Config.Heist.LOBBY_ORIGIN))
+			local ramp = garage:FindFirstChild("StairRamp", true)
+			local rp = RaycastParams.new()
+			rp.FilterType = Enum.RaycastFilterType.Include
+			rp.FilterDescendantsInstances = { ramp :: Instance }
+			local mx = (st.x0 + st.x1) / 2
+			local low = workspace:Raycast(origin2 + Vector3.new(mx, 40, st.z0 + 1), Vector3.new(0, -60, 0), rp)
+			local high = workspace:Raycast(origin2 + Vector3.new(mx, 40, st.z1 - 1), Vector3.new(0, -60, 0), rp)
+			local deckTop = W.MEZZANINE.deckY + W.MEZZANINE.thick
+			check(
+				ramp ~= nil
+					and ramp:IsA("WedgePart")
+					and (ramp :: BasePart).CanCollide
+					and low ~= nil
+					and high ~= nil
+					and low.Position.Y - origin2.Y < 1.5
+					and high.Position.Y - origin2.Y > deckTop - 1.5,
+				string.format(
+					"garage: the stair rises from the floor (%.1f) to the mezzanine deck (%.1f of %.1f)",
+					if low then low.Position.Y - origin2.Y else -1,
+					if high then high.Position.Y - origin2.Y else -1,
+					deckTop
+				)
+			)
 			-- the kit dressing (visual only; the greybox walls and vans stay the colliders)
 			if okKit and KitService.ready(45) and KitService.report().ok then
 				local n = Lobby.dress(KitService)
@@ -1566,6 +1632,221 @@ do
 		end
 	end)
 	check(okRookie, "rookie section ran" .. (if okRookie then "" else ": " .. tostring(rookieErr)))
+end
+
+-- 11. BIG buildings (PLAN_FIRST_PERSON §5 "BIG", Config.Big; docs/audit/LEVELS.md §11). Every launch level and two
+-- daily vaults, kit-dressed with the Christmas layer: the Overhead (ceiling, storeys, roof) is there and visual only
+-- (CanCollide, CanQuery, CanTouch and CastShadow off: the sim's colliders and the cameras' raycasts are what they
+-- were); a first-person "look up" from eye height on a 4-stud grid over every playable room hits the ceiling at the
+-- wall tops, never the sky (a real workspace raycast, the Overhead made queryable for the check only); and with the
+-- diorama camera above you inside, the cut-away rule (Shared/Heist/CutMath on the built groups' attributes) hides
+-- the ceiling and the roof, and every Overhead part a ray from that camera to your head meets is in a hidden group.
+do
+	local okBig, bigErr = pcall(function()
+		local heistDir = server:WaitForChild("Heist")
+		local sharedDir = ReplicatedStorage:WaitForChild("Shared")
+		local Config = require(sharedDir:WaitForChild("Config")) :: any
+		local LevelBuilder = require(heistDir:WaitForChild("LevelBuilder"))
+		local KitPlan = require(heistDir:WaitForChild("KitPlan"))
+		local KitService = require(server:WaitForChild("Kit"):WaitForChild("KitService"))
+		local LevelSpec = require(sharedDir:WaitForChild("Sim"):WaitForChild("LevelSpec"))
+		local Catalog = require(sharedDir:WaitForChild("Levels"):WaitForChild("Catalog"))
+		local DailyVaults = require(sharedDir:WaitForChild("Levels"):WaitForChild("DailyVaults")) :: any
+		local CutMath = require(sharedDir:WaitForChild("Heist"):WaitForChild("CutMath"))
+		local CameraMath = require(
+			game:GetService("StarterPlayer")
+				:WaitForChild("StarterPlayerScripts")
+				:WaitForChild("Client")
+				:WaitForChild("Heist")
+				:WaitForChild("CameraMath")
+		)
+		KitService.start()
+		local kitOk = KitService.ready(60)
+		check(kitOk, "big: the kit is ready (" .. KitService.summary() .. ")")
+		local BIG = Config.Big
+		local D = Config.Heist.CAMERA.DIORAMA
+		local specs = {}
+		for _, s in Catalog do
+			table.insert(specs, s)
+		end
+		table.insert(specs, DailyVaults.designs[1])
+		table.insert(specs, DailyVaults.designs[10])
+		local scratch = Instance.new("Folder")
+		scratch.Name = "BigScratch"
+		scratch.Parent = workspace
+		for n, spec in specs do
+			local lv = LevelSpec.compile(spec)
+			local origin = Vector3.new(-12000, 0, 3000 * n)
+			local built = LevelBuilder.build(lv, origin, scratch, { kit = KitService, dressing = true })
+			local over = built.model:FindFirstChild("Overhead")
+			local groups: { [string]: Instance } = {}
+			local parts, loud = 0, 0
+			if over then
+				for _, g in over:GetChildren() do
+					groups[g.Name] = g
+				end
+				for _, d in over:GetDescendants() do
+					if d:IsA("BasePart") then
+						parts += 1
+						if d.CanCollide or d.CanQuery or d.CanTouch or d.CastShadow then
+							loud += 1
+						end
+					end
+				end
+			end
+			check(
+				over ~= nil
+					and over:GetAttribute("Kit") == true
+					and groups.ceiling ~= nil
+					and groups.roof ~= nil
+					and groups.front ~= nil
+					and parts >= 150
+					and loud == 0,
+				string.format(
+					"big %s: %s building, %d visual-only parts (%d collide, query, touch or cast shadows)",
+					spec.id,
+					tostring(over and over:GetAttribute("Style")),
+					parts,
+					loud
+				)
+			)
+			if not over then
+				continue
+			end
+			-- the sim's own colliders: every solid still its exact box, nothing else in the level collides above them
+			local solidsOk = true
+			for i, sdef in lv.spec.solids do
+				local part = built.solids[i]
+				local b = sdef.box
+				local want = Vector3.new(b.maxX - b.minX, b.maxY - b.minY, b.maxZ - b.minZ)
+				solidsOk = solidsOk and part ~= nil and part.CanCollide and (part.Size - want).Magnitude < 0.01
+			end
+			check(solidsOk, "big " .. spec.id .. ": the sim's solids are still their exact colliders")
+			-- look up: a grid over the playable footprint, from the first-person eye
+			for _, d in over:GetDescendants() do
+				if d:IsA("BasePart") then
+					d.CanQuery = true
+				end
+			end
+			-- only the Overhead (what is over your head): plates, doors, hides and loot below the ceiling never block
+			local params = RaycastParams.new()
+			params.FilterType = Enum.RaycastFilterType.Include
+			params.FilterDescendantsInstances = { over }
+			local bb = KitPlan.buildingBox(lv) :: any
+			local ceilY = origin.Y + lv.floorY + BIG.CEIL_Y
+			local points, misses = 0, {}
+			local x = bb.minX + 2
+			while x < bb.maxX - 1 do
+				local z = bb.minZ + 2
+				while z < bb.maxZ - 1 do
+					local inSolid = false
+					for _, s in lv.spec.solids do
+						local sb = s.box
+						if x > sb.minX - 0.6 and x < sb.maxX + 0.6 and z > sb.minZ - 0.6 and z < sb.maxZ + 0.6 then
+							inSolid = true
+						end
+					end
+					if not inSolid then
+						points += 1
+						local eye = origin + Vector3.new(x, lv.floorY + 3.8, z)
+						local hit = workspace:Raycast(eye, Vector3.new(0, 200, 0), params)
+						local ok = hit ~= nil
+							and hit.Instance:IsDescendantOf(groups.ceiling)
+							and math.abs(hit.Position.Y - ceilY) < 0.7
+						if not ok and #misses < 3 then
+							table.insert(
+								misses,
+								string.format(
+									"(%g, %g) -> %s",
+									x,
+									z,
+									if hit
+										then hit.Instance:GetFullName() .. " y " .. math.floor(hit.Position.Y)
+										else "sky"
+								)
+							)
+						end
+					end
+					z += 4
+				end
+				x += 4
+			end
+			check(
+				#misses == 0 and points >= 40,
+				string.format(
+					"big %s: first person looks up at the ceiling from %d spots over the rooms (%s)",
+					spec.id,
+					points,
+					if #misses == 0 then "never the sky" else table.concat(misses, "; ")
+				)
+			)
+			-- the cut-away: the diorama camera above you in the middle of the building
+			local cut: { CutMath.Group } = {}
+			local names = {}
+			for _, g in over:GetChildren() do
+				local lo, hi = g:GetAttribute("EH_CutMin"), g:GetAttribute("EH_CutMax")
+				local nrm = g:GetAttribute("EH_CutNormal")
+				if typeof(lo) == "Vector3" and typeof(hi) == "Vector3" then
+					table.insert(cut, {
+						kind = g:GetAttribute("EH_CutKind") :: string,
+						minX = lo.X,
+						minY = lo.Y,
+						minZ = lo.Z,
+						maxX = hi.X,
+						maxY = hi.Y,
+						maxZ = hi.Z,
+						nx = if typeof(nrm) == "Vector3" then nrm.X else 0,
+						nz = if typeof(nrm) == "Vector3" then nrm.Z else 0,
+						plane = (g:GetAttribute("EH_CutPlane") :: number?) or 0,
+					})
+					table.insert(names, g.Name)
+				end
+			end
+			local omin, omax = over:GetAttribute("OuterMin") :: Vector3, over:GetAttribute("OuterMax") :: Vector3
+			local b = { ceilY = ceilY, minX = omin.X, maxX = omax.X, minZ = omin.Z, maxZ = omax.Z }
+			local youL = { 0, lv.floorY + 3, (bb.minZ + bb.maxZ) / 2 }
+			local lead = CameraMath.lead(D.FOV, D.PITCH, D.DISTANCE, D.SUBJECT_SCREEN_Y)
+			local focus = { youL[1], youL[2] + D.FOCUS_HEIGHT, youL[3] }
+			local camL = CameraMath.orbit(CameraMath.ahead(focus, 0, lead), 0, D.PITCH, D.DISTANCE)
+			local cam = origin + Vector3.new(camL[1], camL[2], camL[3])
+			local you = origin + Vector3.new(youL[1], youL[2], youL[3])
+			local subj = { you.X, you.Y + 1.5, you.Z, you.X, you.Y - 2.2, you.Z }
+			local hide = {}
+			CutMath.decide(b, cut, cam.X, cam.Y, cam.Z, subj, 2, BIG.CUT.MARGIN, BIG.CUT.INSIDE_PAD, hide)
+			local hidden: { [string]: boolean } = {}
+			for i, nm in names do
+				hidden[nm] = hide[i] == true
+			end
+			local sees = true
+			local head = you + Vector3.new(0, 1.5, 0)
+			local hit = workspace:Raycast(cam, head - cam, params)
+			local blocker = "clear"
+			while hit and hit.Instance:IsDescendantOf(over) do
+				local g = hit.Instance
+				while g.Parent ~= over do
+					g = g.Parent :: Instance
+				end
+				if not hidden[g.Name] then
+					sees = false
+					blocker = hit.Instance:GetFullName()
+					break
+				end
+				local from = hit.Position + (head - cam).Unit * 0.05
+				hit = workspace:Raycast(from, head - from, params)
+			end
+			check(
+				hidden.ceiling and hidden.roof and sees and cam.Y > ceilY,
+				string.format(
+					"big %s: the diorama above you inside cuts away the ceiling and roof and sees you (%s)",
+					spec.id,
+					blocker
+				)
+			)
+			built.model:Destroy()
+		end
+		scratch:Destroy()
+	end)
+	check(okBig, "big section ran" .. (if okBig then "" else ": " .. tostring(bigErr)))
 end
 
 table.insert(results, string.format("%d failure(s)", failures))

@@ -151,6 +151,30 @@
    "sha256": "9f64710255ead1f4fd3eb28d5fd6375622f25b9af8f4a1d2b9de40ec8bd9005d",
    "uploaded": "2026-11-12T11:21:42Z"
   },
+  "Ceiling_8x8": {
+   "assetId": 73725950733656,
+   "file": "assets/fbx/Ceiling_8x8.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Ceiling_8x8"
+   ],
+   "revisionId": "2",
+   "sha256": "62bf56d2071ef2495d987e54a98cb21cd70bd6ce51802e06f110764f00bdd550",
+   "uploaded": "2026-11-13T03:05:37Z"
+  },
+  "Clock_6": {
+   "assetId": 129403410104922,
+   "file": "assets/fbx/Clock_6.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Clock_6"
+   ],
+   "revisionId": "1",
+   "sha256": "7aa39ad830444bb10cc29fdfbd1230e190b83ac5f57d604a5bbbf472f037841a",
+   "uploaded": "2026-11-13T02:38:04Z"
+  },
   "Column_2x12": {
    "assetId": 112027802609788,
    "file": "assets/fbx/Column_2x12.fbx",
@@ -162,6 +186,18 @@
    "revisionId": "1",
    "sha256": "89e400cdf274b80d0d245771ac4feeb6e2266d5bedba5472e9542f3f3c7d756d",
    "uploaded": "2026-11-12T17:18:51Z"
+  },
+  "Cornice_8": {
+   "assetId": 103396754216844,
+   "file": "assets/fbx/Cornice_8.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Cornice_8"
+   ],
+   "revisionId": "1",
+   "sha256": "61d40d3378c737102836fef4b4f31b00bd347008d4a4ea6648542e03b9899b24",
+   "uploaded": "2026-11-13T02:38:15Z"
   },
   "Counter_4x4": {
    "assetId": 85663296446467,
@@ -210,6 +246,43 @@
    "revisionId": "1",
    "sha256": "42e4b64aaefe1286a0a25b6b45e3af75986b03b97b807151621835ca0dcad08c",
    "uploaded": "2026-11-12T11:22:31Z"
+  },
+  "Facade_8x10": {
+   "assetId": 113529009145373,
+   "file": "assets/fbx/Facade_8x10.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Facade_8x10",
+    "Facade_8x10_Body"
+   ],
+   "revisionId": "1",
+   "sha256": "110a026c568c4b363cf0113295ed818839829d062604e339a0c64a2c76bb18af",
+   "uploaded": "2026-11-13T02:38:31Z"
+  },
+  "Facade_Curtain": {
+   "assetId": 126557033004908,
+   "file": "assets/fbx/Facade_Curtain.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Facade_Curtain"
+   ],
+   "revisionId": "1",
+   "sha256": "c879cacb27783f45cc8aba0c2ec5ef50eaa294591be470b92009752a86f990d7",
+   "uploaded": "2026-11-13T02:38:43Z"
+  },
+  "FireEscape_8x10": {
+   "assetId": 123498752791133,
+   "file": "assets/fbx/FireEscape_8x10.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "FireEscape_8x10"
+   ],
+   "revisionId": "1",
+   "sha256": "16a30f9a066100063b1672f8b49582227420bc79a2260a747325c868c917c95c",
+   "uploaded": "2026-11-13T02:38:51Z"
   },
   "Floor_8x8": {
    "assetId": 111900679209514,
@@ -634,6 +707,18 @@
    "sha256": "5a3d6e3b6c49e6fa530f674165f2eeb00566a100d65938feed805fe377ae8f16",
    "uploaded": "2026-11-12T11:26:05Z"
   },
+  "Pediment_24": {
+   "assetId": 101064256180333,
+   "file": "assets/fbx/Pediment_24.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Pediment_24"
+   ],
+   "revisionId": "1",
+   "sha256": "a5e97030c3b59bd66f1b2685d5556b3091551af58f90baaf276df42473a0f809",
+   "uploaded": "2026-11-13T02:39:07Z"
+  },
   "Pillar_2x12": {
    "assetId": 106907997975301,
    "file": "assets/fbx/Pillar_2x12.fbx",
@@ -671,6 +756,42 @@
    "sha256": "8544f1dba37274d5c2ffe6315db9362b78cd41bfc5043d01e1ff02e512767069",
    "uploaded": "2026-11-12T11:26:49Z"
   },
+  "Railing_8": {
+   "assetId": 133295213985388,
+   "file": "assets/fbx/Railing_8.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Railing_8"
+   ],
+   "revisionId": "1",
+   "sha256": "56e6d9dfc06170c5b943cce89283f4a4d665d34d37c9bd8bdb6c6b0c82f3261c",
+   "uploaded": "2026-11-13T02:39:15Z"
+  },
+  "Roof_Antenna": {
+   "assetId": 140071074744392,
+   "file": "assets/fbx/Roof_Antenna.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Roof_Antenna"
+   ],
+   "revisionId": "1",
+   "sha256": "aa9cb57638a5867133f823cc884b9775bd3dba1b922206ee8dc2922caa08a145",
+   "uploaded": "2026-11-13T02:39:26Z"
+  },
+  "Roof_Chimney": {
+   "assetId": 135688851662342,
+   "file": "assets/fbx/Roof_Chimney.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Roof_Chimney"
+   ],
+   "revisionId": "1",
+   "sha256": "0aa440489b6edcf0afcab303177218dc01c59b0d6068347b6b049bd21ad3e8a3",
+   "uploaded": "2026-11-13T02:39:34Z"
+  },
   "Roof_Gable": {
    "assetId": 120853282152490,
    "file": "assets/fbx/Roof_Gable.fbx",
@@ -682,6 +803,18 @@
    "revisionId": "1",
    "sha256": "7cbd99f8889a98d927bcbae175b829fdec7828bb9e64038bd648e541f30a9f40",
    "uploaded": "2026-11-12T23:14:02Z"
+  },
+  "Roof_WaterTank": {
+   "assetId": 119013245679077,
+   "file": "assets/fbx/Roof_WaterTank.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Roof_WaterTank"
+   ],
+   "revisionId": "1",
+   "sha256": "558a91ed42887702b3fc454d22266177a2977ad55c000bfb024f6e8be595d4fb",
+   "uploaded": "2026-11-13T02:39:51Z"
   },
   "Rookie": {
    "assetId": 82283617669885,
@@ -957,6 +1090,18 @@
    "sha256": "943e127f3ee883e6b0d5e2bb7690032fcc8682de0e2af0120502d5ebd7ede4ae",
    "uploaded": "2026-11-12T17:19:22Z"
   },
+  "Truss_8": {
+   "assetId": 119550315330150,
+   "file": "assets/fbx/Truss_8.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Truss_8"
+   ],
+   "revisionId": "1",
+   "sha256": "be0bf8c9eed3c995f067b21826a4241e1561c30ab8dcf21d2c936560f57fbc6f",
+   "uploaded": "2026-11-13T02:40:02Z"
+  },
   "Van": {
    "assetId": 140548604204136,
    "file": "assets/fbx/Van.fbx",
@@ -1135,6 +1280,17 @@
    "revisionId": "1",
    "sha256": "b4a5025dbdddcaefd0d8b4ead3532de99d737f9746b169775c82bcaff7025db7",
    "uploaded": "2026-11-12T17:39:08Z"
+  },
+  "EH_FX_Windows": {
+   "assetId": 74221995905275,
+   "file": "assets/ui/EH_FX_Windows.png",
+   "history": [
+    137130519457516
+   ],
+   "moderation": "Approved",
+   "revisionId": "1",
+   "sha256": "a6b9f321c703c93dc6e8abf4a4901fc90f4a0f656d5e28ac071c14f381011994",
+   "uploaded": "2026-11-13T03:06:33Z"
   },
   "EH_UI_Icons": {
    "assetId": 83898292746311,

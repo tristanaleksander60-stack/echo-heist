@@ -588,3 +588,163 @@ Measured bar (after): warm share in the diorama, the focal element against the b
 
 - **L1 cash:** moved to (10, -26) on a `Safe` (LevelDress). x 6 (the §9 example) would sit behind the door frame from the spawn: the right window's glass spans x 5.5..10.5 at z -20. In first person the Rookie's eyes (~3.8 studs) are below the window sill (4.85), so only a raised cash shows: its top third from every seat ([fp spawn](levels/after/L1_cs1_back_room_1c_spawn_fp.png)), the whole bag from the classic camera ([spawn](levels/after/L1_cs1_back_room_1_spawn.png), [objective](levels/after/L1_cs1_back_room_2_objective.png)). Checked by `tests/unit/HeistL1Cash.spec.luau` and `tests/clone_engine.luau` section 7.
 - **Toy Shop:** the navy wall and front cells became a warm berry-plum (#4F1E36 / #5C2941 / #7D475F, same lightness): WORLD 2.0 L5 warm share diorama 33.8 → 41.2 %, classic 41.2 → 47.9 %, mid-run 18.4 → 58.8 %, no near-black ([diorama](levels/world2/after/L5_diorama.png), [spawn](levels/after/L5_cs5_clone_party_1_spawn.png)). The giant drummer's red coat reads a little less against the berry wall than against navy (its white straps and black hat carry it).
+
+## 12. BIG buildings (2026-11-13): huge, roofed, thought through (PLAN_FIRST_PERSON §5 "BIG")
+
+The owner: *"Make sure all buildings are huge and that the problem is thought through."* The game is first person by
+default now (eye ~3.8 studs over the floor), and the levels were single-storey, roofless boxes built for a top-down
+diorama: indoors you looked up into the sky, from the street every building was a squat 12-stud box, and the town
+round it was 10-24 studs tall.
+
+### 12.1 The problem, thought through
+
+- **What first person needs:** a ceiling over every playable room (never sky indoors), storeys over the street (the
+  sense of a city), and a town whose scale matches. **What the other cameras need:** to keep seeing in. The diorama
+  (pitch 52, distance 30: the camera ~24 studs over you), the classic camera zoomed out, and every presentation shot
+  (the run-start beat from above, the level intros, golden staging, the 8 OF ME pull-back, the Line-up) all look
+  down into the rooms. A tall roofed building would block every one of them.
+- **What must not change:** the sim. The playable footprint, walls, doors, plates, Gus's sight and the server's
+  collisions are exactly what they were (no file under `src/shared/Levels` or `src/shared/Sim` touched). So the BIG
+  building is **visual only and above the playable storey**: everything at or over the wall tops (y 12), or outside the
+  outer faces above the street front's storey; CanCollide, CanQuery, CanTouch and CastShadow off. CanQuery off also
+  keeps every existing camera and gameplay raycast (look-to-interact, Poppercam, Gus's cone, the Line-up's lane
+  search, the wall fade) exactly as it was. CastShadow off keeps the ground floor's moonlight (and the measured
+  WORLD 2.0 interiors): a 50-stud facade's shadow over the street and the lot would have put them back in the filmic toe.
+- **How the cameras still see in: a camera-aware cut-away** (client `Heist/CutAway`, the rule in the pure
+  `Shared/Heist/CutMath`). Two rules, decided 30 times a second on a handful of boxes, faded over 0.18 s with
+  LocalTransparencyModifier (no allocation per frame; a group's parts are written only while its fade moves):
+  - **dollhouse:** when the camera is above the ground floor's ceiling (y 12.5) and a subject stands inside the
+    building (you, or where the camera's look ray meets the floor: the diorama's focus, a shot's subject), the ceiling,
+    the roof and every face the camera is outside of open (all of them when the camera hangs over the footprint);
+  - **occlusion:** any roof, storey or tall town block whose box crosses the segment from the camera to a subject fades.
+  - **First person never cuts:** while the camera is at your eyes nothing hides (and the eye, even jumping, is far
+    under the ceiling plane). A presentation shot lifting the camera out of your eyes cuts like the diorama.
+- **Budgets:** the storeys are shells (no interiors), a handful of instanced kit meshes, panes as Parts, signs as
+  SurfaceGuis, 0 lights; layers drop with the performance tier (PERF.md §9).
+
+### 12.2 What was built
+
+- **The buildings** (server `Heist/TowerPlan` pure + `Heist/Overhead`, `Config.Big`, STYLE_BIBLE §18): ceiling tiles
+  (`Ceiling_8x8`, coffered, their underside on the wall tops so `Lamp_Ceiling` hangs from it), a 2-stud band, then
+  `Facade_8x10` storeys on all four faces (a tintable body with a window opening + the atlas trim: sill with snow,
+  casings, lintel and keystone, dark reveal, white mullions), panes lit Bulb Warm (~58 %, seeded) or a blue-night dark
+  pane, `Facade_Curtain` in about half of the lit ones, corner quoins, `Cornice_8` crowns under snow, parapets, the
+  roof's snow; per location: the **Corner Shop tenement** (4 storeys of brick, fire escapes on the street front and the
+  side, "CORNER SHOP" blade sign, water tank, chimneys, antenna), the **Toy Shop department store** (4 storeys of cream
+  and raspberry, the big lit "HOARDSWORTH'S TOYS" board with a Neon frame, the giant toy soldier on the roof edge), the
+  **Bank** (3 storeys of stone, a giant order of six columns, "HOARDSWORTH BANK" on the entablature, the pediment and
+  its clock); Christmas light strings along the band and under the crown.
+- **New kit** (`assets/blender/tower.py`, all gates pass, uploaded): Facade_8x10 (+ _Body) 113529009145373,
+  Facade_Curtain 126557033004908, Cornice_8 103396754216844, FireEscape_8x10 123498752791133, Roof_WaterTank
+  119013245679077, Roof_Chimney 135688851662342, Roof_Antenna 140071074744392, Pediment_24 101064256180333, Clock_6
+  129403410104922, Ceiling_8x8 73725950733656, Truss_8 119550315330150, Railing_8 133295213985388; the town's window grid
+  `EH_FX_Windows` (UI Decal 74221995905275, `tools/ui/make_window_fx.py`).
+- **The town** (`Shared/Heist/TownPlan`, `Config.Backdrop.TOWN`): every neighbour a 4-8 storey block (a 12-stud ground
+  floor + 3-8 storeys of 9), its windows one Texture per face on a "Skin" part with a few Neon panes on its grid;
+  rooflines with setbacks, water tanks, chimneys and antennas; a second, taller row behind the back row and behind the
+  across-street row (streets with depth, undecorated: seen only over roofs); two landmark towers (11-14 storeys,
+  stepped crowns with a lit band, a spire) either side of Hoardsworth's tower in the sky. Every building's pieces are a
+  cut-away occluder (a block between the diorama and you fades whole). Still 0 lights.
+- **The warehouse garage** (`Heist/LobbyPlan.warehouse`, `Config.Lobby.WAREHOUSE`): over the 12-stud brick course a
+  band, a clerestory of window bays, a frieze to the roof at 28.6; steel `Truss_8` trusses every 11 studs; a roof deck
+  with three skylights (the aurora above); a walkable mezzanine over the front row of vans (deck, posts, rail and wall
+  guards collide; the stair is a wedge up the right wall); a 20 x 18 roll-up door; the stations' dressing (a laptop
+  desk, a wardrobe and mirror corner with a coat stand and the tree, a TV under the mezzanine, "THE CREW" sign, crates,
+  shelves) and the **anchors for the LOBBY track** in `Garage/Anchors` (invisible, non-colliding Parts; CFrame = the
+  spot, LookVector = the facing): `JobBoardSpot`, `LaptopSpot`, `WardrobeSpot`, `TVSpot`, `CrewSign`, `VanBay1..8`
+  (`Lobby.anchor(name)`). GarageSpawn, `spawnFor` and the bays' colliders are unchanged (bay 3 moved 1.5 studs and the
+  trophy shelf 1 stud for the wider door).
+- **Light, value contrast and the pink cast:** the WORLD 2.0 after-frames read washed out and pinkish. Recipe A keeps
+  its intent (night by hue) with a bluer, slightly darker fill and a stronger key: Brightness 1.5 → 1.6, Ambient
+  (136,124,150) → (118,122,152), OutdoorAmbient (174,160,186) → (150,160,194), Atmosphere (158,158,214) / (124,120,184)
+  → (148,160,208) / (112,122,178), ColorCorrection contrast 0.12 → 0.2, saturation 0.08 → 0.1, tint (238,242,255);
+  recipe C follows. All four project files and place_check.
+
+### 12.3 Measured
+
+**Renders** (`python3 tools/blender/level_shots.py --big`, R2 Blender with the same filmic proxy, 19.5:9; one Blender
+process per shot: Eevee crashes after a few Workbench mask passes in one process). First person from the eye (3.8 over
+the floor, FOV 70): the shop from the street (`fp_street`), up the facade (`fp_up`), the street corner (`fp_corner`),
+inside up at the ceiling (`fp_ceiling`) and round the room (`fp_inside`); the diorama and classic cameras at the spawn and
+mid-run, with the cut-away applied exactly as `CutMath` decides; a raised street view (`street_wide`); the garage from the
+spawn, up at the trusses, at the mezzanine, the stations, the diorama and the yard. Files: `docs/audit/levels/big/`,
+`grades.json`, the [contact sheet](levels/big/contact_sheet.png).
+
+| Frame | near-black % | dark % | median luma | value spread | RMS contrast | pink cast | warm % |
+|---|---|---|---|---|---|---|---|
+| [GA_diorama](levels/big/GA_diorama.png) | 0.0 | 1.5 | 0.26 | 0.67 | 0.249 | +0.011 | 29 |
+| [GA_fp_mezzanine](levels/big/GA_fp_mezzanine.png) | 0.0 | 1.2 | 0.26 | 0.24 | 0.133 | +0.036 | 29 |
+| [GA_fp_spawn](levels/big/GA_fp_spawn.png) | 0.0 | 2.3 | 0.23 | 0.66 | 0.226 | +0.012 | 44 |
+| [GA_fp_stations](levels/big/GA_fp_stations.png) | 0.0 | 3.9 | 0.21 | 0.63 | 0.233 | +0.005 | 60 |
+| [GA_fp_up](levels/big/GA_fp_up.png) | 0.0 | 0.1 | 0.21 | 0.29 | 0.128 | -0.001 | 30 |
+| [GA_fp_yard](levels/big/GA_fp_yard.png) | 1.7 | 5.5 | 0.31 | 0.58 | 0.208 | +0.071 | 38 |
+| [L1_classic](levels/big/L1_classic.png) | 0.0 | 2.5 | 0.47 | 0.62 | 0.233 | +0.028 | 55 |
+| [L1_diorama](levels/big/L1_diorama.png) | 0.0 | 1.0 | 0.53 | 0.64 | 0.240 | +0.030 | 52 |
+| [L1_diorama_mid](levels/big/L1_diorama_mid.png) | 0.0 | 9.7 | 0.15 | 0.51 | 0.188 | +0.006 | 36 |
+| [L1_fp_ceiling](levels/big/L1_fp_ceiling.png) | 0.0 | 0.1 | 0.59 | 0.55 | 0.198 | +0.021 | 55 |
+| [L1_fp_corner](levels/big/L1_fp_corner.png) | 1.0 | 5.8 | 0.35 | 0.50 | 0.180 | +0.058 | 50 |
+| [L1_fp_inside](levels/big/L1_fp_inside.png) | 0.1 | 5.3 | 0.35 | 0.58 | 0.238 | +0.014 | 59 |
+| [L1_fp_street](levels/big/L1_fp_street.png) | 0.0 | 3.8 | 0.43 | 0.58 | 0.213 | +0.044 | 57 |
+| [L1_fp_up](levels/big/L1_fp_up.png) | 1.3 | 6.3 | 0.31 | 0.50 | 0.175 | +0.047 | 59 |
+| [L1_street_wide](levels/big/L1_street_wide.png) | 0.0 | 0.6 | 0.36 | 0.43 | 0.177 | +0.056 | 60 |
+| [L5_classic](levels/big/L5_classic.png) | 0.0 | 2.3 | 0.50 | 0.57 | 0.208 | +0.090 | 44 |
+| [L5_diorama](levels/big/L5_diorama.png) | 0.0 | 0.7 | 0.56 | 0.63 | 0.228 | +0.082 | 37 |
+| [L5_diorama_mid](levels/big/L5_diorama_mid.png) | 0.0 | 5.2 | 0.18 | 0.55 | 0.214 | +0.057 | 9 |
+| [L5_fp_ceiling](levels/big/L5_fp_ceiling.png) | 0.0 | 0.0 | 0.53 | 0.53 | 0.199 | +0.044 | 29 |
+| [L5_fp_street](levels/big/L5_fp_street.png) | 0.0 | 3.6 | 0.45 | 0.62 | 0.216 | +0.118 | 41 |
+| [L5_fp_up](levels/big/L5_fp_up.png) | 1.9 | 8.4 | 0.41 | 0.54 | 0.191 | +0.093 | 51 |
+| [L6_classic](levels/big/L6_classic.png) | 0.0 | 3.3 | 0.57 | 0.67 | 0.249 | +0.020 | 30 |
+| [L6_diorama](levels/big/L6_diorama.png) | 0.0 | 1.3 | 0.58 | 0.66 | 0.243 | +0.024 | 32 |
+| [L6_diorama_mid](levels/big/L6_diorama_mid.png) | 0.0 | 2.6 | 0.28 | 0.65 | 0.256 | -0.020 | 22 |
+| [L6_fp_ceiling](levels/big/L6_fp_ceiling.png) | 0.0 | 0.0 | 0.61 | 0.43 | 0.165 | -0.019 | 23 |
+| [L6_fp_street](levels/big/L6_fp_street.png) | 0.1 | 7.9 | 0.58 | 0.67 | 0.251 | +0.032 | 16 |
+| [L6_fp_up](levels/big/L6_fp_up.png) | 1.0 | 7.7 | 0.35 | 0.54 | 0.223 | +0.029 | 24 |
+| [L6_street_wide](levels/big/L6_street_wide.png) | 0.0 | 1.3 | 0.59 | 0.45 | 0.168 | +0.033 | 10 |
+
+| Site / camera | WORLD 2.0 (spread / RMS / pink / near-black) | BIG (spread / RMS / pink / near-black) |
+|---|---|---|
+| L1_diorama | 0.62 / 0.225 / +0.060 / 0.0 % | 0.64 / 0.240 / +0.030 / 0.0 % |
+| L1_classic | 0.54 / 0.215 / +0.044 / 0.0 % | 0.62 / 0.233 / +0.028 / 0.0 % |
+| L1_diorama_mid | 0.54 / 0.213 / +0.052 / 0.0 % | 0.51 / 0.188 / +0.006 / 0.0 % |
+| L5_diorama | 0.62 / 0.227 / +0.094 / 0.0 % | 0.63 / 0.228 / +0.082 / 0.0 % |
+| L5_classic | 0.54 / 0.211 / +0.101 / 0.0 % | 0.57 / 0.208 / +0.090 / 0.0 % |
+| L5_diorama_mid | 0.57 / 0.226 / +0.061 / 0.0 % | 0.55 / 0.214 / +0.057 / 0.0 % |
+| L6_diorama | 0.66 / 0.251 / +0.054 / 0.0 % | 0.66 / 0.243 / +0.024 / 0.0 % |
+| L6_classic | 0.67 / 0.244 / +0.053 / 0.0 % | 0.67 / 0.249 / +0.020 / 0.0 % |
+| L6_diorama_mid | 0.67 / 0.271 / +0.001 / 0.0 % | 0.65 / 0.256 / -0.020 / 0.0 % |
+| GA_diorama | 0.64 / 0.240 / +0.056 / 0.0 % | 0.67 / 0.249 / +0.011 / 0.0 % |
+
+**The bar, honestly:**
+- **Near-black ≤ 3 %: met in every frame** (0.0 % in every diorama, classic and interior frame; 1.0-1.9 % in the
+  street frames that look up, all of it the sky's zenith in the proxy, not a building; the garage yard 1.7 %).
+- **Value contrast back, less pink:** against the WORLD 2.0 after-frames of the same sites and cameras, the value spread
+  holds or rises (L1 classic 0.54 → 0.62, garage diorama 0.64 → 0.67, L6 unchanged at 0.66-0.67) and the pink /
+  lavender cast halves (L1 diorama +0.060 → +0.030, L6 +0.054 → +0.024, garage +0.056 → +0.011). The Toy Shop stays
+  the pinkest site (+0.08-0.12): its candy street and raspberry store are pink by design. Mid-run dioramas lose a
+  little spread (L1 0.54 → 0.51): the dollhouse view shows more of the darker interior and less bright town.
+- **First person never sees sky indoors:** the engine look-up check passes on every launch level and two dailies (77-151
+  spots each), and every `fp_ceiling` / `fp_inside` frame shows the coffered ceiling with the lamps hanging from it.
+- **The cameras still see in:** the cut-away opens the shop at the L1 spawn (plate A visible in `L1_diorama`, engine-checked),
+  the dollhouse mid-run on every site, and the client_engine checks pass for the Line-up, the L5 intro and the 8 OF ME
+  pull-back.
+
+**Self-critique and scores (0-10, "huge, thought through, never black"):**
+- **L1-L4 / dailies, Corner Shop, 8:** from the street the shop is now the ground floor of a red-brick tenement with a fire
+  escape, lit flats with curtains, a cornice under snow and light strings, between 5-7 storey neighbours; inside, a warm
+  coffered ceiling with the lamps hanging from it. Down: every Corner Shop level is the same tenement (only the brick
+  colour varies by seed); the town's window Textures are flat next to the kit facade; the blade sign is small.
+- **L5, Toy Shop, 7.5:** the department store's big lit sign and the soldier on the roof read as a landmark; the street is
+  very pink (by theme) and the store's cream body against candy neighbours is busy.
+- **L6 / Bank dailies, 8.5:** the strongest silhouette: a stone temple front with a giant order, the bank's name and a
+  pediment over the street; the plaza across. Down: the column plinths read dark in the proxy; the clock is small from the
+  street.
+- **Garage, 8:** a real warehouse: trusses and skylights overhead, the clerestory, the mezzanine over the vans, the TV, the
+  crew sign, the big roll-up door to the snowy yard. Down: the clerestory panes are plain dark blue from inside; the
+  stations are dressing only until the LOBBY track builds them.
+- **Risks:** the cut-away's feel in Studio (fade speed, the dollhouse at the street spawn, the classic camera above a roof);
+  the filmic proxy is uncalibrated; the Texture tiling origin of the town's window grids vs their Neon panes (the grid is
+  sized in whole bays and storeys, so either origin lines up, unverified); tier 4's triangle estimate stays over budget
+  (PERF.md §9).
+
+**Engine (Saved v76, after merging main):** engine_smoke 170 ok / 0 (section 11: the BIG buildings on 8 sites, the
+warehouse checks), client_engine 56 / 0, clone_engine 0 failures, perf_engine 0 failures (section E), kit_engine 503 ok / 0.

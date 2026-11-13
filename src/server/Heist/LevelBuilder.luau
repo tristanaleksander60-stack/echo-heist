@@ -27,6 +27,7 @@ local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 local KitDresser = require(script.Parent:WaitForChild("KitDresser"))
 local KitPlan = require(script.Parent:WaitForChild("KitPlan"))
 local LevelDress = require(script.Parent:WaitForChild("LevelDress"))
+local Overhead = require(script.Parent:WaitForChild("Overhead"))
 
 local LIGHT = Config.Lighting
 local FONT = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
@@ -885,6 +886,17 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 		end
 	end
 	model:SetAttribute("Kit", built.kit)
+	-- BIG buildings (Config.Big): the ceiling, the upper storeys and the roof over the playable ground floor (visual
+	-- only; kit pieces when the level was dressed, plain Parts otherwise). A failure never costs the level.
+	do
+		local okBig, err = pcall(Overhead.build, level, origin, model, if built.kit then o.kit else nil, {
+			location = KitPlan.location(level, o.dressing == true, o.location),
+			dressing = o.dressing == true,
+		})
+		if not okBig then
+			warn("[LevelBuilder] the BIG building failed for " .. tostring(level.id) .. ": " .. tostring(err))
+		end
+	end
 	model.Parent = parent
 	return built
 end

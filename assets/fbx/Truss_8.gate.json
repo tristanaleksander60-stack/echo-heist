@@ -1,0 +1,103 @@
+{
+ "asset": "Truss_8",
+ "objects": [
+  {
+   "name": "Truss_8",
+   "class": "module",
+   "tris": 60,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.187,
+    0.7,
+    4.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.0937,
+     -0.35,
+     0.0
+    ],
+    "local_max": [
+     8.0937,
+     0.35,
+     4.0
+    ]
+   },
+   "swatches": [
+    "steel",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 46,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "a Warren roof truss segment for the warehouse garage; tiles along X",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 60,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "48f2b3f3343369e6bb59",
+ "fbx": {
+  "path": "assets/fbx/Truss_8.fbx",
+  "bytes": 20268,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Truss_8"
+  ],
+  "geometry_extents": [
+   [
+    0.7,
+    4.0,
+    8.187
+   ]
+  ]
+ },
+ "spec": "assets/blender/tower.py",
+ "notes": "Truss segment 8 x 0.7 x 4 (the warehouse garage's roof).",
+ "turntable": "docs/art/turntables/Truss_8.png",
+ "seconds": 84.0
+}
