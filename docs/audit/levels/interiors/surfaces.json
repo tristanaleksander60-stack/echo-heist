@@ -2210,40 +2210,24 @@
   }
  },
  "L5_fp_ceiling": {
-  "ceiling_wall": 0.39,
+  "ceiling_wall": 0.18,
   "loot_pop": null,
   "plate_pop": null,
-  "signal_over_decor": 0.086,
   "surfaces": {
    "ceiling": {
-    "median_luma": 0.136,
-    "median_value": 0.243,
-    "share": 24.4
-   },
-   "decor": {
-    "median_luma": 0.758,
-    "median_value": 0.82,
-    "share": 0.2
-   },
-   "lamp": {
-    "median_luma": 0.896,
-    "median_value": 0.996,
-    "share": 3.5
+    "median_luma": 0.117,
+    "median_value": 0.22,
+    "share": 23.2
    },
    "other": {
-    "median_luma": 0.442,
-    "median_value": 0.6,
-    "share": 64.2
-   },
-   "signal": {
-    "median_luma": 0.718,
-    "median_value": 0.906,
-    "share": 3.3
+    "median_luma": 0.205,
+    "median_value": 0.51,
+    "share": 74.0
    },
    "wall": {
-    "median_luma": 0.352,
-    "median_value": 0.612,
-    "share": 4.3
+    "median_luma": 0.655,
+    "median_value": 0.725,
+    "share": 2.9
    }
   }
  },
@@ -2292,13 +2276,46 @@
   }
  },
  "L5_fp_left": {
-  "loot_pop": null,
+  "ceiling_wall": 0.59,
+  "loot_over_decor": 0.135,
+  "loot_pop": 0.31,
   "plate_pop": null,
+  "signal_over_decor": 0.188,
   "surfaces": {
+   "ceiling": {
+    "median_luma": 0.109,
+    "median_value": 0.216,
+    "share": 8.9
+   },
+   "decor": {
+    "median_luma": 0.383,
+    "median_value": 0.651,
+    "share": 0.6
+   },
+   "floor": {
+    "median_luma": 0.451,
+    "median_value": 0.557,
+    "share": 13.1
+   },
+   "lamp": {
+    "median_luma": 0.701,
+    "median_value": 0.824,
+    "share": 1.1
+   },
    "other": {
-    "median_luma": 0.564,
-    "median_value": 0.733,
-    "share": 100.0
+    "median_luma": 0.231,
+    "median_value": 0.529,
+    "share": 44.8
+   },
+   "signal": {
+    "median_luma": 0.519,
+    "median_value": 0.839,
+    "share": 5.2
+   },
+   "wall": {
+    "median_luma": 0.184,
+    "median_value": 0.396,
+    "share": 26.5
    }
   }
  },

@@ -4342,48 +4342,41 @@
  },
  "L5_fp_ceiling": {
   "brightest_1pct_owner": {
-   "lamp": 22.6,
-   "other": 77.4
+   "other": 100
   },
-  "brightest_group": "lamp",
-  "dark_share": 1.8,
+  "brightest_group": null,
+  "dark_share": 2.3,
   "frame": "L5_fp_ceiling.png",
   "glow_share": 0.0,
-  "groups": {
-   "lamp": {
-    "p95_luma": 0.899,
-    "share": 0.28,
-    "warm": 0.0
-   }
-  },
-  "median_luma": 0.297,
+  "groups": {},
+  "median_luma": 0.203,
   "near_black": 0.0,
-  "pink_cast": 0.004,
-  "rms_contrast": 0.233,
+  "pink_cast": -0.02,
+  "rms_contrast": 0.153,
   "sources": {
    "building": {
-    "dark": 1.7,
-    "median_luma": 0.137,
+    "dark": 2.3,
+    "median_luma": 0.118,
     "near_black": 0.0,
-    "p95_luma": 0.309,
+    "p95_luma": 0.349,
     "share": 24.7
    },
    "level": {
     "dark": 0.0,
-    "median_luma": 0.475,
+    "median_luma": 0.205,
     "near_black": 0.0,
-    "p95_luma": 0.862,
+    "p95_luma": 0.691,
     "share": 75.3
    }
   },
   "standard_view": {
    "dark_share": 0.0,
-   "median_luma": 0.281,
+   "median_luma": 0.208,
    "near_black": 0.0,
-   "warm_share": 46.7
+   "warm_share": 8.6
   },
-  "value_spread": 0.629,
-  "warm_share": 46.4
+  "value_spread": 0.402,
+  "warm_share": 9.8
  },
  "L5_fp_front": {
   "brightest_1pct_owner": {
@@ -4444,34 +4437,60 @@
  },
  "L5_fp_left": {
   "brightest_1pct_owner": {
-   "other": 100
+   "cash": 17.9,
+   "lamp": 11.5,
+   "other": 70.6,
+   "rug": 0.0
   },
-  "brightest_group": null,
-  "dark_share": 2.7,
+  "brightest_group": "lamp",
+  "dark_share": 5.1,
   "frame": "L5_fp_left.png",
-  "glow_share": 0.0,
-  "groups": {},
-  "median_luma": 0.564,
-  "near_black": 0.0,
-  "pink_cast": 0.005,
-  "rms_contrast": 0.201,
+  "glow_share": 0.1,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.797,
+    "share": 4.92,
+    "warm": 13.2
+   },
+   "lamp": {
+    "p95_luma": 0.884,
+    "share": 0.12,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.78,
+    "share": 0.52,
+    "warm": 64.5
+   }
+  },
+  "median_luma": 0.233,
+  "near_black": 0.02,
+  "pink_cast": -0.005,
+  "rms_contrast": 0.213,
   "sources": {
-   "level": {
-    "dark": 2.7,
-    "median_luma": 0.564,
+   "building": {
+    "dark": 1.8,
+    "median_luma": 0.112,
     "near_black": 0.0,
-    "p95_luma": 0.755,
-    "share": 100.0
+    "p95_luma": 0.418,
+    "share": 9.7
+   },
+   "level": {
+    "dark": 3.3,
+    "median_luma": 0.258,
+    "near_black": 0.02,
+    "p95_luma": 0.737,
+    "share": 90.3
    }
   },
   "standard_view": {
    "dark_share": 0.0,
-   "median_luma": 0.464,
+   "median_luma": 0.229,
    "near_black": 0.0,
-   "warm_share": 44.5
+   "warm_share": 10.8
   },
-  "value_spread": 0.537,
-  "warm_share": 31.5
+  "value_spread": 0.565,
+  "warm_share": 11.4
  },
  "L5_fp_loot": {
   "brightest_1pct_owner": {
