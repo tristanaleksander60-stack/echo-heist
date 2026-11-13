@@ -36,7 +36,7 @@ What is NOT reproduced: Roblox's exact moon direction, ambient occlusion and ton
 solidify shell; the HUD. The Roblox default camera (no zoom is set in src/client: 12.5 studs, FOV 70) with Poppercam
 approximated by a ray test against the greybox colliders. These are audit renders, not captures.
 
-Writes docs/audit/levels/<L>_<id>_{1_spawn,1b_spawn_clones,2_objective,3_plan,3b_plan_solved,4_thumb,5_street}.png
+Writes docs/audit/levels/<L>_<id>_{1_spawn,1b_spawn_clones,1c_spawn_fp,2_objective,3_plan,3b_plan_solved,4_thumb,5_street}.png
 (1, 3 and 5: run 1, nothing held; 1b, 2 and 3b: the solution's clones on their spots, their plates held) and
 contact_sheet.png. --shots 5_street renders only the named shots; --sheet-only rebuilds the contact sheet.
 --golden renders the GOLDEN_FRAMES G1 / G2 approximations with the W4 backdrop (tools/blender/backdrop_shots.py) into
@@ -66,6 +66,7 @@ VISION = (30.0, 45.0)        # Config.Sim GUARD_VISION_RANGE, GUARD_VISION_HALF_
 EYE = 1.5                    # Config.Sim GUARD_EYE_HEIGHT above the root
 DEFAULT_ZOOM, FOV = 12.5, 70.0   # Roblox default camera (src/client sets no zoom; MASTERPLAN 3.5 wants 16)
 BADGE_MAX = 40.0             # glyph badge hidden beyond 40 studs (MASTERPLAN 6.5 #5)
+FP_EYE = 3.8                 # first person: the Rookie's eyes above the floor (CameraDirector "fp", FpMath.eye)
 
 # Where the placeholder golden solutions (tests/sim/Solutions.luau) leave each clone: oldest first.
 SOLUTION = {
@@ -669,6 +670,16 @@ def tp_camera(level, doors, px, pz, yaw, zoom=DEFAULT_ZOOM, pitch=15.0):
     return rb(*cam), rb(*focus), used
 
 
+def fp_camera(level, px, pz, yaw):
+    """First person (CameraDirector "fp") at a spawn: the Rookie's eyes (FP_EYE), looking along `yaw` at the run
+    start's pitch (Config.Heist.CAMERA.FP.START_PITCH). Returns Blender (pos, target)."""
+    fy = level["floorY"]
+    p = math.radians(level["camera"]["FP"]["START_PITCH"])
+    eye = (px, fy + FP_EYE, pz)
+    look = (px - math.sin(yaw) * math.cos(p) * 10, fy + FP_EYE - math.sin(p) * 10, pz - math.cos(yaw) * math.cos(p) * 10)
+    return rb(*eye), rb(*look)
+
+
 def goal_of(level):
     tops = [it for it in level["loot"] if it["top"]]
     return tops[0] if tops else max(level["loot"], key=lambda it: it["value"])
@@ -790,6 +801,9 @@ def shoot(level, W, Hh, samples, only=None):
             pos, tgt = plan_camera(level)
             shots.append(("3b_plan_solved", pos, tgt, 30.0, None, (sp["x"], sp["z"], sp["yaw"])))
         else:
+            # 1c: first person at spawn 1 (the default camera): the Rookie's eyes, the run-start pitch, your body hidden
+            pos, tgt = fp_camera(level, sp["x"], sp["z"], sp["yaw"])
+            shots.append(("1c_spawn_fp", pos, tgt, level["camera"]["FP"]["FOV"], None, (sp["x"], 900.0, sp["yaw"])))
             # 3: top-down plan (B3: FOV 30), run 1 (nothing held, lasers on); 3b: with the solution's clones
             pos, tgt = plan_camera(level)
             shots.append(("3_plan", pos, tgt, 30.0, None, (sp["x"], sp["z"], sp["yaw"])))
