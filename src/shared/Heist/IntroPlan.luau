@@ -97,13 +97,30 @@ IntroPlan.STAGE = table.freeze({
 	vacuum = { at = { 23, 130, -188 }, yaw = 180, scale = 1.4 },
 	nozzle = { 55.2, 152.4, -154.4 },
 	aim = { -0.1506, -0.6524, 0.7428 },
-	lever = { at = { -12.6, 130, -184.6 }, yaw = 180 }, -- at his right hand
+	-- the lever at his right hand: its handle's knob (knob, the handle upright) is where his gold-ringed glove grips
+	-- it in the "laugh" pose (unit-checked against the rig, tests/unit/HeistIntro.spec.luau)
+	lever = { at = { -11.5, 130, -184.4 }, yaw = 180 },
+	knob = { -11.5, 135.3, -183.65 },
 	hoardsworth = { at = { -9, 130, -185 }, yaw = 180 }, -- faces +Z: the town
+	-- the garage: x 112..148, z 34..58, the roll-up door open at z 58 (toward +Z, the town and the aurora)
 	garage = { centre = { 130, 0, 46 }, size = { 36, 14, 24 } },
 	van = { at = { 130, 0, 42 }, yaw = 90 }, -- the kit van's cab is local -X: yaw 90 turns it to +Z
 	headlights = { { 127.7, 2.6, 49.6 }, { 132.3, 2.6, 49.6 } },
 	rookie = { at = { 130, 0, 53.5 }, yaw = 180 },
 	clones = { { 123, 0, 51 }, { 137, 0, 51 }, { 117.5, 0, 47 }, { 142.5, 0, 47 } },
+	-- The garage's motivated light (Config.Intro.GARAGE has the numbers; Heist/Cinematic and the key frames build
+	-- the same rig). Warm practicals inside, cool aurora light from outside: the headlights back-light the Rookie
+	-- (warm rim) and throw their beams out of the door; the work lamp hangs over the van's roof; the cage lamp under
+	-- the door header tops the Rookie; the aurora pours in through the open door (cool key on the Rookie and the
+	-- crew) and through three high windows in the back wall (their shafts fall over the van; one aims a cool rim at
+	-- the Rookie's cap and shoulder from behind); warm string lights run along both side walls.
+	workLamp = { 130, 12.2, 42 },
+	doorLamp = { 130, 10.8, 56.6 },
+	doorGlow = { centre = { 130, 6, 58.4 }, size = { 34, 12 } }, -- faces -Z (into the garage)
+	windows = { { 119, 10.4, 34.05 }, { 130, 10.4, 34.05 }, { 141, 10.4, 34.05 } }, -- centres on the back wall
+	windowSize = { 7, 3 },
+	rim = { from = { 119, 10.4, 35.5 }, to = { 130, 4.4, 53.5 } },
+	strings = { { 112.6, 10.6, 35 }, { 112.6, 10.6, 57 }, { 147.4, 10.6, 35 }, { 147.4, 10.6, 57 } }, -- 2 runs
 	-- Where the flying presents lift off (rooftops and doorsteps; a deterministic spread).
 	launch = { { -55, 6, -20 }, { -33, 12, 22 }, { 33, 8, -20 }, { 55, 10, 22 }, { -77, 9, 20 }, { 77, 7, -22 } },
 })
@@ -136,13 +153,14 @@ IntroPlan.MOODS = table.freeze({
 		exposure = -0.1,
 		tint = { 222, 230, 255 },
 	},
-	-- the dark garage: headlights only
+	-- the garage at night: a cool aurora-blue fill (never black), the warm practicals carry the key
+	-- (STAGE.workLamp, headlights, doorLamp; Config.Intro.GARAGE)
 	garage = {
-		ambient = { 26, 26, 46 },
-		outdoor = { 40, 40, 70 },
-		brightness = 0.6,
-		exposure = 0.0,
-		tint = { 245, 238, 255 },
+		ambient = { 54, 52, 92 },
+		outdoor = { 78, 82, 136 },
+		brightness = 1.0,
+		exposure = 0.15,
+		tint = { 248, 242, 255 },
 	},
 })
 
@@ -162,25 +180,38 @@ IntroPlan.POSES = table.freeze({
 		LeftShoulder = { -10, 0, 22 },
 		LeftElbow = { 30, 0, 0 },
 	},
-	lever = { -- right hand high on the lever, leaning in
-		Neck = { -6, 10, 0 },
-		Waist = { -6, 8, 0 },
-		RightShoulder = { 150, 0, -6 },
-		RightElbow = { 18, 0, 0 },
-		LeftShoulder = { -8, 0, 14 },
-	},
-	pull = { -- the lever yanked down: hand at the hip
-		Neck = { -4, 6, 0 },
-		Waist = { -10, 4, 0 },
-		RightShoulder = { 40, 0, -10 },
-		RightElbow = { 60, 0, 0 },
-		LeftShoulder = { -8, 0, 16 },
-	},
 	point = { -- arm flung out at the town: "ALL of it"
 		Neck = { 8, -14, 0 },
 		Waist = { 6, -10, 0 },
 		RightShoulder = { 95, -20, 0 },
 		LeftShoulder = { -30, 0, 22 },
+		LeftElbow = { 50, 0, 0 },
+	},
+	-- the villain close-up: head thrown back in a smug laugh, the left hand on his belly, the right (gold ring) already
+	-- on the lever's knob (STAGE.knob: unit-checked); laughB is the chuckle's other beat
+	laugh = {
+		Neck = { 22, -8, 0 },
+		Waist = { 5, 6, 0 },
+		RightShoulder = { 64, -6, 44 },
+		RightElbow = { 8, 0, 0 },
+		LeftShoulder = { 18, 0, 26 },
+		LeftElbow = { 78, 0, 0 },
+	},
+	laughB = {
+		Neck = { 10, -4, 4 },
+		Waist = { 2, 4, 0 },
+		RightShoulder = { 66, -6, 45 },
+		RightElbow = { 6, 0, 0 },
+		LeftShoulder = { 22, 0, 26 },
+		LeftElbow = { 72, 0, 0 },
+	},
+	-- the yank: leaning into it, the hand down at the hip with the handle
+	yank = {
+		Neck = { -10, 8, 0 },
+		Waist = { -14, 8, 0 },
+		RightShoulder = { 34, 0, 38 },
+		RightElbow = { 34, 0, 0 },
+		LeftShoulder = { 10, 0, 20 },
 		LeftElbow = { 50, 0, 0 },
 	},
 	-- the Rookie (stand-in or CharacterKit rig with the same joint names)
@@ -201,13 +232,13 @@ IntroPlan.POSES = table.freeze({
 IntroPlan.SHOTS = table.freeze({
 	{
 		id = "eve",
-		seconds = 6.0,
+		seconds = 4.8,
 		move = "crane",
 		enter = "fade",
 		ease = "inOut",
 		mood = "town",
 		caption = "EVE",
-		captionAt = 0.9,
+		captionAt = 0.7,
 		keys = {
 			{ t = 0, pos = { 26, 112, 168 }, look = { 0, 178, -110 }, fov = 56 },
 			{ t = 0.55, pos = { 16, 50, 112 }, look = { 0, 82, -150 }, fov = 52 },
@@ -223,13 +254,13 @@ IntroPlan.SHOTS = table.freeze({
 	},
 	{
 		id = "hoard",
-		seconds = 6.0,
+		seconds = 4.2,
 		move = "low",
 		enter = "cut",
 		ease = "out",
 		mood = "tower",
 		caption = "HOARD",
-		captionAt = 0.6,
+		captionAt = 0.5,
 		keys = {
 			{ t = 0, pos = { 7.0, 130.9, -178.5 }, look = { -9.6, 137.0, -185 }, fov = 50 },
 			{ t = 1, pos = { 3.5, 131.3, -180.5 }, look = { -9.4, 137.3, -185 }, fov = 40 },
@@ -237,20 +268,40 @@ IntroPlan.SHOTS = table.freeze({
 		events = {
 			{ at = 0, kind = "spawn", id = "hoardsworth" },
 			{ at = 0, kind = "cue", cue = "IntroHoardSting" },
-			{ at = 1.3, kind = "fx", id = "glint" },
-			{ at = 1.3, kind = "cue", cue = "IntroMonocle" },
-			{ at = 3.2, kind = "cue", cue = "IntroLever" },
+		},
+	},
+	-- The villain close-up (REVIEW_STEAM_PLUS #7): a medium close-up on his laughing face, the monocle glints, then
+	-- the camera slides down his arm to the gold-ringed glove on the lever's knob (the ring flashes) and he yanks it.
+	{
+		id = "laugh",
+		seconds = 3.4,
+		move = "close",
+		enter = "cut",
+		ease = "inOut",
+		mood = "tower",
+		caption = "MINE",
+		captionAt = 0.35,
+		keys = {
+			{ t = 0, pos = { -8.0, 136.3, -180.1 }, look = { -9.1, 136.85, -184.8 }, fov = 34 },
+			{ t = 0.5, pos = { -9.6, 135.9, -178.9 }, look = { -10.2, 136.15, -184.3 }, fov = 38 },
+			{ t = 1, pos = { -11.0, 135.0, -179.9 }, look = { -11.45, 135.2, -183.7 }, fov = 34 },
+		},
+		events = {
+			{ at = 0.45, kind = "fx", id = "glint" },
+			{ at = 0.45, kind = "cue", cue = "IntroMonocle" },
+			{ at = 2.2, kind = "fx", id = "ring" },
+			{ at = 2.75, kind = "cue", cue = "IntroLever" },
 		},
 	},
 	{
 		id = "every",
-		seconds = 6.5,
+		seconds = 5.4,
 		move = "whip",
 		enter = "whip",
 		ease = "inOut",
 		mood = "tower",
 		caption = "EVERY",
-		captionAt = 1.3,
+		captionAt = 1.1,
 		keys = {
 			{ t = 0, pos = { 69.7, 140.6, -142.2 }, look = { 55.2, 152.4, -154.4 }, fov = 55 },
 			{ t = 0.5, pos = { 72, 121, -110 }, look = { 50, 146, -160 }, fov = 50 },
@@ -262,59 +313,62 @@ IntroPlan.SHOTS = table.freeze({
 			{ at = 0.35, kind = "fx", id = "flash" },
 			{ at = 0.35, kind = "fx", id = "shake", arg = 1.0 },
 			{ at = 0.35, kind = "cue", cue = "IntroVacuumOn" },
-			{ at = 0.7, kind = "cue", cue = "IntroSuction" },
-			{ at = 0.8, kind = "spawn", id = "presents" },
-			{ at = 3.4, kind = "fx", id = "shake", arg = 0.5 },
+			{ at = 0.6, kind = "cue", cue = "IntroSuction" },
+			{ at = 0.7, kind = "spawn", id = "presents" },
+			{ at = 2.9, kind = "fx", id = "shake", arg = 0.5 },
 		},
 	},
 	{
 		id = "gone",
-		seconds = 4.0,
+		seconds = 3.4,
 		move = "push",
 		enter = "cut",
 		ease = "out",
 		mood = "gone",
 		caption = "GONE",
-		captionAt = 1.7,
+		captionAt = 1.4,
 		keys = {
 			{ t = 0, pos = { -36, 168, -250 }, look = { 12, 44, 30 }, fov = 52 },
 			{ t = 1, pos = { -31, 164, -241 }, look = { 12, 38, 30 }, fov = 48 },
 		},
 		events = {
-			{ at = 0.5, kind = "fx", id = "windowsOut" },
-			{ at = 1.5, kind = "cue", cue = "IntroSuction", stop = true },
-			{ at = 1.5, kind = "cue", cue = "IntroGlobeThunk" },
-			{ at = 1.5, kind = "fx", id = "vacuum", stop = true },
-			{ at = 1.6, kind = "despawn", id = "presents" },
+			{ at = 0.4, kind = "fx", id = "windowsOut" },
+			{ at = 1.2, kind = "cue", cue = "IntroSuction", stop = true },
+			{ at = 1.2, kind = "cue", cue = "IntroGlobeThunk" },
+			{ at = 1.2, kind = "fx", id = "vacuum", stop = true },
+			{ at = 1.3, kind = "despawn", id = "presents" },
 		},
 	},
+	-- The garage is lit from the first frame by the aurora (the door, the high windows) and the string lights; the
+	-- headlights, the work lamp and the cage lamp snap on with IntroHeadlights. The push-in ends a little right of
+	-- his axis, so the headlight beams fan out past him instead of pointing into the lens.
 	{
 		id = "one",
-		seconds = 7.0,
+		seconds = 6.0,
 		move = "follow",
 		enter = "cut",
 		ease = "inOut",
 		mood = "garage",
 		caption = "ONE",
-		captionAt = 4.3,
+		captionAt = 3.7,
 		keys = {
 			{ t = 0, pos = { 112, 72, 46 }, look = { 101, 63, 9 }, fov = 50 },
 			{ t = 0.42, pos = { 128, 26, 80 }, look = { 124, 22, 46 }, fov = 46 },
-			{ t = 0.62, pos = { 130, 2.2, 75 }, look = { 130, 4.2, 50 }, fov = 42 },
-			{ t = 1, pos = { 130, 2.4, 65 }, look = { 130, 3.3, 53.5 }, fov = 38 },
+			{ t = 0.62, pos = { 131.5, 2.4, 75 }, look = { 130, 4.2, 50 }, fov = 42 },
+			{ t = 1, pos = { 132.4, 2.5, 64.6 }, look = { 130.2, 3.4, 53.5 }, fov = 38 },
 		},
 		events = {
 			{ at = 0, kind = "despawn", id = "hoardsworth" },
 			{ at = 0, kind = "spawn", id = "letter" },
 			{ at = 0, kind = "spawn", id = "garage" },
 			{ at = 0.1, kind = "cue", cue = "IntroLetter" },
-			{ at = 3.9, kind = "fx", id = "headlights" },
-			{ at = 3.9, kind = "cue", cue = "IntroHeadlights" },
+			{ at = 3.3, kind = "fx", id = "headlights" },
+			{ at = 3.3, kind = "cue", cue = "IntroHeadlights" },
 		},
 	},
 	{
 		id = "more",
-		seconds = 4.5,
+		seconds = 4.0,
 		move = "pull",
 		enter = "cut",
 		ease = "out",
@@ -322,20 +376,20 @@ IntroPlan.SHOTS = table.freeze({
 		caption = "MORE",
 		captionAt = 0.2,
 		keys = {
-			{ t = 0, pos = { 130, 2.6, 62 }, look = { 130, 3.6, 50 }, fov = 40 },
-			{ t = 1, pos = { 130, 5.6, 80 }, look = { 130, 3.4, 47 }, fov = 50 },
+			{ t = 0, pos = { 131.2, 2.7, 62 }, look = { 130, 3.6, 50 }, fov = 40 },
+			{ t = 1, pos = { 131, 6.2, 79 }, look = { 130, 4.2, 46 }, fov = 52 },
 		},
 		events = {
 			{ at = 0, kind = "despawn", id = "letter" },
-			{ at = 1.0, kind = "fx", id = "clone", arg = 1 },
-			{ at = 1.0, kind = "cue", cue = "IntroTapePrint" },
-			{ at = 1.0, kind = "cue", cue = "CloneChime", step = 0 },
-			{ at = 1.3, kind = "fx", id = "clone", arg = 2 },
-			{ at = 1.3, kind = "cue", cue = "CloneChime", step = 1 },
-			{ at = 1.6, kind = "fx", id = "clone", arg = 3 },
-			{ at = 1.6, kind = "cue", cue = "CloneChime", step = 2 },
-			{ at = 1.9, kind = "fx", id = "clone", arg = 4 },
-			{ at = 1.9, kind = "cue", cue = "CloneChime", step = 3 },
+			{ at = 0.9, kind = "fx", id = "clone", arg = 1 },
+			{ at = 0.9, kind = "cue", cue = "IntroTapePrint" },
+			{ at = 0.9, kind = "cue", cue = "CloneChime", step = 0 },
+			{ at = 1.2, kind = "fx", id = "clone", arg = 2 },
+			{ at = 1.2, kind = "cue", cue = "CloneChime", step = 1 },
+			{ at = 1.5, kind = "fx", id = "clone", arg = 3 },
+			{ at = 1.5, kind = "cue", cue = "CloneChime", step = 2 },
+			{ at = 1.8, kind = "fx", id = "clone", arg = 4 },
+			{ at = 1.8, kind = "cue", cue = "CloneChime", step = 3 },
 		},
 	},
 	{
@@ -349,8 +403,8 @@ IntroPlan.SHOTS = table.freeze({
 		captionAt = 0,
 		wordmark = true,
 		keys = {
-			{ t = 0, pos = { 130, 5.6, 80 }, look = { 130, 3.4, 47 }, fov = 50 },
-			{ t = 1, pos = { 130, 5.7, 81 }, look = { 130, 3.4, 47 }, fov = 51 },
+			{ t = 0, pos = { 131, 6.2, 79 }, look = { 130, 4.2, 46 }, fov = 52 },
+			{ t = 1, pos = { 131, 6.3, 80 }, look = { 130, 4.2, 46 }, fov = 53 },
 		},
 		events = {
 			{ at = 0, kind = "fx", id = "flash" },
@@ -360,53 +414,71 @@ IntroPlan.SHOTS = table.freeze({
 	},
 } :: { Shot })
 
+---------------------------------------------------------------------------
+-- Timing
+---------------------------------------------------------------------------
+local starts: { number } = {}
+local startById: { [string]: number } = {}
+do
+	local acc = 0
+	for i, shot in IntroPlan.SHOTS do
+		starts[i] = acc
+		startById[shot.id] = acc
+		acc += shot.seconds
+	end
+end
+
+-- Absolute seconds of `s` seconds into shot `id` (the tracks below are authored per shot, so retiming a shot
+-- never strands a pose, the letter or the swirl in the wrong shot).
+local function at(id: string, s: number): number
+	return (startById[id] or error("IntroPlan: no shot " .. id)) + s
+end
+IntroPlan.at = at
+
 -- Pose tracks (absolute seconds): between two keys the pose blends with a sine ease.
 IntroPlan.TRACKS = table.freeze({
 	hoardsworth = {
 		{ 0, "gloat" },
-		{ 8.7, "gloat" },
-		{ 9.2, "lever" },
-		{ 9.9, "lever" },
-		{ 10.2, "pull" },
-		{ 11.0, "point" },
+		{ at("hoard", 2.0), "gloat" },
+		{ at("hoard", 2.6), "point" }, -- "WANTS IT ALL": the arm flung at the town
+		{ at("laugh", -0.05), "point" },
+		{ at("laugh", 0), "laugh" }, -- the cut to the close-up: head back, hand on the knob
+		{ at("laugh", 0.45), "laughB" },
+		{ at("laugh", 0.9), "laugh" },
+		{ at("laugh", 1.35), "laughB" },
+		{ at("laugh", 1.8), "laugh" },
+		{ at("laugh", 2.65), "laugh" },
+		{ at("laugh", 3.0), "yank" },
 	},
 	rookie = {
 		{ 0, "stand" },
-		{ 26.4, "stand" },
-		{ 26.9, "catch" },
-		{ 27.6, "catch" },
-		{ 28.0, "capTug" },
-		{ 28.8, "capTug" },
-		{ 29.2, "grin" },
+		{ at("one", 3.4), "stand" },
+		{ at("one", 3.85), "catch" },
+		{ at("one", 4.45), "catch" },
+		{ at("one", 4.8), "capTug" },
+		{ at("one", 5.4), "capTug" },
+		{ at("one", 5.75), "grin" },
 	},
 } :: { [string]: { { any } } })
 
+-- When the lever goes down: the handle swings `degrees` about its hinge over `swing` s from `at`.
+IntroPlan.LEVER = table.freeze({ at = at("laugh", 2.75), swing = 0.25, degrees = -70 })
+
 -- The kid's letter (absolute seconds): drifting from over the town into the Rookie's left hand.
 IntroPlan.LETTER = table.freeze({
-	{ 22.5, { 100, 64, 8 } },
-	{ 24.2, { 117, 34, 36 } },
-	{ 25.4, { 126, 13, 55 } },
-	{ 26.4, { 130.8, 5.2, 56.5 } },
-	{ 27.1, { 131.6, 2.2, 54.2 } }, -- caught at chest height (the Rookie is 4.6 tall), clear of his face
+	{ at("one", 0), { 100, 64, 8 } },
+	{ at("one", 1.45), { 117, 34, 36 } },
+	{ at("one", 2.5), { 126, 13, 55 } },
+	{ at("one", 3.35), { 130.8, 5.2, 56.5 } },
+	{ at("one", 3.95), { 131.6, 2.2, 54.2 } }, -- caught at chest height (the Rookie is 4.6 tall), clear of his face
 })
 IntroPlan.LETTER_FLUTTER = { amp = 2.2, hz = 0.9, tilt = 0.55 }
 IntroPlan.LETTER_SCALE = 0.6 -- of the kit envelope (2.4 x 1.6): a kid's letter in a 4.6-stud Rookie's hand
 
 -- Flying presents: launch window and flight (absolute seconds).
-IntroPlan.SWIRL = table.freeze({ start = 12.8, finish = 20.0, flight = 2.4, turns = 1.6, radius = 7 })
-IntroPlan.GLOBE = table.freeze({ start = 13.4, full = 20.1, min = 0.4 }) -- he has been hoarding a while
-
----------------------------------------------------------------------------
--- Timing
----------------------------------------------------------------------------
-local starts: { number } = {}
-do
-	local acc = 0
-	for i, shot in IntroPlan.SHOTS do
-		starts[i] = acc
-		acc += shot.seconds
-	end
-end
+IntroPlan.SWIRL =
+	table.freeze({ start = at("every", 0.65), finish = at("gone", 0.85), flight = 2.2, turns = 1.6, radius = 7 })
+IntroPlan.GLOBE = table.freeze({ start = at("every", 1.1), full = at("gone", 0.95), min = 0.4 }) -- he has been hoarding a while
 
 function IntroPlan.total(): number
 	local last = #IntroPlan.SHOTS
@@ -664,6 +736,18 @@ function IntroPlan.clonePrint(k: number, t: number): number
 		end
 	end
 	return 0
+end
+
+-- The lever handle's swing at t (degrees about its hinge: 0 upright, LEVER.degrees once yanked).
+function IntroPlan.leverAngle(t: number): number
+	local L = IntroPlan.LEVER
+	return L.degrees * IntroPlan.ease("inOut", (t - L.at) / L.swing)
+end
+
+-- The Rookie's face at t (and his clones'): "smug" once the grin lands, else "idle" (Rookie EH_Face moods).
+function IntroPlan.rookieFace(t: number): string
+	local a, b, w = IntroPlan.pose("rookie", t)
+	return if (b == "grin" and w > 0.5) or a == "grin" then "smug" else "idle"
 end
 
 ---------------------------------------------------------------------------

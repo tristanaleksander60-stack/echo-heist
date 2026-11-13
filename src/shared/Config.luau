@@ -3300,7 +3300,7 @@ Config.Intro = {
 	-- while preparing) or this long (a client that never answers never traps anyone).
 	SERVER_HOLD_SECONDS = 48,
 	-- Studio without data (offline) plays it only when staged (EH_Scenario = "INTRO"): every Play would
-	-- otherwise open on 36 s of cinematic.
+	-- otherwise open on 34 s of cinematic.
 	STUDIO_AUTOPLAY = false,
 	-- Caption cards (big, short, sound-off readable: the MASTERPLAN §9.2 clip rules).
 	CAPTION = {
@@ -3350,6 +3350,36 @@ Config.Intro = {
 		COLOURS = { "#FFF1D8", "#C9C2FF" }, -- warm white into a pale violet
 		SPIN = 2.6, -- rad/s (x Config.Aurora.REDUCED_MOTION under reduced motion)
 	},
+	-- The villain close-up's gold ring on Hoardsworth's right glove: a signet on the back of the knuckles (a Neon-gold
+	-- Cylinder, its axis along the hand's +X = the back of a right hand, built by Heist/Cinematic as a rig decoration),
+	-- flashing when he grips the lever (the "ring" event). SIZE studs (thickness, diameter, diameter); OFFSET from the
+	-- hand's centre in the hand's own space.
+	RING = {
+		SIZE = { 0.08, 0.3, 0.3 },
+		OFFSET = { 0.22, -0.08, 0 },
+		COLOUR = "#FFC24A",
+		GLINT = { SIZE = 0.8, COUNT = 2 },
+	},
+	MONOCLE_GLINT = { SIZE = 0.9, COUNT = 2 }, -- studs: the close-up frames his face about 5 studs away
+	-- The garage's motivated light (IntroPlan.STAGE: workLamp, doorLamp, doorGlow, windows, rim, strings). Warm
+	-- practicals inside, the aurora's cool light from outside (REVIEW_STEAM_PLUS #7: shots 6-8 were near-black).
+	-- Brightness / range / angle as the Light instances take them; colours hex.
+	GARAGE = {
+		HEADLIGHT = { BRIGHTNESS = 7, RANGE = 44, ANGLE = 52, COLOUR = "#FFF1D8" },
+		-- the headlight beams (additive Beams from each lens out of the door, dropping to the floor): per layer
+		-- { width at the lens, width at the end, transparency at the lens }, fading to clear at the end
+		BEAM = { LENGTH = 24, DROP = 2.0, LAYERS = { { 0.8, 4.5, 0.62 }, { 2.0, 11, 0.86 } }, TIERS = 3 },
+		WORK_LAMP = { BRIGHTNESS = 3.2, RANGE = 22, ANGLE = 80, COLOUR = "#FFC890", CONE_TRANSPARENCY = 0.88 },
+		DOOR_LAMP = { BRIGHTNESS = 2.2, RANGE = 14, ANGLE = 70, COLOUR = "#FFD2A0" },
+		-- the aurora through the open door (a SurfaceLight facing in) and the high windows (Neon panes, shafts)
+		DOOR_GLOW = { BRIGHTNESS = 1.6, RANGE = 30, ANGLE = 85, COLOUR = "#7FE3D6" },
+		WINDOW_COLOURS = { "#5BE0C2", "#8A7BFF" }, -- the pane's bottom, top (the aurora's green into violet)
+		SHAFT = { LENGTH = 22, WIDTH = { 5, 9 }, TRANSPARENCY = 0.9, TIERS = 2 },
+		RIM = { BRIGHTNESS = 3.0, RANGE = 30, ANGLE = 26, COLOUR = "#9DB4FF" },
+		STRING = { SPACING = 2.2, SAG = 0.5, COLOUR = "#FFD9A0", TIERS = 3 }, -- bulbs along both side walls
+		SHADOWS_TIER = 2, -- shadows from the headlights and the work lamp up to this tier
+	},
+	TITLE_VEIL = 0.45, -- the ink veil under the wordmark (transparency): the lit garage and the crew show through
 	SNOW_RATE = 60, -- flakes/s in the stage snow (x0.5 under reduced motion)
 	SNOW_MAX = 240, -- alive at most (rate x lifetime is reported to Heist/Particles as steady)
 	HANDOFF_SECONDS = 0.35, -- the wordmark rests this long before the title card takes over
