@@ -56,9 +56,10 @@ _Marketing kit, file 5 of 5. Written 2026-11-12 in simple English for the owner.
 ### Wed Nov 18
 
 - [ ] **D9 kid testers:** recruit 5+ kids aged 10-14 for **three waves** (Sat-Sun **Nov 21-22**, **Nov 28-29**, **Dec 5-6**) through your network or a Danish school or club. Who: owner. How: send parents the note in **Appendix A** (EN + DA); collect a yes for each child before the wave.
+- [ ] **Brief the icon illustrator** (ICON_THUMBNAILS.md §3.5, D7's freelance artist or a separate one): send §3.5, the three icon candidates and `docs/art/rookie_sheet.png`; ask for 2 sketches by Mon Nov 23.
 - [ ] **Creator research** starts (CREATORS.md §3, ~2 h, Nov 18-20). Who: owner. Output: the private `creators.csv` with 20 micro + 10 mid scored, plus backups.
-- [ ] **Capture session C0** (CLIPS.md §7, 20-30 min): footage for the first two posts.
-- [ ] **One-time capture prep** (CLIPS.md §3.1): the Rookie outfit on the capture account, Studio API access on the test experience, OBS scenes.
+- [ ] **One-time capture prep** (CAPTURE.md §0, revised 2026-11-13 for first person): Studio API access on the test experience, the 1920 × 1080 device, OBS, the two hide-UI commands, the cameraman client. No avatar outfit to buy: the game makes you the Rookie.
+- [ ] **Capture session A** (CAPTURE.md §1, ~50 min): the golden frames G1-G3, the whole intro (`EH_Scenario = INTRO`), the first clone walking out of you (TikTok #1, trailer shot 1), the door-in-your-face betrayal (TikTok #2), Crew View (trailer 9), the thumbnail TH5.
 
 ---
 
@@ -77,7 +78,7 @@ _Marketing kit, file 5 of 5. Written 2026-11-12 in simple English for the owner.
 
 - [ ] **D10 music:** library music in-game + platform sounds for clips (default), or commission 2 tracks only if they arrive by Dec 9.
 - [ ] **Check the live experience exists** (created Mon Nov 16) and is still private.
-- [ ] **Capture session C1** (CLIPS.md §7), including the source for the **pitch clip**.
+- [ ] **Capture session B** (CAPTURE.md §2): WRONG ONE in first person + the cameraman take for **TH2**, RUN 1 vs RUN 4, the zap, including the source for the **pitch clip** and trailer shot 10.
 
 ### Sat Nov 21 - Sun Nov 22 (kid wave 1)
 
@@ -107,7 +108,7 @@ _Marketing kit, file 5 of 5. Written 2026-11-12 in simple English for the owner.
 ### Fri Nov 27
 
 - [ ] **D2: buy the deposit Robux.** Who: owner. How: Creator Hub → the experience → **Kids & Select / Audience Reach** → read the live **expedited review** amount (50,000 or 100,000 R$). Buy that many Robux on roblox.com on the account that owns the game (or fund the group). **Don't spend them.** If the Nov 30 gate fails, you keep the Robux for the Dec 10 launch.
-- [ ] **Icon draft** (ICON_THUMBNAILS.md §3) and **T3 / T5 captures** (T5 needs the Christmas dressing; if it isn't visible in Studio yet, shoot T5 on Dec 1). Who: owner + Claude's capture notes (ICON_THUMBNAILS.md §4.0 is the full capture calendar).
+- [ ] **Icon draft** (ICON_THUMBNAILS.md §3; the human-finished icon comes from the illustrator, briefed by Wed Nov 18 with the Blender candidates `docs/marketing/thumbs/IC1-IC3`, §3.5) and **T3 / T5 captures** (targets: `thumbs/TH2_wrong-one.png`, `thumbs/TH3_steal-back-xmas.png`; steps: CAPTURE.md §2 and §5) (T5 needs the Christmas dressing; if it isn't visible in Studio yet, shoot T5 on Dec 1). Who: owner + Claude's capture notes (ICON_THUMBNAILS.md §4.0 is the full capture calendar).
 - [ ] **Capture session C3** (the first Clone Party footage), including the **T1 and T2 stills** (same Clone Party set-up; ICON_THUMBNAILS.md T1, T2).
 - [ ] **Try T4 with 4 test accounts** (a 4-client local test in Studio, all in one party) **[UNVERIFIED that local test clients can form one party]**. If it works, shoot T4 by **Sun Nov 29**; if not, T4 waits for the Dec 4-5 friend session and sits out the first Plays test.
 
@@ -282,7 +283,7 @@ Er det i orden? Svar bare ja eller nej. Tak!
 ## Appendix B: permission for friends in clips and thumbnails (format 7, T4)
 
 ```text
-I agree that the developer of "Heist Yourself" may post videos and pictures of the game in which my Roblox avatar and/or my voice appear, on TikTok, YouTube, Instagram and the game's Roblox page. My name and username will never be shown. I can ask at any time for a post to be taken down, and no new posts with me will be made after that.
+I agree that the developer of "Heist Yourself" may post videos and pictures of the game in which my in-game character (the Rookie in the outfit I picked) and/or my voice appear, on TikTok, YouTube, Instagram and the game's Roblox page. My name and username will never be shown. I can ask at any time for a post to be taken down, and no new posts with me will be made after that.
 
 Name: ________   Date: ________   Signature / "yes" by message: ________
 If under 18, a parent or guardian: ________
