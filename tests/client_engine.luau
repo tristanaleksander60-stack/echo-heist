@@ -1961,7 +1961,7 @@ local okHands, handsErr = pcall(function(): string
 		local f = entry[2]
 		local R, L = ViewmodelMath.hands(VM, f)
 		local fR, fL = ViewmodelMath.fingers(VM, f)
-		local parts: { BasePart } = {}
+		local posed: { BasePart } = {}
 		for _, side in { { fp.R, R, fR, "R" }, { fp.L, L, fL, "L" } } do
 			local el = ViewmodelMath.elbow(VM, side[4], side[2])
 			local elbow = Vector3.new(el[1], el[2], el[3]) * s
@@ -1972,10 +1972,10 @@ local okHands, handsErr = pcall(function(): string
 				p.Size = Vector3.new(b.X * fac[1], b.Y * fac[2], b.Z * fac[3])
 				p.CFrame = cam * CFrame.new(table.unpack(c))
 				assert((p.Size - Vector3.new(b.X * fac[1], b.Y * fac[2], b.Z * fac[3])).Magnitude < 1e-3, "size kept")
-				table.insert(parts, p)
+				table.insert(posed, p)
 			end
 		end
-		for _, p in parts do
+		for _, p in posed do
 			local h = p.Size / 2
 			for _, sx in { -1, 1 } do
 				for _, sy in { -1, 1 } do
