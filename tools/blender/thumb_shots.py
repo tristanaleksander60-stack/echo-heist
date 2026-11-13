@@ -488,7 +488,7 @@ def sheet():
             crop = im.crop(((W - cw) // 2, 0, (W + cw) // 2, Hh)).resize((152, 270), Image.LANCZOS)
             parts.append(crop)
         tiles.append((name, parts))
-    Wt = 1700
+    Wt = 1840
     rowh = 330
     sheet = Image.new("RGB", (Wt, 50 + rowh * len(tiles)), (20, 21, 34))
     d = ImageDraw.Draw(sheet)
@@ -503,6 +503,22 @@ def sheet():
             x += im.size[0] + 16
     sheet.save(os.path.join(THUMBS, "contact_sheet.png"), optimize=True)
     print(json.dumps(grades, indent=1))
+    compress()
+
+
+def compress():
+    """After grading (on the 24-bit renders): every candidate to 256 colours + dither, like the intro key frames and
+    the old concepts, so a 1080p frame is ~0.5 MB in git instead of ~1.9 MB."""
+    from PIL import Image
+    for name, (_fn, _kind, _size, out) in IMAGES.items():
+        p = os.path.join(THUMBS if out == "thumbs" else TRAILER, f"{name}.png")
+        if not os.path.isfile(p):
+            continue
+        im = Image.open(p)
+        if im.mode == "P":
+            continue
+        im.convert("RGB").quantize(colors=256, method=Image.Quantize.MEDIANCUT,
+                                   dither=Image.Dither.FLOYDSTEINBERG).save(p, optimize=True)
 
 
 def trailer_sheet():
@@ -783,9 +799,9 @@ def ic2(W, Hh, samples, name, out_dir):
     _icon(W, samples, name, out_dir, "Bobble")
 
 
-@image("IC3_icon_globe", "icon", (512, 512), "thumbs")
+@image("IC3_icon_aurora", "icon", (512, 512), "thumbs")
 def ic3(W, Hh, samples, name, out_dir):
-    """Christmas: the Snow Globe Vault full of the town's presents as the warm halo behind his head."""
+    """Christmas night: low in front, looking up: Hoardsworth Tower with its vacuum and the aurora over his head."""
     _icon(W, samples, name, out_dir, "Flat", globe=True)
 
 

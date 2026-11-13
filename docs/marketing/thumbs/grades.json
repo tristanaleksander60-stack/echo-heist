@@ -1,0 +1,406 @@
+{
+ "IC1_icon_flatcap": {
+  "frame": {
+   "dark_share": 3.3,
+   "glow_share": 1.8,
+   "median_luma": 0.386,
+   "near_black": 0.66,
+   "value_spread": 0.47,
+   "warm_share": 6.1
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.231,
+     "pop": 0.282,
+     "share": 14.2
+    },
+    "hero": {
+     "grey_pop": -0.147,
+     "pop": -0.341,
+     "share": 31.5
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.229,
+     "pop": 0.273,
+     "share": 13.9
+    },
+    "hero": {
+     "grey_pop": -0.161,
+     "pop": -0.337,
+     "share": 31.6
+    }
+   }
+  }
+ },
+ "IC2_icon_bobble": {
+  "frame": {
+   "dark_share": 2.1,
+   "glow_share": 1.5,
+   "median_luma": 0.405,
+   "near_black": 0.6,
+   "value_spread": 0.527,
+   "warm_share": 8.1
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.243,
+     "pop": 0.192,
+     "share": 15.1
+    },
+    "hero": {
+     "grey_pop": -0.056,
+     "pop": -0.176,
+     "share": 34.8
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.242,
+     "pop": 0.2,
+     "share": 14.9
+    },
+    "hero": {
+     "grey_pop": -0.063,
+     "pop": -0.18,
+     "share": 34.9
+    }
+   }
+  }
+ },
+ "IC3_icon_aurora": {
+  "frame": {
+   "dark_share": 5.6,
+   "glow_share": 0.4,
+   "median_luma": 0.407,
+   "near_black": 1.59,
+   "value_spread": 0.478,
+   "warm_share": 5.0
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.198,
+     "pop": 0.106,
+     "share": 9.2
+    },
+    "globe": {
+     "grey_pop": 0.525,
+     "pop": 0.557,
+     "share": 0.3
+    },
+    "hero": {
+     "grey_pop": -0.215,
+     "pop": -0.302,
+     "share": 26.0
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.211,
+     "pop": 0.094,
+     "share": 9.2
+    },
+    "globe": {
+     "grey_pop": 0.534,
+     "pop": 0.52,
+     "share": 0.3
+    },
+    "hero": {
+     "grey_pop": -0.202,
+     "pop": -0.302,
+     "share": 26.0
+    }
+   }
+  }
+ },
+ "TH1_8-of-me": {
+  "frame": {
+   "dark_share": 3.0,
+   "glow_share": 4.3,
+   "median_luma": 0.422,
+   "near_black": 0.57,
+   "value_spread": 0.577,
+   "warm_share": 3.6
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.165,
+     "pop": 0.239,
+     "share": 8.8
+    },
+    "globe": {
+     "grey_pop": 0.608,
+     "pop": 0.614,
+     "share": 0.2
+    },
+    "hero": {
+     "grey_pop": -0.123,
+     "pop": -0.357,
+     "share": 2.8
+    },
+    "loot": {
+     "grey_pop": -0.102,
+     "pop": -0.249,
+     "share": 1.0
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.125,
+     "pop": 0.173,
+     "share": 8.8
+    },
+    "globe": {
+     "grey_pop": 0.473,
+     "pop": 0.614,
+     "share": 0.2
+    },
+    "hero": {
+     "grey_pop": -0.096,
+     "pop": -0.318,
+     "share": 2.9
+    },
+    "loot": {
+     "grey_pop": -0.106,
+     "pop": -0.194,
+     "share": 1.0
+    }
+   }
+  }
+ },
+ "TH2_wrong-one": {
+  "frame": {
+   "dark_share": 5.4,
+   "glow_share": 2.8,
+   "median_luma": 0.376,
+   "near_black": 0.0,
+   "value_spread": 0.617,
+   "warm_share": 41.2
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.396,
+     "pop": 0.451,
+     "share": 5.9
+    },
+    "hero": {
+     "grey_pop": 0.01,
+     "pop": 0.094,
+     "share": 2.0
+    },
+    "loot": {
+     "grey_pop": 0.128,
+     "pop": 0.102,
+     "share": 0.7
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.351,
+     "pop": 0.437,
+     "share": 5.9
+    },
+    "hero": {
+     "grey_pop": 0.027,
+     "pop": 0.112,
+     "share": 2.0
+    },
+    "loot": {
+     "grey_pop": 0.164,
+     "pop": 0.147,
+     "share": 0.6
+    }
+   }
+  }
+ },
+ "TH3_steal-back-xmas": {
+  "frame": {
+   "dark_share": 5.2,
+   "glow_share": 4.8,
+   "median_luma": 0.406,
+   "near_black": 0.39,
+   "value_spread": 0.63,
+   "warm_share": 4.6
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.291,
+     "pop": 0.384,
+     "share": 5.0
+    },
+    "globe": {
+     "grey_pop": 0.628,
+     "pop": 0.62,
+     "share": 0.1
+    },
+    "hero": {
+     "grey_pop": -0.042,
+     "pop": -0.061,
+     "share": 4.7
+    },
+    "loot": {
+     "grey_pop": -0.191,
+     "pop": -0.416,
+     "share": 4.3
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.246,
+     "pop": 0.38,
+     "share": 4.9
+    },
+    "globe": {
+     "grey_pop": 0.646,
+     "pop": 0.653,
+     "share": 0.1
+    },
+    "hero": {
+     "grey_pop": -0.019,
+     "pop": -0.043,
+     "share": 4.6
+    },
+    "loot": {
+     "grey_pop": -0.182,
+     "pop": -0.365,
+     "share": 4.3
+    }
+   }
+  }
+ },
+ "TH4_16-robbers": {
+  "frame": {
+   "dark_share": 4.5,
+   "glow_share": 5.1,
+   "median_luma": 0.388,
+   "near_black": 0.6,
+   "value_spread": 0.585,
+   "warm_share": 2.7
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.225,
+     "pop": 0.329,
+     "share": 6.6
+    },
+    "hero": {
+     "grey_pop": -0.156,
+     "pop": -0.392,
+     "share": 15.1
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.194,
+     "pop": 0.292,
+     "share": 6.4
+    },
+    "hero": {
+     "grey_pop": -0.146,
+     "pop": -0.376,
+     "share": 15.2
+    }
+   }
+  }
+ },
+ "TH5_thats-me": {
+  "frame": {
+   "dark_share": 14.9,
+   "glow_share": 1.9,
+   "median_luma": 0.475,
+   "near_black": 1.78,
+   "value_spread": 0.646,
+   "warm_share": 22.8
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.238,
+     "pop": 0.31,
+     "share": 5.1
+    },
+    "loot": {
+     "grey_pop": -0.037,
+     "pop": 0.033,
+     "share": 1.8
+    },
+    "van": {
+     "grey_pop": -0.017,
+     "pop": 0.027,
+     "share": 0.0
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.227,
+     "pop": 0.298,
+     "share": 5.0
+    },
+    "loot": {
+     "grey_pop": -0.04,
+     "pop": 0.024,
+     "share": 1.9
+    },
+    "van": {
+     "grey_pop": -0.015,
+     "pop": 0.027,
+     "share": 0.0
+    }
+   }
+  }
+ },
+ "TH6_steal-it-back": {
+  "frame": {
+   "dark_share": 3.5,
+   "glow_share": 3.9,
+   "median_luma": 0.438,
+   "near_black": 0.75,
+   "value_spread": 0.591,
+   "warm_share": 1.7
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.275,
+     "pop": 0.373,
+     "share": 4.2
+    },
+    "globe": {
+     "grey_pop": 0.548,
+     "pop": 0.475,
+     "share": 0.3
+    },
+    "hero": {
+     "grey_pop": -0.269,
+     "pop": -0.494,
+     "share": 2.3
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.245,
+     "pop": 0.337,
+     "share": 4.2
+    },
+    "globe": {
+     "grey_pop": 0.497,
+     "pop": 0.427,
+     "share": 0.3
+    },
+    "hero": {
+     "grey_pop": -0.254,
+     "pop": -0.467,
+     "share": 2.3
+    }
+   }
+  }
+ }
+}

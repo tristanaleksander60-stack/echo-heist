@@ -4,6 +4,52 @@ _Marketing kit, file 4 of 5. Written 2026-11-12. Sources: MASTERPLAN §2.2 (bran
 
 **Every final image is a real in-game capture** (MASTERPLAN §9.4) from the capture setup in CLIPS.md §3, graded lightly, with text added on top. No paint-overs that change shapes, no characters or loot that the game doesn't have. Alt text and any text a player reads say **flashlight**, not "torch" (most players are American; "torch" stays fine in internal notes and the palette name Torch Amber).
 
+## 0. After the first-person pivot (2026-11-13): read this first
+
+### 0.1 What changed for the store art
+
+- **You are the Rookie, not your Roblox avatar.** The game's own character (`Config.Rookie`: flat cap, long scarf, Breton stripes, knit gloves, smug side-eye; outfits from the wardrobe), and **clones are copies of your Rookie**: the outfit and face kept, the crew pieces in your crew colour, the crew-hue fill and outline, a numbered pill. "That's me" is carried by the outfit, the colour and the pill (PLAN_FIRST_PERSON §1). Every brief below that says "avatar" or "catalog" means this now (§2 "Characters", §3.1).
+- **First person is the default.** Your gloves at the bottom of the frame are a new brand asset: they say "this is you" with no text (candidate **TH5**). Third-person stills need Settings → Camera → CLASSIC or the cameraman client (CAPTURE.md §0).
+- **Crew View** (hold Q / LB / CREW) is the first-person answer to "where are my clones?": a trailer beat, not a thumbnail.
+- **The story exists:** Sir Hoardsworth, his tower with the giant H, the Snow Globe Vault full of the town's presents, the northern lights. Story / event art only; gameplay thumbnails stay inside a heist.
+- **No Santa hat for the Rookie** in the kit (§3.1 "Christmas": request `Rookie_Cap_Santa`).
+- The hook line **"◀ ME, 20 SEC AGO"** still works unchanged (CLIPS.md §1.2): the clone is still "me", now visibly in my outfit.
+
+### 0.2 The 2026-11-13 candidates (Blender, from the real kit; concepts and stand-ins, never uploads)
+
+Rendered by `python3 tools/blender/thumb_shots.py --only <name>` (one image per command), graded by `--sheet` into `thumbs/grades.json` and `thumbs/contact_sheet.png` (each candidate full size, at **150 px and 64 px** (icons square; thumbnails 150 and 64 px tall), 64 px at 3x, 64 px greyscale, and the central 9:16 crop a vertical clip keeps). Every image carries "CONCEPT RENDER, NOT A CAPTURE" in its metadata corner. The real kit: the Rookie (outfits, faces), clones drawn as EchoView draws them, Gus with his Santa hat and cone, the kit loot (cash bag, presents), the van, levels L1 / L2 / L4 rebuilt by `level_shots`, and the story town with Hoardsworth Tower, the Snow Globe Vault and the game's aurora (AuroraPlan).
+
+![contact sheet](thumbs/contact_sheet.png)
+
+| Candidate | Brief | Stage | Capturable? | 64 px read (grey pop, `grades.json`) | 150 px read | Score | Honest note |
+|---|---|---|---|---|---|---|---|
+| [`TH1_8-of-me`](thumbs/TH1_8-of-me.png) | T1 8 OF ME | story town, tower + aurora | the Line-up version (CAPTURE.md C1) | clones +0.13 (just under 0.15), hero a dark silhouette (-0.10), cash bag -0.11 | clones +0.17 | **7.0** | The swarm and the text read at once; the hero is a dark shape against the snow, not a face, and three clones hide behind him. The real Line-up on the level street is the capture |
+| [`TH2_wrong-one`](thumbs/TH2_wrong-one.png) | T3 WRONG ONE! | L4 Night Clerk back room (level_shots) | **yes** (CAPTURE.md B3) | clone +0.35, bag +0.16, hero +0.03 | clone +0.40 | **7.5** | The best gameplay joke: Gus in his Santa hat, the "?", the clone in his light. The sneaking Rookie only reads through his gold bag at 64 px; the mop bucket in the foreground is clutter (move the camera half a stud) |
+| [`TH3_steal-back-xmas`](thumbs/TH3_steal-back-xmas.png) | T5 STEAL BACK XMAS | story town | no (key art); the DV04 capture brief stays | clones +0.25, hero -0.02, presents -0.18 | clones +0.29 | **6.5** | The face is clear and the presents say Christmas, but the hero merges with the street at 64 px, the Snow Globe is cropped by the text, and 3 words on 2 lines eat the top third |
+| [`TH4_16-robbers`](thumbs/TH4_16-robbers.png) | T4 16 ROBBERS | story town | yes (4 clients, CAPTURE.md §4) | clones +0.19, four players dark (-0.15) | clones +0.23 | **7.5** | Four colours, four outfits, 16 bodies: the friends promise reads at 150 px. The Ghost White crew clips to white (as the old concepts warned); the front row is a line, not a hero |
+| [`TH5_thats-me`](thumbs/TH5_thats-me.png) | new: the first-person hook | L1 Back Room street, first person | **yes** (CAPTURE.md A6) | clone +0.23, bag -0.04 | clone +0.24 | **7.0** | The only one that shows the pivot (your gloves, the reticle) and the twist in one look. The gloves are the kit stand-ins posed by hand (blocky), the bag is dull at 64 px, the pill "1" is small |
+| [`TH6_steal-it-back`](thumbs/TH6_steal-it-back.png) | new: story key art (events) | story town | no (key art) | tower / globe +0.50, clones +0.25, hero -0.25 | +0.55 | **6.0** | A mood piece: the tower under the aurora is the strongest shape, but the crew are three backs at the bottom and the Snow Globe itself sits behind the vacuum. For an E2 event tile, not the Home pool |
+| [`IC1_icon_flatcap`](thumbs/IC1_icon_flatcap.png) | icon, evergreen | story town street | key art → illustrator | hero -0.16, copies +0.23 | -0.15 / +0.23 | **6.0** | Face and cap read at 64 px; the copies crowd the left edge and the second hides behind the first; the background is cool and flat (no warm halo) |
+| [`IC2_icon_bobble`](thumbs/IC2_icon_bobble.png) | icon, winter | story town street | key art → illustrator | hero -0.06 (fails 0.15), copies +0.24 | -0.06 | **5.5** | The blue Bobble Hat sinks into the blue night: proof that the cap needs a warm halo or a warm colour |
+| [`IC3_icon_aurora`](thumbs/IC3_icon_aurora.png) | icon, Christmas night | story town, low angle | key art → illustrator | hero -0.20, copies +0.21, tower +0.53 | -0.22 / +0.20 | **6.5** | The strongest at 64 px: a dark head against the bright aurora, copies to the right. The vacuum's mouth beside his head is noise; the Snow Globe ended up behind the gantry (hence the rename from "globe") |
+
+Trailer key frames (TRAILER.md): [`TR04_first-clone`](trailer/TR04_first-clone.png) **6.5** (the hook reads; the print band itself is left out because a still of it looked like a hat brim), [`TR07_crew-view`](trailer/TR07_crew-view.png) **6.0** (from above the clones are mostly cap tops; the plates' lit cables do the explaining), [`TR09_van-drive`](trailer/TR09_van-drive.png) **7.0** (headlights, the town, the tower and the aurora in one frame).
+
+Scores are honest self-scores on the §7 rubric (0-10, upload bar 8.5): **none of these passes the upload bar, and none is meant to**; they set the direction for the captures and the illustrator. The numbers in the "64 px read" column come from `grades.json` (the hero's / the promise's value pop over its surround at 64 px, in greyscale; ≥ 0.15 reads).
+
+### 0.3 Capture or key art (proposal for the owner: open question 6)
+
+- **Capturable in a heist (keep the "real capture" rule):** TH1 (the Clone Party Line-up), TH2 (L4, CAPTURE.md B3), TH4 (4 clients, CAPTURE.md §4), TH5 (L1 first person, CAPTURE.md A6), T5 via DV04 (CAPTURE.md §5).
+- **Key art** (the story town exists only inside the intro): TH3, TH6 and the icons. **Proposal:** allow the **icon** (human-finished, §3.5) and **one** story thumbnail for the events (E1 / E2) as in-engine key art: the game's own meshes, no shape changes, no element the game doesn't have, labelled as key art in our files. Gameplay thumbnails in the Home pool stay real captures.
+
+### 0.4 Recommendation for Dec 3
+
+- **Home pool: T5 + T3 as planned**, captured from the TH2 (WRONG ONE) and TH3 / DV04 (STEAL BACK XMAS) targets.
+- **Plays test (Dec 3-6): add TH5 "THAT'S ME?!"** as a new creative: it is the only one that shows the first-person game and the core twist in one look, and it is cheap to capture (CAPTURE.md A6). If it wins the ad test, it becomes the third Home thumbnail once DAU allows (§6).
+- **Icon:** the illustrator's version of **IC1** (evergreen) with the **IC3** treatment (the aurora and the tower behind him, a dark head on a bright sky: the best 64 px read) for December, unless `Rookie_Cap_Santa` ships.
+
+---
+
 ---
 
 ## 1. Rules for every image
@@ -91,7 +137,7 @@ Make this a guide layer in the image editor (and, once the owner kit has it, a t
 | The twist | **2 cyan copies** (not 3: at 64 px a third becomes noise) of the same head, up-left and a little smaller (they stand behind), the in-game clone look (the Rookie under the crew-hue fill + outline) with the age ramp. Since the pivot the copies keep the face and the cap, so the read is "the same guy, glowing" rather than "ghosts"; offsets of ~19 % and ~36 % of the width keep both readable (the 2026-11-12 concept notes; at 8 % they hide behind his head) |
 | Background | Ink Indigo field, a soft Plum Slate radial behind the head, the **vault dial ring** (in-game Neon, Warm Marble `#D8C8A8` glow) as a halo partly behind the head |
 | Accent | One Heist Gold glint: the loot he holds at shoulder height (every loot item carries the gold sparkle shape, STYLE_BIBLE §1), with the sparkle near the eye line on the right. If no loot can be in his hand in the capture, leave the glint out: never paint one in |
-| Christmas (Dec 3 - Jan 4) | **Revised 2026-11-13: there is no catalog avatar any more, and the Rookie has no Santa hat** (the cap slot is Flat / Beanie / Bobble / Trapper; `Hat_Santa` is a clone cosmetic of the pre-Rookie rig, **[UNVERIFIED]** whether it still dresses Rookie clones). Options, in order: (1) **request a `Rookie_Cap_Santa` cap piece** (art track: Ribbon Burgundy with a snow trim, the Bobble's attach point; the trim carries the 64 px read, Ribbon Burgundy alone is only 0.14 luma above Ink Indigo) and a Christmas outfit unlock; (2) the illustrator draws the Santa cap on the human-finished icon (§3.5) **only if (1) ships**, or the icon shows something the game doesn't have; (3) fallback: the Christmas icon uses the **Snow Globe Vault halo** (`IC3`) and keeps the flat cap |
+| Christmas (Dec 3 - Jan 4) | **Revised 2026-11-13: there is no catalog avatar any more, and the Rookie has no Santa hat** (the cap slot is Flat / Beanie / Bobble / Trapper; `Hat_Santa` is a clone cosmetic of the pre-Rookie rig, **[UNVERIFIED]** whether it still dresses Rookie clones). Options, in order: (1) **request a `Rookie_Cap_Santa` cap piece** (art track: Ribbon Burgundy with a snow trim, the Bobble's attach point; the trim carries the 64 px read, Ribbon Burgundy alone is only 0.14 luma above Ink Indigo) and a Christmas outfit unlock; (2) the illustrator draws the Santa cap on the human-finished icon (§3.5) **only if (1) ships**, or the icon shows something the game doesn't have; (3) fallback: the Christmas icon uses the **night-sky treatment** of `IC3` (the aurora and Hoardsworth Tower over his head; the Snow Globe glow if the illustrator can place it clear of the head) and keeps the flat cap |
 | Evergreen (from Tue Jan 5) | Same capture without the hat (shoot both versions in the same session) |
 | Text | None (vault: text at icon size is noise; one icon per locale, so text-free works for Danish too) |
 
@@ -127,20 +173,20 @@ Make this a guide layer in the image editor (and, once the owner kit has it, a t
 
 ### 3.5 Illustrator brief: the human-finished icon (new 2026-11-13)
 
-MASTERPLAN §2.2 wants the mascot **human-finished** (an AI provenance log for any moodboard use). The Blender candidates `thumbs/IC1_icon_flatcap.png`, `IC2_icon_bobble.png`, `IC3_icon_globe.png` are **stand-ins and references for this brief, never the upload**. Send the illustrator this section, the three candidates, `docs/art/rookie_sheet.png` (the Rookie's outfits, faces and four crew colours), `docs/art/turntables/Rookie*.png` and `docs/art/intro/shot_6.png` / `shot_7.png` (the Rookie and his clones lit).
+MASTERPLAN §2.2 wants the mascot **human-finished** (an AI provenance log for any moodboard use). The Blender candidates `thumbs/IC1_icon_flatcap.png`, `IC2_icon_bobble.png`, `IC3_icon_aurora.png` are **stand-ins and references for this brief, never the upload**. Send the illustrator this section, the three candidates, `docs/art/rookie_sheet.png` (the Rookie's outfits, faces and four crew colours), `docs/art/turntables/Rookie*.png` and `docs/art/intro/shot_6.png` / `shot_7.png` (the Rookie and his clones lit).
 
 | Item | Brief |
 |---|---|
 | Deliverable | A **1024 × 1024** icon (PNG, layered source: PSD / Krita / Procreate), plus a **Christmas variant** (same art, the seasonal change only). Rights assigned in writing (MASTERPLAN §1.3: original, commissioned). No AI-generated pixels in the deliverable |
 | Subject | **The Rookie's head and shoulders** exactly as the game models him (the kit is the model sheet: big head, flat cap, long scarf, Breton stripes, smug side-eye with one brow cocked and the crooked smirk). Eyes ~40 % from the top, turned 3/4, eyes to the viewer. Head + shoulders 60-80 % of the frame |
 | The twist | **Two copies of him**, up and to the left, smaller (behind), in the **clone look**: the same Rookie under a flat Clone Cyan `#3DE8FF` glow with a bright cyan outline; the older (further) one dimmer and drifting toward violet (the age ramp). They keep his face and cap (that is the game since the pivot). Not three: at 64 px a third is noise |
-| Background | Ink Indigo `#1C1F3B` night with a soft warm halo behind the head: the **Snow Globe Vault's glow** (IC3) or a street lamp (IC1/IC2); a hint of the aurora's green-teal in the top corner at most (STYLE_BIBLE §16: never cyan, it must not compete with the copies) |
+| Background | Ink Indigo `#1C1F3B` night with a soft warm halo behind the head: the **aurora and Hoardsworth Tower** over him (IC3), the Snow Globe Vault's glow, or a street lamp (IC1/IC2); a hint of the aurora's green-teal in the top corner at most (STYLE_BIBLE §16: never cyan, it must not compete with the copies) |
 | Accent | One Heist Gold `#FFC21F` glint only if he holds loot (a cash bag at the shoulder); else none |
-| Christmas variant | Only what the game will really have on Dec 3: if the art track ships a `Rookie_Cap_Santa` (§3.1 "Christmas"), the Santa cap on him and the copies; if not, the Snow Globe halo with snow falling, and the flat cap stays |
+| Christmas variant | Only what the game will really have on Dec 3: if the art track ships a `Rookie_Cap_Santa` (§3.1 "Christmas"), the Santa cap on him and the copies; if not, the IC3 night sky (aurora, the tower, the Snow Globe if it sits clear of the head) with snow falling, and the flat cap stays |
 | Style | The game's chunky low-poly toy look, flat-shaded planes, bold silhouette, no outlines on the hero except where the game draws them (the copies' outline). Readable in **greyscale at 64 px**: hero face, copies and background are three separate values (§3.2) |
 | Never | A mask, a weapon, money piles or "$$$", Robux icons, text, arrows, emoji, other games' characters or looks, a Roblox avatar, Gus or Hoardsworth (they are for thumbnails and events) |
 | Process | 2 rough sketches (Mon Nov 23) → owner picks one → colour draft at 64 / 150 px on a phone (Thu Nov 26) → final by **Fri Nov 27** (the §3.4 slot) → owner sign-off Mon Nov 30 → upload Wed Dec 2 |
-| What the candidates teach (from the grades, §0.2) | The face carries the icon; the copies must sit clear of his cap (in IC1/IC2 they crowd the left edge); a warm halo directly behind the head is what separates the dark cap from the night at 64 px |
+| What the candidates teach (from the grades, §0.2) | The face carries the icon at 64 px in all three; a **bright field behind the head** (IC3's aurora: grey pop 0.20) is what separates the dark cap from the night, while a blue cap on blue night fails (IC2: 0.06); the copies must sit clear of his cap and of the frame edge (in IC1/IC2 they crowd the left edge and the second hides); keep props (IC3's vacuum) away from the head |
 
 ---
 
@@ -424,5 +470,5 @@ Rules: keep a control in every round; one variable per pair; 7-14 days per round
 2. ~~The Rookie's face: which catalog face?~~ Resolved by the pivot: the game's own smug face (`Rookie_Face_Smug`); the illustrator draws from it (§3.5).
 3. ~~Sir Hoardsworth: will he exist?~~ He does (the story intro). Story and event art only (§2 "Characters"), never a gameplay thumbnail.
 4. Is a diamond planned for any launch or December level? If yes, a T3 variant with it can be tested.
-5. (new) A `Rookie_Cap_Santa` for the Christmas icon and T5 before Dec 3? (art track; else the Christmas icon is IC3's Snow Globe halo.)
+5. (new) A `Rookie_Cap_Santa` for the Christmas icon and T5 before Dec 3? (art track; else the Christmas icon is IC3's aurora-and-tower treatment.)
 6. (new) Key art: may the icon and **one** thumbnail be in-engine key art (the game's own meshes posed in Blender or a Studio stage, no shape changes) instead of a heist capture? (§0.3)
