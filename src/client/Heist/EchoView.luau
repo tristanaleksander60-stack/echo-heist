@@ -713,7 +713,7 @@ function EchoView.new(state: any): any
 				if beat > 0 then
 					-- The coach's run-start beat (Hud/Coach, RUN2 CLARITY): the camera holds on your clone before
 					-- control, so it is there, labelled, for the whole beat (it walks once control returns).
-					entry.visibleAt = controlAt - beat
+					entry.visibleAt = math.max(controlAt - beat, os.clock()) -- (never before this call)
 				end
 				youLabel(Rigs.anchorPart(entry.rig), Ui.agoLabel("YOU", secs, Palette.hueFor(a.seat)))
 				entry.youLabel = true

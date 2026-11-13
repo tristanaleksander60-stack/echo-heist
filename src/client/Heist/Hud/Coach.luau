@@ -284,7 +284,7 @@ function Coach.build(ctx: any): any
 	-- For tests and the debug chip.
 	function coach.state(): any
 		return {
-			card = if card.Visible then card.Text else nil,
+			card = if ctx.coachCardUp then card.Text else nil, -- (Ui.setShown fades it: Visible lags)
 			arrow = if arrowTarget then arrowTarget.kind else nil,
 			path = #pathParts,
 			focus = focus,
