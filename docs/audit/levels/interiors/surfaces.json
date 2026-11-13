@@ -245,6 +245,107 @@
    }
   }
  },
+ "L1_before_fp_ceiling": {
+  "ceiling_wall": 4.84,
+  "loot_pop": null,
+  "plate_pop": null,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.61,
+    "median_value": 0.682,
+    "share": 47.0
+   },
+   "lamp": {
+    "median_luma": 0.641,
+    "median_value": 0.914,
+    "share": 0.2
+   },
+   "other": {
+    "median_luma": 0.227,
+    "median_value": 0.38,
+    "share": 2.7
+   },
+   "signal": {
+    "median_luma": 0.357,
+    "median_value": 0.459,
+    "share": 5.5
+   },
+   "wall": {
+    "median_luma": 0.126,
+    "median_value": 0.216,
+    "share": 44.6
+   }
+  }
+ },
+ "L1_before_fp_front": {
+  "ceiling_wall": 3.7,
+  "loot_pop": null,
+  "plate_pop": 0.051,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.64,
+    "median_value": 0.718,
+    "share": 19.4
+   },
+   "floor": {
+    "median_luma": 0.373,
+    "median_value": 0.451,
+    "share": 26.0
+   },
+   "lamp": {
+    "median_luma": 0.843,
+    "median_value": 0.937,
+    "share": 2.1
+   },
+   "other": {
+    "median_luma": 0.352,
+    "median_value": 0.451,
+    "share": 10.8
+   },
+   "signal": {
+    "median_luma": 0.364,
+    "median_value": 0.467,
+    "share": 2.5
+   },
+   "wall": {
+    "median_luma": 0.173,
+    "median_value": 0.318,
+    "share": 39.1
+   }
+  }
+ },
+ "L1_before_fp_left": {
+  "ceiling_wall": 3.26,
+  "loot_pop": null,
+  "plate_pop": null,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.636,
+    "median_value": 0.714,
+    "share": 14.6
+   },
+   "floor": {
+    "median_luma": 0.608,
+    "median_value": 0.706,
+    "share": 24.5
+   },
+   "lamp": {
+    "median_luma": 0.88,
+    "median_value": 0.984,
+    "share": 0.8
+   },
+   "other": {
+    "median_luma": 0.342,
+    "median_value": 0.435,
+    "share": 6.7
+   },
+   "wall": {
+    "median_luma": 0.195,
+    "median_value": 0.337,
+    "share": 53.4
+   }
+  }
+ },
  "L1_diorama_mid": {
   "loot_pop": null,
   "plate_pop": -0.024,
