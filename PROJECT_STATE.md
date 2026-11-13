@@ -1,5 +1,7 @@
 # PROJECT_STATE
 
+_Last updated: 2026-11-13 (AUDIO track: the empty cues filled)_
+
 _Last updated: 2026-11-13 (BIG buildings track)_
 
 _Last updated: 2026-11-13 (story intro track)_
@@ -376,3 +378,12 @@ _Last updated: 2026-11-13 (SKY track: northern lights)_
 - **Budgets (PERF.md §9):** one building 356-404 instances, 13 batches, 50-60k tris at tier 1 (11-15k at tier 3); busiest view ~333k / ~297k / ~150k / ~150k tris at tiers 1-4 (tier 4 over its 120k estimate, as before BIG).
 - **Open / verify in Studio:** the cut-away's feel (fade speed, the dollhouse at the street spawn in diorama), whether a Texture's tiling origin matches the Neon panes on the town's faces, the sign text sizes, recipe A's new contrast on a phone (the filmic proxy is uncalibrated), the LOBBY track builds the stations on the anchors.
 - **BIG buildings merged (integrator):** tall facades (tenement, department store, bank) with ceilings over every heist building, CutAway for non-first-person cameras, 4-8 storey town, warehouse hideout with anchors, recipe A contrast retune. Engine v76: engine_smoke 0 (170 ok), client_engine 56/0, clone_engine 0, kit_engine 0, perf_engine 0. **Published.** LOBBY track running.
+
+## 2026-11-13: AUDIO track (fill every empty cue with licensed Creator Store audio)
+- **Filled 29 of the 30 empty cues** in `src/shared/Audio/Cues.luau` (ids only, plus `alt`, a few `pitch` / `volume` values and notes): Gus's beats (GusKeys, GusSnore, GusBarkHey / Hm / Gotcha / WrongOne), world feedback (PlateHum, LaserWhine, LootTinkle, VanToot), moments (ChoirHit, SnareRoll, VaultSlam), VanDoor, the 13 intro cues, Heartbeat and a stand-in RewindStinger (APM reverse swell at 1.9x). All from the partner catalogues: APM Music (APMOfficial) and Pro Sound Effects (ProSoundEffects). 77 cues, 76 with ids; repeating cues have >= 3 takes; no id shared between cues. Manifest: 191 ids (143 used + 48 alternates), each row from the Creator Store `items/details` response.
+- **Still empty: GusStep** (no human footsteps in any partner catalogue; the keys every 2nd step carry Gus's approach). No lobby engine cue exists; the closest licensed loops are listed in AUDIO.md "Still missing" for the LOBBY track.
+- **Engine:** new `tests/audio_engine.luau` (every manifest id loads, every cue / set with ids has a take that loads, length gaps warned, GetProductInfoAsync creators). Saved **v78**: 191/191 ready, 83 cues / sets load, 12/12 licensed creators, 0 failures; engine_smoke on v78 170 ok / 0. A Luau Execution server renders no audio (AudioAnalyzer reads 0), so loudness and hit timing are audition work.
+- **Docs:** AUDIO.md "Audio pass 2026-11-13" (a table per group: ids, source / licence, engine length, one-line description), "Still missing", §11 (audio_engine), §12, and the **owner audition list §13** (sorted by how often players hear each cue).
+- **Tests:** unit 523 (AudioCues: RewindStinger now has a stand-in, >= 70 cues with ids), sim 226, compile, StyLua, Selene x2, pure, LihFolk 307 files 0, 4 places + place_check 0, clips, hud_layout 2,846/0, glyph, ui_kit 105/0.
+- **Owner:** audition §13 (decisions: GusBarkHey's sergeant words, GusBarkGotcha's yells, SnareRoll's hit time -> `Config.Moments.LINEUP.SNARE_SECONDS`, ChoirHit's 10 s ring-out); GusStep takes; the reversed RewindStinger render; one voice actor for Gus eventually; the loudness pass.
+
