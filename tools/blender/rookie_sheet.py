@@ -8,10 +8,13 @@ Writes docs/art/rookie_sheet.png:
   row 1  four looks (one per crew seat, every outfit variant used at least once) + the back of look 1 (the scarf tail)
   row 2  the same frames with the Rookie 48 px tall, shown 3x with nearest-neighbour (PLAN_STEAM_PLUS A4: 48 px read)
   row 3  the four faces (idle, smug, shocked, busted) close up
+  row 4  the first-person arms in four outfits, as Heist/Viewmodel.fromOutfit builds them from the same pieces
+         (sleeve, glove in the glove colour, the gloves slot's cuff, crew stripes or the colour-block cuff), raised in
+         front of the eye like the viewmodel's rest pose
 Lights are kit_preview's Heist Night approximation, the floor the runtime floor colour. Evidence rung R0 (offline
 render of the real meshes), not a Studio capture. Colours: crew = Palette.CLONE_HUES, gloves = Config.Rookie.GLOVES.
 """
-import argparse, json, os, sys, tempfile
+import argparse, json, math, os, sys, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import bpy  # noqa: E402
@@ -72,6 +75,54 @@ def rookie(look, crew, at):
     return objs
 
 
+VM_LOOKS = [("Knit", "Stripes", 0), ("Leather", "Stripes", 1), ("Knit", "Block", 2), ("Leather", "Block", 3)]
+STRIPES = (0.3, 0.56)   # Config.FirstPerson.VIEWMODEL.SLEEVE_STRIPES (shares of elbow -> wrist)
+STRIPE_R = (0.29, 0.283)
+STRIPE_W = 0.09
+
+
+def arms(gloves, sweater, crew):
+    """Both forearms as Viewmodel.fromOutfit assembles them, each raised forward about its elbow (the hands in
+    front of the eye, palms in), on a Rookie-sized eye line."""
+    import bmesh
+    from mathutils import Matrix
+    glove = GLOVES[gloves]
+    for side, sx in (("Right", -1), ("Left", 1)):
+        elbow = blender_body("Rookie_" + side + "LowerArm")
+        wrist = blender_body("Rookie_" + side + "Hand")
+        objs = put("Rookie", "Rookie_" + side + "LowerArm", elbow)
+        objs += put("Rookie", "Rookie_" + side + "Hand", wrist, glove)
+        cuff = f"Rookie_Gloves_{gloves}_{side}"
+        objs += put("Rookie_Outfits", cuff, blender_point(cuff), glove)
+        if sweater == "Block":
+            n = f"Rookie_Block_{side}Cuff"
+            objs += put("Rookie_Outfits", n, blender_point(n), crew)
+        else:
+            for t, r in zip(STRIPES, STRIPE_R):
+                c = elbow.lerp(wrist, t)
+                bm = bmesh.new()
+                bmesh.ops.create_cone(bm, cap_ends=True, segments=20, radius1=r, radius2=r, depth=STRIPE_W)
+                me = bpy.data.meshes.new("Stripe")
+                bm.to_mesh(me)
+                bm.free()
+                o = bpy.data.objects.new("Stripe", me)
+                d = (wrist - elbow).normalized()
+                o.matrix_world = Matrix.Translation(c) @ d.to_track_quat("Z", "Y").to_matrix().to_4x4()
+                o.data.materials.append(K._mat("EH_Stripe_" + crew, K._lin(crew)))
+                bpy.context.scene.collection.objects.link(o)
+                objs.append(o)
+        # raise the forearm about the elbow: the hand forward (Blender -Y) and a little in
+        rot = Matrix.Translation(elbow) @ Matrix.Rotation(math.radians(-80), 4, "X") @ \
+            Matrix.Rotation(math.radians(sx * -14), 4, "Z") @ Matrix.Translation(-elbow)
+        for o in objs:
+            o.matrix_world = rot @ o.matrix_world
+
+
+def blender_body(piece):
+    o = MAN[piece]["origin"]
+    return Vector((-o[0], o[2], o[1]))
+
+
 def render(path, size, samples, build, target, az, el, dist, vfov):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     K._ATLAS.clear()
@@ -99,14 +150,14 @@ def sheet(rows, size, path):
     from PIL import Image, ImageDraw, ImageFont
     fp = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
     font = ImageFont.truetype(fp, 14) if os.path.isfile(fp) else ImageFont.load_default()
-    looks, faces = rows
-    cols = max(len(looks), len(faces))
+    looks, faces, vms = rows
+    cols = max(len(looks), len(faces), len(vms))
     # the Rookie spans about 66 % of a look tile's height: scale so he is 48 px tall, then show 3x
     small = max(8, round(48 / 0.66))
     big = small * 3
     head = 30
     W = cols * size
-    H = head + size + 22 + big + 22 + size
+    H = head + size + 22 + big + 22 + size + 22 + size
     img = Image.new("RGB", (W, H), (24, 25, 36))
     dr = ImageDraw.Draw(img)
     dr.text((8, 7), "The Rookie: crew seats 1-4 (scarf + sweater stripes), outfit slots, faces. Row 2: 48 px, shown 3x",
@@ -128,6 +179,15 @@ def sheet(rows, size, path):
         img.paste(im.resize((size, size)), (x, y3))
         dr.rectangle([x, y3, x + 8 + 7 * len(label), y3 + 20], fill=(24, 25, 36))
         dr.text((x + 4, y3 + 2), label, fill=(230, 232, 245), font=font)
+    y4 = y3 + size + 22
+    dr.text((8, y4 - 19), "first-person arms in your outfit (Viewmodel.fromOutfit: glove variant + colour, crew stripes)",
+            fill=(200, 204, 225), font=font)
+    for i, (p, label) in enumerate(vms):
+        im = Image.open(p).convert("RGB")
+        x = i * size
+        img.paste(im.resize((size, size)), (x, y4))
+        dr.rectangle([x, y4, x + 8 + 7 * len(label), y4 + 20], fill=(24, 25, 36))
+        dr.text((x + 4, y4 + 2), label, fill=(230, 232, 245), font=font)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     img.quantize(colors=256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(path, optimize=True)
     return path
@@ -155,7 +215,13 @@ def main(argv):
         look = dict(LOOKS[0], face=f)
         render(p, a.size, a.samples, lambda look=look: rookie(look, CREW[0], (0, 0, 0)), (0, -0.6, 3.75), -12, 6, 5.5, 30)
         faces.append((p, f.lower()))
-    print(sheet((looks, faces), a.size, OUT))
+    vms = []
+    for i, (gloves, sweater, ci) in enumerate(VM_LOOKS):
+        p = os.path.join(tmp, f"vm_{i}.png")
+        render(p, a.size, a.samples, lambda g=gloves, sw=sweater, ci=ci: arms(g, sw, CREW[ci]), (0, -0.55, 2.05), 180,
+               22, 2.7, 46)
+        vms.append((p, f"arms: {gloves} gloves, {sweater}"))
+    print(sheet((looks, faces, vms), a.size, OUT))
 
 
 if __name__ == "__main__":

@@ -103,6 +103,8 @@ The PerfSample governor then steps down when p95 > 36 ms for 20 s (then a 30 s c
 | Snow alive | 240 | 240 | **60** | 40 |
 | Backdrop (WORLD 2.0 town) | all | all | far ring, props, Christmas pieces and pools off (snowfield, streets, buildings, windows stay) | as tier 3 |
 | Aurora (Config.Aurora, `Budget.auroraLayers` / `auroraAnimated`) | 4 layers, 26 Beams, 1,040 tris, animated | same | **2 layers**, 13 Beams, 520 tris, animated | **1 static layer**, 7 Beams, 280 tris |
+| Scarf sway (Config.Rookie.SCARF, `Budget.scarfRigs`) | nearest 8 characters within 70 studs, 2 weld C0 writes each a frame | same | **off** (modelled pose) | **off** |
+| Intro suction vortex (Config.Intro.VORTEX) | 8 arms, 40 Beams, spun (1 CFrame write a frame) | 6 arms, 30 Beams | 4 arms, 20 Beams | **none** |
 | Rewind blur | on | off | off | off |
 
 - **Aurora (SKY track):** client-built additive Beams (`Heist/Aurora`, plan `Shared/Heist/AuroraPlan`), one invisible anchored holder Part per layer that follows the camera, so it never streams and never replicates. Cost per tier from `AuroraPlan.cost`: tiers 1-2 = 4 layers, 26 Beams, 30 Attachments, 1,040 triangles, about 2,000 property writes a second (15 Hz: attachment CFrames, CurveSizes, Brightness, Color); tier 3 = 2 layers, 13 Beams, 520 triangles, about 1,000 writes; tier 4 = 1 layer, 7 Beams, 280 triangles, posed once (0 writes). The real cost is fill rate: large additive ribbons overdraw the sky when you look up (about 1-1.5 screens of additive overdraw at tier 1, one layer's worth at tier 4). Not measured on a phone yet. The textures (3 x 1024 x 512 RGBA) are preloaded, and nothing shows until they arrive. Reduced motion: 0.35x speed, never off. Unit spec `AuroraPlan` (8), engine check `client_engine` K.

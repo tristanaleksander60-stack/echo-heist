@@ -210,8 +210,8 @@ IntroPlan.SHOTS = table.freeze({
 		captionAt = 0.9,
 		keys = {
 			{ t = 0, pos = { 26, 112, 168 }, look = { 0, 178, -110 }, fov = 56 },
-			{ t = 0.55, pos = { 16, 50, 112 }, look = { 0, 74, -150 }, fov = 52 },
-			{ t = 1, pos = { 8, 23, 74 }, look = { 0, 66, -200 }, fov = 48 },
+			{ t = 0.55, pos = { 16, 50, 112 }, look = { 0, 82, -150 }, fov = 52 },
+			{ t = 1, pos = { 8, 23, 74 }, look = { 0, 80, -200 }, fov = 48 },
 		},
 		events = {
 			{ at = 0, kind = "spawn", id = "town" },
