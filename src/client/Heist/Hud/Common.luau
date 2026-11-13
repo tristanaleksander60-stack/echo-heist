@@ -90,37 +90,90 @@ function Common.runName(state: any, n: number): string
 	return Strings.run(n)
 end
 
--- Avatar headshots (crew cards, PLAN_STEAM_PLUS §3.2): Players:GetUserThumbnailAsync HeadShot, fetched
--- once per user and cached; fn(uri) runs when it is known (at once if cached). A failed fetch calls
--- nothing (the card keeps its plain crew-colour backdrop) and the next ask tries again.
-local headshots: { [number]: string } = {}
-local headshotWaiting: { [number]: { (string) -> () } } = {}
-function Common.headshot(userId: number, fn: (uri: string) -> ())
-	local known = headshots[userId]
-	if known then
-		fn(known)
-		return
+-- Rookie portraits (crew cards; PLAN_FIRST_PERSON "CH": the card shows YOUR Rookie in your outfit, not a Roblox
+-- headshot): a ViewportFrame of the owner's clone template (ReplicatedStorage.HeistAvatars/<userId>, built by the
+-- server in their outfit), head and shoulders from a 3/4 front view, the crew pieces in `hue`. No web fetch. Until
+-- the template arrives (it is built at join) the CharacterKit Rookie (default outfit) stands in; with neither
+-- the card keeps its plain crew-colour backdrop. Only the head, the torso, the upper arms and what is welded to
+-- them are copied (a handful of parts per card).
+local PORTRAIT_PARTS = { Head = true, UpperTorso = true, LeftUpperArm = true, RightUpperArm = true }
+
+local function portraitSource(userId: number): Model?
+	local avatars = ReplicatedStorage:FindFirstChild("HeistAvatars")
+	local t = avatars and avatars:FindFirstChild(tostring(userId))
+	if t and t:IsA("Model") and t:GetAttribute("EH_Rookie") == true then
+		return t
 	end
-	local list = headshotWaiting[userId]
-	if list then
-		table.insert(list, fn)
-		return
-	end
-	headshotWaiting[userId] = { fn }
-	task.spawn(function()
-		local size = (Enum.ThumbnailSize :: any)[Config.Ui.CARD.HEADSHOT_SIZE] or Enum.ThumbnailSize.Size100x100
-		local ok, uri = pcall(function()
-			return Players:GetUserThumbnailAsync(userId, Enum.ThumbnailType.HeadShot, size)
-		end)
-		local waiting = headshotWaiting[userId] or {}
-		headshotWaiting[userId] = nil
-		if ok and type(uri) == "string" and uri ~= "" then
-			headshots[userId] = uri
-			for _, cb in waiting do
-				task.spawn(cb, uri)
+	local kit = ReplicatedStorage:FindFirstChild(Config.Rookie.KIT_FOLDER)
+	local r = kit and kit:FindFirstChild("Rookie")
+	return if r and r:IsA("Model") then r else nil
+end
+
+local function fillPortrait(vp: ViewportFrame, source: Model, hue: Color3?)
+	local world = Instance.new("WorldModel")
+	world.Name = "Rookie"
+	local head: BasePart? = nil
+	for _, d in source:GetChildren() do
+		if d:IsA("BasePart") then
+			local weld = d:FindFirstChild("EH_Weld")
+			local host = if weld and weld:IsA("Weld") and weld.Part0 then weld.Part0.Name else d.Name
+			if PORTRAIT_PARTS[host] and d.Transparency < 1 then
+				local c = d:Clone()
+				for _, j in c:GetChildren() do
+					if j:IsA("JointInstance") or j:IsA("Attachment") then
+						j:Destroy()
+					end
+				end
+				c.Anchored = true
+				if hue and c:GetAttribute("EH_Tint") == "crew" then
+					c.Color = hue
+				end
+				c.Parent = world
+				if d.Name == "Head" then
+					head = c
+				end
 			end
 		end
+	end
+	local P = Config.Rookie.PORTRAIT
+	local cam = Instance.new("Camera")
+	cam.FieldOfView = P.FOV
+	local target = (if head then head.Position else Vector3.new(0, 3.8, 0)) + Vector3.new(0, P.LIFT, 0)
+	local from = target + CFrame.Angles(0, math.rad(P.YAW), 0):VectorToWorldSpace(Vector3.new(0, 0.35, -P.DISTANCE))
+	cam.CFrame = CFrame.lookAt(from, target)
+	cam.Parent = vp
+	vp.CurrentCamera = cam
+	world.Parent = vp
+end
+
+function Common.portrait(parent: GuiObject, userId: number, hue: Color3?): ViewportFrame
+	local vp = Instance.new("ViewportFrame")
+	vp.Name = "Portrait"
+	vp.BackgroundTransparency = 1
+	vp.Ambient = Color3.fromRGB(150, 150, 170)
+	vp.LightColor = Color3.fromRGB(255, 236, 214)
+	vp.LightDirection = Vector3.new(-0.4, -1, -0.6)
+	vp.Active = false
+	vp.Parent = parent
+	task.spawn(function()
+		local src = portraitSource(userId)
+		local waited = 0
+		while vp.Parent and (src == nil or src.Name ~= tostring(userId)) and waited < 15 do
+			if src and not vp:FindFirstChild("Rookie") then
+				fillPortrait(vp, src, hue) -- the default Rookie while the owner's template is built
+			end
+			task.wait(0.5)
+			waited += 0.5
+			src = portraitSource(userId)
+		end
+		if vp.Parent and src then
+			for _, c in vp:GetChildren() do
+				c:Destroy()
+			end
+			fillPortrait(vp, src, hue)
+		end
 	end)
+	return vp
 end
 
 -- Sheets that cover the screen (results, MENU, settings) switch Roblox's touch controls off while

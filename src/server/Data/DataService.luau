@@ -46,6 +46,7 @@ local Keys = require(DataShared:WaitForChild("Keys"))
 local Progress = require(DataShared:WaitForChild("Progress"))
 local Schema = require(DataShared:WaitForChild("Schema"))
 local Store = require(DataShared:WaitForChild("Store"))
+local Outfit = require(Shared:WaitForChild("Heist"):WaitForChild("Outfit"))
 
 local PlayerData = require(script.Parent.PlayerData)
 local Policy = require(script.Parent.Policy)
@@ -99,6 +100,8 @@ local function publishAttributes(player: Player, heist: Schema.Heist)
 		player:SetAttribute("Cosmetic_" .. slot, id)
 	end
 	player:SetAttribute("BagLevel", heist.bagLevel)
+	-- The Rookie's outfit (Heist/Outfit.key): Heist/Characters dresses the character from it.
+	player:SetAttribute("Outfit", Outfit.key(heist.outfit))
 end
 
 -- Stars are a mirror of the medals and daily first clears; this keeps the balance exact.
@@ -245,6 +248,12 @@ end
 function DataService.getBagLevel(player: Player): number
 	local profile = PlayerData.Get(player)
 	return if profile then heistOf(profile).bagLevel else 0
+end
+
+-- The Rookie's outfit (slot -> Config.Rookie.OUTFIT id; the default while there is no profile).
+function DataService.getOutfit(player: Player): { [string]: string }
+	local profile = PlayerData.Get(player)
+	return if profile then Outfit.clean(heistOf(profile).outfit) else Outfit.default()
 end
 
 function DataService.getSettings(player: Player): { [string]: boolean | number }
@@ -451,11 +460,29 @@ local function declareRemotes()
 			end)
 		end,
 	})
+	-- Cosmetic slots (Store.canEquip) and, as the smallest extension (no new remote, CLAUDE.md), the Rookie's
+	-- outfit slots: an outfit slot + a Config.Rookie.OUTFIT id, checked by Heist/Outfit.canWear (slot, unlock).
+	local equipSlots, equipItems = table.clone(DATA.DEFAULT_EQUIPPED), table.clone(DATA.Cosmetics)
+	for slot, id in Config.Rookie.DEFAULT_OUTFIT do
+		equipSlots[slot] = id
+	end
+	for id, def in Config.Rookie.OUTFIT do
+		equipItems[id] = def
+	end
 	Net.Handle("Data.Equip", {
 		rate = { burst = 6, perSecond = 2 },
-		args = { T.key(DATA.DEFAULT_EQUIPPED), T.key(DATA.Cosmetics) },
+		args = { T.key(equipSlots), T.key(equipItems) },
 		handler = function(player: Player, slot: string, itemId: string): Net.Result
 			return withProfile(player, function(profile, heist)
+				if Outfit.isSlot(slot) then
+					local okWear, wearCode = Outfit.canWear(heist, slot, itemId)
+					if not okWear then
+						return Net.fail(wearCode)
+					end
+					heist.outfit[slot] = itemId
+					changed(player, profile, "outfit")
+					return Net.ok()
+				end
 				local ok, code = Store.canEquip(heist, slot, itemId)
 				if not ok then
 					return Net.fail(code)

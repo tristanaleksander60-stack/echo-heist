@@ -649,6 +649,19 @@ local function memberOfActor(inst: any, actorId: number): (Member?, any)
 	return inst.byId[a.ownerId], a
 end
 
+-- The Rookie's face on a live moment (bank, zap, bust): Heist/Characters.flashFace, set by HeistService.
+-- Cosmetic only, and never allowed to break the event loop.
+local faceHook: ((number, string) -> ())? = nil
+function HeistInstance.setFaceHook(fn: ((number, string) -> ())?)
+	faceHook = fn
+end
+local function faceOf(userId: number, mood: string)
+	local fn = faceHook
+	if fn then
+		pcall(fn, userId, mood)
+	end
+end
+
 -- A crew member to report an orphan tape's failure on (the owner left).
 local function reporterFor(inst: any, owner: Member?): Member?
 	if owner and not owner.left then
@@ -695,7 +708,10 @@ local function scanLog(inst: any, from: number, to: number)
 				end
 			end
 		elseif kind == EV.Bank then
-			local m = memberOfActor(inst, log.a[i])
+			local m, ba = memberOfActor(inst, log.a[i])
+			if m and ba and ba.kind == "live" then
+				faceOf(m.userId, "smug") -- the Rookie's smug side-eye on a bank (cosmetic)
+			end
 			if m and not m.ftue.FirstBank then
 				trackMember(inst, m, "heistStep", inst.heistId, "FirstBank")
 			end
@@ -706,10 +722,17 @@ local function scanLog(inst: any, from: number, to: number)
 		elseif kind == EV.GoalMet then
 			trackAll(inst, "heistStep", inst.heistId, "GoalMet")
 		elseif kind == EV.Busted then
-			local m = memberOfActor(inst, log.b[i])
+			local m, bu = memberOfActor(inst, log.b[i])
+			if m and bu and bu.kind == "live" then
+				faceOf(m.userId, "busted")
+			end
 			ftue(inst, m, "FirstCloneBusted")
 			cloneFailed(inst, log.b[i], "busted")
 		elseif kind == EV.Zap then
+			local zm, za = memberOfActor(inst, log.a[i])
+			if zm and za and za.kind == "live" then
+				faceOf(zm.userId, "shocked")
+			end
 			cloneFailed(inst, log.a[i], "zapped")
 		elseif kind == EV.Stuck then
 			cloneFailed(inst, log.a[i], if log.b[i] == CAUSE.Door then "bonk" else "blocked")
