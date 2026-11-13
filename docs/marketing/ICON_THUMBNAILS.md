@@ -6,16 +6,33 @@ _Marketing kit, file 4 of 5. Written 2026-11-12. Sources: MASTERPLAN §2.2 (bran
 
 ## 0. After the first-person pivot (2026-11-13): read this first
 
-### 0.1 What changed for the store art
+### 0.1 What the top Roblox icons and thumbnails do (2025-2026): 10 rules
+
+Researched 2026-11-13. Sources: the LihFolk vault's top-games snapshot (*Cross-Game Patterns - Thumbnails Icons and Titles That Get Clicks*: the icons and first three thumbnails of ten top games **observed via Roblox's public games and thumbnails APIs on 27 Oct 2026**, plus the *Case Study* notes for Grow a Garden, Steal a Brainrot, 99 Nights in the Forest, Doors, Dead Rails), the vault's *Game Icon Design*, *Thumbnail Composition for High CTR* and *Icon and Thumbnail Rendering Pipeline*, and a web search the same day ([DevForum: Creating a proper Roblox Icon](https://devforum.roblox.com/t/creating-a-proper-roblox-icon-a-guide-based-on-my-preliminary-research/1774810), [DevForum: Optimize CTR with Icons and Thumbnails](https://devforum.roblox.com/t/optimize-ctr-with-icons-and-thumbnails/3316365), [RoWatcher: Your Roblox Game Icon Is Losing You Players](https://rowatcher.com/news/your-roblox-game-icon-is-losing-you-players-before-they-click), [ForgeGUI: Roblox thumbnails that get clicks in 2026](https://forgegui.com/blog/how-to-make-roblox-thumbnail-that-gets-clicks-2026), [Roblox docs: Experience thumbnails](https://create.roblox.com/docs/production/promotion/thumbnails)). This session's network could not open devforum.roblox.com, create.roblox.com or rowatcher.com, so those three are cited from search summaries, not read in full; no live icon images were fetched, so the per-game descriptions are the vault's dated observations. Pressure was not in any source we could reach.
+
+| # | Rule | Evidence | How the finals apply it |
+|---|---|---|---|
+| 1 | **The icon is a face**, cropped tight, looking at the viewer | 8 of 10 top icons are a face toward the viewer: PS99's cat, Adopt Me's dragon, **99 Nights' deer**, **Doors' entity**, Brookhaven's witch, DTI's doll, Fisch's avatar, **Grow a Garden's farmer** (vault snapshot, 27 Oct 2026); "one big subject, readable expression" (vault *Game Icon Design*) | The Rookie's head and shoulders fill 55-70 % of every icon |
+| 2 | **The expression carries the genre** | "Shock or fear (horror), joy (simulator), mischief (troll)" (vault *Game Icon Design*); 99 Nights and Doors use huge eyes / one glowing eye | The smug side-eye (`Rookie_Face_Smug`): mischief, "I got away with it" |
+| 3 | **One bright point near the eyes** | "At icon size, eyes are what the visual system finds first"; Doors' monocle, the deer's white eyes (vault Pattern 2) | The Santa cap's Snow trim sits right over the eyes; one gold sparkle near the eye line |
+| 4 | **Separate by value first** (grey test), then colour, then a rim light | Subject vs surround ≥ 30-40 points on 0-100 (vault *Composition* §4); "a rim light ... glow around their edges" (web search summary); our own 64 px grades: the blue cap on blue night failed (IC2, 0.06) | Measured: hero and clones ≥ 0.15 grey pop at 64 and 150 px (`final/grades.json`); key + two coloured rims on the hero |
+| 5 | **Warm vs cool, saturated subject, calmer background** | "Complementary pair: orange on blue, gold on violet" (vault *Composition* §4); Grow a Garden's gold-on-rainbow, Brainrot's rainbow text | Gold glow and loot against Clone Cyan / Magenta copies on Ink-to-plum; nothing else is cyan |
+| 6 | **Simple background: a radial gradient on icons, a blurred scene on thumbnails** | "A radial gradient or flat colour field, with a glow or rim light separating the subject. Busy scenes belong in thumbnails" (vault *Game Icon Design*); "a single saturated colour or a simple gradient reads best" (web search summary) | Icons: a 2D gold-to-plum radial (no set); thumbnails: the real level / town rendered as its own pass and blurred (depth of field) |
+| 7 | **A thick dark outline** round the characters | "Outline: dilate the alpha and fill the ring with dark ink. Outlines separate the icon from any card colour" (vault *Rendering Pipeline* stage 4); "a neon outline around a character" (web search summary) | An Ink Indigo outline (1.1 % of the height round the hero) on every character; the clones keep their in-game crew-hue outline plus a glow in their own hue |
+| 8 | **Text: none on the icon; ≤ 3 words on a thumbnail**, heavy rounded caps, white with a heavy dark stroke, upper third, away from the bottom edge | "Nobody writes a sentence on an icon" (vault Pattern 2: wordmarks only - Adopt Me, Doors); "white text with a heavy black stroke" (web search summary); the bottom of a tile sits under the player count (vault *Thumbnail Specs*) | No text on icons; thumbnails in **Luckiest Guy** (the game's own display face, `Brand.FACE`) with the Ink stroke and the wordmark's cyan double-exposure copy, cap height 13-15 % of the frame, top third |
+| 9 | **Pick the dream: mood art or number art** | The two biggest 2025 games use a giant number (Grow a Garden "$95,643,734,647", Steal a Brainrot "$997,151,167/s"); 99 Nights, Doors, Adopt Me use a creature or a place (vault Pattern 3). Scale contrast sells a creature (Fisch's avatar beside the serpent) | Our number is **8**: "8 OF ME" is our number art; "WRONG ONE!" and "STEAL BACK CHRISTMAS" are mood art (a joke, a place) |
+| 10 | **Seasonal art is a costume on the same template** | 9 of 10 top games had Halloween art, but kept their composition and swapped the outfit (Brookhaven, Adopt Me, Doors; vault Pattern 5) | The icons are the evergreen template wearing `Rookie_Cap_Santa`; on Jan 5 the same render with the Flat Cap goes up (`final_shots.py`, `SANTA` -> `DEFAULT`) |
+
+### 0.2 What changed for the store art
 
 - **You are the Rookie, not your Roblox avatar.** The game's own character (`Config.Rookie`: flat cap, long scarf, Breton stripes, knit gloves, smug side-eye; outfits from the wardrobe), and **clones are copies of your Rookie**: the outfit and face kept, the crew pieces in your crew colour, the crew-hue fill and outline, a numbered pill. "That's me" is carried by the outfit, the colour and the pill (PLAN_FIRST_PERSON §1). Every brief below that says "avatar" or "catalog" means this now (§2 "Characters", §3.1).
 - **First person is the default.** Your gloves at the bottom of the frame are a new brand asset: they say "this is you" with no text (candidate **TH5**). Third-person stills need Settings → Camera → CLASSIC or the cameraman client (CAPTURE.md §0).
 - **Crew View** (hold Q / LB / CREW) is the first-person answer to "where are my clones?": a trailer beat, not a thumbnail.
 - **The story exists:** Sir Hoardsworth, his tower with the giant H, the Snow Globe Vault full of the town's presents, the northern lights. Story / event art only; gameplay thumbnails stay inside a heist.
-- **No Santa hat for the Rookie** in the kit (§3.1 "Christmas": request `Rookie_Cap_Santa`).
+- ~~No Santa hat for the Rookie~~ **`Rookie_Cap_Santa` exists (2026-11-13):** a kit piece in `Rookie_Outfits` (Ribbon cone, Snow trim, pompom; gates pass) and `Config.Rookie.OUTFIT.Cap_Santa`, unlocked by clearing the launch-day advent vault (`Orn_Advent2026_03`, catch-up until Dec 31). The Christmas icon shows it truthfully. Its FBX still has to be re-uploaded (`python3 tools/kit_upload.py --only Rookie_Outfits`, same asset id) before players see it.
 - The hook line **"◀ ME, 20 SEC AGO"** still works unchanged (CLIPS.md §1.2): the clone is still "me", now visibly in my outfit.
 
-### 0.2 The 2026-11-13 candidates (Blender, from the real kit; concepts and stand-ins, never uploads)
+### 0.3 The 2026-11-13 candidates (Blender, from the real kit; concepts and stand-ins, never uploads)
 
 Rendered by `python3 tools/blender/thumb_shots.py --only <name>` (one image per command), graded by `--sheet` into `thumbs/grades.json` and `thumbs/contact_sheet.png` (each candidate full size, at **150 px and 64 px** (icons square; thumbnails 150 and 64 px tall), 64 px at 3x, 64 px greyscale, and the central 9:16 crop a vertical clip keeps). Every image carries "CONCEPT RENDER, NOT A CAPTURE" in its metadata corner. The real kit: the Rookie (outfits, faces), clones drawn as EchoView draws them, Gus with his Santa hat and cone, the kit loot (cash bag, presents), the van, levels L1 / L2 / L4 rebuilt by `level_shots`, and the story town with Hoardsworth Tower, the Snow Globe Vault and the game's aurora (AuroraPlan).
 
@@ -37,12 +54,12 @@ Trailer key frames (TRAILER.md): [`TR04_first-clone`](trailer/TR04_first-clone.p
 
 Scores are honest self-scores on the §7 rubric (0-10, upload bar 8.5): **none of these passes the upload bar, and none is meant to**; they set the direction for the captures and the illustrator. The numbers in the "64 px read" column come from `grades.json` (the hero's / the promise's value pop over its surround at 64 px, in greyscale; ≥ 0.15 reads).
 
-### 0.3 Capture or key art (proposal for the owner: open question 6)
+### 0.4 Capture or key art (proposal for the owner: open question 6)
 
 - **Capturable in a heist (keep the "real capture" rule):** TH1 (the Clone Party Line-up), TH2 (L4, CAPTURE.md B3), TH4 (4 clients, CAPTURE.md §4), TH5 (L1 first person, CAPTURE.md A6), T5 via DV04 (CAPTURE.md §5).
 - **Key art** (the story town exists only inside the intro): TH3, TH6 and the icons. **Proposal:** allow the **icon** (human-finished, §3.5) and **one** story thumbnail for the events (E1 / E2) as in-engine key art: the game's own meshes, no shape changes, no element the game doesn't have, labelled as key art in our files. Gameplay thumbnails in the Home pool stay real captures.
 
-### 0.4 Recommendation for Dec 3
+### 0.5 Recommendation for Dec 3
 
 - **Home pool: T5 + T3 as planned**, captured from the TH2 (WRONG ONE) and TH3 / DV04 (STEAL BACK XMAS) targets.
 - **Plays test (Dec 3-6): add TH5 "THAT'S ME?!"** as a new creative: it is the only one that shows the first-person game and the core twist in one look, and it is cheap to capture (CAPTURE.md A6). If it wins the ad test, it becomes the third Home thumbnail once DAU allows (§6).
@@ -186,13 +203,13 @@ MASTERPLAN §2.2 wants the mascot **human-finished** (an AI provenance log for a
 | Style | The game's chunky low-poly toy look, flat-shaded planes, bold silhouette, no outlines on the hero except where the game draws them (the copies' outline). Readable in **greyscale at 64 px**: hero face, copies and background are three separate values (§3.2) |
 | Never | A mask, a weapon, money piles or "$$$", Robux icons, text, arrows, emoji, other games' characters or looks, a Roblox avatar, Gus or Hoardsworth (they are for thumbnails and events) |
 | Process | 2 rough sketches (Mon Nov 23) → owner picks one → colour draft at 64 / 150 px on a phone (Thu Nov 26) → final by **Fri Nov 27** (the §3.4 slot) → owner sign-off Mon Nov 30 → upload Wed Dec 2 |
-| What the candidates teach (from the grades, §0.2) | The face carries the icon at 64 px in all three; a **bright field behind the head** (IC3's aurora: grey pop 0.20) is what separates the dark cap from the night, while a blue cap on blue night fails (IC2: 0.06); the copies must sit clear of his cap and of the frame edge (in IC1/IC2 they crowd the left edge and the second hides); keep props (IC3's vacuum) away from the head |
+| What the candidates teach (from the grades, §0.3) | The face carries the icon at 64 px in all three; a **bright field behind the head** (IC3's aurora: grey pop 0.20) is what separates the dark cap from the night, while a blue cap on blue night fails (IC2: 0.06); the copies must sit clear of his cap and of the frame edge (in IC1/IC2 they crowd the left edge and the second hides); keep props (IC3's vacuum) away from the head |
 
 ---
 
 ## 4. Thumbnail briefs T1-T5
 
-**First-person build (2026-11-13):** wherever a brief below says "freecam" or "pinned", read CAPTURE.md §0: Settings → Camera → CLASSIC for freecam stills, or the **cameraman client** for a fixed angle while the live you moves; "avatar" means your Rookie in the default outfit. The positions and timings are unchanged (the sim did not change; `clips_check.luau` still holds them). The Blender target frame for each brief is in §0.2.
+**First-person build (2026-11-13):** wherever a brief below says "freecam" or "pinned", read CAPTURE.md §0: Settings → Camera → CLASSIC for freecam stills, or the **cameraman client** for a fixed angle while the live you moves; "avatar" means your Rookie in the default outfit. The positions and timings are unchanged (the sim did not change; `clips_check.luau` still holds them). The Blender target frame for each brief is in §0.3.
 
 Each brief: the promise, the sketch (64 × 16 characters ≈ 16:9; `·` = corners, the dashed line = top of the bottom 18 %), what it tests, and the exact capture setup. Times are elapsed run time; positions are level coordinates (CLIPS.md §4 explains them and the run budget). A still where the hero stands on a mark can use the freecam; a still where the hero walks needs the pinned camera (CLIPS.md §3.2 #4) or a 60 fps recording of the follow camera.
 
@@ -471,4 +488,4 @@ Rules: keep a control in every round; one variable per pair; 7-14 days per round
 3. ~~Sir Hoardsworth: will he exist?~~ He does (the story intro). Story and event art only (§2 "Characters"), never a gameplay thumbnail.
 4. Is a diamond planned for any launch or December level? If yes, a T3 variant with it can be tested.
 5. (new) A `Rookie_Cap_Santa` for the Christmas icon and T5 before Dec 3? (art track; else the Christmas icon is IC3's aurora-and-tower treatment.)
-6. (new) Key art: may the icon and **one** thumbnail be in-engine key art (the game's own meshes posed in Blender or a Studio stage, no shape changes) instead of a heist capture? (§0.3)
+6. (new) Key art: may the icon and **one** thumbnail be in-engine key art (the game's own meshes posed in Blender or a Studio stage, no shape changes) instead of a heist capture? (§0.4)
