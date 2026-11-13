@@ -4,6 +4,9 @@
                                               [--spot front|back|lamp] [--bg l1|plain] [--samples 24] [--height 720]
     python3 tools/blender/fp_hands_preview.py --all [--mode ...]      # every pose and aspect, one process each
     python3 tools/blender/fp_hands_preview.py --sheet                 # docs/art/fp_hands/contact_sheet.png
+    python3 tools/blender/fp_hands_preview.py --mode v2|v125 --light roblox --outfit tone=Tone_Mustard \
+        --out docs/art/fp_hands_v2 --pose ready                       # FP HANDS v2 (skinned) vs v125 (rigid)
+    python3 tools/blender/fp_hands_preview.py --sheet-v2 [--capture owner.png]   # docs/art/fp_hands_v2 sheet
 
 The hands come from `lune run tools/fp_hands_plan.luau <mode> <fov>`: AFTER runs the game's own Heist/ViewmodelMath
 and Heist/FpRig on RookieData.fpArms (the dedicated arms, the viewmodel projection, the per-axis part sizes);
@@ -34,7 +37,9 @@ ASPECTS = {"16x9": 16 / 9, "19.5x9": 19.5 / 9}
 FOV = 70.0                      # Config.Heist.CAMERA.FP.FOV
 CREW = "#3DE8FF"                # Palette.CLONE_HUES[1] (seat 1)
 MARBLE = "#D8C8A8"              # Palette.marble (the glove lift target)
+PALETTE = {"marble": MARBLE, "marbleLo": "#A8987A", "marbleHi": "#EDE2C8"}
 BEFORE_REV = "af24400"          # v101 (the owner's last capture)
+V125_REV = "e8ed654"            # v125 Published (FP HANDS v2's BEFORE: the owner's capture)
 SAFE = (0.97, 0.85, -1.1)       # Config VIEWMODEL.SAFE: |x| <= X, y <= Y_TOP (drawn on --guides)
 # the contact sheet's extra row (rendered with --spot / --outfit): the light check and the other outfit
 EXTRAS = [("after_ready_16x9_back.png", "dim back room (ready)"), ("after_ready_16x9_lamp.png", "under a lamp (ready)"),
@@ -53,7 +58,16 @@ def lune_plan(mode, fov=FOV, outfit=None):
             txt = subprocess.run(["git", "show", f"{BEFORE_REV}:{src}"], cwd=REPO, capture_output=True, text=True,
                                  check=True).stdout
             open(path, "w").write(txt)
-    args = ["lune", "run", "tools/fp_hands_plan.luau", mode, str(fov)] + ([outfit] if outfit else [])
+    if mode == "v125":       # the live v125 modules (main at V125_REV), so BEFORE is what the owner saw
+        for src in ("src/shared/Config.luau", "src/shared/Heist/RookieData.luau", "src/client/Heist/ViewmodelMath.luau",
+                    "src/client/Heist/FpRig.luau"):
+            path = os.path.join(BUILD, "fp_v125", src[4:])
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            txt = subprocess.run(["git", "show", f"{V125_REV}:{src}"], cwd=REPO, capture_output=True, text=True,
+                                 check=True).stdout
+            open(path, "w").write(txt)
+    plan_mode = mode
+    args = ["lune", "run", "tools/fp_hands_plan.luau", plan_mode, str(fov)] + ([outfit] if outfit else [])
     out = subprocess.run(args, cwd=REPO, capture_output=True, text=True, check=True).stdout
     return json.loads(out)
 
@@ -72,7 +86,8 @@ _LIB = {}
 
 
 def library(model):
-    """Imports one kit FBX once; returns {piece name: object} (left where it was authored, hidden until placed)."""
+    """Imports one kit FBX once; returns {piece name: object} (left where it was authored, hidden until placed).
+    Armatures (the v2 skinned gloves) stay, under their own name."""
     if model not in _LIB:
         before = set(bpy.data.objects)
         bpy.ops.import_scene.fbx(filepath=os.path.join(FBX, model + ".fbx"))
@@ -81,6 +96,8 @@ def library(model):
             if o.type == "MESH":
                 got[o.name.split(".")[0]] = o
                 o.hide_render = True
+            elif o.type == "ARMATURE":
+                got[o.name.split(".")[0]] = o
             else:
                 bpy.data.objects.remove(o, do_unlink=True)
         _LIB[model] = got
@@ -121,6 +138,66 @@ def place_piece(cam, piece, cf, scale, tint=None, rough=None):
     return o
 
 
+def v2_material(o, hexc, rough):
+    """FP HANDS v2 pieces: MeshPart.Color (hexc) times the mesh's vertex shading, matte (Fabric) or a soft sheen."""
+    m = bpy.data.materials.new("EH_V2_" + o.name)
+    m.use_nodes = True
+    nt = m.node_tree
+    b = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+    vc = nt.nodes.new("ShaderNodeVertexColor")
+    vc.layer_name = "Col"
+    mix = nt.nodes.new("ShaderNodeMix")
+    mix.data_type = "RGBA"
+    mix.blend_type = "MULTIPLY"
+    mix.inputs[0].default_value = 1.0
+    nt.links.new(vc.outputs["Color"], mix.inputs[6])
+    mix.inputs[7].default_value = K._lin(hexc)
+    nt.links.new(mix.outputs[2], b.inputs["Base Color"])
+    b.inputs["Roughness"].default_value = rough
+    if "Sheen Weight" in b.inputs and rough > 0.9:
+        b.inputs["Sheen Weight"].default_value = 0.35       # a knit's soft fuzz at grazing angles
+    o.data.materials.clear()
+    o.data.materials.append(m)
+
+
+def place_v2(cam, plan, pose, p, hexc, rough):
+    """A v2 piece at its final camera-space frame (never resized). The skinned glove: its armature placed so the mesh
+    lands where the MeshPart does, then every pose bone set from the plan's hinge frames (the game's maths)."""
+    spec = MAN[p["piece"]]
+    lib = library(spec["model"])
+    o = lib[p["piece"]]
+    lo, hi = spec["boundsMin"], spec["boundsMax"]
+    centre = Vector(((lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (lo[2] + hi[2]) / 2))
+    v2_material(o, hexc, rough)
+    o.hide_render = False
+    o.visible_shadow = False
+    if not p.get("skinned"):
+        W0 = o.matrix_world.copy()
+        o.parent = cam
+        o.matrix_parent_inverse = Matrix.Identity(4)
+        o.matrix_basis = cf_matrix(p["cf"]) @ Matrix.Translation(-centre) @ C @ Matrix.Translation(-W0.translation) @ W0
+        return o
+    arm = o.parent
+    W0 = o.matrix_world.copy()
+    A0 = arm.matrix_world.copy()
+    L = Matrix.Translation(-centre) @ C @ Matrix.Translation(-W0.translation) @ A0     # armature space -> part space
+    arm.parent = cam
+    arm.matrix_parent_inverse = Matrix.Identity(4)
+    arm.matrix_basis = cf_matrix(p["cf"]) @ L
+    side = "Left" if "_Left_" in p["piece"] else "Right"
+    rest, posed = plan["rest"][side], pose["skins"][p["piece"]]
+    Li = L.inverted()
+    bpy.context.view_layer.update()
+    for b in arm.data.bones:            # parents come first in Blender's bone list order of creation
+        if b.name not in posed:
+            continue
+        B0 = L @ b.matrix_local
+        O = cf_matrix(rest[b.name]).inverted() @ B0
+        arm.pose.bones[b.name].matrix = Li @ cf_matrix(posed[b.name]) @ O
+        bpy.context.view_layer.update()
+    return o
+
+
 def place_cylinder(cam, cf, size, hexc):
     """A code-built Cylinder Part (the old sleeve stripes): axis along its local X."""
     bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=0.5, depth=1.0)
@@ -143,8 +220,24 @@ def hands(cam, plan, pose_name):
         glove = srgb_lerp(glove, MARBLE if key == "marble" else glove, t)
     mats = plan.get("materials") or {}
     gloves_id = (plan.get("outfit") or {}).get("gloves", "Gloves_Knit")
-    rough = {"Fabric": 0.95, "Leather": 0.55}
+    rough = {"Fabric": 0.95, "Leather": 0.55, "SmoothPlastic": 0.4}
     objs = []
+    if plan.get("v2"):
+        for p in pose["parts"]:
+            if p.get("tint") == "gloves":
+                hexc, r = glove, rough.get(mats.get(gloves_id), 0.9)
+            elif p.get("tint") == "crew":
+                hexc, r = CREW, rough["Fabric"]
+            elif p.get("joint") == "Sleeve":
+                hexc, r = PALETTE.get(plan.get("sleeveColour"), MARBLE), rough["Fabric"]
+            else:
+                hexc, r = "#FFFFFF", rough["SmoothPlastic"]
+            objs.append(place_v2(cam, plan, pose, p, hexc, r))
+        if pose.get("loot"):
+            spec = MAN["CashBag"]
+            k = plan["lootSize"] / max(spec["size"])
+            objs.append(place_piece(cam, "CashBag", pose["loot"]["cf"], [k * f for f in pose["loot"]["scale"]]))
+        return objs
     for p in pose["parts"]:
         tint = glove if p.get("tint") == "gloves" else CREW if p.get("tint") == "crew" else None
         r = None
@@ -234,6 +327,27 @@ def l1_scene(samples, W, Hh, spot):
     return s, cam
 
 
+def roblox_light(s, cam):
+    """Closer to the engine's read of the near hands (the owner's v125 capture): Roblox gives a part no ambient bounce
+    or occlusion, only the flat Lighting.Ambient plus the local lamps, so the shadow side of a glove is far darker than
+    Eevee's world light makes it, and the lamp side warmer. Approximation: the world (ambient) light at 40 %, a warm
+    key from the shop's ceiling lamps over the hands. Same for BEFORE and AFTER."""
+    w = s.world
+    for n in w.node_tree.nodes:
+        if n.type == "BACKGROUND":
+            n.inputs["Strength"].default_value *= 0.4
+    ld = bpy.data.lights.new("lampkey", "POINT")
+    ld.color = K._lin("#FFD2A0")[:3]
+    ld.energy = 3.0
+    ld.use_shadow = False
+    ld.shadow_soft_size = 0.3
+    o = bpy.data.objects.new("lampkey", ld)
+    s.collection.objects.link(o)
+    o.parent = cam
+    o.matrix_parent_inverse = Matrix.Identity(4)
+    o.location = (0.0, 0.9, -0.4)
+
+
 def plain_scene(samples, W, Hh):
     """A quick neutral stage (iteration only): a dim plum room light + a warm key, like an L1 interior."""
     import marketing_renders as MR
@@ -283,10 +397,13 @@ def render_one(a):
         s, cam = plain_scene(a.samples, W, Hh)
     plan = lune_plan(a.mode, FOV, a.outfit)
     hands(cam, plan, a.pose)
-    if a.mode == "after":
+    if a.mode in ("after", "v125", "v2"):
         fill_light(cam, plan)
+    if a.light == "roblox":
+        roblox_light(s, cam)
     os.makedirs(OUT, exist_ok=True)
     tag = f"{a.mode}_{a.pose}_{a.aspect}" + ("" if a.spot == "front" else "_" + a.spot) + \
+        ("" if a.light == "eevee" else "_" + a.light) + \
         ("" if a.bg == "l1" else "_plain") + (("_" + a.outfit.replace("=", "-").replace(",", "_")) if a.outfit else "")
     raw = os.path.join(BUILD, "fp_hands_raw", tag + ".png")
     os.makedirs(os.path.dirname(raw), exist_ok=True)
@@ -355,10 +472,94 @@ def sheet(out_path, aspect_rows=("16x9", "19.5x9")):
     print("wrote", os.path.relpath(out_path, REPO))
 
 
+V2_POSES = ["idle", "ready", "reach", "carry", "point", "watch", "handsUp", "push"]
+V2_TAG = "_16x9_roblox_tone-Tone_Mustard"
+V2_EXTRAS = [("v2_ready_16x9_roblox.png", "AFTER: indigo knit (default)"),
+             ("v2_watch_16x9_roblox_gloves-Gloves_Leather_sweater-Sweater_Block.png", "AFTER: leather, block"),
+             ("v2_ready_19.5x9_roblox_tone-Tone_Mustard.png", "AFTER: 19.5:9 phone"),
+             ("v125_ready_16x9_back_roblox_tone-Tone_Mustard.png", "BEFORE: dim back room"),
+             ("v2_ready_16x9_back_roblox_tone-Tone_Mustard.png", "AFTER: dim back room")]
+
+
+def sheet_v2(out_dir, capture=None):
+    """FP HANDS v2 before / after (docs/art/fp_hands_v2/contact_sheet.png): the owner's v125 capture, BEFORE (v125,
+    the rigid capsule arms) and AFTER (v2, the skinned gloves) per pose in the owner's outfit (Mustard knit) under the
+    Roblox-like light, hand close-ups, and the extras (other outfits, the phone aspect, a dim room)."""
+    from PIL import Image, ImageDraw, ImageFont
+    tw, th = 300, 169
+    pad, lab = 6, 18
+    cols = V2_POSES
+    Wd = pad + 90 + len(cols) * (tw + pad)
+    rows_h = [th * 2 + lab, th + lab, th + lab, th * 2 + lab, th + lab]
+    H = 50 + sum(h + pad for h in rows_h)
+    im = Image.new("RGB", (Wd, H), (24, 26, 46))
+    d = ImageDraw.Draw(im)
+    try:
+        f = ImageFont.truetype("DejaVuSans.ttf", 14)
+        fb = ImageFont.truetype("DejaVuSans-Bold.ttf", 18)
+    except OSError:
+        f = fb = ImageFont.load_default()
+    d.text((pad, 10), "FP HANDS v2: BEFORE (v125 rigid capsule arms) vs AFTER (one skinned glove a hand). Owner's "
+                      "outfit (Mustard knit), L1, FOV 70, the game's own maths, Roblox-like light (flat ambient, warm "
+                      "lamp key)", fill=(244, 247, 255), font=fb)
+    y = 50
+    d.text((pad, y + 40), "OWNER\nv125\ncapture", fill=(255, 140, 140), font=f)
+    if capture and os.path.isfile(capture):
+        cap = Image.open(capture).convert("RGB")
+        w = int(cap.width * (th * 2) / cap.height)
+        im.paste(cap.resize((w, th * 2), Image.LANCZOS), (pad + 90, y + lab))
+        d.text((pad + 92, y), "the owner's live v125 screenshot (reference)", fill=(220, 224, 240), font=f)
+    y += rows_h[0] + pad
+    for mode, label, colr in (("v125", "BEFORE\nv125", (169, 178, 204)), ("v2", "AFTER\nv2", (255, 210, 122))):
+        d.text((pad, y + th // 2), label, fill=colr, font=f)
+        for i, pose in enumerate(cols):
+            x = pad + 90 + i * (tw + pad)
+            path = os.path.join(out_dir, f"{mode}_{pose}{V2_TAG}.png")
+            if os.path.isfile(path):
+                im.paste(Image.open(path).convert("RGB").resize((tw, th), Image.LANCZOS), (x, y + lab))
+            else:
+                d.rectangle([x, y + lab, x + tw, y + lab + th], outline=(80, 80, 110))
+            d.text((x + 2, y + 1), pose, fill=(220, 224, 240), font=f)
+        y += th + lab + pad
+    # close-ups: one hand of a few poses, BEFORE then AFTER, 2x
+    d.text((pad, y + th), "CLOSE\n2x", fill=(255, 210, 122), font=f)
+    x = pad + 90
+    for pose in ("ready", "point", "watch", "handsUp"):
+        for mode in ("v125", "v2"):
+            path = os.path.join(out_dir, f"{mode}_{pose}{V2_TAG}.png")
+            if not os.path.isfile(path):
+                continue
+            src = Image.open(path).convert("RGB")
+            W0, H0 = src.size
+            box = (int(W0 * 0.56), int(H0 * 0.52), int(W0 * 0.98), int(H0 * 1.0)) if pose != "watch" else \
+                (int(W0 * 0.10), int(H0 * 0.40), int(W0 * 0.62), int(H0 * 0.98))
+            crop = src.crop(box)
+            cw = int(crop.width * (th * 2) / crop.height)
+            if x + cw > Wd:
+                break
+            im.paste(crop.resize((cw, th * 2), Image.LANCZOS), (x, y + lab))
+            d.text((x + 2, y + 1), f"{'BEFORE' if mode == 'v125' else 'AFTER'} {pose}", fill=(220, 224, 240), font=f)
+            x += cw + pad
+    y += rows_h[3] + pad
+    d.text((pad, y + th // 2), "EXTRAS", fill=(255, 210, 122), font=f)
+    for i, (fname, title) in enumerate(V2_EXTRAS):
+        x = pad + 90 + i * (tw + pad)
+        path = os.path.join(out_dir, fname)
+        if os.path.isfile(path):
+            src = Image.open(path).convert("RGB")
+            im.paste(src.resize((tw, int(tw * src.height / src.width)), Image.LANCZOS), (x, y + lab))
+        d.text((x + 2, y + 1), title, fill=(220, 224, 240), font=f)
+    out = os.path.join(out_dir, "contact_sheet.png")
+    im.save(out, optimize=True)
+    print("wrote", os.path.relpath(out, REPO))
+
+
 def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument("--pose", default="idle", choices=POSES)
-    ap.add_argument("--mode", default="after", choices=("after", "before"))
+    ap.add_argument("--mode", default="after", choices=("after", "before", "v125", "v2"))
+    ap.add_argument("--light", default="eevee", choices=("eevee", "roblox"),
+                    help="roblox: the in-game read (flat lavender Ambient, no ambient occlusion on the hands)")
     ap.add_argument("--aspect", default="16x9", choices=tuple(ASPECTS))
     ap.add_argument("--spot", default="front", choices=("front", "back", "lamp"))
     ap.add_argument("--bg", default="l1", choices=("l1", "plain"))
@@ -369,15 +570,21 @@ def main(argv):
     ap.add_argument("--out", help="output folder (default docs/art/fp_hands)")
     ap.add_argument("--all", action="store_true", help="every pose x aspect, one Blender process each")
     ap.add_argument("--sheet", action="store_true")
+    ap.add_argument("--sheet-v2", action="store_true", help="docs/art/fp_hands_v2/contact_sheet.png")
+    ap.add_argument("--capture", help="--sheet-v2: the owner's capture to show as the reference row")
     a = ap.parse_args(argv)
     if a.sheet:
         sheet(os.path.join(OUT, "contact_sheet.png"))
+        return
+    if a.sheet_v2:
+        sheet_v2(a.out or os.path.join(REPO, "docs", "art", "fp_hands_v2"), a.capture)
         return
     if a.all:
         for asp in ASPECTS:
             for pose in POSES:
                 cmd = [sys.executable, os.path.abspath(__file__), "--pose", pose, "--mode", a.mode, "--aspect", asp,
-                       "--spot", a.spot, "--bg", a.bg, "--samples", str(a.samples), "--height", str(a.height)]
+                       "--spot", a.spot, "--bg", a.bg, "--samples", str(a.samples), "--height", str(a.height),
+                       "--light", a.light] + (["--outfit", a.outfit] if a.outfit else [])
                 subprocess.run(cmd + (["--out", a.out] if a.out else []), check=False)
         return
     render_one(a)

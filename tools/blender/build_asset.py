@@ -73,6 +73,16 @@ def content_hash(asset, render, mood, size):
         h.update(str(sorted((tuple(sorted(p.vertices)), tuple(sorted(tuple(round(c, 3) + 0.0 for c in cn[j].vector)
                                                                       for j in p.loop_indices)))
                             for p in me.polygons)).encode())
+        # vertex colours, skin weights and bones (only on the pieces that have them: other hashes are unchanged)
+        for ca in me.color_attributes:
+            h.update(b"".join(b"%.3f,%.3f,%.3f;" % tuple(d.color[:3]) for d in ca.data))
+        if ob.vertex_groups:
+            names = [g.name for g in ob.vertex_groups]
+            h.update(json.dumps(names).encode())
+            h.update(b"".join(b"%d:%d:%.4f;" % (v.index, g.group, g.weight) for v in me.vertices for g in v.groups))
+        if ob.parent is not None and ob.parent.type == "ARMATURE":
+            for b in ob.parent.data.bones:
+                h.update(b"%s %.5f,%.5f,%.5f %.5f,%.5f,%.5f;" % (b.name.encode(), *b.head_local, *b.tail_local))
         for slot in ob.material_slots:
             if slot.material and slot.material.node_tree:
                 for n in slot.material.node_tree.nodes:

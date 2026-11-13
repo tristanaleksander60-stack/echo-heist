@@ -5972,6 +5972,1662 @@
    "slot": "cap",
    "variant": "Trapper"
   },
+  "Rookie_FPH_Left_Block": {
+   "model": "Rookie_FPHands",
+   "size": [
+    0.066,
+    0.058,
+    0.035
+   ],
+   "tris": 360,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.033,
+    -0.029,
+    0.021
+   ],
+   "boundsMax": [
+    0.033,
+    0.029,
+    0.056
+   ],
+   "origin": [
+    -0.18,
+    0.0,
+    0.04
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "fp2": {
+    "side": "Left",
+    "joint": "Block",
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "centre": [
+     0.0,
+     0.0,
+     0.194
+    ],
+    "v2": true,
+    "slot": "sweater",
+    "variant": "Block"
+   }
+  },
+  "Rookie_FPH_Left_CuffKnit": {
+   "model": "Rookie_FPHands",
+   "size": [
+    0.073,
+    0.064,
+    0.036
+   ],
+   "tris": 784,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.036,
+    -0.032,
+    -0.01
+   ],
+   "boundsMax": [
+    0.036,
+    0.032,
+    0.027
+   ],
+   "origin": [
+    -0.18,
+    0.0,
+    0.04
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVES / the knit tone), lifted for first person",
+   "fp2": {
+    "side": "Left",
+    "joint": "CuffKnit",
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "centre": [
+     0.0,
+     0.0,
+     0.0425
+    ],
+    "v2": true,
+    "slot": "gloves",
+    "variant": "Knit"
+   }
+  },
+  "Rookie_FPH_Left_CuffLeather": {
+   "model": "Rookie_FPHands",
+   "size": [
+    0.081,
+    0.073,
+    0.042
+   ],
+   "tris": 816,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.04,
+    -0.036,
+    -0.011
+   ],
+   "boundsMax": [
+    0.04,
+    0.036,
+    0.032
+   ],
+   "origin": [
+    -0.18,
+    0.0,
+    0.04
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVES / the knit tone), lifted for first person",
+   "fp2": {
+    "side": "Left",
+    "joint": "CuffLeather",
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "centre": [
+     0.0,
+     0.0,
+     0.0525
+    ],
+    "v2": true,
+    "slot": "gloves",
+    "variant": "Leather"
+   }
+  },
+  "Rookie_FPH_Left_Glove": {
+   "model": "Rookie_FPHands_L",
+   "size": [
+    0.101,
+    0.053,
+    0.239
+   ],
+   "tris": 2600,
+   "class": "medium",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.042,
+    -0.029,
+    -0.149
+   ],
+   "boundsMax": [
+    0.059,
+    0.024,
+    0.09
+   ],
+   "origin": [
+    -0.18,
+    0.0,
+    0.04
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVES / the knit tone), lifted for first person",
+   "fp2": {
+    "side": "Left",
+    "joint": "Glove",
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "centre": [
+     0.0421,
+     -0.0116,
+     -0.1469
+    ],
+    "v2": true,
+    "skinned": true,
+    "bones": [
+     {
+      "name": "Root",
+      "bone": "L_Root",
+      "parent": null,
+      "hinge": [
+       0.0,
+       0.0,
+       0.2
+      ],
+      "look": [
+       0.0,
+       0.0,
+       1.0
+      ],
+      "up": [
+       0.0,
+       1.0,
+       0.0
+      ]
+     },
+     {
+      "name": "Forearm",
+      "bone": "L_Forearm",
+      "parent": "Root",
+      "hinge": [
+       0.0,
+       0.0,
+       0.2
+      ],
+      "look": [
+       0.0,
+       0.0,
+       1.0
+      ],
+      "up": [
+       0.0,
+       1.0,
+       0.0
+      ]
+     },
+     {
+      "name": "Hand",
+      "bone": "L_Hand",
+      "parent": "Root",
+      "hinge": [
+       0.0,
+       0.0,
+       0.2
+      ],
+      "look": [
+       0.0,
+       0.0,
+       -1.0
+      ],
+      "up": [
+       0.0,
+       1.0,
+       0.0
+      ]
+     },
+     {
+      "name": "Index1",
+      "bone": "L_Index1",
+      "parent": "Hand",
+      "hinge": [
+       0.15,
+       0.01,
+       -0.17
+      ],
+      "look": [
+       0.0871,
+       -0.0349,
+       -0.9956
+      ],
+      "up": [
+       0.003,
+       0.9994,
+       -0.0348
+      ]
+     },
+     {
+      "name": "Index2",
+      "bone": "L_Index2",
+      "parent": "Index1",
+      "hinge": [
+       0.161,
+       0.0056,
+       -0.2954
+      ],
+      "look": [
+       0.0865,
+       -0.1219,
+       -0.9888
+      ],
+      "up": [
+       0.0106,
+       0.9925,
+       -0.1214
+      ]
+     },
+     {
+      "name": "Index3",
+      "bone": "L_Index3",
+      "parent": "Index2",
+      "hinge": [
+       0.1688,
+       -0.0054,
+       -0.3844
+      ],
+      "look": [
+       0.0853,
+       -0.2079,
+       -0.9744
+      ],
+      "up": [
+       0.0181,
+       0.9781,
+       -0.2071
+      ]
+     },
+     {
+      "name": "IndexTip",
+      "bone": "L_IndexTip",
+      "parent": "Index3",
+      "hinge": [
+       0.1749,
+       -0.0203,
+       -0.4546
+      ],
+      "look": [
+       0.0853,
+       -0.2079,
+       -0.9744
+      ],
+      "up": [
+       0.0181,
+       0.9781,
+       -0.2071
+      ]
+     },
+     {
+      "name": "Middle1",
+      "bone": "L_Middle1",
+      "parent": "Hand",
+      "hinge": [
+       0.05,
+       0.014,
+       -0.186
+      ],
+      "look": [
+       0.0262,
+       -0.0349,
+       -0.999
+      ],
+      "up": [
+       0.0009,
+       0.9994,
+       -0.0349
+      ]
+     },
+     {
+      "name": "Middle2",
+      "bone": "L_Middle2",
+      "parent": "Middle1",
+      "hinge": [
+       0.0536,
+       0.0092,
+       -0.3239
+      ],
+      "look": [
+       0.026,
+       -0.1219,
+       -0.9922
+      ],
+      "up": [
+       0.0032,
+       0.9925,
+       -0.1218
+      ]
+     },
+     {
+      "name": "Middle3",
+      "bone": "L_Middle3",
+      "parent": "Middle2",
+      "hinge": [
+       0.0562,
+       -0.0028,
+       -0.4211
+      ],
+      "look": [
+       0.0256,
+       -0.2079,
+       -0.9778
+      ],
+      "up": [
+       0.0054,
+       0.9781,
+       -0.2078
+      ]
+     },
+     {
+      "name": "MiddleTip",
+      "bone": "L_MiddleTip",
+      "parent": "Middle3",
+      "hinge": [
+       0.0582,
+       -0.019,
+       -0.4974
+      ],
+      "look": [
+       0.0256,
+       -0.2079,
+       -0.9778
+      ],
+      "up": [
+       0.0054,
+       0.9781,
+       -0.2078
+      ]
+     },
+     {
+      "name": "Ring1",
+      "bone": "L_Ring1",
+      "parent": "Hand",
+      "hinge": [
+       -0.05,
+       0.01,
+       -0.178
+      ],
+      "look": [
+       -0.0436,
+       -0.0349,
+       -0.9984
+      ],
+      "up": [
+       -0.0015,
+       0.9994,
+       -0.0349
+      ]
+     },
+     {
+      "name": "Ring2",
+      "bone": "L_Ring2",
+      "parent": "Ring1",
+      "hinge": [
+       -0.0557,
+       0.0055,
+       -0.3078
+      ],
+      "look": [
+       -0.0433,
+       -0.1219,
+       -0.9916
+      ],
+      "up": [
+       -0.0053,
+       0.9925,
+       -0.1218
+      ]
+     },
+     {
+      "name": "Ring3",
+      "bone": "L_Ring3",
+      "parent": "Ring2",
+      "hinge": [
+       -0.0597,
+       -0.0057,
+       -0.399
+      ],
+      "look": [
+       -0.0427,
+       -0.2079,
+       -0.9772
+      ],
+      "up": [
+       -0.0091,
+       0.9781,
+       -0.2077
+      ]
+     },
+     {
+      "name": "RingTip",
+      "bone": "L_RingTip",
+      "parent": "Ring3",
+      "hinge": [
+       -0.0628,
+       -0.0211,
+       -0.4713
+      ],
+      "look": [
+       -0.0427,
+       -0.2079,
+       -0.9772
+      ],
+      "up": [
+       -0.0091,
+       0.9781,
+       -0.2077
+      ]
+     },
+     {
+      "name": "Pinky1",
+      "bone": "L_Pinky1",
+      "parent": "Hand",
+      "hinge": [
+       -0.142,
+       -0.002,
+       -0.156
+      ],
+      "look": [
+       -0.1217,
+       -0.0523,
+       -0.9912
+      ],
+      "up": [
+       -0.0064,
+       0.9986,
+       -0.0519
+      ]
+     },
+     {
+      "name": "Pinky2",
+      "bone": "L_Pinky2",
+      "parent": "Pinky1",
+      "hinge": [
+       -0.1542,
+       -0.0072,
+       -0.2551
+      ],
+      "look": [
+       -0.1204,
+       -0.1564,
+       -0.9803
+      ],
+      "up": [
+       -0.0191,
+       0.9877,
+       -0.1553
+      ]
+     },
+     {
+      "name": "Pinky3",
+      "bone": "L_Pinky3",
+      "parent": "Pinky2",
+      "hinge": [
+       -0.1631,
+       -0.0188,
+       -0.3277
+      ],
+      "look": [
+       -0.1177,
+       -0.2588,
+       -0.9587
+      ],
+      "up": [
+       -0.0315,
+       0.9659,
+       -0.2569
+      ]
+     },
+     {
+      "name": "PinkyTip",
+      "bone": "L_PinkyTip",
+      "parent": "Pinky3",
+      "hinge": [
+       -0.1706,
+       -0.0354,
+       -0.389
+      ],
+      "look": [
+       -0.1177,
+       -0.2588,
+       -0.9587
+      ],
+      "up": [
+       -0.0315,
+       0.9659,
+       -0.2569
+      ]
+     },
+     {
+      "name": "Thumb1",
+      "bone": "L_Thumb1",
+      "parent": "Hand",
+      "hinge": [
+       0.128,
+       -0.03,
+       0.06
+      ],
+      "look": [
+       0.5486,
+       -0.2793,
+       -0.788
+      ],
+      "up": [
+       0.5591,
+       0.8233,
+       0.0975
+      ]
+     },
+     {
+      "name": "Thumb2",
+      "bone": "L_Thumb2",
+      "parent": "Thumb1",
+      "hinge": [
+       0.1949,
+       -0.0641,
+       -0.0361
+      ],
+      "look": [
+       0.3397,
+       -0.1998,
+       -0.9191
+      ],
+      "up": [
+       0.6045,
+       0.795,
+       0.0506
+      ]
+     },
+     {
+      "name": "Thumb3",
+      "bone": "L_Thumb3",
+      "parent": "Thumb2",
+      "hinge": [
+       0.2262,
+       -0.0825,
+       -0.1207
+      ],
+      "look": [
+       0.2394,
+       -0.1596,
+       -0.9577
+      ],
+      "up": [
+       0.6167,
+       0.7869,
+       0.023
+      ]
+     },
+     {
+      "name": "ThumbTip",
+      "bone": "L_ThumbTip",
+      "parent": "Thumb3",
+      "hinge": [
+       0.2449,
+       -0.0949,
+       -0.1954
+      ],
+      "look": [
+       0.2394,
+       -0.1596,
+       -0.9577
+      ],
+      "up": [
+       0.6167,
+       0.7869,
+       0.023
+      ]
+     }
+    ],
+    "scale": 0.2
+   }
+  },
+  "Rookie_FPH_Left_Sleeve": {
+   "model": "Rookie_FPHands",
+   "size": [
+    0.084,
+    0.076,
+    0.519
+   ],
+   "tris": 840,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.042,
+    -0.038,
+    0.02
+   ],
+   "boundsMax": [
+    0.042,
+    0.038,
+    0.54
+   ],
+   "origin": [
+    -0.18,
+    0.0,
+    0.04
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "fp2": {
+    "side": "Left",
+    "joint": "Sleeve",
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "centre": [
+     0.0,
+     0.0,
+     1.4
+    ],
+    "v2": true
+   }
+  },
+  "Rookie_FPH_Left_Stripes": {
+   "model": "Rookie_FPHands",
+   "size": [
+    0.071,
+    0.064,
+    0.06
+   ],
+   "tris": 640,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.035,
+    -0.032,
+    0.092
+   ],
+   "boundsMax": [
+    0.035,
+    0.032,
+    0.152
+   ],
+   "origin": [
+    -0.18,
+    0.0,
+    0.04
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "fp2": {
+    "side": "Left",
+    "joint": "Stripes",
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "centre": [
+     0.0,
+     0.0,
+     0.61
+    ],
+    "v2": true,
+    "slot": "sweater",
+    "variant": "Stripes"
+   }
+  },
+  "Rookie_FPH_Left_Watch": {
+   "model": "Rookie_FPHands",
+   "size": [
+    0.07,
+    0.07,
+    0.028
+   ],
+   "tris": 648,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.035,
+    -0.032,
+    0.066
+   ],
+   "boundsMax": [
+    0.035,
+    0.039,
+    0.094
+   ],
+   "origin": [
+    -0.18,
+    0.0,
+    0.04
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "fp2": {
+    "side": "Left",
+    "joint": "Watch",
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "centre": [
+     0.0,
+     0.0177,
+     0.4
+    ],
+    "v2": true
+   }
+  },
+  "Rookie_FPH_Right_Block": {
+   "model": "Rookie_FPHands",
+   "size": [
+    0.066,
+    0.058,
+    0.035
+   ],
+   "tris": 360,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.033,
+    -0.029,
+    0.021
+   ],
+   "boundsMax": [
+    0.033,
+    0.029,
+    0.056
+   ],
+   "origin": [
+    0.18,
+    0.0,
+    0.04
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "fp2": {
+    "side": "Right",
+    "joint": "Block",
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "centre": [
+     0.0,
+     0.0,
+     0.194
+    ],
+    "v2": true,
+    "slot": "sweater",
+    "variant": "Block"
+   }
+  },
+  "Rookie_FPH_Right_CuffKnit": {
+   "model": "Rookie_FPHands",
+   "size": [
+    0.073,
+    0.064,
+    0.036
+   ],
+   "tris": 784,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.036,
+    -0.032,
+    -0.01
+   ],
+   "boundsMax": [
+    0.036,
+    0.032,
+    0.027
+   ],
+   "origin": [
+    0.18,
+    0.0,
+    0.04
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVES / the knit tone), lifted for first person",
+   "fp2": {
+    "side": "Right",
+    "joint": "CuffKnit",
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "centre": [
+     0.0,
+     0.0,
+     0.0425
+    ],
+    "v2": true,
+    "slot": "gloves",
+    "variant": "Knit"
+   }
+  },
+  "Rookie_FPH_Right_CuffLeather": {
+   "model": "Rookie_FPHands",
+   "size": [
+    0.081,
+    0.073,
+    0.042
+   ],
+   "tris": 816,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.04,
+    -0.036,
+    -0.011
+   ],
+   "boundsMax": [
+    0.04,
+    0.036,
+    0.032
+   ],
+   "origin": [
+    0.18,
+    0.0,
+    0.04
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVES / the knit tone), lifted for first person",
+   "fp2": {
+    "side": "Right",
+    "joint": "CuffLeather",
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "centre": [
+     0.0,
+     0.0,
+     0.0525
+    ],
+    "v2": true,
+    "slot": "gloves",
+    "variant": "Leather"
+   }
+  },
+  "Rookie_FPH_Right_Glove": {
+   "model": "Rookie_FPHands_R",
+   "size": [
+    0.101,
+    0.053,
+    0.239
+   ],
+   "tris": 2600,
+   "class": "medium",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.059,
+    -0.029,
+    -0.149
+   ],
+   "boundsMax": [
+    0.042,
+    0.024,
+    0.09
+   ],
+   "origin": [
+    0.18,
+    0.0,
+    0.04
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVES / the knit tone), lifted for first person",
+   "fp2": {
+    "side": "Right",
+    "joint": "Glove",
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "centre": [
+     -0.0421,
+     -0.0116,
+     -0.1469
+    ],
+    "v2": true,
+    "skinned": true,
+    "bones": [
+     {
+      "name": "Root",
+      "bone": "R_Root",
+      "parent": null,
+      "hinge": [
+       0.0,
+       0.0,
+       0.2
+      ],
+      "look": [
+       0.0,
+       0.0,
+       1.0
+      ],
+      "up": [
+       0.0,
+       1.0,
+       0.0
+      ]
+     },
+     {
+      "name": "Forearm",
+      "bone": "R_Forearm",
+      "parent": "Root",
+      "hinge": [
+       0.0,
+       0.0,
+       0.2
+      ],
+      "look": [
+       0.0,
+       0.0,
+       1.0
+      ],
+      "up": [
+       0.0,
+       1.0,
+       0.0
+      ]
+     },
+     {
+      "name": "Hand",
+      "bone": "R_Hand",
+      "parent": "Root",
+      "hinge": [
+       0.0,
+       0.0,
+       0.2
+      ],
+      "look": [
+       0.0,
+       0.0,
+       -1.0
+      ],
+      "up": [
+       0.0,
+       1.0,
+       0.0
+      ]
+     },
+     {
+      "name": "Index1",
+      "bone": "R_Index1",
+      "parent": "Hand",
+      "hinge": [
+       -0.15,
+       0.01,
+       -0.17
+      ],
+      "look": [
+       -0.0871,
+       -0.0349,
+       -0.9956
+      ],
+      "up": [
+       -0.003,
+       0.9994,
+       -0.0348
+      ]
+     },
+     {
+      "name": "Index2",
+      "bone": "R_Index2",
+      "parent": "Index1",
+      "hinge": [
+       -0.161,
+       0.0056,
+       -0.2954
+      ],
+      "look": [
+       -0.0865,
+       -0.1219,
+       -0.9888
+      ],
+      "up": [
+       -0.0106,
+       0.9925,
+       -0.1214
+      ]
+     },
+     {
+      "name": "Index3",
+      "bone": "R_Index3",
+      "parent": "Index2",
+      "hinge": [
+       -0.1688,
+       -0.0054,
+       -0.3844
+      ],
+      "look": [
+       -0.0853,
+       -0.2079,
+       -0.9744
+      ],
+      "up": [
+       -0.0181,
+       0.9781,
+       -0.2071
+      ]
+     },
+     {
+      "name": "IndexTip",
+      "bone": "R_IndexTip",
+      "parent": "Index3",
+      "hinge": [
+       -0.1749,
+       -0.0203,
+       -0.4546
+      ],
+      "look": [
+       -0.0853,
+       -0.2079,
+       -0.9744
+      ],
+      "up": [
+       -0.0181,
+       0.9781,
+       -0.2071
+      ]
+     },
+     {
+      "name": "Middle1",
+      "bone": "R_Middle1",
+      "parent": "Hand",
+      "hinge": [
+       -0.05,
+       0.014,
+       -0.186
+      ],
+      "look": [
+       -0.0262,
+       -0.0349,
+       -0.999
+      ],
+      "up": [
+       -0.0009,
+       0.9994,
+       -0.0349
+      ]
+     },
+     {
+      "name": "Middle2",
+      "bone": "R_Middle2",
+      "parent": "Middle1",
+      "hinge": [
+       -0.0536,
+       0.0092,
+       -0.3239
+      ],
+      "look": [
+       -0.026,
+       -0.1219,
+       -0.9922
+      ],
+      "up": [
+       -0.0032,
+       0.9925,
+       -0.1218
+      ]
+     },
+     {
+      "name": "Middle3",
+      "bone": "R_Middle3",
+      "parent": "Middle2",
+      "hinge": [
+       -0.0562,
+       -0.0028,
+       -0.4211
+      ],
+      "look": [
+       -0.0256,
+       -0.2079,
+       -0.9778
+      ],
+      "up": [
+       -0.0054,
+       0.9781,
+       -0.2078
+      ]
+     },
+     {
+      "name": "MiddleTip",
+      "bone": "R_MiddleTip",
+      "parent": "Middle3",
+      "hinge": [
+       -0.0582,
+       -0.019,
+       -0.4974
+      ],
+      "look": [
+       -0.0256,
+       -0.2079,
+       -0.9778
+      ],
+      "up": [
+       -0.0054,
+       0.9781,
+       -0.2078
+      ]
+     },
+     {
+      "name": "Ring1",
+      "bone": "R_Ring1",
+      "parent": "Hand",
+      "hinge": [
+       0.05,
+       0.01,
+       -0.178
+      ],
+      "look": [
+       0.0436,
+       -0.0349,
+       -0.9984
+      ],
+      "up": [
+       0.0015,
+       0.9994,
+       -0.0349
+      ]
+     },
+     {
+      "name": "Ring2",
+      "bone": "R_Ring2",
+      "parent": "Ring1",
+      "hinge": [
+       0.0557,
+       0.0055,
+       -0.3078
+      ],
+      "look": [
+       0.0433,
+       -0.1219,
+       -0.9916
+      ],
+      "up": [
+       0.0053,
+       0.9925,
+       -0.1218
+      ]
+     },
+     {
+      "name": "Ring3",
+      "bone": "R_Ring3",
+      "parent": "Ring2",
+      "hinge": [
+       0.0597,
+       -0.0057,
+       -0.399
+      ],
+      "look": [
+       0.0427,
+       -0.2079,
+       -0.9772
+      ],
+      "up": [
+       0.0091,
+       0.9781,
+       -0.2077
+      ]
+     },
+     {
+      "name": "RingTip",
+      "bone": "R_RingTip",
+      "parent": "Ring3",
+      "hinge": [
+       0.0628,
+       -0.0211,
+       -0.4713
+      ],
+      "look": [
+       0.0427,
+       -0.2079,
+       -0.9772
+      ],
+      "up": [
+       0.0091,
+       0.9781,
+       -0.2077
+      ]
+     },
+     {
+      "name": "Pinky1",
+      "bone": "R_Pinky1",
+      "parent": "Hand",
+      "hinge": [
+       0.142,
+       -0.002,
+       -0.156
+      ],
+      "look": [
+       0.1217,
+       -0.0523,
+       -0.9912
+      ],
+      "up": [
+       0.0064,
+       0.9986,
+       -0.0519
+      ]
+     },
+     {
+      "name": "Pinky2",
+      "bone": "R_Pinky2",
+      "parent": "Pinky1",
+      "hinge": [
+       0.1542,
+       -0.0072,
+       -0.2551
+      ],
+      "look": [
+       0.1204,
+       -0.1564,
+       -0.9803
+      ],
+      "up": [
+       0.0191,
+       0.9877,
+       -0.1553
+      ]
+     },
+     {
+      "name": "Pinky3",
+      "bone": "R_Pinky3",
+      "parent": "Pinky2",
+      "hinge": [
+       0.1631,
+       -0.0188,
+       -0.3277
+      ],
+      "look": [
+       0.1177,
+       -0.2588,
+       -0.9587
+      ],
+      "up": [
+       0.0315,
+       0.9659,
+       -0.2569
+      ]
+     },
+     {
+      "name": "PinkyTip",
+      "bone": "R_PinkyTip",
+      "parent": "Pinky3",
+      "hinge": [
+       0.1706,
+       -0.0354,
+       -0.389
+      ],
+      "look": [
+       0.1177,
+       -0.2588,
+       -0.9587
+      ],
+      "up": [
+       0.0315,
+       0.9659,
+       -0.2569
+      ]
+     },
+     {
+      "name": "Thumb1",
+      "bone": "R_Thumb1",
+      "parent": "Hand",
+      "hinge": [
+       -0.128,
+       -0.03,
+       0.06
+      ],
+      "look": [
+       -0.5486,
+       -0.2793,
+       -0.788
+      ],
+      "up": [
+       -0.5591,
+       0.8233,
+       0.0975
+      ]
+     },
+     {
+      "name": "Thumb2",
+      "bone": "R_Thumb2",
+      "parent": "Thumb1",
+      "hinge": [
+       -0.1949,
+       -0.0641,
+       -0.0361
+      ],
+      "look": [
+       -0.3397,
+       -0.1998,
+       -0.9191
+      ],
+      "up": [
+       -0.6045,
+       0.795,
+       0.0506
+      ]
+     },
+     {
+      "name": "Thumb3",
+      "bone": "R_Thumb3",
+      "parent": "Thumb2",
+      "hinge": [
+       -0.2262,
+       -0.0825,
+       -0.1207
+      ],
+      "look": [
+       -0.2394,
+       -0.1596,
+       -0.9577
+      ],
+      "up": [
+       -0.6167,
+       0.7869,
+       0.023
+      ]
+     },
+     {
+      "name": "ThumbTip",
+      "bone": "R_ThumbTip",
+      "parent": "Thumb3",
+      "hinge": [
+       -0.2449,
+       -0.0949,
+       -0.1954
+      ],
+      "look": [
+       -0.2394,
+       -0.1596,
+       -0.9577
+      ],
+      "up": [
+       -0.6167,
+       0.7869,
+       0.023
+      ]
+     }
+    ],
+    "scale": 0.2
+   }
+  },
+  "Rookie_FPH_Right_Sleeve": {
+   "model": "Rookie_FPHands",
+   "size": [
+    0.084,
+    0.076,
+    0.519
+   ],
+   "tris": 840,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.042,
+    -0.038,
+    0.02
+   ],
+   "boundsMax": [
+    0.042,
+    0.038,
+    0.54
+   ],
+   "origin": [
+    0.18,
+    0.0,
+    0.04
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "fp2": {
+    "side": "Right",
+    "joint": "Sleeve",
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "centre": [
+     0.0,
+     0.0,
+     1.4
+    ],
+    "v2": true
+   }
+  },
+  "Rookie_FPH_Right_Stripes": {
+   "model": "Rookie_FPHands",
+   "size": [
+    0.071,
+    0.064,
+    0.06
+   ],
+   "tris": 640,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.035,
+    -0.032,
+    0.092
+   ],
+   "boundsMax": [
+    0.035,
+    0.032,
+    0.152
+   ],
+   "origin": [
+    0.18,
+    0.0,
+    0.04
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "fp2": {
+    "side": "Right",
+    "joint": "Stripes",
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "centre": [
+     0.0,
+     0.0,
+     0.61
+    ],
+    "v2": true,
+    "slot": "sweater",
+    "variant": "Stripes"
+   }
+  },
   "Rookie_FP_Left_Block": {
    "model": "Rookie_FPArms",
    "size": [
