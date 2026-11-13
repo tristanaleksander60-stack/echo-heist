@@ -2720,13 +2720,13 @@ Config.Intro = {
 		ARMS = { 8, 6, 4, 0 },
 		POINTS = 6, -- control points per arm (POINTS - 1 Beams)
 		MOUTH_RADIUS = 3.5, -- where the arms pour into the throat
-		FAR_RADIUS = 26, -- the funnel's wide end, LENGTH studs out toward the town
-		LENGTH = 46,
+		FAR_RADIUS = 17, -- the funnel's wide end, LENGTH studs out toward the town
+		LENGTH = 32,
 		FLARE = 1.4, -- radius growth exponent (> 1: a trumpet)
 		TURNS = 0.85, -- turns of an arm from the far end to the mouth
 		CURVE = 0.35, -- Beam curve size per stud of radius (round spirals between the points)
-		WIDTH = { 1.6, 4.5 }, -- Beam width at the mouth, at the far end
-		ALPHA = { 0.25, 0.94 }, -- Beam transparency at the mouth, at the far end
+		WIDTH = { 0.7, 2.4 }, -- Beam width at the mouth, at the far end
+		ALPHA = { 0.5, 0.97 }, -- Beam transparency at the mouth, at the far end
 		COLOURS = { "#FFF1D8", "#C9C2FF" }, -- warm white into a pale violet
 		SPIN = 2.6, -- rad/s (x Config.Aurora.REDUCED_MOTION under reduced motion)
 	},

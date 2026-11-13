@@ -306,7 +306,7 @@ return function(test)
 		local head = { ST.hoardsworth.at[1], ST.hoardsworth.at[2] + 7, ST.hoardsworth.at[3] }
 		for _, k in hoard.keys do
 			Assert.truthy(dist(k.pos, head) < 18.5, "close on Hoardsworth")
-			Assert.truthy(angle(k.pos, k.look, ST.globe.centre) > 25, "the globe is not behind him filling the frame")
+			Assert.truthy(angle(k.pos, k.look, ST.globe.centre) > 40, "the globe is not behind him filling the frame")
 		end
 	end)
 

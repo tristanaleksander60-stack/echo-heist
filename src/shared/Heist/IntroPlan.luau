@@ -231,8 +231,8 @@ IntroPlan.SHOTS = table.freeze({
 		caption = "HOARD",
 		captionAt = 0.6,
 		keys = {
-			{ t = 0, pos = { 1.5, 130.6, -172.0 }, look = { -9.6, 137.0, -185 }, fov = 50 },
-			{ t = 1, pos = { -1.6, 131.2, -176.4 }, look = { -9.4, 137.3, -185 }, fov = 40 },
+			{ t = 0, pos = { 7.0, 130.9, -178.5 }, look = { -9.6, 137.0, -185 }, fov = 50 },
+			{ t = 1, pos = { 3.5, 131.3, -180.5 }, look = { -9.4, 137.3, -185 }, fov = 40 },
 		},
 		events = {
 			{ at = 0, kind = "spawn", id = "hoardsworth" },
@@ -252,7 +252,7 @@ IntroPlan.SHOTS = table.freeze({
 		caption = "EVERY",
 		captionAt = 1.3,
 		keys = {
-			{ t = 0, pos = { 60, 139, -137 }, look = { 55.2, 152.4, -154.4 }, fov = 55 },
+			{ t = 0, pos = { 69.7, 140.6, -142.2 }, look = { 55.2, 152.4, -154.4 }, fov = 55 },
 			{ t = 0.5, pos = { 72, 121, -110 }, look = { 50, 146, -160 }, fov = 50 },
 			{ t = 1, pos = { 78, 104, -86 }, look = { 30, 140, -178 }, fov = 46 },
 		},

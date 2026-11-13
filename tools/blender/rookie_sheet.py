@@ -9,8 +9,8 @@ Writes docs/art/rookie_sheet.png:
   row 2  the same frames with the Rookie 48 px tall, shown 3x with nearest-neighbour (PLAN_STEAM_PLUS A4: 48 px read)
   row 3  the four faces (idle, smug, shocked, busted) close up
   row 4  the first-person arms in four outfits, as Heist/Viewmodel.fromOutfit builds them from the same pieces
-         (sleeve, glove in the glove colour, the gloves slot's cuff, crew stripes or the colour-block cuff), raised in
-         front of the eye like the viewmodel's rest pose
+         (sleeve, glove in the glove colour, the gloves slot's cuff, crew stripes or the colour-block cuff), raised
+         forward about the elbow, seen from the front
 Lights are kit_preview's Heist Night approximation, the floor the runtime floor colour. Evidence rung R0 (offline
 render of the real meshes), not a Studio capture. Colours: crew = Palette.CLONE_HUES, gloves = Config.Rookie.GLOVES.
 """
@@ -218,8 +218,8 @@ def main(argv):
     vms = []
     for i, (gloves, sweater, ci) in enumerate(VM_LOOKS):
         p = os.path.join(tmp, f"vm_{i}.png")
-        render(p, a.size, a.samples, lambda g=gloves, sw=sweater, ci=ci: arms(g, sw, CREW[ci]), (0, -0.55, 2.05), 180,
-               22, 2.7, 46)
+        render(p, a.size, a.samples, lambda g=gloves, sw=sweater, ci=ci: arms(g, sw, CREW[ci]), (0, -0.75, 2.0), -32,
+               16, 4.2, 40)
         vms.append((p, f"arms: {gloves} gloves, {sweater}"))
     print(sheet((looks, faces, vms), a.size, OUT))
 

@@ -515,7 +515,7 @@ def vortex(st, P_, cam_pos):
         o = bpy.data.objects.new("Vortex", me)
         bpy.context.scene.collection.objects.link(o)
         # UV v runs from the mouth (0) to the far end (1): bright and warm at the mouth, faint violet out there
-        me.materials.append(gradient_mat(f"Vortex{arm}", col0, col1, 2.6, alphas[0], alphas[-1]))
+        me.materials.append(gradient_mat(f"Vortex{arm}", col0, col1, 1.3, alphas[0], alphas[-1]))
         o.visible_shadow = False
 
 
