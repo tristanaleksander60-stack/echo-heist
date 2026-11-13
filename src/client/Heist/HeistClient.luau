@@ -180,6 +180,7 @@ function HeistClient.start()
 	local cutaway = CutAway.new(camera)
 	-- First person (PLAN_FIRST_PERSON FP): the hands, look-to-interact and Gus's edge warning.
 	local momentsRef: any = nil -- MomentDirector, made after the HUD (the hands hold during its hit-stop)
+	local lookRef: any = nil -- LookTarget, made after the hands
 	RookieAnim.start() -- your character in the Rookie's own walk, run, idle, jump, fall and land
 	local hands = Viewmodel.new(state, {
 		camera = camera,
@@ -190,12 +191,17 @@ function HeistClient.start()
 		frozen = function(): boolean
 			return momentsRef ~= nil and momentsRef.frozen(os.clock())
 		end,
+		-- something you can use under the reticle: the hands raise and open (fp_hands.md rule 13)
+		target = function(): boolean
+			return lookRef ~= nil and lookRef.current() ~= nil
+		end,
 	})
 	local look = LookTarget.new(state, {
 		world = world,
 		isTouch = HudCommon.usingTouch,
 		usingGamepad = HudCommon.usingGamepad,
 	})
+	lookRef = look
 	local backdrop = Backdrop.new()
 	backdropRef = backdrop
 	backdrop.setReducedMotion(state.reduced == true)

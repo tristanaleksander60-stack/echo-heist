@@ -515,19 +515,61 @@ Config.Heist.CAMERA = {
 
 -- First person: hands, look-to-interact, the reduced HUD and Gus's screen-edge warning (PLAN_FIRST_PERSON FP).
 -- Client only, nothing here decides gameplay (the server and the sim still do). The camera's own numbers are
--- Config.Heist.CAMERA.FP. Hand poses are camera space at full size (x right, y up, z forward is negative),
--- studs and degrees (rx pitch, ry yaw, rz roll), before VIEWMODEL.SCALE.
+-- Config.Heist.CAMERA.FP. Hand poses are VIEWMODEL camera space at full size (x right, y up, z forward is
+-- negative; studs and degrees: rx pitch, ry yaw, rz roll) as a camera of VIEW_FOV sees them, before SCALE.
+-- Research and rules: docs/research/fp_hands.md (the numbers there are these).
 Config.FirstPerson = {
 	VIEWMODEL = {
 		-- Drawn at this size and this much closer to the eye: it looks the same, but sticks out only this share as
 		-- far, so it stays inside the character's own collision (vault "First-Person Viewmodels" §3, rule 1).
-		SCALE = 0.4,
-		FOV_REF = 70, -- the poses are authored at this FOV; x / y follow tan(fov / 2) so hands keep their screen spot
+		SCALE = 0.16,
+		-- The viewmodel FOV (vertical degrees; Source's 54-68 horizontal on 4:3 = 42-54 vertical). The hands are
+		-- drawn as a VIEW_FOV camera would see them, whatever the camera's FOV (the comfort slider 60-90): every
+		-- part's camera-space centre maps (x, y, z) -> (k x, k y, z), k = tan(fov / 2) / tan(VIEW_FOV / 2), its
+		-- axes are mapped and its size scaled per axis (ViewmodelMath.project). Less corner stretch, same look at
+		-- any FOV (fp_hands.md rule 5).
+		VIEW_FOV = 50,
 		KIT = "CharacterKit", -- ReplicatedStorage folder the CHARACTER track publishes
-		KIT_MODEL = "Rookie_Viewmodel", -- forearms + gloved hands with GripR / GripL attachments
+		KIT_MODEL = "Rookie_Viewmodel", -- the old body-piece arms: the fallback when Rookie_FPArms is missing
 		KIT_CHECK_SECONDS = 2, -- the placeholder hands are swapped for the kit model once it arrives
-		-- Kit arms in your outfit (Viewmodel.fromOutfit): Breton stripes down the sleeve, as shares of the elbow ->
-		-- wrist line, their width and radii (just over the sleeve's 0.27 -> 0.25 studs).
+		-- The dedicated first-person arms (Rookie_FPArms, RookieData.fpArms; fp_hands.md rules 1-4, 9-11): per hand
+		-- set (one palm, 15 finger segments, the sleeve, one cuff, the stripes or block, the left watch) at most
+		-- TRI_BUDGET triangles (the art gate counts them; the unit spec checks RookieData).
+		ARMS = {
+			TRI_BUDGET = 2700,
+			-- materials (Enum.Material names): matte knit, a soft leather sheen, a matte sweater
+			MATERIALS = { Gloves_Knit = "Fabric", Gloves_Leather = "Leather", sleeve = "Fabric", crew = "Fabric" },
+			-- the glove colour in first person: Config.Rookie.GLOVES lifted this share toward GLOVE_LIFT_TO (a
+			-- Palette key), so the indigo knit never sinks to black in a dim room (rule 12); the body keeps the plain
+			-- colour
+			GLOVE_LIFT = 0.16,
+			GLOVE_LIFT_TO = "marble",
+			-- the forearm aims at this off-screen elbow (viewmodel camera space, full size): the sleeve always
+			-- enters from the bottom of the screen, whatever the hand does (rule 6)
+			ELBOW = { R = { 2.05, -2.15, -0.9 }, L = { -2.05, -2.15, -0.9 } },
+			ELBOW_FOLLOW = 0.85, -- share of the hand's move from its rest the elbow follows (ViewmodelMath.elbow)
+			WRIST_ROLL = 0.6, -- share of the hand's roll the forearm follows (the sleeve twists less than the hand)
+		},
+		-- A client-only fill so the near hands read in every room (rule 12): a PointLight at the eye, no shadows,
+		-- range in world studs (the rig sits within ~0.6 of the eye at SCALE; walls beyond get almost none).
+		FILL = { ENABLED = true, BRIGHTNESS = 0.55, RANGE = 1.4, COLOUR = "#FFEBD8", OFFSET = { 0, 0.15, 0.1 } },
+		-- When the hands show (rule 13). MODE "lowered": at idle they sink by LOWER (added to the rest pose) with
+		-- only the backs of the gloves peeking in; they raise for a look target, carrying, any action, the
+		-- onboarding point and REWIND. "hidden": idle drops them out of view (DROP) and the rig is unparented.
+		-- "always": the raised rest at all times.
+		VISIBILITY = {
+			MODE = "lowered",
+			LOWER = {
+				R = { 0.1, -0.26, 0.18, -6, 4, -4 },
+				L = { -0.1, -0.26, 0.18, -6, -4, 4 },
+			},
+			DROP = { 0, -1.6, 0.4, -30, 0, 0 }, -- "hidden": added at idle (off the bottom of the screen)
+			RAISE_SECONDS = 0.16,
+			LOWER_SECONDS = 0.45,
+			LOWER_DELAY = 0.6, -- s after the last reason to raise
+		},
+		-- Kit arms in your outfit, the OLD body-piece path (Viewmodel.fromOutfit fallback without Rookie_FPArms):
+		-- Breton stripes down the sleeve, as shares of the elbow -> wrist line, their width and radii.
 		SLEEVE_STRIPES = { 0.3, 0.56 },
 		STRIPE_WIDTH = 0.09,
 		STRIPE_RADIUS = { 0.29, 0.283 },
@@ -540,133 +582,168 @@ Config.FirstPerson = {
 			watch = "goldHi",
 			band = "goldLo",
 		},
+		-- The raised rest (rules 6-7): hands in the lower corners, canted in 17 degrees, the thumb side rolled up
+		-- 24, the fingers pitched up 14 (the forearm comes up from the bottom edge to meet them).
 		REST = {
-			R = { 0.6, -0.62, -1.2, 10, -12, -8 },
-			L = { -0.6, -0.62, -1.2, 10, 12, 8 },
+			R = { 1.2, -0.84, -2.85, 34, 14, -12 },
+			L = { -1.2, -0.84, -2.85, 34, -14, 12 },
 		},
 		-- One pose per action; `hands` = which hands it moves. Envelope (s): rise, hold, fall (ViewmodelMath.envelope).
+		-- anticipate = { seconds, share }: the hand first pulls back that share of the move (a negative weight);
+		-- overshoot: the easeOutBack constant of the rise (1.5 = about 8 % past the pose, then it settles).
 		ACTIONS = {
 			reach = {
-				R = { 0.22, -0.32, -1.85, -12, -4, -18 },
-				L = { -0.62, -0.7, -1.15, 14, 12, 8 },
-				time = { 0.12, 0.1, 0.28 },
+				R = { 0.6, -0.55, -3.2, -4, 12, -14 },
+				L = { -1.3, -0.98, -2.75, 12, -17, 24 },
+				time = { 0.12, 0.08, 0.26 },
+				anticipate = { 0.07, 0.3 },
+				overshoot = 1.5,
 			},
-			push = { R = { 0.32, -0.22, -1.7, -78, -6, 0 }, time = { 0.1, 0.18, 0.32 } },
-			press = { R = { 0.18, -0.24, -1.75, -24, -2, -6 }, time = { 0.1, 0.12, 0.25 } },
+			push = {
+				R = { 0.6, -0.48, -3.3, 78, 8, -4 },
+				time = { 0.1, 0.18, 0.32 },
+				anticipate = { 0.06, 0.25 },
+				overshoot = 1.3,
+			},
+			press = {
+				R = { 0.5, -0.56, -3.35, -2, 12, -16 },
+				time = { 0.1, 0.12, 0.25 },
+				anticipate = { 0.05, 0.25 },
+				overshoot = 1.3,
+			},
 			stomp = {
-				R = { 0.78, -0.74, -1.1, 4, -24, -26 },
-				L = { -0.78, -0.74, -1.1, 4, 24, 26 },
+				R = { 1.45, -1.12, -2.6, 2, 28, -30 },
+				L = { -1.45, -1.12, -2.6, 2, -28, 30 },
 				time = { 0.08, 0.12, 0.3 },
 			},
-			-- REWIND: the left wrist comes up into view and the right index taps the watch.
+			-- REWIND: the left forearm comes across with the watch toward you; the right index taps it.
 			watch = {
-				R = { 0.08, -0.36, -1.08, 14, -34, -22 },
-				L = { -0.14, -0.44, -1.04, 42, 58, 78 },
+				R = { -0.22, -1.0, -2.2, 79.4, 34, -9.6 },
+				L = { -0.35, -0.62, -2.6, 45, -67, -8 },
 				time = { 0.14, 0.4, 0.3 },
-				tap = { 0.05, 6, 0.5 }, -- studs of tap travel, taps a second, share of the travel that goes down
+				tap = { 0.08, 6, 0.5 }, -- studs of tap travel, taps a second, share of the travel that goes down
+				anticipate = { 0.06, 0.15 },
+				overshoot = 1.3,
 			},
 			handsUp = {
-				R = { 0.72, 0.22, -1.1, 78, -6, -12 },
-				L = { -0.72, 0.22, -1.1, 78, 6, 12 },
+				R = { 1.12, 0.05, -2.75, 84, -8, -8 },
+				L = { -1.12, 0.05, -2.75, 84, 8, 8 },
 				time = { 0.15, 1.3, 0.45 },
+				overshoot = 1.4,
 			},
 		},
+		-- The onboarding look cue (state.fpPointing): the right arm comes up and in as the index points.
+		POINT = { R = { 0.95, -0.6, -3.0, 17, 33, 26 } },
 		CARRY = {
-			R = { 0.4, -0.5, -1.3, 0, 22, -72 },
-			L = { -0.4, -0.5, -1.3, 0, -22, 72 },
-			LOOT = { 0, -0.36, -1.45 }, -- where the held loot sits (full size, camera space)
+			R = { 0.56, -0.74, -2.55, 6, 30, -66 },
+			L = { -0.56, -0.74, -2.55, 6, -30, 66 },
+			LOOT = { 0, -0.64, -2.78 }, -- where the held loot sits (full size, viewmodel camera space)
 			LOOT_SIZE = 0.95, -- full-size studs the held loot's longest side is scaled to
 			BLEND_SECONDS = 0.18,
 		},
-		HIDDEN = { 0, -0.2, 0.12 }, -- added to both hands while you hide (a crouch-like lower)
+		HIDDEN = { 0, -0.3, 0.2 }, -- added to both hands while you hide (a crouch-like lower)
 		HIDDEN_SECONDS = 0.25,
-		-- Motion.
-		IDLE = { x = 0.008, y = 0.012, hzX = 0.13, hzY = 0.25 }, -- breathing sway (studs, Hz)
-		WALK = { x = 0.03, y = 0.035, rz = 2.5 }, -- walk bob at full speed (studs, degrees), synced to the head bob
+		-- Motion (rules 14-15).
+		IDLE = { x = 0.006, y = 0.01, hzX = 0.13, hzY = 0.25 }, -- breathing sway (studs, Hz), off while walking
+		-- walk bob at full speed (studs, degrees), in step with the head bob but LAG radians behind it
+		WALK = { x = 0.022, y = 0.028, rz = 1.6, LAG = 0.7 },
 		LAG = {
-			PER_DEG_S = 0.0011, -- studs of lag per degree a second of look speed
-			ROLL_PER_DEG_S = 0.018, -- degrees of roll per degree a second
-			MAX = 0.16, -- studs
-			MAX_ROLL = 7, -- degrees
-			FREQ = 4.5, -- spring (Hz)
-			DAMPING = 0.55, -- < 1: a small overshoot when you stop turning
+			PER_DEG_S = 0.0009, -- studs of lag per degree a second of look speed
+			ROLL_PER_DEG_S = 0.015, -- degrees of roll per degree a second
+			MAX = 0.12, -- studs
+			MAX_ROLL = 5, -- degrees
+			FREQ = 5, -- spring (Hz)
+			DAMPING = 0.6, -- < 1: one small overshoot when you stop turning
+			CARRY_FREQ = 3.8, -- carrying: a heavier, slower follow
+			CARRY_SCALE = 1.35, -- and a longer trail
 		},
 		-- Wall push: a ray from the eye; a wall closer than RANGE pulls the hands back and down (studs at
 		-- world size, i.e. already scaled; PULL is full-size camera space at a wall touching the eye).
-		WALL = { RANGE = 1.4, PULL = { 0, -0.22, 0.4 }, RATE = 14 },
+		WALL = { RANGE = 1.4, PULL = { 0, -0.5, 0.9 }, RATE = 14 },
+		NEAR = 0.15, -- world studs: no part of the rig comes nearer the eye (the near plane is 0.1)
 		-- The push and the plate glance: a door this close in front (studs), and a cooldown (s).
 		PUSH_RANGE = 3.2,
 		PUSH_CONE = 50, -- degrees off the look
 		PUSH_COOLDOWN = 1.5,
 		REACH_DEDUPE = 0.4, -- s: your Grab event does not replay the reach the GRAB press just played
-		-- Finger poses (REVIEW_STEAM_PLUS #10): the kit gloves (Rookie_Hands: palm + index, finger block and thumb in
-		-- two hinged segments each) or the placeholder's fingers turn about their hinges. Per joint { curl, across }
-		-- in degrees: curl folds toward the palm (- bends back), across swings the thumb over the palm. The hands
-		-- blend like the arms (rest, carry, then each action by its envelope, then the look-cue point) and every
-		-- joint follows its target through a spring (ViewmodelMath.fingers, Heist/Viewmodel).
+		-- Screen-safe rect for every pose (rule 8; tests project every part): NDC x as a share of the half-width,
+		-- y of the half-height; below the bottom edge is off screen (the sleeve leaves there). Raised, each palm stays in
+		-- view (its centre above PALM_MIN_Y).
+		SAFE = { X = 0.97, Y_TOP = 0.85, PALM_MIN_Y = -0.92 },
+		-- Fingers (rule 17). A pose gives each finger { curl, spread, bend }: curl = the base knuckle's fold
+		-- (degrees toward the palm; - bends back), the middle and tip joints follow by CHAIN, `bend` adds to those
+		-- two (a press's bent tip); spread fans the finger (toward the thumb +). The thumb: { curl, across } (across
+		-- swings it over the palm), its joints by THUMB_CHAIN. The hands blend like the arms (rest, the look-target
+		-- READY, carry, each action by its envelope, then the look-cue point) and every joint follows its target
+		-- through a spring. The old 6-joint keys (Index1/2, Fingers1/2, Thumb1/2) are derived for the placeholder
+		-- and the Rookie_Hands fallback (ViewmodelMath.fingers).
 		HANDS = {
 			FREQ = 9, -- spring Hz
-			DAMPING = 0.8,
+			DAMPING = 0.75,
+			CHAIN = { 1, 1.4, 0.8 }, -- MCP, PIP, DIP shares of a finger's curl
+			THUMB_CHAIN = { 0.5, 1, 0.9 },
+			FINGERS = { "index", "middle", "ring", "pinky", "thumb" },
 			POSES = {
-				open = { -- relaxed: a soft curl, the thumb loose
-					Index1 = { 14, 0 },
-					Index2 = { 12, 0 },
-					Fingers1 = { 22, 0 },
-					Fingers2 = { 18, 0 },
-					Thumb1 = { 8, 12 },
-					Thumb2 = { 8, 0 },
+				open = { -- relaxed: a soft cascading curl, more on the pinky side, the thumb resting by the index
+					index = { 14, 3, 0 },
+					middle = { 18, 1, 0 },
+					ring = { 22, -1, 0 },
+					pinky = { 27, -4, 0 },
+					thumb = { 12, 6 },
+				},
+				ready = { -- looking at something you can use: the hand opens a little, ready to take it
+					index = { 6, 6, 0 },
+					middle = { 8, 2, 0 },
+					ring = { 11, -2, 0 },
+					pinky = { 14, -7, 0 },
+					thumb = { 2, -6 },
 				},
 				reach = { -- spread wide as the hand goes for the loot
-					Index1 = { -6, 0 },
-					Index2 = { 2, 0 },
-					Fingers1 = { -4, 0 },
-					Fingers2 = { 4, 0 },
-					Thumb1 = { -10, -20 },
-					Thumb2 = { 0, 0 },
+					index = { -4, 10, 0 },
+					middle = { -2, 3, 0 },
+					ring = { 0, -4, 0 },
+					pinky = { 2, -12, 0 },
+					thumb = { -10, -22 },
 				},
 				grip = { -- holding the loot: wrapped round it
-					Index1 = { 74, 0 },
-					Index2 = { 66, 0 },
-					Fingers1 = { 80, 0 },
-					Fingers2 = { 72, 0 },
-					Thumb1 = { 30, 40 },
-					Thumb2 = { 30, 0 },
+					index = { 52, 2, 6 },
+					middle = { 56, 0, 6 },
+					ring = { 60, -2, 6 },
+					pinky = { 64, -4, 6 },
+					thumb = { 26, 34 },
 				},
 				push = { -- a flat palm on the door, fingers a touch bent back
-					Index1 = { -8, 0 },
-					Index2 = { -4, 0 },
-					Fingers1 = { -8, 0 },
-					Fingers2 = { -4, 0 },
-					Thumb1 = { 0, -8 },
-					Thumb2 = { 0, 0 },
+					index = { -10, 5, -6 },
+					middle = { -10, 1, -6 },
+					ring = { -9, -3, -6 },
+					pinky = { -8, -7, -6 },
+					thumb = { -6, -14 },
 				},
 				point = { -- the index straight out, the rest folded, the thumb over them
-					Index1 = { -4, 0 },
-					Index2 = { 0, 0 },
-					Fingers1 = { 86, 0 },
-					Fingers2 = { 82, 0 },
-					Thumb1 = { 32, 44 },
-					Thumb2 = { 30, 0 },
+					index = { -2, 0, -4 },
+					middle = { 72, 0, 12 },
+					ring = { 76, -2, 12 },
+					pinky = { 80, -4, 12 },
+					thumb = { 30, 40 },
 				},
 				press = { -- the index presses (the REWIND watch tap, a switch): its tip bent onto the button
-					Index1 = { 16, 0 },
-					Index2 = { 24, 0 },
-					Fingers1 = { 86, 0 },
-					Fingers2 = { 82, 0 },
-					Thumb1 = { 32, 44 },
-					Thumb2 = { 30, 0 },
+					index = { 10, 0, 14 },
+					middle = { 72, 0, 12 },
+					ring = { 76, -2, 12 },
+					pinky = { 80, -4, 12 },
+					thumb = { 30, 40 },
 				},
 				handsUp = { -- caught: fingers splayed
-					Index1 = { -10, 0 },
-					Index2 = { -4, 0 },
-					Fingers1 = { -10, 0 },
-					Fingers2 = { -6, 0 },
-					Thumb1 = { -14, -26 },
-					Thumb2 = { -4, 0 },
+					index = { -8, 12, -4 },
+					middle = { -8, 4, -4 },
+					ring = { -8, -5, -4 },
+					pinky = { -6, -14, -4 },
+					thumb = { -14, -26 },
 				},
 			},
-			ORDER = { "open", "reach", "grip", "push", "point", "press", "handsUp" }, -- renders and tests
+			ORDER = { "open", "ready", "reach", "grip", "push", "point", "press", "handsUp" }, -- renders and tests
 			REST = "open",
+			READY = "ready",
 			CARRY = "grip",
 			-- What each arm action does with the fingers, per hand (R / L).
 			ACTIONS = {
@@ -679,6 +756,7 @@ Config.FirstPerson = {
 			},
 			POINT = "point", -- while the onboarding look cue shows (state.fpPointing), the right hand points
 			POINT_BLEND = 0.25, -- s
+			READY_BLEND = 0.15, -- s
 		},
 	},
 	LOOK = {

@@ -1,10 +1,20 @@
 --!strict
--- Heist/Viewmodel: your first-person hands (PLAN_FIRST_PERSON FP; vault "First-Person Viewmodels"). A
--- local-only arms rig bound to the camera after the camera has moved (RenderPriority Camera + 2), shown only
--- while the camera is at your eyes (state.fpView, Heist/CameraDirector). Numbers in Config.FirstPerson
--- .VIEWMODEL, pose maths in Heist/ViewmodelMath (pure, Lune-tested).
+-- Heist/Viewmodel: your first-person hands (PLAN_FIRST_PERSON FP; vault "First-Person Viewmodels";
+-- docs/research/fp_hands.md). A local-only arms rig bound to the camera after the camera has moved (RenderPriority
+-- Camera + 2), shown only while the camera is at your eyes (state.fpView, Heist/CameraDirector). Numbers in
+-- Config.FirstPerson.VIEWMODEL, pose maths in Heist/ViewmodelMath and the arm assembly in Heist/FpRig (both pure,
+-- Lune-tested; the Blender preview tools/blender/fp_hands_preview.py runs the same code).
 --
--- The rig: ReplicatedStorage.CharacterKit.Rookie_Viewmodel (forearms + gloved hands with GripR / GripL
+-- The rig, best first: the DEDICATED first-person arms (Rookie_FPArms in CharacterKit.Pieces, Viewmodel.fromFpArms:
+-- a slim sleeve aimed at an off-screen elbow, a gloved hand with a palm, 4 fingers x 3 segments and a 3-segment
+-- thumb, your outfit's glove cuff and sweater stripes or block, the REWIND watch); else the body-piece arms (the
+-- old fromOutfit path); else the Rookie_Viewmodel model; else the placeholder below.
+-- Every part is drawn through the viewmodel FOV (Config VIEW_FOV, ViewmodelMath.project): as a narrower camera
+-- would draw it, whatever the camera's FOV, so the corners never stretch (rule 5). Visibility (rule 13): at idle
+-- the hands sink (VISIBILITY.MODE "lowered"), they raise for a look target, carrying, actions and REWIND. A weak
+-- client-only fill light keeps them readable in dim rooms (FILL, rule 12).
+--
+-- The old kit rig: ReplicatedStorage.CharacterKit.Rookie_Viewmodel (forearms + gloved hands with GripR / GripL
 -- attachments) when the CHARACTER track publishes it (checked every KIT_CHECK_SECONDS; each part follows the
 -- grip it is nearest to; a grip's -Z points along the fingers, +Y out of the back of the hand). Until then
 -- the placeholder: chunky gloved hands built from rounded parts in palette colours (a padded glove, four
@@ -42,6 +52,7 @@ local Outfit = require(Shared:WaitForChild("Heist"):WaitForChild("Outfit"))
 local RookieData = require(Shared:WaitForChild("Heist"):WaitForChild("RookieData")) :: any
 
 local FpMath = require(script.Parent:WaitForChild("FpMath"))
+local FpRig = require(script.Parent:WaitForChild("FpRig"))
 local ViewmodelMath = require(script.Parent:WaitForChild("ViewmodelMath"))
 
 local VM = Config.FirstPerson.VIEWMODEL
@@ -64,7 +75,11 @@ export type Finger = {
 }
 -- offsets: rigid part relative to the grip (scaled); fingers: the hinged segments (not in `parts`)
 export type Hand = { parts: { BasePart }, offsets: { CFrame }, fingers: { Finger } }
-export type Rig = { model: Model, R: Hand, L: Hand, kit: boolean }
+-- The dedicated arms: FpRig hands, the parts by piece name, the sides' outfit variants.
+export type FpArms = { R: FpRig.Hand, L: FpRig.Hand, parts: { [string]: BasePart } }
+-- fp: the dedicated arms (then R / L list every part of a side with its rest-pose offset from the grip, no
+-- fingers); base: every part's scaled size (the viewmodel projection scales it per axis each frame).
+export type Rig = { model: Model, R: Hand, L: Hand, kit: boolean, fp: FpArms?, base: { [BasePart]: Vector3 }? }
 
 local function colour(key: string): Color3
 	return (Palette :: any)[key] or Palette.plumHi
@@ -399,6 +414,106 @@ local function v3(t: { number }): Vector3
 	return Vector3.new(t[1], t[2], t[3])
 end
 
+-- The first-person glove colour: the outfit's glove colour lifted toward ARMS.GLOVE_LIFT_TO (rule 12).
+function Viewmodel.gloveColour(outfit: Outfit.Outfit): Color3
+	local A = VM.ARMS
+	local glove = Color3.fromHex(Outfit.gloveHex(outfit))
+	local to = (Palette :: any)[A.GLOVE_LIFT_TO] or Palette.marble
+	local c = glove:Lerp(to, A.GLOVE_LIFT)
+	-- 8-bit, as BasePart.Color stores it (so a part's colour compares equal to this)
+	return Color3.fromRGB(math.round(c.R * 255), math.round(c.G * 255), math.round(c.B * 255))
+end
+
+local function material(name: string?): Enum.Material?
+	if name == nil then
+		return nil
+	end
+	local ok, m = pcall(function(): Enum.Material
+		return (Enum.Material :: any)[name]
+	end)
+	return if ok then m else nil
+end
+
+-- The dedicated first-person arms (Rookie_FPArms, fp_hands.md) in your outfit: clones of CharacterKit.Pieces sized to
+-- VIEWMODEL.SCALE, the glove pieces in the lifted glove colour and material, the crew pieces in your hue, the sleeve
+-- in its knit material; assembled by Heist/FpRig every frame. nil when the kit lacks a piece (an older kit).
+-- R / L list every part of a side with its offset from the grip at the rest pose (tests, debug).
+function Viewmodel.fromFpArms(folder: Instance, outfitKey: string?, hue: Color3): Rig?
+	local pieces = folder:FindFirstChild("Pieces")
+	local data = RookieData.fpArms
+	if not pieces or not data or not data.Right or not data.Left then
+		return nil
+	end
+	local outfit = Outfit.fromKey(outfitKey)
+	local glove = Viewmodel.gloveColour(outfit)
+	local M = VM.ARMS.MATERIALS
+	local gloveMat = material(M[outfit.gloves])
+	local keep = FpRig.wears(outfit)
+	local s = VM.SCALE
+	local model = Instance.new("Model")
+	model.Name = Viewmodel.MODEL_NAME
+	local parts: { [string]: BasePart } = {}
+	local base: { [BasePart]: Vector3 } = {}
+	local hands: { [string]: FpRig.Hand } = {}
+	local sideParts: { [string]: { BasePart } } = { Right = {}, Left = {} }
+	for _, side in { "Right", "Left" } do
+		local hand = FpRig.build(CFrame, Vector3, side, data[side], s, keep)
+		for _, e in hand.entries do
+			local src = pieces:FindFirstChild(e.piece)
+			if not src or not src:IsA("BasePart") then
+				model:Destroy()
+				return nil
+			end
+			local p = src:Clone()
+			for _, c in p:GetChildren() do
+				if not (c:IsA("DataModelMesh") or c:IsA("SurfaceAppearance")) then
+					c:Destroy()
+				end
+			end
+			p.Size = v3(e.size) * s
+			if e.tint == "gloves" then
+				p.Color = glove
+				p.Material = gloveMat or p.Material
+			elseif e.tint == "crew" then
+				p.Color = hue
+				p.Material = material(M.crew) or p.Material
+			elseif e.joint == "Sleeve" then
+				p.Material = material(M.sleeve) or p.Material
+			end
+			quiet(p)
+			p.Parent = model
+			parts[e.piece] = p
+			base[p] = p.Size
+			table.insert(sideParts[side], p)
+		end
+		hands[side] = hand
+	end
+	-- R / L: each side's parts and their rest-pose offsets from the grip (the arm aimed at the rest elbow)
+	local function restHand(side: string, key: string): Hand
+		local handCf = CFrame.new(v3(VM.REST[key]) * s)
+			* CFrame.Angles(math.rad(VM.REST[key][4]), math.rad(VM.REST[key][5]), math.rad(VM.REST[key][6]))
+		local placed =
+			FpRig.place(CFrame, Vector3, hands[side], handCf, v3(VM.ARMS.ELBOW[key]) * s, {}, VM.ARMS.WRIST_ROLL)
+		local out: Hand = { parts = {}, offsets = {}, fingers = {} }
+		for _, pc in placed do
+			local p = parts[pc[1]]
+			if p then
+				table.insert(out.parts, p)
+				table.insert(out.offsets, handCf:ToObjectSpace(pc[2]))
+			end
+		end
+		return out
+	end
+	return {
+		model = model,
+		R = restHand("Right", "R"),
+		L = restHand("Left", "L"),
+		kit = true,
+		fp = { R = hands.Right, L = hands.Left, parts = parts },
+		base = base,
+	}
+end
+
 local function bodyOrigin(part: string): Vector3?
 	for _, b in RookieData.body do
 		if b.part == part then
@@ -415,6 +530,10 @@ end
 -- like any kit viewmodel (Viewmodel.fromKit). nil when a piece is missing (the plain Rookie_Viewmodel then).
 -- outfitKey: the player attribute "Outfit" (Outfit.key); nil = the default outfit.
 function Viewmodel.fromOutfit(folder: Instance, outfitKey: string?, hue: Color3): Rig?
+	local fp = Viewmodel.fromFpArms(folder, outfitKey, hue)
+	if fp then
+		return fp
+	end
 	local pieces = folder:FindFirstChild("Pieces")
 	if not pieces then
 		return nil
@@ -531,10 +650,11 @@ function Viewmodel.fromOutfit(folder: Instance, outfitKey: string?, hue: Color3)
 	return rig
 end
 
-local function poseFrame(cam: CFrame, pose: { number }, fit: number): CFrame
+-- A hand pose { x, y, z, rx, ry, rz } (viewmodel camera space, full size) as the grip's camera-space CFrame at the
+-- rig's scale (before the viewmodel projection, ViewmodelMath.project).
+function Viewmodel.poseFrame(pose: { number }): CFrame
 	local s = VM.SCALE
-	return cam
-		* CFrame.new(pose[1] * s * fit, pose[2] * s * fit, pose[3] * s)
+	return CFrame.new(pose[1] * s, pose[2] * s, pose[3] * s)
 		* CFrame.Angles(math.rad(pose[4]), math.rad(pose[5]), math.rad(pose[6]))
 end
 
@@ -573,7 +693,8 @@ function Viewmodel.heldCopy(part: BasePart, size: Vector3?): BasePart
 	return copy
 end
 
--- deps: camera (Heist/CameraDirector), world (Heist/WorldView: heldPart, partFor), hue () -> Color3.
+-- deps: camera (Heist/CameraDirector), world (Heist/WorldView: heldPart, partFor), hue () -> Color3, frozen () ->
+-- boolean (hit-stop), target () -> boolean (something you can use is under the reticle: the hands raise and open).
 function Viewmodel.new(state: any, deps: any): any
 	local vm = {}
 	local player = Players.LocalPlayer
@@ -588,15 +709,55 @@ function Viewmodel.new(state: any, deps: any): any
 	local lastLook: CFrame? = nil
 	local heldSource: BasePart? = nil
 	local heldCopy: BasePart? = nil
+	local heldBase: Vector3? = nil
 	local lastPush = -math.huge
 	local shown = false
 	-- finger springs: hand ("R" / "L") -> joint -> { curl, curl speed, across, across speed } (degrees)
 	local springs: { [string]: { [string]: { number } } } = { R = {}, L = {} }
-	local point, forcedPose = 0, nil :: string?
+	local point, ready, forcedPose = 0, 0, nil :: string?
+	-- visibility (rule 13): raise 0..1 and the seconds since the last reason to raise
+	local raise, since = 0, math.huge
 	local frozen: (() -> boolean)? = deps.frozen
 	local rayParams = RaycastParams.new()
 	rayParams.FilterType = Enum.RaycastFilterType.Exclude
 	rayParams.IgnoreWater = true
+	-- the client-only fill (rule 12): an invisible part at the eye carrying a PointLight, inside the rig model so it
+	-- only lights while the hands show
+	local F = VM.FILL
+	local fillPart: BasePart? = nil
+	if F and F.ENABLED then
+		local p = Instance.new("Part")
+		p.Name = "EH_ViewmodelFill"
+		p.Size = Vector3.new(0.05, 0.05, 0.05)
+		p.Transparency = 1
+		quiet(p)
+		local light = Instance.new("PointLight")
+		light.Brightness = F.BRIGHTNESS
+		light.Range = F.RANGE
+		light.Color = Color3.fromHex(F.COLOUR)
+		light.Shadows = false
+		light.Parent = p
+		fillPart = p
+	end
+	-- sizes the viewmodel projection writes: the last size written per part
+	local written: { [BasePart]: Vector3 } = {}
+
+	local function ensureBase(r: Rig)
+		if r.base then
+			return
+		end
+		local b: { [BasePart]: Vector3 } = {}
+		for _, d in r.model:GetDescendants() do
+			if d:IsA("BasePart") then
+				b[d] = d.Size
+			end
+		end
+		r.base = b
+	end
+	ensureBase(rig)
+	if fillPart then
+		fillPart.Parent = rig.model
+	end
 
 	local function setShown(on: boolean)
 		if on == shown then
@@ -613,10 +774,20 @@ function Viewmodel.new(state: any, deps: any): any
 		if heldCopy then
 			heldCopy.Parent = nil
 		end
+		if fillPart then
+			fillPart.Parent = nil
+		end
 		rig.model:Destroy()
 		rig = new
+		ensureBase(rig)
+		table.clear(written)
+		table.clear(springs.R)
+		table.clear(springs.L)
 		if heldCopy then
 			heldCopy.Parent = rig.model
+		end
+		if fillPart then
+			fillPart.Parent = rig.model
 		end
 		setShown(wasShown)
 	end
@@ -677,7 +848,7 @@ function Viewmodel.new(state: any, deps: any): any
 			held[name] = nil
 			local a = VM.ACTIONS[name]
 			-- fall from now: restart the clock at the end of the hold
-			actions[name] = os.clock() - a.time[1] - a.time[2]
+			actions[name] = os.clock() - (if a.anticipate then a.anticipate[1] else 0) - a.time[1] - a.time[2]
 		end
 	end
 
@@ -732,8 +903,8 @@ function Viewmodel.new(state: any, deps: any): any
 		for name, t0 in actions do
 			local a = VM.ACTIONS[name]
 			local e = now - t0
-			local v = ViewmodelMath.envelope(e, a.time, held[name])
-			if v <= 0 and e > ViewmodelMath.duration(a.time) and not held[name] then
+			local v = ViewmodelMath.envelope(e, a.time, held[name], a.anticipate, a.overshoot)
+			if v == 0 and e > ViewmodelMath.duration(a.time, a.anticipate) and not held[name] then
 				actions[name] = nil
 			else
 				w[name] = v
@@ -759,6 +930,7 @@ function Viewmodel.new(state: any, deps: any): any
 				local made = Viewmodel.heldCopy(src, size)
 				made.Parent = rig.model
 				heldCopy = made
+				heldBase = made.Size
 			end
 		end
 		return heldCopy
@@ -769,8 +941,8 @@ function Viewmodel.new(state: any, deps: any): any
 		local char = player and player.Character
 		local hum = char and char:FindFirstChildOfClass("Humanoid")
 		local on = state.fpView == true and cam ~= nil and hum ~= nil and hum.Health > 0
-		setShown(on)
 		if not on or not cam then
+			setShown(false)
 			lastLook = nil
 			return
 		end
@@ -782,6 +954,25 @@ function Viewmodel.new(state: any, deps: any): any
 		recolour()
 		local reducedMotion = state.reduced == true
 		local camCf = cam.CFrame
+		local loot = updateHeld()
+		local w = weights(now)
+		-- Visibility (rule 13): a reason to raise holds the hands up; LOWER_DELAY after the last one they sink.
+		local targeted = deps.target ~= nil and deps.target() == true
+		local acting = next(w) ~= nil
+		local reason = targeted or acting or loot ~= nil or state.fpPointing == true or forcedPose ~= nil
+		since = if reason then 0 else since + dt
+		local V = VM.VISIBILITY
+		local want = ViewmodelMath.raiseTarget(VM, since)
+		raise = FpMath.approach(raise, want, dt, V.RAISE_SECONDS, V.LOWER_SECONDS)
+		if forcedPose ~= nil then
+			raise = 1
+		end
+		-- "hidden": at idle the rig leaves the camera entirely
+		setShown(not (V.MODE == "hidden" and raise <= 0.001))
+		if not shown then
+			lastLook = nil
+			return
+		end
 		-- Look lag from the camera's own rotation since last frame (works for every input).
 		local yawSpeed, pitchSpeed = 0, 0
 		if lastLook and dt > 1e-4 then
@@ -792,12 +983,13 @@ function Viewmodel.new(state: any, deps: any): any
 		end
 		lastLook = camCf
 		local L = VM.LAG
-		local tx, ty, tr = ViewmodelMath.lagTarget(yawSpeed, pitchSpeed, L)
-		lagX, lagVX = FpMath.spring(lagX, lagVX, tx, dt, L.FREQ, L.DAMPING)
-		lagY, lagVY = FpMath.spring(lagY, lagVY, ty, dt, L.FREQ, L.DAMPING)
-		lagR, lagVR = FpMath.spring(lagR, lagVR, tr, dt, L.FREQ, L.DAMPING)
+		local heavy = carry > 0.5
+		local freq = if heavy then L.CARRY_FREQ else L.FREQ
+		local tx, ty, tr = ViewmodelMath.lagTarget(yawSpeed, pitchSpeed, L, 1 + (L.CARRY_SCALE - 1) * carry)
+		lagX, lagVX = FpMath.spring(lagX, lagVX, tx, dt, freq, L.DAMPING)
+		lagY, lagVY = FpMath.spring(lagY, lagVY, ty, dt, freq, L.DAMPING)
+		lagR, lagVR = FpMath.spring(lagR, lagVR, tr, dt, freq, L.DAMPING)
 		-- Carry, hide and wall blends.
-		local loot = updateHeld()
 		local k = FpMath.damp(1 / math.max(VM.CARRY.BLEND_SECONDS, 1e-3) * 3, dt)
 		carry += ((if loot then 1 else 0) - carry) * k
 		local kh = FpMath.damp(1 / math.max(VM.HIDDEN_SECONDS, 1e-3) * 3, dt)
@@ -807,14 +999,16 @@ function Viewmodel.new(state: any, deps: any): any
 		local pull = ViewmodelMath.wallPull(if hit then hit.Distance else nil, VM.WALL.RANGE)
 		wall += (pull - wall) * FpMath.damp(VM.WALL.RATE, dt)
 		local phase, amp = camera.bob()
-		local w = weights(now)
 		local tap: number? = nil
 		local watchW = w.watch
 		if watchW and watchW > 0 then
 			local spec = VM.ACTIONS.watch.tap
-			tap = math.max(0, math.sin((now - actions.watch) * 2 * math.pi * spec[2])) * spec[1] * watchW
+			tap = math.max(0, math.sin((now - actions.watch) * 2 * math.pi * spec[2])) * spec[1] * math.min(watchW, 1)
 		end
-		local R, Lh = ViewmodelMath.hands(VM, {
+		local H = VM.HANDS
+		point += ((if state.fpPointing then 1 else 0) - point) * FpMath.damp(1 / math.max(H.POINT_BLEND, 1e-3) * 3, dt)
+		ready += ((if targeted then 1 else 0) - ready) * FpMath.damp(1 / math.max(H.READY_BLEND, 1e-3) * 3, dt)
+		local frame: ViewmodelMath.Frame = {
 			t = now,
 			bobPhase = phase,
 			bobAmp = amp,
@@ -827,27 +1021,20 @@ function Viewmodel.new(state: any, deps: any): any
 			actions = w,
 			tap = tap,
 			reduced = reducedMotion,
-		})
-		local fit = ViewmodelMath.fovFit(cam.FieldOfView, VM.FOV_REF)
-		local rCf = poseFrame(camCf, R, fit)
-		local lCf = poseFrame(camCf, Lh, fit)
-		-- Fingers (REVIEW #10): targets layered like the arms, each joint through a spring.
-		local H = VM.HANDS
-		point += ((if state.fpPointing then 1 else 0) - point) * FpMath.damp(1 / math.max(H.POINT_BLEND, 1e-3) * 3, dt)
-		local fR, fL = ViewmodelMath.fingers(VM, { carry = carry, actions = w, point = point } :: any)
+			point = point,
+			raise = raise,
+			ready = ready,
+		}
+		local R, Lh = ViewmodelMath.hands(VM, frame)
+		local rCf = Viewmodel.poseFrame(R)
+		local lCf = Viewmodel.poseFrame(Lh)
+		-- Fingers (rule 17): targets layered like the arms, each joint through a spring.
+		local fR, fL = ViewmodelMath.fingers(VM, frame)
 		if forcedPose then
-			fR, fL = H.POSES[forcedPose], H.POSES[forcedPose]
+			local j = ViewmodelMath.joints(H, H.POSES[forcedPose])
+			fR, fL = j, j
 		end
-		local parts: { BasePart } = {}
-		local cfs: { CFrame } = {}
-		local function place(hand: Hand, handCf: CFrame, key: string, target: { [string]: { number } })
-			for i, p in hand.parts do
-				table.insert(parts, p)
-				table.insert(cfs, handCf * hand.offsets[i])
-			end
-			if #hand.fingers == 0 then
-				return
-			end
+		local function springAngles(key: string, target: { [string]: { number } }): { [string]: { number } }
 			local sp = springs[key]
 			local angles: { [string]: { number } } = {}
 			for joint, t in target do
@@ -860,29 +1047,92 @@ function Viewmodel.new(state: any, deps: any): any
 				st[3], st[4] = FpMath.spring(st[3], st[4], t[2], dt, H.FREQ, H.DAMPING)
 				angles[joint] = { st[1], st[3] }
 			end
-			local frames = Viewmodel.fingerFrames(hand, angles)
-			for i, f in hand.fingers do
-				for j, p in f.parts do
-					table.insert(parts, p)
-					table.insert(cfs, handCf * frames[i] * f.rests[j])
+			return angles
+		end
+		local aR, aL = springAngles("R", fR), springAngles("L", fL)
+		-- Every part's camera-space frame (before the viewmodel projection).
+		local local_: { { any } } = {}
+		local fp = rig.fp
+		if fp then
+			local s = VM.SCALE
+			for _, pc in
+				FpRig.place(CFrame, Vector3, fp.R, rCf, v3(ViewmodelMath.elbow(VM, "R", R)) * s, aR, VM.ARMS.WRIST_ROLL)
+			do
+				table.insert(local_, { fp.parts[pc[1]], pc[2] })
+			end
+			for _, pc in
+				FpRig.place(
+					CFrame,
+					Vector3,
+					fp.L,
+					lCf,
+					v3(ViewmodelMath.elbow(VM, "L", Lh)) * s,
+					aL,
+					VM.ARMS.WRIST_ROLL
+				)
+			do
+				table.insert(local_, { fp.parts[pc[1]], pc[2] })
+			end
+		else
+			local function place(hand: Hand, handCf: CFrame, angles: { [string]: { number } })
+				for i, p in hand.parts do
+					table.insert(local_, { p, handCf * hand.offsets[i] })
+				end
+				if #hand.fingers > 0 then
+					local frames = Viewmodel.fingerFrames(hand, angles)
+					for i, f in hand.fingers do
+						for j, p in f.parts do
+							table.insert(local_, { p, handCf * frames[i] * f.rests[j] })
+						end
+					end
 				end
 			end
+			place(rig.R, rCf, aR)
+			place(rig.L, lCf, aL)
 		end
-		place(rig.R, rCf, "R", fR)
-		place(rig.L, lCf, "L", fL)
 		if loot then
 			-- between the hands: the carry pose's loot point, moved with the hands' midpoint
 			local C = VM.CARRY
 			local mid = { (R[1] + Lh[1]) / 2, (R[2] + Lh[2]) / 2, (R[3] + Lh[3]) / 2 }
 			local rest = { (C.R[1] + C.L[1]) / 2, (C.R[2] + C.L[2]) / 2, (C.R[3] + C.L[3]) / 2 }
 			local s = VM.SCALE
-			local at = {
-				(C.LOOT[1] + mid[1] - rest[1]) * s * fit,
-				(C.LOOT[2] + mid[2] - rest[2]) * s * fit,
-				(C.LOOT[3] + mid[3] - rest[3]) * s,
-			}
-			table.insert(parts, loot)
-			table.insert(cfs, camCf * CFrame.new(at[1], at[2], at[3]) * CFrame.Angles(0, 0, math.rad(lagR)))
+			local at = Vector3.new(
+				(C.LOOT[1] + mid[1] - rest[1]) * s,
+				(C.LOOT[2] + mid[2] - rest[2]) * s,
+				(C.LOOT[3] + mid[3] - rest[3]) * s
+			)
+			table.insert(local_, { loot, CFrame.new(at) * CFrame.Angles(0, 0, math.rad(lagR)) })
+		end
+		-- The viewmodel projection (rule 5): each part as a VIEW_FOV camera would draw it.
+		local kv = ViewmodelMath.viewK(cam.FieldOfView, VM.VIEW_FOV)
+		local base = rig.base or {}
+		local parts: { BasePart } = table.create(#local_ + 1)
+		local cfs: { CFrame } = table.create(#local_ + 1)
+		for _, pc in local_ do
+			local p: BasePart = pc[1]
+			if p then
+				local b = base[p] or (if p == loot then heldBase else nil) or p.Size
+				local comps, f = ViewmodelMath.project({ (pc[2] :: CFrame):GetComponents() }, { b.X, b.Y, b.Z }, kv)
+				local size: Vector3
+				if p:IsA("MeshPart") then
+					size = Vector3.new(b.X * f[1], b.Y * f[2], b.Z * f[3])
+				else
+					local u = (f[1] + f[2] + f[3]) / 3 -- balls and cylinders keep their shape
+					size = b * u
+				end
+				local last = written[p]
+				if last == nil or (last - size).Magnitude > 0.004 * b.Magnitude then
+					p.Size = size
+					written[p] = size
+				end
+				table.insert(parts, p)
+				table.insert(cfs, camCf * CFrame.new(table.unpack(comps)))
+			end
+		end
+		if fillPart then
+			local o = F.OFFSET
+			table.insert(parts, fillPart)
+			table.insert(cfs, camCf * CFrame.new(o[1], o[2], o[3]))
 		end
 		workspace:BulkMoveTo(parts, cfs, Enum.BulkMoveMode.FireCFrameChanged)
 	end
@@ -907,16 +1157,19 @@ function Viewmodel.new(state: any, deps: any): any
 		for _ in actions do
 			n += 1
 		end
-		local fingers = #rig.R.fingers + #rig.L.fingers
-		local curl = springs.R.Fingers1
+		local fp = rig.fp
+		local fingers = if fp then #fp.R.segs + #fp.L.segs else #rig.R.fingers + #rig.L.fingers
+		local curl = springs.R.Middle1 or springs.R.Fingers1
 		return {
 			shown = shown,
 			kit = rig.kit,
+			fp = fp ~= nil,
 			carry = carry,
+			raise = raise,
 			actions = n,
 			holding = heldCopy ~= nil,
 			fingers = fingers,
-			curl = if curl then curl[1] else nil, -- the right finger block's current curl (degrees)
+			curl = if curl then curl[1] else nil, -- the right middle finger's current base curl (degrees)
 		}
 	end
 

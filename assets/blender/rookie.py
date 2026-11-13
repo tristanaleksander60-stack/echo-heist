@@ -656,23 +656,23 @@ FP_GRIP_X = 0.9             # Blender x of each hand's grip in the asset (right 
 FP_WRIST_Z = 0.2            # the wrist hinge, grip space
 FP_FINGERS = [
     # name, MCP hinge (grip space, right hand), segment lengths, base radius, fan (rest splay, toward the thumb +)
-    ("Index", (-0.150, 0.004, -0.180), (0.150, 0.110, 0.088), 0.051, 1.0),
-    ("Middle", (-0.050, 0.010, -0.196), (0.164, 0.120, 0.094), 0.053, 0.25),
-    ("Ring", (0.049, 0.004, -0.188), (0.154, 0.114, 0.090), 0.050, -0.5),
-    ("Pinky", (0.142, -0.008, -0.162), (0.120, 0.090, 0.076), 0.045, -1.0),
+    ("Index", (-0.162, 0.006, -0.178), (0.128, 0.094, 0.076), 0.058, 1.0),
+    ("Middle", (-0.054, 0.012, -0.194), (0.140, 0.102, 0.082), 0.060, 0.25),
+    ("Ring", (0.054, 0.006, -0.186), (0.132, 0.096, 0.078), 0.057, -0.5),
+    ("Pinky", (0.156, -0.006, -0.160), (0.102, 0.078, 0.066), 0.052, -1.0),
 ]
-FP_TAPER = (1.0, 0.94, 0.88, 0.83)   # radius at each joint along a finger (base, PIP, DIP, tip) as shares of the base
+FP_TAPER = (1.0, 0.95, 0.9, 0.86)    # radius at each joint along a finger (base, PIP, DIP, tip) as shares of the base
 FP_THUMB = [
     # name, length, radius base -> end, direction (grip space, right hand)
-    ("Thumb1", 0.150, (0.066, 0.060), (-0.52, -0.30, -0.80)),
-    ("Thumb2", 0.112, (0.058, 0.054), (-0.30, -0.22, -0.93)),
-    ("Thumb3", 0.094, (0.054, 0.047), (-0.22, -0.18, -0.96)),
+    ("Thumb1", 0.130, (0.074, 0.068), (-0.52, -0.30, -0.80)),
+    ("Thumb2", 0.098, (0.066, 0.062), (-0.30, -0.22, -0.93)),
+    ("Thumb3", 0.082, (0.062, 0.056), (-0.22, -0.18, -0.96)),
 ]
-FP_THUMB_BASE = (-0.130, -0.040, 0.075)
+FP_THUMB_BASE = (-0.135, -0.040, 0.070)
 FP_THUMB_UP = (-0.62, 0.78, 0.0)     # the thumbnail side (right hand)
 # sleeve profile along +Z from the wrist side (grip space z, radius): ribbed cuff, slim forearm, widening to the edge
 FP_SLEEVE = [(0.25, 0.128), (0.26, 0.142), (0.29, 0.147), (0.31, 0.140), (0.33, 0.147), (0.35, 0.140), (0.37, 0.147),
-             (0.39, 0.140), (0.41, 0.136), (0.9, 0.146), (1.6, 0.160), (2.3, 0.170), (2.9, 0.176)]
+             (0.39, 0.140), (0.41, 0.138), (0.9, 0.165), (1.6, 0.188), (2.3, 0.202), (2.9, 0.21)]
 FP_SLEEVE_RIB = 9           # profile edges before this index are the rib cuff (one value step darker)
 FP_STRIPES = (0.66, 0.88)   # Breton stripes (crew), grip-space z centres
 FP_STRIPE_W = 0.075
@@ -732,7 +732,7 @@ def fp_palm(k, side, name):
         n.normalize()
         # n.y runs along the hand (Blender +Y = Roblox +Z: toward the wrist), n.z is up (the back of the hand)
         along = math.copysign(abs(n.y) ** e, n.y)
-        hw = 0.212 - 0.03 * max(0.0, along)                          # narrower toward the wrist
+        hw = 0.222 - 0.03 * max(0.0, along)                          # narrower toward the wrist
         up = math.copysign(abs(n.z) ** 0.75, n.z)
         th = 0.092 if up > 0 else 0.078                              # a domed back, a flatter palm side
         v.co = c + Vector((math.copysign(abs(n.x) ** e, n.x) * hw, along * 0.205, up * th))
@@ -1032,7 +1032,9 @@ def build(k):
         check_seats(lf, [(ob, by[par]) for ob, _j, par, *_r in hand if par])
         for ob, joint, parent, hinge, look, up in hand:
             fp = {"side": s, "joint": joint, "parent": parent, "frame": "hand",
-                  "hinge": k.roblox_point(fp_point(hinge, side), grip), "look": rdir(look), "up": rdir(up)}
+                  "hinge": k.roblox_point(fp_point(hinge, side), grip)}
+            if parent:   # a finger segment: its hinge frame (the palm is rigid on the grip)
+                fp["look"], fp["up"] = rdir(look), rdir(up)
             fp_objs.append(k.Obj(ob, "small", role="char", pivot="point", collision="Box", can_collide=False,
                                  cast_shadow=False, atlas=False, tint=glove, tags=["EH_Rookie", "EH_FPArm"],
                                  extra={"fp": fp}, notes=f"first-person {s.lower()} glove: {joint} (pivot = its hinge)"))
