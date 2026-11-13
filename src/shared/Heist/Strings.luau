@@ -561,6 +561,18 @@ end
 ---------------------------------------------------------------------------
 Strings.REWIND_BANNER = "REWIND"
 Strings.SKIP = "SKIP"
+-- The story intro's caption cards (Heist/Cinematic, Shared/Heist/IntroPlan; docs/art/intro/STORYBOARD.md):
+-- six words at most each (Config.Intro.CAPTION.WORDS_MAX, unit-tested), readable with the sound off.
+Strings.INTRO = table.freeze({
+	EVE = "CHRISTMAS EVE.",
+	HOARD = "SIR HOARDSWORTH WANTS IT ALL.",
+	EVERY = "EVERY PRESENT IN TOWN...",
+	GONE = "...GONE.",
+	ONE = "ONE ROBBER. ONE NIGHT.",
+	MORE = "IT'LL TAKE MORE OF ME.",
+	TITLE = "HEIST YOURSELF",
+} :: { [string]: string })
+Strings.INTRO_SKIP_HINT = "ANY KEY"
 -- The blooper cut at heist end (MASTERPLAN §9.2 #2): the caption over the clone's failure replay.
 Strings.BLOOPER_CAPTION = "MY CLONE BETRAYED ME"
 Strings.ME = "ME"

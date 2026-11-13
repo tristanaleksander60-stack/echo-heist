@@ -8,7 +8,7 @@
 --     server's (the run's transition ends): the doors are always open by then, so the title can cut
 --     itself short but never delays control.
 --   * controlWithin / bootControl: the "control within 10 s of the first frame" rule (G1).
---   * Gates: titleDue (first join), introKind (once per level per account, never L1), seenKinds (what a
+--   * Gates: titleDue (first join), introDue (the story intro instead of the title beat), introKind (once per level per account, never L1), seenKinds (what a
 --     saved profile has already seen).
 --   * Level intro (C2): introStops (plates -> doors -> loot, the Party: Gus), introPlan (fits them
 --     into the transition: drops stops rather than whip-pan) and introFocus (where the camera looks).
@@ -123,6 +123,31 @@ function PresentPlan.titleDue(status: string, seen: boolean, boot: string): bool
 	end
 	-- No data at all: the server treats the player as new (HeistService.isNewAccount), so does the title.
 	return status == "none" and boot == "preparing"
+end
+
+-- Does this boot play the story intro (Heist/Cinematic) in place of the title beat? The title's first-join
+-- rule (the same "title" kind marks both, so a player sees one or the other once), plus: the feature flag,
+-- and Studio without data (status "none") plays it only when staged (EH_Scenario = "INTRO") unless
+-- studioAutoplay. Staged: always (Studio only; Scenario.resolve already refuses a live server).
+function PresentPlan.introDue(o: {
+	enabled: boolean,
+	status: string,
+	seen: boolean,
+	boot: string,
+	studio: boolean,
+	staged: boolean,
+	studioAutoplay: boolean,
+}): boolean
+	if o.staged and o.studio then
+		return true
+	end
+	if not o.enabled or not PresentPlan.titleDue(o.status, o.seen, o.boot) then
+		return false
+	end
+	if o.studio and o.status == "none" and not o.studioAutoplay then
+		return false
+	end
+	return true
 end
 
 -- The once-per-account kind of a level's intro, or nil: never on the FTUE level (C2: never before first

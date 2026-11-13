@@ -70,7 +70,7 @@ SWATCHES = [
 # Cells that a location atlas swap may recolour (walls, floors, furniture wood). Characters, loot, signals and
 # metal never change between locations, so roles in FIXED_ROLES may not use these cells (rule P3).
 LOCATION_CELLS = ("plum_deep", "plum", "plum_hi", "floor_a", "floor_b", "wood_lo", "wood", "wood_hi")
-FIXED_ROLES = ("char",)
+FIXED_ROLES = ("char", "villain")
 
 # Location atlases: same cells, new colours (MASTERPLAN 6.7 "atlas swaps"). Bank is the base atlas the kit is
 # exported with (assets/textures/EH_Palette_Bank.png); the others are uploaded once and swapped in by code
@@ -118,6 +118,10 @@ NEON = {
     "Xmas_Tree_Lights":    (WARM_BULB, "fixed (bulbs and the star)", ()),
     "Skyline_Near_Windows": (WARM_BULB, "fixed (lit windows of the backdrop skyline, PLAN 3.1 exception)", ()),
     "Skyline_Far_Windows":  (WARM_BULB, "fixed (lit windows of the backdrop skyline, PLAN 3.1 exception)", ()),
+    # the story intro's stage (Heist/Cinematic, client-only): lit house windows (out on "...GONE.") and the vacuum
+    "Intro_House_A_Windows": (WARM_BULB, "fixed; Vault Steel shade #4E5675 once the presents are gone", ("#4E5675",)),
+    "Intro_House_B_Windows": (WARM_BULB, "fixed; Vault Steel shade #4E5675 once the presents are gone", ("#4E5675",)),
+    "Intro_Vacuum_Lights":   ("#4E5675", "Bulb Warm #F6C0A2 while the vacuum runs", (WARM_BULB,)),
 }
 GLASS_TINT = "#A9B2CC"
 
@@ -180,6 +184,9 @@ ROLE_RULES = {
                                           # Christmas reds and greens; never loot gold or a signal colour
     "story":  {"env", "xmas", "tint"},    # comfort and storytelling props (the warm Rug_8x6, the garage JobBoard's
                                           # red string): may use the Ribbon reds; never loot gold or a signal colour
+    "villain": {"env", "char", "xmas", "tint"},   # Sir Hoardsworth and his machines (the story intro): burgundy
+                                          # velvet (Ribbon), antique-gold trim (Warm Marble shade), Gus's skin cells;
+                                          # never loot gold or a signal colour; no location cells (rule P3)
 }
 
 INDEX = {k: i for i, (k, *_r) in enumerate(SWATCHES)}

@@ -1,0 +1,356 @@
+{
+ "asset": "Intro_SnowGlobe",
+ "objects": [
+  {
+   "name": "Intro_SnowGlobe",
+   "class": "hero",
+   "tris": 1008,
+   "budget": [
+    10000,
+    20000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    25.028,
+    25.028,
+    12.5
+   ],
+   "pivot": {
+    "rule": "bottom",
+    "local_min": [
+     -12.5139,
+     -12.5139,
+     0.0
+    ],
+    "local_max": [
+     12.5139,
+     12.5139,
+     12.5
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 95,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": null,
+   "role": "villain",
+   "notes": "the Snow Globe Vault's plinth and gold cradle (hero, near the tower top)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Intro_SnowGlobe_Glass",
+   "class": "medium",
+   "tris": 960,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -16.0,
+     -16.0,
+     4.0
+    ],
+    "local_max": [
+     16.0,
+     16.0,
+     36.0
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Glass",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.55,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": null,
+   "role": "env",
+   "notes": "Glass, Transparency 0.55, TextureID cleared; radius 16 about (0, 20, 0) (Roblox)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Intro_SnowGlobe_Cap",
+   "class": "small",
+   "tris": 240,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    7.6,
+    7.6,
+    2.6
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.8,
+     -3.8,
+     35.4
+    ],
+    "local_max": [
+     3.8,
+     3.8,
+     38.0
+    ]
+   },
+   "swatches": [
+    "ink",
+    "marble",
+    "marble_lo",
+    "ribbon"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": null,
+   "role": "villain",
+   "notes": "the inlet cap on the globe's top (the vacuum's outlet ends here)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Intro_SnowGlobe_Presents",
+   "class": "hero",
+   "tris": 4044,
+   "budget": [
+    10000,
+    20000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    20.8,
+    20.8,
+    15.185
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -10.4,
+     -10.4,
+     -1.065
+    ],
+    "local_max": [
+     10.4,
+     10.4,
+     14.1197
+    ]
+   },
+   "swatches": [
+    "gold",
+    "gold_hi",
+    "holly",
+    "holly_lo",
+    "marble_hi",
+    "ribbon",
+    "ribbon_hi",
+    "snow"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    5.4
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 4853,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": null,
+   "role": "present",
+   "notes": "the stolen presents inside: pivot = the pile's floor; the cinematic grows it (Size.Y) as it fills",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 6252,
+ "seats": [
+  {
+   "name": "Intro_SnowGlobe_Glass",
+   "gap": 0.0,
+   "penetration": 6.22183,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Intro_SnowGlobe_Cap",
+   "gap": 0.0,
+   "penetration": 0.59708,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "36c06480af0bf1086cac",
+ "fbx": {
+  "path": "assets/fbx/Intro_SnowGlobe.fbx",
+  "bytes": 179084,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Intro_SnowGlobe",
+   "Intro_SnowGlobe_Cap",
+   "Intro_SnowGlobe_Glass",
+   "Intro_SnowGlobe_Presents"
+  ],
+  "geometry_extents": [
+   [
+    2.6,
+    7.6,
+    7.6
+   ],
+   [
+    12.5,
+    25.028,
+    25.028
+   ],
+   [
+    15.185,
+    20.8,
+    20.8
+   ],
+   [
+    32.0,
+    32.0,
+    32.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/intro.py",
+ "notes": "Hero Snow Globe Vault: burgundy and gold plinth, glass dome (r 16), inlet cap, a heap of stolen presents.",
+ "turntable": "docs/art/turntables/Intro_SnowGlobe.png",
+ "seconds": 52.0
+}

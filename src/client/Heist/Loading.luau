@@ -3,14 +3,19 @@
 -- ReplicatedFirst/Loading puts the branded ink card up on the very first frame; this module takes it
 -- over (Brand.ATTR on the card's ScreenGui) and hands it off cleanly:
 --   * a returning player: the card fades (0.3 s) on the garage's first built frame;
---   * a new account (the FTUE autostarts L1): the title beat (Heist/Title) replaces the card in the
+--   * a new account (the FTUE autostarts L1): the story intro (Heist/Cinematic, PresentPlan.introDue)
+--     replaces the card while the server holds the first heist (HeistService: until Heist.Ready, at most
+--     Config.Intro.SERVER_HOLD_SECONDS; the owner waived the 10 s rule for it); it ends on the wordmark,
+--     which the title card (Heist/Title, at rest) takes over in the same frame, then the van doors open
+--     onto L1. With the intro off (or seen), the title beat (Heist/Title) replaces the card in the
 --     same frame, overlaps the server's wait, and the van doors (Heist/Transition) open onto L1 by the
 --     time the first run's transition ends. If the server is quick, the beat is cut short: nothing on
 --     the client ever delays first control (PresentPlan.revealAt);
 --   * the server's cold wait ("preparing") is the card's reel and a "Finding your van" hint, or the
 --     title beat, never a silent text card (WALKTHROUGH §2.0).
 --
---   Loading.boot(doors, reduced) -> boot     HeistClient, once
+--   Loading.boot(doors, reduced, camera?, tier?) -> boot     HeistClient, once (camera: CameraDirector;
+--                               tier: the perf tier getter, both handed to the intro)
 --     boot.active()             still in the first hand-off
 --     boot.preparing() -> bool  the server is getting the first heist ready (false: no card left)
 --     boot.arrive(kind)         the server's first answer, before the view is built: "garage", "heist",
@@ -28,10 +33,15 @@ local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")) :: any
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Config = require(Shared:WaitForChild("Config")) :: any
+local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
+local Scenario = require(Shared:WaitForChild("Heist"):WaitForChild("Scenario"))
+local Net = require(ReplicatedStorage:WaitForChild("LihFolk"):WaitForChild("Net"))
 local Brand = require(ReplicatedFirst:WaitForChild("Brand"))
 local LoadingCard = require(ReplicatedFirst:WaitForChild("LoadingCard"))
 
+local Cinematic = require(script.Parent:WaitForChild("Cinematic"))
 local FirstTime = require(script.Parent:WaitForChild("FirstTime"))
 local PresentPlan = require(script.Parent:WaitForChild("PresentPlan"))
 local Title = require(script.Parent:WaitForChild("Title"))
@@ -73,13 +83,16 @@ function Loading.reel(parent: Instance, size: number): Frame
 	return reel
 end
 
-function Loading.boot(doors: any, reduced: () -> boolean): any
+function Loading.boot(doors: any, reduced: () -> boolean, camera: any?, tier: (() -> number)?): any
 	local boot = {}
 	local pg = playerGui()
 	local gui = card()
 	local shownAt: number = if gui then tonumber(gui:GetAttribute(A.SHOWN_AT)) or os.clock() else os.clock()
 	local active = pg ~= nil
 	local title: any = nil
+	local intro: any = nil -- the story intro (Heist/Cinematic) while it plays
+	local introOver = false
+	local released = false
 	local first: string? = nil -- the server's first answer
 	local controlNoted = false
 
@@ -108,23 +121,85 @@ function Loading.boot(doors: any, reduced: () -> boolean): any
 		end)
 	end
 
-	local function startTitle()
-		if title or not active or not pg then
+	-- The server holds a new account's first heist for the intro: tell it once that it may start
+	-- (Heist.Ready while preparing; the server only reads it then).
+	local function release()
+		if not released then
+			released = true
+			pcall(Net.Send, Protocol.REMOTE.Ready, reduced())
+		end
+	end
+
+	local function startTitle(atRest: boolean?)
+		if title or not pg then
 			return
 		end
 		FirstTime.markSeen(PresentPlan.TITLE_KIND)
 		doors.cover() -- ink under ink: the doors wait closed under the title
 		title = Title.play(pg, reduced)
+		if atRest then
+			title.skip() -- the intro ended on the split wordmark: the card takes over at rest
+		end
 		setAttr(A.DISMISS, "handoff") -- the title drew the card's frame one layer up
 	end
 
-	local function decide(kind: string)
-		if title or not active then
+	local function startIntro()
+		if intro or title or not pg then
 			return
 		end
-		if PresentPlan.titleDue(FirstTime.status(), FirstTime.seen(PresentPlan.TITLE_KIND), kind) then
+		FirstTime.markSeen(PresentPlan.TITLE_KIND)
+		doors.cover()
+		intro = true -- reserved while the kit arrives (the card stays up meanwhile)
+		task.spawn(function()
+			Cinematic.waitForKit()
+			intro = Cinematic.play({
+				gui = pg,
+				director = camera,
+				reduced = reduced,
+				tier = if tier then tier() else nil,
+				onEnd = function()
+					introOver = true
+					startTitle(true)
+					release()
+				end,
+			})
+			if intro == nil then -- could not play (another one running): straight to the title
+				introOver = true
+				startTitle(true)
+				release()
+				return
+			end
+			setAttr(A.DISMISS, "handoff") -- the intro's ink frame is up: the card can go
+		end)
+	end
+
+	local function decide(kind: string)
+		if title or intro or not active then
+			return
+		end
+		local status = FirstTime.status()
+		local staged = Scenario.resolve(RunService:IsStudio(), workspace:GetAttribute(Scenario.ATTRIBUTE)) == "INTRO"
+		if not staged and kind == "preparing" and status == "pending" then
+			return -- the profile decides (onStatus asks again); the server keeps holding meanwhile
+		end
+		if
+			PresentPlan.introDue({
+				enabled = Config.Intro.ENABLED,
+				status = status,
+				seen = FirstTime.seen(PresentPlan.TITLE_KIND),
+				boot = kind,
+				studio = RunService:IsStudio(),
+				staged = staged,
+				studioAutoplay = Config.Intro.STUDIO_AUTOPLAY,
+			})
+		then
+			startIntro()
+			return
+		end
+		if PresentPlan.titleDue(status, FirstTime.seen(PresentPlan.TITLE_KIND), kind) then
 			startTitle()
 		end
+		release()
 	end
 
 	function boot.active(): boolean
@@ -158,6 +233,9 @@ function Loading.boot(doors: any, reduced: () -> boolean): any
 	end
 
 	local function reveal(controlAt: number?)
+		while intro ~= nil and not introOver do -- the intro plays to its end (or SKIP) first
+			task.wait()
+		end
 		local fade = if title then P.TITLE.FADE_SECONDS elseif gui and gui.Parent then P.LOADING.FADE_SECONDS else 0
 		local function startAt(): number
 			local s = PresentPlan.revealAt(

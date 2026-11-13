@@ -394,6 +394,149 @@
    "sha256": "59ebfa7e160659732444eb8fc011b841ac477f2d296537d29bfe232d06c005f1",
    "uploaded": "2026-11-12T11:25:06Z"
   },
+  "Hoardsworth": {
+   "assetId": 79882422494775,
+   "file": "assets/fbx/Hoardsworth.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Hoardsworth_Hat",
+    "Hoardsworth_Head",
+    "Hoardsworth_LeftFoot",
+    "Hoardsworth_LeftHand",
+    "Hoardsworth_LeftLowerArm",
+    "Hoardsworth_LeftLowerLeg",
+    "Hoardsworth_LeftUpperArm",
+    "Hoardsworth_LeftUpperLeg",
+    "Hoardsworth_LowerTorso",
+    "Hoardsworth_Monocle",
+    "Hoardsworth_RightFoot",
+    "Hoardsworth_RightHand",
+    "Hoardsworth_RightLowerArm",
+    "Hoardsworth_RightLowerLeg",
+    "Hoardsworth_RightUpperArm",
+    "Hoardsworth_RightUpperLeg",
+    "Hoardsworth_UpperTorso"
+   ],
+   "revisionId": "1",
+   "sha256": "ff41428fc2fe3e8d1eb4a11fe2f620db96bab9e7047b7a9b24e57658da52ec57",
+   "uploaded": "2026-11-13T00:23:21Z"
+  },
+  "Intro_House_A": {
+   "assetId": 117193090557906,
+   "file": "assets/fbx/Intro_House_A.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Intro_House_A",
+    "Intro_House_A_Windows"
+   ],
+   "revisionId": "1",
+   "sha256": "2cd462c7ef154bac65e67158ca11b7f5dd79d24b6605ac81fa0ba71c5f32d5a4",
+   "uploaded": "2026-11-13T00:23:40Z"
+  },
+  "Intro_House_B": {
+   "assetId": 73030213951767,
+   "file": "assets/fbx/Intro_House_B.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Intro_House_B",
+    "Intro_House_B_Windows"
+   ],
+   "revisionId": "1",
+   "sha256": "f258140321d6b31402c92e1b5401448517cf0a906c2751782fc4a38953f3eb77",
+   "uploaded": "2026-11-13T00:23:59Z"
+  },
+  "Intro_Letter": {
+   "assetId": 101253194939214,
+   "file": "assets/fbx/Intro_Letter.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Intro_Letter"
+   ],
+   "revisionId": "1",
+   "sha256": "c5dafed853ef8b28b1d773aacb3ff84311339789dab29ab13bef3662c580049f",
+   "uploaded": "2026-11-13T00:24:19Z"
+  },
+  "Intro_Lever": {
+   "assetId": 136644252288726,
+   "file": "assets/fbx/Intro_Lever.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Intro_Lever",
+    "Intro_Lever_Handle"
+   ],
+   "revisionId": "1",
+   "sha256": "1f98dea793d726e5622048f9d0ed413467c3aa0aeb0879f553f3efc2cd05cb8b",
+   "uploaded": "2026-11-13T00:24:32Z"
+  },
+  "Intro_Present_A": {
+   "assetId": 101197081641449,
+   "file": "assets/fbx/Intro_Present_A.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Intro_Present_A"
+   ],
+   "revisionId": "1",
+   "sha256": "e75fce60b1fd416636a523478fe3e79d101bf247081c69d7d8229bb25aabe482",
+   "uploaded": "2026-11-13T00:25:26Z"
+  },
+  "Intro_Present_B": {
+   "assetId": 103054968493943,
+   "file": "assets/fbx/Intro_Present_B.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Intro_Present_B"
+   ],
+   "revisionId": "1",
+   "sha256": "b510f78c778721c11ec473b8d6ce9a68712fb2701271545810e676b4aedcdf82",
+   "uploaded": "2026-11-13T00:25:45Z"
+  },
+  "Intro_Present_C": {
+   "assetId": 100199303227377,
+   "file": "assets/fbx/Intro_Present_C.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Intro_Present_C"
+   ],
+   "revisionId": "1",
+   "sha256": "4190c14a0b75c9528761e5ef293b00fe7e7664c2878aef892b3d6b08d95b0f17",
+   "uploaded": "2026-11-13T00:26:12Z"
+  },
+  "Intro_SnowGlobe": {
+   "assetId": 101004713770736,
+   "file": "assets/fbx/Intro_SnowGlobe.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Intro_SnowGlobe",
+    "Intro_SnowGlobe_Cap",
+    "Intro_SnowGlobe_Glass",
+    "Intro_SnowGlobe_Presents"
+   ],
+   "revisionId": "1",
+   "sha256": "0ddb0e2443f09742287ff373309d3c09e9d9a13cee6f51f9c10a15ad1f380a4d",
+   "uploaded": "2026-11-13T00:26:26Z"
+  },
+  "Intro_Vacuum": {
+   "assetId": 81402106868569,
+   "file": "assets/fbx/Intro_Vacuum.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Intro_Vacuum",
+    "Intro_Vacuum_Lights"
+   ],
+   "revisionId": "1",
+   "sha256": "ad2d866e2232474fb5e4c3dc1019f8abdfb5e73cb81077e511344890a6c6642a",
+   "uploaded": "2026-11-13T00:26:46Z"
+  },
   "JobBoard": {
    "assetId": 112136984753667,
    "file": "assets/fbx/JobBoard.fbx",

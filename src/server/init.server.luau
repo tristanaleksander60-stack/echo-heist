@@ -61,6 +61,8 @@ if Config.GAME_MODE == "sim" then
 			require(script:WaitForChild("Heist"):WaitForChild("GusTemplate")).publish(KitService)
 			-- the Rookie (player character, clone templates, first-person arms): ReplicatedStorage.CharacterKit
 			require(script:WaitForChild("Heist"):WaitForChild("Rookie")).publish(KitService)
+			-- the story intro's meshes for the client stage (stand-ins until they arrive)
+			require(script:WaitForChild("Heist"):WaitForChild("IntroKit")).publish(KitService)
 		end
 	end)
 	if not okKit then

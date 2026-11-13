@@ -1,0 +1,194 @@
+{
+ "asset": "Intro_Lever",
+ "objects": [
+  {
+   "name": "Intro_Lever",
+   "class": "small",
+   "tris": 200,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.0,
+    1.4,
+    3.059
+   ],
+   "pivot": {
+    "rule": "bottom",
+    "local_min": [
+     -1.0,
+     -0.7,
+     0.0
+    ],
+    "local_max": [
+     1.0,
+     0.7,
+     3.0592
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 58,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": null,
+   "role": "villain",
+   "notes": "Hoardsworth's switch: burgundy pillar, gold top, steel hinge",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Intro_Lever_Handle",
+   "class": "small",
+   "tris": 188,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.6,
+    1.076,
+    2.582
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3,
+     -0.9163,
+     -0.1522
+    ],
+    "local_max": [
+     0.3,
+     0.16,
+     2.43
+    ]
+   },
+   "swatches": [
+    "ribbon",
+    "steel_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    2.85
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 28,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "LeverHinge",
+    "parent": "Intro_Lever"
+   },
+   "role": "villain",
+   "notes": "pivot = the hinge (axis X): the cinematic rotates it 0 (up, back) -> 70 deg (pulled)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 388,
+ "seats": [
+  {
+   "name": "Intro_Lever_Handle",
+   "gap": 0.0,
+   "penetration": 0.05706,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "828f05910e65cae1df26",
+ "fbx": {
+  "path": "assets/fbx/Intro_Lever.fbx",
+  "bytes": 29388,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Intro_Lever",
+   "Intro_Lever_Handle"
+  ],
+  "geometry_extents": [
+   [
+    0.6,
+    1.076,
+    2.582
+   ],
+   [
+    1.4,
+    2.0,
+    3.059
+   ]
+  ]
+ },
+ "spec": "assets/blender/intro.py",
+ "notes": "The vacuum's switch: a brass-topped burgundy pillar with a ball-knob lever.",
+ "turntable": "docs/art/turntables/Intro_Lever.png",
+ "seconds": 21.8
+}

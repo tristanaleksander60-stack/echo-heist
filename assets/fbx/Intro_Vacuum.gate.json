@@ -1,0 +1,193 @@
+{
+ "asset": "Intro_Vacuum",
+ "objects": [
+  {
+   "name": "Intro_Vacuum",
+   "class": "hero",
+   "tris": 3752,
+   "budget": [
+    10000,
+    20000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    42.296,
+    43.209,
+    41.897
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -12.497,
+     -28.7119,
+     0.0
+    ],
+    "local_max": [
+     29.7988,
+     14.497,
+     41.8967
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 832,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": null,
+   "role": "villain",
+   "notes": "the giant vacuum: motor, ribbed hose, flared intake (mouth at NOZZLE, aiming down at the town), outlet pipe into the Snow Globe's cap",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Intro_Vacuum_Lights",
+   "class": "small",
+   "tris": 584,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    36.083,
+    27.64,
+    10.986
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -6.6,
+     -28.5698,
+     10.0
+    ],
+    "local_max": [
+     29.4829,
+     -0.9294,
+     20.9862
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Vault Steel shade #4E5675 off; Bulb Warm #F6C0A2 while it runs (eh_palette.NEON)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": null,
+   "role": "villain",
+   "notes": "the intake's rim ring and three lamps on the motor",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 4336,
+ "seats": [
+  {
+   "name": "Intro_Vacuum_Lights",
+   "gap": 0.0,
+   "penetration": 0.5613,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "40e6d89fb13d710878ea",
+ "fbx": {
+  "path": "assets/fbx/Intro_Vacuum.fbx",
+  "bytes": 115820,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Intro_Vacuum",
+   "Intro_Vacuum_Lights"
+  ],
+  "geometry_extents": [
+   [
+    10.986,
+    27.64,
+    36.083
+   ],
+   [
+    41.897,
+    42.296,
+    43.209
+   ]
+  ]
+ },
+ "spec": "assets/blender/intro.py",
+ "notes": "Hoardsworth's giant vacuum on the tower roof: motor, hose and intake; the outlet fills the Snow Globe.",
+ "turntable": "docs/art/turntables/Intro_Vacuum.png",
+ "seconds": 23.6
+}
