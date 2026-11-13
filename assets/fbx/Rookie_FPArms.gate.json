@@ -2905,7 +2905,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "c458243000d24247cc66",
+ "contentHash": "c2296b517bef83c74c62",
  "fbx": {
   "path": "assets/fbx/Rookie_FPArms.fbx",
   "bytes": 231260,
@@ -3177,5 +3177,6 @@
  },
  "spec": "assets/blender/rookie.py",
  "notes": "Dedicated first-person arms: slim sleeve (ribbed cuff, crew stripes or block), gloved hands with a palm, 4 fingers x 3 segments, a 3-segment thumb, knit / leather cuffs, the REWIND watch. Grip space: fingers -Z, back of the hand +Y; pivots at the hinges.",
- "seconds": 0.2
+ "turntable": "docs/art/turntables/Rookie_FPArms.png",
+ "seconds": 9.6
 }

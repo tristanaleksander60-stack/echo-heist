@@ -33,7 +33,7 @@ local R = Config.Rookie
 
 local Rookie = {}
 
-local GROUPS = { "Rookie", "Rookie_Faces", "Rookie_Outfits", "Rookie_Viewmodel", "Rookie_Hands" }
+local GROUPS = { "Rookie", "Rookie_Faces", "Rookie_Outfits", "Rookie_Viewmodel", "Rookie_Hands", "Rookie_FPArms" }
 local MOODS = { "idle", "smug", "shocked", "busted" }
 
 local function v3(t: { number }): Vector3
