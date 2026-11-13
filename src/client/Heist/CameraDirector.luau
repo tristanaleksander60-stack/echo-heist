@@ -7,7 +7,7 @@
 -- as "classic" by Schema.sanitize):
 --   "fp"       (default) head-locked at your eyes, FOV 70 (the fpFov comfort slider, 60-90), never rolls.
 --              Mouse lock on PC while you play (MouseBehavior LockCenter; the cursor is free whenever a panel
---              or sheet is up, between runs, in the garage, in a presentation shot, or while Left Alt is held:
+--              or sheet is up, between runs, at a hideout station, in a presentation shot, or while Left Alt is held:
 --              then a right-drag looks); touch drag outside the thumbstick looks; the right stick looks (with
 --              a response curve). Your character turns to the look yaw (AutoRotate off while fp drives it, so
 --              clones record where you looked). Subtle head bob and a landing dip, both off under reduced
@@ -227,7 +227,10 @@ function CameraDirector.new(state: any): any
 		if mode ~= "fp" or suspended() or shotFn ~= nil or next(freeHolds) ~= nil then
 			return false
 		end
-		if not UserInputService.MouseEnabled or state.where ~= "heist" or state.phase ~= "Run" then
+		-- a run, or the hideout lobby while you walk about (Heist/Hideout sets lobbyRoam; a station frees it)
+		local playing = (state.where == "heist" and state.phase == "Run")
+			or (state.where == "garage" and state.lobbyRoam == true)
+		if not UserInputService.MouseEnabled or not playing then
 			return false
 		end
 		if GuiService.MenuIsOpen or UserInputService:GetFocusedTextBox() ~= nil then

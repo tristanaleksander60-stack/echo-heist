@@ -42,6 +42,8 @@ local DailyVault = require(DataShared:WaitForChild("DailyVault"))
 local Codec = require(Shared:WaitForChild("Rec"):WaitForChild("Codec"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local Help = require(Shared:WaitForChild("Heist"):WaitForChild("Help"))
+local CrewBoard = require(Shared:WaitForChild("Heist"):WaitForChild("CrewBoard"))
+local VanRules = require(Shared:WaitForChild("Heist"):WaitForChild("VanRules"))
 local Strings = require(Shared:WaitForChild("Heist"):WaitForChild("Strings"))
 local HeistSim = require(Shared:WaitForChild("Sim"):WaitForChild("HeistSim"))
 local Scenario = require(Shared:WaitForChild("Heist"):WaitForChild("Scenario"))
@@ -53,11 +55,13 @@ local HeistInstance = require(script.Parent:WaitForChild("HeistInstance"))
 local Avatars = require(script.Parent:WaitForChild("Avatars"))
 local Characters = require(script.Parent:WaitForChild("Characters"))
 local Lobby = require(script.Parent:WaitForChild("Lobby"))
+local Vans = require(script.Parent:WaitForChild("Vans"))
 local Staging = require(script.Parent:WaitForChild("Staging"))
 local LiveFlags = require(script.Parent.Parent:WaitForChild("Analytics"):WaitForChild("LiveFlags"))
 
 local T = Net.T
 local H = Config.Heist
+local HD = Config.Hideout
 local KIND = Codec.EVENT
 
 local HeistService = {}
@@ -77,6 +81,10 @@ type Crew = {
 	pending: { Player }, -- joined while the crew was mid-heist: seat at the next heist
 	instance: any?,
 	friends: { [Player]: { [number]: boolean } },
+	-- the hideout lobby (Config.Hideout): the job the leader picked on the job board (nil = their next job) and the
+	-- departure in progress (GO -> the drive -> the heist)
+	job: { index: number, day: number? }?,
+	departing: any?,
 }
 
 export type CreateOpts = {
@@ -109,6 +117,8 @@ local introDone: { [Player]: boolean } = {}
 local lastStartBy: { [Player]: number } = {}
 local tryFtueStart: (player: Player) -> boolean
 local retryFtue: (player: Player) -> ()
+-- The hideout's vans (Shared/Heist/VanRules; Heist/Vans draws them): one state for the whole server.
+local vans = VanRules.new()
 
 ---------------------------------------------------------------------------
 -- Data, analytics and kit hooks
@@ -436,6 +446,60 @@ local function dailyState(player: Player): any
 	}
 end
 
+---------------------------------------------------------------------------
+-- The hideout's vans (Config.Hideout; Shared/Heist/VanRules, Heist/Vans)
+---------------------------------------------------------------------------
+
+-- Is the van lobby on? (the config switch, and the garage's van rigs exist)
+local function lobbyOn(): boolean
+	return HD.ENABLED == true and Vans.folder() ~= nil
+end
+
+-- What the van rules need to know about a crew.
+local function crewInfo(crew: Crew): VanRules.Crew
+	local ids = {}
+	for _, p in crew.members do
+		table.insert(ids, p.UserId)
+	end
+	return { id = crew.id, leaderId = crew.leader.UserId, members = ids, inHeist = crew.instance ~= nil }
+end
+
+local function namesOf(crew: Crew): { [number]: string }
+	local out = {}
+	for _, p in crew.members do
+		out[p.UserId] = p.DisplayName
+	end
+	for _, p in crew.pending do
+		out[p.UserId] = p.DisplayName
+	end
+	return out
+end
+
+-- Redraws a crew's van (seats follow the crew's members).
+local function renderVan(crew: Crew?)
+	if not crew then
+		return
+	end
+	local v = VanRules.vanOfCrew(vans, crew.id)
+	if v then
+		VanRules.syncSeats(v, crewInfo(crew))
+		Vans.render(v.bay, v, namesOf(crew))
+	end
+end
+
+local function releaseVan(crew: Crew)
+	local v = VanRules.vanOfCrew(vans, crew.id)
+	if v then
+		VanRules.release(vans, v.bay)
+		Vans.render(v.bay, nil, {})
+	end
+end
+
+local function vanBayOf(crew: Crew?): number?
+	local v = crew and VanRules.vanOfCrew(vans, crew.id)
+	return if v then v.bay else nil
+end
+
 local function garageState(player: Player): any
 	local crew = crewOf[player]
 	local members = {}
@@ -453,6 +517,11 @@ local function garageState(player: Player): any
 		inHeist = crew ~= nil and crew.instance ~= nil,
 		levels = levelList(player),
 		daily = dailyState(player),
+		-- the hideout lobby (Config.Hideout): vans on, your crew's van bay (0 = none), the job the leader picked
+		lobby = lobbyOn(),
+		van = vanBayOf(crew) or 0,
+		job = if crew and crew.job then crew.job.index else 0,
+		jobDay = if crew and crew.job then crew.job.day else nil,
 	}
 end
 
@@ -486,6 +555,7 @@ local function pushGarage(crew: Crew)
 			push(p, "Sync", garageState(p))
 		end
 	end
+	renderVan(crew)
 end
 
 ---------------------------------------------------------------------------
@@ -514,6 +584,8 @@ local function dropCrewIfEmpty(crew: Crew)
 			table.remove(crews, i)
 		end
 		table.clear(crew.friends)
+		crew.departing = nil
+		releaseVan(crew)
 	end
 end
 
@@ -566,6 +638,7 @@ local function leaveCrew(player: Player)
 		return
 	end
 	crewOf[player] = nil
+	Vans.unseat(player, player.Parent == Players)
 	local i = table.find(crew.members, player)
 	if i then
 		table.remove(crew.members, i)
@@ -727,15 +800,18 @@ function HeistService.destroyInstance(inst: any)
 	end
 end
 
-local function toGarage(player: Player, i: number)
+-- bay: the crew's van (Config.Hideout): the crew comes back beside it, else round the garage spawn.
+local function toGarage(player: Player, i: number, bay: number?)
 	player:SetAttribute(Protocol.PLAYER_ATTR, "")
 	blockPrompts(player, false)
+	Vans.unseat(player, false)
 	local char = player.Character
 	local root = char and char:FindFirstChild("HumanoidRootPart")
 	if root and root:IsA("BasePart") then
 		root.Anchored = false
 		root.AssemblyLinearVelocity = Vector3.zero
-		root:PivotTo(Lobby.spawnFor(i))
+		local at = if bay then Vans.besideVan(bay, i) else nil
+		root:PivotTo(at or Lobby.spawnFor(i))
 	end
 end
 
@@ -745,12 +821,17 @@ local function returnToGarage(crew: Crew)
 		HeistService.destroyInstance(inst)
 	end
 	crew.instance = nil
+	crew.departing = nil
 	for _, p in crew.pending do
 		table.insert(crew.members, p)
 	end
 	table.clear(crew.pending)
+	local bay = vanBayOf(crew)
+	if bay then
+		VanRules.returned(vans, bay, crewInfo(crew)) -- the van is parked again, every seat to be taken anew
+	end
 	for i, p in crew.members do
-		toGarage(p, i)
+		toGarage(p, i, bay)
 	end
 	pushGarage(crew)
 end
@@ -806,6 +887,11 @@ local function startHeist(crew: Crew, levelIndex: number, daily: HeistInstance.D
 	end
 	crew.instance = inst
 	crewOfInstance[inst] = crew
+	local bay = vanBayOf(crew)
+	if bay then
+		VanRules.setAway(vans, bay) -- the van stays the crew's while it is on the job
+		renderVan(crew)
+	end
 	local spec = Catalog[levelIndex]
 	for seat, p in crew.members do
 		Characters.setSeat(p, seat)
@@ -953,6 +1039,298 @@ local function selectRelaxed(player: Player, index: number)
 	end
 end
 
+---------------------------------------------------------------------------
+-- The hideout lobby: van actions (Heist.Ready with a VanRules action table)
+---------------------------------------------------------------------------
+
+local function crewById(id: number): Crew?
+	for _, c in crews do
+		if c.id == id then
+			return c
+		end
+	end
+	return nil
+end
+
+-- Studs from a player's root to a van point ("cab" | "door" | "paint"; "any" = the nearest of them).
+local function vanDist(player: Player, bay: number, point: string): number?
+	local char = player.Character
+	local root = char and char:FindFirstChild("HumanoidRootPart")
+	if not (root and root:IsA("BasePart")) then
+		return nil
+	end
+	local best: number? = nil
+	for _, name in (if point == "any" then { "cab", "door", "paint" } else { point }) do
+		local pos = Vans.point(bay, name)
+		if pos then
+			local d = (root.Position - pos).Magnitude
+			if best == nil or d < best then
+				best = d
+			end
+		end
+	end
+	return best
+end
+
+local function refused(player: Player, code: string)
+	local text = Strings.LOBBY_REFUSED[code]
+	if text then
+		push(player, "Toast", { text = text })
+	end
+end
+
+-- The job a departure plays: the one the leader picked on the job board, else their next job (CrewBoard.nextJob).
+local function jobFor(crew: Crew): (number?, HeistInstance.Daily?)
+	local job = crew.job
+	if job and job.index == Protocol.DAILY_INDEX then
+		if not LiveFlags.isOn("dailyVault") or not dailyOpenFor(crew.leader) then
+			push(crew.leader, "Toast", { text = "The daily vault is closed right now." })
+			return nil, nil
+		end
+		local today = todayDay()
+		local daily = HeistService.dailyFor(job.day or today, today)
+		if not daily then
+			push(crew.leader, "Toast", { text = "That vault is not open today." })
+			return nil, nil
+		end
+		return Protocol.DAILY_INDEX, daily
+	end
+	local index = (if job then job.index else CrewBoard.nextJob(levelList(crew.leader))) or ftueIndex()
+	if not isUnlocked(crew.leader, index) then
+		push(crew.leader, "Toast", { text = lockedText(crew.leader, index) })
+		return nil, nil
+	end
+	return index, nil
+end
+
+-- SOLO / GO: the doors shut, every member's client plays the drive (Msg "Depart"), and the heist starts
+-- Config.Hideout.DRIVE.SERVER_SECONDS later (everything checked again then).
+local function depart(crew: Crew, bay: number, player: Player)
+	local last = lastStartBy[player]
+	if last and os.clock() - last < H.INSTANCE_COOLDOWN_SECONDS then
+		push(player, "Toast", { text = "Warming up the engine... try again in a moment." })
+		return
+	end
+	if freeSlot() == nil then
+		push(player, "Toast", { text = "All the vans are out. Try again in a minute." })
+		return
+	end
+	local index, daily = jobFor(crew)
+	if not index then
+		return
+	end
+	lastStartBy[player] = os.clock()
+	VanRules.depart(vans, bay)
+	Vans.seat(crew.leader, bay, 1) -- the leader climbs into the driver's seat
+	renderVan(crew)
+	local v = VanRules.vanOfCrew(vans, crew.id)
+	for _, p in crew.members do
+		push(p, "Depart", { bay = bay, seconds = HD.DRIVE.SERVER_SECONDS, paint = if v then v.paint else 0 })
+	end
+	local token = {}
+	crew.departing = token
+	task.delay(HD.DRIVE.SERVER_SECONDS, function()
+		if crew.departing ~= token then
+			return -- called off (the crew emptied, or it came back)
+		end
+		crew.departing = nil
+		local van = VanRules.vanOfCrew(vans, crew.id)
+		if not van or van.bay ~= bay or crew.instance or #crew.members == 0 then
+			return
+		end
+		for _, p in crew.members do
+			Vans.unseat(p, false) -- out of the seat welds before the heist teleports everyone
+		end
+		if not startHeist(crew, index, daily) then
+			VanRules.returned(vans, bay, crewInfo(crew))
+			for i, p in crew.members do
+				toGarage(p, i, bay)
+			end
+			pushGarage(crew)
+			return
+		end
+		crew.job = nil -- the next departure plays the next job unless the leader picks again
+	end)
+end
+
+-- Sitting in a friend's van: the crew size cap and the friend rule are VanRules.canSit's; this seats the player.
+local function sitIn(player: Player, vanCrew: Crew, bay: number, joining: boolean)
+	if joining then
+		joinCrew(player, vanCrew) -- sitting in a friend's van IS joining their crew
+		push(vanCrew.leader, "Toast", { text = player.DisplayName .. " sat in your van!" })
+	end
+	local seatIndex = table.find(vanCrew.members, player)
+	if seatIndex then
+		renderVan(vanCrew) -- the seat exists before it is marked
+		VanRules.markSeated(vans, bay, player.UserId, true)
+		Vans.seat(player, bay, seatIndex)
+	end
+	renderVan(vanCrew)
+end
+
+-- The job board in the hideout: the leader's pick (Heist.SelectLevel / SelectDaily, validated by the caller) is
+-- pinned for the crew's next departure; the van starts it. False = not the hideout (the results card's REPLAY /
+-- NEXT, the lobby off): the caller starts the heist as before.
+local function pinJob(player: Player, job: { index: number, day: number? }): boolean
+	if not lobbyOn() then
+		return false
+	end
+	local crew = crewOf[player]
+	if not crew or crew.instance ~= nil then
+		return false
+	end
+	if crew.leader ~= player then
+		push(player, "Toast", { text = "Your crew leader picks the job." })
+		return true
+	end
+	if crew.departing then
+		return true
+	end
+	crew.job = { index = job.index, day = job.day }
+	local name = if job.index == Protocol.DAILY_INDEX then Strings.DAILY_VAULT else nil
+	local spec = Catalog[job.index]
+	if spec then
+		name = spec.name
+	end
+	push(player, "Toast", { text = if vanBayOf(crew) then Strings.jobPinned(name or "?") else Strings.JOB_PINNED_PICK })
+	pushGarage(crew)
+	return true
+end
+
+-- One lobby action from a player (validated shape: VanRules.validAction). Everything is checked here again.
+local function lobbyAction(player: Player, a: { [string]: any })
+	if not lobbyOn() or preparing[player] or instanceOf(player) ~= nil then
+		return
+	end
+	local crew = crewOf[player]
+	if not crew or crew.instance or crew.departing then
+		return
+	end
+	local op: string = a.op
+	local bay: number = a.bay or 0
+	local uid = player.UserId
+	local info = crewInfo(crew)
+	if op == "claim" then
+		local old = vanBayOf(crew)
+		local ok, code = VanRules.claim(vans, bay, info, uid, vanDist(player, bay, "any"))
+		if not ok then
+			refused(player, code)
+			return
+		end
+		if old and old ~= bay then
+			Vans.render(old, nil, {})
+		end
+		pushGarage(crew)
+	elseif op == "paint" then
+		local ok, code = VanRules.setPaint(vans, bay, uid, a.n, vanDist(player, bay, "paint"))
+		if not ok then
+			refused(player, code)
+			return
+		end
+		renderVan(crew)
+	elseif op == "crew" or op == "park" then
+		local mode = if op == "crew" then VanRules.MODE.Crew else VanRules.MODE.Parked
+		local ok, code = VanRules.setMode(vans, bay, info, uid, mode, vanDist(player, bay, "door"))
+		if not ok then
+			refused(player, code)
+			return
+		end
+		renderVan(crew)
+	elseif op == "solo" or op == "go" then
+		local ok, code = VanRules.canGo(vans, bay, info, uid, vanDist(player, bay, "cab"), op == "solo")
+		if not ok then
+			refused(player, code)
+			return
+		end
+		depart(crew, bay, player)
+	elseif op == "sit" then
+		local v = VanRules.van(vans, bay)
+		local vanCrew = v and crewById(v.crewId)
+		if not v or not vanCrew then
+			refused(player, "NoVan")
+			return
+		end
+		local friend = false
+		if vanCrew ~= crew then
+			local leaderId = vanCrew.leader.UserId
+			local okF, isFriend = pcall(function()
+				return player:IsFriendsWithAsync(leaderId)
+			end)
+			friend = okF and isFriend == true
+			-- re-check everything after the yield
+			local now = VanRules.van(vans, bay)
+			if
+				player.Parent ~= Players
+				or crewOf[player] == nil
+				or instanceOf(player) ~= nil
+				or not now
+				or crewById(now.crewId) ~= vanCrew
+				or vanCrew.leader.UserId ~= leaderId
+			then
+				return
+			end
+		end
+		local mine = crewOf[player] :: Crew
+		local ok, code = VanRules.canSit(
+			vans,
+			bay,
+			{ userId = uid, crewId = mine.id, friend = friend },
+			crewSize(vanCrew),
+			vanDist(player, bay, "door")
+		)
+		if not ok then
+			refused(player, code)
+			return
+		end
+		if code == "Join" and not LiveFlags.isOn("joinFriend") then
+			push(player, "Toast", { text = "Joining crews is paused right now." })
+			return
+		end
+		sitIn(player, vanCrew, bay, code == "Join")
+	elseif op == "ready" or op == "unready" then
+		local v = VanRules.vanOfCrew(vans, crew.id)
+		if not v then
+			return
+		end
+		local ok, code = VanRules.setReady(vans, v.bay, uid, op == "ready")
+		if not ok then
+			refused(player, code)
+			return
+		end
+		renderVan(crew)
+		if op == "ready" and VanRules.waiting(v) == 0 and #crew.members > 1 then
+			push(crew.leader, "Toast", { text = "Everyone is READY: GO from the cab!" })
+		end
+	elseif op == "stand" then
+		local v = VanRules.vanOfCrew(vans, crew.id)
+		Vans.unseat(player, true)
+		if v then
+			VanRules.markSeated(vans, v.bay, uid, false)
+			renderVan(crew)
+		end
+	end
+end
+
+-- A seated player left their seat themselves (a jump): out of the side door; the seat stays theirs (not READY).
+local function onStoodUp(userId: number, bay: number)
+	local player = Players:GetPlayerByUserId(userId)
+	local crew = player and crewOf[player]
+	local v = VanRules.van(vans, bay)
+	if not player or not crew or not v or v.crewId ~= crew.id then
+		return
+	end
+	if v.mode == VanRules.MODE.Departing or v.mode == VanRules.MODE.Away then
+		return -- the heist start unseats everyone itself
+	end
+	VanRules.markSeated(vans, bay, userId, false)
+	local char = player.Character
+	local cf = Vans.besideVan(bay, 1)
+	if char and cf then
+		char:PivotTo(cf)
+	end
+	renderVan(crew)
+end
+
 local function declareRemotes()
 	local R = Protocol.REMOTE
 	local RATE = H.RATE
@@ -988,10 +1366,17 @@ local function declareRemotes()
 			end
 		end,
 	})
+	-- Heist.Ready(arg?): arg = the reduced-motion flag ("▶ RUN n"), or a hideout lobby action table
+	-- { op, bay?, n? } (Shared/Heist/VanRules.validReadyArg: the exact keys, ops and ranges; no new remote names)
 	Net.Listen(R.Ready, {
 		rate = RATE.Ready,
-		args = { T.optional(T.boolean) },
-		handler = function(player: Player, reduced: boolean?)
+		args = { VanRules.validReadyArg },
+		handler = function(player: Player, arg: any)
+			if type(arg) == "table" then
+				lobbyAction(player, arg)
+				return
+			end
+			local reduced: boolean? = arg
 			local inst = instanceOf(player)
 			if inst then
 				HeistInstance.ready(inst, player.UserId, reduced)
@@ -1022,6 +1407,9 @@ local function declareRemotes()
 				push(player, "Toast", { text = lockedText(player, index) })
 				return
 			end
+			if pinJob(player, { index = index }) then
+				return -- the hideout: the job board picks the job, the van starts it
+			end
 			local crew = leaderCrew(player)
 			if crew and startHeist(crew, index, nil) then
 				lastStartBy[player] = os.clock()
@@ -1045,6 +1433,9 @@ local function declareRemotes()
 			local daily = HeistService.dailyFor(day or today, today)
 			if not daily then
 				push(player, "Toast", { text = "That vault is not open today." })
+				return
+			end
+			if pinJob(player, { index = Protocol.DAILY_INDEX, day = daily.day }) then
 				return
 			end
 			local crew = leaderCrew(player)
@@ -1085,6 +1476,15 @@ local function declareRemotes()
 			push(crew.leader, "Toast", { text = player.DisplayName .. " joined your crew!" })
 			if crew.instance then
 				push(player, "Toast", { text = "You join at their next heist." })
+			elseif lobbyOn() and not crew.departing then
+				-- the hideout: a friend who joins takes a seat in the crew's van (its side door opens for them)
+				local v = VanRules.vanOfCrew(vans, crew.id)
+				if v and v.mode == VanRules.MODE.Parked then
+					v.mode = VanRules.MODE.Crew
+				end
+				if v and v.mode == VanRules.MODE.Crew then
+					sitIn(player, crew, v.bay, false)
+				end
 			end
 		end,
 	})
@@ -1338,6 +1738,9 @@ function HeistService.start(opts: StartOpts?)
 	if o.lobby ~= false then
 		-- greybox at once; dressed with the art kit in the background once it is ready (garage v1)
 		Lobby.build(if H.KIT_LEVELS then KitService else nil)
+		if HD.ENABLED then
+			Vans.build(onStoodUp) -- the hideout's van rigs on the warehouse's VanBay anchors
+		end
 	end
 	declareRemotes()
 	-- The store kill switch applies at once (prompts are re-checked on every change).

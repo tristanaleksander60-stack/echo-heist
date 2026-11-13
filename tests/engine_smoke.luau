@@ -1849,5 +1849,284 @@ do
 	check(okBig, "big section ran" .. (if okBig then "" else ": " .. tostring(bigErr)))
 end
 
+-- 12. The hideout lobby (LOBBY track, PLAN_FIRST_PERSON "LB", Config.Hideout). Heist/Vans builds a rig on every
+-- VanBay anchor of the warehouse garage (look points, plate, seat cards, side door leaf, Seat parts: all visual or
+-- seats, no lights); the kit van's open side door is on its local -Z and its cab on its local -X (a precise-collision
+-- copy, raycast), so each bay anchor's facing is the side door's, toward the aisle. Then the van rules on the real
+-- anchors with fake members (Luau Execution has no players): one claims VanBay2, a friend sits in as crew and is
+-- READY, GO starts ONE heist instance with both; a solo player at VanBay3 starts alone; a third player cannot claim
+-- the taken van; the seat cap holds. Heist.Ready's validator (VanRules.validReadyArg) and no new Heist.* remote names.
+do
+	local okLobby, lobbyErr = pcall(function()
+		local AssetService = game:GetService("AssetService")
+		local heistDir = server:WaitForChild("Heist")
+		local sharedDir = ReplicatedStorage:WaitForChild("Shared")
+		local Config = require(sharedDir:WaitForChild("Config")) :: any
+		local HD = Config.Hideout
+		local Lobby = require(heistDir:WaitForChild("Lobby"))
+		local Vans = require(heistDir:WaitForChild("Vans"))
+		local HeistService = require(heistDir:WaitForChild("HeistService"))
+		local KitService = require(server:WaitForChild("Kit"):WaitForChild("KitService"))
+		local VanRules = require(sharedDir:WaitForChild("Heist"):WaitForChild("VanRules"))
+		local Protocol = require(sharedDir:WaitForChild("Heist"):WaitForChild("Protocol"))
+		local garage = Lobby.model() or Lobby.build(nil)
+		local folder = Vans.build(nil)
+		check(folder ~= nil and folder.Parent == garage, "hideout: Garage/Vans built on the anchors")
+		if not folder then
+			return
+		end
+		local rigsOk, visualOk, lights = 0, true, 0
+		for bay = 1, HD.BAYS do
+			local m = folder:FindFirstChild("Van" .. bay)
+			local seats = 0
+			if m then
+				for _, d in m:GetDescendants() do
+					if d:IsA("Seat") then
+						seats += if not d.CanCollide and not d.CanTouch then 1 else 0
+					elseif d:IsA("BasePart") and (d.CanCollide or d.CanQuery or d.CanTouch) then
+						visualOk = false
+					elseif d:IsA("Light") then
+						lights += 1
+					end
+				end
+			end
+			if
+				m
+				and m:FindFirstChild("Cab")
+				and m:FindFirstChild("Door")
+				and m:FindFirstChild("Paint")
+				and m:FindFirstChild("Plate")
+				and m:FindFirstChild("DoorLeaf")
+				and seats == #HD.VAN.SEATS
+				and m:GetAttribute("Mode") == VanRules.MODE.Free
+			then
+				rigsOk += 1
+			end
+		end
+		check(
+			rigsOk == HD.BAYS and visualOk and lights == 0,
+			string.format(
+				"hideout: %d / %d van rigs (points, plate, door, %d seats), visual only %s, %d lights",
+				rigsOk,
+				HD.BAYS,
+				#HD.VAN.SEATS,
+				tostring(visualOk),
+				lights
+			)
+		)
+		-- every bay's side door faces the aisle (the anchor's LookVector toward the garage's middle)
+		local facing = 0
+		for bay = 1, HD.BAYS do
+			local a = Vans.anchor(bay)
+			if a and math.abs((a.Position + a.LookVector * 4).Z) < math.abs(a.Position.Z) then
+				facing += 1
+			end
+		end
+		check(facing == HD.BAYS, string.format("hideout: %d / %d side doors face the aisle", facing, HD.BAYS))
+		-- the kit van: its open side door on local Z = DOOR_Z, its cab on local X = CAB_X
+		if KitService.isReady() then
+			local src = KitService.clone("Van", {})
+			local okM, van = pcall(function()
+				return AssetService:CreateMeshPartAsync(
+					(src :: MeshPart).MeshContent,
+					{ CollisionFidelity = Enum.CollisionFidelity.PreciseConvexDecomposition }
+				)
+			end)
+			if okM and van and src then
+				van.Size = src.Size
+				van.Anchored = true
+				van.CanQuery = true
+				van.CFrame = CFrame.new(0, 800 + van.Size.Y / 2, 0)
+				van.Parent = workspace
+				local params = RaycastParams.new()
+				params.FilterType = Enum.RaycastFilterType.Include
+				params.FilterDescendantsInstances = { van }
+				local dz = HD.VAN.DOOR_Z
+				local function reach(fromZ: number): number
+					local hit = workspace:Raycast(Vector3.new(0.1, 804.5, fromZ), Vector3.new(0, 0, -fromZ * 2), params)
+					return if hit then math.abs(hit.Position.Z - fromZ) else math.huge
+				end
+				local doorSide = reach(dz * 10) -- in through the open door, to the far wall
+				local farSide = reach(-dz * 10) -- the closed far side
+				local function top(x: number): number
+					local hit = workspace:Raycast(Vector3.new(x, 830, 0), Vector3.new(0, -40, 0), params)
+					return if hit then hit.Position.Y - 800 else 0
+				end
+				local cab = top(HD.VAN.CAB_X * 6)
+				local rear = top(-HD.VAN.CAB_X * 6)
+				check(
+					doorSide > 10 and farSide < 8 and cab < rear - 1,
+					string.format(
+						"hideout: kit van side door on local Z %d (ray in %.1f vs %.1f), cab on local X %d (top %.1f vs %.1f)",
+						dz,
+						doorSide,
+						farSide,
+						HD.VAN.CAB_X,
+						cab,
+						rear
+					)
+				)
+				van:Destroy()
+			else
+				table.insert(results, "      hideout: no precise van copy (" .. tostring(van) .. ")")
+			end
+		end
+
+		-- the rules on the real anchors, with fake members
+		local st = VanRules.new()
+		local function standAt(bay: number, point: string): number
+			local p = Vans.point(bay, point) :: Vector3
+			local a = Vans.anchor(bay) :: CFrame
+			local you = p + a.LookVector * 3 + Vector3.new(0, -1.2, 0) -- outside the side door, root height
+			return (you - p).Magnitude
+		end
+		local A, B, C, D = -301, -302, -303, -304
+		local crewA: VanRules.Crew = { id = 9001, leaderId = A, members = { A } }
+		local okClaim = VanRules.claim(st, 2, crewA, A, standAt(2, "door"))
+		check(okClaim, "hideout: A claims VanBay2 standing at its side door")
+		local okFar = VanRules.claim(st, 4, { id = 9009, leaderId = -309, members = { -309 } }, -309, 40)
+		check(not okFar, "hideout: a van is not claimed from across the garage")
+		local okOpen = VanRules.setMode(st, 2, crewA, A, VanRules.MODE.Crew, standAt(2, "door"))
+		local vanA = VanRules.van(st, 2) :: VanRules.Van
+		Vans.render(2, vanA, { [A] = "FakeA" })
+		local rig = folder:WaitForChild("Van2") :: Model
+		local plate = rig:WaitForChild("Plate") :: BasePart
+		local plateGui = plate:FindFirstChildOfClass("SurfaceGui")
+		local plateName = plateGui and plateGui:FindFirstChild("Name")
+		check(
+			okOpen
+				and rig:GetAttribute("Mode") == VanRules.MODE.Crew
+				and rig:GetAttribute("LeaderId") == A
+				and plateName ~= nil
+				and (plateName :: TextLabel).Text == "FAKEA'S CREW",
+			"hideout: VanBay2 is A's: CREW mode, the leader's plate"
+		)
+		local okSit, codeSit =
+			VanRules.canSit(st, 2, { userId = B, crewId = 9002, friend = true }, 1, standAt(2, "door"))
+		check(okSit and codeSit == "Join", "hideout: B (a friend) walks in at the side door and joins as crew")
+		crewA.members = { A, B }
+		VanRules.syncSeats(vanA, crewA)
+		VanRules.markSeated(st, 2, B, true)
+		local okWait = VanRules.canGo(st, 2, crewA, A, standAt(2, "cab"), false)
+		check(not okWait, "hideout: GO waits for B's READY")
+		VanRules.setReady(st, 2, B, true)
+		Vans.render(2, vanA, { [A] = "FakeA", [B] = "FakeB" })
+		local card = rig:WaitForChild("SeatCard2") :: BasePart
+		local cardGui = card:FindFirstChildOfClass("SurfaceGui")
+		local cardName = cardGui and cardGui:FindFirstChild("Name")
+		check(
+			cardName ~= nil and (cardName :: TextLabel).Text == "FAKEB" and rig:GetAttribute("Waiting") == 0,
+			"hideout: B's seat card lights with B's name, nobody waiting"
+		)
+		local okGo = VanRules.canGo(st, 2, crewA, A, standAt(2, "cab"), false)
+		check(okGo, "hideout: A presses GO at the cab")
+		local l1 = HeistService.indexOf(Config.Heist.FTUE_L1_LEVEL) :: number
+		if okGo then
+			VanRules.depart(st, 2)
+			local inst = HeistService.createInstance(l1, {
+				{ userId = A, name = "FakeA", fake = { x = 0, y = 3, z = 14, yaw = 0 } },
+				{ userId = B, name = "FakeB", fake = { x = 2, y = 3, z = 14, yaw = 0 } },
+			}, A, false)
+			local count = 0
+			if inst then
+				for _ in inst.byId do
+					count += 1
+				end
+			end
+			check(
+				inst ~= nil and inst.byId[A] ~= nil and inst.byId[B] ~= nil and count == 2,
+				string.format("hideout: GO starts one instance with both (%d members)", count)
+			)
+			if inst then
+				HeistService.destroyInstance(inst)
+			end
+			VanRules.setAway(st, 2)
+		end
+		local okTaken, codeTaken = VanRules.claim(st, 2, { id = 9003, leaderId = C, members = { C } }, C, 1)
+		check(not okTaken and codeTaken == "Taken", "hideout: a third player cannot claim the taken van")
+		-- a solo player at VanBay3 starts alone
+		local crewD: VanRules.Crew = { id = 9004, leaderId = D, members = { D } }
+		local okD = VanRules.claim(st, 3, crewD, D, standAt(3, "paint"))
+		local okSolo = VanRules.canGo(st, 3, crewD, D, standAt(3, "cab"), true)
+		check(okD and okSolo, "hideout: D claims VanBay3 and goes SOLO")
+		if okSolo then
+			local inst = HeistService.createInstance(l1, {
+				{ userId = D, name = "FakeD", fake = { x = 0, y = 3, z = 14, yaw = 0 } },
+			}, D, false)
+			local count = 0
+			if inst then
+				for _ in inst.byId do
+					count += 1
+				end
+			end
+			check(inst ~= nil and count == 1, string.format("hideout: SOLO starts alone (%d member)", count))
+			if inst then
+				HeistService.destroyInstance(inst)
+			end
+		end
+		-- the seat cap: a crew of MAX_CREW fills the van; the next friend is refused
+		local crewE: VanRules.Crew = { id = 9005, leaderId = -310, members = { -310 } }
+		VanRules.claim(st, 5, crewE, -310, standAt(5, "door"))
+		VanRules.setMode(st, 5, crewE, -310, VanRules.MODE.Crew, standAt(5, "door"))
+		local seated = 1
+		for k = 1, Config.Sim.MAX_CREW do
+			local uid = -320 - k
+			local okK = VanRules.canSit(st, 5, { userId = uid, crewId = 0, friend = true }, seated, standAt(5, "door"))
+			if okK then
+				seated += 1
+			end
+		end
+		check(
+			seated == Config.Sim.MAX_CREW,
+			string.format("hideout: seat cap %d holds (%d seated)", Config.Sim.MAX_CREW, seated)
+		)
+		-- the crew comes back beside its van: clear of every van, inside the garage
+		local besideOk = 0
+		for i = 1, Config.Sim.MAX_CREW do
+			local cf = Vans.besideVan(2, i) :: CFrame
+			local clear = true
+			for _, d in garage:GetChildren() do
+				if d:IsA("BasePart") and d:GetAttribute("EH_Kind") == "garageVan" then
+					local l = d.CFrame:PointToObjectSpace(cf.Position)
+					if math.abs(l.X) < d.Size.X / 2 + 1 and math.abs(l.Z) < d.Size.Z / 2 + 1 then
+						clear = false
+					end
+				end
+			end
+			local p = cf.Position
+			if clear and math.abs(p.X) < Config.Lobby.HALF_X and math.abs(p.Z) < Config.Lobby.HALF_Z then
+				besideOk += 1
+			end
+		end
+		check(besideOk == Config.Sim.MAX_CREW, "hideout: the crew comes back beside its van, clear of the vans")
+		-- the remote: Heist.Ready's validator, and no Heist.* remote outside Protocol.REMOTE
+		check(
+			VanRules.validReadyArg({ op = "claim", bay = 2 })
+				and VanRules.validReadyArg(true)
+				and VanRules.validReadyArg(nil)
+				and not VanRules.validReadyArg({ op = "claim", bay = 2, hack = 1 })
+				and not VanRules.validReadyArg({ op = "claim", bay = 99 })
+				and not VanRules.validReadyArg("claim"),
+			"hideout: Heist.Ready validates the lobby action table"
+		)
+		local allowed = {}
+		for _, name in Protocol.REMOTE do
+			allowed[name] = true
+		end
+		local extra = {}
+		local lf = ReplicatedStorage:FindFirstChild("LihFolkRemotes")
+		for _, r in (if lf then lf:GetChildren() else {}) do
+			if string.sub(r.Name, 1, 6) == "Heist." and not allowed[r.Name] then
+				table.insert(extra, r.Name)
+			end
+		end
+		check(#extra == 0, "hideout: no new Heist.* remote names (" .. table.concat(extra, ", ") .. ")")
+		for bay = 1, HD.BAYS do
+			Vans.render(bay, nil, {})
+		end
+	end)
+	check(okLobby, "hideout section ran" .. (if okLobby then "" else ": " .. tostring(lobbyErr)))
+end
+
 table.insert(results, string.format("%d failure(s)", failures))
 return table.concat(results, "\n")

@@ -178,6 +178,19 @@ Cues.cues = {
 		priority = 3,
 		note = "APM Horror Tools kick (0.44 s): one low thump per call; alts are a second kick and a PSE synth thud",
 	},
+	-- The hideout's departure (Config.Hideout.DRIVE): the van's engine under the short drive. Empty until the
+	-- owner's audio pass.
+	VanDrive = {
+		ids = {},
+		search = "van engine rumble drive by loop short",
+		bus = "SFX",
+		volume = 0.5,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		choke = true,
+		priority = 3,
+		note = "LOBBY track: GO -> the 2-3 s drive before the van-door wipe",
+	},
 
 	-------------------------------------------------------------------------------------------------------
 	-- Mechanisms (§7.3): positional at the device (opts.at); clone presses go through the Clone bus.

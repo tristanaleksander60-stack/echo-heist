@@ -32,10 +32,36 @@ export type Prompt = {
 	text: string, -- the word(s) shown
 	colour: Color3,
 	key: string?, -- the key cap ("E", "X", "TAP"), nil for the van
+	locked: boolean?, -- a lobby target that does nothing for you (steel words)
 }
 
 -- The icon for each verb (the 38-icon sheet).
-Reticle.ICON = table.freeze({ grab = "loot", locked = "loot", open = "door", press = "plate", bank = "van" })
+Reticle.ICON = table.freeze({
+	grab = "loot",
+	locked = "loot",
+	open = "door",
+	press = "plate",
+	bank = "van",
+	-- the hideout lobby (Shared/Heist/LobbyLook verbs)
+	jobs = "star",
+	laptop = "gift",
+	wardrobe = "you",
+	tv = "play",
+	invite = "invite",
+	pick = "van",
+	leaderPicks = "lock",
+	solo = "play",
+	go = "play",
+	wait = "lock",
+	crew = "door",
+	park = "door",
+	paint = "bolt",
+	sit = "seat_circle",
+	ready = "check",
+	unready = "cross",
+	taken = "lock",
+	busy = "lock",
+})
 
 function Reticle.build(ctx: any): any
 	local reticle = {}
@@ -178,7 +204,7 @@ function Reticle.build(ctx: any): any
 			Icons.set(iconGet(), Reticle.ICON[prompt.verb] or "loot")
 			Ui.pop(chip)
 		end
-		word.TextColor3 = if prompt.verb == "locked" then Palette.steelHi else Palette.white
+		word.TextColor3 = if prompt.verb == "locked" or prompt.locked then Palette.steelHi else Palette.white
 	end
 
 	-- The onboarding finger for the chip (Hud/Hints): pointing up at it from below, so it never covers the

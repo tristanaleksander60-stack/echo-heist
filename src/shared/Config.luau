@@ -1454,6 +1454,106 @@ Config.Lobby = {
 	},
 }
 
+-- The hideout lobby (PLAN_FIRST_PERSON "LB", the LOBBY track; MASTERPLAN §3.3): first person in the warehouse garage,
+-- look-to-interact stations on the BIG track's anchors (Garage/Anchors) and the vans: PICK a free van (your crew's,
+-- claimed by the leader), its paint, then SOLO (climb in, GO) or CREW (the side door opens, friends walk in and SIT,
+-- the leader presses GO when every seated member is READY). Pure rules: Shared/Heist/VanRules (server state machine
+-- and the Heist.Ready action validator) and Shared/Heist/LobbyLook (what each target offers you, the station camera).
+-- Server: Heist/Vans (the van rigs in Garage/Vans) and HeistService; client: Heist/Hideout, Hud/Lobby, Hud/Wardrobe.
+Config.Hideout = {
+	ENABLED = true, -- false: the old flow (the HUD job board opens in the garage, a pick starts the heist at once)
+	BAYS = 8, -- van bays (Config.Lobby.BAYS)
+	-- Look-to-interact (client): reach from the eye, and the server's own check from your root (a little longer, so
+	-- a prompt shown is an action the server takes).
+	REACH = 10,
+	SERVER_REACH = 13,
+	-- Stations: an anchor of Garage/Anchors, the verb it offers, the look target (local offset from the anchor in
+	-- studs: right, up, toward the facing; radius) and the station camera (where the eye eases to: `back` studs out
+	-- along the anchor's facing, `up` above the target, FOV). The HUD panel opens once the ease is done.
+	STATIONS = {
+		{
+			anchor = "JobBoardSpot",
+			verb = "jobs",
+			target = { 0, 4.5, 0, 2.2 },
+			cam = { back = 5.5, up = 0.2, fov = 52 },
+		},
+		{
+			anchor = "LaptopSpot",
+			verb = "laptop",
+			target = { 0, 0.7, 0, 1.4 },
+			cam = { back = 3.2, up = 0.4, fov = 50 },
+		},
+		{
+			anchor = "WardrobeSpot",
+			verb = "wardrobe",
+			target = { 0, 4.5, 0, 2.6 },
+			cam = { back = 7, up = 0, fov = 50 },
+		},
+		{ anchor = "TVSpot", verb = "tv", target = { 0, 0, 0, 3.2 }, cam = { back = 9, up = 0, fov = 50 } },
+		{ anchor = "CrewSign", verb = "invite", target = { 0, 0, 0, 2.8 }, cam = { back = 6, up = 0, fov = 50 } },
+	},
+	FOCUS_SECONDS = 0.45, -- the eye's ease into a station view (reduced motion: a cut)
+	FOCUS_LEAVE_STUDS = 4, -- a station closes when you walk this far from where you opened it
+	-- The wardrobe's view of yourself: a third-person orbit round your Rookie (the mirror is dressing).
+	-- spin: deg/s; shift: studs the look point slides left, so you stand right of the sheet (HudLayout.WARDROBE)
+	WARDROBE_ORBIT = { distance = 7.5, height = 1.2, yaw = 25, fov = 48, look = 0.4, spin = 18, shift = 1.8 },
+	-- Vans. Geometry in van space: `along` toward the cab, `up` from the floor, `out` toward the open side door. The
+	-- kit van (assets/blender/van.py) puts the cab at its local -X and the side door at its local -Z (engine-checked:
+	-- tests/engine_smoke.luau section 12), so a bay anchor's LookVector (yaw = the bay's) is the door's facing.
+	VAN = {
+		CAB_X = -1, -- sign of the van's local X toward the cab
+		DOOR_Z = -1, -- sign of the van's local Z toward the side door
+		-- paints you pick from at your van (mid values, never Getaway White: GOLDEN G1); a claimed van starts in its
+		-- bay's own paint (Config.Lobby.BAY_PAINTS) until the leader picks one. No van styles in the kit: paints only.
+		PAINTS = {
+			{ name = "TEAL", rgb = { 62, 138, 150 } },
+			{ name = "BERRY", rgb = { 168, 84, 140 } },
+			{ name = "INDIGO", rgb = { 100, 92, 176 } },
+			{ name = "CARAMEL", rgb = { 140, 100, 72 } },
+			{ name = "PINE", rgb = { 70, 120, 84 } },
+			{ name = "BRICK", rgb = { 160, 74, 62 } },
+		},
+		-- look targets on the door side (along, up, out, radius): the cab door (SOLO / GO), the side door (CREW / SIT /
+		-- READY), the rear panel (PAINT)
+		POINTS = {
+			cab = { 4.6, 4.4, 3.4, 1.7 },
+			door = { 0.1, 4.2, 3.4, 2.4 },
+			paint = { -5, 4.2, 3.4, 1.8 },
+		},
+		EXIT = { 0.1, 0, 6.5 }, -- where you step out (floor level, outside the side door)
+		-- seats (along, up, out, yaw toward: "cab" | "door"); seat 1 is the driver (the leader), 2.. the cargo bench
+		-- (crew seat order, Config.Sim.MAX_CREW in all)
+		SEATS = {
+			{ 4.3, 2.3, -1.2, "cab" },
+			{ -5.4, 2.4, -2.1, "door" },
+			{ -3.4, 2.4, -2.1, "door" },
+			{ -1.4, 2.4, -2.1, "door" },
+		},
+		SEAT_LIGHT = { up = 6.1, out = -2.86, size = { 1.6, 0.9 } }, -- the lit name card over each cargo seat
+		PLATE = { along = 0.1, up = 8.0, out = 3.05, size = { 6.4, 1.1 } }, -- the crew name plate over the side door
+		DOOR_LEAF = { along = 0.1, up = 4.25, out = 3.3, size = { 5, 4.9, 0.2 }, openAlong = -4.7, openOut = 3.72 },
+		DOOR_SECONDS = 0.45, -- the side door slides
+		FREE_LIGHT = 0.55, -- seat card transparency while empty
+	},
+	-- GO -> the doors shut -> a short drive (the van in your paint down a snowy street, the town passing; skippable)
+	-- -> the van-door wipe -> the heist. The server starts the heist SERVER_SECONDS after GO.
+	DRIVE = {
+		SERVER_SECONDS = 2.4,
+		SECONDS = 2.6, -- the client's shot (the wipe closes over its end; reduced motion: the wipe at once)
+		STAGE_ORIGIN = { 0, 600, -3600 }, -- client-only stage, far from the garage and every instance slot
+		SPEED = 46, -- studs/s the street scrolls past
+		BLOCK = { length = 18, gap = 6, depth = 12, minH = 16, maxH = 34 }, -- the passing town
+		STREET_W = 26,
+		LAMP_EVERY = 24,
+		CAM = { along = 9, up = 3.2, out = 13, lookAlong = -1, lookUp = 3, fov = 55 }, -- a tracking 3/4 of the van
+		SHAKE = 0.05, -- studs of engine rumble (off with shake / reduced motion)
+		CUE = "VanDrive", -- engine rumble (Audio cue; an empty id until the owner's lands)
+	},
+	-- the first hideout visit: a world hint over the nearest free van ("PICK A VAN") until you have one
+	HINT = { up = 10.5, size = { 220, 64 }, bob = 0.4 },
+	-- the drive's SKIP and the touch USE button reuse HudLayout boxes (LOBBY_SKIP, LOBBY_USE)
+}
+
 -- Art kit (spike S2, automated path: docs/art/KIT_IMPORT.md "Automated path"). The asset ids and the
 -- manifest live in the generated src/server/Kit/KitData.luau (python3 tools/kit_upload.py); these are
 -- the boot knobs of src/server/Kit/KitService.luau.

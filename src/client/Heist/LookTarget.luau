@@ -275,6 +275,66 @@ function LookTarget.new(state: any, deps: any): any
 		return current
 	end
 
+	-- The hideout lobby (Config.Hideout, Heist/Hideout): the same pick over the lobby's targets (the stations and
+	-- the vans' points). items: { id, pos: Vector3, radius, part (its line-of-sight part), adornee (what the outline
+	-- draws), ok }. Returns the picked item's index (nil = none) and outlines it; locked = a steel outline.
+	-- fromChar: pick along what your character faces from its head (the diorama and classic cameras look down on
+	-- you, so their ray is not where you are looking).
+	local lobbyId: any = nil
+	function look.updateLobby(items: { any }, locked: ((any) -> boolean)?, fromChar: boolean?): number?
+		local cam = workspace.CurrentCamera
+		if not cam or #items == 0 then
+			lobbyId = nil
+			showOutline(nil)
+			return nil
+		end
+		local list: { FpMath.Candidate } = {}
+		for _, it in items do
+			table.insert(list, { id = it.id, pos = t3(it.pos), radius = it.radius, ok = it.ok ~= false })
+		end
+		local eye = t3(cam.CFrame.Position)
+		local dir = t3(cam.CFrame.LookVector)
+		local char = player and player.Character
+		local head = char and char:FindFirstChild("Head")
+		local rootPart = char and char:FindFirstChild("HumanoidRootPart")
+		if fromChar and head and head:IsA("BasePart") and rootPart and rootPart:IsA("BasePart") then
+			eye = t3(head.Position)
+			dir = t3(rootPart.CFrame.LookVector)
+		end
+		local k = FpMath.pick(eye, dir, list, {
+			reach = Config.Hideout.REACH,
+			assist = assist(),
+			distanceWeight = LK.DISTANCE_WEIGHT,
+			sticky = LK.STICKY,
+			current = lobbyId,
+			losCandidates = LK.LOS_CANDIDATES,
+			blocked = function(e: { number }, c: FpMath.Candidate): boolean
+				local idx = table.find(list, c)
+				local it = idx and items[idx]
+				return it == nil or blocked(e, c, it.part)
+			end,
+		})
+		if not k then
+			lobbyId = nil
+			showOutline(nil)
+			return nil
+		end
+		local it = items[k]
+		lobbyId = it.id
+		local adornee = it.adornee or it.part
+		if adornee and adornee:IsA("BasePart") then
+			showOutline({
+				kind = "lobby",
+				index = k,
+				part = adornee,
+				verb = if locked and locked(it) then "locked" else "grab",
+			})
+		else
+			showOutline(nil)
+		end
+		return k
+	end
+
 	function look.current(): Target?
 		return current
 	end
