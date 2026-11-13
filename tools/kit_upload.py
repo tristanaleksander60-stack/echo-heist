@@ -17,7 +17,7 @@ InsertService:LoadAsset. Guide: docs/art/KIT_IMPORT.md "Automated path".
   python3 tools/kit_upload.py --set-image EH_Palette_Bank 123   # record a Decal's resolved image id
   python3 tools/kit_upload.py --ui               # upload new or changed assets/ui/*.png (UI kit, tools/ui/make_ui_kit.py)
   python3 tools/kit_upload.py --set-ui-image EH_UI_Icons 123     # record a UI Decal's resolved image id
-  python3 tools/kit_upload.py --sky              # the Heist City sky faces + the snowflake (assets/sky) as Decals
+  python3 tools/kit_upload.py --sky              # the Heist City sky faces, the snowflake, the aurora (assets/sky)
   python3 tools/kit_upload.py --resolve-sky      # Decal -> image ids for assets/sky (read-only Luau task, no publish)
 
 Every run that changes ids (and --gen) regenerates src/server/Kit/KitData.luau (manifest + ids, read by
@@ -66,7 +66,7 @@ UI_DIR = ROOT / "assets/ui"
 UI_ASSETS = ROOT / "src/shared/Heist/UiAssets.luau"
 SKY_DIR = ROOT / "assets/sky"
 SKY_IDS = SKY_DIR / "sky_ids.json"
-SKY_FILES = ("EH_SkyCity_*.png", "EH_SnowFlake.png")   # what --sky uploads (sky_city.py faces, Backdrop snow)
+SKY_FILES = ("EH_SkyCity_*.png", "EH_SnowFlake.png", "EH_Aurora_*.png")  # --sky: sky faces, snow, aurora curtains
 UNIVERSE, PLACE = "10776026960", "70772627070328"       # the test experience (tools/cloud_test.py)
 KIT_DATA = ROOT / "src/server/Kit/KitData.luau"
 ENGINE_TEST = ROOT / "tests/kit_engine.luau"
