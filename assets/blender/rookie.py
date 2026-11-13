@@ -14,12 +14,14 @@ The default Animate clips, the uploaded CloneClips and Roblox emotes key these j
 code: 2 x 2 x 1, its centre 3 studs above the floor (Config.Rookie.HIP_HEIGHT 2, the sim's root height), joined to
 the hip centre (Root, 1.62) below it.
 
-Four groups (FBX files):
+Six groups (FBX files):
   Rookie            the body (15 parts) + Rookie_Face_Idle (the default face, welded to the head)
   Rookie_Faces      Smug, Shocked, Busted: swapped with Idle by state (only one face shows)
   Rookie_Outfits    the outfit slots: cap x4, scarf x4, sweater x2 (overlays), gloves x2 (cuffs), mask x1 (+ none)
   Rookie_Viewmodel  the first-person forearms + gloved hands (LeftArm, RightArm; grips GripL / GripR)
   Rookie_Hands      the first-person gloves with fingers: palm + index / finger block / thumb, two segments each
+  Rookie_FPArms     the DEDICATED first-person arms (docs/research/fp_hands.md): slim sleeve, palm, 4 x 3 finger
+                    segments, a 3-segment thumb, knit / leather cuffs, crew stripes / block, the REWIND watch
 Outfit pieces and faces are authored on the body and seat-checked against it (A16 below), then moved apart for the
 turntable; their pivot is their attach point (manifest `attach`: body part + offset from that part's pivot, Roblox
 axes), so the game welds them by pivot, never by scene position.

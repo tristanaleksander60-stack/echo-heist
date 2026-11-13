@@ -1587,8 +1587,16 @@ def golden_plan(t=GFP_T):
     return json.loads(out)
 
 
-def fp_hands(cam, rest, crew=CYAN):
-    """Both first-person hands as Heist/Viewmodel.fromOutfit draws them in the default outfit (the kit forearm,
+def fp_hands(cam, rest=None, crew=CYAN, pose="ready"):
+    """Both first-person hands exactly as Heist/Viewmodel draws them now (the dedicated Rookie_FPArms, the viewmodel
+    FOV projection: tools/blender/fp_hands_preview.py runs the game's ViewmodelMath + FpRig through Lune), raised
+    as when something you can use is under the reticle. `rest` and `crew` are kept for the old callers."""
+    import fp_hands_preview as FP
+    return FP.hands(cam, FP.lune_plan("after"), pose)
+
+
+def fp_hands_v101(cam, rest, crew=CYAN):
+    """(v101, kept for comparison) Both first-person hands as the old Viewmodel.fromOutfit drew them (the kit forearm,
     the knit glove and its cuff, two crew stripes down the sleeve), the wrists at Config.FirstPerson.VIEWMODEL.REST
     (camera space, full size: the game draws them at 0.4 scale that much closer, which looks the same), each
     forearm running back and out from the wrist; parented to the camera. Approximate: the rest pose's grip rotation

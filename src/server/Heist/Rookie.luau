@@ -3,7 +3,7 @@
 --
 -- Publishes ReplicatedStorage/<Config.Rookie.KIT_FOLDER> ("CharacterKit") once the kit is loaded:
 --   Pieces            every Rookie kit piece (body, faces, outfit pieces, viewmodel arms, the first-person gloves
---                     with fingers), as KitService prepared them
+--                     with fingers, the dedicated first-person arms Rookie_FPArms), as KitService prepared them
 --   Rookie            the template character: default outfit, seat-1 hue (a whole R15 character Model)
 --   Rookie_Viewmodel  the first-person arms for the FP track: LeftArm, RightArm (anchored, no collisions, no
 --                     shadows), each with its grip attachment (GripL / GripR at the palm) and an Elbow attachment

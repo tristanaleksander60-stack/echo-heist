@@ -12,6 +12,7 @@ local serde = require("@lune/serde")
 
 local Config = require("../src/shared/Config")
 local RookieData = require("../src/shared/Heist/RookieData") :: any
+local ViewmodelMath = require("../src/client/Heist/ViewmodelMath") :: any
 
 local CFrame = roblox.CFrame
 local Vector3 = roblox.Vector3
@@ -37,7 +38,7 @@ end
 
 local dump: { [string]: any } = { order = H.ORDER }
 for _, name in H.ORDER do
-	local pose = H.POSES[name]
+	local pose = ViewmodelMath.joints(H, H.POSES[name]) -- the per-finger pose as joint angles
 	local entry = {}
 	for side, segs in RookieData.hands do
 		local across = Vector3.new(0, 0, if side == "Right" then 1 else -1)
