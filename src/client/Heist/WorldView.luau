@@ -194,6 +194,8 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 	local carryTrack: AnimationTrack? = nil
 	local carryChar: Model? = nil
 	local liveCarry = false
+	local heldPart: BasePart? = nil -- your first carried item (first person draws it in your hands)
+	local heldSize: Vector3? = nil -- its size before any grab squash
 
 	local function stopHums()
 		for _, l in lasers do
@@ -223,6 +225,8 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 		end
 		stopCarryClip()
 		liveCarry = false
+		heldPart = nil
+		heldSize = nil
 		table.clear(hideOutlines)
 		table.clear(vaultLamps)
 		table.clear(vaultCounts)
@@ -1084,6 +1088,8 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 
 		local carryingMine = false
 		local carryCount = 0
+		local heldNow: BasePart? = nil
+		local heldNowSize: Vector3? = nil
 		local root = localRoot()
 		for _, k in loot do
 			local st = folder:GetAttribute(k.kState) or "Home"
@@ -1117,6 +1123,10 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 				if isMine(carrier) then
 					carryingMine = true
 					carryCount += 1
+					if not heldNow then
+						heldNow = k.part
+						heldNowSize = k.baseSize
+					end
 				end
 			elseif st == "Dropped" then
 				local pos = folder:GetAttribute(k.kPos)
@@ -1156,6 +1166,13 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 			if k.part.Transparency ~= want then
 				k.part.Transparency = want
 			end
+			-- First person: the loot you hold is drawn in your hands (Heist/Viewmodel), so the world copy at your
+			-- chest is hidden for you only (LocalTransparencyModifier, written only when it changes hands).
+			local fpHeld = st == "Carried" and isMine(carrier) and state.fpView == true
+			if fpHeld ~= (k.fpHeld == true) then
+				k.fpHeld = fpHeld
+				k.part.LocalTransparencyModifier = if fpHeld then 1 else 0
+			end
 			if k.sparkle then
 				local on = st == "Home"
 				if k.sparkle.Enabled ~= on then
@@ -1183,6 +1200,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 		end
 		state.carrying = carryingMine
 		state.carryCount = carryCount
+		heldPart, heldSize = heldNow, heldNowSize
 		if carryingMine ~= liveCarry then
 			liveCarry = carryingMine
 			setLiveCarry(carryingMine)
@@ -1349,6 +1367,47 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 			end
 		end
 		return best, value, opensAt
+	end
+
+	-- First person (Heist/Viewmodel): the loot part you carry first (or nil), and its size before the grab's
+	-- squash.
+	function view.heldPart(): (BasePart?, Vector3?)
+		return heldPart, heldSize
+	end
+
+	-- First person (Heist/LookTarget): what you could look at and use, written into `out` (cleared first):
+	-- loot at home or dropped ({ kind = "loot", index, part, value, opensAt? }), every switch
+	-- ({ kind = "switch", index, part }) and the van zone ({ kind = "van", index = 1, part }).
+	function view.lookables(out: { any }): { any }
+		table.clear(out)
+		local f: Instance? = state.folder
+		if not f then
+			return out
+		end
+		for i, k in loot do
+			local st = f:GetAttribute(k.kState)
+			if (st == "Home" or st == "Dropped") and k.part.Parent ~= nil then
+				table.insert(out, {
+					kind = "loot",
+					index = i,
+					part = k.part,
+					value = num(k.part:GetAttribute("EH_Value"), 0),
+					opensAt = k.opensAt,
+				})
+			end
+		end
+		local sw = tagged.switch
+		if sw then
+			for i, inst in sw do
+				if inst.Parent ~= nil and inst:IsA("BasePart") then
+					table.insert(out, { kind = "switch", index = i, part = inst })
+				end
+			end
+		end
+		if vanZone and vanZone.Parent ~= nil then
+			table.insert(out, { kind = "van", index = 1, part = vanZone })
+		end
+		return out
 	end
 
 	-- Time-locked items: { index, opensAt } (the HUD's "Locked" toast). Built at bind;

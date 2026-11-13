@@ -247,7 +247,7 @@ function DataService.getBagLevel(player: Player): number
 	return if profile then heistOf(profile).bagLevel else 0
 end
 
-function DataService.getSettings(player: Player): { [string]: boolean | number }
+function DataService.getSettings(player: Player): { [string]: boolean | number | string }
 	local profile = PlayerData.Get(player)
 	local settings = if profile then heistOf(profile).settings else Schema.defaultHeist().settings
 	return table.clone(settings :: any)
@@ -420,8 +420,15 @@ local function declareRemotes()
 		lo, hi = math.min(lo, range[1]), math.max(hi, range[2])
 	end
 	local numberValue = T.number(lo, hi)
+	local choices: { string } = {}
+	for _, list in DATA.SETTING_CHOICES do
+		for _, c in list do
+			table.insert(choices, c)
+		end
+	end
+	local choiceValue = T.oneOf(choices :: any)
 	local function settingValue(v: any): boolean
-		return T.boolean(v) or numberValue(v)
+		return T.boolean(v) or numberValue(v) or choiceValue(v)
 	end
 	local buyable = Store.buyable()
 	changedPush = Net.Push("Data.Changed")
@@ -436,10 +443,11 @@ local function declareRemotes()
 	})
 	Net.Handle("Data.SetSetting", {
 		rate = { burst = 6, perSecond = 2 },
-		-- A known key, then a boolean or a finite number in 0..1 (the widest SETTING_NUMBERS range);
-		-- the handler checks the value against that key's own type and range (Schema.validSetting).
+		-- A known key, then a boolean, a finite number in the widest SETTING_NUMBERS range, or one of the
+		-- SETTING_CHOICES strings (cameraMode); the handler checks the value against that key's own type,
+		-- range and choices (Schema.validSetting).
 		args = { T.key(settingKeys), settingValue },
-		handler = function(player: Player, key: string, value: boolean | number): Net.Result
+		handler = function(player: Player, key: string, value: boolean | number | string): Net.Result
 			if not Schema.validSetting(key, value) then
 				return Net.fail("BadValue")
 			end

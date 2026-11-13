@@ -815,7 +815,7 @@ function EchoView.new(state: any): any
 	-- Poses every clone at view time tView (or along the reel when `reelT` is set:
 	-- the rewind plays each path backwards from the end of the last run, §7.1).
 	function view.update(tView: number, now: number, dt: number, reelT: number?)
-		halo.update()
+		halo.update(state.fpView == true) -- first person: no rim on your own (hidden) body
 		if not run then
 			return
 		end

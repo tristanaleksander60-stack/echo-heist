@@ -66,7 +66,9 @@ export type Heist = {
 		reducedMotion: boolean, -- true = reduced motion on (the client also follows the device setting)
 		relaxed: boolean,
 		colourBlindGlyphs: boolean, -- seat shapes beside clone numbers (crew cards, results)
-		classicCamera: boolean, -- Heist/CameraDirector: true = the classic follow cam (default: diorama)
+		classicCamera: boolean, -- legacy (before first person): true = the classic follow cam; read once into cameraMode
+		cameraMode: string, -- Heist/CameraDirector: "fp" (default) | "diorama" | "classic" (Config.Data.SETTING_CHOICES)
+		fpFov: number, -- first-person field of view, degrees (Config.Data.SETTING_NUMBERS)
 		-- U7 settings (client Heist/Hud/Settings, additive: no migration; sanitize fills them in):
 		musicVolume: number, -- 0..1 (Config.Data.SETTING_NUMBERS)
 		sfxVolume: number, -- 0..1
@@ -89,13 +91,16 @@ local function defaultEquipped(): { [string]: string }
 	return table.clone(Config.Data.DEFAULT_EQUIPPED)
 end
 
--- A NEW default settings table every call. Booleans, plus the numbers in Config.Data.SETTING_NUMBERS.
+-- A NEW default settings table every call. Booleans, the numbers in Config.Data.SETTING_NUMBERS and the
+-- choices in Config.Data.SETTING_CHOICES (their first entry).
 function Schema.defaultSettings(): any
 	return {
 		reducedMotion = false,
 		relaxed = false,
 		colourBlindGlyphs = false,
 		classicCamera = false,
+		cameraMode = Config.Data.SETTING_CHOICES.cameraMode[1],
+		fpFov = Config.Data.SETTING_NUMBER_DEFAULTS.fpFov,
 		musicVolume = 1,
 		sfxVolume = 1,
 		shake = true,
@@ -109,8 +114,8 @@ function Schema.defaultSettings(): any
 end
 
 -- Is `value` a valid value for settings key `key`? (Data.SetSetting and sanitize use the same rule.)
--- A number setting takes a finite number inside its Config.Data.SETTING_NUMBERS range; any other known
--- key takes a boolean. Unknown keys are never valid.
+-- A number setting takes a finite number inside its Config.Data.SETTING_NUMBERS range, a choice setting one of
+-- its Config.Data.SETTING_CHOICES strings; any other known key takes a boolean. Unknown keys are never valid.
 function Schema.validSetting(key: any, value: any): boolean
 	if type(key) ~= "string" then
 		return false
@@ -118,6 +123,10 @@ function Schema.validSetting(key: any, value: any): boolean
 	local range = Config.Data.SETTING_NUMBERS[key]
 	if range then
 		return type(value) == "number" and value == value and value >= range[1] and value <= range[2]
+	end
+	local choices = Config.Data.SETTING_CHOICES[key]
+	if choices then
+		return type(value) == "string" and table.find(choices, value) ~= nil
 	end
 	local default = Schema.defaultSettings()[key]
 	return default ~= nil and type(value) == "boolean"
@@ -321,6 +330,12 @@ function Schema.sanitize(heist: Heist): { string }
 			h.daily[key] = default
 			table.insert(repairs, "daily." .. key)
 		end
+	end
+	-- cameraMode (first person) replaces the boolean classicCamera additively: an old pick of the classic
+	-- camera carries over once; everyone else gets the new default (first person).
+	if h.settings.cameraMode == nil and h.settings.classicCamera == true then
+		h.settings.cameraMode = "classic"
+		table.insert(repairs, "settings.cameraMode")
 	end
 	for key, default in defaults.settings do
 		if not Schema.validSetting(key, h.settings[key]) then

@@ -69,6 +69,11 @@ local Ui = require(Heist:WaitForChild("Ui"))
 local Loading = require(Heist:WaitForChild("Loading"))
 local Transition = require(Heist:WaitForChild("Transition"))
 local LevelIntro = require(Heist:WaitForChild("LevelIntro"))
+local Viewmodel = require(Heist:WaitForChild("Viewmodel"))
+local LookTarget = require(Heist:WaitForChild("LookTarget"))
+local FpWarn = require(Heist:WaitForChild("FpWarn"))
+local HudCommon = require(Heist:WaitForChild("Hud"):WaitForChild("Common"))
+local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 
 local EV = EventLog.EV
 local R = Protocol.REMOTE
@@ -159,6 +164,23 @@ function HeistClient.start()
 	local lights = LightDirector.new()
 	local camera = CameraDirector.new(state)
 	state.camera = camera -- LineupDirector hands the camera back through it
+	-- First person (PLAN_FIRST_PERSON FP): the hands, look-to-interact and Gus's edge warning.
+	local momentsRef: any = nil -- MomentDirector, made after the HUD (the hands hold during its hit-stop)
+	local hands = Viewmodel.new(state, {
+		camera = camera,
+		world = world,
+		hue = function(): Color3
+			return Palette.hueFor(state.mySeat or 1)
+		end,
+		frozen = function(): boolean
+			return momentsRef ~= nil and momentsRef.frozen(os.clock())
+		end,
+	})
+	local look = LookTarget.new(state, {
+		world = world,
+		isTouch = HudCommon.usingTouch,
+		usingGamepad = HudCommon.usingGamepad,
+	})
 	local backdrop = Backdrop.new()
 	backdropRef = backdrop
 	backdrop.setReducedMotion(state.reduced == true)
@@ -175,6 +197,7 @@ function HeistClient.start()
 	local actions = {
 		endRun = function()
 			Sound.play("RewindClack") -- the tape-deck clack, before any server reply (§7.1)
+			hands.play("watch") -- first person: a tap on the wrist-watch
 			Net.Send(R.EndRun)
 		end,
 		interact = function(kind: number, index: number)
@@ -224,9 +247,19 @@ function HeistClient.start()
 		onCameraMode = function(fn: (string) -> ())
 			camera.onModeChanged(fn)
 		end,
+		-- First person: what you look at (Hud/Run, Hud/Reticle), the hands' actions, the cursor lock.
+		look = look,
+		hands = function(action: string)
+			hands.play(action)
+		end,
+		cursorLocked = function(): boolean
+			return camera.cursorLocked()
+		end,
 	}
 	FirstTime.init() -- first-time beats, seeded from the profile (Heist/FirstTime)
 	local hud = Hud.new(state, actions)
+	camera.setCursorProbe(hud.sheetOpen) -- first person: the cursor is free while a sheet is up
+	local gusWarn = FpWarn.new(state, hud.fxGui)
 	-- Camera shake off: the rewind's FOV kick stays at 0 (Settings "shake").
 	local function fovKick(deg: number)
 		camera.setFovKick(if Settings.get("shake") == false then 0 else deg)
@@ -250,6 +283,7 @@ function HeistClient.start()
 		fovKick = fovKick,
 	})
 	hud.catchView = moments.catchView
+	momentsRef = moments
 	local isReduced = function(): boolean
 		return state.reduced == true
 	end
@@ -447,6 +481,9 @@ function HeistClient.start()
 		end
 		moments.onEvent(e, live)
 		hud.onEvent(e, live)
+		if live then
+			hands.onEvent(e, resolver.isMine, EV)
+		end
 	end
 
 	local function applyEvents(buf: buffer?, live: boolean)
@@ -497,6 +534,7 @@ function HeistClient.start()
 		local transition = if live then (msg.transition or 0) else 0
 		local reelEnd = state.lastRunT
 		echo.setRun(msg, state.recs, os.clock() + transition * 0.75)
+		hands.onRun()
 		moments.onRun(msg, live) -- the rewind's 66 ms freeze; a fresh blooper log
 		hud.onRun(msg)
 		Telemetry.ready() -- first control (JoinToControl)
@@ -606,6 +644,8 @@ function HeistClient.start()
 		table.clear(state.recs)
 		world.quiet()
 		camera.clearFades()
+		look.clear()
+		gusWarn.hide()
 		echo.clear()
 		gus.clear()
 		world.clear()
@@ -869,6 +909,7 @@ function HeistClient.start()
 		debug.profileend()
 		debug.profilebegin("EH.Hud")
 		hud.update(tView, now, dt, world)
+		gusWarn.update(now, dt)
 		debug.profileend()
 	end)
 end

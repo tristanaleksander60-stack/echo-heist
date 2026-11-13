@@ -17,11 +17,13 @@ local EventLog = require(Sim:WaitForChild("EventLog"))
 local Interact = require(Sim:WaitForChild("Interact"))
 local HeistShared = Shared:WaitForChild("Heist")
 local Help = require(HeistShared:WaitForChild("Help"))
+local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local RunMarkers = require(HeistShared:WaitForChild("RunMarkers"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 local Mix = require(Shared:WaitForChild("Audio"):WaitForChild("Mix"))
 
+local Icons = require(script.Parent.Parent:WaitForChild("Icons"))
 local Sound = require(script.Parent.Parent:WaitForChild("Sound"))
 local Ui = require(script.Parent.Parent:WaitForChild("Ui"))
 local Common = require(script.Parent:WaitForChild("Common"))
@@ -32,6 +34,7 @@ local AU = Config.Audio
 local EV = EventLog.EV
 local KIND = Codec.EVENT
 local FAIL = Interact.FAIL
+local FH = Config.FirstPerson.HUD
 local localPlayer = Players.LocalPlayer
 
 local Run = {}
@@ -378,8 +381,25 @@ function Run.build(ctx: any)
 
 	local nearLoot: number? = nil
 	local nearLock: number? = nil
+	local nearSwitch: number? = nil -- first person: a looked-at switch (Press)
+	local lookVerb: string? = nil -- first person: the looked-at target's verb (Heist/LookTarget)
+	local shownBtnIcon = "coin"
 
+	-- E / ButtonX / a click with the cursor locked / the GRAB button. The target is the one you look at in
+	-- first person (Heist/LookTarget), else the nearest loot; the server re-checks everything (Sim/Interact).
 	function hud.interact()
+		if nearSwitch then
+			ctx.lastGrabTap = os.clock()
+			actions.interact(KIND.Press, nearSwitch)
+			if actions.hands then
+				actions.hands("press")
+			end
+			Ui.pop(interactBtn)
+			if ctx.reticle then
+				Ui.pop(ctx.reticle.chip)
+			end
+			return
+		end
 		if not nearLoot then
 			return
 		end
@@ -390,7 +410,27 @@ function Run.build(ctx: any)
 			return
 		end
 		actions.interact(KIND.Grab, nearLoot)
+		if actions.hands then
+			actions.hands("reach") -- the hands reach before the server answers (latency masking)
+		end
 		Ui.pop(interactBtn)
+		if ctx.reticle then
+			Ui.pop(ctx.reticle.chip)
+		end
+	end
+
+	-- The onboarding finger's GRAB target (Hud/Hints): the button when it shows GRAB, else in first person
+	-- the prompt chip while it shows GRAB.
+	function ctx.grabPointTarget(): GuiObject?
+		local grabbing = lookVerb == nil or lookVerb == "grab"
+		if interactBtn.Visible and interactBtn.BackgroundColor3 == Palette.gold and grabbing then
+			return interactBtn
+		end
+		local r = ctx.reticle
+		if r and lookVerb == "grab" and Ui.isShown(r.chip) then
+			return r.chip
+		end
+		return nil
 	end
 
 	-- REWIND's breath, 0..1: the world's plate pulse when it gives one (hud.setPlatePulse), else its
@@ -419,12 +459,45 @@ function Run.build(ctx: any)
 		ctx.rewindRightMove = on
 	end
 
+	-- First person's reduced run HUD (HudLayout fpRun): the objective / alarm line moves under the reticle,
+	-- the rail to the bottom, and the loot meter only peeks in for LOOT_PEEK_SECONDS after it changes (and
+	-- while you carry). Off: everything back where the other cameras have it.
+	local fpPlaced: boolean? = nil
+	local lootPeekUntil = 0
+	local lastBanked: any = nil
+	function ctx.fpLayout(fp: boolean)
+		if fp ~= fpPlaced then
+			fpPlaced = fp
+			Common.place(top.objective, if fp then HudLayout.OBJECTIVE_FP else HudLayout.OBJECTIVE)
+			Common.place(top.alarmPill, if fp then HudLayout.ALARM_FP else HudLayout.ALARM)
+			ctx.fpRail = fp
+			hud.placeRail(false)
+			if not fp then
+				Ui.show(top.lootBox)
+				if ctx.reticle then
+					ctx.reticle.set(false, nil)
+				end
+			end
+		end
+		if fp then
+			local f = state.folder
+			local banked = f and f:GetAttribute("Banked")
+			local now = os.clock()
+			if banked ~= lastBanked then
+				lastBanked = banked
+				lootPeekUntil = now + FH.LOOT_PEEK_SECONDS
+			end
+			Ui.setShown(top.lootBox, state.carrying == true or now < lootPeekUntil)
+		end
+	end
+
 	function hud.update(tView: number, now: number, dt: number, world: any)
 		if state.where ~= "heist" then
 			return
 		end
 		if state.phase ~= "Run" or not state.clock then
 			-- between runs and after: the meter still lands
+			ctx.fpLayout(false)
 			top.updateLoot(now)
 			ctx.deck.updateBetween()
 			hints.update(now, dt)
@@ -532,27 +605,72 @@ function Run.build(ctx: any)
 			end
 		end
 
-		-- Contextual Interact (nearest loot in range, not while your bag is full or spectating).
+		-- Contextual Interact. First person: what you look at (Heist/LookTarget: loot, a switch, the van while
+		-- you carry), shown by the reticle's prompt chip; the GRAB button stays as the touch fallback and is
+		-- labelled for that target (on touch it also falls back to the nearest loot). Other cameras: the nearest
+		-- loot in range, as before. Never while your bag is full or you are spectating.
 		worldLocks = world.timeLocks()
 		nearLoot = nil
 		nearLock = nil
+		nearSwitch = nil
+		lookVerb = nil
 		local bagFull = (state.carryCount or 0) >= (state.myCapacity or 1)
-		if pos and not myEnded and started and not bagFull then
-			local worldPos = state.origin + pos
+		local can = pos ~= nil and not myEnded and started
+		local fp = state.fpView == true
+		local touch = Common.usingTouch()
+		local look = actions.look
+		local target = if look then look.update(tView, fp and can) else nil
+		local prompt: any = nil
+		local showButton = false
+		local function lootLabel(value: number, opensAt: number?): (string, Color3, boolean)
+			if opensAt and tView < opensAt then
+				return Strings.lockedFor(Ui.clock(opensAt - tView)), Palette.steel, true
+			end
+			return Strings.grab(Ui.money(value)), Palette.gold, false
+		end
+		if target then
+			lookVerb = target.verb
+			local key = if touch then nil elseif Common.usingGamepad() then Strings.KEY_PAD else Strings.KEY_E
+			if target.kind == "loot" then
+				nearLoot, nearLock = target.index, target.opensAt
+				local word, colour, locked = lootLabel(target.value or 0, target.opensAt)
+				interactBtn.Text, interactBtn.BackgroundColor3 = word, colour
+				prompt = { verb = if locked then "locked" else "grab", text = word, colour = colour, key = key }
+				showButton = touch
+			elseif target.kind == "switch" then
+				nearSwitch = target.index
+				local word = Strings.FP_VERB[target.verb] or Strings.FP_VERB.press
+				interactBtn.Text, interactBtn.BackgroundColor3 = word, Palette.gold
+				prompt = { verb = target.verb, text = word, colour = Palette.gold, key = key }
+				showButton = touch
+			else
+				-- the van: banking is walking in (positional), so no key and no button
+				prompt = { verb = "bank", text = Strings.FP_BANK, colour = Palette.exit }
+			end
+		elseif can and not bagFull and (not fp or touch) then
+			local worldPos = state.origin + (pos :: Vector3)
 			local index, value, opensAt = world.nearestLoot(worldPos, Config.Sim.INTERACT_RANGE)
 			if index then
 				nearLoot = index
 				nearLock = opensAt
-				if opensAt and tView < opensAt then
-					interactBtn.Text = Strings.lockedFor(Ui.clock(opensAt - tView))
-					interactBtn.BackgroundColor3 = Palette.steel
-				else
-					interactBtn.Text = Strings.grab(Ui.money(value))
-					interactBtn.BackgroundColor3 = Palette.gold
-				end
+				local word, colour = lootLabel(value, opensAt)
+				interactBtn.Text, interactBtn.BackgroundColor3 = word, colour
+				showButton = true
 			end
 		end
-		interactBtn.Visible = nearLoot ~= nil
+		interactBtn.Visible = showButton
+		local btnIcon = if nearSwitch then "door" else "coin"
+		if btnIcon ~= shownBtnIcon and controls.interactIcon then
+			local img = controls.interactIcon()
+			if img then
+				shownBtnIcon = btnIcon
+				Icons.set(img, btnIcon)
+			end
+		end
+		if ctx.reticle then
+			ctx.reticle.set(fp and can, prompt)
+		end
+		ctx.fpLayout(fp)
 		controls.ffPill.Visible = folder ~= nil and folder:GetAttribute("CanFF") == true and not myEnded
 		hints.update(now, dt)
 	end
