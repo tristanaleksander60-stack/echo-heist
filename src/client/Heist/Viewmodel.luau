@@ -417,7 +417,7 @@ function Viewmodel.new(state: any, deps: any): any
 			vm.play("handsUp")
 		elseif e.kind == EV.Grab and mine(e.a) then
 			local t = actions.reach
-			if not t or os.clock() - t > 0.4 then
+			if not t or os.clock() - t > VM.REACH_DEDUPE then
 				vm.play("reach") -- (the press already played it, unless the grab came from elsewhere)
 			end
 		elseif e.kind == EV.SwitchOn and mine(e.b) then

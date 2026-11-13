@@ -181,7 +181,7 @@ function CameraDirector.new(state: any): any
 		local now = os.clock()
 		-- A full scan when hiding starts, then twice a second (an accessory that loads late, the default
 		-- camera's TransparencyController writing it back).
-		if on and char and (not bodyHidden or now - lastHideScan >= 0.5) then
+		if on and char and (not bodyHidden or now - lastHideScan >= FP.HIDE_RESCAN_SECONDS) then
 			lastHideScan = now
 			for _, d in char:GetDescendants() do
 				if (d:IsA("BasePart") or d:IsA("Decal")) and (d :: any).LocalTransparencyModifier < 1 then

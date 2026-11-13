@@ -393,6 +393,7 @@ Config.Heist.CAMERA = {
 		PAD_EXPONENT = 1.6, -- stick response curve (precise near the centre, fast at the edge)
 		FACE_EPS = 0.5, -- degrees: the character turns to the look yaw when it differs by more
 		HIDE_BODY_WITHIN = 1.6, -- studs: your own body is hidden while the camera is this close to your eyes
+		HIDE_RESCAN_SECONDS = 0.5, -- the hidden body is rescanned this often (late accessories)
 		-- Head bob (one cycle = two steps) and the landing dip (FpMath.bobStep / FpMath.spring).
 		BOB = {
 			STRIDE = 2.4, -- studs per step
@@ -524,7 +525,7 @@ Config.FirstPerson = {
 				R = { 0.08, -0.36, -1.08, 14, -34, -22 },
 				L = { -0.14, -0.44, -1.04, 42, 58, 78 },
 				time = { 0.14, 0.4, 0.3 },
-				tap = { 0.05, 6 }, -- studs of tap travel, taps a second (while held)
+				tap = { 0.05, 6, 0.5 }, -- studs of tap travel, taps a second, share of the travel that goes down
 			},
 			handsUp = {
 				R = { 0.72, 0.22, -1.1, 78, -6, -12 },
@@ -559,6 +560,7 @@ Config.FirstPerson = {
 		PUSH_RANGE = 3.2,
 		PUSH_CONE = 50, -- degrees off the look
 		PUSH_COOLDOWN = 1.5,
+		REACH_DEDUPE = 0.4, -- s: your Grab event does not replay the reach the GRAB press just played
 	},
 	LOOK = {
 		-- A ray from the camera centre picks what you look at (FpMath.pick). REACH: studs from the eye to the

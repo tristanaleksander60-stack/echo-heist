@@ -95,7 +95,7 @@ function ViewmodelMath.hands(cfg: any, f: Frame): (Pose, Pose)
 	end
 	if f.tap and f.tap ~= 0 then
 		R[3] -= f.tap -- the index taps forward onto the watch
-		R[2] -= f.tap * 0.5
+		R[2] -= f.tap * ((cfg.ACTIONS.watch.tap or {})[3] or 0)
 	end
 	local reduced = f.reduced == true
 	local dx, dy, droll = 0, 0, 0
