@@ -1729,12 +1729,20 @@ def interiors_level(level, samples, out_dir, before=False):
     gx, gz = g["x"], g["z"]
     cz = gz + 5.0 if gz + 5.0 < max(z for z in lines if z > gz) - 1.0 else gz + 3.0
     cx = gx * 0.4
+
+    def free_x(x, z):
+        """The nearest eye spot to (x, z) outside every solid (Clone Party's gondolas stand on the middle line)."""
+        for dx in (0.0, 2.0, -2.0, 4.0, -4.0, 6.0, -6.0):
+            if not any(b[0] - 1.0 < x + dx < b[3] + 1.0 and b[2] - 1.0 < z < b[5] + 1.0 and b[4] > fy + 4.5
+                       for b in (sd["box"] for sd in level["solids"])):
+                return x + dx
+        return x
     shots = [
         ("fp_spawn", _fp(sp["x"], sp["z"], fy, 0.0, -2.0), (sp["x"], sp["z"]), True),
         ("fp_front", _fp(0.0, fz1 - 3.0, fy, 0.0, 3.0), (0.0, fz1 - 3.0), False),
-        ("fp_left", _fp(2.0, fm, fy, math.pi / 2, 4.0), (2.0, fm), False),
+        ("fp_left", _fp(free_x(2.0, fm), fm, fy, math.pi / 2, 4.0), (free_x(2.0, fm), fm), False),
         ("fp_window", _fp(0.0, fz0 + 3.0, fy, math.pi, 3.0), (0.0, fz0 + 3.0), False),
-        ("fp_ceiling", _fp(0.0, fm, fy, 0.0, 32.0), (0.0, fm), False),
+        ("fp_ceiling", _fp(free_x(0.0, fm), fm, fy, 0.0, 32.0), (free_x(0.0, fm), fm), False),
         ("fp_loot", _fp(cx, cz, fy, math.atan2(-(gx - cx), -(gz - cz)), -6.0), (cx, cz), False),
         # beside the loot, turned to look across its room (the room round the goal at eye level)
         ("fp_loot_round", _fp(gx - (2.0 if gx >= 0 else -2.0), gz, fy, math.pi / 2 if gx >= 0 else -math.pi / 2, 2.0),
