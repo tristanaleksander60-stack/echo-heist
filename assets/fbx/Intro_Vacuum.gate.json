@@ -11,21 +11,21 @@
    ],
    "budget_note": "ok",
    "dims": [
-    42.296,
-    43.209,
-    41.897
+    66.817,
+    59.295,
+    43.378
    ],
    "pivot": {
     "rule": "point",
     "local_min": [
-     -12.497,
-     -28.7119,
+     -25.0983,
+     -40.1966,
      0.0
     ],
     "local_max": [
-     29.7988,
-     14.497,
-     41.8967
+     41.7183,
+     19.0983,
+     43.3781
     ]
    },
    "swatches": [
@@ -47,7 +47,7 @@
    ],
    "symmetry_error": null,
    "self_intersections": 0,
-   "cross_shell_overlaps": 832,
+   "cross_shell_overlaps": 876,
    "cap_overlaps": 0,
    "flipped_faces": 0,
    "boundary_edges": 0,
@@ -86,21 +86,21 @@
    ],
    "budget_note": "ok",
    "dims": [
-    36.083,
-    27.64,
-    10.986
+    50.516,
+    38.697,
+    15.381
    ],
    "pivot": {
     "rule": "point",
     "local_min": [
-     -6.6,
-     -28.5698,
-     10.0
+     -9.24,
+     -39.9977,
+     14.0
     ],
     "local_max": [
-     29.4829,
-     -0.9294,
-     20.9862
+     41.276,
+     -1.3011,
+     29.3806
     ]
    },
    "swatches": [
@@ -150,7 +150,7 @@
   {
    "name": "Intro_Vacuum_Lights",
    "gap": 0.0,
-   "penetration": 0.5613,
+   "penetration": 0.78582,
    "gap_frac": 0.0,
    "seated": true
   }
@@ -162,10 +162,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "40e6d89fb13d710878ea",
+ "contentHash": "cd2b1e67a41b2fb60dbe",
  "fbx": {
   "path": "assets/fbx/Intro_Vacuum.fbx",
-  "bytes": 115820,
+  "bytes": 118076,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -175,19 +175,19 @@
   ],
   "geometry_extents": [
    [
-    10.986,
-    27.64,
-    36.083
+    15.381,
+    38.697,
+    50.516
    ],
    [
-    41.897,
-    42.296,
-    43.209
+    43.378,
+    59.295,
+    66.817
    ]
   ]
  },
  "spec": "assets/blender/intro.py",
  "notes": "Hoardsworth's giant vacuum on the tower roof: motor, hose and intake; the outlet fills the Snow Globe.",
  "turntable": "docs/art/turntables/Intro_Vacuum.png",
- "seconds": 23.6
+ "seconds": 60.7
 }

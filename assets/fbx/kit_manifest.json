@@ -3015,12 +3015,128 @@
    ],
    "sim": "none"
   },
+  "Intro_Tower": {
+   "model": "Intro_Tower",
+   "size": [
+    68.5,
+    132.6,
+    55.7
+   ],
+   "tris": 7088,
+   "class": "hero",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -41.0,
+    -0.5,
+    -28.2
+   ],
+   "boundsMax": [
+    27.5,
+    132.1,
+    27.5
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none"
+  },
+  "Intro_Tower_Sign": {
+   "model": "Intro_Tower",
+   "size": [
+    13.2,
+    12.0,
+    0.65
+   ],
+   "tris": 36,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -6.6,
+    78.0,
+    -17.45
+   ],
+   "boundsMax": [
+    6.6,
+    90.0,
+    -16.8
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "tint": "Sign Gold #FFB85C (eh_palette.NEON); it stays lit all night"
+  },
+  "Intro_Tower_Windows": {
+   "model": "Intro_Tower",
+   "size": [
+    38.5,
+    111.9,
+    45.5
+   ],
+   "tris": 3240,
+   "class": "medium",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -19.25,
+    3.0,
+    -26.25
+   ],
+   "boundsMax": [
+    19.25,
+    114.9,
+    19.25
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "tint": "Bulb Warm #F6C0A2; Vault Steel shade #4E5675 once the presents are gone (eh_palette.NEON)"
+  },
   "Intro_Vacuum": {
    "model": "Intro_Vacuum",
    "size": [
-    42.296,
-    41.897,
-    43.209
+    66.817,
+    43.378,
+    59.295
    ],
    "tris": 3752,
    "class": "hero",
@@ -3034,14 +3150,14 @@
    "layer": "base",
    "passed": true,
    "boundsMin": [
-    -29.799,
+    -41.718,
     0.0,
-    -28.712
+    -40.197
    ],
    "boundsMax": [
-    12.497,
-    41.897,
-    14.497
+    25.098,
+    43.378,
+    19.098
    ],
    "origin": [
     0.0,
@@ -3056,9 +3172,9 @@
   "Intro_Vacuum_Lights": {
    "model": "Intro_Vacuum",
    "size": [
-    36.083,
-    10.986,
-    27.64
+    50.516,
+    15.381,
+    38.697
    ],
    "tris": 584,
    "class": "small",
@@ -3072,14 +3188,14 @@
    "layer": "base",
    "passed": true,
    "boundsMin": [
-    -29.483,
-    10.0,
-    -28.57
+    -41.276,
+    14.0,
+    -39.998
    ],
    "boundsMax": [
-    6.6,
-    20.986,
-    -0.929
+    9.24,
+    29.381,
+    -1.301
    ],
    "origin": [
     0.0,
@@ -7782,6 +7898,14 @@
   "Intro_Vacuum_Lights": {
    "idle": "#4E5675",
    "runtime": "Bulb Warm #F6C0A2 while the vacuum runs"
+  },
+  "Intro_Tower_Windows": {
+   "idle": "#F6C0A2",
+   "runtime": "fixed; Vault Steel shade #4E5675 once the presents are gone"
+  },
+  "Intro_Tower_Sign": {
+   "idle": "#FFB85C",
+   "runtime": "fixed: Hoardsworth's giant H stays lit all night"
   }
  }
 }
