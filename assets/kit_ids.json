@@ -1039,9 +1039,11 @@
    "uploaded": "2026-11-13T09:36:52Z"
   },
   "Rookie_Outfits": {
-   "assetId": 88500778373104,
+   "assetId": 92519027703361,
    "file": "assets/fbx/Rookie_Outfits.fbx",
-   "history": [],
+   "history": [
+    88500778373104
+   ],
    "moderation": "Approved",
    "pieces": [
     "Rookie_Block_LeftCuff",
@@ -1050,6 +1052,7 @@
     "Rookie_Cap_Beanie",
     "Rookie_Cap_Bobble",
     "Rookie_Cap_Flat",
+    "Rookie_Cap_Santa",
     "Rookie_Cap_Trapper",
     "Rookie_Gloves_Knit_Left",
     "Rookie_Gloves_Knit_Right",
@@ -1066,9 +1069,9 @@
     "Rookie_Stripes_RightArm",
     "Rookie_Stripes_Torso"
    ],
-   "revisionId": "2",
-   "sha256": "73d46157359ee57e60fbd1031148dc8713a0805ea87e6671c4305e1f954c9867",
-   "uploaded": "2026-11-13T02:58:14Z"
+   "revisionId": "1",
+   "sha256": "cbf8515fe567b489ff923decbf7e7a4aaf89f0f4973ccecb4481e46691bdc589",
+   "uploaded": "2026-11-13T18:51:58Z"
   },
   "Rookie_Viewmodel": {
    "assetId": 74916290022054,
