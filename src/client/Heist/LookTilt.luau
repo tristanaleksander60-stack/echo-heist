@@ -70,7 +70,9 @@ local function write(j: Joint, deg: number)
 		inst.C0 = j.rest * turn
 	elseif inst:IsA("AnimationConstraint") then
 		local now = inst.Transform
-		local base = if j.written ~= nil and j.base ~= nil and now == j.written then j.base else now
+		-- still what we wrote (read back in float32, so fuzzy): the Animator skipped it this frame
+		local written, last = j.written, j.base
+		local base = if written ~= nil and last ~= nil and now:FuzzyEq(written, 1e-4) then last else now
 		local cf = turn * base
 		inst.Transform = cf
 		j.written = if deg == 0 then nil else cf
