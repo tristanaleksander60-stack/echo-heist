@@ -1031,9 +1031,9 @@
    "pieces": [
     "Rookie_FPH_Left_Glove"
    ],
-   "revisionId": "1",
-   "sha256": "8a1aa810ed0c9285d0b6f4983e96e7d01649a25a7a3c375902bbd9daa2103bb0",
-   "uploaded": "2026-11-13T20:09:32Z"
+   "revisionId": "3",
+   "sha256": "a6b842eb619c65db8868b31b7d39b3e643471ac534eea8620086fed3fae7b1d6",
+   "uploaded": "2026-11-13T20:17:17Z"
   },
   "Rookie_FPHands_R": {
    "assetId": 133672464815512,
@@ -1043,9 +1043,9 @@
    "pieces": [
     "Rookie_FPH_Right_Glove"
    ],
-   "revisionId": "1",
-   "sha256": "914fef27692481d77db23ed2291d8e2ad963d555cc7eebe6c82eefdfd8956741",
-   "uploaded": "2026-11-13T20:09:48Z"
+   "revisionId": "3",
+   "sha256": "d8a20821c43d3651ce4c2308cdbb9282edd81c30d08d891f45917f398aa9815f",
+   "uploaded": "2026-11-13T20:17:34Z"
   },
   "Rookie_Faces": {
    "assetId": 115892166045394,

@@ -1242,6 +1242,7 @@ return {
 					hinge = { 0.175, -0.02, -0.455 },
 					centre = { 0, 0, 0 },
 					boneParent = "Index3",
+					leaf = true,
 				},
 				{
 					piece = "L_Middle1",
@@ -1286,6 +1287,7 @@ return {
 					hinge = { 0.058, -0.019, -0.497 },
 					centre = { 0, 0, 0 },
 					boneParent = "Middle3",
+					leaf = true,
 				},
 				{
 					piece = "L_Ring1",
@@ -1330,6 +1332,7 @@ return {
 					hinge = { -0.063, -0.021, -0.471 },
 					centre = { 0, 0, 0 },
 					boneParent = "Ring3",
+					leaf = true,
 				},
 				{
 					piece = "L_Pinky1",
@@ -1374,6 +1377,7 @@ return {
 					hinge = { -0.171, -0.035, -0.389 },
 					centre = { 0, 0, 0 },
 					boneParent = "Pinky3",
+					leaf = true,
 				},
 				{
 					piece = "L_Thumb1",
@@ -1418,6 +1422,7 @@ return {
 					hinge = { 0.245, -0.095, -0.195 },
 					centre = { 0, 0, 0 },
 					boneParent = "Thumb3",
+					leaf = true,
 				},
 			},
 			Right = {
@@ -1491,6 +1496,7 @@ return {
 					hinge = { -0.175, -0.02, -0.455 },
 					centre = { 0, 0, 0 },
 					boneParent = "Index3",
+					leaf = true,
 				},
 				{
 					piece = "R_Middle1",
@@ -1535,6 +1541,7 @@ return {
 					hinge = { -0.058, -0.019, -0.497 },
 					centre = { 0, 0, 0 },
 					boneParent = "Middle3",
+					leaf = true,
 				},
 				{
 					piece = "R_Ring1",
@@ -1579,6 +1586,7 @@ return {
 					hinge = { 0.063, -0.021, -0.471 },
 					centre = { 0, 0, 0 },
 					boneParent = "Ring3",
+					leaf = true,
 				},
 				{
 					piece = "R_Pinky1",
@@ -1623,6 +1631,7 @@ return {
 					hinge = { 0.171, -0.035, -0.389 },
 					centre = { 0, 0, 0 },
 					boneParent = "Pinky3",
+					leaf = true,
 				},
 				{
 					piece = "R_Thumb1",
@@ -1667,6 +1676,7 @@ return {
 					hinge = { -0.245, -0.095, -0.195 },
 					centre = { 0, 0, 0 },
 					boneParent = "Thumb3",
+					leaf = true,
 				},
 			},
 		},

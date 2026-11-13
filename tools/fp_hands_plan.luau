@@ -106,6 +106,16 @@ local function lootCf(VM: any, R: { number }, L: { number }, s: number): any
 	)
 end
 
+-- the glove colour as Outfit.gloveHex picks it: the knit tone for toned gloves, else the gloves' own colour
+local function gloveHex(Config: any, outfit: any): string
+	local R = Config.Rookie
+	local tone = R.OUTFIT[outfit.tone or ""]
+	if R.TONED[outfit.gloves] and tone and type(tone.hex) == "string" then
+		return tone.hex
+	end
+	return R.GLOVES[outfit.gloves]
+end
+
 local out: { [string]: any } = { mode = mode, fov = fov, poses = {}, order = {} }
 
 if mode == "v2" then
@@ -161,7 +171,7 @@ if mode == "v2" then
 	out.viewK = k
 	out.scale = s
 	out.v2 = true
-	out.glove = Config.Rookie.GLOVES[outfit.gloves]
+	out.glove = gloveHex(Config, outfit)
 	out.gloveLift = { VM.ARMS.GLOVE_LIFT, VM.ARMS.GLOVE_LIFT_TO }
 	out.materials = VM.ARMS.MATERIALS
 	out.sleeveColour = VM.ARMS.SLEEVE_COLOUR
@@ -244,7 +254,7 @@ elseif mode == "after" then
 	local k = VMath.viewK(fov, VM.VIEW_FOV)
 	out.viewK = k
 	out.scale = s
-	out.glove = Config.Rookie.GLOVES[outfit.gloves]
+	out.glove = gloveHex(Config, outfit)
 	out.gloveLift = { VM.ARMS.GLOVE_LIFT, VM.ARMS.GLOVE_LIFT_TO }
 	out.materials = VM.ARMS.MATERIALS
 	out.outfit = outfit

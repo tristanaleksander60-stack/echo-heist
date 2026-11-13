@@ -42,6 +42,9 @@ WRIST_Z = 0.2               # the wrist hinge, grip space
 STEP = 0.0062               # the SDF grid (authored studs)
 GLOVE_TRIS = 2600           # decimation target per glove
 TAU = 0.011                 # weight falloff (authored studs): how soft a joint's blend is
+SEAMS = (-0.100, 0.000, 0.096)   # the stitched points on the back (grip-space x, right hand: between the knuckles)
+SEAM_W = 0.008
+SEAM_DARK = 0.30
 
 # name, MCP hinge (grip space, right hand), segment lengths, base radius, bind fan (deg, + toward the thumb),
 # bind pitch per joint (deg, + toward the palm): a relaxed, slightly open bind pose (good for skinning)
@@ -199,6 +202,14 @@ def shade_and_weights(whole, own, V):
     ao = S.occlusion(whole, V, N, 0.022, samples=5, strength=0.55)
     under = np.clip(-N[:, 1], 0, 1)                    # the palm side reads a step darker
     shade = np.clip(0.30 + 0.70 * ao, 0, 1) * (1.0 - 0.10 * under)
+    # the glove's three stitched "points" on the back of the hand: soft dark lines from the valleys between the
+    # knuckles toward the wrist (what makes a hand read as a glove, with the cuff)
+    back = np.clip((N[:, 1] - 0.25) / 0.4, 0.0, 1.0)
+    z = V[:, 2]
+    along = np.clip((z + 0.165) / 0.05, 0.0, 1.0) * np.clip((0.06 - z) / 0.06, 0.0, 1.0)
+    for x0 in SEAMS:
+        line = np.exp(-((V[:, 0] - x0) / SEAM_W) ** 2)
+        shade = shade * (1.0 - SEAM_DARK * line * along * back)
     shade = np.clip(shade, 0.52, 1.0)
     names = ["Forearm", "Hand"] + SEG_NAMES
     D = np.stack([own[n](V) for n in names], axis=1)      # (N, B)
@@ -217,7 +228,19 @@ def shade_and_weights(whole, own, V):
         W[i, cand] = w2
     W[W < 0.01] = 0.0
     W /= W.sum(1, keepdims=True)
-    return N, shade, {n: W[:, j] for j, n in enumerate(names)}
+    out = {n: W[:, j] for j, n in enumerate(names)}
+    # each fingertip shares its last segment's weight with the leaf Tip bone (it never moves against that segment,
+    # so nothing changes on screen): the Roblox importer drops bones that carry no weight (measured: 18 of 23 kept)
+    _bones, caps = skeleton()
+    seg = {j: (a, b) for j, a, b, _ra, _rb in caps}
+    for f in [x[0] for x in FINGERS] + ["Thumb"]:
+        a, b = seg[f"{f}3"]
+        ab = b - a
+        t = np.clip(((V - a) @ ab) / (ab @ ab), 0.0, 1.0)
+        share = np.clip((t - 0.45) / 0.4, 0.0, 1.0) * 0.5 * out[f"{f}3"]
+        out[f"{f}Tip"] = share
+        out[f"{f}3"] = out[f"{f}3"] - share
+    return N, shade, out
 
 
 # ---------------------------------------------------------------- Blender plumbing

@@ -316,21 +316,24 @@ def l1_scene(samples, W, Hh, spot):
 
 
 def roblox_light(s, cam):
-    """The engine's read of the near hands (the owner's v125 capture): Roblox lights a part with the flat
-    Lighting.Ambient (no occlusion: Eevee's world light occludes, so it is replaced on the hands by a flat lavender
-    term) plus the local lamps and the client fill. Approximated by an extra uniform light from all around the camera
-    in the interior Ambient colour; the room itself keeps the Eevee render."""
-    import backdrop_shots as BS
-    amb = BS.LIGHTING.get("Ambient", [0.46, 0.48, 0.6])
-    hexc = "#%02X%02X%02X" % tuple(int(round(x * 255)) for x in amb)
-    for i, d in enumerate(((0, 0, 1), (0, 1, 0), (1, 0, 0), (-1, 0, 0), (0, -1, 0))):
-        ld = bpy.data.lights.new(f"amb{i}", "SUN")
-        ld.color = K._lin(hexc)[:3]
-        ld.energy = 0.55
-        ld.use_shadow = False
-        o = bpy.data.objects.new(f"amb{i}", ld)
-        s.collection.objects.link(o)
-        o.rotation_euler = Vector(d).to_track_quat("Z", "Y").to_euler()
+    """Closer to the engine's read of the near hands (the owner's v125 capture): Roblox gives a part no ambient bounce
+    or occlusion, only the flat Lighting.Ambient plus the local lamps, so the shadow side of a glove is far darker than
+    Eevee's world light makes it, and the lamp side warmer. Approximation: the world (ambient) light at 40 %, a warm
+    key from the shop's ceiling lamps over the hands. Same for BEFORE and AFTER."""
+    w = s.world
+    for n in w.node_tree.nodes:
+        if n.type == "BACKGROUND":
+            n.inputs["Strength"].default_value *= 0.4
+    ld = bpy.data.lights.new("lampkey", "POINT")
+    ld.color = K._lin("#FFD2A0")[:3]
+    ld.energy = 3.0
+    ld.use_shadow = False
+    ld.shadow_soft_size = 0.3
+    o = bpy.data.objects.new("lampkey", ld)
+    s.collection.objects.link(o)
+    o.parent = cam
+    o.matrix_parent_inverse = Matrix.Identity(4)
+    o.location = (0.0, 0.9, -0.4)
 
 
 def plain_scene(samples, W, Hh):

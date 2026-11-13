@@ -83,10 +83,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "c6c9fa09b795d1cb7610",
+ "contentHash": "31423dfc233fab5ee4c8",
  "fbx": {
   "path": "assets/fbx/Rookie_FPHands_L.fbx",
-  "bytes": 177100,
+  "bytes": 178908,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -128,5 +128,5 @@
  "spec": "assets/blender/fp_hands.py",
  "notes": "FP HANDS v2: one continuous skinned glove (23 bones, smooth, vertex-shaded), exported at 0.2 (the in-game size).",
  "turntable": "docs/art/turntables/Rookie_FPHands_L.png",
- "seconds": 33.5
+ "seconds": 18.2
 }

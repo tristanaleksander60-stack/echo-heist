@@ -634,11 +634,12 @@ function Viewmodel.fromFpHands(folder: Instance, outfitKey: string?, hue: Color3
 		end
 		for _, b in data.bones[side] do
 			local bone = gloveBones[b.piece]
-			if not bone then
+			if bone then
+				allBones[b.piece] = bone
+			elseif not b.leaf then -- a fingertip marker may be missing; a bone that bends the mesh may not
 				model:Destroy()
 				return nil
 			end
-			allBones[b.piece] = bone
 		end
 		hands[side] = hand
 		skins[side] = FpRig.skin(CFrame, Vector3, hand, gloveName, order, parent, rest)

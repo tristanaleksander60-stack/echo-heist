@@ -190,6 +190,8 @@ def source():
                                f"up = {vec(b['up'])}"]
                 fields += [f"hinge = {vec(b['hinge'])}", "centre = { 0, 0, 0 }", f'boneParent = ' +
                            (f'"{b["parent"]}"' if b["parent"] else "nil")]
+                if b["name"].endswith("Tip"):
+                    fields.append("leaf = true")  # a fingertip marker: the game does not need it
                 out.append("\t\t\t\t{ " + ", ".join(fields) + " },")
             out.append("\t\t\t},")
         out.append("\t\t},")
