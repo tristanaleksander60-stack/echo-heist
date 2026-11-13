@@ -487,7 +487,11 @@ return function(test)
 					lamps += 1
 				end
 			end
-			Assert.eq(lamps, #KitPlan.lamps(level, LevelDress[level.id], LIGHT), spec.id .. ": a Lamp_Ceiling per lamp")
+			local fixtures = 0
+			for _, l in KitPlan.lamps(level, LevelDress[level.id], LIGHT) do
+				fixtures += if l.kind == "wash" then 0 else 1 -- a wall wash is a light only
+			end
+			Assert.eq(lamps, fixtures, spec.id .. ": a Lamp_Ceiling per lamp")
 			if spec.id == "cs1_back_room" then
 				Assert.eq(#windows, 2, "L1: two partition windows")
 				for _, b in windows do

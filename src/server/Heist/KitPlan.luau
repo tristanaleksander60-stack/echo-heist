@@ -468,7 +468,14 @@ end
 -- did not dress is lit and signposted the same way). LEVELS.md §4 P0-1..P0-3, PLAN_STEAM_PLUS §4.1 W2.
 ---------------------------------------------------------------------------
 
-export type Lamp = { x: number, z: number, kind: string, index: number? } -- kind: plate | hero | room | accent | street
+export type Lamp = {
+	x: number,
+	z: number,
+	kind: string, -- plate | hero | room | accent | street | wash
+	index: number?,
+	dx: number?, -- wash: the wall it faces (unit, level space)
+	dz: number?,
+}
 
 local function insideTall(level: any, x: number, z: number): boolean
 	for _, s in level.spec.solids or {} do
@@ -596,6 +603,66 @@ function KitPlan.lamps(level: any, dress: any?, cfg: any): { Lamp }
 			table.insert(out, { x = st[1], z = st[2], kind = "street" })
 		end
 	end
+	-- Warm wall washes (INTERIORS, cfg.LAMP.wash): in every room band between the building's X-axis wall lines, one
+	-- SpotLight near the ceiling in front of each side wall at the band's middle, aimed at it; kept only while every
+	-- view (cfg.VIEW_RADIUS) stays within cfg.MAX_LIGHTS_PER_VIEW, so the light budget never grows past its cap.
+	local wash = cfg.LAMP.wash
+	local bb = KitPlan.buildingBox(level)
+	if wash and bb then
+		local b = bb :: Box
+		local lines: { number } = {}
+		for i, s in level.spec.solids or {} do
+			local w = wallOf(i, s.box)
+			if w and w.axis == "X" and w.line >= b.minZ - 0.01 and w.line <= b.maxZ + 0.01 then
+				local dup = false
+				for _, z in lines do
+					dup = dup or math.abs(z - w.line) < 0.5
+				end
+				if not dup then
+					table.insert(lines, w.line)
+				end
+			end
+		end
+		table.sort(lines, function(p: number, q: number): boolean
+			return p > q
+		end)
+		local r2 = cfg.VIEW_RADIUS * cfg.VIEW_RADIUS
+		local function fits(cand: Lamp): boolean
+			table.insert(out, cand)
+			local ok = true
+			for _, a in out do
+				local lit = 0
+				for _, c in out do
+					local dx, dz = a.x - c.x, a.z - c.z
+					if dx * dx + dz * dz <= r2 then
+						lit += 1
+					end
+				end
+				ok = ok and lit <= cfg.MAX_LIGHTS_PER_VIEW
+			end
+			table.remove(out)
+			return ok
+		end
+		for k = 1, #lines - 1 do
+			local zm = (lines[k] + lines[k + 1]) / 2
+			if lines[k] - lines[k + 1] < 6 then
+				continue
+			end
+			for _, side in { -1, 1 } do
+				local wallX = if side < 0 then b.minX + 0.5 else b.maxX - 0.5
+				local cand: Lamp = {
+					x = wallX - side * (1 + wash.off),
+					z = zm,
+					kind = "wash",
+					dx = side,
+					dz = 0,
+				}
+				if not insideTall(level, cand.x, cand.z) and fits(cand) then
+					table.insert(out, cand)
+				end
+			end
+		end
+	end
 	return out
 end
 
@@ -615,8 +682,14 @@ end
 -- lamps (signals) and the hero (the focal pool) keep cfg.LAMP's warm white; street lamps keep their own warm
 -- colour and pool (cfg.LAMP.street.poolColor). Returns {color, pool} per lamp, in the order of `lamps`. Pure
 -- data: never adds or removes a light.
-function KitPlan.lampLooks(lamps: { Lamp }, location: string?, cfg: any): { { color: { number }, pool: { number } } }
-	local loc = cfg.LOCATION and location and cfg.LOCATION[location]
+function KitPlan.lampLooks(
+	lamps: { Lamp },
+	location: string?,
+	cfg: any,
+	theme: any?
+): { { color: { number }, pool: { number }, brightness: number? } }
+	-- theme: a level theme's light (Config.Interior.THEMES[...].light): its room colours and pool replace the location's
+	local loc = theme or (cfg.LOCATION and location and cfg.LOCATION[location])
 	local out = {}
 	local rooms = 0
 	for k, l in lamps do
@@ -627,7 +700,7 @@ function KitPlan.lampLooks(lamps: { Lamp }, location: string?, cfg: any): { { co
 			color = loc.room[(rooms - 1) % #loc.room + 1]
 			pool = loc.pool or pool
 		end
-		out[k] = { color = color, pool = pool }
+		out[k] = { color = color, pool = pool, brightness = if l.kind == "room" and theme then theme.brightness else nil }
 	end
 	return out
 end
@@ -1524,7 +1597,9 @@ function KitPlan.plan(level: any, specs: { [string]: PartSpec }, opts: Options?)
 		local hang = o.lighting.LAMP_HANG_Y - 12 -- the pieces' pivot is 12 studs up (manifest origin)
 		for k, l in KitPlan.lamps(level, o.dress, o.lighting) do
 			local it: Item? = nil
-			if l.kind == "street" then
+			if l.kind == "wash" then
+				continue -- a wall wash is a light only (no fixture)
+			elseif l.kind == "street" then
 				if streetNames and hasAll(streetNames) then
 					it = item("lamp", "visual", streetNames, { x = l.x, y = floorY, z = l.z, yaw = 0 }, { 1, 1, 1 })
 				end

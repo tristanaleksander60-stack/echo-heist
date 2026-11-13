@@ -429,19 +429,19 @@ def train_loop(k):
     mb.lathe([(0, 0.0), (1.0, 0.0), (1.0, 0.8), (0.94, 0.86), (0, 0.86)], 16, ["holly_lo", "holly_lo", "holly", "holly"],
              (0, 0, 0), part="Plinth")
     pl = mb.parts["Plinth"]
-    mb.xform(pl, Matrix.Diagonal((3.0, 2.0, 1.0, 1)))
-    pts = [(2.3 * math.cos(math.radians(a)), 1.4 * math.sin(math.radians(a)), 0.86) for a in range(0, 345, 15)]
+    mb.xform(pl, Matrix.Diagonal((3.0, 1.6, 1.0, 1)))
+    pts = [(2.3 * math.cos(math.radians(a)), 1.05 * math.sin(math.radians(a)), 0.86) for a in range(0, 345, 15)]
     L.tube(mb, pts, 0.07, 4, "steel", part="Rail", normal=(0, 0, 1))
     for i, (a, c) in enumerate(((90, "ribbon"), (55, "holly"), (25, "marble_hi"))):
-        x, y = 2.3 * math.cos(math.radians(a)), 1.4 * math.sin(math.radians(a))
+        x, y = 2.3 * math.cos(math.radians(a)), 1.05 * math.sin(math.radians(a))
         car = mb.box((-0.35, -0.22, 0.86 - E), (0.35, 0.22, 1.35 if i else 1.55), c, chamfer=0.04,
                      cham_col="snow", part=f"Car{i}")
         mb.xform(car, Matrix.Translation(Vector((x, y, 0))) @ Matrix.Rotation(math.radians(a + 90), 4, "Z"))
-    mb.cylinder((0.0, 1.4, 1.5), (0, 0, 1), 0.1, 0.0, 0.3, 6, "ink_hi", part="Funnel")
+    mb.cylinder((0.0, 1.05, 1.5), (0, 0, 1), 0.1, 0.0, 0.3, 6, "ink_hi", part="Funnel")
     tree = mb.lathe([(0, 0.0), (0.55, 0.0), (0, 1.6)], 8, ["holly", "holly"], (0.0, 0.0, 0.86 - E), part="Tree")
     _ = tree
     ob = k.finalize(mb, pivot=(0, 0, 0))
-    return floor_obj(k, ob, notes="toy train loop on a round plinth 6 x 4 x 1.6")
+    return floor_obj(k, ob, notes="toy train loop on an oval plinth 6 x 3.2 x 2.4")
 
 
 def toy(k):
@@ -511,7 +511,7 @@ def palm(k):
         pts = [base + d * 0.1]
         for j in range(1, 6):
             t = j / 5
-            pts.append(base + d * (2.6 * t) + Vector((0, 0, 1.2 * t - 2.1 * t * t)))
+            pts.append(base + d * (1.6 * t) + Vector((0, 0, 1.0 * t - 2.0 * t * t)))
         L.tube(mb, [tuple(p) for p in pts], [0.32, 0.38, 0.34, 0.26, 0.16, 0.05], 4,
                "leaf_hi" if i % 2 else "leaf", part=f"Frond{i}")
     ob = k.finalize(mb, pivot=(0, 0, 0))

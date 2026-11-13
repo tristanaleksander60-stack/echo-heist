@@ -14,9 +14,14 @@
 -- time with its own hysteresis (PerfSample.stepUp: 60 good seconds, doubling after each step up), so the recipe
 -- never flickers. This module is the tier's only lighting listener.
 -- setExteriorTint (SKY track): the aurora's faint green on the snow, added to OutdoorAmbient over either recipe.
+-- INTERIORS (Config.Interior; docs/audit/LEVELS.md §13): the floor pools fade at grazing view angles (in first person a
+-- pool ten studs ahead read as painted fog; the room's real light carries the floor there), at full strength again
+-- when you look down into one or the camera is above (diorama, classic); and the interior props (EH_Layer "decor")
+-- hide from Config.Interior.DECOR_OFF_TIER. The wall washes are lamp kind "wash" (lightKindsOff from tier 2).
 
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
@@ -25,6 +30,8 @@ local Budget = require(Shared:WaitForChild("Heist"):WaitForChild("Budget"))
 local Theme = require(script.Parent:WaitForChild("Theme"))
 
 local L = Config.Lighting
+local IN = Config.Interior
+local FADE = IN.POOL_FADE
 local SOFT = Config.Perf.SOFT_TOYBOX
 local GROUPS = { "Lighting", "Bloom", "ColorCorrection", "Atmosphere" } -- SOFT_TOYBOX tables applied to instances
 
@@ -160,6 +167,21 @@ local function applyRecipe(tier: number)
 end
 
 type LevelLight = { light: Light, kind: string?, range: number }
+type PoolFade = { gui: SurfaceGui, host: BasePart, alpha: number, base: { [GuiObject]: number } }
+
+-- The share of a pool's strength at a view: 1 when the camera is high over it or inside it, down to FADE.min when the
+-- camera looks across it at a grazing angle (elevation of the camera over the pool's nearest point, in degrees).
+local function fadeAt(cam: Vector3, host: BasePart): number
+	local c = host.Position
+	local hx, hz = host.Size.X / 2, host.Size.Y / 2 -- the pool part lies flat: its Y runs along world Z
+	local dx = math.max(math.abs(cam.X - c.X) - hx, 0)
+	local dz = math.max(math.abs(cam.Z - c.Z) - hz, 0)
+	local h = cam.Y - c.Y
+	local elev = math.deg(math.atan2(h, math.sqrt(dx * dx + dz * dz)))
+	local t = math.clamp((elev - FADE.from) / (FADE.to - FADE.from), 0, 1)
+	t = t * t * (3 - 2 * t)
+	return FADE.min + (1 - FADE.min) * t
+end
 
 local LightDirector = {}
 
@@ -169,7 +191,11 @@ function LightDirector.new(): any
 	local heroLights: { Light } = {}
 	local levelLights: { LevelLight } = {}
 	local pools: { SurfaceGui } = {}
+	local fades: { PoolFade } = {}
+	local decor: { { part: BasePart, base: number } } = {}
 	local addedConn: RBXScriptConnection? = nil
+	local fadeConn: RBXScriptConnection? = nil
+	local fadeClock = 0
 	local poolImage: string? = nil
 
 	-- One pool onto the gradient image (no-op until it is known, or when the pool has no "Soft" label).
@@ -216,6 +242,47 @@ function LightDirector.new(): any
 				gui.Enabled = poolsOn
 			end
 		end
+		local decorOn = tierNow < IN.DECOR_OFF_TIER
+		for _, d in decor do
+			local want = if decorOn then d.base else 1
+			if d.part.Transparency ~= want then
+				d.part.Transparency = want
+			end
+		end
+	end
+
+	-- One pool at `alpha` of its built strength (the soft image and the fallback discs alike).
+	local function writeFade(f: PoolFade, alpha: number)
+		if math.abs(alpha - f.alpha) < 0.01 then
+			return
+		end
+		f.alpha = alpha
+		for obj, base in f.base do
+			local opacity = (1 - base) * alpha
+			if obj:IsA("ImageLabel") then
+				obj.ImageTransparency = 1 - opacity
+			else
+				obj.BackgroundTransparency = 1 - opacity
+			end
+		end
+	end
+
+	local function fadeStep(dt: number)
+		fadeClock += dt
+		if fadeClock < 1 / FADE.hz then
+			return
+		end
+		fadeClock = 0
+		local cam = workspace.CurrentCamera
+		if cam == nil then
+			return
+		end
+		local at = cam.CFrame.Position
+		for _, f in fades do
+			if f.host.Parent then
+				writeFade(f, fadeAt(at, f.host))
+			end
+		end
 	end
 
 	local function bindOne(d: Instance)
@@ -232,10 +299,23 @@ function LightDirector.new(): any
 			)
 		elseif d:IsA("SurfaceGui") then
 			local host = d.Parent
-			if host and host:GetAttribute("EH_Kind") == "lightPool" then
+			if host and host:GetAttribute("EH_Kind") == "lightPool" and host:IsA("BasePart") then
 				table.insert(pools, d)
-				task.defer(soften, d) -- its children may replicate a frame after it
+				local f: PoolFade = { gui = d, host = host, alpha = 1, base = {} }
+				table.insert(fades, f)
+				task.defer(function() -- its children may replicate a frame after it
+					soften(d)
+					for _, c in d:GetDescendants() do
+						if c:IsA("ImageLabel") and c.Name == "Soft" then
+							f.base[c] = c.ImageTransparency
+						elseif c:IsA("Frame") and c.Name == "Ring" then
+							f.base[c] = c.BackgroundTransparency
+						end
+					end
+				end)
 			end
+		elseif d:IsA("BasePart") and d:GetAttribute("EH_Layer") == "decor" then
+			table.insert(decor, { part = d, base = d.Transparency })
 		end
 	end
 
@@ -245,13 +325,27 @@ function LightDirector.new(): any
 			addedConn = nil
 		end
 		-- hand the lights back as the server built them (local writes only; the model may be reused)
+		if fadeConn then
+			fadeConn:Disconnect()
+			fadeConn = nil
+		end
 		for _, rec in levelLights do
 			rec.light.Enabled = true
 			rec.light.Range = rec.range
 		end
+		for _, f in fades do
+			writeFade(f, 1)
+		end
+		for _, d in decor do
+			if d.part.Parent then
+				d.part.Transparency = d.base
+			end
+		end
 		table.clear(heroLights)
 		table.clear(levelLights)
 		table.clear(pools)
+		table.clear(fades)
+		table.clear(decor)
 	end
 
 	-- The level model of the current instance (HeistClient binds it with WorldView). Lights that stream or
@@ -265,7 +359,16 @@ function LightDirector.new(): any
 			bindOne(d)
 			apply()
 		end)
+		fadeConn = RunService.Heartbeat:Connect(fadeStep)
 		apply()
+	end
+
+	-- Tests: the pool fade share at a camera position for a pool part, and the decor parts bound.
+	function director.poolFade(at: Vector3, host: BasePart): number
+		return fadeAt(at, host)
+	end
+	function director.decorCount(): number
+		return #decor
 	end
 
 	-- Hooked to Telemetry.onTier by the caller (1 = quality ... 4 = minimum). The Lighting recipe follows at once,

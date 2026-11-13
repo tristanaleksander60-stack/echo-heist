@@ -24,6 +24,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 
+local DecorPlan = require(script.Parent:WaitForChild("DecorPlan"))
 local KitDresser = require(script.Parent:WaitForChild("KitDresser"))
 local KitPlan = require(script.Parent:WaitForChild("KitPlan"))
 local LevelDress = require(script.Parent:WaitForChild("LevelDress"))
@@ -193,8 +194,37 @@ local function ceilingLamp(
 	index: number,
 	look: any,
 	poolRect: any?
-): (BasePart, BasePart)
+): (BasePart, BasePart?)
 	local spec = LIGHT.LAMP[l.kind] or LIGHT.LAMP.room
+	if l.kind == "wash" then
+		-- a warm wall wash (INTERIORS, KitPlan.lamps): a SpotLight near the ceiling aimed down the wall it faces, held by
+		-- an invisible, visual-only part; no fixture, no floor pool
+		local at = origin + Vector3.new(l.x, floorY + spec.lightY, l.z)
+		local t = math.rad(spec.tilt)
+		local aim = Vector3.new(l.dx or 0, 0, l.dz or 0) * math.cos(t) - Vector3.yAxis * math.sin(t)
+		local holder = part({
+			Name = "WallWash",
+			Size = Vector3.one * 0.2,
+			CFrame = CFrame.lookAt(at, at + aim),
+			Transparency = 1,
+			CanCollide = false,
+			CanQuery = false,
+			CanTouch = false,
+			CastShadow = false,
+		}, parent)
+		holder:SetAttribute("EH_Kind", "wallWash")
+		holder:SetAttribute("EH_Index", index)
+		holder:SetAttribute("EH_LampKind", "wash")
+		local spot = Instance.new("SpotLight")
+		spot.Face = Enum.NormalId.Front
+		spot.Angle = spec.angle
+		spot.Range = spec.range
+		spot.Brightness = spec.brightness
+		spot.Color = rgb(look.color)
+		spot.Shadows = false
+		spot.Parent = holder
+		return holder, nil
+	end
 	-- street lamps hang their light at the StreetLamp lantern (spec.bulbY / lightY), ceiling lamps under the shade
 	local bulbY = spec.bulbY or LIGHT.BULB_Y
 	local lightY = spec.lightY or LIGHT.LIGHT_Y
@@ -239,8 +269,8 @@ local function ceilingLamp(
 		light = Instance.new("PointLight")
 	end
 	light.Range = spec.range
-	light.Brightness = spec.brightness
-	light.Color = rgb(look.color) -- KitPlan.lampLooks: the location colour on room lamps
+	light.Brightness = look.brightness or spec.brightness -- a level theme may dim its room lamps (L3 Lights Out)
+	light.Color = rgb(look.color) -- KitPlan.lampLooks: the location (or the level theme's) colour on room lamps
 	light.Shadows = spec.shadows == true
 	if spec.shadows then
 		light:SetAttribute("EH_HeroShadow", true)
@@ -788,14 +818,59 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 	-- Room lamps take the location's light colour (Config.Lighting.LOCATION, PLAN_STEAM_PLUS §3.1).
 	local lampList = KitPlan.lamps(level, LevelDress[level.id], LIGHT)
 	local buildOpts: BuildOpts = opts or {}
-	local looks =
-		KitPlan.lampLooks(lampList, KitPlan.location(level, buildOpts.dressing == true, buildOpts.location), LIGHT)
+	local buildLocation = KitPlan.location(level, buildOpts.dressing == true, buildOpts.location)
+	-- each level's own room light (Config.Interior.THEMES: the bakery's peach, the pharmacy's cool white ...)
+	local themeLight = if Config.Interior.ENABLED then DecorPlan.light(level, buildLocation, Config.Interior) else nil
+	local looks = KitPlan.lampLooks(lampList, buildLocation, LIGHT, themeLight)
 	for k, l in lampList do
 		local spec = LIGHT.LAMP[l.kind] or LIGHT.LAMP.room
 		local d = spec.pool or (if l.kind == "hero" then LIGHT.POOL.heroDiameter else LIGHT.POOL.diameter)
 		local bulb, pool = ceilingLamp(model, origin, floorY, l, k, looks[k], KitPlan.poolRect(level, l.x, l.z, d))
 		lamps[k] = bulb
-		pools[k] = pool
+		if pool then
+			pools[k] = pool
+		end
+	end
+	-- The shop's name over the entrance (Config.Interior.THEMES: each level its own shop; DecorPlan.fascia): a thin
+	-- board on the kit front's sign board, its SurfaceGui toward the street. Visual only.
+	local fascia = if Config.Interior.ENABLED
+		then DecorPlan.fascia(
+			level,
+			buildLocation,
+			{ KP = KitPlan, cfg = Config.Interior }
+		)
+		else nil
+	if fascia then
+		local board = part({
+			Name = "Fascia",
+			Size = Vector3.new(fascia.w, fascia.h, 0.05),
+			CFrame = CFrame.new(origin + Vector3.new(fascia.x, fascia.y, fascia.z)),
+			Color = rgb(fascia.board),
+			CanCollide = false,
+			CanQuery = false,
+			CanTouch = false,
+			CastShadow = false,
+		}, model)
+		board:SetAttribute("EH_Kind", "fascia")
+		local gui = Instance.new("SurfaceGui")
+		gui.Name = "Name"
+		gui.Face = Enum.NormalId.Back -- +Z: the street
+		gui.LightInfluence = 0.4
+		gui.Brightness = 1.3
+		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		gui.PixelsPerStud = 40
+		gui.MaxDistance = 220
+		local t = Instance.new("TextLabel")
+		t.Name = "Text"
+		t.BackgroundTransparency = 1
+		t.Size = UDim2.fromScale(0.94, 0.8)
+		t.Position = UDim2.fromScale(0.03, 0.1)
+		t.FontFace = FONT
+		t.TextScaled = true
+		t.TextColor3 = rgb(fascia.color)
+		t.Text = fascia.text
+		t.Parent = gui
+		gui.Parent = board
 	end
 
 	-- The van: a bank zone in Getaway White, dim until you carry loot (WorldView lights it then), with
@@ -889,9 +964,15 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 	-- BIG buildings (Config.Big): the ceiling, the upper storeys and the roof over the playable ground floor (visual
 	-- only; kit pieces when the level was dressed, plain Parts otherwise). A failure never costs the level.
 	do
+		local bigLocation = KitPlan.location(level, o.dressing == true, o.location)
+		local _, theme = DecorPlan.theme(level, bigLocation, Config.Interior)
+		local useTheme = Config.Interior.ENABLED and theme ~= nil
 		local okBig, err = pcall(Overhead.build, level, origin, model, if built.kit then o.kit else nil, {
-			location = KitPlan.location(level, o.dressing == true, o.location),
+			location = bigLocation,
 			dressing = o.dressing == true,
+			-- the level's ceiling colour (Ceiling_8x8_Tin, ~0.6x the wall value in first person) and its blade sign
+			ceiling = if useTheme then theme.ceiling else nil,
+			sign = if useTheme and bigLocation == "CornerShop" then theme.name else nil,
 		})
 		if not okBig then
 			warn("[LevelBuilder] the BIG building failed for " .. tostring(level.id) .. ": " .. tostring(err))

@@ -44,6 +44,7 @@ export type Options = {
 	dressing: boolean?, -- the Christmas layer
 	dress: any?, -- Heist/LevelDress entry (windows, rugs)
 	base: { any }?, -- the base kit plan's items (KitPlan.plan(...).items): their props are keep-outs
+	why: { [string]: number }?, -- tests: rejected slots counted by reason
 }
 export type Deps = { KP: any, cfg: any, lighting: any? }
 export type Plan = { items: { Item }, theme: string?, rooms: { { kind: string, z0: number, z1: number } } }
@@ -292,9 +293,6 @@ function DecorPlan.plan(level: any, specs: { [string]: any }, opts: Options?, de
 	local circles: { { number } } = {} -- x, z, r
 	local segs: { { number } } = {} -- ax, az, bx, bz, r
 	local pad = cfg.WALL_PAD
-	for _, w in walls do
-		table.insert(rects, grow(w.box, pad, pad))
-	end
 	for _, b in others do
 		table.insert(rects, grow(b, 0.3, 0.3))
 	end
@@ -326,6 +324,7 @@ function DecorPlan.plan(level: any, specs: { [string]: any }, opts: Options?, de
 	end
 	for _, h in level.hides or {} do
 		table.insert(rects, grow(h.box, C.hide, C.hide))
+		table.insert(wallRects, grow(h.box, 1.1, 1.1)) -- no poster or corkboard behind a coat rack or a fern
 	end
 	table.insert(rects, grow(level.van, C.van, C.van))
 	for _, def in level.loot do
@@ -456,40 +455,47 @@ function DecorPlan.plan(level: any, specs: { [string]: any }, opts: Options?, de
 	type Placed = { rect: Rect, y0: number, y1: number, wall: boolean }
 	local placed: { Placed } = {}
 
+	local why = o.why
+	local function no(reason: string): boolean
+		if why then
+			why[reason] = (why[reason] or 0) + 1
+		end
+		return false
+	end
 	local function clearRect(r: Rect, y0: number, y1: number, isWall: boolean, host: Wall?): boolean
 		if r.x0 < inner.x0 or r.x1 > inner.x1 or r.z0 < inner.z0 or r.z1 > inner.z1 then
-			return false
+			return no("outside")
+		end
+		for _, w in walls do
+			if w ~= host and rectOverlap(r, grow(w.box, pad, pad), 0) then
+				return no("wall")
+			end
 		end
 		if isWall then
-			for _, w in walls do
-				if w ~= host and rectOverlap(r, grow(w.box, pad, pad), 0) then
-					return false
-				end
-			end
 			for _, b in others do
 				if b.maxY > y0 and rectOverlap(r, grow(b, 0.3, 0.3), 0) then
-					return false
+					return no("solid")
 				end
 			end
 			for _, k in wallRects do
 				if rectOverlap(r, k, 0) then
-					return false
+					return no("wallRect")
 				end
 			end
 		else
 			for _, k in rects do
 				if rectOverlap(r, k, 0) then
-					return false
+					return no("rect")
 				end
 			end
 			for _, c in circles do
 				if pointRect2(c[1], c[2], r) < c[3] * c[3] then
-					return false
+					return no("circle")
 				end
 			end
 			for _, s in segs do
 				if segNear(s[1], s[2], s[3], s[4], r, s[5]) then
-					return false
+					return no("seg")
 				end
 			end
 		end
@@ -497,7 +503,7 @@ function DecorPlan.plan(level: any, specs: { [string]: any }, opts: Options?, de
 		local rg = { x0 = r.x0 - g, x1 = r.x1 + g, z0 = r.z0 - g, z1 = r.z1 + g }
 		for _, p in placed do
 			if p.y1 > y0 and p.y0 < y1 and rectOverlap(rg, p.rect, 0) then
-				return false
+				return no("placed")
 			end
 		end
 		return true
@@ -551,7 +557,7 @@ function DecorPlan.plan(level: any, specs: { [string]: any }, opts: Options?, de
 		local w, h, d = hi[1] - lo[1], hi[2] - lo[2], hi[3] - lo[3]
 		local mount = cfg.MOUNT[name]
 		local isWall = mount ~= nil and mount > 0
-		if not isWall and d > cfg.MAX_DEPTH then
+		if not isWall and role == "decor" and d > cfg.MAX_DEPTH then
 			return false
 		end
 		local back = if mount ~= nil then WALL_SURFACE else cfg.KIT_WALL_HALF + cfg.WALL_GAP
@@ -614,7 +620,7 @@ function DecorPlan.plan(level: any, specs: { [string]: any }, opts: Options?, de
 
 	-- 1. the theme's hero window display: in the front band against the street front, beside the entrance
 	local entX = DecorPlan.entrance(level, KP)
-	if theme and theme.hero and entX and #plan.rooms > 0 then
+	if theme and theme.hero and entX and #plan.rooms > 0 and (dressing or not cfg.XMAS[theme.hero]) then
 		local cx = entX :: number
 		local ok = placeOne(theme.hero, "hero", "front", 1, function(f: Face, s: Slot): boolean
 			return f.front and math.abs(s.cx - cx) >= 4.5

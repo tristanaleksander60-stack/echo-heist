@@ -213,21 +213,21 @@
    ],
    "budget_note": "ok",
    "dims": [
-    5.19,
-    5.19,
-    6.131
+    3.235,
+    3.235,
+    6.093
    ],
    "pivot": {
     "rule": "point",
     "local_min": [
-     -2.5952,
-     -2.5952,
+     -1.6176,
+     -1.6176,
      0.0
     ],
     "local_max": [
-     2.5952,
-     2.5952,
-     6.1308
+     1.6176,
+     1.6176,
+     6.0933
     ]
    },
    "swatches": [
@@ -246,7 +246,7 @@
    ],
    "symmetry_error": null,
    "self_intersections": 0,
-   "cross_shell_overlaps": 454,
+   "cross_shell_overlaps": 500,
    "cap_overlaps": 0,
    "flipped_faces": 0,
    "boundary_edges": 0,
@@ -353,10 +353,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "07ffa827e9b9fe805944",
+ "contentHash": "a2fefe4af5eb494d247f",
  "fbx": {
   "path": "assets/fbx/Decor_Bank.fbx",
-  "bytes": 80956,
+  "bytes": 80636,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -389,14 +389,13 @@
     6.0
    ],
    [
-    5.19,
-    5.19,
-    6.131
+    3.235,
+    3.235,
+    6.093
    ]
   ]
  },
  "spec": "assets/blender/interior.py",
  "notes": "Bank eye-level props: teller brass, queue rope, marble bench, potted palm, deposit boxes.",
- "turntable": "docs/art/turntables/Decor_Bank.png",
- "seconds": 48.8
+ "seconds": 0.7
 }

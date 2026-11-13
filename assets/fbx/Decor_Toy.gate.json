@@ -298,19 +298,19 @@
    "budget_note": "ok",
    "dims": [
     6.0,
-    4.0,
+    3.2,
     2.43
    ],
    "pivot": {
     "rule": "point",
     "local_min": [
      -3.0,
-     -2.0,
+     -1.6,
      0.0
     ],
     "local_max": [
      3.0,
-     2.0,
+     1.6,
      2.43
     ]
    },
@@ -330,7 +330,7 @@
    ],
    "symmetry_error": null,
    "self_intersections": 0,
-   "cross_shell_overlaps": 269,
+   "cross_shell_overlaps": 266,
    "cap_overlaps": 0,
    "flipped_faces": 0,
    "boundary_edges": 0,
@@ -353,7 +353,7 @@
    "tags": [],
    "joint": null,
    "role": "story",
-   "notes": "toy train loop on a round plinth 6 x 4 x 1.6",
+   "notes": "toy train loop on an oval plinth 6 x 3.2 x 2.4",
    "fails": [],
    "passed": true
   }
@@ -369,10 +369,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "bfd4d41afc929499f967",
+ "contentHash": "a3b5a7fc09c3eb97f35f",
  "fbx": {
   "path": "assets/fbx/Decor_Toy.fbx",
-  "bytes": 91484,
+  "bytes": 91468,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -401,7 +401,7 @@
    ],
    [
     2.43,
-    4.0,
+    3.2,
     6.0
    ],
    [
@@ -413,6 +413,5 @@
  },
  "spec": "assets/blender/interior.py",
  "notes": "Toy Shop eye-level props: toy shelf, rocking horse, gift-wrap table, giant candy cane, train loop.",
- "turntable": "docs/art/turntables/Decor_Toy.png",
- "seconds": 34.3
+ "seconds": 0.9
 }

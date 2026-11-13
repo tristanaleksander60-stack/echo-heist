@@ -426,9 +426,9 @@ local PARTS: { [string]: any } = {
 	},
 	Decor_Palm = {
 		model = "Decor_Bank",
-		size = { 5.19, 6.131, 5.19 },
-		center = { 0, 3.0655, 0 },
-		scene = { 0, 3.0655, 0 },
+		size = { 3.235, 6.093, 3.235 },
+		center = { 0, 3.0465, 0 },
+		scene = { 0, 3.0465, 0 },
 		collision = "Box",
 		canCollide = false,
 	},
@@ -498,7 +498,7 @@ local PARTS: { [string]: any } = {
 	},
 	Decor_TrainLoop_6 = {
 		model = "Decor_Toy",
-		size = { 6, 2.43, 4 },
+		size = { 6, 2.43, 3.2 },
 		center = { 0, 1.215, 0 },
 		scene = { 0, 1.215, 0 },
 		collision = "Box",

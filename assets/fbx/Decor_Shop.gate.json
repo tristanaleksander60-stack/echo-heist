@@ -867,10 +867,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "fced303c0be1b818466c",
+ "contentHash": "0285ef91f30c76f046db",
  "fbx": {
   "path": "assets/fbx/Decor_Shop.fbx",
-  "bytes": 113100,
+  "bytes": 113084,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -953,6 +953,5 @@
  },
  "spec": "assets/blender/interior.py",
  "notes": "Corner Shop eye-level props: stocked shelf, fridge, magazines, candy, mop, cat, posters, clock, cards.",
- "turntable": "docs/art/turntables/Decor_Shop.png",
- "seconds": 19.1
+ "seconds": 1.2
 }
