@@ -215,6 +215,11 @@ local function ceilingLamp(
 		holder:SetAttribute("EH_Kind", "wallWash")
 		holder:SetAttribute("EH_Index", index)
 		holder:SetAttribute("EH_LampKind", "wash")
+		-- under an attachment like every level light (tests and tools read Light.Parent.WorldPosition); the attachment
+		-- keeps the holder's orientation, so Face Front points along the aim
+		local lat = Instance.new("Attachment")
+		lat.Name = "LightAt"
+		lat.Parent = holder
 		local spot = Instance.new("SpotLight")
 		spot.Face = Enum.NormalId.Front
 		spot.Angle = spec.angle
@@ -222,7 +227,7 @@ local function ceilingLamp(
 		spot.Brightness = spec.brightness
 		spot.Color = rgb(look.color)
 		spot.Shadows = false
-		spot.Parent = holder
+		spot.Parent = lat
 		return holder, nil
 	end
 	-- street lamps hang their light at the StreetLamp lantern (spec.bulbY / lightY), ceiling lamps under the shade

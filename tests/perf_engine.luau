@@ -1351,7 +1351,11 @@ do
 						end
 					end
 				end
-			elseif d:IsA("SpotLight") and d.Parent and d.Parent:GetAttribute("EH_LampKind") == "wash" then
+			elseif
+				d:IsA("SpotLight")
+				and d:FindFirstAncestorWhichIsA("BasePart") ~= nil
+				and (d:FindFirstAncestorWhichIsA("BasePart") :: BasePart):GetAttribute("EH_LampKind") == "wash"
+			then
 				washes += 1
 				washShadow += if d.Shadows then 1 else 0
 			end

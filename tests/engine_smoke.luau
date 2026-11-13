@@ -772,10 +772,14 @@ do
 			if okL6 then
 				local LIGHT = Config.Lighting
 				local lights: { Light } = {}
-				local shades, pools = 0, 0
+				local shades, pools, washes = 0, 0, 0
 				for _, dsc in b6.model:GetDescendants() do
 					if dsc:IsA("Light") then
 						table.insert(lights, dsc)
+						local holder = dsc:FindFirstAncestorWhichIsA("BasePart")
+						if holder and holder:GetAttribute("EH_LampKind") == "wash" then
+							washes += 1 -- INTERIORS: a wall wash is a light only (no fixture, no pool)
+						end
 					elseif
 						dsc:GetAttribute("KitPiece") == "Lamp_Ceiling"
 						or dsc:GetAttribute("KitPiece") == "StreetLamp"
@@ -814,11 +818,12 @@ do
 					)
 				)
 				check(
-					shades == #lights and pools == #lights,
+					shades == #lights - washes and pools == #lights - washes,
 					string.format(
-						"light: a fixture (Lamp_Ceiling or StreetLamp, %d) and a floor pool (%d) per lamp",
+						"light: a fixture (Lamp_Ceiling or StreetLamp, %d) and a floor pool (%d) per lamp (+ %d wall washes)",
 						shades,
-						pools
+						pools,
+						washes
 					)
 				)
 				local lettered = 0
