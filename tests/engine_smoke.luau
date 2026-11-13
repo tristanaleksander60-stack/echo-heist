@@ -2312,7 +2312,8 @@ do
 			end
 		end
 		local anchor = Vans.anchor(bay) :: CFrame
-		local kit = garage:FindFirstChild("Kit") :: Model
+		local kit = garage:WaitForChild("Kit", 5) :: Model
+		local doorPart = rig:WaitForChild("Door", 5) :: BasePart
 		for n, style in HD.VAN.STYLES do
 			local okSwap = Vans.style(bay, n)
 			local pieces, paintPiece = 0, nil
@@ -2342,13 +2343,13 @@ do
 			end
 			local seatsIn = 0
 			for k = 1, #HD.VAN.SEATS do
-				local seat = rig:FindFirstChild("Seat" .. k) :: BasePart
-				local p = anchor:PointToObjectSpace(seat.Position)
-				if p.X > lo.X and p.X < hi.X and p.Z > lo.Z and p.Z < hi.Z and p.Y > lo.Y and p.Y < hi.Y then
+				local seat = rig:FindFirstChild("Seat" .. k)
+				local p = if seat and seat:IsA("BasePart") then anchor:PointToObjectSpace(seat.Position) else nil
+				if p and p.X > lo.X and p.X < hi.X and p.Z > lo.Z and p.Z < hi.Z and p.Y > lo.Y and p.Y < hi.Y then
 					seatsIn += 1
 				end
 			end
-			local doorAt = anchor:PointToObjectSpace((rig:FindFirstChild("Door") :: BasePart).Position)
+			local doorAt = anchor:PointToObjectSpace(doorPart.Position)
 			Vans.paint(bay, 2)
 			local painted = paintPiece ~= nil and (paintPiece :: BasePart).Color == Vans.paintColour(bay, 2)
 			check(

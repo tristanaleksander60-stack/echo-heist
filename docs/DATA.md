@@ -7,8 +7,8 @@ The data layer for Heist Yourself (MASTERPLAN §5 and §8.7-8.8). It is installe
 | Path (Rojo) | In the place | What |
 |---|---|---|
 | `src/lihfolk/` | `ReplicatedStorage/LihFolk` | Library shared modules: `Signal`, `Net`, `RateLimit`, `Janitor`, `Feedback` (client messages). This is the install path the library expects. It is a separate folder because Rojo cannot map a subfolder of `src/shared` to a second place without duplicating it |
-| `src/server/Data/` | `ServerScriptService/Server/Data` | Library server modules: `PlayerData`, `Policy`, `Currency`, `Receipts`, `Shop`, plus `Rewards` and `Inventory`, which `Receipts` and `Shop` require. Inventory is not initialised (no slice, no remotes). Echo Heist's wiring and API: `DataService` |
-| `src/shared/Data/` | `ReplicatedStorage/Shared/Data` | Pure rules (no engine services; Lune-tested): `Schema`, `Progress`, `DailyVault`, `Store`, `Keys`, `Calendar`. Client helper: `ProductPrices` |
+| `src/server/Data/` | `ServerScriptService/Server/Data` | Library server modules: `PlayerData`, `Policy`, `Currency`, `Receipts`, `Shop`, plus `Rewards` and `Inventory`, which `Receipts` and `Shop` require. Inventory is not initialised (no slice, no remotes). Echo Heist's wiring and API: `DataService`; the per-server daily board: `HaulBoardService` |
+| `src/shared/Data/` | `ReplicatedStorage/Shared/Data` | Pure rules (no engine services; Lune-tested): `Schema`, `Progress`, `DailyVault`, `HaulBoard`, `Store`, `Keys`, `Calendar`. Client helper: `ProductPrices` |
 | `src/shared/Config.luau` | `Shared/Config` | `Config.Data`: every tuning number, the catalog, the products and the level medal rules |
 
 The library files are byte-for-byte copies, formatted with StyLua (whitespace only). Not installed, because nothing uses them yet: `DailyRewards` (it is a login-reward track; the daily vault is a level clear, so `DailyVault` reuses its streak rule), `Leaderboard` (the board arrives Dec 11), `Quests`, `Codes`, `Rebirth`, `EggHatch` and `Odds` (no paid randomness, ever).
@@ -51,6 +51,7 @@ Never rename `STORE_NAME` or `KEY_PREFIX` after launch. `Keys.isWritable` makes 
 | `daily` | `{ lastClearDay, streak, bestStreak, stars, haulDay, haulBest, haulClones, haulTimeMs }` | Daily vault (UTC day numbers) and the "biggest haul today" entry with its tie-breaks (clones, then time) |
 | `settings` | `{ reducedMotion, relaxed, colourBlindGlyphs, classicCamera, musicVolume, sfxVolume, shake, captions, guardPath, seenStarHaul, seenStarCrew, seenStarClean }` | Booleans, plus the numbers in `Config.Data.SETTING_NUMBERS` (`musicVolume`, `sfxVolume`: 0..1, default 1). `classicCamera`: the camera A/B pick (off = diorama). `shake`, `captions`, `guardPath` default on. `seenStar*`: the job sheet has shown that star's reason and the star was earned (WALKTHROUGH S7). All additive, no migration: `sanitize` fills a missing key and repairs a wrong type or an out-of-range number to its default (`Schema.validSetting`). `Data.SetSetting(key, value)` accepts a known key and a boolean or a finite number, then checks the value against that key's own type and range (`BadValue` otherwise). Each is published as the player attribute `Setting_<Key>` (`Schema.settingAttribute`) |
 | `outfit` | `{ cap, scarf, sweater, gloves, mask }` -> id | The Rookie's outfit (PLAN_FIRST_PERSON "CH"; ids in `Config.Rookie.OUTFIT`, default `Config.Rookie.DEFAULT_OUTFIT`). Additive, no migration: `sanitize` drops unknown slots and repairs a junk, wrong-slot or locked id to the slot default (`Heist/Outfit.repair`). Unlocks: free ids, a star total (medal + daily stars) or a trophy (`OUTFIT[id].unlock`). Changed through the existing `Data.Equip(slot, id)` (an outfit slot + an outfit id, checked by `Outfit.canWear`: `BadSlot`, `UnknownItem`, `WrongSlot`, `Locked`). Published as the player attribute `Outfit` (`Outfit.key`: the five ids joined by `\|`), which `Heist/Characters` dresses the character from |
+| `vanStyle` | string | The hideout van style (LOBBY 2): a `Config.Hideout.VAN.STYLES` id (`step`, `bakery`, `camper`, `security`; default `step`). The crew leader cycles it at their van's rear wheel (`Heist.Ready { op = "style", bay, n }`, `VanRules.setStyle`), and the server saves it with `DataService.setVanStyle(player, id)`. The next van the player claims wears it. Additive, no migration: `sanitize` fills a missing field and repairs an unknown id to the default (`Schema.validVanStyle`). Published as the player attribute `VanStyle`. Ids are never reordered or reused; a new style is appended |
 | `ftueStep`, `firstHeistDone`, `stats = { heists, clears }` | numbers, boolean | Onboarding and counters |
 
 Stars are stored as a `Currency` balance so the UI gets a `Stars` attribute. The balance is a mirror: it is recomputed from the medals plus `daily.stars` after every award and on load, and it is never spent. Cash and Candy Canes are normal balances. None of them can be bought with Robux (`paid = false`).
@@ -92,6 +93,21 @@ Size: a stress profile (30 levels, every trophy and cosmetic, 40 future ornament
 - **Cash:** `floor(haul × CASH_PER_HAUL × (1 + min(friends × 10%, 30%)))`, plus the level's first-clear bonus on a first clear, capped at `MAX_CASH_PER_HEIST`.
 - **Daily vault:** the vault design is `(day - launchDay) % VAULT_COUNT + 1` (UTC; launch day Dec 3 = vault 1, so slot n = daily design n and `Orn_VaultNN` is design NN's ornament). The first clear of today gives 1 Star, 250 Cash, 5 Candy Canes (only during Dec 3 - Jan 4) and that vault's ornament; in December that is the day's advent ornament. The streak allows one grace day. A missed advent day can be cleared until Dec 31 for its ornament and the same rewards; catch-ups never touch the streak.
 - **Board entry:** today's best run, untainted and not Relaxed: the bigger haul, then fewer clones, then less time (`DailyVault.beatsBoard`; `timeMs` is the sim's `result().daily.timeMs`). An exact tie keeps the earlier entry; an empty haul never boards.
+
+## Boards: "today's biggest haul" (LOBBY 2, MASTERPLAN §5.3 D1, §8.7)
+
+The launch board is **per server**, as the plan says ("server board at launch, global from Dec 11"). The data layer has no MemoryStore yet, so the board lives in the server's memory behind one small interface, and the global board can plug in behind the same calls later.
+
+| Piece | What |
+|---|---|
+| `src/shared/Data/HaulBoard.luau` (pure, unit `DataHaulBoard`) | `eligible(result, vaultDay, today)`: the result passes `DailyVault.validateResult`, `tainted == false` (the Validator's taint, §8.8; a missing flag is not trusted), `relaxed == false`, the vault is today's (a catch-up never boards) and the haul is at least 1. `submit(board, day, userId, name, run)`: one entry per player, replaced only by a better run (`DailyVault.beatsBoard`); an exact tie keeps the earlier entry; a new day empties the board; at most `Config.Data.Board.KEEP` (100) entries. `top(board, n)`, `rankOf(board, userId)`, `encode` / `decode` (the wire format), `cleanName` |
+| `src/server/Data/HaulBoardService.luau` | One board for the server day. `submit(userId, name, vaultDay, result)` is called by `Heist/HeistService` for every daily result, before and apart from `awardDailyVault` (the facts are the server's; a board error is a warning, never a failed award). `seed(userId, name, daily)` puts a joining player's saved entry for today on the board (`DataService.Loaded`; the profile's `daily.haul*` fields are only ever written for untainted, non-Relaxed runs of today's vault). `top`, `rankOf`, `day`. Nothing yields: the lobby never waits on the board |
+| `ReplicatedStorage.EH_HaulBoard` (Folder, server-written attributes) | `Day` (the server day), `Rows` (`HaulBoard.encode` of the top 100: `userId,haul,clones,timeMs,name;...` in rank order), `Count`. Written at most once per `PUBLISH_MIN_SECONDS` |
+| The laptop (client `Hud/Garage`, station "laptop") | Opens on the board: your own row on top (or "Clear today's vault to get on the board."), then the top `Config.Data.Board.SHOW` (10) in two columns, each a rank, a **Rookie portrait** (`Common.portrait`: the player's clone template, else the default Rookie) and the display name, and the haul. CATCH-UP swaps in the advent catch-up list. The LiveFlag `boards` hides it; a missing or stale folder reads as "No hauls yet today." |
+
+**Kid-safe:** an entry is numbers plus the player's Roblox display name (already filtered by Roblox); there is no free text anywhere, and the wire format strips the separators out of names.
+
+**Global board (Dec 11, LiveFlag `globalBoard`, not built):** a daily `OrderedDataStore` written on improvement and only for eligible runs, with a MemoryStore sorted map caching the top 100 for 60 s (§8.7), behind `HaulBoardService`'s calls. Budgets are per experience and shared with Open Cloud.
 - **All numbers are placeholders** until the level layouts exist: `haulTarget`, `maxHaul`, `firstClearCash`, the bag costs and the item prices are all in `Config.Data`. The heist server can supply level rules from `src/shared/Levels` with `DataService.setLevelResolver(lookup, order)` before `start()`.
 
 ## Server API (`DataService`, for the future heist server)
@@ -106,10 +122,11 @@ Every call validates its input, then mutates the profile with no yield in betwee
 | `earnCash`, `spendCash`, `earnCandyCanes(player, amount, reason)` | Whole amounts from 1 to `MAX_CASH_PER_HEIST`. Candy Canes only during the event |
 | `isLevelUnlocked`, `getBagLevel`, `getSettings`, `getSnapshot`, `isReady`, `waitForData`, `status`, `environment` | Reads |
 | `setFtueStep(player, step)` | Only moves forward |
+| `setVanStyle(player, styleId)` | The hideout van style (LOBBY 2): `Schema.validVanStyle` or false; publishes `VanStyle` |
 | `setPromptsBlocked(player, bool)` | Store prompts are refused while this is set (during a heist or a bust, §5.4) |
 | `DataService.Loaded`, `DataService.Changed` | Signals |
 
-Player attributes for the UI: `Cash`, `Stars`, `CandyCanes` (Currency), `Setting_ReducedMotion`, `Setting_Relaxed`, `Setting_ColourBlindGlyphs`, `Cosmetic_<slot>`, `BagLevel`, `DataReady`, `PaidRandomAllowed`.
+Player attributes for the UI: `Cash`, `Stars`, `CandyCanes` (Currency), `VanStyle`, `Setting_ReducedMotion`, `Setting_Relaxed`, `Setting_ColourBlindGlyphs`, `Cosmetic_<slot>`, `BagLevel`, `DataReady`, `PaidRandomAllowed`.
 
 ## Client remotes (`Net`: rate limit, then argument count and types, then handler)
 
@@ -147,7 +164,8 @@ No paid randomness, no Robux-to-Cash, no paid skips or hints: unit tests assert 
 
 ## Tests
 
-- **L1 (Lune):** `lune run tests/run_unit.luau`. The data specs are `DataSchema` (defaults, the 16 KB budget, JSON round trip, migration harness, repair, keys, calendar), `DataProgress` (medals, best-run order, Cash maths, first clear, tainted and Relaxed runs, the first-session flow and the Big Score gate), `DataDaily` (streak and grace, rotation, advent, catch-up, board haul and its tie-breaks) and `DataStore` (catalog, monetization rules, buy, equip, bag, shelf, prices, product prompt checks).
+- **L1 (Lune):** `lune run tests/run_unit.luau`. The data specs are `DataSchema` (defaults, the 16 KB budget, JSON round trip, migration harness, repair, keys, calendar), `DataProgress` (medals, best-run order, Cash maths, first clear, tainted and Relaxed runs, the first-session flow and the Big Score gate), `DataDaily` (streak and grace, rotation, advent, catch-up, board haul and its tie-breaks), `DataStore` (catalog, monetization rules, buy, equip, bag, shelf, prices, product prompt checks), `DataHaulBoard` (who boards, ranking and ties, one entry per player, the day reset, KEEP, the wire format) and `HeistVanStyles` (the `vanStyle` field: default, repair, validation).
+- **L3:** `tests/engine_smoke.luau` section 13 writes untainted, tainted, Relaxed and catch-up results to `HaulBoardService` and reads the published rows back.
 - **Place check:** `tests/place_check.luau` checks that the library modules sit at their install paths and that the place has exactly one `ProcessReceipt`.
 - **L3 (Open Cloud Luau Execution):** `tests/engine_smoke.luau` section 6 boots `DataService` in the real engine and checks that it uses `_TEST_` keys, comes online and creates its remotes. It also runs the library's `PlayerData.prepare` (new, newer, corrupt and old documents). Only when `game.GameId` is the test universe does it do one real `UpdateAsync` and uncached `GetAsync` on a throwaway `_TEST_smoke_<guid>` key, then `RemoveAsync`. No player profile is touched.
 
@@ -164,7 +182,7 @@ No paid randomness, no Robux-to-Cash, no paid skips or hints: unit tests assert 
 ## Not built yet
 
 - Ghost keys (written by the heist server on `newBest`).
-- The daily board (`Leaderboard`, Dec 11).
+- The global daily board (Dec 11; the per-server board is built, see "Boards").
 - Rewarded video.
 - Clone emotes and rewind styles (Jan).
 - Trophy stands.

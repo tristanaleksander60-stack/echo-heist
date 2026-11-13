@@ -237,7 +237,7 @@ if not okAnalytics then warn("[Server] analytics failed to start: " .. tostring(
 |---|---|
 | `FtueStep` / `FTUE_STEPS` | Bound already through `heistService`. Optional: use `Events.FUNNELS.onb_v2.steps` as the list (a unit test asserts they match today) |
 | After `HeistInstance.new(...)`, for each real member | `Analytics.heistStarted(player, { heistId = inst.heistId, level = Catalog[levelIndex].id, crew = #liveMembers, friends = m.friends, daily = <vault design number or nil> })` |
-| Quick Crew seat taken (when built) | `Analytics.quickCrewJoined(player, crewSize)` |
+| Quick Crew seat taken (HeistService: a held seat sat in) | `Analytics.quickCrewJoined(player, crewSize)` |
 | Relaxed accepted or turned on | `Analytics.relaxedChosen(player, dataKey)` |
 | Share link (`SocialService:PromptLinkSharingAsync`) | `LaunchData = Analytics.launchData("share", dataKey)`, then `Analytics.inviteSent(player, "share")` |
 | Optional deep-link route on join | `JoinSource.requestedLevel(Analytics.joinSource(player).launch)`, which can be nil for the first 10 s; open it only if it is unlocked |
