@@ -1691,6 +1691,1336 @@
     ]
    }
   },
+  "Hoardsworth_Hat": {
+   "model": "Hoardsworth",
+   "size": [
+    1.6,
+    1.42,
+    1.44
+   ],
+   "tris": 364,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.8,
+    -0.02,
+    -0.72
+   ],
+   "boundsMax": [
+    0.8,
+    1.4,
+    0.72
+   ],
+   "origin": [
+    0.0,
+    7.36,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "HatAttach",
+    "parent": "Hoardsworth_Head"
+   }
+  },
+  "Hoardsworth_Head": {
+   "model": "Hoardsworth",
+   "size": [
+    1.269,
+    1.44,
+    1.195
+   ],
+   "tris": 756,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.635,
+    -0.08,
+    -0.8
+   ],
+   "boundsMax": [
+    0.635,
+    1.36,
+    0.395
+   ],
+   "origin": [
+    0.0,
+    6.1,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "Neck",
+    "parent": "Hoardsworth_UpperTorso"
+   }
+  },
+  "Hoardsworth_LeftFoot": {
+   "model": "Hoardsworth",
+   "size": [
+    0.42,
+    0.62,
+    1.25
+   ],
+   "tris": 140,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.21,
+    -0.42,
+    -0.95
+   ],
+   "boundsMax": [
+    0.21,
+    0.2,
+    0.3
+   ],
+   "origin": [
+    -0.36,
+    0.42,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "LeftAnkle",
+    "parent": "Hoardsworth_LeftLowerLeg"
+   }
+  },
+  "Hoardsworth_LeftHand": {
+   "model": "Hoardsworth",
+   "size": [
+    0.418,
+    0.525,
+    0.42
+   ],
+   "tris": 116,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.168,
+    -0.502,
+    -0.23
+   ],
+   "boundsMax": [
+    0.25,
+    0.022,
+    0.19
+   ],
+   "origin": [
+    -1.1,
+    3.9,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "LeftWrist",
+    "parent": "Hoardsworth_LeftLowerArm"
+   }
+  },
+  "Hoardsworth_LeftLowerArm": {
+   "model": "Hoardsworth",
+   "size": [
+    0.518,
+    1.044,
+    0.476
+   ],
+   "tris": 160,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.303,
+    -0.973,
+    -0.238
+   ],
+   "boundsMax": [
+    0.215,
+    0.071,
+    0.238
+   ],
+   "origin": [
+    -1.04,
+    4.8,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "LeftElbow",
+    "parent": "Hoardsworth_LeftUpperArm"
+   }
+  },
+  "Hoardsworth_LeftLowerLeg": {
+   "model": "Hoardsworth",
+   "size": [
+    0.36,
+    1.62,
+    0.342
+   ],
+   "tris": 80,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.18,
+    -1.56,
+    -0.171
+   ],
+   "boundsMax": [
+    0.18,
+    0.06,
+    0.171
+   ],
+   "origin": [
+    -0.36,
+    1.92,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "LeftKnee",
+    "parent": "Hoardsworth_LeftUpperLeg"
+   }
+  },
+  "Hoardsworth_LeftUpperArm": {
+   "model": "Hoardsworth",
+   "size": [
+    0.632,
+    1.379,
+    0.571
+   ],
+   "tris": 180,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.333,
+    -1.079,
+    -0.285
+   ],
+   "boundsMax": [
+    0.3,
+    0.3,
+    0.285
+   ],
+   "origin": [
+    -0.92,
+    5.8,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "LeftShoulder",
+    "parent": "Hoardsworth_UpperTorso"
+   }
+  },
+  "Hoardsworth_LeftUpperLeg": {
+   "model": "Hoardsworth",
+   "size": [
+    0.44,
+    1.62,
+    0.418
+   ],
+   "tris": 80,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.22,
+    -1.56,
+    -0.209
+   ],
+   "boundsMax": [
+    0.22,
+    0.06,
+    0.209
+   ],
+   "origin": [
+    -0.36,
+    3.42,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "LeftHip",
+    "parent": "Hoardsworth_LowerTorso"
+   }
+  },
+  "Hoardsworth_LowerTorso": {
+   "model": "Hoardsworth",
+   "size": [
+    1.44,
+    1.98,
+    1.256
+   ],
+   "tris": 308,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.72,
+    -1.43,
+    -0.534
+   ],
+   "boundsMax": [
+    0.72,
+    0.55,
+    0.722
+   ],
+   "origin": [
+    0.0,
+    3.55,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "Root",
+    "parent": null
+   }
+  },
+  "Hoardsworth_Monocle": {
+   "model": "Hoardsworth",
+   "size": [
+    0.475,
+    0.721,
+    0.349
+   ],
+   "tris": 192,
+   "class": "tiny",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.21,
+    -0.517,
+    -0.03
+   ],
+   "boundsMax": [
+    0.265,
+    0.205,
+    0.319
+   ],
+   "origin": [
+    0.2,
+    6.92,
+    -0.47
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "Monocle",
+    "parent": "Hoardsworth_Head"
+   }
+  },
+  "Hoardsworth_RightFoot": {
+   "model": "Hoardsworth",
+   "size": [
+    0.42,
+    0.62,
+    1.25
+   ],
+   "tris": 140,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.21,
+    -0.42,
+    -0.95
+   ],
+   "boundsMax": [
+    0.21,
+    0.2,
+    0.3
+   ],
+   "origin": [
+    0.36,
+    0.42,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "RightAnkle",
+    "parent": "Hoardsworth_RightLowerLeg"
+   }
+  },
+  "Hoardsworth_RightHand": {
+   "model": "Hoardsworth",
+   "size": [
+    0.418,
+    0.525,
+    0.42
+   ],
+   "tris": 116,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.25,
+    -0.502,
+    -0.23
+   ],
+   "boundsMax": [
+    0.168,
+    0.022,
+    0.19
+   ],
+   "origin": [
+    1.1,
+    3.9,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "RightWrist",
+    "parent": "Hoardsworth_RightLowerArm"
+   }
+  },
+  "Hoardsworth_RightLowerArm": {
+   "model": "Hoardsworth",
+   "size": [
+    0.518,
+    1.044,
+    0.476
+   ],
+   "tris": 160,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.215,
+    -0.973,
+    -0.238
+   ],
+   "boundsMax": [
+    0.303,
+    0.071,
+    0.238
+   ],
+   "origin": [
+    1.04,
+    4.8,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "RightElbow",
+    "parent": "Hoardsworth_RightUpperArm"
+   }
+  },
+  "Hoardsworth_RightLowerLeg": {
+   "model": "Hoardsworth",
+   "size": [
+    0.36,
+    1.62,
+    0.342
+   ],
+   "tris": 80,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.18,
+    -1.56,
+    -0.171
+   ],
+   "boundsMax": [
+    0.18,
+    0.06,
+    0.171
+   ],
+   "origin": [
+    0.36,
+    1.92,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "RightKnee",
+    "parent": "Hoardsworth_RightUpperLeg"
+   }
+  },
+  "Hoardsworth_RightUpperArm": {
+   "model": "Hoardsworth",
+   "size": [
+    0.632,
+    1.379,
+    0.571
+   ],
+   "tris": 180,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.3,
+    -1.079,
+    -0.285
+   ],
+   "boundsMax": [
+    0.333,
+    0.3,
+    0.285
+   ],
+   "origin": [
+    0.92,
+    5.8,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "RightShoulder",
+    "parent": "Hoardsworth_UpperTorso"
+   }
+  },
+  "Hoardsworth_RightUpperLeg": {
+   "model": "Hoardsworth",
+   "size": [
+    0.44,
+    1.62,
+    0.418
+   ],
+   "tris": 80,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.22,
+    -1.56,
+    -0.209
+   ],
+   "boundsMax": [
+    0.22,
+    0.06,
+    0.209
+   ],
+   "origin": [
+    0.36,
+    3.42,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "RightHip",
+    "parent": "Hoardsworth_LowerTorso"
+   }
+  },
+  "Hoardsworth_UpperTorso": {
+   "model": "Hoardsworth",
+   "size": [
+    1.88,
+    2.7,
+    1.379
+   ],
+   "tris": 552,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.94,
+    -0.08,
+    -0.717
+   ],
+   "boundsMax": [
+    0.94,
+    2.62,
+    0.662
+   ],
+   "origin": [
+    0.0,
+    4.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "Waist",
+    "parent": "Hoardsworth_LowerTorso"
+   }
+  },
+  "Intro_House_A": {
+   "model": "Intro_House_A",
+   "size": [
+    13.6,
+    17.79,
+    12.8
+   ],
+   "tris": 984,
+   "class": "medium",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -6.8,
+    0.0,
+    -6.5
+   ],
+   "boundsMax": [
+    6.8,
+    17.79,
+    6.3
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none"
+  },
+  "Intro_House_A_Windows": {
+   "model": "Intro_House_A",
+   "size": [
+    12.16,
+    7.3,
+    6.48
+   ],
+   "tris": 108,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -6.08,
+    2.0,
+    -5.58
+   ],
+   "boundsMax": [
+    6.08,
+    9.3,
+    0.9
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "tint": "Bulb Warm #F6C0A2; Vault Steel shade #4E5675 once the presents are gone (eh_palette.NEON)"
+  },
+  "Intro_House_B": {
+   "model": "Intro_House_B",
+   "size": [
+    16.6,
+    17.05,
+    12.8
+   ],
+   "tris": 984,
+   "class": "medium",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.3,
+    0.0,
+    -6.5
+   ],
+   "boundsMax": [
+    8.3,
+    17.05,
+    6.3
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none"
+  },
+  "Intro_House_B_Windows": {
+   "model": "Intro_House_B",
+   "size": [
+    15.16,
+    5.3,
+    6.48
+   ],
+   "tris": 108,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.58,
+    2.0,
+    -5.58
+   ],
+   "boundsMax": [
+    7.58,
+    7.3,
+    0.9
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "tint": "Bulb Warm #F6C0A2; Vault Steel shade #4E5675 once the presents are gone (eh_palette.NEON)"
+  },
+  "Intro_Letter": {
+   "model": "Intro_Letter",
+   "size": [
+    2.4,
+    1.6,
+    0.2
+   ],
+   "tris": 160,
+   "class": "tiny",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.2,
+    -0.8,
+    -0.07
+   ],
+   "boundsMax": [
+    1.2,
+    0.8,
+    0.13
+   ],
+   "origin": [
+    0.0,
+    0.8,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none"
+  },
+  "Intro_Lever": {
+   "model": "Intro_Lever",
+   "size": [
+    2.0,
+    3.059,
+    1.4
+   ],
+   "tris": 200,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.0,
+    0.0,
+    -0.7
+   ],
+   "boundsMax": [
+    1.0,
+    3.059,
+    0.7
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none"
+  },
+  "Intro_Lever_Handle": {
+   "model": "Intro_Lever",
+   "size": [
+    0.6,
+    2.582,
+    1.076
+   ],
+   "tris": 188,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.3,
+    -0.152,
+    -0.916
+   ],
+   "boundsMax": [
+    0.3,
+    2.43,
+    0.16
+   ],
+   "origin": [
+    0.0,
+    2.85,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "joint": {
+    "name": "LeverHinge",
+    "parent": "Intro_Lever"
+   }
+  },
+  "Intro_Present_A": {
+   "model": "Intro_Present_A",
+   "size": [
+    2.52,
+    3.97,
+    2.52
+   ],
+   "tris": 196,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "present",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.26,
+    -1.66,
+    -1.26
+   ],
+   "boundsMax": [
+    1.26,
+    2.31,
+    1.26
+   ],
+   "origin": [
+    0.0,
+    1.6,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none"
+  },
+  "Intro_Present_B": {
+   "model": "Intro_Present_B",
+   "size": [
+    3.72,
+    2.63,
+    2.72
+   ],
+   "tris": 196,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "present",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.86,
+    -0.96,
+    -1.36
+   ],
+   "boundsMax": [
+    1.86,
+    1.67,
+    1.36
+   ],
+   "origin": [
+    0.0,
+    0.9,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none"
+  },
+  "Intro_Present_C": {
+   "model": "Intro_Present_C",
+   "size": [
+    2.72,
+    3.43,
+    2.72
+   ],
+   "tris": 196,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "present",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.36,
+    -1.36,
+    -1.36
+   ],
+   "boundsMax": [
+    1.36,
+    2.07,
+    1.36
+   ],
+   "origin": [
+    0.0,
+    1.3,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none"
+  },
+  "Intro_SnowGlobe": {
+   "model": "Intro_SnowGlobe",
+   "size": [
+    25.028,
+    12.5,
+    25.028
+   ],
+   "tris": 1008,
+   "class": "hero",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -12.514,
+    0.0,
+    -12.514
+   ],
+   "boundsMax": [
+    12.514,
+    12.5,
+    12.514
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none"
+  },
+  "Intro_SnowGlobe_Cap": {
+   "model": "Intro_SnowGlobe",
+   "size": [
+    7.6,
+    2.6,
+    7.6
+   ],
+   "tris": 240,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -3.8,
+    35.4,
+    -3.8
+   ],
+   "boundsMax": [
+    3.8,
+    38.0,
+    3.8
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none"
+  },
+  "Intro_SnowGlobe_Glass": {
+   "model": "Intro_SnowGlobe",
+   "size": [
+    32.0,
+    32.0,
+    32.0
+   ],
+   "tris": 960,
+   "class": "medium",
+   "collision": "Box",
+   "material": "Glass",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -16.0,
+    4.0,
+    -16.0
+   ],
+   "boundsMax": [
+    16.0,
+    36.0,
+    16.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "transparency": 0.55
+  },
+  "Intro_SnowGlobe_Presents": {
+   "model": "Intro_SnowGlobe",
+   "size": [
+    20.8,
+    15.185,
+    20.8
+   ],
+   "tris": 4044,
+   "class": "hero",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "present",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -10.4,
+    -1.065,
+    -10.4
+   ],
+   "boundsMax": [
+    10.4,
+    14.12,
+    10.4
+   ],
+   "origin": [
+    0.0,
+    5.4,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none"
+  },
+  "Intro_Vacuum": {
+   "model": "Intro_Vacuum",
+   "size": [
+    42.296,
+    41.897,
+    43.209
+   ],
+   "tris": 3752,
+   "class": "hero",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -29.799,
+    0.0,
+    -28.712
+   ],
+   "boundsMax": [
+    12.497,
+    41.897,
+    14.497
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none"
+  },
+  "Intro_Vacuum_Lights": {
+   "model": "Intro_Vacuum",
+   "size": [
+    36.083,
+    10.986,
+    27.64
+   ],
+   "tris": 584,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -29.483,
+    10.0,
+    -28.57
+   ],
+   "boundsMax": [
+    6.6,
+    20.986,
+    -0.929
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "tint": "Vault Steel shade #4E5675 off; Bulb Warm #F6C0A2 while it runs (eh_palette.NEON)"
+  },
   "JobBoard": {
    "model": "JobBoard",
    "size": [
@@ -4378,6 +5708,18 @@
   "Skyline_Far_Windows": {
    "idle": "#F6C0A2",
    "runtime": "fixed (lit windows of the backdrop skyline, PLAN 3.1 exception)"
+  },
+  "Intro_House_A_Windows": {
+   "idle": "#F6C0A2",
+   "runtime": "fixed; Vault Steel shade #4E5675 once the presents are gone"
+  },
+  "Intro_House_B_Windows": {
+   "idle": "#F6C0A2",
+   "runtime": "fixed; Vault Steel shade #4E5675 once the presents are gone"
+  },
+  "Intro_Vacuum_Lights": {
+   "idle": "#4E5675",
+   "runtime": "Bulb Warm #F6C0A2 while the vacuum runs"
   }
  }
 }

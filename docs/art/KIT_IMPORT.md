@@ -59,6 +59,39 @@ The table below shows what Studio must show after the import (generated from `as
 | Hide_Curtain.fbx | Hide_Curtain | 6.38 x 10.78 x 1.84 | 468 | Box | SmoothPlastic | off | on | base |
 | Hide_DepositStack.fbx | Hide_DepositStack | 6.24 x 7 x 6.355 | 696 | Box | SmoothPlastic | off | on | base |
 | Hide_Plant.fbx | Hide_Plant | 6.293 x 6.174 x 5.969 | 568 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_Hat | 1.6 x 1.42 x 1.44 | 364 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_Head | 1.269 x 1.44 x 1.195 | 756 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_LeftFoot | 0.42 x 0.62 x 1.25 | 140 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_LeftHand | 0.418 x 0.525 x 0.42 | 116 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_LeftLowerArm | 0.518 x 1.044 x 0.476 | 160 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_LeftLowerLeg | 0.36 x 1.62 x 0.342 | 80 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_LeftUpperArm | 0.632 x 1.379 x 0.571 | 180 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_LeftUpperLeg | 0.44 x 1.62 x 0.418 | 80 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_LowerTorso | 1.44 x 1.98 x 1.256 | 308 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_Monocle | 0.475 x 0.721 x 0.349 | 192 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_RightFoot | 0.42 x 0.62 x 1.25 | 140 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_RightHand | 0.418 x 0.525 x 0.42 | 116 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_RightLowerArm | 0.518 x 1.044 x 0.476 | 160 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_RightLowerLeg | 0.36 x 1.62 x 0.342 | 80 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_RightUpperArm | 0.632 x 1.379 x 0.571 | 180 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_RightUpperLeg | 0.44 x 1.62 x 0.418 | 80 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_UpperTorso | 1.88 x 2.7 x 1.379 | 552 | Box | SmoothPlastic | off | on | base |
+| Intro_House_A.fbx | Intro_House_A | 13.6 x 17.79 x 12.8 | 984 | Box | SmoothPlastic | off | on | base |
+| Intro_House_A.fbx | Intro_House_A_Windows | 12.16 x 7.3 x 6.48 | 108 | Box | Neon | off | off | base |
+| Intro_House_B.fbx | Intro_House_B | 16.6 x 17.05 x 12.8 | 984 | Box | SmoothPlastic | off | on | base |
+| Intro_House_B.fbx | Intro_House_B_Windows | 15.16 x 5.3 x 6.48 | 108 | Box | Neon | off | off | base |
+| Intro_Letter.fbx | Intro_Letter | 2.4 x 1.6 x 0.2 | 160 | Box | SmoothPlastic | off | off | base |
+| Intro_Lever.fbx | Intro_Lever | 2 x 3.059 x 1.4 | 200 | Box | SmoothPlastic | off | on | base |
+| Intro_Lever.fbx | Intro_Lever_Handle | 0.6 x 2.582 x 1.076 | 188 | Box | SmoothPlastic | off | on | base |
+| Intro_Present_A.fbx | Intro_Present_A | 2.52 x 3.97 x 2.52 | 196 | Box | SmoothPlastic | off | off | base |
+| Intro_Present_B.fbx | Intro_Present_B | 3.72 x 2.63 x 2.72 | 196 | Box | SmoothPlastic | off | off | base |
+| Intro_Present_C.fbx | Intro_Present_C | 2.72 x 3.43 x 2.72 | 196 | Box | SmoothPlastic | off | off | base |
+| Intro_SnowGlobe.fbx | Intro_SnowGlobe | 25.028 x 12.5 x 25.028 | 1008 | Box | SmoothPlastic | off | on | base |
+| Intro_SnowGlobe.fbx | Intro_SnowGlobe_Cap | 7.6 x 2.6 x 7.6 | 240 | Box | SmoothPlastic | off | on | base |
+| Intro_SnowGlobe.fbx | Intro_SnowGlobe_Glass | 32 x 32 x 32 | 960 | Box | Glass (T 0.55) | off | off | base |
+| Intro_SnowGlobe.fbx | Intro_SnowGlobe_Presents | 20.8 x 15.185 x 20.8 | 4044 | Box | SmoothPlastic | off | off | base |
+| Intro_Vacuum.fbx | Intro_Vacuum | 42.296 x 41.897 x 43.209 | 3752 | Box | SmoothPlastic | off | on | base |
+| Intro_Vacuum.fbx | Intro_Vacuum_Lights | 36.083 x 10.986 x 27.64 | 584 | Box | Neon | off | off | base |
 | JobBoard.fbx | JobBoard | 5.4 x 7.32 x 1 | 844 | Box | SmoothPlastic | off | on | base |
 | Lamp_Ceiling.fbx | Lamp_Ceiling | 3.2 x 3.38 x 3.2 | 568 | Box | SmoothPlastic | off | off | base |
 | Lamp_Ceiling.fbx | Lamp_Ceiling_Bulb | 0.84 x 0.84 x 0.84 | 120 | Box | Neon | off | off | base |
@@ -123,7 +156,7 @@ The table below shows what Studio must show after the import (generated from `as
 | Xmas_Tree.fbx | Xmas_Tree_Lights | 4.119 x 5.64 x 4.033 | 400 | Box | Neon | off | off | xmas |
 | Xmas_Wreath.fbx | Xmas_Wreath | 2.826 x 3.56 x 1.135 | 548 | Box | SmoothPlastic | off | off | xmas |
 
-**59 FBX files, 105 MeshParts, 53,738 triangles in all.** Christmas layer: 17 parts.
+**69 FBX files, 138 MeshParts, 71,330 triangles in all.** Christmas layer: 17 parts.
 <!-- kit-table:end -->
 
 ---
@@ -424,5 +457,5 @@ Use this if the meshes, sizes or collision do not survive `rojo build`. Then we 
    ```
    Then it sets Size, TextureID, Material, PivotOffset and the other flags from the manifest. Each heist clones the cached parts.
 <!-- fallback-cost:start -->
-4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 105 MeshParts and 53,738 triangles about **2.3 s** at boot (generated by kit_docs.py). Boot only, never per heist.
+4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 138 MeshParts and 71,330 triangles about **3.1 s** at boot (generated by kit_docs.py). Boot only, never per heist.
 <!-- fallback-cost:end -->

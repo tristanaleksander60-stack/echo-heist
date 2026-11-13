@@ -1,0 +1,108 @@
+{
+ "asset": "Intro_Letter",
+ "objects": [
+  {
+   "name": "Intro_Letter",
+   "class": "tiny",
+   "tris": 160,
+   "budget": [
+    150,
+    300
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    2.4,
+    0.2,
+    1.6
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.2,
+     -0.07,
+     -0.8
+    ],
+    "local_max": [
+     1.2,
+     0.13,
+     0.8
+    ]
+   },
+   "swatches": [
+    "holly",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "ribbon"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.8
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 39,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": null,
+   "role": "story",
+   "notes": "pivot = the envelope's centre; front (-Z) shows the crayon star",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 160,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "6356742fe058d63044fe",
+ "fbx": {
+  "path": "assets/fbx/Intro_Letter.fbx",
+  "bytes": 22540,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Intro_Letter"
+  ],
+  "geometry_extents": [
+   [
+    0.2,
+    1.6,
+    2.4
+   ]
+  ]
+ },
+ "spec": "assets/blender/intro.py",
+ "notes": "A kid's letter to Santa: cream envelope, burgundy seal, a crayon star and two lines.",
+ "turntable": "docs/art/turntables/Intro_Letter.png",
+ "seconds": 90.7
+}
