@@ -1061,7 +1061,7 @@ local function instanceOf(player: Player): any
 	return nil
 end
 
--- Heist.Interact(kind, arg): the queued intents, and Slide (arg 0 / 1; Sim/Interact.slide records it at once and
+-- Heist.Interact(kind, arg): the queued intents, and Slide (arg 0; Sim/Interact.slide records it at once and
 -- has its own server cooldown: the validator's raised speed window, Config.Slide)
 local INTERACT_KINDS = { KIND.Grab, KIND.Release, KIND.Press, KIND.Hide, KIND.Emote, KIND.Slide }
 

@@ -100,14 +100,13 @@ Strings.KEY_LABEL = table.freeze({
 	ButtonX = "X",
 	ButtonY = "Y",
 	ButtonL1 = "LB",
+	ButtonL3 = "LS", -- the left stick pressed (the sprint toggle)
 	ButtonR1 = "RB",
 	ButtonL2 = "LT",
 	ButtonR2 = "RT",
 	ButtonStart = "Menu",
 } :: { [string]: string })
-Strings.KEY_JOIN = "+" -- a chord: "Ctrl+Shift", "B+LB"
--- The slide's touch button (Hud/Slide; Ctrl / B on keys and pads)
-Strings.SLIDE = "SLIDE"
+Strings.KEY_JOIN = "+" -- a chord: "Shift+Ctrl", "LS+B"
 function Strings.lockedFor(clock: string): string
 	return "LOCKED " .. clock
 end
@@ -769,6 +768,12 @@ Strings.CREW_VIEW_HINT_BY = table.freeze({
 	key = "Hold Q to see your crew.",
 	pad = "Hold LB to see your crew.",
 	touch = "Tap and hold CREW to see your crew.",
+} :: { [string]: string })
+-- The sprint (Heist/Sprint): the one-time toast after walking a while in a run (not L1), on a keyboard or a gamepad.
+-- Touch sprints by pushing the stick to its edge (no key to teach: no toast there).
+Strings.SPRINT_HINTS = table.freeze({
+	key = "Hold Shift to sprint.",
+	pad = "Press LS to sprint.",
 } :: { [string]: string })
 -- The plain line `key` (a Strings key) for a device in first person; other cameras get the plain line.
 function Strings.forDevice(key: string, device: string, firstPerson: boolean): string

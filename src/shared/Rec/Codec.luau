@@ -59,7 +59,7 @@ Codec.EVENT = table.freeze({
 	Respawn = 10, -- server moved the actor to a spawn: allows a cut sample
 	Caught = 11, -- terminal: Gus caught the actor; the run ends (§3.1)
 	Teleport = 12, -- any other server move (exemption token): allows a cut sample
-	Slide = 13, -- a validated slide started (arg 0 = slide, 1 = fast): opens Rec/Validator's slide window
+	Slide = 13, -- a validated slide started (arg 0; 1 was the retired fast slide): opens Rec/Validator's slide window
 })
 Codec.EVENT_COUNT = 13
 

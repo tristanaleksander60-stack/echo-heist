@@ -4,7 +4,7 @@
 -- clone rings it while you wait at the vault door. The lobby opens to the hall only
 -- at its east end, so the race from the bell (from the edge of press range) takes
 -- 3.9 s against a door that is shut 2.35 s after the ring: a solo try misses by
--- 1.5 s, and even at the Validator's 1.35x WalkSpeed limit (2.95 s) it misses
+-- 1.5 s, and even at the Validator's 1.6x WalkSpeed limit (2.50 s; a Shift sprint is 1.4x) it misses
 -- (tests/sim/Daily.spec.luau). The timed switch is the "press" verb of §3.4; it has
 -- no Mentor tape yet (owner decision: approve the verb for the advent, or move this
 -- vault later behind a tape).

@@ -137,7 +137,7 @@ function Interact.request(sim: any, actor: any, kind: number, arg: number): (boo
 	return true, nil
 end
 
--- A slide starts (arg 0 = slide, 1 = fast slide): appends the Slide event to a live
+-- A slide starts (arg 0: the one slide kind; the fast slide is gone): appends the Slide event to a live
 -- actor's recording, which opens Rec/Validator's slide window. Refused while fast-
 -- forwarding (that run records standing), out of the run, or inside the cooldown.
 function Interact.slide(sim: any, actor: any, arg: number): (boolean, number?)
@@ -147,7 +147,7 @@ function Interact.slide(sim: any, actor: any, arg: number): (boolean, number?)
 	if actor.kind ~= "live" then
 		return true, nil
 	end
-	if arg ~= 0 and arg ~= 1 then
+	if arg ~= 0 then
 		return false, FAIL.Unknown
 	end
 	local t = sim.t

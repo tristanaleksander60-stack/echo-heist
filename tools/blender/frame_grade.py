@@ -14,6 +14,8 @@ What it measures (sRGB 8-bit pixels of the finished frame, after bloom, haze and
     occlusion included): each group's share of the frame, its 95th-percentile luma, and which group owns the
     brightest 1 % of the frame. "The van must not be the brightest thing" = the van group's p95 is under the focal
     groups' (cash, plate) and it owns little of the brightest 1 %.
+  * LIGHT AND SPRINT: the clipped share (luma >= NEAR_WHITE 0.94, after bloom): at most CLIPPED_MAX 3 % of the frame
+    (bulbs, Neon and the signals; a wall washed to white fails it). `clipped_ok` in the output.
   * WORLD 2.0 (docs/audit/LEVELS.md section 10): the near-black share (luma < NEAR_BLACK, 5 %) and the dark share
     (< 10 %). With a source mask (<frame>_src.png from level_shots.src_mask: one flat colour per world layer, the sky
     transparent): each source's share of the frame, its median luma and how much of the frame is near-black there
@@ -32,6 +34,8 @@ WARM_LUMA = 0.06
 GLOW_LUMA = 0.9
 TOP_SHARE = 0.01
 NEAR_BLACK = 0.05
+NEAR_WHITE = 0.94        # LIGHT AND SPRINT (owner v125 "the light is WAY too sharp"): luma at or over this is clipped
+CLIPPED_MAX = 3.0        # % of the frame that may be clipped / near-white (lamp bulbs, Neon, the signals; never walls)
 DARK = 0.10
 SURROUND_PX = 0.02       # the surround band of a signal, as a share of the frame height
 SIGNAL_POP = 0.15        # premium A1: value contrast of a signal against its surround
@@ -91,7 +95,10 @@ def grade(path, ids=None, src=None):
         "median_luma": round(float(np.median(y)), 3),
         "glow_share": round(float((y >= GLOW_LUMA).mean()) * 100, 1),
         "near_black": round(float((y < NEAR_BLACK).mean()) * 100, 2),
+        # clipped / near-white share (<= CLIPPED_MAX): bulbs and signals may clip, lit walls must not wash to white
+        "clipped": round(float((y >= NEAR_WHITE).mean()) * 100, 2),
         "dark_share": round(float((y < DARK).mean()) * 100, 1),
+        "clipped_ok": bool((y >= NEAR_WHITE).mean() * 100 <= CLIPPED_MAX),
         # BIG (LEVELS.md 12): value contrast (the spread of luma, p90 - p10, and its RMS) and the pink cast: the mean
         # of min(R, B) - G over the mid tones (> 0 where red AND blue both sit over green: pink / lavender, the
         # washed-out complaint; warm brick, red and orange, and plain blue score <= 0)

@@ -1,10 +1,10 @@
 --!strict
 -- Heist/KeyHints: which key does what, as data, and the label a key cap shows for it on this device. The one source
--- for both: Hud/Controls, Heist/Slide and Heist/Hideout bind their actions from KeyHints.codes, and every on-screen
+-- for both: Hud/Controls, Heist/Slide, Heist/Sprint and Heist/Hideout bind their actions from KeyHints.codes, and every on-screen
 -- button that has a key shows KeyHints.label in the prompt chip's key-cap style (Hud/Common.keyCap), updated live when
 -- the input device changes. Pure (Lune reads it: tests/unit/HeistKeyHints.spec.luau).
 --   label(action, device)            "R" / "Y" / "" (touch, or no binding on that device)
---   chord(action, modifier, device)  "Ctrl+Shift" / "B+LB" (a held modifier with the action)
+--   chord(action, modifier, device)  "Shift+Ctrl" / "LS+B" (a held modifier with the action)
 --   codes(action)                    every Enum.KeyCode name bound to it (keyboard first, then gamepad)
 --   prompt(device)                   the prompt chip's cap: the USE key, "TAP" on touch
 -- Devices are Strings.forDevice's: "key" | "pad" | "touch". Gamepad labels are text ("Y", "LB"; ASCII only).
@@ -24,8 +24,9 @@ KeyHints.BINDINGS = table.freeze({
 	fast = { key = { "F" }, pad = { "ButtonR1" } }, -- hold to fast-forward (B is the slide's)
 	crew = { key = { "Q" }, pad = { "ButtonL1" } }, -- hold for Crew View (first-person run)
 	deck = { key = { "Q" }, pad = { "ButtonL1" } }, -- the Clone Deck between runs
-	slide = { key = { "LeftControl", "RightControl" }, pad = { "ButtonB" } },
-	slideFast = { key = { "LeftShift", "RightShift" }, pad = { "ButtonL1" } }, -- held with slide: the fast one
+	slide = { key = { "LeftControl", "RightControl" }, pad = { "ButtonB" } }, -- no touch slide (owner, live v125)
+	-- hold Shift to sprint; L3 (the left stick pressed) toggles it on a pad; touch: the stick at its edge (no button)
+	sprint = { key = { "LeftShift", "RightShift" }, pad = { "ButtonL3" } },
 	back = { key = { "Backspace" }, pad = { "ButtonB" } }, -- close a station, the settings, the MENU sheet
 	skip = { key = { "Space", "Return" }, pad = { "ButtonA" } }, -- the Line-up's SKIP
 	skipIntro = { key = { "Space" }, pad = { "ButtonB" } }, -- the story intro (any key skips it)

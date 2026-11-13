@@ -946,27 +946,39 @@ function HeistSim.autoEndArmed(sim: any): any
 	return if sim.autoEndArmed then ae else nil
 end
 
-function HeistSim.canFastForward(sim: any): boolean
+-- A clone still has something to play (fast-forward would skip to it), whatever the live players do. The HUD's
+-- HOLD FAST pill follows this (attribute FFPending), not canFastForward: moving must not flicker it.
+function HeistSim.ffPending(sim: any): boolean
 	if sim.phase ~= "Run" then
 		return false
 	end
+	for _, a in sim.actors do
+		if
+			a.kind == "clone"
+			and a.present
+			and (a.state == "Active" or (a.state == "Holding" and a.cursor < #a.rec.events))
+		then
+			return true
+		end
+	end
+	return false
+end
+
+-- Fast-forward may run now: a clone is pending and every live player stands still.
+function HeistSim.canFastForward(sim: any): boolean
+	if not HeistSim.ffPending(sim) then
+		return false
+	end
 	local S = Config.Sim
-	local pending = false
 	for _, a in sim.actors do
 		if a.kind == "live" and a.present then
 			local inp = a.player.input
 			if Geom.dist2(inp.x, inp.z, a.x, a.z) > S.STANDING_EPS * S.STANDING_EPS then
 				return false
 			end
-		elseif
-			a.kind == "clone"
-			and a.present
-			and (a.state == "Active" or (a.state == "Holding" and a.cursor < #a.rec.events))
-		then
-			pending = true
 		end
 	end
-	return pending
+	return true
 end
 
 -- Sets the clock rate (fast-forward on: Config.Rec.SKIP_SPEED; off: 1).

@@ -73,7 +73,7 @@
 --   Leader   { leader }                the crew leader changed while the results card is up
 --   Toast    { text }                  short message
 -- State (attributes on workspace.Heists.<name>, written only when they change):
---   Phase, RunIndex, Banked, Goal, LevelIndex, LevelId, Kind, Origin, HeistId, CanFF,
+--   Phase, RunIndex, Banked, Goal, LevelIndex, LevelId, Kind, Origin, HeistId, CanFF, FFPending,
 --   Ready, Crew, Leader, Daily (UTC day, daily vaults only), Dressing, Kit, Tuning,
 --   AutoEndArmed (L1: the tutorial auto-end applies this run), AutoStartAt (server time the
 --   next run starts by itself, between runs), Relaxed (the level is Levels/Relaxed)

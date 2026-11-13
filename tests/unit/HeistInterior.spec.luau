@@ -501,7 +501,8 @@ return function(test)
 	test("the theme light: L3 Lights Out is the dimmest Corner Shop room light, still warm", function()
 		local l3 = IN.THEMES.toyrepair.light
 		Assert.truthy((l3.brightness or LIGHT.LAMP.room.brightness) < LIGHT.LAMP.room.brightness, "L3 dimmer")
-		Assert.truthy((l3.brightness or 0) >= 1.2, "L3 never dark (the near-black bar, LEVELS §13)")
+		-- never dark (the near-black bar, LEVELS §13): at least 0.8 of the room lamp (LIGHT AND SPRINT took both down)
+		Assert.truthy((l3.brightness or 0) >= 0.8 * LIGHT.LAMP.room.brightness, "L3 never dark")
 		Assert.truthy(l3.room[1][1] - l3.room[1][3] >= 100, "L3 warm")
 	end)
 end

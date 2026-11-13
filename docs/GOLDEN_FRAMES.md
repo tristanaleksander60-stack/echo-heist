@@ -10,6 +10,8 @@ Each frame lists its composition, what must be in it, and the pass checks. Scene
 
 ![the three golden frames](audit/levels/golden_fp/contact_sheet.png)
 
+**Clipping check (every frame, LIGHT AND SPRINT track, 2026-11-13).** Besides near-black ≤ 5 %, a frame passes only with **clipped / near-white ≤ 3 %** (luma ≥ 0.94 after bloom: `frame_grade.py` reports `clipped` and `clipped_ok`). Only lamp bulbs, Neon and the signals may clip; a lit wall, a door frame or a shelf washed to white fails. Why: the owner's live v125 screenshot of L1's back room in first person graded **27.7 % clipped** (30 % glow share, median luma 0.61) while every Blender approximation here graded 0-0.03 %: the Blender proxy (exposure 0.3, `LAMP_W` calibrated by eye, no stacked Future lights) does not see what the engine does, so **the Studio / phone capture is the frame that is graded for clipping**, never the render alone. The numbers that caused it and the bounds that now hold them are in `Config.Lighting.LIMITS` (`tests/unit/HeistLighting.spec.luau`).
+
 ---
 
 ## G1: L1 "Back Room" in first person, on the street in front of the shop

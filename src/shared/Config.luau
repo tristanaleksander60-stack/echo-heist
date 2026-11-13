@@ -59,7 +59,9 @@ Config.Rec = {
 
 	-- Validator (anti-exploit on recorded movement)
 	WALK_SPEED = 16, -- default Humanoid.WalkSpeed when the caller passes none
-	SPEED_MULT = 1.35, -- allowed horizontal speed = WalkSpeed x this
+	-- allowed horizontal speed = WalkSpeed x this: the sprint (Config.Sprint.MULT 1.4) plus a lag margin (was 1.35
+	-- over a plain walk; the leaky bucket below takes the bursts). tests/unit/HeistSprint.spec.luau keeps the margin.
+	SPEED_MULT = 1.6,
 	SPEED_BUCKET_STUDS = 3, -- leaky-bucket slack for lag bursts, in studs
 	PING_ALLOWANCE_CAP = 0.3, -- seconds of ping that widen the bucket (x max speed)
 	JUMP_HEIGHT = 7.2, -- Humanoid.JumpHeight default; vertical rise allowed above the last ground
@@ -151,29 +153,49 @@ Config.Sim = {
 	ALARM_HINT_SECONDS = 10, -- a clone that trips the alarm this early earns "Clone #N sets off the alarm: Redo #N?"
 }
 
--- The slide (Ctrl, or Ctrl + Shift for the fast one; B / B + LB; the touch SLIDE button). The client pushes your
--- character with a short burst along your move direction (Shared/Heist/SlideMath: the envelope, the camera dip, the
--- gate; Heist/Slide drives it), and in a heist sends Heist.Interact(EVENT.Slide, kind - 1). The server records the
--- Slide event (Sim/Interact.slide: its own cooldown) and Rec/Validator raises the allowed speed only inside the
--- window that event opens, so a slide never taints or clamps the run. Index 1 = slide, 2 = fast slide.
+-- The slide (Ctrl on a keyboard, B on a gamepad; no touch slide and no on-screen button: owner, live v125 "remove the
+-- slide button, it is too fast"). The client pushes your character with a short burst along your move direction
+-- (Shared/Heist/SlideMath: the envelope, the camera dip, the gate; Heist/Slide drives it) on top of the speed you
+-- already move at (WalkSpeed, raised while you sprint), and in a heist sends Heist.Interact(EVENT.Slide, 0). The server
+-- records the Slide event (Sim/Interact.slide: its own cooldown) and Rec/Validator raises the allowed speed only inside
+-- the window that event opens, so a slide never taints or clamps the run. One kind only (the fast Ctrl + Shift slide
+-- is gone: Shift is the sprint).
 Config.Slide = {
-	BURST = { 18, 30 }, -- studs/s on top of WalkSpeed at the burst's peak
-	SECONDS = { 0.65, 0.75 }, -- the burst decays to nothing over this long (from the press)
+	BURST = 9, -- studs/s on top of the current WalkSpeed at the burst's peak (was 18 / 30: about half)
+	SECONDS = 0.45, -- the burst decays to nothing over this long (from the press; was 0.65 / 0.75)
 	ATTACK_SECONDS = 0.06, -- the push-off: 0 -> full burst over this long (the remote overtakes the first steps)
 	COOLDOWN = 1.2, -- client: seconds from one slide's start to the next
 	FORCE_PER_MASS = 2000, -- the LinearVelocity's force limit = assembly mass x this
 	MIN_MOVE = 0.2, -- a move direction shorter than this slides along the look instead
 	-- First person (Heist/CameraDirector): the eye dips low and comes back; a slight FOV kick (off under reduced
 	-- motion or with camera shake off)
-	DIP = { 1.3, 1.6 }, -- studs the eye drops at the bottom of the dip
+	DIP = 0.9, -- studs the eye drops at the bottom of the dip (was 1.3 / 1.6)
 	DIP_IN_SECONDS = 0.12, -- down this fast
 	DIP_OUT_SECONDS = 0.3, -- back up over this long once the burst is spent
-	FOV_KICK = { 4, 6 }, -- degrees added at the burst's peak (follows the burst; <= Heist.CAMERA.FOV_KICK_MAX)
+	FOV_KICK = 2.5, -- degrees added at the burst's peak (follows the burst; with the sprint's <= FOV_KICK_MAX)
 	-- Server (Sim/Interact.slide) and Rec/Validator: the validated slide window
 	SERVER_COOLDOWN = 1.0, -- seconds between accepted slides (< COOLDOWN: the remote's arrival jitter)
-	WINDOW_SECONDS = 0.8, -- the raised speed allowance lasts at most this long after the Slide event (>= SECONDS)
+	WINDOW_SECONDS = 0.55, -- the raised speed allowance lasts at most this long after the Slide event (>= SECONDS)
 	WINDOW_GRACE = 0.2, -- + this and the measured ping (capped at Rec.PING_ALLOWANCE_CAP): late position packets
 	ALLOW_MARGIN = 1.15, -- the allowance is BURST x this on top of the normal max speed, flat over the window
+}
+
+-- The sprint (owner, live v125: "make it possible to sprint with Shift"). Hold Shift on a keyboard; on a gamepad
+-- press the left stick (L3: on until you stop moving or press it again); on touch push the thumbstick to its edge
+-- (auto-sprint, no button). The client raises your Humanoid.WalkSpeed to WalkSpeed x MULT, eased over RAMP_SECONDS
+-- (Shared/Heist/SprintMath, Heist/Sprint); first person adds a small FOV kick (off under reduced motion or with
+-- camera shake off). No stamina. Server: no event and no remote. Recordings are positions, so a clone replays a
+-- sprint tick for tick; Rec/Validator's normal speed limit (Config.Rec.SPEED_MULT) sits above sprint speed with a
+-- lag margin (tests/unit/HeistSprint.spec.luau keeps them in step). A Sprint event would buy nothing: everyone may
+-- sprint at any time, so an always-on fake Sprint flag would allow exactly what SPEED_MULT allows now.
+Config.Sprint = {
+	MULT = 1.4, -- sprint speed = WalkSpeed x this (16 -> 22.4 studs/s)
+	RAMP_SECONDS = 0.18, -- walk -> sprint and back (the WalkSpeed eases; never a step)
+	FOV_KICK = 3, -- degrees at full sprint, first person only (with the slide's <= Heist.CAMERA.FOV_KICK_MAX)
+	MIN_MOVE = 0.2, -- a move vector shorter than this is standing: the sprint stops (and the L3 toggle clears)
+	TOUCH_FULL = 0.92, -- touch: the thumbstick's push (0..1) from which you sprint
+	HINT_WALK_SECONDS = 5, -- the one-time "Hold Shift to sprint" toast after this long walking in a run
+	HINT_SKIP_LEVEL = "cs1_back_room", -- no sprint toast on the first level (it has its own onboarding lines)
 }
 
 -- Level content rules shared by the authored levels (src/shared/Levels), MASTERPLAN
@@ -343,6 +365,15 @@ Config.Heist = {
 	UI_TEXT_MIN = 16, -- px at 1x: text that shrinks to fit stops here (16 x 0.9 = 14.4 px, §7.4 ">= 14 px")
 	TOAST_SECONDS = 3,
 	END_RUN_GRAB_GUARD = 0.3, -- s: an END RUN tap this soon after a GRAB tap is ignored (thumb slip)
+	-- The HOLD FAST pill (Shared/Heist/FfPill): shown while a clone still has something to play (FFPending), with
+	-- hysteresis; dimmed (not hidden) while someone moves (CanFF false), so walking never flickers it (owner, v125)
+	FF_PILL = {
+		SHOW_DELAY = 0.25, -- s the pending state must hold before the pill comes up
+		HIDE_DELAY = 0.6, -- s it must be gone before the pill goes
+		READY_DELAY = 0.2, -- s CanFF must hold before the dim changes
+		DIM_OPACITY = 0.55, -- the pill while fast-forward would not run yet (someone moves)
+		FADE_SECONDS = 0.2, -- opacity eases this fast (0 -> 1)
+	},
 	BLINK_HZ_MAX = 3, -- §7.3: nothing on screen flashes faster than 3 times a second
 	CAPTION_SECONDS = 2.5, -- sound captions ("[Alarm!]"), on by default (§7.4)
 
@@ -1334,12 +1365,30 @@ Config.LiveFlags = {
 -- Lamps: Heist/KitPlan.lamps (one over each plate, a hero over the goal, room centres from Heist/LevelDress),
 -- built by Heist/LevelBuilder (light + unlit floor pool) and dressed with Lamp_Ceiling by Heist/KitDresser.
 Config.Lighting = {
+	-- LIGHT AND SPRINT pass (owner, live v125: "the light is WAY too sharp"): walls washed to white in first person.
+	-- The causes stacked: recipe A's ExposureCompensation 0.4 (x1.32 on everything), Bloom Threshold 1.15 with
+	-- Intensity 0.6 (bright walls and the unlit 1.2-1.6 glows bloomed), ColorCorrection Contrast 0.2 (pushed the
+	-- highlights into clipping), every lamp at 1.3-3 overlapping in a 32 x 24 room, and your own halo PointLight 2.5
+	-- studs over your head lighting the door frame you stood in. Now: exposure 0, Bloom 0.25 / 1.6 (only bulbs, Neon
+	-- and the signals over 1.6 bloom), Contrast 0.08, the lamps about 30 % down, the halo light off in first person.
+	-- tests/unit/HeistLighting.spec.luau keeps every number here and in the project files inside LIMITS.
+	LIMITS = {
+		EXPOSURE = 0.15, -- |ExposureCompensation| <= this (recipes A and C)
+		BLOOM_INTENSITY = 0.35, -- Bloom.Intensity <= this
+		BLOOM_THRESHOLD = 1.5, -- Bloom.Threshold >= this: lit walls stay under it, light sources go over
+		CONTRAST = 0.12, -- ColorCorrection.Contrast <= this (more clips the highlights)
+		POINT_BRIGHTNESS = 1.3, -- a PointLight / wall wash in a level or the hideout
+		SPOT_BRIGHTNESS = 2.4, -- the shadowed key SpotLight (hero, your bay's lamp)
+		UNLIT_GLOW = 1.45, -- an unlit SurfaceGui's Brightness (pools, clone glows, rings, the board): under Threshold
+		HALO_BRIGHTNESS = 0.6, -- your halo PointLight (third person only)
+		AMBIENT_SUM = 1.9, -- Ambient R + G + B (0-1 each): the fill that lights every wall
+	},
 	-- Per lamp kind: PointLight (room, plate) or a downward SpotLight (hero, the only shadowed one).
 	LAMP = {
 		-- room: the warm interior flood (golden-frame pass: brighter, wider, a bigger softer pool than the signals')
 		room = {
 			range = 24,
-			brightness = 1.6,
+			brightness = 1.15, -- LIGHT AND SPRINT: was 1.6 (with exposure 0.4: 2.1 effective)
 			color = { 255, 205, 150 },
 			shadows = false,
 			pool = 20,
@@ -1350,24 +1399,24 @@ Config.Lighting = {
 				{ size = 0.4, alpha = 0.76 },
 			},
 		},
-		plate = { range = 18, brightness = 1.3, color = { 255, 205, 150 }, shadows = false },
+		plate = { range = 18, brightness = 1.0, color = { 255, 205, 150 }, shadows = false }, -- was 1.3
 		-- accent: a warm gold flood that ignores the location colour (LevelDress `accents`: the L6 vault, so the gold
 		-- room reads warm and lit from the scale room, LEVELS L6 "lit vault and gold")
 		accent = {
 			range = 20,
-			brightness = 1.5,
+			brightness = 1.1, -- was 1.5
 			color = { 255, 206, 128 },
 			shadows = false,
 			pool = 14,
 			poolColor = { 246, 204, 132 },
 			poolRings = { { size = 1, alpha = 0.86 }, { size = 0.66, alpha = 0.8 }, { size = 0.36, alpha = 0.76 } },
 		},
-		hero = { range = 36, brightness = 3, angle = 60, color = { 255, 214, 160 }, shadows = true },
+		hero = { range = 36, brightness = 2.2, angle = 60, color = { 255, 214, 160 }, shadows = true }, -- was 3
 		-- wash (INTERIORS, KitPlan.lamps): a warm SpotLight near the ceiling aimed down a wall, so the walls carry
 		-- the room's light in first person instead of the ceiling (no shadows, no pool, no fixture; tier 1 only)
 		wash = {
 			range = 20,
-			brightness = 1.8,
+			brightness = 1.1, -- was 1.8: the near wall washed out first
 			angle = 100,
 			color = { 255, 200, 150 },
 			shadows = false,
@@ -1381,7 +1430,7 @@ Config.Lighting = {
 		-- washes the shop front and the snow, and a bigger, denser warm pool (pool / poolRings / poolColor).
 		street = {
 			range = 22,
-			brightness = 1.6,
+			brightness = 1.3, -- was 1.6 (outdoors: the exposure drop already darkens the street)
 			color = { 255, 182, 110 },
 			shadows = false,
 			lightY = 9.43,
@@ -1409,7 +1458,7 @@ Config.Lighting = {
 		diameter = 14,
 		heroDiameter = 11,
 		lift = 0.06, -- studs above the floor (kit floor tiles sit at +0.02, cables at +0.03..0.06)
-		brightness = 1.2,
+		brightness = 1.0, -- was 1.2
 		color = { 216, 200, 168 }, -- Warm Marble #D8C8A8
 		rings = { { size = 1, alpha = 0.88 }, { size = 0.7, alpha = 0.8 }, { size = 0.42, alpha = 0.72 } },
 		pixelsPerStud = 8,
@@ -1613,7 +1662,7 @@ Config.Lobby = {
 		out = 7,
 		along = 1,
 		range = 30,
-		brightness = 1.7,
+		brightness = 1.4, -- was 1.7
 		angle = 80,
 		color = { 255, 200, 140 },
 		shadows = true,
@@ -1621,7 +1670,7 @@ Config.Lobby = {
 		poolColor = { 226, 168, 112 },
 	},
 	-- the shelf lamp: over your first trophy, reaching the job board in front of the shelf (they share the light)
-	TROPHY_LIGHT = { range = 13, brightness = 1.4, color = { 255, 210, 150 } },
+	TROPHY_LIGHT = { range = 13, brightness = 1.1, color = { 255, 210, 150 } }, -- was 1.4
 	-- warm floods down the aisle between the rows (Lamp_Ceiling + pool): the garage reads lit from inside
 	AISLE_LAMPS = { { -22, -6 }, { 0, -6 }, { 22, -6 } },
 	AISLE_LAMP = { range = 28, brightness = 1.1, color = { 255, 190, 125 }, pool = 20, poolColor = { 232, 176, 116 } },
@@ -1637,7 +1686,7 @@ Config.Lobby = {
 		cardDepth = 0.06,
 		cardColor = { 30, 33, 62 },
 		textColor = { 255, 226, 150 },
-		glowBrightness = 1.6, -- SurfaceGui Brightness (LightInfluence 0): the board's one glowing thing
+		glowBrightness = 1.4, -- SurfaceGui Brightness (LightInfluence 0): the board's one glowing thing (was 1.6)
 	},
 	-- The trophy shelf: a Counter_8x2 against the back wall between the roll-up door and your van, with ornament
 	-- stands on top (Ornament_Stand; the ornament hangs from the arm tip, TROPHY_HANG in the stand's local axes). The
@@ -2592,7 +2641,7 @@ Config.Clone = {
 	DRIFT_DEGREES = 25, -- solo only: older runs drift this far toward violet (MASTERPLAN §6.5 #4)
 	GLOW_SIZE = 4.4, -- studs across the floor-glow canvas (the disc fills GLOW_DISC of it)
 	GLOW_DISC = 0.72,
-	GLOW_BRIGHTNESS = 1.6, -- SurfaceGui Brightness (LightInfluence 0: unlit, no light object)
+	GLOW_BRIGHTNESS = 1.3, -- SurfaceGui Brightness (LightInfluence 0: unlit, no light object; was 1.6: it bloomed)
 	GLOW_ALPHA = { 0.55, 0.72, 0.84 }, -- inner core, middle, outer disc
 	GLOW_RING_ALPHA = 0.45, -- the disc's rim at rest
 	PRINT_SECONDS = 0.35, -- "tape print": the clone builds up from the feet
@@ -2612,8 +2661,9 @@ Config.Clone = {
 
 	-- Your live character (G1): client-only warm rim and ground ring, so dark outfits read on dark floors.
 	HALO_RIM_ALPHA = 0.35, -- Highlight outline (fill off)
-	HALO_LIGHT_RANGE = 7, -- one warm PointLight behind and above you (tiers 1-2 only)
-	HALO_LIGHT_BRIGHTNESS = 0.8,
+	HALO_LIGHT_RANGE = 7, -- one warm PointLight behind and above you (tiers 1-2, third person only: in first person it
+	-- lit the door frame you stood in to white, owner v125)
+	HALO_LIGHT_BRIGHTNESS = 0.5, -- was 0.8
 	HALO_LIGHT_OFFSET = { 0, 2.5, 2 },
 	HALO_RING_SIZE = 4.2,
 	HALO_RING_ALPHA = 0.35,
@@ -2812,14 +2862,15 @@ Config.Perf = {
 			Brightness = 1.8, -- recipe A + 0.2 (BIG: A is 1.6)
 			ColorShift_Top = { 170, 190, 255 },
 			Ambient = { 128, 132, 162 }, -- BIG: recipe A's bluer, less pink fill (+10)
-			OutdoorAmbient = { 160, 170, 204 },
+			OutdoorAmbient = { 170, 180, 214 }, -- recipe A's (160, 170, 204) + 10
 			EnvironmentDiffuseScale = 0.3,
 			EnvironmentSpecularScale = 0,
-			ExposureCompensation = 0.35, -- WORLD 2.0: recipe A's 0.4 less the Soft style's flatter fill
+			ExposureCompensation = 0, -- LIGHT AND SPRINT: neutral like recipe A (was 0.35)
 			GlobalShadows = false, -- no sun shadow pass on low phones (was HeistClient's tier >= 3 rule)
 		},
-		Bloom = { Intensity = 0.9, Size = 24, Threshold = 1.0 }, -- Lighting.Bloom (the project file's)
-		ColorCorrection = { Contrast = 0.22, Saturation = 0.12 }, -- Lighting.ColorCorrection (BIG: A + 0.02)
+		-- Lighting.Bloom (the project file's): was 0.9 / 24 / 1.0, the strongest glow of all on the weakest phones
+		Bloom = { Intensity = 0.2, Size = 16, Threshold = 1.6 },
+		ColorCorrection = { Contrast = 0.1, Saturation = 0.1 }, -- Lighting.ColorCorrection (recipe A + 0.02)
 		-- Lighting.Atmosphere: thinner haze on low phones (a "black fog" is reported at the lowest quality levels,
 		-- roblox_quality §1.1; WORLD 2.0 keeps the distance a light haze there too)
 		Atmosphere = { Density = 0.2, Haze = 1.4 },
@@ -3476,7 +3527,7 @@ Config.Interior = {
 			frieze = { 52, 100, 86 },
 			ceiling = { 48, 42, 48 },
 			-- Lights Out: deeper amber, a little dimmer; never near-black (LEVELS §13)
-			light = { room = { { 255, 168, 96 } }, pool = { 230, 176, 120 }, brightness = 1.35 },
+			light = { room = { { 255, 168, 96 } }, pool = { 230, 176, 120 }, brightness = 1.0 }, -- LAMP.room x 0.87
 			board = { 32, 62, 58 },
 			text = { 250, 214, 140 },
 		},

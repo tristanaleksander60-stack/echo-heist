@@ -65,8 +65,9 @@ HudLayout.HELP_CHIP = box(1, 0, 1, -8, 0, 6, 168, TAP)
 HudLayout.RETICLE = box(0.5, 0.5, 0.5, 0, 0.5, 0, 28, 28)
 HudLayout.PROMPT = box(0, 0.5, 0.5, 26, 0.5, 0, 196, 40)
 HudLayout.SCREEN_CENTRED = table.freeze({ RETICLE = true, PROMPT = true })
--- (Left of centre by FP_SHIFT: the touch SLIDE button sits between them and Interact.)
-local FP_SHIFT = -148
+-- (Left of centre by FP_SHIFT, so they clear Interact; the touch SLIDE button that sat between them is gone: owner,
+-- live v125.)
+local FP_SHIFT = -68
 HudLayout.RAIL_FP = box(0.5, 1, 0.5, FP_SHIFT, 1, -8, 336, 98)
 HudLayout.OBJECTIVE_FP = box(0.5, 1, 0.5, FP_SHIFT, 1, -114, 360, 28)
 HudLayout.ALARM_FP = box(0.5, 1, 0.5, FP_SHIFT, 1, -114, 360, 30)
@@ -78,10 +79,8 @@ HudLayout.ALARM_FP = box(0.5, 1, 0.5, FP_SHIFT, 1, -114, 360, 30)
 -- (HudLayout.crewYields; you are looking at something to use, not peeking).
 HudLayout.CREW = box(1, 1, 1, -124, 1, -(16 + H.INTERACT_BUTTON + 10), 80, TAP)
 HudLayout.CREW_LABEL = box(0.5, 0, 0.5, 0, 0, 98, 168, 28)
--- The slide (Config.Slide, Heist/Slide): the SLIDE button, bottom row, left of Interact (in the hideout, of USE), under
--- your right thumb. Shown in a first-person run and in the hideout whenever a slide may start; hold FAST with it on
--- touch for the fast slide.
-HudLayout.SLIDE = box(1, 1, 1, -(124 + H.INTERACT_BUTTON + 56 + 8), 1, -16, TAP, H.INTERACT_BUTTON)
+-- No SLIDE button (owner, live v125: "remove the slide button"): the slide is Ctrl / B only (Heist/Slide), the sprint
+-- Shift / L3 / the touch stick at its edge (Heist/Sprint); neither has an on-screen button.
 -- Key caps (Hud/Common.keyCap) straddle a button's corner by this much: less than GAP, so a cap never reaches a
 -- neighbouring box.
 HudLayout.KEY_CAP_OUT = 6
@@ -176,7 +175,6 @@ HudLayout.SCENES = table.freeze({
 		"END_RUN",
 		"INTERACT",
 		"CREW",
-		"SLIDE",
 		"RETICLE",
 		"PROMPT",
 		"RAIL_FP",
@@ -193,7 +191,6 @@ HudLayout.SCENES = table.freeze({
 		"END_RUN",
 		"INTERACT",
 		"CREW",
-		"SLIDE",
 		"RETICLE",
 		"PROMPT",
 		"RAIL_FP",
@@ -211,7 +208,6 @@ HudLayout.SCENES = table.freeze({
 		"END_RUN",
 		"INTERACT",
 		"CREW",
-		"SLIDE",
 		"CREW_LABEL",
 		"RAIL_FP",
 		"HELP_CHIP",
@@ -227,7 +223,6 @@ HudLayout.SCENES = table.freeze({
 		"END_RUN",
 		"INTERACT",
 		"CREW",
-		"SLIDE",
 		"CREW_LABEL",
 		"RAIL_FP",
 		"HELP_CHIP",
@@ -239,7 +234,7 @@ HudLayout.SCENES = table.freeze({
 	menu = { "MENU_SHEET" },
 	settings = { "SETTINGS" },
 	garageButtons = { "GARAGE_SETTINGS" },
-	lobby = { "RETICLE", "PROMPT", "RAIL_FP", "LOBBY_USE", "LOBBY_QUICK", "SLIDE" },
+	lobby = { "RETICLE", "PROMPT", "RAIL_FP", "LOBBY_USE", "LOBBY_QUICK" },
 	station = { "GARAGE" },
 	wardrobe = { "WARDROBE" },
 	drive = { "LOBBY_SKIP" },

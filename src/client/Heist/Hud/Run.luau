@@ -16,6 +16,7 @@ local Sim = Shared:WaitForChild("Sim")
 local EventLog = require(Sim:WaitForChild("EventLog"))
 local Interact = require(Sim:WaitForChild("Interact"))
 local HeistShared = Shared:WaitForChild("Heist")
+local FfPill = require(HeistShared:WaitForChild("FfPill"))
 local Help = require(HeistShared:WaitForChild("Help"))
 local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
 local KeyHints = require(HeistShared:WaitForChild("KeyHints"))
@@ -55,6 +56,10 @@ function Run.build(ctx: any)
 	local endedCount = 0
 	local runStartAt = 0
 	local myEnded = false
+	local ffPill = FfPill.new() -- the HOLD FAST pill's hysteresis and fade (Shared/Heist/FfPill)
+	local ffReadyWas = false
+	local ffPillBase = controls.ffPill.BackgroundTransparency
+	local ffOutline = controls.ffPill:FindFirstChild("Outline")
 	local hintStage = 0
 	local lastWhole = -1
 	local lastPulse = -1
@@ -164,6 +169,7 @@ function Run.build(ctx: any)
 	function hud.onRunEnd(p: any)
 		interactBtn.Visible = false
 		controls.ffPill.Visible = false
+		ffPill = FfPill.new()
 		top.alarmPill.Visible = false
 		top.objective.Visible = true
 		-- Passing lines go; why the run ended stays until the deck opens (WALKTHROUGH
@@ -672,7 +678,28 @@ function Run.build(ctx: any)
 			ctx.reticle.set(fp and can, prompt)
 		end
 		ctx.fpLayout(fp or state.crewView == true) -- Crew View keeps the first-person layout (nothing jumps)
-		controls.ffPill.Visible = folder ~= nil and folder:GetAttribute("CanFF") == true and not myEnded
+		-- HOLD FAST: up while a clone still has something to play (FFPending, with hysteresis and a fade), dimmed while
+		-- someone moves (CanFF false); never toggled by walking (owner, live v125). Held while you walked: the server
+		-- refused it, so it is asked again the moment you stand (CanFF rises).
+		local pending = folder ~= nil and folder:GetAttribute("FFPending") == true and not myEnded
+		local ffReady = pending and folder ~= nil and folder:GetAttribute("CanFF") == true
+		local pillUp, opacity = FfPill.step(ffPill, pending, ffReady, dt, H.FF_PILL)
+		local pill = controls.ffPill
+		if pill.Visible ~= pillUp then
+			pill.Visible = pillUp
+		end
+		if pillUp then
+			local fade = 1 - opacity
+			pill.BackgroundTransparency = ffPillBase + (1 - ffPillBase) * fade
+			pill.TextTransparency = fade
+			if ffOutline and ffOutline:IsA("UIStroke") then
+				ffOutline.Transparency = fade
+			end
+		end
+		if ffReady and not ffReadyWas and ctx.ffHeld == true then
+			actions.fastForward(true, true)
+		end
+		ffReadyWas = ffReady
 		hints.update(now, dt)
 	end
 
