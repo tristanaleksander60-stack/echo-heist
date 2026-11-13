@@ -145,12 +145,33 @@ def empty_stage(samples, ambient="#2E2C55", strength=0.55):
 
 # ------------------------------------------------------------------ passes
 def render_passes(s, cam, name, bg=True):
+    """fg first (everything but the characters a holdout, transparent film), then bg (characters hidden), then the
+    ID pass. Set EH_FG_HIDE=1 to hide the set instead of holding it out in the fg pass (no occlusion by the set:
+    a fallback for Eevee crashing on holdouts in a big level at full size)."""
     os.makedirs(TMP, exist_ok=True)
     s.camera = cam
     s.render.image_settings.file_format = "PNG"
     s.render.image_settings.color_mode = "RGBA"
     fg = [o for o in bpy.data.objects if o.get("eh_group") in FG_GROUPS]
-    if bg:
+    others = [o for o in bpy.data.objects if o.type in ("MESH", "CURVE", "FONT") and o not in fg]
+    hide = bool(os.environ.get("EH_FG_HIDE"))
+    only = os.environ.get("EH_PASS")      # --split: one pass per process (Eevee segfaults on a second full-size
+    #                                       render of a big level in one process)
+    if only in (None, "fg"):
+        for o in others:
+            if hide:
+                o.hide_render = True
+            else:
+                o.is_holdout = True
+        s.render.film_transparent = True
+        s.render.filepath = os.path.join(TMP, f"{name}_fg.png")
+        bpy.ops.render.render(write_still=True)
+        for o in others:
+            if hide:
+                o.hide_render = False
+            else:
+                o.is_holdout = False
+    if bg and only in (None, "bg"):
         for o in fg:
             o.hide_render = True
         s.render.film_transparent = False
@@ -158,15 +179,8 @@ def render_passes(s, cam, name, bg=True):
         bpy.ops.render.render(write_still=True)
         for o in fg:
             o.hide_render = False
-    others = [o for o in bpy.data.objects if o.type in ("MESH", "CURVE", "FONT") and o not in fg]
-    for o in others:
-        o.is_holdout = True
-    s.render.film_transparent = True
-    s.render.filepath = os.path.join(TMP, f"{name}_fg.png")
-    bpy.ops.render.render(write_still=True)
-    for o in others:
-        o.is_holdout = False
-    T.id_pass(s, cam, os.path.join(TMP, f"{name}_ids.png"))
+    if only in (None, "ids"):
+        T.id_pass(s, cam, os.path.join(TMP, f"{name}_ids.png"))
 
 
 # ------------------------------------------------------------------ 2D finish
@@ -466,7 +480,7 @@ def image(name, kind, size, out):
 
 # ------------------------------------------------------------------ icons
 def icon_stage(samples, W, copies, pose="icon_bag", carry="CashBag", face_at=(0.6, 0.47), fov=30.0, yaw_off=22,
-               dist=8.2, cam_up=0.5, cam_side=-0.15):
+               dist=8.2, cam_up=0.5, cam_side=-0.15, outfit=SANTA):
     """The Rookie's head and shoulders in his Santa cap, copies of him behind (the wordmark's double-exposure
     offset), each a step further back so they read smaller; no set (the background is 2D)."""
     s = empty_stage(samples)
@@ -474,20 +488,20 @@ def icon_stage(samples, W, copies, pose="icon_bag", carry="CashBag", face_at=(0.
     head_r = (0.0, 4.0, 0.0)
     cam_r = (head_r[0] + dist * math.sin(math.radians(cam_side * 60)), head_r[1] + cam_up, head_r[2] + dist)
     cam = T.camera(s, cam_r, head_r, fov, W, W)
-    hero = T.rookie(hero_at, 180 + yaw_off, pose, face="smug", outfit=SANTA)
+    hero = T.rookie(hero_at, 180 + yaw_off, pose, face="smug", outfit=outfit)
     if carry == "CashBag":
         side = "Right" if pose.endswith("_r") else "Left"
         T.in_hand(hero, "CashBag", side, drop=0.8, yaw=20 if side == "Right" else -20, scale=0.8)
     elif carry:
         hl, hr = T.part_pos(hero, "Rookie_LeftHand"), T.part_pos(hero, "Rookie_RightHand")
-        drop, sc = (0.55, 0.45) if carry == "GoldStack" else (0.75, 0.75)
+        drop, sc = (0.55, 0.45) if carry == "GoldStack" else (1.2, 0.72)
         T.prop(carry, (hl + hr) / 2 + Vector((0, -0.35, -drop)), 20, sc)
     hp = T.part_pos(hero, "Rookie_Head")
     tgt = MR.frame(cam.location, hp, face_at[0], face_at[1], fov, W, W)
     aim(cam, tgt)
     depth0 = (hp - cam.location).length
     for k, (sx, sy, back, hue) in enumerate(copies):
-        c = T.clone(hero_at, 180 + yaw_off, pose, hue=hue, outfit=SANTA, glow=False)
+        c = T.clone(hero_at, 180 + yaw_off, pose, hue=hue, outfit=outfit, glow=False)
         head_to(c, screen_point(cam, sx, sy, depth0 + back, W, W))
     hero_rig(hp, cam, key_pw=1500, rims=(("#5FE6FF", 1.0, 2800), ("#FFB347", -1.0, 3000)))
     return s, cam, hp
@@ -536,12 +550,12 @@ def icon_bg(base_top, base_bottom, halo_at, halo_col="#FFB23F", halo_r=0.62, aur
 
 
 def _icon(W, Hh, samples, name, out, copies, bg, sparks, pose="icon_bag", carry="CashBag", face_at=(0.6, 0.47),
-          glow=("#FFC21F", 0.05, 3.2), **kw):
+          glow=("#FFC21F", 0.05, 3.2), halo=None, **kw):
     ss = 2
     s, cam, hp = icon_stage(samples, W * ss, copies, pose=pose, carry=carry, face_at=face_at, **kw)
     render_passes(s, cam, name, bg=False)
     compose(name, out, bg_fn=bg, outline=0.007, hero_outline=0.011, clone_glow=0.035, hero_gain=1.12,
-            hero_glow=glow,
+            hero_glow=glow, hero_halo=halo,
             fg_sat=1.15, drop=0.014, vignette=0.3, post=icon_post(sparks), supersample=ss)
 
 
@@ -557,12 +571,12 @@ def icon_1(W, Hh, samples, name, out):
 
 @image("icon_2_santa-solo", "icon", (512, 512), "final")
 def icon_2(W, Hh, samples, name, out):
-    """Solo: three cyan copies with the age ramp (dimmer, drifting violet), a present in his arms, a gold halo with
-    the game's aurora over it."""
-    copies = ((0.37, 0.33, 3.0, T.drift(CYAN, 0, 3)), (0.22, 0.25, 6.0, T.drift(CYAN, 1, 3)),
-              (0.09, 0.18, 9.5, T.drift(CYAN, 2, 3)))
-    _icon(W, Hh, samples, name, out, copies, icon_stops_bg(0.4, 0.28, aurora=0.5, scale=1.0),
-          [(0.85, 0.8, 0.045), (0.93, 0.7, 0.022)], pose="icon_gift", carry="Present", face_at=(0.58, 0.44))
+    """Solo: two cyan copies with the age ramp (dimmer, drifting violet), a present in his arms (Leather Gloves, an
+    unlock: lighter than the knit ones), a gold halo with the game's aurora over it."""
+    copies = ((0.36, 0.31, 3.2, T.drift(CYAN, 0, 2)), (0.16, 0.22, 6.8, T.drift(CYAN, 1, 2)))
+    _icon(W, Hh, samples, name, out, copies, icon_stops_bg(0.6, 0.3, aurora=0.5, scale=1.0),
+          [(0.85, 0.8, 0.045), (0.93, 0.7, 0.022)], pose="icon_gift", carry="Present", face_at=(0.58, 0.44),
+          outfit=("Santa", "Long", "Stripes", "Leather"), glow=("#FFE08A", 0.07, 4.5))
 
 
 @image("icon_3_santa-twins", "icon", (512, 512), "final")
@@ -570,10 +584,10 @@ def icon_3(W, Hh, samples, name, out):
     """Symmetric: the Rookie square to the camera, smug, a cyan copy over one shoulder and a magenta copy over the
     other (the wordmark's copies split out, as the title beat does), a gold stack in his hands, the gold halo
     behind his head."""
-    copies = ((0.2, 0.36, 3.4, CYAN), (0.8, 0.36, 3.4, MAGENTA))
-    _icon(W, Hh, samples, name, out, copies, icon_stops_bg(0.5, 0.2, scale=1.0),
+    copies = ((0.15, 0.32, 5.5, CYAN), (0.85, 0.32, 5.5, MAGENTA))
+    _icon(W, Hh, samples, name, out, copies, icon_stops_bg(0.5, 0.0, scale=1.0),
           [(0.64, 0.8, 0.04), (0.36, 0.84, 0.02)], pose="carry_low", carry="GoldStack", face_at=(0.5, 0.42),
-          yaw_off=0, cam_side=0.0, glow=("#FFE08A", 0.06, 4.5), dist=10.0)
+          yaw_off=0, cam_side=0.0, glow=None, halo=(0.05, 0.9), dist=10.0)
 
 
 # ------------------------------------------------------------------ thumbnails
@@ -590,6 +604,7 @@ def thumb_finish(name, out, bg_blur, glows, post, hero_gain=1.15, outline=0.0045
             drop=0.008, vignette=vignette, post=post, supersample=ss)
 
 
+SPLIT = False
 RECOMPOSE = False     # --recompose: redo the 2D finish from the saved passes and anchors (no Blender scene)
 
 
@@ -601,6 +616,8 @@ def anchors(name, build):
         return json.load(open(path))
     A = build()
     json.dump(A, open(path, "w"), indent=1)
+    if os.environ.get("EH_PASS"):
+        sys.exit(0)
     return A
 
 
@@ -938,7 +955,21 @@ def render_one(name, scale, samples):
         W, Hh = Image.open(os.path.join(TMP, f"{name}_fg.png")).size
     else:
         W, Hh = int(size[0] * scale), int(size[1] * scale)
+    if SPLIT and not RECOMPOSE and kind == "thumb":
+        import subprocess
+        for p in ("fg", "bg", "ids"):
+            env = dict(os.environ, EH_PASS=p)
+            r = subprocess.run([sys.executable, os.path.abspath(__file__), "--only", name, "--scale", str(scale),
+                                "--samples", str(samples)], env=env, stdout=subprocess.DEVNULL)
+            if r.returncode != 0:
+                raise SystemExit(f"pass {p} failed ({r.returncode})")
+        set_recompose(True)
     fn(W, Hh, samples, name, out_path(name))
+
+
+def set_recompose(v):
+    global RECOMPOSE
+    RECOMPOSE = v
 
 
 def main(argv):
@@ -949,9 +980,11 @@ def main(argv):
     ap.add_argument("--grade", action="store_true")
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--recompose", action="store_true", help="thumbnails: redo the 2D finish from the saved passes")
+    ap.add_argument("--split", action="store_true", help="thumbnails: each pass in its own Blender process")
     a = ap.parse_args(argv)
-    global RECOMPOSE
+    global RECOMPOSE, SPLIT
     RECOMPOSE = a.recompose
+    SPLIT = a.split
     if a.list:
         for n, (_f, kind, size, _o) in IMAGES.items():
             print(n, kind, size)

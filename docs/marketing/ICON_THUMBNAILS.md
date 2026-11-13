@@ -59,6 +59,22 @@ Scores are honest self-scores on the §7 rubric (0-10, upload bar 8.5): **none o
 - **Capturable in a heist (keep the "real capture" rule):** TH1 (the Clone Party Line-up), TH2 (L4, CAPTURE.md B3), TH4 (4 clients, CAPTURE.md §4), TH5 (L1 first person, CAPTURE.md A6), T5 via DV04 (CAPTURE.md §5).
 - **Key art** (the story town exists only inside the intro): TH3, TH6 and the icons. **Proposal:** allow the **icon** (human-finished, §3.5) and **one** story thumbnail for the events (E1 / E2) as in-engine key art: the game's own meshes, no shape changes, no element the game doesn't have, labelled as key art in our files. Gameplay thumbnails in the Home pool stay real captures.
 
+### 0.6 The finals (2026-11-13): `final/`
+
+The upload set lives in [`final/`](final/UPLOAD.md). It has 3 icons and 4 thumbnails, rendered by `tools/blender/final_shots.py` from the real kit with the §0.1 finish (hero key + coloured rims, the background as a blurred pass, gels, ink outline, clone glow, Luckiest Guy text). Each is graded at 64 and 150 px (`final/grades.json`, `readability.png`, `grid_test.png`).
+
+| File | Score | Use |
+|---|---|---|
+| `icon_512_1_santa-crew` | 8.8 | Icon Dec 3 - Jan 4; its Flat Cap version from Jan 5 |
+| `icon_512_3_santa-twins` | 8.5 | The time-sliced challenger after Jan 5 |
+| `icon_512_2_santa-solo` | 8.3 | Below the bar (the hero is only -0.12 grey pop at 150 px); don't upload it |
+| `thumb_1920x1080_4_wrong-one` | 8.8 | Home pool at launch (T3) |
+| `thumb_1920x1080_3_steal-back-christmas` | 8.7 | Home pool at launch (T5) |
+| `thumb_1920x1080_1_8-of-me` | 8.7 | Third Home thumbnail once SwarmSeen ≥ 60 % (T1) |
+| `thumb_1920x1080_2_rob-with-clones` | 8.5 | The first-person challenger in the Plays ad test; its text is "ROB WITH CLONES" (≤ 3 words) |
+
+They are key art (§0.4), not captures. The owner decides whether Home thumbnails may be key art. If not, use them as capture targets.
+
 ### 0.5 Recommendation for Dec 3
 
 - **Home pool: T5 + T3 as planned**, captured from the TH2 (WRONG ONE) and TH3 / DV04 (STEAL BACK XMAS) targets.

@@ -1,0 +1,355 @@
+{
+ "icon_512_1_santa-crew.png": {
+  "frame": {
+   "dark_share": 6.9,
+   "glow_share": 2.1,
+   "mean_saturation": 0.693,
+   "median_luma": 0.448,
+   "near_black": 0.76,
+   "rms_contrast": 0.234,
+   "saturated_share": 67.4,
+   "value_spread": 0.624,
+   "warm_share": 56.9
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.196,
+     "pop": 0.239,
+     "share": 25.8
+    },
+    "hero": {
+     "grey_pop": -0.193,
+     "pop": -0.133,
+     "share": 32.7
+    },
+    "loot": {
+     "grey_pop": 0.298,
+     "pop": 0.388,
+     "share": 10.0
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.198,
+     "pop": 0.251,
+     "share": 25.8
+    },
+    "hero": {
+     "grey_pop": -0.196,
+     "pop": -0.145,
+     "share": 32.7
+    },
+    "loot": {
+     "grey_pop": 0.255,
+     "pop": 0.355,
+     "share": 10.1
+    }
+   }
+  }
+ },
+ "icon_512_2_santa-solo.png": {
+  "frame": {
+   "dark_share": 15.1,
+   "glow_share": 2.9,
+   "mean_saturation": 0.672,
+   "median_luma": 0.343,
+   "near_black": 5.02,
+   "rms_contrast": 0.256,
+   "saturated_share": 55.9,
+   "value_spread": 0.69,
+   "warm_share": 42.3
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.25,
+     "pop": 0.31,
+     "share": 25.8
+    },
+    "hero": {
+     "grey_pop": -0.121,
+     "pop": -0.016,
+     "share": 32.6
+    },
+    "loot": {
+     "grey_pop": -0.088,
+     "pop": -0.184,
+     "share": 12.6
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.234,
+     "pop": 0.31,
+     "share": 25.7
+    },
+    "hero": {
+     "grey_pop": -0.176,
+     "pop": -0.061,
+     "share": 32.7
+    },
+    "loot": {
+     "grey_pop": -0.089,
+     "pop": -0.208,
+     "share": 12.5
+    }
+   }
+  }
+ },
+ "icon_512_3_santa-twins.png": {
+  "frame": {
+   "dark_share": 17.9,
+   "glow_share": 1.2,
+   "mean_saturation": 0.687,
+   "median_luma": 0.361,
+   "near_black": 5.69,
+   "rms_contrast": 0.237,
+   "saturated_share": 56.3,
+   "value_spread": 0.591,
+   "warm_share": 45.0
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.27,
+     "pop": 0.416,
+     "share": 30.2
+    },
+    "hero": {
+     "grey_pop": 0.196,
+     "pop": 0.322,
+     "share": 31.5
+    },
+    "loot": {
+     "grey_pop": 0.091,
+     "pop": 0.047,
+     "share": 3.5
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.212,
+     "pop": 0.363,
+     "share": 30.1
+    },
+    "hero": {
+     "grey_pop": 0.161,
+     "pop": 0.273,
+     "share": 31.6
+    },
+    "loot": {
+     "grey_pop": 0.08,
+     "pop": 0.053,
+     "share": 3.5
+    }
+   }
+  }
+ },
+ "thumb_1920x1080_1_8-of-me.png": {
+  "frame": {
+   "dark_share": 10.0,
+   "glow_share": 3.6,
+   "mean_saturation": 0.667,
+   "median_luma": 0.263,
+   "near_black": 0.27,
+   "rms_contrast": 0.232,
+   "saturated_share": 68.3,
+   "value_spread": 0.575,
+   "warm_share": 5.9
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.215,
+     "pop": 0.208,
+     "share": 14.4
+    },
+    "hero": {
+     "grey_pop": 0.322,
+     "pop": 0.31,
+     "share": 5.1
+    },
+    "loot": {
+     "grey_pop": 0.132,
+     "pop": 0.047,
+     "share": 4.1
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.207,
+     "pop": 0.18,
+     "share": 14.6
+    },
+    "hero": {
+     "grey_pop": 0.281,
+     "pop": 0.243,
+     "share": 5.1
+    },
+    "loot": {
+     "grey_pop": 0.122,
+     "pop": 0.061,
+     "share": 4.0
+    }
+   }
+  }
+ },
+ "thumb_1920x1080_2_rob-with-clones.png": {
+  "frame": {
+   "dark_share": 1.2,
+   "glow_share": 4.9,
+   "mean_saturation": 0.423,
+   "median_luma": 0.263,
+   "near_black": 0.01,
+   "rms_contrast": 0.255,
+   "saturated_share": 22.7,
+   "value_spread": 0.647,
+   "warm_share": 46.7
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.365,
+     "pop": 0.412,
+     "share": 3.7
+    },
+    "hero": {
+     "grey_pop": -0.058,
+     "pop": 0.043,
+     "share": 9.9
+    },
+    "loot": {
+     "grey_pop": 0.497,
+     "pop": 0.655,
+     "share": 5.8
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.32,
+     "pop": 0.375,
+     "share": 3.6
+    },
+    "hero": {
+     "grey_pop": -0.098,
+     "pop": 0.0,
+     "share": 10.0
+    },
+    "loot": {
+     "grey_pop": 0.434,
+     "pop": 0.567,
+     "share": 5.8
+    }
+   }
+  }
+ },
+ "thumb_1920x1080_3_steal-back-christmas.png": {
+  "frame": {
+   "dark_share": 8.2,
+   "glow_share": 3.9,
+   "mean_saturation": 0.608,
+   "median_luma": 0.368,
+   "near_black": 0.38,
+   "rms_contrast": 0.222,
+   "saturated_share": 60.8,
+   "value_spread": 0.553,
+   "warm_share": 9.7
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.24,
+     "pop": 0.369,
+     "share": 10.3
+    },
+    "globe": {
+     "grey_pop": 0.205,
+     "pop": 0.155,
+     "share": 0.4
+    },
+    "hero": {
+     "grey_pop": 0.354,
+     "pop": 0.482,
+     "share": 4.9
+    },
+    "loot": {
+     "grey_pop": -0.137,
+     "pop": -0.357,
+     "share": 8.3
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.209,
+     "pop": 0.314,
+     "share": 10.2
+    },
+    "globe": {
+     "grey_pop": 0.226,
+     "pop": 0.184,
+     "share": 0.4
+    },
+    "hero": {
+     "grey_pop": 0.322,
+     "pop": 0.439,
+     "share": 4.9
+    },
+    "loot": {
+     "grey_pop": -0.149,
+     "pop": -0.343,
+     "share": 8.3
+    }
+   }
+  }
+ },
+ "thumb_1920x1080_4_wrong-one.png": {
+  "frame": {
+   "dark_share": 3.7,
+   "glow_share": 5.8,
+   "mean_saturation": 0.404,
+   "median_luma": 0.282,
+   "near_black": 0.16,
+   "rms_contrast": 0.256,
+   "saturated_share": 16.0,
+   "value_spread": 0.672,
+   "warm_share": 51.2
+  },
+  "sizes": {
+   "150": {
+    "clone": {
+     "grey_pop": 0.253,
+     "pop": 0.337,
+     "share": 5.8
+    },
+    "hero": {
+     "grey_pop": 0.46,
+     "pop": 0.525,
+     "share": 6.6
+    },
+    "loot": {
+     "grey_pop": -0.084,
+     "pop": -0.002,
+     "share": 2.9
+    }
+   },
+   "64": {
+    "clone": {
+     "grey_pop": 0.256,
+     "pop": 0.322,
+     "share": 5.9
+    },
+    "hero": {
+     "grey_pop": 0.436,
+     "pop": 0.51,
+     "share": 6.5
+    },
+    "loot": {
+     "grey_pop": -0.017,
+     "pop": 0.043,
+     "share": 3.0
+    }
+   }
+  }
+ }
+}
