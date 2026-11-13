@@ -9157,6 +9157,225 @@
    ],
    "sim": "solid body; the bank zone is the kerb in front of the open door (LevelSpec van box)"
   },
+  "VanBakery": {
+   "model": "VanBakery",
+   "size": [
+    14.9,
+    7.999,
+    7.5
+   ],
+   "tris": 1652,
+   "class": "medium",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.45,
+    0.061,
+    -4.2
+   ],
+   "boundsMax": [
+    7.45,
+    8.06,
+    3.3
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_VanStyle"
+   ]
+  },
+  "VanBakery_Paint": {
+   "model": "VanBakery",
+   "size": [
+    14.0,
+    5.85,
+    6.8
+   ],
+   "tris": 192,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.0,
+    1.55,
+    -3.6
+   ],
+   "boundsMax": [
+    7.0,
+    7.4,
+    3.2
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tint": "van paint: a mid value by MeshPart.Color (the bay's or the crew's pick in the hideout and the drive); never Getaway White",
+   "tintable": true
+  },
+  "VanCamper": {
+   "model": "VanCamper",
+   "size": [
+    14.9,
+    7.891,
+    7.08
+   ],
+   "tris": 2240,
+   "class": "medium",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.45,
+    0.059,
+    -3.74
+   ],
+   "boundsMax": [
+    7.45,
+    7.95,
+    3.34
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_VanStyle"
+   ]
+  },
+  "VanCamper_Paint": {
+   "model": "VanCamper",
+   "size": [
+    14.0,
+    5.15,
+    6.8
+   ],
+   "tris": 172,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.0,
+    1.55,
+    -3.6
+   ],
+   "boundsMax": [
+    7.0,
+    6.7,
+    3.2
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tint": "van paint: a mid value by MeshPart.Color (the bay's or the crew's pick in the hideout and the drive); never Getaway White",
+   "tintable": true
+  },
+  "VanSecurity": {
+   "model": "VanSecurity",
+   "size": [
+    14.9,
+    7.786,
+    7.12
+   ],
+   "tris": 2204,
+   "class": "medium",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.45,
+    0.064,
+    -3.76
+   ],
+   "boundsMax": [
+    7.45,
+    7.85,
+    3.36
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_VanStyle"
+   ]
+  },
+  "VanSecurity_Paint": {
+   "model": "VanSecurity",
+   "size": [
+    14.0,
+    5.3,
+    6.8
+   ],
+   "tris": 168,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.0,
+    1.55,
+    -3.6
+   ],
+   "boundsMax": [
+    7.0,
+    6.85,
+    3.2
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tint": "van paint: a mid value by MeshPart.Color (the bay's or the crew's pick in the hideout and the drive); never Getaway White",
+   "tintable": true
+  },
   "Van_Paint": {
    "model": "Van",
    "size": [
