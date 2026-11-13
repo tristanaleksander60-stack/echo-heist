@@ -239,7 +239,7 @@ Config.Heist = {
 	METER_STEP = 0.1, -- detection meter attribute resolution (seconds)
 
 	-- FTUE (§7.5): a new account starts L1 straight away (no level select).
-	FTUE_AUTOSTART = true,
+	FTUE_AUTOSTART = false, -- owner 2026-11-13: everyone spawns in the hideout lobby at once (ads live); L1 is the first job
 	DATA_WAIT_SECONDS = 4, -- how long the garage waits for the profile before deciding
 	FLAGS_WAIT_SECONDS = 3, -- ... and for the first LiveFlags DataStore/ConfigService read
 	FTUE_L1_LEVEL = "cs1_back_room", -- LevelSpec id of the FTUE level (autostart, L1Complete, daily gate)
@@ -3543,7 +3543,7 @@ Config.Interior = {
 -- is data in Shared/Heist/IntroPlan (pure, unit-tested); the client Heist/Cinematic builds the stage locally
 -- (never replicated, never collides, never queried) and plays it. Numbers here; story and framing there.
 Config.Intro = {
-	ENABLED = true, -- replaces the 3 s title beat for new players (Heist/Loading)
+	ENABLED = false, -- owner 2026-11-13: the story intro is OFF everywhere (first join and the hideout TV) until it is fixed
 	-- Where the client builds its stage: far from every heist slot (Heist.INSTANCE_SPACING grid) and their
 	-- backdrop rings, so nothing of a level is ever in a shot. Client-made parts are never streamed.
 	STAGE_ORIGIN = { 0, 0, 7500 },
