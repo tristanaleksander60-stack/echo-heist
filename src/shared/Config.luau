@@ -1686,6 +1686,144 @@ Config.Backdrop = {
 	},
 }
 
+-- Northern lights (PLAN_FIRST_PERSON "SKY"; STYLE_BIBLE §16 sky exception; docs/PERF.md §4). Client only: Heist/Aurora
+-- builds chains of additive Beams along curved spines from the pure Shared/Heist/AuroraPlan; tier counts in
+-- Shared/Heist/Budget. Every layer is a band of the sky seen from the camera's ground point: a spine on a big circle
+-- whose centre lies behind the viewer (real aurora arcs run in parallel bands), so a band passes `dist` studs ahead
+-- of the viewer at its middle and curves back at its ends. Local frame: x to the right, z forward = toward the
+-- landmark (the site's first view, Hoardsworth's tower in the sky), y up; studs.
+Config.Aurora = {
+	ENABLED = true,
+	-- assets/sky/EH_Aurora_{A,B,C}.png (tools/blender/aurora_textures.py), uploaded with kit_upload.py --sky and
+	-- resolved to image ids with --resolve-sky (assets/sky/sky_ids.json). The three tiles share their edge columns,
+	-- so a chain may mix them without a seam.
+	TEXTURES = {
+		"rbxassetid://114658167481459",
+		"rbxassetid://111319134560419",
+		"rbxassetid://90786809529777",
+	},
+	-- The tiles are authored with image x along the beam and image top = the curtain's top. If Studio shows the
+	-- violet tips at the bottom, set this: the chains are built from the other end, which flips the image.
+	REVERSE_SPINE = false,
+	SEGMENTS = 20, -- Beam.Segments per spine piece (a smooth curve, 40 triangles a piece)
+	UPDATE_HZ = 15, -- sway and breathing writes a second (the shimmer is the engine's TextureSpeed)
+	REVEAL_SECONDS = 3, -- the fade-in once every texture has loaded (an unloaded Beam texture draws a solid bar)
+	PRELOAD_RETRY_SECONDS = 30, -- one more preload after a failure; until then nothing is shown
+	BRIGHTNESS = 1.6, -- Beam.Brightness before each layer's own factor (LightInfluence 0: unlit)
+	REDUCED_MOTION = 0.35, -- sway, scroll and breathing speed under reduced motion (slower, never off)
+	-- Never reachable, never in a room (unit spec over every sway phase): every ribbon's lower edge stays at least
+	-- MIN_CLEARANCE studs over the anchor and MIN_ELEVATION degrees over the viewer's horizon.
+	MIN_CLEARANCE = 40,
+	MIN_ELEVATION = 3,
+	-- Colour breathing: each Beam's Color runs between these two tints (multiplied onto the texture), as a slow wave
+	-- along the band; white keeps the texture's own green.
+	TINT_A = { 255, 255, 255 },
+	TINT_B = { 190, 255, 238 }, -- a teal lean
+	TINT_WAVE = 2, -- tint waves along a whole band
+	-- The layers in priority order: a tier keeps the first Budget.auroraLayers(tier). Fields:
+	--   dist / height: the band's middle, studs ahead of and above the viewer; radius: its circle (bigger = straighter);
+	--   span: studs of band left and right of the middle; points: spine control points (points - 1 Beams);
+	--   width: the ribbon's width (the curtain's height on screen); fold / foldWaves / foldPhase: the band's static
+	--   folds toward and away from the viewer; lift: a static height wave;
+	--   sway = { z, y, period }: the control points' slow drift (studs, studs, seconds per cycle);
+	--   breathe = { amount, period }: Brightness x (1 +- amount); scroll: TextureSpeed (tiles a second, sign = way);
+	--   transparency: the ribbon's base Transparency; brightness: x BRIGHTNESS; follow: the share of the camera's
+	--   horizontal moves the band follows (1 = a sky element; less = slight parallax between the bands).
+	LAYERS = {
+		{
+			name = "Veil", -- ahead, high: the showpiece over the landmark (kept on every tier)
+			dist = 330,
+			height = 360,
+			radius = 1500,
+			span = 900,
+			points = 7,
+			width = 280,
+			fold = 70,
+			foldWaves = 1.5,
+			foldPhase = 0.2,
+			lift = 30,
+			sway = { 34, 18, 31 },
+			breathe = { 0.18, 13 },
+			scroll = 0.012,
+			transparency = 0.12,
+			brightness = 1,
+			texture = 1,
+			follow = 0.95,
+		},
+		{
+			name = "Crown", -- nearly overhead: first person looking up
+			dist = 70,
+			height = 470,
+			radius = 1800,
+			span = 1000,
+			points = 7,
+			width = 340,
+			fold = 90,
+			foldWaves = 1.2,
+			foldPhase = 0.65,
+			lift = 40,
+			sway = { 40, 22, 37 },
+			breathe = { 0.2, 17 },
+			scroll = -0.009,
+			transparency = 0.3,
+			brightness = 0.85,
+			texture = 2,
+			follow = 0.9,
+		},
+		{
+			name = "Drape", -- far ahead, lower: depth behind the Veil
+			dist = 640,
+			height = 300,
+			radius = 1700,
+			span = 1100,
+			points = 8,
+			width = 230,
+			fold = 60,
+			foldWaves = 2,
+			foldPhase = 0.45,
+			lift = 26,
+			sway = { 30, 14, 27 },
+			breathe = { 0.22, 11 },
+			scroll = 0.015,
+			transparency = 0.32,
+			brightness = 0.9,
+			texture = 3,
+			follow = 0.97,
+		},
+		{
+			name = "Glow", -- low over the horizon: the soft glow at the top of the classic frame
+			dist = 820,
+			height = 200,
+			radius = 2000,
+			span = 1300,
+			points = 8,
+			width = 190,
+			fold = 50,
+			foldWaves = 2.5,
+			foldPhase = 0.1,
+			lift = 16,
+			sway = { 26, 10, 23 },
+			breathe = { 0.25, 9 },
+			scroll = -0.011,
+			transparency = 0.45,
+			brightness = 0.8,
+			texture = 2,
+			follow = 1,
+		},
+	},
+	-- Per runtime tier (Config.Heist.PERF_TIERS; Shared/Heist/Budget): tier 1-2 everything, tier 3 two layers,
+	-- tier 4 one static layer (no sway, scroll or breathing).
+	TIERS = {
+		{ layers = 4, animated = true },
+		{ layers = 4, animated = true },
+		{ layers = 2, animated = true },
+		{ layers = 1, animated = false },
+	},
+	-- The aurora's light on the snow: added to Lighting.OutdoorAmbient (0-255 per channel) through LightDirector's
+	-- setExteriorTint (it owns Lighting). Only adds, so Ambient <= OutdoorAmbient still holds. Very low.
+	OUTDOOR_ADD = { 0, 7, 4 },
+}
+
 -- Audio: cue table and pure rules in src/shared/Audio (Cues, Manifest, CueCheck, Voices, Mix), the client
 -- player in src/client/Audio/AudioDirector (Audio API graph). MASTERPLAN §7.1-7.3, docs/research/feel.md D5,
 -- docs/AUDIO.md. Per-cue data (asset ids, level, jitter, voices, cooldown) lives in Audio/Cues like level data;

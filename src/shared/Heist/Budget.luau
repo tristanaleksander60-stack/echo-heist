@@ -260,6 +260,35 @@ function Budget.particleCap(tier: number, touch: boolean): number
 	return math.floor(live * M.PARTICLE_CAP / M.PARTICLE_CAP_TOUCH + 0.5)
 end
 
+---------------------------------------------------------------------------
+-- Northern lights (Config.Aurora; client Heist/Aurora, pure Shared/Heist/AuroraPlan).
+---------------------------------------------------------------------------
+
+local function auroraTier(tier: number): any
+	local T = Config.Aurora.TIERS
+	return T[math.clamp(math.floor(tier), 1, #T)]
+end
+
+-- How many aurora layers draw at `tier` (Config.Aurora.LAYERS keeps them in priority order): every layer at tiers
+-- 1-2, two at tier 3, one at tier 4; never more than the layers that exist, never none.
+function Budget.auroraLayers(tier: number): number
+	return math.clamp(auroraTier(tier).layers, 1, #Config.Aurora.LAYERS)
+end
+
+-- Whether the aurora moves at `tier` (sway, shimmer scroll, breathing); tier 4 holds one static layer.
+function Budget.auroraAnimated(tier: number): boolean
+	return auroraTier(tier).animated == true
+end
+
+-- The aurora's Beams at `tier` (each layer is a chain of points - 1 Beams).
+function Budget.auroraBeams(tier: number): number
+	local n = 0
+	for i = 1, Budget.auroraLayers(tier) do
+		n += Config.Aurora.LAYERS[i].points - 1
+	end
+	return n
+end
+
 -- Measured view counts against a tier: a list of "what: measured > budget" lines (empty = within budget).
 -- `m` holds any of: drawCalls, tris, lights, shadowed, liveParticles, highlights.
 function Budget.over(tier: number, m: { [string]: number }): { string }
