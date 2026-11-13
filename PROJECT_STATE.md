@@ -642,3 +642,4 @@ _Last updated: 2026-11-13 (SKY track: northern lights)_
   - Rookie / Gus arms and hands, the vault dial, lamps and the tree shade round in first person.
   - No colour fringes on far parts at graphics quality 1-3.
   - The blue-violet cast in shadow remains: it is a Lighting call.
+- **v151 Published (2026-11-13):** studio-fidelity merged (round normals on curved shapes, atlas UVs at cell centres, Precise hero pieces, Roblox-faithful Blender preview; 97 groups re-uploaded). engine_smoke 0, client_engine 74/0, kit_engine 0, clone_engine 0. Open: the blue-violet ambient cast (docs/audit/STUDIO_FIDELITY.md options). Running: store video.
