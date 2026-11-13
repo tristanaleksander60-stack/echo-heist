@@ -8,7 +8,7 @@
 
 ## The game in one line
 
-"A Christmas Eve caper in a toy-sized town, and the whole crew is you." Each short heist run is recorded and replayed as copies of yourself who help you rob the shop. The guard, Gus, is funny, not scary. The audience is kids 8-13 and their friends, on phones.
+"A Christmas Eve caper in a toy-sized town, and the whole crew is you." You play first person as the Rookie, a cheeky robber in a flat cap; each short heist run is recorded and replayed as copies of your Rookie who help you rob the shop. The guard, Gus, is funny, not scary. The villain, Sir Hoardsworth, has vacuumed up every present in town into his Snow Globe Vault (a 34 s story intro opens the game). The audience is kids 8-13 and their friends, on phones.
 
 ## Track 1: main theme, "caper night"
 
@@ -28,6 +28,11 @@
 - **Heist complete,** 3 s.
 - **Busted,** 1.5 s, funny, not sad.
 - **Sunrise**, the end of the party, 3 s.
+
+## Trailer and intro cut (added 2026-11-13)
+
+- A **30 s trailer edit** of Track 2 (docs/marketing/TRAILER.md): a cold-open hit on frame 1 (the first clone), a darker 8-bar "villain" turn for the intro shots (Hoardsworth, the vacuum, "...GONE."), the caper groove back for the gameplay, the "8 OF ME!" choir hit at 18.6 s, a button ending on the title at 26.4 s. Must work muted (the trailer is captioned) and under platform sounds.
+- The intro's 13 cues (docs/AUDIO.md "Intro") can come from the same session if the quote allows: a sting per caption card.
 
 ## Delivery
 

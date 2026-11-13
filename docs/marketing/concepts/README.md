@@ -1,4 +1,6 @@
-# Icon and thumbnail CONCEPTS (direction only)
+# Icon and thumbnail CONCEPTS (direction only): SUPERSEDED 2026-11-13
+
+> **Superseded by `docs/marketing/thumbs/`** (the first-person pivot): these 2026-11-12 concepts use a blocky stand-in for a catalog-avatar Rookie and stripped "hologram" clones. The game now has its own Rookie (outfits, faces) and clones that are copies of it, so the new candidates (`tools/blender/thumb_shots.py`) render the real kit Rookie, Gus, Hoardsworth's tower and the Snow Globe Vault, the aurora and the levels. Kept for history; don't use these for direction.
 
 **Nothing in this folder is ever uploaded.** Every icon and thumbnail that ships is a **real in-game capture** from the capture setups in `docs/marketing/ICON_THUMBNAILS.md` (§3.3, §4) and `CLIPS.md` §3 (MASTERPLAN §9.4, truth gate G1). These renders only fix the direction before the capture sessions on Fri Nov 27: framing, scale of the hero, where the text goes, and whether the promise reads at 64 px / 160 × 90. Each image carries a small "CONCEPT RENDER, NOT A CAPTURE" tag in its bottom-right corner (the metadata zone) so it can't be uploaded by mistake.
 

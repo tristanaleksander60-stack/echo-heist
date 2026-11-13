@@ -54,7 +54,7 @@ Make this a guide layer in the image editor (and, once the owner kit has it, a t
 | Guard light | Torch Amber `#FFD27A`, only as Gus's cone |
 | Danger | Alarm Red `#FF3838` (owner-confirmed 2026-11-12, STYLE_BIBLE §1.1) only as real alarm beacons and lasers, always with a shape; never decoration, never text |
 | Christmas | Holly Green `#2FBF71`, Ribbon Burgundy `#8C2F4B` (Santa hats, berries), Snow `#C0C3D5` (small areas), warm-white fairy lights `#FFE7B8` |
-| Characters | **The Rookie**: the capture avatar (flat cap, long scarf, smug side-eye; CLIPS.md §3.1). **The scarf and the face are on the live hero only**: a clone rig strips the face, layered clothing and every accessory except at most 2 hair / hat pieces (`src/server/Heist/Avatars.luau`, `Config.Heist.MAX_CLONE_ACCESSORIES`), so the cyan copies show hair + cap and never the scarf. **Gus**: big flashlight (the "torch" of the internal docs), peaked cap, handlebar moustache, Santa hat Dec 3 - Jan 4 (STYLE_BIBLE §12). **Sir Hoardsworth** appears only once he exists in the game (open question 3) |
+| Characters | **The Rookie** (revised 2026-11-13): the game's own player character, not a catalog avatar (`server/Heist/Characters`, `Config.Rookie`): chunky, big head, Breton sweater, flat cap, long scarf, knit gloves, smug side-eye (faces idle / smug / shocked / busted). Brand shots use the **default outfit** (Flat Cap, Long Scarf, Breton Stripes, Knit Gloves) in **seat 1 = Clone Cyan** crew pieces. **Clones are copies of your Rookie** (`Avatars.buildRookie`): the outfit and the face are kept, only the crew pieces (scarf, stripes) take the crew hue, then the crew-hue fill (0.55) + outline, a floor glow and a numbered pill; older solo runs dimmer and drifting violet. So the copies now show the face, the cap and the scarf under the cyan fill (the old "smooth cyan heads" are gone). **Gus**: big flashlight (the "torch" of the internal docs), peaked cap, handlebar moustache, Santa hat Dec 3 - Jan 4 (STYLE_BIBLE §12). **Sir Hoardsworth** now exists (the story intro, `Hoardsworth` kit rig): use him only in story / event art, never in a gameplay thumbnail (he is not in a heist) |
 | Text style | **[DECISION]** Heavy rounded caps in a free-licensed font (proposal: *Lilita One*, SIL Open Font License; the owner or the freelance artist may pick another OFL or owned font that matches the "HEIST YOURSELF" wordmark). Fill Getaway White `#F4F7FF`, outline Ink Indigo `#1C1F3B` 8-10 px, the key word in Clone Cyan |
 | Never | Heist masks, guns, police, money piles with "$$$", Robux icons, emoji stickers, arrows, other games' looks, AI-generated art (MASTERPLAN §1.3, STYLE_BIBLE §9) |
 
@@ -88,10 +88,10 @@ Make this a guide layer in the image editor (and, once the owner kit has it, a t
 | Item | Spec |
 |---|---|
 | Subject | Head and shoulders of the Rookie, **60-80 % of the frame**, face in the upper-middle (eyes ~38-42 % from the top), turned 3/4 toward the viewer, eyes to the viewer (side-eye smirk) |
-| The twist | **2 cyan copies** (not 3: at 64 px a third becomes noise) of the same head, each offset ~8 % of the width up-left and a little smaller (they stand behind), the in-game clone look (opaque glow rig, outline) with the age ramp. Faces on clones are stripped in the game, so the copies are smooth cyan heads: that is the read ("ghosts of me") |
+| The twist | **2 cyan copies** (not 3: at 64 px a third becomes noise) of the same head, up-left and a little smaller (they stand behind), the in-game clone look (the Rookie under the crew-hue fill + outline) with the age ramp. Since the pivot the copies keep the face and the cap, so the read is "the same guy, glowing" rather than "ghosts"; offsets of ~19 % and ~36 % of the width keep both readable (the 2026-11-12 concept notes; at 8 % they hide behind his head) |
 | Background | Ink Indigo field, a soft Plum Slate radial behind the head, the **vault dial ring** (in-game Neon, Warm Marble `#D8C8A8` glow) as a halo partly behind the head |
 | Accent | One Heist Gold glint: the loot he holds at shoulder height (every loot item carries the gold sparkle shape, STYLE_BIBLE §1), with the sparkle near the eye line on the right. If no loot can be in his hand in the capture, leave the glint out: never paint one in |
-| Christmas (Dec 3 - Jan 4) | A **catalog Santa hat** (accessory type **Hat**, red/burgundy with a white snow trim) on the Rookie **in place of the cap**: hair + this hat are the 2 pieces a clone rig keeps, so the copies show it as a cyan hat silhouette. **Not** the in-game `Hat_Santa`: that is a clone-only cosmetic (`cloneHat` slot, 25 Candy Canes, `Config.Data` Cosmetics), so the live hero can't wear it. The snow trim matters: Ribbon Burgundy alone is only 0.14 luma above Ink Indigo, below the 0.15 step |
+| Christmas (Dec 3 - Jan 4) | **Revised 2026-11-13: there is no catalog avatar any more, and the Rookie has no Santa hat** (the cap slot is Flat / Beanie / Bobble / Trapper; `Hat_Santa` is a clone cosmetic of the pre-Rookie rig, **[UNVERIFIED]** whether it still dresses Rookie clones). Options, in order: (1) **request a `Rookie_Cap_Santa` cap piece** (art track: Ribbon Burgundy with a snow trim, the Bobble's attach point; the trim carries the 64 px read, Ribbon Burgundy alone is only 0.14 luma above Ink Indigo) and a Christmas outfit unlock; (2) the illustrator draws the Santa cap on the human-finished icon (§3.5) **only if (1) ships**, or the icon shows something the game doesn't have; (3) fallback: the Christmas icon uses the **Snow Globe Vault halo** (`IC3`) and keeps the flat cap |
 | Evergreen (from Tue Jan 5) | Same capture without the hat (shoot both versions in the same session) |
 | Text | None (vault: text at icon size is noise; one icon per locale, so text-free works for Danish too) |
 
@@ -109,7 +109,8 @@ Make this a guide layer in the image editor (and, once the owner kit has it, a t
 | Step | Do |
 |---|---|
 | Where | **L6 The Big Score: Bank**, the scale room, facing the **vault door** (door plane at z -48). The dial is on the door face, 3.6 studs above the floor (STYLE_BIBLE §7 anchor T) |
-| Avatar | The Rookie outfit + the smug face; for the Christmas version swap the cap for the catalog Santa hat (Hat type, §3.1). At most 2 hair / hat accessories in total, or a copy drops one |
+| Outfit (revised 2026-11-13) | Your Rookie in the default outfit (Flat Cap, Long Scarf, Breton Stripes, Knit Gloves), seat 1; the face is the game's (smug shows on a bank, `Config.Rookie` faces), so time the frame to a bank or use the idle face. The copies wear the same outfit under the cyan fill. Christmas version: §3.1 row "Christmas" |
+| Camera mode | In-game **Settings → Camera → CLASSIC** before the run, then the freecam while you stand on the hero mark (CAPTURE.md §0) |
 | Clones | The vault door must stay **closed** (the dial is on it), so the path is lobby → staff door → hall → laser grid → scale room. Wait for every crossing beside the staff door in the lobby (x -4, z -11), out of Gus's sight. **Run 1:** stand on plate A (behind the teller desk, through the counter gate; holds the staff door), END there. **Run 2:** at **0:05.3** go through the staff door to plate B (under the fern, just inside on the west; turns the hall grid off), END there. **Run 3 (copy 2):** at **0:06.0** cross the hall and the (now dark) grid into the scale room and stand at (x -2.4, z -44.5): 2.4 studs left of the dial's centre line and 1 stud closer to the door than the hero mark; face +z (toward the arch), END at about 0:14. **Run 4 (copy 1):** the same to (x -1.2, z -44.0), END. **Run 5 (hero):** grab the lobby drawer cash (x 12, z -9, through the counter gate: its sparkle is the gold glint), wait beside the staff door, cross at **0:06.0**, stand on the hero mark (x 0, z -43.5: the dial's centre line, 4.5 studs in front of the door), face +z, then the freecam (you stand still). Crossing windows from beside the staff door (sim): **5.2-7.8 s**, then about every 9 s (9.4-16.8 s); a crossing outside them is caught. Gus paces the hall, not the scale room, so the room is quiet. Run budget: Dawn at run 8, the heist only completes on the gold: never touch it |
 | Camera (`CAM_ICON`) | Freecam 6 studs in front of the hero's face, **at chin height**, pitched up 3-5° so the dial ring sits behind the head; FOV **30**; the head + two copies fill the centre square |
 | Lighting | The project's "Heist Night" as shipped; no extra lights (truth rule). A light DepthOfField is allowed (the game uses it in menus and the reel): focus on the face, far intensity ~0.3 |
@@ -124,9 +125,28 @@ Make this a guide layer in the image editor (and, once the owner kit has it, a t
 - Christmas version live **Thu Dec 3** → evergreen version **Tue Jan 5**.
 - No other icon changes in December. An icon change is a **time-sliced** test (14 days A, 14 days B, only trust a 30 %+ difference, not in update weeks, not during a thumbnail round; vault *A-B Testing* §5). Keep a dated archive with the metric window of each version.
 
+### 3.5 Illustrator brief: the human-finished icon (new 2026-11-13)
+
+MASTERPLAN §2.2 wants the mascot **human-finished** (an AI provenance log for any moodboard use). The Blender candidates `thumbs/IC1_icon_flatcap.png`, `IC2_icon_bobble.png`, `IC3_icon_globe.png` are **stand-ins and references for this brief, never the upload**. Send the illustrator this section, the three candidates, `docs/art/rookie_sheet.png` (the Rookie's outfits, faces and four crew colours), `docs/art/turntables/Rookie*.png` and `docs/art/intro/shot_6.png` / `shot_7.png` (the Rookie and his clones lit).
+
+| Item | Brief |
+|---|---|
+| Deliverable | A **1024 × 1024** icon (PNG, layered source: PSD / Krita / Procreate), plus a **Christmas variant** (same art, the seasonal change only). Rights assigned in writing (MASTERPLAN §1.3: original, commissioned). No AI-generated pixels in the deliverable |
+| Subject | **The Rookie's head and shoulders** exactly as the game models him (the kit is the model sheet: big head, flat cap, long scarf, Breton stripes, smug side-eye with one brow cocked and the crooked smirk). Eyes ~40 % from the top, turned 3/4, eyes to the viewer. Head + shoulders 60-80 % of the frame |
+| The twist | **Two copies of him**, up and to the left, smaller (behind), in the **clone look**: the same Rookie under a flat Clone Cyan `#3DE8FF` glow with a bright cyan outline; the older (further) one dimmer and drifting toward violet (the age ramp). They keep his face and cap (that is the game since the pivot). Not three: at 64 px a third is noise |
+| Background | Ink Indigo `#1C1F3B` night with a soft warm halo behind the head: the **Snow Globe Vault's glow** (IC3) or a street lamp (IC1/IC2); a hint of the aurora's green-teal in the top corner at most (STYLE_BIBLE §16: never cyan, it must not compete with the copies) |
+| Accent | One Heist Gold `#FFC21F` glint only if he holds loot (a cash bag at the shoulder); else none |
+| Christmas variant | Only what the game will really have on Dec 3: if the art track ships a `Rookie_Cap_Santa` (§3.1 "Christmas"), the Santa cap on him and the copies; if not, the Snow Globe halo with snow falling, and the flat cap stays |
+| Style | The game's chunky low-poly toy look, flat-shaded planes, bold silhouette, no outlines on the hero except where the game draws them (the copies' outline). Readable in **greyscale at 64 px**: hero face, copies and background are three separate values (§3.2) |
+| Never | A mask, a weapon, money piles or "$$$", Robux icons, text, arrows, emoji, other games' characters or looks, a Roblox avatar, Gus or Hoardsworth (they are for thumbnails and events) |
+| Process | 2 rough sketches (Mon Nov 23) → owner picks one → colour draft at 64 / 150 px on a phone (Thu Nov 26) → final by **Fri Nov 27** (the §3.4 slot) → owner sign-off Mon Nov 30 → upload Wed Dec 2 |
+| What the candidates teach (from the grades, §0.2) | The face carries the icon; the copies must sit clear of his cap (in IC1/IC2 they crowd the left edge); a warm halo directly behind the head is what separates the dark cap from the night at 64 px |
+
 ---
 
 ## 4. Thumbnail briefs T1-T5
+
+**First-person build (2026-11-13):** wherever a brief below says "freecam" or "pinned", read CAPTURE.md §0: Settings → Camera → CLASSIC for freecam stills, or the **cameraman client** for a fixed angle while the live you moves; "avatar" means your Rookie in the default outfit. The positions and timings are unchanged (the sim did not change; `clips_check.luau` still holds them). The Blender target frame for each brief is in §0.2.
 
 Each brief: the promise, the sketch (64 × 16 characters ≈ 16:9; `·` = corners, the dashed line = top of the bottom 18 %), what it tests, and the exact capture setup. Times are elapsed run time; positions are level coordinates (CLIPS.md §4 explains them and the run budget). A still where the hero stands on a mark can use the freecam; a still where the hero walks needs the pinned camera (CLIPS.md §3.2 #4) or a 60 fps recording of the follow camera.
 
@@ -210,7 +230,7 @@ Ad creatives are uploaded on **Mon Nov 30** (LAUNCH_CHECKLIST) for the Dec 3-6 P
 | Item | Spec |
 |---|---|
 | Promise | "Your own clone can ruin your plan" (Mistakes are content, pillar 2) |
-| Hero | The live Rookie at the **right third**, ~35 %, with a **shocked face** (a catalog face swap for this capture: any avatar may wear it), lit by Gus's amber flashlight cone |
+| Hero | The live Rookie at the **right third**, ~35 %, with the game's **shocked face** (`Rookie_Face_Shocked`, shown on a zap; for a still, time the frame to a face swap or use the idle face), lit by Gus's amber flashlight cone |
 | Secondary | A cyan clone at the till, cash bag in hand, under the red alarm beacon (left third, mid-ground); Gus small behind the hero in the aisle |
 | Text | `BETRAYED!` upper left |
 | Tests | **Emotion + betrayal.** Hypothesis: a shocked face + "my clone did it" beats the calm comedy of T3. Variable vs T3: the emotion and who the threat is. Runs in the Plays ad test first; enters the Home pool when the pool can hold 3+ |
@@ -335,7 +355,7 @@ Ad creatives are uploaded on **Mon Nov 30** (LAUNCH_CHECKLIST) for the Dec 3-6 P
 | Item | Spec |
 |---|---|
 | Promise | "Steal the presents back: a Christmas heist with your clones" (§4.3) |
-| Hero | The Rookie in a **catalog Santa hat** (Hat type, in place of the cap, §3.1: the in-game `Hat_Santa` is clone-only), left third, ~35 %, carrying the big wrapped present toward the camera |
+| Hero | Your Rookie (default outfit; a `Rookie_Cap_Santa` only if the art track ships one, §3.1 "Christmas"), left third, ~35 %, carrying the big wrapped present toward the camera at belly height |
 | Secondary | A cyan clone right behind him with the second present (its silhouette wears the hat too); through the doorway, Gus in his Santa hat small in the back room, facing the other way; the dressing layer's garland and warm-white lights on the front-room walls if the layer puts them there. **No tree in this shot:** DV04's tree hide (x -15.5..-10.5, z -26.5..-21.5) is behind the z -20 wall, out of view through the 6-stud doorway (a back-room angle would show it but puts Gus right by the camera) |
 | Text | `STEAL BACK XMAS` upper right (3 words, "XMAS" in Clone Cyan) |
 | Tests | **The control at launch** (the event promise). Hypothesis: the seasonal promise wins Dec 3 - Jan 4 for new players. It is the baseline every other thumbnail is compared with |
@@ -397,10 +417,12 @@ Rules: keep a control in every round; one variable per pair; 7-14 days per round
 
 ## 8. Decisions and open questions
 
-**Decisions made here:** a catalog Santa hat (Hat type) on the live hero, because `Hat_Santa` is clone-only; the scarf is a live-hero trait (§2, §3.1); every image that feeds the Dec 3-6 Plays test is shot by Nov 29, T1 and T2 in C3, T4 with test accounts or out of the first test (§4.0); T5 v1 without the tree (out of view from the doorway camera); T1 in Clone Party, not the Bank (§4 T1); T2 shows the clone robbing the till (no alarm button exists), timed to the 0:20 till lock; T3 uses the real double-take and the night-deposit bag (no collar grab, no diamond at launch); T4 at the Crew Line-up; T5 v1 without Hoardsworth or the Snow Globe Vault; E1 images limited to launch content; E2 submitted by Dec 11; 2 clone copies on the icon; free-licensed rounded font for text.
+**Decisions made here (2026-11-12, revised 2026-11-13):** ~~a catalog Santa hat on the live hero~~ (no catalog avatar after the pivot: request a `Rookie_Cap_Santa`, §3.1); ~~the scarf is a live-hero trait~~ (clones keep the outfit now, §2); every image that feeds the Dec 3-6 Plays test is shot by Nov 29, T1 and T2 in C3, T4 with test accounts or out of the first test (§4.0); T5 v1 without the tree (out of view from the doorway camera); T1 in Clone Party, not the Bank (§4 T1); T2 shows the clone robbing the till (no alarm button exists), timed to the 0:20 till lock; T3 uses the real double-take and the night-deposit bag (no collar grab, no diamond at launch); T4 at the Crew Line-up; T5 v1 without Hoardsworth or the Snow Globe Vault; E1 images limited to launch content; E2 submitted by Dec 11; 2 clone copies on the icon; free-licensed rounded font for text.
 
 **Open questions:**
 1. Who stages the captures, and when does the owner kit's "freeze at t" and level jump exist (T5 needs DV04 on demand)?
-2. The Rookie's face: which catalog face gives the smug side-eye at 64 px? (Owner picks 2-3 candidates; the icon stranger test decides.)
-3. Sir Hoardsworth: will he exist in the game (a model, a portrait in the bank) by Dec 18? Until then he is not shown in any image.
+2. ~~The Rookie's face: which catalog face?~~ Resolved by the pivot: the game's own smug face (`Rookie_Face_Smug`); the illustrator draws from it (§3.5).
+3. ~~Sir Hoardsworth: will he exist?~~ He does (the story intro). Story and event art only (§2 "Characters"), never a gameplay thumbnail.
 4. Is a diamond planned for any launch or December level? If yes, a T3 variant with it can be tested.
+5. (new) A `Rookie_Cap_Santa` for the Christmas icon and T5 before Dec 3? (art track; else the Christmas icon is IC3's Snow Globe halo.)
+6. (new) Key art: may the icon and **one** thumbnail be in-engine key art (the game's own meshes posed in Blender or a Studio stage, no shape changes) instead of a heist capture? (§0.3)
