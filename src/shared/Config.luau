@@ -483,7 +483,7 @@ Config.Heist.CAMERA = {
 		G1 = { STAND = { -10, 28 }, LOOT = "Cash", PITCH = -18, YAW_OFFSET = 0, FOV = 70 },
 		G2 = { PITCH = 45, FOV = 45, YAW = 0, MAX_DISTANCE = 70 },
 		-- the hideout: you stand in the aisle at the vans (STAND x, z) and look between the job board and your van
-		G3 = { STAND = { 6, -5 }, LOOK_AT = { 18.5, 4.2, -21 }, PITCH = -3, FOV = 70 },
+		G3 = { STAND = { 22, -10 }, LOOK_AT = { 19, 4.2, -21 }, PITCH = -4, FOV = 70 },
 	},
 }
 

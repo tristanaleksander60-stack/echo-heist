@@ -1882,7 +1882,7 @@ def golden_fp_sheet(gdir):
              ("G2_eight_of_me", "G2  Clone Party: 8 OF ME (eight Rookies)"),
              ("G3_fp_hideout", "G3  the hideout in first person: the vans and the job board")]
     tw, th = 640, 360
-    sheet = Image.new("RGB", (tw * 3 + 40, th + 60), (20, 21, 34))
+    sheet = Image.new("RGB", (tw * 3 + 40, th + 72), (20, 21, 34))
     d = ImageDraw.Draw(sheet)
     f, _ = MR._font(15)
     for i, (n, label) in enumerate(names):
@@ -2415,6 +2415,7 @@ def main(argv):
         tag = a.only.upper()
         if tag == "G3":
             plan = load_plan(not a.plain, False)
+            plan["garage"]["firstJob"] = plan["levels"][0]["name"].upper()   # Heist/JobCard.first(Catalog)
             golden_fp_g3(plan["garage"], gp, a.samples, gdir)
             return
         plan = load_plan(not a.plain, False)
