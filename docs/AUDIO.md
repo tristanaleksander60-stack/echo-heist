@@ -220,6 +220,31 @@ and plays nothing until the owner pastes a licensed id. The title beat's sound l
 |---|---|---|
 | VanDoor | a toy-like sliding-door roll ending in a soft slam (UI bus, 2D), under 0.4 s | 2 |
 
+#### Missing (intro)
+
+Intro track, 2026-11-13 (docs/art/intro/STORYBOARD.md, PLAN_FIRST_PERSON §5): `Heist/Cinematic` plays these cues at
+the times in `Shared/Heist/IntroPlan` (the shot list). They are in `Cues.luau` with empty `ids` and play nothing until
+the owner pastes licensed ids; every caption card reads without sound. The clones' entrance reuses `CloneChime`
+(steps 0-3, the sound logo). SKIP stops the two loops (`IntroMusic`, `IntroSuction`). The ideal is one commissioned
+36.5 s score with the hit points below (the D10 music commission); until then `IntroMusic` can be a library cue and
+the stings carry the beats.
+
+| Cue | Bus | When (s from the first frame) | What | Takes wanted |
+|---|---|---|---|---|
+| IntroMusic | Music, loop | 0.0 (stopped at 36.5 or on SKIP) | the score: music-box town (0-6), villain brass (6-12), suction build (12-22), a hush (22-26), caper bass (26-34), the title hit at 34.0 | 1 |
+| IntroBells | Ambience | 0.2 | a soft music-box twinkle under CHRISTMAS EVE. | 1 |
+| IntroHoardSting | Music | 6.0 | Hoardsworth's low brass "dun-dun" (funny-sinister, not scary) | 1 |
+| IntroMonocle | SFX | 7.3 | the monocle glint: one bright "ting" | 1 |
+| IntroLever | SFX | 9.2 | a big brass lever yanked down | 1-2 |
+| IntroWhoosh | SFX | 12.0 | the whip-pan to the vacuum | 1-2 |
+| IntroVacuumOn | SFX (ducks music) | 12.35 | the giant vacuum switching on: clunk, rising whine, roar | 1 |
+| IntroSuction | SFX, loop | 12.7 (stopped at 20.0) | the suction roar under the swirl | 1 loop |
+| IntroGlobeThunk | SFX | 20.0 | the last present thunks into the Snow Globe, then silence for ...GONE. | 1 |
+| IntroLetter | SFX | 22.6 | the kid's letter fluttering down | 1 |
+| IntroHeadlights | SFX | 26.4 | two heavy clunks as the van's headlights flick on | 1 |
+| IntroTapePrint | Clone | 30.5 | a VHS glitch-print under the clones' entrance | 1-2 |
+| IntroTitleSmash | Music | 34.0 | the HEIST YOURSELF title hit | 1 |
+
 ### Loot and bank
 
 | Cue | Bus | Takes (id "title" (creator, s)) | Alternates | Vol | Jitter | Voices | Cooldown | Notes |

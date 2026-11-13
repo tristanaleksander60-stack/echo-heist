@@ -155,7 +155,7 @@ def box(name, lo, hi, mat, shadow=True):
 def world(s, mood):
     """Camera rays see the Heist City sky (turned 180 deg: Heist/Cinematic turns Sky.SkyboxOrientation so the
     painted landmark never doubles the 3D tower); lighting sees the mood's outdoor ambient."""
-    tmp = os.path.join(REPO, "build", "intro")
+    tmp = os.path.join(REPO, "build", "blender")
     os.makedirs(tmp, exist_ok=True)
     path = BS.equirect(os.path.join(tmp, "sky_city_equirect.png"))
     nt = s.world.node_tree
