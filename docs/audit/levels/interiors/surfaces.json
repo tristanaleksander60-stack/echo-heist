@@ -2210,13 +2210,40 @@
   }
  },
  "L5_fp_ceiling": {
+  "ceiling_wall": 0.39,
   "loot_pop": null,
   "plate_pop": null,
+  "signal_over_decor": 0.086,
   "surfaces": {
+   "ceiling": {
+    "median_luma": 0.136,
+    "median_value": 0.243,
+    "share": 24.4
+   },
+   "decor": {
+    "median_luma": 0.758,
+    "median_value": 0.82,
+    "share": 0.2
+   },
+   "lamp": {
+    "median_luma": 0.896,
+    "median_value": 0.996,
+    "share": 3.5
+   },
    "other": {
-    "median_luma": 0.255,
-    "median_value": 0.455,
-    "share": 100.0
+    "median_luma": 0.442,
+    "median_value": 0.6,
+    "share": 64.2
+   },
+   "signal": {
+    "median_luma": 0.718,
+    "median_value": 0.906,
+    "share": 3.3
+   },
+   "wall": {
+    "median_luma": 0.352,
+    "median_value": 0.612,
+    "share": 4.3
    }
   }
  },
