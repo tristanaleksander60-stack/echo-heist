@@ -593,7 +593,7 @@ Config.FirstPerson = {
 		-- overshoot: the easeOutBack constant of the rise (1.5 = about 8 % past the pose, then it settles).
 		ACTIONS = {
 			reach = {
-				R = { 0.6, -0.55, -3.2, -4, 12, -14 },
+				R = { 0.62, -0.58, -3.0, 2, 12, -14 },
 				L = { -1.3, -0.98, -2.75, 12, -17, 24 },
 				time = { 0.12, 0.08, 0.26 },
 				anticipate = { 0.07, 0.3 },
@@ -638,7 +638,7 @@ Config.FirstPerson = {
 			R = { 0.56, -0.74, -2.55, 6, 30, -66 },
 			L = { -0.56, -0.74, -2.55, 6, -30, 66 },
 			LOOT = { 0, -0.64, -2.78 }, -- where the held loot sits (full size, viewmodel camera space)
-			LOOT_SIZE = 0.95, -- full-size studs the held loot's longest side is scaled to
+			LOOT_SIZE = 0.8, -- full-size studs the held loot's longest side is scaled to
 			BLEND_SECONDS = 0.18,
 		},
 		HIDDEN = { 0, -0.3, 0.2 }, -- added to both hands while you hide (a crouch-like lower)
