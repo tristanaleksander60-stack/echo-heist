@@ -510,4 +510,4 @@ _Last updated: 2026-11-13 (SKY track: northern lights)_
 
 - **Integrator (2026-11-13):** BADGES merged (8 launch badges, Met the Boss, BADGE UNLOCKED card, boss pill; ids 0 until the owner creates them). Engine: engine_smoke 0, client_engine 62/0, clone_engine 0. **v115 Published.** Owner: create the 8 badges (5 free/day), send the ids. Still running: first-person hands, icon + thumbnails.
 
-- **Badge ids (2026-11-13):** the owner created 5 badges, checked with GetBadgeInfoAsync (names match, all enabled): welcome, first_heist, first_clone, eight_of_me, met_the_boss. Still 0: crew_up, daily_streak_3, ghost (earned and saved, sent once their ids exist).
+- **Badge ids (2026-11-13):** the owner created 5 badges, checked with GetBadgeInfoAsync (names match, all enabled): welcome, first_heist, first_clone, eight_of_me, met_the_boss. Still 0: crew_up, daily_streak_3, ghost (earned and saved, sent once their ids exist). **v116 Published** with these ids (engine_smoke 0, client_engine 62/0, clone_engine 0).
