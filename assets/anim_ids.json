@@ -19,6 +19,41 @@
     "moderation": "Approved",
     "sha256": "d9f688d783b6ddf4bb75ecc2fd4037538e0ecfde1140f4283157d68e90b5451a"
   },
+  "EH_Rookie_fall": {
+    "assetId": 109370233679677,
+    "moderation": "Approved",
+    "sha256": "6b077f6b4b11b40beeb5f5060ca30d1f4f397b0c23c79f60eecc0c5e96a5d81b"
+  },
+  "EH_Rookie_idle": {
+    "assetId": 100182589865719,
+    "moderation": "Approved",
+    "sha256": "bb1c6e258ba5ad15fe3fdd97bcd75cfbdbf13b55651dc559906b061b5cdd35f1"
+  },
+  "EH_Rookie_jump": {
+    "assetId": 91160306117434,
+    "moderation": "Approved",
+    "sha256": "767a9ddd7a10baf8114ff0e71bfa5c1f6bf7222b7355c1700e29dde4da09c58b"
+  },
+  "EH_Rookie_land": {
+    "assetId": 88472519960189,
+    "moderation": "Approved",
+    "sha256": "2cd6a8a460ee2a6596310f1d00212a92f6b1e651e58bb29b75e974644504a6f3"
+  },
+  "EH_Rookie_look": {
+    "assetId": 139232191586711,
+    "moderation": "Approved",
+    "sha256": "8a4b003157dc8e6e8e1490da7efdabd1e992e0e8f3fc3ff59c3b105b3cde5308"
+  },
+  "EH_Rookie_run": {
+    "assetId": 86202197239120,
+    "moderation": "Approved",
+    "sha256": "f1064477a4d1157ca6b21d1b609fde4e40bdeb74311c276340e6968629fa8015"
+  },
+  "EH_Rookie_walk": {
+    "assetId": 71310211325205,
+    "moderation": "Approved",
+    "sha256": "35e323286de4dbaa2650ed9fa2cece5176ed5186a20e8642deafeefc4c39e14c"
+  },
   "anim_spike": {
     "assetId": 83859875506228,
     "moderation": "Approved",
