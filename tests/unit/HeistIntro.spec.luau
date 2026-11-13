@@ -442,7 +442,7 @@ return function(test)
 		end
 		-- the knob is the lever's handle top (the kit's Intro_Lever: hinge 2.85 up, the handle 2.43 above it, leaning
 		-- toward his front)
-		Assert.truthy(math.abs(ST.knob[2] - (ST.lever.at[2] + 2.85 + 2.43)) < 0.3, "the knob is the handle's top")
+		Assert.truthy(math.abs(ST.knob[2] - (ST.lever.at[2] + 2.85 + 2.2)) < 0.3, "the knob is the handle's top")
 		Assert.truthy(math.abs(ST.knob[1] - ST.lever.at[1]) < 0.2, "over the lever")
 		-- the camera: opens close on his face (the monocle in the middle), ends on the knob, and stays close
 		local face = partCentre("laugh", IntroRig.MONOCLE)
@@ -462,8 +462,18 @@ return function(test)
 		Assert.truthy(seen.ring and seen.ring > seen.glint, "then the ring flashes on the knob")
 		Assert.truthy(seen.IntroLever and seen.IntroLever > seen.ring, "then he yanks it")
 		Assert.near(IntroPlan.LEVER.at, IntroPlan.startOf(i) + seen.IntroLever, 1e-9, "the handle swings on the cue")
-		local a, b = IntroPlan.pose("hoardsworth", IntroPlan.startOf(i) + 0.2)
-		Assert.truthy(a == "laugh" or b == "laugh" or a == "laughB" or b == "laughB", "laughing in the close-up")
+		for s = 0, 2.6, 0.1 do
+			Assert.truthy(IntroPlan.laughing(IntroPlan.startOf(i) + s), string.format("laughing at %.1f s", s))
+		end
+		Assert.falsy(IntroPlan.laughing(IntroPlan.startOf(i) - 1), "not before the close-up")
+		Assert.falsy(IntroPlan.laughing(IntroPlan.LEVER.at + 0.4), "the yank is effort, not a laugh")
+		local kinds = {}
+		for _, l in ST.villainLights do
+			kinds[l.kind] = true
+			Assert.truthy(I.VILLAIN_LIGHTS[l.kind] ~= nil, "Config.Intro.VILLAIN_LIGHTS." .. l.kind)
+			Assert.truthy(dist(l.from, l.to) < 25, l.kind .. ": in range of him")
+		end
+		Assert.truthy(kinds.under and kinds.key and kinds.rim and kinds.hand, "under, key, rim and the hand kicker")
 		Assert.truthy(I.RING and #I.RING.SIZE == 3, "the ring's numbers in Config.Intro")
 	end)
 

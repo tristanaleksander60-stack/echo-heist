@@ -196,9 +196,10 @@ local function poseRig(rig: Rig, feet: CFrame, a: string, b: string, w: number, 
 end
 
 -- Hoardsworth: the kit's 17 meshes, or boxes sized from the manifest bounds (IntroRig), plus the gold ring on his
--- right glove (Config.Intro.RING: a thin Neon-gold disc that rides the hand as a rig decoration). Returns the rig,
--- the monocle (its glint) and the ring (its flash on the lever).
-local function buildHoardsworth(parent: Instance): (Rig, BasePart, BasePart)
+-- right glove (Config.Intro.RING: a thin Neon-gold disc that rides the hand as a rig decoration) and his open
+-- laughing mouth (Config.Intro.LAUGH_MOUTH, hidden until IntroPlan.laughing). Returns the rig, the monocle (its
+-- glint), the ring (its flash on the lever) and the mouth parts.
+local function buildHoardsworth(parent: Instance): (Rig, BasePart, BasePart, { BasePart })
 	local kit = kitModel("Hoardsworth")
 	local map = if kit then partsByName(kit) else nil
 	if map then
@@ -251,6 +252,34 @@ local function buildHoardsworth(parent: Instance): (Rig, BasePart, BasePart)
 	ring.Material = Enum.Material.Neon
 	quiet(ring, false)
 	ring.Parent = model
+	local function onJoint(partName: string, spec: any, name: string, shape: Enum.PartType): BasePart?
+		local ix = index[partName]
+		if not ix then
+			return nil
+		end
+		local p = Instance.new("Part")
+		p.Name = name
+		p.Shape = shape
+		p.Size = Vector3.new(spec.SIZE[1], spec.SIZE[2], spec.SIZE[3])
+		p.Color = Color3.fromHex(spec.COLOUR)
+		p.Material = Enum.Material.SmoothPlastic
+		p.Transparency = 1
+		quiet(p, false)
+		p.Parent = model
+		table.insert(rig.deco, {
+			part = p,
+			joint = ix,
+			offset = CFrame.new(spec.OFFSET[1], spec.OFFSET[2], spec.OFFSET[3]),
+		})
+		return p
+	end
+	local mouth: { BasePart } = {}
+	for _, key in { "MOUTH", "TEETH" } do
+		local p = onJoint("Hoardsworth_Head", I.LAUGH_MOUTH[key], "Hoardsworth_Laugh" .. key, Enum.PartType.Block)
+		if p then
+			table.insert(mouth, p)
+		end
+	end
 	local hand = index["Hoardsworth_RightHand"]
 	if hand then
 		local spec = IntroRig.PARTS[hand]
@@ -262,11 +291,13 @@ local function buildHoardsworth(parent: Instance): (Rig, BasePart, BasePart)
 		table.insert(rig.deco, {
 			part = ring,
 			joint = hand,
-			offset = CFrame.new(centre + Vector3.new(R.OFFSET[1], R.OFFSET[2], R.OFFSET[3])),
+			-- the cylinder's axis (X) turned onto the hand's Z: the signet faces up off the knuckles
+			offset = CFrame.new(centre + Vector3.new(R.OFFSET[1], R.OFFSET[2], R.OFFSET[3]))
+				* CFrame.Angles(0, math.pi / 2, 0),
 		})
 	end
 	model.Parent = parent
-	return rig, rig.parts[index[IntroRig.MONOCLE]], ring
+	return rig, rig.parts[index[IntroRig.MONOCLE]], ring, mouth
 end
 
 -- The Rookie stand-in (only when CharacterKit's Rookie never arrived): an R15-proportioned figure with a flat
@@ -838,6 +869,32 @@ function Cinematic.new(opts: any?): any
 	local hoard: Rig? = nil
 	local monocle: BasePart? = nil
 	local ringPart: BasePart? = nil
+	local mouthParts: { BasePart } = {}
+	local laughShown = false
+	local villainLights: Folder? = nil
+
+	-- His light on the terrace (STAGE.villainLights, Config.Intro.VILLAIN_LIGHTS): built with him, gone with him.
+	local function buildVillainLights()
+		local f = Instance.new("Folder")
+		f.Name = "VillainLights"
+		for _, l in ST.villainLights do
+			local spec = I.VILLAIN_LIGHTS[l.kind]
+			local host =
+				part(f, "VillainLight", Vector3.new(0.3, 0.3, 0.3), stageCF * CFrame.lookAt(v3(l.from), v3(l.to)), OFF)
+			host.Transparency = 1
+			host.CastShadow = false
+			local sp = Instance.new("SpotLight")
+			sp.Face = Enum.NormalId.Front
+			sp.Brightness = spec.BRIGHTNESS
+			sp.Range = spec.RANGE
+			sp.Angle = spec.ANGLE
+			sp.Color = Color3.fromHex(spec.COLOUR)
+			sp.Shadows = false
+			sp.Parent = host
+		end
+		f.Parent = stage
+		villainLights = f
+	end
 	local presents: { BasePart } = {}
 	local letter: BasePart? = nil
 	local nPresents = I.PRESENTS[tier] or 6
@@ -1186,6 +1243,17 @@ function Cinematic.new(opts: any?): any
 			cone.Enabled = false
 			table.insert(headBeams, cone)
 		end
+		-- a warm lamp over the workbench (always on: the crew's practical)
+		local bench = part(
+			f,
+			"BenchLamp",
+			Vector3.new(0.4, 0.4, 0.4),
+			at(ST.benchLamp),
+			Color3.fromHex(GL.BENCH_LAMP.COLOUR),
+			Enum.Material.Neon
+		)
+		bench.Shape = Enum.PartType.Ball
+		light("PointLight", bench, GL.BENCH_LAMP, nil, true)
 		-- the cage lamp under the door header: tops the Rookie (comes on with the headlights)
 		local dl = ST.doorLamp
 		local cage = part(f, "DoorLamp", Vector3.new(0.5, 0.5, 0.5), at(dl), OFF, Enum.Material.Neon)
@@ -1459,8 +1527,10 @@ function Cinematic.new(opts: any?): any
 			applyMood(shot.mood)
 		elseif kind == "spawn" then
 			if e.id == "hoardsworth" and not hoard then
-				local r, mono, ring = buildHoardsworth(stage)
-				hoard, monocle, ringPart = r, mono, ring
+				local r, mono, ring, mouth = buildHoardsworth(stage)
+				hoard, monocle, ringPart, mouthParts = r, mono, ring, mouth
+				laughShown = false
+				buildVillainLights()
 			elseif e.id == "presents" then
 				for k = 1, nPresents do
 					local p = presentPart(k)
@@ -1487,6 +1557,11 @@ function Cinematic.new(opts: any?): any
 			if e.id == "hoardsworth" and hoard then
 				hoard.model:Destroy()
 				hoard = nil
+				mouthParts = {}
+				if villainLights then
+					villainLights:Destroy()
+					villainLights = nil
+				end
 			elseif e.id == "presents" then
 				for _, p in presents do
 					p:Destroy()
@@ -1629,6 +1704,13 @@ function Cinematic.new(opts: any?): any
 		if hoard then
 			local a, b, w = IntroPlan.pose("hoardsworth", t)
 			poseRig(hoard, at(ST.hoardsworth.at, ST.hoardsworth.yaw), a, b, w, partsBuf, cfBuf)
+			local laughing = IntroPlan.laughing(t)
+			if laughing ~= laughShown then
+				laughShown = laughing
+				for _, p in mouthParts do
+					p.Transparency = if laughing then 0 else 1
+				end
+			end
 			if leverHandle then
 				local ang = IntroPlan.leverAngle(t)
 				table.insert(partsBuf, leverHandle)

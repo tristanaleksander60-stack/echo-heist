@@ -3350,17 +3350,30 @@ Config.Intro = {
 		COLOURS = { "#FFF1D8", "#C9C2FF" }, -- warm white into a pale violet
 		SPIN = 2.6, -- rad/s (x Config.Aurora.REDUCED_MOTION under reduced motion)
 	},
-	-- The villain close-up's gold ring on Hoardsworth's right glove: a signet on the back of the knuckles (a Neon-gold
-	-- Cylinder, its axis along the hand's +X = the back of a right hand, built by Heist/Cinematic as a rig decoration),
-	-- flashing when he grips the lever (the "ring" event). SIZE studs (thickness, diameter, diameter); OFFSET from the
-	-- hand's centre in the hand's own space.
+	-- The villain close-up's gold ring on Hoardsworth's right glove: a signet on top of the knuckles (a Neon-gold
+	-- Cylinder, its axis along the hand's Z, its top as he grips the knob; built by Heist/Cinematic as a rig
+	-- decoration), flashing when he grips the lever (the "ring" event). SIZE studs (thickness, diameter, diameter);
+	-- OFFSET from the hand's centre in the hand's own space.
 	RING = {
-		SIZE = { 0.08, 0.3, 0.3 },
-		OFFSET = { 0.22, -0.08, 0 },
+		SIZE = { 0.06, 0.22, 0.22 },
+		OFFSET = { 0, -0.12, -0.24 },
 		COLOUR = "#FFC24A",
 		GLINT = { SIZE = 0.8, COUNT = 2 },
 	},
 	MONOCLE_GLINT = { SIZE = 0.9, COUNT = 2 }, -- studs: the close-up frames his face about 5 studs away
+	-- His open laughing mouth over the kit face's closed one (rig decorations on the head, shown while
+	-- IntroPlan.laughing): a dark mouth and a teeth strip; SIZE studs, OFFSET from the head's joint in its own space.
+	LAUGH_MOUTH = {
+		MOUTH = { SIZE = { 0.42, 0.2, 0.08 }, OFFSET = { 0.02, 0.33, -0.39 }, COLOUR = "#3A1020" },
+		TEETH = { SIZE = { 0.34, 0.06, 0.04 }, OFFSET = { 0.02, 0.39, -0.42 }, COLOUR = "#FFF4E0" },
+	},
+	-- His light on the terrace (IntroPlan.STAGE.villainLights; SpotLights, no shadows, while he is on stage).
+	VILLAIN_LIGHTS = {
+		under = { BRIGHTNESS = 2.4, RANGE = 20, ANGLE = 40, COLOUR = "#FF9C6A" },
+		key = { BRIGHTNESS = 1.6, RANGE = 20, ANGLE = 30, COLOUR = "#FFE2C0" },
+		rim = { BRIGHTNESS = 3, RANGE = 26, ANGLE = 30, COLOUR = "#9C8CFF" },
+		hand = { BRIGHTNESS = 1.8, RANGE = 8, ANGLE = 30, COLOUR = "#FFC24A" },
+	},
 	-- The garage's motivated light (IntroPlan.STAGE: workLamp, doorLamp, doorGlow, windows, rim, strings). Warm
 	-- practicals inside, the aurora's cool light from outside (REVIEW_STEAM_PLUS #7: shots 6-8 were near-black).
 	-- Brightness / range / angle as the Light instances take them; colours hex.
@@ -3370,13 +3383,14 @@ Config.Intro = {
 		-- { width at the lens, width at the end, transparency at the lens }, fading to clear at the end
 		BEAM = { LENGTH = 24, DROP = 2.0, LAYERS = { { 0.8, 4.5, 0.62 }, { 2.0, 11, 0.86 } }, TIERS = 3 },
 		WORK_LAMP = { BRIGHTNESS = 3.2, RANGE = 22, ANGLE = 80, COLOUR = "#FFC890", CONE_TRANSPARENCY = 0.88 },
-		DOOR_LAMP = { BRIGHTNESS = 2.2, RANGE = 14, ANGLE = 70, COLOUR = "#FFD2A0" },
+		DOOR_LAMP = { BRIGHTNESS = 2.6, RANGE = 14, ANGLE = 70, COLOUR = "#FFD2A0" },
+		BENCH_LAMP = { BRIGHTNESS = 1.6, RANGE = 12, COLOUR = "#FFB870" }, -- a PointLight over the workbench
 		-- the aurora through the open door (a SurfaceLight facing in) and the high windows (Neon panes, shafts)
-		DOOR_GLOW = { BRIGHTNESS = 1.6, RANGE = 30, ANGLE = 85, COLOUR = "#7FE3D6" },
+		DOOR_GLOW = { BRIGHTNESS = 1.6, RANGE = 30, ANGLE = 85, COLOUR = "#9CBCFF" },
 		WINDOW_COLOURS = { "#5BE0C2", "#8A7BFF" }, -- the pane's bottom, top (the aurora's green into violet)
 		SHAFT = { LENGTH = 22, WIDTH = { 5, 9 }, TRANSPARENCY = 0.9, TIERS = 2 },
 		RIM = { BRIGHTNESS = 3.0, RANGE = 30, ANGLE = 26, COLOUR = "#9DB4FF" },
-		STRING = { SPACING = 2.2, SAG = 0.5, COLOUR = "#FFD9A0", TIERS = 3 }, -- bulbs along both side walls
+		STRING = { SPACING = 2.2, SAG = 0.5, COLOUR = "#FFC680", TIERS = 3 }, -- bulbs along both side walls
 		SHADOWS_TIER = 2, -- shadows from the headlights and the work lamp up to this tier
 	},
 	TITLE_VEIL = 0.45, -- the ink veil under the wordmark (transparency): the lit garage and the crew show through

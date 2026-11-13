@@ -243,8 +243,11 @@ def town(st, lit, shot_id):
     return objs
 
 
-def hoardsworth(at, yaw, pose, rig):
-    """The rig posed like Heist/Cinematic: world[i] = world[parent] * C0 * pose (Roblox CFrames)."""
+def hoardsworth(at, yaw, pose, rig, ring=None, mouth=None):
+    """The rig posed like Heist/Cinematic: world[i] = world[parent] * C0 * pose (Roblox CFrames), with the gold signet
+    ring on the right glove (Config.Intro.RING: a Neon-gold disc, axis along the hand's +X, at OFFSET from the hand's
+    centre) and, while he laughs, the open mouth over the kit face's closed one (Config.Intro.LAUGH_MOUTH). Returns
+    the monocle's world position (its glint); RING_AT[0] holds the ring's (its flash)."""
     before = set(bpy.data.objects)
     bpy.ops.import_scene.fbx(filepath=os.path.join(K.FBX, "Hoardsworth.fbx"))
     objs = {o.name.split(".")[0]: o for o in set(bpy.data.objects) - before if o.type == "MESH"}
@@ -264,11 +267,28 @@ def hoardsworth(at, yaw, pose, rig):
         if o:
             o.matrix_world = place_m @ (C4 @ delta @ C4I) @ o.matrix_world
             K.style(o, LOC)
+    if ring:
+        man = K.MANIFEST["Hoardsworth_RightHand"]
+        cen = [(man["boundsMin"][k] + man["boundsMax"][k]) / 2 for k in range(3)]
+        off = Vector([cen[k] + ring["OFFSET"][k] for k in range(3)])
+        # the hand's frame (Roblox axes) moved to the ring; the Blender cylinder's axis (Z) turned onto the hand's X
+        rw = world["Hoardsworth_RightHand"] @ Matrix.Translation(off) @ Matrix.Rotation(math.radians(90), 4, "X")
+        o = MR.cyl("Ring", ring["SIZE"][1] / 2, ring["SIZE"][1] / 2, ring["SIZE"][0], emissive(ring["COLOUR"], 1.3),
+                   None, (0, 0, 0), seg=20)
+        o.matrix_world = place_m @ (C4 @ rw @ C4I)
+        RING_AT[0] = (place_m @ (C4 @ rw)).translation.copy()
+    for key in (("MOUTH", "TEETH") if mouth else ()):
+        m = mouth[key]
+        sz = m["SIZE"]
+        o = MR.box("Laugh" + key, (sz[0], sz[2], sz[1]), MR.mat(m["COLOUR"], 0.6), None, (0, 0, 0), bevel=0.02)
+        o.matrix_world = place_m @ (C4 @ world["Hoardsworth_Head"] @ Matrix.Translation(tuple(m["OFFSET"])) @ C4I)
     mono = world["Hoardsworth_Monocle"].translation
     return place_m @ (C4 @ Vector((mono.x, mono.y, mono.z, 1.0))).to_3d() if False else \
         (place_m @ (C4 @ Matrix.Translation(mono))).translation
 
 
+
+RING_AT = [None]
 
 ROOKIE_OUTFIT = ("Rookie_Cap_Flat", "Rookie_Scarf_Long", "Rookie_Scarf_Long_Tail1", "Rookie_Scarf_Long_Tail2",
                  "Rookie_Stripes_Torso", "Rookie_Stripes_LeftArm", "Rookie_Stripes_RightArm", "Rookie_Gloves_Knit_Left",
@@ -420,12 +440,93 @@ def fig_pose(pose):
     return out
 
 
-def garage(st, lights_on):
+def beam_card(name, p0, p1, w0, w1, alpha0, hexc, cam_pos, strength=1.2):
+    """A FaceCamera Beam as the game draws it (LightEmission 1: additive): a quad from p0 (width w0) to p1 (w1),
+    turned to face the camera, opacity 1 - alpha0 at p0 fading to clear at p1. Roblox points."""
+    a, b, c = rbv(p0), rbv(p1), rbv(cam_pos)
+    d = (b - a).normalized()
+    v = (c - (a + b) / 2).normalized()
+    side = d.cross(v)
+    if side.length < 1e-6:
+        side = d.orthogonal()
+    side.normalize()
+    bm = bmesh.new()
+    uvl = bm.loops.layers.uv.new("UVMap")
+    vs = [bm.verts.new(a - side * w0 / 2), bm.verts.new(a + side * w0 / 2), bm.verts.new(b + side * w1 / 2),
+          bm.verts.new(b - side * w1 / 2)]
+    f = bm.faces.new(vs)
+    for lp, uv in zip(f.loops, ((0, 0), (1, 0), (1, 1), (0, 1))):
+        lp[uvl].uv = uv
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    o = bpy.data.objects.new(name, me)
+    bpy.context.scene.collection.objects.link(o)
+    me.materials.append(additive_mat(name, hexc, strength, 1 - alpha0))
+    o.visible_shadow = False
+    return o
+
+
+def additive_mat(name, hexc, strength, opacity):
+    """Additive emission (Roblox LightEmission 1) whose weight falls from `opacity` at UV v 0 to 0 at v 1, and softly
+    to the long edges (a Beam texture's soft sides)."""
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    nt = m.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(tc.outputs["UV"], sep.inputs[0])
+    along = nt.nodes.new("ShaderNodeMapRange")       # v: 0 at the source -> opacity, 1 -> 0
+    along.inputs["To Min"].default_value = opacity
+    along.inputs["To Max"].default_value = 0.0
+    nt.links.new(sep.outputs["Y"], along.inputs["Value"])
+    edge = nt.nodes.new("ShaderNodeMath")            # 1 - |2u - 1|: soft sides
+    edge.operation = "MULTIPLY_ADD"
+    edge.inputs[1].default_value = 2.0
+    edge.inputs[2].default_value = -1.0
+    nt.links.new(sep.outputs["X"], edge.inputs[0])
+    ab = nt.nodes.new("ShaderNodeMath")
+    ab.operation = "ABSOLUTE"
+    nt.links.new(edge.outputs[0], ab.inputs[0])
+    inv = nt.nodes.new("ShaderNodeMath")
+    inv.operation = "SUBTRACT"
+    inv.inputs[0].default_value = 1.0
+    nt.links.new(ab.outputs[0], inv.inputs[1])
+    mul = nt.nodes.new("ShaderNodeMath")
+    mul.operation = "MULTIPLY"
+    nt.links.new(along.outputs["Result"], mul.inputs[0])
+    nt.links.new(inv.outputs[0], mul.inputs[1])
+    em = nt.nodes.new("ShaderNodeEmission")
+    em.inputs["Color"].default_value = MR.lin(hexc)
+    sm = nt.nodes.new("ShaderNodeMath")
+    sm.operation = "MULTIPLY"
+    sm.inputs[1].default_value = strength
+    nt.links.new(mul.outputs[0], sm.inputs[0])
+    nt.links.new(sm.outputs[0], em.inputs["Strength"])
+    tr = nt.nodes.new("ShaderNodeBsdfTransparent")
+    add = nt.nodes.new("ShaderNodeAddShader")
+    nt.links.new(tr.outputs[0], add.inputs[0])
+    nt.links.new(em.outputs[0], add.inputs[1])
+    nt.links.new(add.outputs[0], out.inputs["Surface"])
+    m.surface_render_method = "BLENDED"
+    m.use_backface_culling = False
+    return m
+
+
+def garage(st, lights_on, GL, cam_pos):
+    """The crew's garage as Heist/Cinematic builds it, lit by the same rig (IntroPlan.STAGE + Config.Intro.GARAGE):
+    the aurora's cool light in at the open door and through three high windows (their shafts), a cool rim on the
+    Rookie from the first window, warm string lights along both walls; with the headlights: the lenses, their
+    layered beams (FaceCamera Beams: additive cards), the work lamp over the van (shade, bulb, light cone) and the
+    cage lamp under the door header. Blender light powers are this render's own (Roblox brightness does not map)."""
     g = st["garage"]
     cx, _cy, cz = g["centre"]
     w, h, d = g["size"]
-    brick, brick_hi = MR.mat("#573429", 0.85), MR.mat("#704B3E", 0.8)
-    floor = MR.mat(H["floor_a"], 0.7)
+    brick, brick_hi = MR.mat("#6A3E31", 0.85), MR.mat("#80574A", 0.8)
+    floor = MR.mat(H["floor_a"], 0.55)
     x0, x1, z0, z1 = cx - w / 2, cx + w / 2, cz - d / 2, cz + d / 2
     box("GFloor", (x0, -0.05, z0), (x1, 0.05, z1 + 2), floor)
     box("GBack", (x0, 0, z0 - 1), (x1, h, z0), brick)
@@ -441,19 +542,81 @@ def garage(st, lights_on):
     box("Peg", (x0 + 2, 4.5, z0), (x0 + 10, 9, z0 + 0.3), MR.mat(H["wood_lo"], 0.8))
     box("Shelf", (x1 - 9, 0, z0), (x1 - 2, 7, z0 + 2), MR.mat(H["steel_lo"], 0.6))
     place("Van", tuple(st["van"]["at"]), st["van"]["yaw"], ("tint:#8C6448",))
+    # the aurora through the open door: a cool area light facing in, the size of the opening
+    dg = st["doorGlow"]
+    c = dg["centre"]
+    ld = MR.light("AREA", tuple(rb(c[0], c[1], c[2] + 1.5)), tuple(rb(c[0], c[1] - 3, c[2] - 20)),
+                  GL["DOOR_GLOW"]["COLOUR"], 5000, size=dg["size"][0], shadow=True)
+    ld.data.shape = "RECTANGLE"
+    ld.data.size_y = dg["size"][1]
+    # the high windows: green below, violet above, a mullion, a soft cool area light each, and their shafts
+    ww, wh = st["windowSize"]
+    cols = GL["WINDOW_COLOURS"]
+    for wp in st["windows"]:
+        box("PaneLo", (wp[0] - ww / 2, wp[1] - wh / 2, wp[2] - 0.06), (wp[0] + ww / 2, wp[1], wp[2] + 0.06),
+            emissive(cols[0], 1.6, key=("pane", 0)), shadow=False)
+        box("PaneHi", (wp[0] - ww / 2, wp[1], wp[2] - 0.06), (wp[0] + ww / 2, wp[1] + wh / 2, wp[2] + 0.06),
+            emissive(cols[1], 1.6, key=("pane", 1)), shadow=False)
+        box("Mullion", (wp[0] - 0.15, wp[1] - wh / 2 - 0.2, wp[2]), (wp[0] + 0.15, wp[1] + wh / 2 + 0.2, wp[2] + 0.3),
+            MR.mat(H["ink_hi"], 0.7))
+        la = MR.light("AREA", tuple(rb(wp[0], wp[1], wp[2] + 0.4)), tuple(rb(wp[0], wp[1] - 6, wp[2] + 8)), cols[0],
+                      220, size=ww, shadow=True)
+        la.data.shape = "RECTANGLE"
+        la.data.size_y = wh
+        S = GL["SHAFT"]
+        dd = S["LENGTH"] / math.sqrt(2)
+        beam_card("Shaft", (wp[0], wp[1], wp[2] + 0.3), (wp[0], wp[1] - dd, wp[2] + dd), S["WIDTH"][0], S["WIDTH"][1],
+                  S["TRANSPARENCY"], cols[0], cam_pos)
+    # a warm lamp over the workbench (always on)
+    bl = st["benchLamp"]
+    o = MR.cyl("BenchBulb", 0.2, 0.2, 0.4, emissive(GL["BENCH_LAMP"]["COLOUR"], 6.0), None, tuple(rbv(bl)), seg=10)
+    o.visible_shadow = False
+    MR.light("POINT", tuple(rbv(bl)), None, GL["BENCH_LAMP"]["COLOUR"], 700, size=0.3, shadow=True)
+    # the cool rim on the Rookie's cap and shoulder, from the first window
+    rim = st["rim"]
+    MR.light("SPOT", tuple(rbv(rim["from"])), tuple(rbv(rim["to"])), GL["RIM"]["COLOUR"], 1600, size=0.6,
+             spot=GL["RIM"]["ANGLE"], blend=0.4)
+    # warm string lights along both side walls
+    SL = GL["STRING"]
+    bulb_m = emissive(SL["COLOUR"], 6.0, key="stringbulb")
+    for run in range(0, len(st["strings"]), 2):
+        p0, p1 = st["strings"][run], st["strings"][run + 1]
+        n = max(2, int(abs(p1[2] - p0[2]) / SL["SPACING"]) + 1)
+        for k in range(n):
+            u = k / (n - 1)
+            sag = SL["SAG"] * 4 * u * (1 - u)
+            p = (p0[0], p0[1] - sag, p0[2] + (p1[2] - p0[2]) * u)
+            o = MR.cyl("StringBulb", 0.15, 0.15, 0.3, bulb_m, None, tuple(rbv(p)), seg=8)
+            o.visible_shadow = False
+            if k % 3 == 1:
+                MR.light("POINT", tuple(rbv(p)), None, SL["COLOUR"], 160, size=0.2, shadow=False)
+    # the work lamp over the van: cord, shade, bulb; the cage lamp; the headlight lenses
+    wl = st["workLamp"]
+    box("Cord", (wl[0] - 0.04, wl[1], wl[2] - 0.04), (wl[0] + 0.04, h, wl[2] + 0.04), MR.mat(H["ink_hi"], 0.7))
+    MR.cyl("Shade", 0.35, 1.1, 0.7, MR.mat(H["steel"], 0.4), None, tuple(rb(wl[0], wl[1], wl[2])), seg=24)
     lens = emissive("#FFF4E0" if lights_on else H["steel_lo"], 6.0 if lights_on else 0.1, key=("lens", lights_on))
+    o = MR.cyl("Bulb", 0.3, 0.3, 0.5, lens, None, tuple(rb(wl[0], wl[1] - 0.4, wl[2])), seg=12)
+    o.visible_shadow = False
+    dl = st["doorLamp"]
+    box("Cage", (dl[0] - 0.3, dl[1] - 0.3, dl[2] - 0.3), (dl[0] + 0.3, dl[1] + 0.3, dl[2] + 0.3), lens, shadow=False)
     for hp in st["headlights"]:
         o = MR.cyl("Headlight", 0.55, 0.55, 0.2, lens, None, tuple(rbv(hp) + Vector((0, 0.05, 0))), (90, 0, 0), seg=16)
         o.visible_shadow = False
-        if lights_on:
-            MR.light("SPOT", tuple(rbv(hp) + Vector((0, 0.3, 0))), tuple(rb(hp[0], 1.5, hp[2] + 30)), "#FFF1D8", 9000,
-                     size=0.4, spot=46, blend=0.35)
-            # the beams themselves are camera-facing Beams in the game; a still shows their pool on the floor
-            pool = MR.mat("#FFF1D8", 0.9, emit=0.35, alpha=0.35, key="pool")
-            o = MR.cyl("Pool", 3.2, 3.2, 0.02, pool, None, tuple(rb(hp[0], 0.08, hp[2] + 9)), seg=24, scale=(1, 2.2, 1))
-            o.visible_shadow = False
-    if lights_on:   # the work lamp over the Rookie comes on with the headlights (Heist/Cinematic)
-        MR.light("POINT", tuple(rb(cx, 6.5, cz + 11.5)), None, "#FFC890", 2200, size=1.2, shadow=True)
+    if not lights_on:
+        return
+    MR.light("SPOT", tuple(rb(wl[0], wl[1] - 0.6, wl[2])), tuple(rb(wl[0], 0, wl[2])), GL["WORK_LAMP"]["COLOUR"], 3200,
+             size=0.5, spot=GL["WORK_LAMP"]["ANGLE"], blend=0.5)
+    beam_card("LampCone", (wl[0], wl[1] - 0.5, wl[2]), (wl[0], 7.8, wl[2]), 1.6, 7.0,
+              GL["WORK_LAMP"]["CONE_TRANSPARENCY"], GL["WORK_LAMP"]["COLOUR"], cam_pos)
+    MR.light("SPOT", tuple(rbv(dl)), tuple(rb(dl[0], 0, dl[2] - 1.5)), GL["DOOR_LAMP"]["COLOUR"], 3600, size=0.3,
+             spot=GL["DOOR_LAMP"]["ANGLE"], blend=0.6)
+    HL, BM = GL["HEADLIGHT"], GL["BEAM"]
+    for hp in st["headlights"]:
+        MR.light("SPOT", tuple(rbv(hp) + Vector((0, 0.3, 0))), tuple(rb(hp[0], hp[1] - BM["DROP"], hp[2] + BM["LENGTH"])),
+                 HL["COLOUR"], 4500, size=0.4, spot=HL["ANGLE"], blend=0.35)
+        for layer in BM["LAYERS"]:
+            beam_card("HeadBeam", (hp[0], hp[1], hp[2] + 0.3), (hp[0], hp[1] - BM["DROP"], hp[2] + BM["LENGTH"]),
+                      layer[0], layer[1], layer[2], HL["COLOUR"], cam_pos)
 
 
 # ------------------------------------------------------------------ effects
@@ -590,24 +753,25 @@ def build(shot, P_):
         vortex(st, P_, shot["cam"]["pos"])
     lv = st["lever"]
     lobjs = place("Intro_Lever", tuple(lv["at"]), lv["yaw"])
-    pulled = shot["lever"] in ("pull", "point") or shot["t"] > 10.2
+    swing = shot["lever"]   # IntroPlan.leverAngle: 0 upright, -70 yanked
     for o in lobjs:
-        if o.name.startswith("Intro_Lever_Handle") and pulled:
+        if o.name.startswith("Intro_Lever_Handle") and abs(swing) > 1e-3:
             p = o.matrix_world.translation.copy()
             axis = (Matrix.Rotation(math.radians(lv["yaw"]), 4, "Z") @ Vector((1, 0, 0, 0))).to_3d()
-            o.matrix_world = Matrix.Translation(p) @ Matrix.Rotation(math.radians(-70), 4, axis) @ \
+            o.matrix_world = Matrix.Translation(p) @ Matrix.Rotation(math.radians(swing), 4, axis) @ \
                 Matrix.Translation(-p) @ o.matrix_world
     glint = None
     if "hoardsworth" in live:
         hw = st["hoardsworth"]
-        glint = hoardsworth(hw["at"], hw["yaw"], shot["hoardsworth"], P_["rig"])
+        glint = hoardsworth(hw["at"], hw["yaw"], shot["hoardsworth"], P_["rig"], P_["ring"],
+                            P_["mouth"] if shot["laughing"] else None)
     for pr in shot["presents"]:
         o = place("Intro_Present_" + "ABC"[pr["variant"] - 1], tuple(pr["pos"]), math.degrees(pr["spin"]))
         for x in o:
             x.matrix_world = Matrix.Translation(x.matrix_world.translation) @ Matrix.Rotation(pr["spin"] * 0.7, 4, "X") @ \
                 Matrix.Scale(1.6, 4) @ Matrix.Translation(-x.matrix_world.translation) @ x.matrix_world
     if "garage" in live or shot["id"] in ("one", "more", "title"):
-        garage(st, "headlights" in fx)
+        garage(st, "headlights" in fx, P_["garageLight"], shot["cam"]["pos"])
     if shot["letter"]["visible"] and "letter" in live:
         lo = place("Intro_Letter", tuple(shot["letter"]["pos"]), 200)
         for x in lo:
@@ -620,7 +784,7 @@ def build(shot, P_):
                 @ x.matrix_world
     if shot["id"] in ("one", "more", "title"):
         rk = st["rookie"]["at"]
-        grin = shot["t"] >= 29.0
+        grin = shot["rookieFace"] == "smug"
         rookie(rk, st["rookie"]["yaw"], shot["rookie"], face="smug" if grin else "idle")
         # the clones: Rookie copies drawn as EchoView draws yours (crew pieces in the age-ramped hue, the owner
         # Highlight's fill and outline, floor glows), pulling his face; one still mid tape-print (scan band)
@@ -649,14 +813,12 @@ def build(shot, P_):
         snowfall((c.x, c.y, c.z), (40, 22, 40), n=700, cam=tuple(cp))
     # lights per mood
     MR.light("SUN", (0, 0, 100), tuple(rb(-60, -100, 80)), "#9AA6FF", 1.6 * mood["brightness"], shadow=True)
-    if shot["mood"] == "tower":
-        hw = st["hoardsworth"]["at"]
-        MR.light("SPOT", tuple(rb(hw[0] + 2, hw[1] - 2, hw[2] + 9)), tuple(rb(hw[0], hw[1] + 6, hw[2])), "#FF9C6A",
-                 2600, size=1.5, spot=40)
-        MR.light("SPOT", tuple(rb(hw[0] + 5, hw[1] + 9, hw[2] + 7)), tuple(rb(hw[0], hw[1] + 7, hw[2])), "#FFE2C0",
-                 1500, size=2.0, spot=30)   # the face key
-        MR.light("SPOT", tuple(rb(hw[0] - 6, hw[1] + 12, hw[2] - 10)), tuple(rb(hw[0], hw[1] + 5, hw[2])), "#9C8CFF",
-                 4000, size=1.0, spot=30)
+    if "hoardsworth" in live:   # his light on the terrace (STAGE.villainLights, Config.Intro.VILLAIN_LIGHTS)
+        power = {"under": 2600, "key": 1500, "rim": 4000, "hand": 260}
+        for vl in st["villainLights"]:
+            spec = P_["villainLights"][vl["kind"]]
+            MR.light("SPOT", tuple(rbv(vl["from"])), tuple(rbv(vl["to"])), spec["COLOUR"], power[vl["kind"]],
+                     size=0.6 if vl["kind"] == "hand" else 1.5, spot=spec["ANGLE"], shadow=vl["kind"] != "hand")
     cam_p = rbv(shot["cam"]["pos"])
     cam_t = rbv(shot["cam"]["look"])
     return cam_p, cam_t, shot["cam"]["fov"], glint
@@ -668,11 +830,10 @@ def finish(raw, out, shot, glint_px):
     img = MR.finish(raw, out, [], None, vignette=0.24, tag=False, truecolor=True).convert("RGBA")
     W, Hh = img.size
     d = ImageDraw.Draw(img)
-    if glint_px:
-        x, y = glint_px
+    for x, y, k in glint_px or ():
         layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
         dl = ImageDraw.Draw(layer)
-        for rr, a in ((Hh * 0.06, 90), (Hh * 0.035, 200), (Hh * 0.016, 255)):
+        for rr, a in ((Hh * 0.06 * k, 90), (Hh * 0.035 * k, 200), (Hh * 0.016 * k, 255)):
             w = rr * 0.12
             dl.polygon([(x, y - rr), (x + w, y - w), (x + rr, y), (x + w, y + w), (x, y + rr), (x - w, y + w),
                         (x - rr, y), (x - w, y - w)], fill=(255, 250, 235, a))
@@ -686,7 +847,7 @@ def finish(raw, out, shot, glint_px):
     if cap and not shot["wordmark"]:
         img = MR.draw_text(img, {"lines": [[(cap, P.HEX["exit"])]], "cap": 0.066, "y": 0.83, "align": "c", "x": 0.5})
     elif shot["wordmark"]:
-        dark = Image.new("RGBA", img.size, (14, 15, 30, 150))
+        dark = Image.new("RGBA", img.size, (14, 15, 30, int(255 * (1 - P_veil[0]))))
         img = Image.alpha_composite(img, dark)
         hues = ["#3DE8FF", "#FF4FD8", "#6A5CFF"]
         for k in (3, 2, 1):
@@ -713,22 +874,29 @@ def finish(raw, out, shot, glint_px):
     img.quantize(colors=256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.FLOYDSTEINBERG).save(out, optimize=True)
 
 
+P_veil = [0.25]
+
+
 def render_one(n, scale, samples):
     from bpy_extras.object_utils import world_to_camera_view
     P_ = plan()
     shot = P_["shots"][n - 1]
+    P_veil[0] = P_.get("titleVeil", 0.25)
     W, Hh = int(1920 * scale), int(1080 * scale)
     s = MR.reset(samples)
     cam_p, cam_t, fov, glint = build(shot, P_)
     cam = MR.camera(s, tuple(cam_p), tuple(cam_t), fov, W, Hh)
     cam.data.clip_end = 2000
     s.eevee.use_shadows = True
-    gp = None
-    if glint is not None and shot["id"] == "hoard":
+    gp = []
+    if glint is not None and shot["id"] == "laugh":   # the monocle's star, and the ring's smaller one
         bpy.context.view_layer.update()
-        v = world_to_camera_view(s, cam, glint)
-        if v.z > 0:
-            gp = (v.x * W, (1 - v.y) * Hh)
+        for pt, size in ((glint, 0.7), (RING_AT[0], 0.45)):
+            if pt is None:
+                continue
+            v = world_to_camera_view(s, cam, pt)
+            if v.z > 0 and 0 <= v.x <= 1 and 0 <= v.y <= 1:
+                gp.append((v.x * W, (1 - v.y) * Hh, size))
     os.makedirs(OUT, exist_ok=True)
     tmp = os.path.join(OUT, f".shot_{n}_raw.png")
     s.render.filepath = tmp

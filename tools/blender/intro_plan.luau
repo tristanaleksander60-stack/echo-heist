@@ -86,6 +86,7 @@ for i, shot in IntroPlan.SHOTS do
 		rookie = poseTable("rookie", t),
 		lever = IntroPlan.leverAngle(t),
 		rookieFace = IntroPlan.rookieFace(t),
+		laughing = IntroPlan.laughing(t),
 		presents = presents,
 		letter = { pos = lp, tilt = tilt, visible = lv },
 		globeFill = IntroPlan.globeFill(t),
@@ -110,6 +111,8 @@ print(serde.encode("json", {
 	signColour = Config.Intro.SIGN_COLOUR,
 	garageLight = Config.Intro.GARAGE,
 	ring = Config.Intro.RING,
+	mouth = Config.Intro.LAUGH_MOUTH,
+	villainLights = Config.Intro.VILLAIN_LIGHTS,
 	titleVeil = Config.Intro.TITLE_VEIL,
 	clone = {
 		fill = Config.Heist.CLONE_FILL_TRANSPARENCY,

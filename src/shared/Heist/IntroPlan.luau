@@ -100,8 +100,16 @@ IntroPlan.STAGE = table.freeze({
 	-- the lever at his right hand: its handle's knob (knob, the handle upright) is where his gold-ringed glove grips
 	-- it in the "laugh" pose (unit-checked against the rig, tests/unit/HeistIntro.spec.luau)
 	lever = { at = { -11.5, 130, -184.4 }, yaw = 180 },
-	knob = { -11.5, 135.3, -183.65 },
+	knob = { -11.5, 135.3, -183.7 },
 	hoardsworth = { at = { -9, 130, -185 }, yaw = 180 }, -- faces +Z: the town
+	-- his light on the terrace (Config.Intro.VILLAIN_LIGHTS): a hot gold underlight (the H sign's floodlight), a warm
+	-- face key, a cool violet rim from behind, and a small gold kicker on the ringed hand at the lever
+	villainLights = {
+		{ kind = "under", from = { -7, 128, -176 }, to = { -9, 136, -185 } },
+		{ kind = "key", from = { -4, 139, -178 }, to = { -9, 137, -185 } },
+		{ kind = "rim", from = { -15, 142, -195 }, to = { -9, 135, -185 } },
+		{ kind = "hand", from = { -9.6, 133.4, -180.6 }, to = { -11.5, 135.3, -183.7 } },
+	},
 	-- the garage: x 112..148, z 34..58, the roll-up door open at z 58 (toward +Z, the town and the aurora)
 	garage = { centre = { 130, 0, 46 }, size = { 36, 14, 24 } },
 	van = { at = { 130, 0, 42 }, yaw = 90 }, -- the kit van's cab is local -X: yaw 90 turns it to +Z
@@ -116,6 +124,7 @@ IntroPlan.STAGE = table.freeze({
 	-- the Rookie's cap and shoulder from behind); warm string lights run along both side walls.
 	workLamp = { 130, 12.2, 42 },
 	doorLamp = { 130, 10.8, 56.6 },
+	benchLamp = { 118, 4.6, 35.8 }, -- a warm lamp clamped over the workbench (the back wall's left)
 	doorGlow = { centre = { 130, 6, 58.4 }, size = { 34, 12 } }, -- faces -Z (into the garage)
 	windows = { { 119, 10.4, 34.05 }, { 130, 10.4, 34.05 }, { 141, 10.4, 34.05 } }, -- centres on the back wall
 	windowSize = { 7, 3 },
@@ -192,7 +201,7 @@ IntroPlan.POSES = table.freeze({
 	laugh = {
 		Neck = { 22, -8, 0 },
 		Waist = { 5, 6, 0 },
-		RightShoulder = { 64, -6, 44 },
+		RightShoulder = { 60, -6, 44 },
 		RightElbow = { 8, 0, 0 },
 		LeftShoulder = { 18, 0, 26 },
 		LeftElbow = { 78, 0, 0 },
@@ -200,8 +209,8 @@ IntroPlan.POSES = table.freeze({
 	laughB = {
 		Neck = { 10, -4, 4 },
 		Waist = { 2, 4, 0 },
-		RightShoulder = { 66, -6, 45 },
-		RightElbow = { 6, 0, 0 },
+		RightShoulder = { 56, -6, 44 },
+		RightElbow = { 16, 0, 0 },
 		LeftShoulder = { 22, 0, 26 },
 		LeftElbow = { 72, 0, 0 },
 	},
@@ -283,8 +292,8 @@ IntroPlan.SHOTS = table.freeze({
 		captionAt = 0.35,
 		keys = {
 			{ t = 0, pos = { -8.0, 136.3, -180.1 }, look = { -9.1, 136.85, -184.8 }, fov = 34 },
-			{ t = 0.5, pos = { -9.6, 135.9, -178.9 }, look = { -10.2, 136.15, -184.3 }, fov = 38 },
-			{ t = 1, pos = { -11.0, 135.0, -179.9 }, look = { -11.45, 135.2, -183.7 }, fov = 34 },
+			{ t = 0.5, pos = { -9.2, 135.6, -178.6 }, look = { -10.5, 135.8, -184.0 }, fov = 40 },
+			{ t = 1, pos = { -10.8, 136.5, -180.2 }, look = { -11.5, 135.3, -183.7 }, fov = 32 },
 		},
 		events = {
 			{ at = 0.45, kind = "fx", id = "glint" },
@@ -742,6 +751,15 @@ end
 function IntroPlan.leverAngle(t: number): number
 	local L = IntroPlan.LEVER
 	return L.degrees * IntroPlan.ease("inOut", (t - L.at) / L.swing)
+end
+
+-- Hoardsworth laughs (his open mouth shows: Config.Intro.LAUGH_MOUTH) while a laugh pose holds.
+function IntroPlan.laughing(t: number): boolean
+	local a, b, w = IntroPlan.pose("hoardsworth", t)
+	local function isLaugh(p: string): boolean
+		return p == "laugh" or p == "laughB"
+	end
+	return isLaugh(a) and (w < 0.5 or isLaugh(b)) or (isLaugh(b) and w >= 0.5)
 end
 
 -- The Rookie's face at t (and his clones'): "smug" once the grin lands, else "idle" (Rookie EH_Face moods).
