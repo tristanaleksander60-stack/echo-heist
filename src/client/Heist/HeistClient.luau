@@ -82,6 +82,7 @@ local RookieAnim = require(Heist:WaitForChild("RookieAnim"))
 local LookTarget = require(Heist:WaitForChild("LookTarget"))
 local LookTilt = require(Heist:WaitForChild("LookTilt"))
 local FpWarn = require(Heist:WaitForChild("FpWarn"))
+local BadgeView = require(Heist:WaitForChild("BadgeView"))
 local HudCommon = require(Heist:WaitForChild("Hud"):WaitForChild("Common"))
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 
@@ -336,6 +337,12 @@ function HeistClient.start()
 	local hud = Hud.new(state, actions)
 	camera.setCursorProbe(hud.sheetOpen) -- first person: the cursor is free while a sheet is up
 	local gusWarn = FpWarn.new(state, hud.fxGui)
+	-- Badges: the BADGE UNLOCKED card and the boss's marks, from server-written attributes (Heist/BadgeView).
+	BadgeView.new(hud.fxGui, hud.toast, {
+		reduced = function(): boolean
+			return state.reduced == true
+		end,
+	})
 	-- Camera shake off: the rewind's FOV kick stays at 0 (Settings "shake").
 	local function fovKick(deg: number)
 		camera.setFovKick(if Settings.get("shake") == false then 0 else deg)

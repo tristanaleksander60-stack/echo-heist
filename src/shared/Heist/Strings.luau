@@ -899,4 +899,16 @@ function Strings.agoLabel(who: string, ago: string, hueHex: string): string
 	return string.format('<font color="#%s">%s</font>, %s', hueHex, who, ago)
 end
 
+---------------------------------------------------------------------------
+-- Badges (BADGES track; Heist/BadgeView): the BADGE UNLOCKED card and the boss's marks. Badge names and
+-- descriptions live in Shared/Heist/Badges (they are the Roblox badge's own text).
+---------------------------------------------------------------------------
+Strings.BADGE_UNLOCKED = "BADGE UNLOCKED"
+-- "3 OF 8 BADGES" under the badge name
+function Strings.badgeCount(n: number, total: number): string
+	return string.format("%d OF %d BADGES", n, total)
+end
+Strings.BOSS_HERE = "THE BOSS IS HERE!" -- the message rail, on every screen, when the owner joins
+Strings.BOSS_PILL = "THE BOSS" -- the gold pill over the owner's Rookie
+
 return table.freeze(Strings)

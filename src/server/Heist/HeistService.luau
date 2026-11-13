@@ -102,6 +102,7 @@ local staging: string? = nil -- golden-frame scenario (Studio only, Heist/Stagin
 local DataService: any = nil
 local Analytics: any = nil
 local KitService: any = nil
+local Awards: any = nil -- server Data/Awards (Roblox badges); nil = no badges
 local msgPush: Net.Push? = nil
 local crewOf: { [Player]: Crew } = {}
 local crews: { Crew } = {}
@@ -190,6 +191,11 @@ end
 -- src/server/Kit/KitService: levels are dressed with the art kit once it is loaded.
 function HeistService.configureKit(kit: any)
 	KitService = kit
+end
+
+-- src/server/Data/Awards: heists earn Roblox badges from their sim facts (BADGES track).
+function HeistService.configureAwards(awards: any)
+	Awards = awards
 end
 
 local function track(fn: string, ...: any)
@@ -861,6 +867,7 @@ function HeistService.createInstance(
 		nextInfo = nextInfo,
 		onFtue = ftueHook,
 		analytics = Analytics,
+		awards = Awards,
 	})
 	inst.slot = slot
 	instances[slot] = inst

@@ -45,6 +45,7 @@ local Validator = require(Rec:WaitForChild("Validator"))
 local Catalog = require(Shared:WaitForChild("Levels"):WaitForChild("Catalog"))
 local Help = require(Shared:WaitForChild("Heist"):WaitForChild("Help"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
+local Badges = require(Shared:WaitForChild("Heist"):WaitForChild("Badges"))
 
 local LevelBuilder = require(script.Parent:WaitForChild("LevelBuilder"))
 
@@ -70,6 +71,8 @@ export type Member = {
 	ftue: { [string]: boolean },
 	ownMax: number?, -- party levels: most of this member's own clones in one run
 	firstVisit: boolean?, -- their profile has no play of this level yet (Help.firstVisit: run 1's longer intro)
+	spottedRun: number?, -- the last run in which Gus spotted this member's live run (sim EV.Spotted; Ghost badge)
+	liveRun: number?, -- the last run this member had a live run in (Ghost: they played the winning run)
 }
 
 -- LiveFlags tuning read at heist start (HeistService.tuning); nil fields = Config defaults.
@@ -110,6 +113,8 @@ export type Opts = {
 	-- per member (unlocked / starsNeeded / needsClear), read after the award
 	onFtue: ((player: Player, step: string) -> ())?,
 	analytics: any?, -- server Analytics module (or nil)
+	-- Roblox badges (server Data/Awards: earn(player, key), onHeistOver(player, facts)); nil = no badges
+	awards: any?,
 }
 
 local levelCache: { [string]: any } = {}
@@ -285,6 +290,7 @@ function HeistInstance.new(o: Opts): any
 		nextInfo = o.nextInfo,
 		onFtue = o.onFtue,
 		analytics = o.analytics,
+		awards = o.awards,
 		-- recordings
 		recKeys = setmetatable({}, { __mode = "k" }) :: any,
 		recBufs = {} :: { [number]: buffer },
@@ -649,6 +655,15 @@ local function memberOfActor(inst: any, actorId: number): (Member?, any)
 	return inst.byId[a.ownerId], a
 end
 
+-- A Roblox badge from a server-decided sim fact (Data/Awards). Never allowed to break the event loop.
+local function badge(inst: any, member: Member?, key: string)
+	local awards = inst.awards
+	local player = member and member.player
+	if awards and player and not (member :: Member).left then
+		pcall(awards.earn, player, key)
+	end
+end
+
 -- The Rookie's face on a live moment (bank, zap, bust): Heist/Characters.flashFace, set by HeistService.
 -- Cosmetic only, and never allowed to break the event loop.
 local faceHook: ((number, string) -> ())? = nil
@@ -697,7 +712,24 @@ local function scanLog(inst: any, from: number, to: number)
 			if a and a.kind == "live" then
 				ftue(inst, m, "FirstPlate")
 			end
-		elseif kind == EV.RunStart and log.a[i] >= 2 then
+		elseif kind == EV.RunStart then
+			-- Badges: who plays this run live (Ghost needs a live winning run), and a first own clone (Meet Yourself)
+			local ownClone: { [number]: boolean } = {}
+			for _, a in sim.actors do
+				local am = inst.byId[a.ownerId]
+				if am and a.kind == "live" then
+					am.liveRun = log.a[i]
+				elseif a.kind == "clone" and not a.helper then
+					ownClone[a.ownerId] = true
+				end
+			end
+			for _, m in inst.members do
+				if ownClone[m.userId] then
+					badge(inst, m, "first_clone")
+				end
+			end
+		end
+		if kind == EV.RunStart and log.a[i] >= 2 then
 			for _, m in inst.members do
 				if not m.ftue.FirstRewind then
 					trackMember(inst, m, "heistStep", inst.heistId, "FirstRewind")
@@ -741,6 +773,14 @@ local function scanLog(inst: any, from: number, to: number)
 			ftue(inst, inst.members[log.a[i]], "SwarmSeen")
 			inst.runSwarm = math.max(inst.runSwarm, log.b[i])
 			inst.maxOfMe = math.max(inst.maxOfMe, log.b[i])
+			if Badges.swarmEarned(log.b[i]) then
+				badge(inst, inst.members[log.a[i]], "eight_of_me")
+			end
+		elseif kind == EV.Spotted then
+			local sm, sa = memberOfActor(inst, log.b[i])
+			if sm and sa and sa.kind == "live" then
+				sm.spottedRun = sim.runIndex
+			end
 		elseif kind == EV.AlarmOn then
 			local by = log.a[i]
 			inst.alarmBy = by
@@ -1031,6 +1071,26 @@ local function onOver(inst: any, now: number)
 	}
 	inst.overMsg = slim
 	local outcome = outcomeOf(result)
+	-- Badges (Data/Awards): the crew's real players still here, and the facts Ghost needs.
+	local crewPlayers = 0
+	for _, m in inst.members do
+		if m.player and not m.left then
+			crewPlayers += 1
+		end
+	end
+	for _, m in inst.members do
+		if inst.awards and m.player and not m.left and result.reason ~= "Abandoned" then
+			pcall(inst.awards.onHeistOver, m.player, {
+				complete = result.complete == true,
+				tainted = result.tainted == true,
+				relaxed = sim.relaxed == true,
+				guarded = #sim.guards > 0,
+				spottedFinal = m.spottedRun == result.runs,
+				inFinal = m.liveRun == result.runs,
+				crewPlayers = crewPlayers,
+			})
+		end
+	end
 	for _, m in inst.members do
 		local res = award(inst, m, result)
 		if m.player and not m.left then

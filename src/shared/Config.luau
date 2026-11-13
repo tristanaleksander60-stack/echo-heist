@@ -3566,4 +3566,48 @@ Config.Intro = {
 	HANDOFF_SECONDS = 0.35, -- the wordmark rests this long before the title card takes over
 }
 
+-- Badges (BADGES track; docs/marketing/BADGES.md, Shared/Heist/Badges, server Data/Awards). The launch set is 8
+-- Roblox badges awarded by the server from server-decided facts. The profile keeps "earned" and "sent" flags, so the
+-- BadgeService API is called once per badge per player (a badge id of 0 = not created yet: earned, kept, sent later).
+Config.Badges = {
+	-- Platform rules (LihFolk vault "Badges and Achievement Design", Roblox docs as of Oct 2026): the award budget is
+	-- 50 + 35 x players per minute (AwardBadgeAsync and UserHasBadgeAsync share it here); 5 free badges per UTC day
+	-- per experience, then 100 Robux each.
+	RATE_BASE = 50,
+	RATE_PER_PLAYER = 35,
+	RATE_HEADROOM = 0.5, -- spend at most this share of the budget (other systems may award too)
+	RATE_WINDOW = 60, -- seconds
+	AWARD_ATTEMPTS = 3, -- pcall tries per award in a session; after that it waits for the player's next join
+	RETRY_SECONDS = { 2, 6, 15 }, -- backoff before try 2, 3, ...
+	WORKER_SECONDS = 0.5, -- the award queue drains this often
+	INFO_RETRY_SECONDS = 60, -- a failed GetBadgeInfoAsync is asked again after this
+	FREE_PER_DAY = 5, -- badges an experience creates free per UTC day
+	ROBUX_EACH_AFTER = 100, -- each extra badge that day
+	NAME_MAX = 50, -- our own cap on a badge name (short reads well on the game page)
+	DESCRIPTION_MAX = 200, -- our own cap on a description
+	-- Conditions
+	CREW_UP_MIN = 2, -- real players in the crew at the end of a cleared heist
+	STREAK_DAYS = 3, -- daily vault best streak for "Hot Streak"
+	-- Played with the Owner: the owner (game.CreatorId, or the owning group's owner) or a staff id below must be in
+	-- this server with you for this long. Server only; the boss never earns it from themselves.
+	BOSS_TOGETHER_SECONDS = 60,
+	BOSS_TICK_SECONDS = 5, -- how often the server adds up time together
+	STAFF_USER_IDS = {} :: { number }, -- extra "boss" userIds (empty: only the owner)
+	-- Client: the BADGE UNLOCKED card and the boss's marks
+	TOAST_SECONDS = 4.5, -- the card holds this long
+	TOAST_IN_SECONDS = 0.3,
+	TOAST_GAP_SECONDS = 0.4, -- between two queued cards
+	TOAST_Y = 0.2, -- card centre, share of the screen height (under the top bar)
+	TOAST_SIZE = { 380, 96 }, -- design px
+	TOAST_ICON = 80, -- design px
+	BOSS_PILL = { WIDTH = 150, HEIGHT = 34, OFFSET_Y = 3.4, MAX_DISTANCE = 160 }, -- px, px, studs above the head, studs
+	-- Tier colours (the rim of every icon and the toast card), hex
+	TIERS = {
+		bronze = "#D08A4E",
+		silver = "#C9D3E0",
+		gold = "#FFC24A",
+		boss = "#5BE0E6", -- cyan rim around gold: the owner badge only
+	},
+}
+
 return Config

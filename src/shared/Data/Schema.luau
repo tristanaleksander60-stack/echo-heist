@@ -14,6 +14,7 @@
 
 local Config = require("../Config")
 local Outfit = require("../Heist/Outfit")
+local Badges = require("../Heist/Badges")
 
 local Schema = {}
 
@@ -91,6 +92,12 @@ export type Heist = {
 	-- The hideout van style (LOBBY 2; additive, no migration; sanitize repairs it): a Config.Hideout.VAN.STYLES id.
 	-- The crew leader's pick at their van, saved per player; the van they claim next wears it.
 	vanStyle: string,
+	-- Roblox badges (BADGES track; Heist/Badges, server Data/Awards; additive, no migration; sanitize repairs them):
+	-- badges = badge key -> unix time the server decided it was earned (kept even while the badge id is 0);
+	-- badgesSent = badge key -> true once AwardBadgeAsync succeeded or Roblox said the player owns it. A sent badge
+	-- is never sent again (a player who deleted it from their profile does not get it back on every join).
+	badges: { [string]: number },
+	badgesSent: { [string]: boolean },
 	ftueStep: number,
 	firstHeistDone: boolean,
 	stats: { heists: number, clears: number },
@@ -183,6 +190,8 @@ function Schema.defaultHeist(): Heist
 		outfit = Outfit.default(),
 		outfitRolled = false,
 		vanStyle = Config.Hideout.VAN.STYLES[1].id,
+		badges = {},
+		badgesSent = {},
 		ftueStep = 0,
 		firstHeistDone = false,
 		stats = { heists = 0, clears = 0 },
@@ -382,6 +391,19 @@ function Schema.sanitize(heist: Heist): { string }
 	local _, outfitFixed = Outfit.repair(h.outfit, h)
 	for _, slot in outfitFixed do
 		table.insert(repairs, "outfit." .. slot)
+	end
+	-- Badges: short [a-z0-9_] keys (unknown ones are kept, a rollback must not forget a badge), a whole time / true.
+	for key, at in h.badges do
+		if not Badges.validStoredKey(key) or not isWhole(at, 0, BIG) then
+			h.badges[key] = nil
+			table.insert(repairs, "badges." .. tostring(key))
+		end
+	end
+	for key, sent in h.badgesSent do
+		if not Badges.validStoredKey(key) or sent ~= true or h.badges[key] == nil then
+			h.badgesSent[key] = nil
+			table.insert(repairs, "badgesSent." .. tostring(key))
+		end
 	end
 	if not isWhole(h.ftueStep, 0, Config.Data.MAX_FTUE_STEP) then
 		h.ftueStep = wholeOr(h.ftueStep, 0, Config.Data.MAX_FTUE_STEP, 0)

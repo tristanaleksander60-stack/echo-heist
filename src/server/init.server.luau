@@ -61,6 +61,15 @@ if Config.GAME_MODE == "sim" then
 		warn("[Server] data layer failed to start; progress is not saved: " .. tostring(simDataErr))
 	end
 	startAnalytics(DataService, HeistService)
+	-- Roblox badges (Data/Awards): server-decided facts only, never in the way of play.
+	local okBadges, badgesErr = pcall(function()
+		local Awards = require(Data:WaitForChild("Awards"))
+		Awards.start({ data = DataService })
+		HeistService.configureAwards(Awards)
+	end)
+	if not okBadges then
+		warn("[Server] badges unavailable: " .. tostring(badgesErr))
+	end
 	local okKit, kitErr = pcall(function()
 		local KitService = require(script:WaitForChild("Kit"):WaitForChild("KitService"))
 		HeistService.configureKit(KitService)

@@ -19,6 +19,7 @@
 --   DataService.grantCosmetic(player, cosmeticId, reason) -> Net.Result (free grants only)
 --   DataService.earnCash / spendCash / earnCandyCanes(player, amount, reason) -> boolean
 --   DataService.setVanStyle(player, styleId) -> boolean   the hideout van style (LOBBY 2; Schema.validVanStyle)
+--   DataService.badgeFacts / earnBadge / markBadgeSent  the badge ledger (BADGES track; only Data/Awards calls them)
 --   DataService.isLevelUnlocked, getBagLevel, getSettings, getSnapshot, setFtueStep,
 --   setPromptsBlocked (no store prompt during a heist or a bust), setLevelResolver
 -- Client remotes (Net: rate limit + per-argument validation): Data.Snapshot,
@@ -48,6 +49,7 @@ local Progress = require(DataShared:WaitForChild("Progress"))
 local Schema = require(DataShared:WaitForChild("Schema"))
 local Store = require(DataShared:WaitForChild("Store"))
 local Outfit = require(Shared:WaitForChild("Heist"):WaitForChild("Outfit"))
+local Badges = require(Shared:WaitForChild("Heist"):WaitForChild("Badges"))
 
 local PlayerData = require(script.Parent.PlayerData)
 local Policy = require(script.Parent.Policy)
@@ -110,6 +112,8 @@ local function publishAttributes(player: Player, heist: Schema.Heist)
 	player:SetAttribute("Outfit", Outfit.key(heist.outfit))
 	-- The hideout van style (LOBBY 2): Heist/HeistService gives a van this player claims this body.
 	player:SetAttribute("VanStyle", heist.vanStyle)
+	-- How many launch badges this profile has earned (Heist/Badges; the client's card reads it for "3 / 8").
+	player:SetAttribute(Badges.ATTR_EARNED, Badges.countEarned(heist.badges))
 end
 
 -- Stars are a mirror of the medals and daily first clears; this keeps the balance exact.
@@ -417,6 +421,59 @@ function DataService.setVanStyle(player: Player, id: string): boolean
 		player:SetAttribute("VanStyle", id)
 		changed(player, profile, "vanStyle")
 	end
+	return true
+end
+
+-- Roblox badges (BADGES track; server Data/Awards is the only caller). The profile is the ledger: `badges` (key ->
+-- unix time earned) and `badgesSent` (key -> true once Roblox has it). nil = no profile (offline, not loaded).
+export type BadgeFacts = {
+	earned: { [string]: number },
+	sent: { [string]: boolean },
+	bestStreak: number,
+	clears: number,
+}
+
+function DataService.badgeFacts(player: Player): BadgeFacts?
+	local profile = PlayerData.Get(player)
+	if not profile then
+		return nil
+	end
+	local heist = heistOf(profile)
+	return {
+		earned = table.clone(heist.badges),
+		sent = table.clone(heist.badgesSent),
+		bestStreak = heist.daily.bestStreak,
+		clears = heist.stats.clears,
+	}
+end
+
+-- Records a badge as earned (once). True when this call earned it.
+function DataService.earnBadge(player: Player, key: string): boolean
+	local profile = PlayerData.Get(player)
+	if not profile or not Badges.validStoredKey(key) then
+		return false
+	end
+	local heist = heistOf(profile)
+	if heist.badges[key] ~= nil then
+		return false
+	end
+	heist.badges[key] = os.time()
+	changed(player, profile, "badge")
+	return true
+end
+
+-- Records that Roblox has the badge (AwardBadgeAsync succeeded, or UserHasBadgeAsync said owned).
+function DataService.markBadgeSent(player: Player, key: string): boolean
+	local profile = PlayerData.Get(player)
+	if not profile then
+		return false
+	end
+	local heist = heistOf(profile)
+	if heist.badges[key] == nil or heist.badgesSent[key] == true then
+		return false
+	end
+	heist.badgesSent[key] = true
+	changed(player, profile, "badgeSent")
 	return true
 end
 
