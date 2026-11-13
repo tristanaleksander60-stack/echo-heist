@@ -126,6 +126,8 @@ NEON = {
     "Intro_House_A_Windows": (WARM_BULB, "fixed; Vault Steel shade #4E5675 once the presents are gone", ("#4E5675",)),
     "Intro_House_B_Windows": (WARM_BULB, "fixed; Vault Steel shade #4E5675 once the presents are gone", ("#4E5675",)),
     "Intro_Vacuum_Lights":   ("#4E5675", "Bulb Warm #F6C0A2 while the vacuum runs", (WARM_BULB,)),
+    "Intro_Tower_Windows":   (WARM_BULB, "fixed; Vault Steel shade #4E5675 once the presents are gone", ("#4E5675",)),
+    "Intro_Tower_Sign":      ("#FFB85C", "fixed: Hoardsworth's giant H stays lit all night", ()),
 }
 GLASS_TINT = "#A9B2CC"
 

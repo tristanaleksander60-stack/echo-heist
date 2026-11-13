@@ -1367,6 +1367,16 @@ function EchoView.new(state: any): any
 		return n
 	end
 
+	-- The avatar rigs on screen now (Heist/ScarfSway sways their scarf tails): appended to `out`, which is returned.
+	function view.swayModels(out: { Model }): { Model }
+		for _, entry in order do
+			if entry.drawn == entry.rig and entry.rig.kind == "avatar" and entry.fade < 1 then
+				table.insert(out, entry.rig.model)
+			end
+		end
+		return out
+	end
+
 	-- The rig on screen for an actor: its avatar / mannequin rig, or the light rig while the LOD draws it far.
 	function view.drawnRigOf(actorId: number): any
 		local entry = active[actorId]

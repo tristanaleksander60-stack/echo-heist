@@ -32,6 +32,8 @@ local RunService = game:GetService("RunService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
+local Outfit = require(Shared:WaitForChild("Heist"):WaitForChild("Outfit"))
+local RookieData = require(Shared:WaitForChild("Heist"):WaitForChild("RookieData")) :: any
 
 local FpMath = require(script.Parent:WaitForChild("FpMath"))
 local ViewmodelMath = require(script.Parent:WaitForChild("ViewmodelMath"))
@@ -266,6 +268,110 @@ function Viewmodel.fromKit(source: Model): Rig?
 	return { model = model, R = handOf(r, wr), L = handOf(l, wl), kit = true }
 end
 
+local function v3(t: { number }): Vector3
+	return Vector3.new(t[1], t[2], t[3])
+end
+
+local function bodyOrigin(part: string): Vector3?
+	for _, b in RookieData.body do
+		if b.part == part then
+			return v3(b.origin)
+		end
+	end
+	return nil
+end
+
+-- Your arms in your outfit (CH polish): built from CharacterKit.Pieces like Heist/Rookie dresses a character, so
+-- the hands in first person match your body: the sleeve (the R15 lower arm), the glove (the hand) and the gloves
+-- slot's cuff in your glove colour (Config.Rookie.GLOVES), the colour-block cuff or two Breton stripes down the
+-- sleeve in your crew hue. Grips at the palms (RookieData.viewmodel, offsets from the elbow). Scaled and bound
+-- like any kit viewmodel (Viewmodel.fromKit). nil when a piece is missing (the plain Rookie_Viewmodel then).
+-- outfitKey: the player attribute "Outfit" (Outfit.key); nil = the default outfit.
+function Viewmodel.fromOutfit(folder: Instance, outfitKey: string?, hue: Color3): Rig?
+	local pieces = folder:FindFirstChild("Pieces")
+	if not pieces then
+		return nil
+	end
+	local outfit = Outfit.fromKey(outfitKey)
+	local glove = Color3.fromHex(Outfit.gloveHex(outfit))
+	local names = Outfit.pieces(outfit)
+	local model = Instance.new("Model")
+	model.Name = "Rookie_Viewmodel"
+	local ok = true
+	for armName, d in RookieData.viewmodel do
+		local s = if armName == "RightArm" then "Right" else "Left"
+		local function add(name: string, at: CFrame, color: Color3?): BasePart?
+			local src = pieces:FindFirstChild(name)
+			if not src or not src:IsA("BasePart") then
+				ok = false
+				return nil
+			end
+			local p = src:Clone()
+			p.Name = s .. "_" .. name -- the side in the name: Viewmodel.fromKit binds it to that hand's grip
+			for _, c in p:GetChildren() do
+				if not (c:IsA("DataModelMesh") or c:IsA("SurfaceAppearance")) then
+					c:Destroy()
+				end
+			end
+			p:PivotTo(at)
+			if color then
+				p.Color = color
+			end
+			p.Parent = model
+			return p
+		end
+		local elbowAt, wristAt = bodyOrigin(s .. "LowerArm"), bodyOrigin(s .. "Hand")
+		if not elbowAt or not wristAt then
+			ok = false
+			break
+		end
+		local elbow = CFrame.new(elbowAt)
+		add("Rookie_" .. s .. "LowerArm", elbow)
+		local hand = add("Rookie_" .. s .. "Hand", CFrame.new(wristAt), glove)
+		-- the outfit's pieces on the forearm and the hand: the glove cuff, the colour-block cuff
+		for _, n in names do
+			local a = RookieData.attach[n]
+			local host = a and bodyOrigin(a.part)
+			if a and host and (a.part == s .. "Hand" or a.part == s .. "LowerArm") then
+				local tint = RookieData.tint[n]
+				add(
+					n,
+					CFrame.new(host + v3(a.offset)),
+					if tint == "crew" then hue elseif tint == "gloves" then glove else nil
+				)
+			end
+		end
+		-- Breton stripes: two crew bands round the sleeve (the body shows them on the upper arm, out of view here)
+		if outfit.sweater == "Sweater_Stripes" then
+			local axis = (wristAt - elbowAt).Unit
+			local side = axis:Cross(Vector3.zAxis).Unit
+			for i, t in VM.SLEEVE_STRIPES do
+				local band = Instance.new("Part")
+				band.Name = s .. "_Stripe" .. i
+				band.Shape = Enum.PartType.Cylinder
+				band.Material = Enum.Material.SmoothPlastic
+				band.Size = Vector3.new(VM.STRIPE_WIDTH, VM.STRIPE_RADIUS[i] * 2, VM.STRIPE_RADIUS[i] * 2)
+				band.CFrame = CFrame.fromMatrix(elbowAt:Lerp(wristAt, t), axis, side)
+				band.Color = hue
+				band.Parent = model
+			end
+		end
+		if hand then
+			local grip = Instance.new("Attachment")
+			grip.Name = d.grip
+			grip.CFrame = hand.CFrame:ToObjectSpace(elbow * CFrame.new(v3(d.gripOffset)))
+			grip.Parent = hand
+		end
+	end
+	if not ok then
+		model:Destroy()
+		return nil
+	end
+	local rig = Viewmodel.fromKit(model)
+	model:Destroy()
+	return rig
+end
+
 local function poseFrame(cam: CFrame, pose: { number }, fit: number): CFrame
 	local s = VM.SCALE
 	return cam
@@ -367,18 +473,31 @@ function Viewmodel.new(state: any, deps: any): any
 		end
 	end
 
+	-- The kit arms in your outfit (gloves, glove colour, crew stripes): rebuilt when your outfit or crew hue changes.
+	local builtKey: string? = nil
 	local function checkKit(now: number)
-		if rig.kit or now - kitChecked < VM.KIT_CHECK_SECONDS then
+		if now - kitChecked < VM.KIT_CHECK_SECONDS then
 			return
 		end
 		kitChecked = now
+		local key = if player then player:GetAttribute("Outfit") else nil
+		local hue = if deps.hue then deps.hue() else Palette.CLONE_HUES[1]
+		local want = tostring(key) .. "#" .. hue:ToHex()
+		if rig.kit and builtKey == want then
+			return
+		end
 		local kit = ReplicatedStorage:FindFirstChild(VM.KIT)
-		local src = kit and kit:FindFirstChild(VM.KIT_MODEL)
-		if src and src:IsA("Model") then
-			local made = Viewmodel.fromKit(src)
-			if made then
-				swapRig(made)
-			end
+		if not kit then
+			return
+		end
+		local made = Viewmodel.fromOutfit(kit, if type(key) == "string" then key else nil, hue)
+		if not made then
+			local src = kit:FindFirstChild(VM.KIT_MODEL)
+			made = if src and src:IsA("Model") then Viewmodel.fromKit(src) else nil
+		end
+		if made then
+			builtKey = want
+			swapRig(made)
 		end
 	end
 

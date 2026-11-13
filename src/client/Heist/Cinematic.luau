@@ -1,20 +1,25 @@
 --!strict
 -- Heist/Cinematic: the story intro (docs/art/intro/STORYBOARD.md; PLAN_FIRST_PERSON §5 "INTRO"; MASTERPLAN §4.3).
 -- The shot list is data in Shared/Heist/IntroPlan; this module builds the stage on this client only and plays it:
---   * the stage: a toy town under the northern lights, Hoardsworth Tower with the giant vacuum and the Snow Globe
---     Vault, the crew's garage with the van. Built locally at Config.Intro.STAGE_ORIGIN (far from every heist slot)
+--   * the stage: a toy town under the northern lights (the game's own Heist/Aurora, anchored to the stage; the
+--     session's aurora hides meanwhile), Hoardsworth Tower (the kit's art-deco landmark: setbacks, gold crown, lit
+--     windows, the giant H) with the giant vacuum on its gantry and the Snow Globe Vault on its terrace, the crew's
+--     garage with the van. Built locally at Config.Intro.STAGE_ORIGIN (far from every heist slot)
 --     from ReplicatedStorage/<Config.Intro.KIT_FOLDER> (the server's Heist/IntroKit), with Part stand-ins for any
 --     mesh that has not arrived. Client-made parts are never streamed, never collide, are never queried.
 --   * the Rookie: ReplicatedStorage/<Config.Intro.CHARACTER_KIT>/<ROOKIE_TEMPLATE> (the CHARACTER track's R15
 --     template, read when the garage is built), posed through its Motor6D.Transform with the IntroPlan joint angles
---     (the same R15 joint names), smug face on the grin; the clones are tinted copies of it. A Part stand-in only
---     when the kit never arrived.
+--     (the same R15 joint names), smug face on the grin; the clones are copies of it drawn as EchoView draws your
+--     clones (outfit kept, crew pieces in your hue with the solo age ramp, one crew-hue Highlight, floor glows,
+--     the tape print from the feet up under a scan band), striking his pose. A Part stand-in only when the kit
+--     never arrived.
 --   * the camera: CameraDirector is suspended ("intro"); the camera is Scriptable on IntroPlan.camera (Catmull-Rom
 --     keys, eased, whip-pans as a fast yaw with a blur), restored on every exit path (end, SKIP, destroy, watchdog).
 --   * caption cards (Ui/Theme/Motion kit, Strings.INTRO), letterbox bars, a SKIP button from the first frame (any
 --     key on a keyboard too), the HEIST YOURSELF wordmark smash (ReplicatedFirst/Wordmark) as the last shot.
---   * effects: present swirl (sparkles through the Heist/Particles budget), suction beams, aurora curtains (Beams),
---     snow, monocle glint, headlights, the clones' tape print, flashes (Heist/FlashLimit), screen shake (Settings
+--   * effects: present swirl (sparkles through the Heist/Particles budget), suction beams and the suction vortex
+--     (spiral Beam arms spun about the mouth, Config.Intro.VORTEX), snow, monocle glint, headlights, the H sign's
+--     floodlight, the clones' tape print, flashes (Heist/FlashLimit), screen shake (Settings
 --     "shake" and reduced motion turn it off). Reduced motion: cuts instead of whip-pans, no shake, no flashes.
 --   * audio: IntroPlan cues through Heist/Sound (empty cues until the owner's ids land: docs/AUDIO.md).
 --
@@ -39,19 +44,23 @@ local UserInputService = game:GetService("UserInputService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local HeistShared = Shared:WaitForChild("Heist")
+local CloneState = require(HeistShared:WaitForChild("CloneState"))
 local IntroPlan = require(HeistShared:WaitForChild("IntroPlan"))
 local IntroRig = require(HeistShared:WaitForChild("IntroRig"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
+local Aurora = require(script.Parent:WaitForChild("Aurora"))
 local FlashLimit = require(script.Parent:WaitForChild("FlashLimit"))
 local Particles = require(script.Parent:WaitForChild("Particles"))
+local PlayerHalo = require(script.Parent:WaitForChild("PlayerHalo"))
 local Settings = require(script.Parent:WaitForChild("Settings"))
 local Sound = require(script.Parent:WaitForChild("Sound"))
 local Theme = require(script.Parent:WaitForChild("Theme"))
 local Ui = require(script.Parent:WaitForChild("Ui"))
 
 local I = Config.Intro
+local C = Config.Clone
 local ST = IntroPlan.STAGE
 
 local Cinematic = {}
@@ -59,11 +68,7 @@ local Cinematic = {}
 local RENDER_NAME = "EH_Cinematic"
 local WARM = Color3.fromHex("#F6C0A2") -- Bulb Warm (eh_palette.WARM_BULB)
 local OFF = Palette.steelLo
-local AURORA = {
-	{ Color3.fromHex("#3CE0A0"), Color3.fromHex("#4FD6C0"), Color3.fromHex("#7A5CC8") },
-	{ Color3.fromHex("#2FC28E"), Color3.fromHex("#3FB8B0"), Color3.fromHex("#5E4AB0") },
-	{ Color3.fromHex("#58E8B8"), Color3.fromHex("#62D8D0"), Color3.fromHex("#8A6AD8") },
-}
+local SIGN = Color3.fromHex(I.SIGN_COLOUR) -- the giant H on Hoardsworth Tower (eh_palette.NEON Intro_Tower_Sign)
 
 local playing: any = nil
 
@@ -404,6 +409,70 @@ function Cinematic.new(opts: any?): any
 	---------------------------------------------------------------- the town and the tower (built now)
 	local windows: { BasePart } = {}
 	local townLights: { PointLight } = {}
+	-- The Part stand-in of Hoardsworth Tower (the kit never arrived): burgundy tiers, gold cornices and corner fins,
+	-- lit windows on the front and a side, the roof deck.
+	local function towerStandIn(f: Instance)
+		local T = ST.tower
+		local y = 0
+		local base = T.base
+		local gold, body = Palette.marbleLo, Color3.fromHex("#8C2F4B")
+		for ti, tierSpec in T.tiers do
+			local w, hgt = tierSpec[1], tierSpec[2]
+			part(f, "Tier" .. ti, Vector3.new(w, hgt, w), at({ base[1], y + hgt / 2, base[3] }), body)
+			part(f, "Cornice" .. ti, Vector3.new(w + 2, 1.6, w + 2), at({ base[1], y + hgt - 0.8, base[3] }), gold)
+			for _, sx in { -1, 1 } do
+				part(
+					f,
+					"Fin",
+					Vector3.new(2.4, hgt - 1.6, 2.4),
+					at({ base[1] + sx * w / 2, y + (hgt - 1.6) / 2, base[3] + w / 2 }),
+					gold
+				)
+			end
+			local rows = math.floor((hgt - 6) / 7)
+			local cols = math.floor((w - 6) / 6)
+			for r = 0, rows - 1 do
+				for c = 0, cols - 1 do
+					local x = base[1] - (cols - 1) * 3 + c * 6
+					local yy = y + 6 + r * 7
+					table.insert(
+						windows,
+						part(
+							f,
+							"TowerWin",
+							Vector3.new(2.6, 4, 0.4),
+							at({ x, yy, base[3] + w / 2 }),
+							WARM,
+							Enum.Material.Neon
+						)
+					)
+					table.insert(
+						windows,
+						part(
+							f,
+							"TowerWin",
+							Vector3.new(0.4, 4, 2.6),
+							at({ base[1] + w / 2, yy, base[3] - (cols - 1) * 3 + c * 6 }),
+							WARM,
+							Enum.Material.Neon
+						)
+					)
+				end
+			end
+			y += hgt
+		end
+		local d = T.deck
+		part(f, "Deck", v3(d), at({ base[1], ST.deckY - d[2] / 2, base[3] }), Palette.inkHi)
+		part(
+			f,
+			"DeckTrim",
+			Vector3.new(d[1] + 0.8, 1, d[3] + 0.8),
+			at({ base[1], ST.deckY - d[2] - 0.1, base[3] }),
+			gold
+		)
+		part(f, "SignH", Vector3.new(10, 12, 0.6), at(T.sign), SIGN, Enum.Material.Neon)
+	end
+
 	local function townBuild()
 		local f = Instance.new("Folder")
 		f.Name = "Town"
@@ -482,65 +551,36 @@ function Cinematic.new(opts: any?): any
 			tree:ScaleTo(2.6)
 			tree.Parent = f
 		end
-		-- Hoardsworth Tower: burgundy tiers, gold cornices and corner fins, lit windows (front and side)
+		-- Hoardsworth Tower: the kit's art-deco landmark (setbacks, gold crown, lit windows, the giant H), turned to
+		-- face the town; the Part stand-in (burgundy tiers, gold cornices, lit windows) only without the kit
 		local T = ST.tower
-		local y = 0
-		local base = T.base
-		local gold, body = Palette.marbleLo, Color3.fromHex("#8C2F4B")
-		for ti, tierSpec in T.tiers do
-			local w, hgt = tierSpec[1], tierSpec[2]
-			part(f, "Tier" .. ti, Vector3.new(w, hgt, w), at({ base[1], y + hgt / 2, base[3] }), body)
-			part(f, "Cornice" .. ti, Vector3.new(w + 2, 1.6, w + 2), at({ base[1], y + hgt - 0.8, base[3] }), gold)
-			for _, sx in { -1, 1 } do
-				part(
-					f,
-					"Fin",
-					Vector3.new(2.4, hgt - 1.6, 2.4),
-					at({ base[1] + sx * w / 2, y + (hgt - 1.6) / 2, base[3] + w / 2 }),
-					gold
-				)
-			end
-			local rows = math.floor((hgt - 6) / 7)
-			local cols = math.floor((w - 6) / 6)
-			for r = 0, rows - 1 do
-				for c = 0, cols - 1 do
-					local x = base[1] - (cols - 1) * 3 + c * 6
-					local yy = y + 6 + r * 7
-					table.insert(
-						windows,
-						part(
-							f,
-							"TowerWin",
-							Vector3.new(2.6, 4, 0.4),
-							at({ x, yy, base[3] + w / 2 }),
-							WARM,
-							Enum.Material.Neon
-						)
-					)
-					table.insert(
-						windows,
-						part(
-							f,
-							"TowerWin",
-							Vector3.new(0.4, 4, 2.6),
-							at({ base[1] + w / 2, yy, base[3] - (cols - 1) * 3 + c * 6 }),
-							WARM,
-							Enum.Material.Neon
-						)
-					)
+		local tower = kitModel("Intro_Tower")
+		if tower then
+			tower:PivotTo(at(T.base, T.yaw))
+			for _, d in tower:GetDescendants() do
+				if d:IsA("BasePart") then
+					if d.Name == "Intro_Tower_Windows" then
+						d.Color = WARM
+						table.insert(windows, d)
+					elseif d.Name == "Intro_Tower_Sign" then
+						d.Color = SIGN
+					end
 				end
 			end
-			y += hgt
+			tower.Parent = f
+		else
+			towerStandIn(f)
 		end
-		local d = T.deck
-		part(f, "Deck", v3(d), at({ base[1], ST.deckY - d[2] / 2, base[3] }), Palette.inkHi)
-		part(
-			f,
-			"DeckTrim",
-			Vector3.new(d[1] + 0.8, 1, d[3] + 0.8),
-			at({ base[1], ST.deckY - d[2] - 0.1, base[3] }),
-			gold
-		)
+		-- the H sign's floodlight (warm gold; it stays on when the town goes dark): from tier 2 down only
+		if tier <= 2 then
+			local holder = part(f, "SignLight", Vector3.new(0.2, 0.2, 0.2), at(T.sign) * CFrame.new(0, 0, 8), SIGN)
+			holder.Transparency = 1
+			local l = Instance.new("PointLight")
+			l.Color = SIGN
+			l.Range = I.SIGN_LIGHT.RANGE
+			l.Brightness = I.SIGN_LIGHT.BRIGHTNESS
+			l.Parent = holder
+		end
 		f.Parent = stage
 	end
 
@@ -551,6 +591,10 @@ function Cinematic.new(opts: any?): any
 	local pilePivot: CFrame = CFrame.identity
 	local vacuumLights: BasePart? = nil
 	local suction: { Beam } = {}
+	local vortex: { Beam } = {}
+	local vortexHolder: BasePart? = nil
+	local vortexBase: CFrame = CFrame.identity
+	local vortexSpin = 0
 	local swirlEmitter: ParticleEmitter? = nil
 	local leverHandle: BasePart? = nil
 	local leverRest: CFrame = CFrame.identity
@@ -590,9 +634,9 @@ function Cinematic.new(opts: any?): any
 		gl.Brightness = 1.5
 		gl.Parent = holder
 		globeLight = gl
-		-- the vacuum
+		-- the vacuum (authored 1.4x: it reads as GIANT next to Hoardsworth), on the tower's gantry
 		local vac = kitModel("Intro_Vacuum")
-		local vcf = at(ST.vacuum.at, 180)
+		local vcf = at(ST.vacuum.at, ST.vacuum.yaw)
 		if vac then
 			vac:PivotTo(vcf)
 			vac.Parent = f
@@ -601,11 +645,72 @@ function Cinematic.new(opts: any?): any
 				vacuumLights.Color = OFF
 			end
 		else
-			part(f, "VacuumStandIn", Vector3.new(18.8, 14, 14), vcf * CFrame.new(0, 7.6, 0), Color3.fromHex("#8C2F4B"))
-			local mouth = part(f, "Mouth", Vector3.new(12, 2, 12), at(ST.nozzle), Palette.steel)
+			local k = ST.vacuum.scale
+			part(
+				f,
+				"VacuumStandIn",
+				Vector3.new(18.8, 14, 14) * k,
+				vcf * CFrame.new(0, 7.6 * k, 0),
+				Color3.fromHex("#8C2F4B")
+			)
+			local mouth = part(f, "Mouth", Vector3.new(2, 13, 13) * k, at(ST.nozzle), Palette.steel)
 			mouth.Shape = Enum.PartType.Cylinder
-			vacuumLights =
-				part(f, "VacuumLamp", Vector3.new(1.4, 1.4, 1.4), vcf * CFrame.new(0, 14.6, 0), OFF, Enum.Material.Neon)
+			mouth.CFrame = CFrame.lookAt(mouth.Position, mouth.Position + v3(ST.aim))
+				* CFrame.Angles(0, math.rad(90), 0)
+			vacuumLights = part(
+				f,
+				"VacuumLamp",
+				Vector3.new(1.4, 1.4, 1.4) * k,
+				vcf * CFrame.new(0, 14.6 * k, 0),
+				OFF,
+				Enum.Material.Neon
+			)
+		end
+		-- the suction vortex: spiral arms of additive Beams on a funnel that narrows into the mouth (along the aim),
+		-- spun about the aim each frame while the vacuum runs; arms per tier (Config.Intro.VORTEX)
+		local V = I.VORTEX
+		local nArms = V.ARMS[tier] or 0
+		local aim = v3(ST.aim).Unit
+		local mouthCF = CFrame.lookAt(v3(ST.nozzle), v3(ST.nozzle) + aim) -- -Z (look) = out of the mouth
+		vortexBase = stageCF * mouthCF
+		local vh = part(f, "Vortex", Vector3.new(1, 1, 1), vortexBase, OFF)
+		vh.Transparency = 1
+		vortexHolder = vh
+		for arm = 1, nArms do
+			local prev: Attachment? = nil
+			local a0 = 2 * math.pi * (arm - 1) / nArms
+			for j = 0, V.POINTS - 1 do
+				local s = j / (V.POINTS - 1) -- 0 at the mouth, 1 at the funnel's far end
+				local r = V.MOUTH_RADIUS + (V.FAR_RADIUS - V.MOUTH_RADIUS) * s ^ V.FLARE
+				local ang = a0 + V.TURNS * 2 * math.pi * (1 - s)
+				local a = Instance.new("Attachment")
+				a.Position = Vector3.new(r * math.cos(ang), r * math.sin(ang), -V.LENGTH * s)
+				a.Parent = vh
+				if prev then
+					local b = Instance.new("Beam")
+					b.Attachment0 = a
+					b.Attachment1 = prev
+					b.FaceCamera = true
+					b.Segments = 10
+					b.Width0 = V.WIDTH[1] + (V.WIDTH[2] - V.WIDTH[1]) * s
+					b.Width1 = V.WIDTH[1] + (V.WIDTH[2] - V.WIDTH[1]) * (s - 1 / (V.POINTS - 1))
+					b.CurveSize0 = V.CURVE * r
+					b.CurveSize1 = -V.CURVE * r
+					b.LightEmission = 1
+					b.LightInfluence = 0
+					b.Color = ColorSequence.new(Color3.fromHex(V.COLOURS[1]), Color3.fromHex(V.COLOURS[2]))
+					-- faint at the far end, brightest where it pours into the mouth
+					local sNear = s - 1 / (V.POINTS - 1)
+					b.Transparency = NumberSequence.new(
+						V.ALPHA[1] + (V.ALPHA[2] - V.ALPHA[1]) * s,
+						V.ALPHA[1] + (V.ALPHA[2] - V.ALPHA[1]) * sNear
+					)
+					b.Enabled = false
+					b.Parent = vh
+					table.insert(vortex, b)
+				end
+				prev = a
+			end
 		end
 		-- suction beams from the mouth down to the town (off until the switch)
 		local mouthA = Instance.new("Attachment")
@@ -669,48 +774,18 @@ function Cinematic.new(opts: any?): any
 		f.Parent = stage
 	end
 
-	---------------------------------------------------------------- the aurora (Beams, camera-facing curtains)
-	local function auroraBuild()
-		local layers = I.AURORA_LAYERS[tier] or 1
-		local f = Instance.new("Folder")
-		f.Name = "Aurora"
-		local anchor = part(f, "AuroraAnchor", Vector3.new(1, 1, 1), stageCF, OFF)
-		anchor.Transparency = 1
-		for k = 1, layers do
-			local z = -420 - 120 * (k - 1)
-			local cols = AURORA[(k - 1) % 3 + 1]
-			for row = 0, 3 do -- stacked rows: bright at the foot, fading up (a vertical gradient without a texture)
-				local prev: Attachment? = nil
-				for i = 0, 18 do
-					local x = -460 + i * 50
-					local y = 175 + 40 * (k - 1) + 18 * math.sin(i * 0.66 + k) + row * 26
-					local a = Instance.new("Attachment")
-					a.WorldPosition = (stageCF * CFrame.new(x, y, z + 60 * math.sin(i * 0.42 + k * 1.7))).Position
-					a.Parent = anchor
-					if prev then
-						local b = Instance.new("Beam")
-						b.Attachment0 = prev
-						b.Attachment1 = a
-						b.FaceCamera = true
-						b.Width0 = 30
-						b.Width1 = 30
-						b.LightEmission = 1
-						b.LightInfluence = 0
-						b.CurveSize0 = 8 * math.sin(i)
-						b.CurveSize1 = -8 * math.cos(i)
-						b.Segments = 6
-						local c = cols[math.min(3, 1 + math.floor(row * 0.75))]
-						b.Color = ColorSequence.new(c, cols[(i % 2) + 1])
-						local base = 0.35 + 0.17 * row + 0.1 * (k - 1)
-						b.Transparency = NumberSequence.new(math.min(0.95, base), math.min(0.97, base + 0.05))
-						b.Parent = anchor
-					end
-					prev = a
-				end
-			end
-		end
-		f.Parent = stage
-	end
+	---------------------------------------------------------------- the aurora (the game's Heist/Aurora, anchored here)
+	-- The same northern lights as the town in the game (textured Beam curtains, sway and shimmer, per-tier layers),
+	-- anchored to the stage with its landmark direction toward the tower (-Z); the session's own aurora hides while
+	-- this one plays (Aurora.solo), and the curtains show at once (no fade-in: the shot opens on them).
+	local auroraFolder = Instance.new("Folder")
+	auroraFolder.Name = "Aurora"
+	auroraFolder.Parent = stage
+	local aurora = Aurora.new(auroraFolder, { revealSeconds = 0 })
+	aurora.setAnchor(origin, I.AURORA_YAW)
+	aurora.setTier(tier)
+	aurora.setReducedMotion(reducedFn())
+	Aurora.solo(aurora)
 
 	---------------------------------------------------------------- snow (one emitter that follows the camera)
 	local snowPart = part(stage, "SnowVolume", Vector3.new(80, 30, 80), stageCF, OFF)
@@ -769,8 +844,29 @@ function Cinematic.new(opts: any?): any
 	local rookieMotors: { Motor6D } = {}
 	local cloneMotors: { { Motor6D } } = {}
 	local rookieFace = ""
-	local clones: { { rig: Rig?, model: Model, highlight: Highlight, scan: BasePart } } = {}
+	type Clone = {
+		rig: Rig?,
+		model: Model,
+		parts: { BasePart },
+		heights: { number },
+		height: number,
+		shown: number,
+		band: BasePart,
+		glow: SurfaceGui,
+		ring: Frame,
+	}
+	local clones: { Clone } = {}
+	local crewHighlight: Highlight? = nil
+	local cloneFace = ""
 	local garageFolder: Folder? = nil
+
+	-- A clone's crew hue as EchoView picks it for your own solo runs: older runs drift toward violet and are dimmer.
+	local function cloneHue(rank: number, count: number): Color3
+		local hue = Palette.hueFor(1)
+		local h, sat, val = hue:ToHSV()
+		hue = Color3.fromHSV(CloneState.driftHue(h, rank, count, true), sat, val)
+		return Palette.dim(hue, math.max(1 - Config.Heist.CLONE_AGE_DIM * rank, 0.35))
+	end
 
 	local function rookieTemplate(): Model?
 		local kitFolder = ReplicatedStorage:FindFirstChild(I.CHARACTER_KIT)
@@ -780,19 +876,20 @@ function Cinematic.new(opts: any?): any
 
 	-- A copy of the CharacterKit Rookie for the stage: the root anchored, the body parts held by their R15 Motor6Ds
 	-- (so Motor6D.Transform poses them with the IntroPlan joint angles), nothing collides, is queried or scripted,
-	-- no name tag. hue: a clone's tint (Clone Cyan), else the template's own look. Returns its motors.
+	-- no name tag. hue: a clone's crew hue (only the crew pieces, EH_Tint "crew", take it, as Heist/Rigs tints
+	-- clone rigs; clones cast no shadow), else the template's own look. Returns its motors.
 	local function prepRookie(m: Model, hue: Color3?): { Motor6D }
 		local motors: { Motor6D } = {}
 		for _, d in m:GetDescendants() do
 			if d:IsA("BasePart") then
 				quiet(d, hue == nil)
 				d.Anchored = d.Name == "HumanoidRootPart"
-				if hue and d.Transparency < 1 then
+				if hue and d:GetAttribute("EH_Tint") == "crew" then
 					d.Color = hue
 				end
 			elseif d:IsA("Motor6D") then
 				table.insert(motors, d)
-			elseif d:IsA("Script") or d:IsA("LocalScript") or (hue and d:IsA("Decal")) then
+			elseif d:IsA("Script") or d:IsA("LocalScript") then
 				d:Destroy()
 			elseif d:IsA("Humanoid") then
 				d.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
@@ -979,8 +1076,26 @@ function Cinematic.new(opts: any?): any
 		else
 			rookie = buildStandIn(f, "RookieStandIn", nil)
 		end
+		-- The clones: copies of the Rookie drawn the way EchoView draws your clones (PLAN_STEAM_PLUS §4.4 A2): the
+		-- outfit kept, only the crew pieces in your hue (older runs dimmer and drifting toward violet, as solo
+		-- runs do), one crew-hue Highlight over the group (fill + outline), a floor glow under each, and the tape
+		-- print: each builds up from the feet under a rising scan band while its floor ring settles.
+		local crew = Instance.new("Model")
+		crew.Name = "Crew"
+		local seatHue = Palette.hueFor(1)
+		local hl = Instance.new("Highlight")
+		hl.FillColor = seatHue
+		hl.OutlineColor = seatHue
+		hl.FillTransparency = Config.Heist.CLONE_FILL_TRANSPARENCY
+		hl.OutlineTransparency = 0
+		hl.DepthMode = Enum.HighlightDepthMode.Occluded
+		hl.Enabled = false
+		hl.Adornee = crew
+		hl.Parent = crew
+		crewHighlight = hl
+		local n = #ST.clones
 		for k, cp in ST.clones do
-			local hue = Palette.CLONE_HUES[1]
+			local hue = cloneHue(n - k, n) -- clone 1 is the oldest run
 			local m: Model
 			local rig: Rig? = nil
 			if tpl then
@@ -988,28 +1103,48 @@ function Cinematic.new(opts: any?): any
 				m.Name = "Clone" .. k
 				cloneMotors[k] = prepRookie(m, hue)
 				placeOnFloor(m, at(cp, rk.yaw + (if cp[1] < 130 then 8 else -8)))
-				m.Parent = f
+				m.Parent = crew
+				setRookieFace(m, "idle")
 			else
-				rig = buildStandIn(f, "Clone" .. k, hue)
+				rig = buildStandIn(crew, "Clone" .. k, hue)
 				m = (rig :: Rig).model
 			end
-			local hl = Instance.new("Highlight")
-			hl.FillColor = hue
-			hl.OutlineColor = hue
-			hl.FillTransparency = 1
-			hl.OutlineTransparency = 1
-			hl.DepthMode = Enum.HighlightDepthMode.Occluded
-			hl.Adornee = m
-			hl.Parent = m
-			local scan = part(f, "TapeScan", Vector3.new(3.4, 0.12, 1.6), at(cp), hue, Enum.Material.Neon)
-			scan.Transparency = 1
+			-- rest heights over the feet (the print shows a part once the band passes its bottom)
+			local feetY = at(cp).Position.Y
+			local parts, heights, top = {}, {}, 0
 			for _, d in m:GetDescendants() do
 				if d:IsA("BasePart") then
+					table.insert(parts, d)
+					local bottom = d.Position.Y - d.Size.Y / 2 - feetY
+					heights[#parts] = bottom
+					if d.Transparency < 1 then
+						top = math.max(top, bottom + d.Size.Y)
+					end
 					d.LocalTransparencyModifier = 1
 				end
 			end
-			table.insert(clones, { rig = rig, model = m, highlight = hl, scan = scan })
+			local band = part(f, "PrintBand", Vector3.new(0.12, 3.2, 3.2), at(cp), hue, Enum.Material.Neon)
+			band.Shape = Enum.PartType.Cylinder
+			band.Transparency = 1
+			local glowPart, glowGui, glowRing =
+				PlayerHalo.disc("FloorGlow", C.GLOW_SIZE, hue, C.GLOW_ALPHA, C.GLOW_RING_ALPHA, C.GLOW_DISC)
+			glowPart.Massless = true
+			glowPart.CFrame = at(cp) * CFrame.new(0, 0.06, 0)
+			glowGui.Enabled = false
+			glowPart.Parent = f
+			table.insert(clones, {
+				rig = rig,
+				model = m,
+				parts = parts,
+				heights = heights,
+				height = if top > 0 then top else 4.6,
+				shown = -2,
+				band = band,
+				glow = glowGui,
+				ring = glowRing,
+			})
 		end
+		crew.Parent = f
 		f.Parent = stage
 	end
 
@@ -1114,6 +1249,9 @@ function Cinematic.new(opts: any?): any
 		for _, b in suction do
 			b.Enabled = on
 		end
+		for _, b in vortex do
+			b.Enabled = on
+		end
 		if swirlEmitter then
 			swirlEmitter.Enabled = false -- bursts only (Particles budget)
 		end
@@ -1185,11 +1323,8 @@ function Cinematic.new(opts: any?): any
 			end
 		elseif kind == "fx" then
 			local on = not e.stop
-			if e.id == "aurora" and not on then
-				local a = stage:FindFirstChild("Aurora")
-				if a then
-					a:Destroy()
-				end
+			if e.id == "aurora" then
+				aurora.setVisible(on)
 			elseif e.id == "snow" then
 				snow.Enabled = on
 				snow.Rate = snowRate * (if reducedFn() then 0.5 else 1)
@@ -1255,6 +1390,7 @@ function Cinematic.new(opts: any?): any
 	local partsBuf: { BasePart } = {}
 	local cfBuf: { CFrame } = {}
 	local nextSwirl = 0
+	local lastDrawT = 0
 	local function draw()
 		local t = st.t
 		local reduced = reducedFn()
@@ -1273,6 +1409,14 @@ function Cinematic.new(opts: any?): any
 			camera.FieldOfView = fov
 		end
 		blur.Size = if reduced then 0 else I.WHIP_BLUR * whip
+		aurora.step(os.clock(), cf.Position)
+		-- the suction vortex turns while the vacuum runs (slower under reduced motion)
+		local dt = math.clamp(t - lastDrawT, 0, 0.1)
+		lastDrawT = t
+		if vortexHolder and st.fx.vacuum then
+			vortexSpin += dt * I.VORTEX.SPIN * (if reduced then Config.Aurora.REDUCED_MOTION else 1)
+			vortexHolder.CFrame = vortexBase * CFrame.Angles(0, 0, vortexSpin)
+		end
 		snowPart.CFrame = cf * CFrame.new(0, 6, -30)
 		-- fade in, flash
 		fade.BackgroundTransparency = math.clamp(t / I.FADE_IN, 0, 1)
@@ -1340,6 +1484,9 @@ function Cinematic.new(opts: any?): any
 				setRookieFace(rookieModel, mood)
 			end
 		end
+		local anyPrinted = false
+		local ra, rb, rw = IntroPlan.pose("rookie", t)
+		local face = if (rb == "grin" and rw > 0.5) or ra == "grin" then "smug" else "idle"
 		for k, c in clones do
 			local pr = IntroPlan.clonePrint(k, t)
 			if c.rig then
@@ -1353,25 +1500,41 @@ function Cinematic.new(opts: any?): any
 					partsBuf,
 					cfBuf
 				)
-			elseif cloneMotors[k] then -- copies of me: they strike the Rookie's pose
-				local a, b, w = IntroPlan.pose("rookie", t)
-				poseMotors(cloneMotors[k], a, b, w)
-			end
-			local flicker = if pr > 0
-					and pr < 1
-					and not reduced
-				then (if math.floor(t * 30) % 2 == 0 then 0.55 else 0.15)
-				else 0
-			local vis = if pr <= 0 then 1 else math.clamp(1 - pr + flicker, 0, 1)
-			for _, d in c.model:GetDescendants() do
-				if d:IsA("BasePart") then
-					d.LocalTransparencyModifier = vis
+			elseif cloneMotors[k] then -- copies of me: they strike the Rookie's pose and pull his face
+				poseMotors(cloneMotors[k], ra, rb, rw)
+				if face ~= cloneFace then
+					setRookieFace(c.model, face)
 				end
 			end
-			c.highlight.FillTransparency = if pr > 0 then 1 - 0.45 * pr else 1
-			c.highlight.OutlineTransparency = if pr > 0 then 1 - pr else 1
-			c.scan.Transparency = if pr > 0 and pr < 1 then 0.1 else 1
-			c.scan.CFrame = at(ST.clones[k]) * CFrame.new(0, 5.4 * pr, 0)
+			-- the tape print (EchoView): parts appear from the feet up; reduced motion shows the whole clone at once
+			local printing = pr > 0 and pr < 1 and not reduced
+			local h = if pr <= 0 then -1 elseif printing then pr * c.height else math.huge
+			if h ~= c.shown then
+				local last = c.shown
+				c.shown = h
+				for i, p in c.parts do
+					local show = c.heights[i] <= h
+					if last == -2 or (c.heights[i] <= last) ~= show then
+						p.LocalTransparencyModifier = if show then 0 else 1
+					end
+				end
+			end
+			anyPrinted = anyPrinted or pr > 0
+			c.band.Transparency = if printing then C.PRINT_BAND_ALPHA + (1 - C.PRINT_BAND_ALPHA) * pr else 1
+			c.band.CFrame = at(ST.clones[k])
+				* CFrame.new(0, math.min(h, c.height), 0)
+				* CFrame.Angles(0, 0, math.pi / 2)
+			c.glow.Enabled = pr > 0
+			local ring = if printing then C.PRINT_RING_FROM + (1 - C.PRINT_RING_FROM) * pr else C.GLOW_DISC
+			c.ring.Size = UDim2.fromScale(ring, ring)
+			local stroke = c.ring:FindFirstChildOfClass("UIStroke")
+			if stroke then
+				stroke.Transparency = if printing then pr else C.GLOW_RING_ALPHA
+			end
+		end
+		cloneFace = face
+		if crewHighlight then
+			crewHighlight.Enabled = anyPrinted
 		end
 		for k, p in presents do
 			local pp, spin, alive = IntroPlan.present(k, #presents, t)
@@ -1427,6 +1590,8 @@ function Cinematic.new(opts: any?): any
 		end
 		grade:Destroy()
 		blur:Destroy()
+		Aurora.release(aurora) -- the session's aurora shows again
+		aurora.destroy()
 		Particles.setSteady("introSnow", nil)
 		if o.director then
 			o.director.resume("intro")
@@ -1524,7 +1689,6 @@ function Cinematic.new(opts: any?): any
 
 	townBuild()
 	topBuild()
-	auroraBuild()
 	stage.Parent = o.parent or workspace
 	applyMood(IntroPlan.SHOTS[1].mood)
 	cine.skipButton = skipBtn

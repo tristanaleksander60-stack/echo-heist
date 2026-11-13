@@ -3015,12 +3015,128 @@
    ],
    "sim": "none"
   },
+  "Intro_Tower": {
+   "model": "Intro_Tower",
+   "size": [
+    68.5,
+    132.6,
+    55.7
+   ],
+   "tris": 7088,
+   "class": "hero",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -41.0,
+    -0.5,
+    -28.2
+   ],
+   "boundsMax": [
+    27.5,
+    132.1,
+    27.5
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none"
+  },
+  "Intro_Tower_Sign": {
+   "model": "Intro_Tower",
+   "size": [
+    13.2,
+    12.0,
+    0.65
+   ],
+   "tris": 36,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -6.6,
+    78.0,
+    -17.45
+   ],
+   "boundsMax": [
+    6.6,
+    90.0,
+    -16.8
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "tint": "Sign Gold #FFB85C (eh_palette.NEON); it stays lit all night"
+  },
+  "Intro_Tower_Windows": {
+   "model": "Intro_Tower",
+   "size": [
+    38.5,
+    111.9,
+    45.5
+   ],
+   "tris": 3240,
+   "class": "medium",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -19.25,
+    3.0,
+    -26.25
+   ],
+   "boundsMax": [
+    19.25,
+    114.9,
+    19.25
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Intro"
+   ],
+   "sim": "none",
+   "tint": "Bulb Warm #F6C0A2; Vault Steel shade #4E5675 once the presents are gone (eh_palette.NEON)"
+  },
   "Intro_Vacuum": {
    "model": "Intro_Vacuum",
    "size": [
-    42.296,
-    41.897,
-    43.209
+    66.817,
+    43.378,
+    59.295
    ],
    "tris": 3752,
    "class": "hero",
@@ -3034,14 +3150,14 @@
    "layer": "base",
    "passed": true,
    "boundsMin": [
-    -29.799,
+    -41.718,
     0.0,
-    -28.712
+    -40.197
    ],
    "boundsMax": [
-    12.497,
-    41.897,
-    14.497
+    25.098,
+    43.378,
+    19.098
    ],
    "origin": [
     0.0,
@@ -3056,9 +3172,9 @@
   "Intro_Vacuum_Lights": {
    "model": "Intro_Vacuum",
    "size": [
-    36.083,
-    10.986,
-    27.64
+    50.516,
+    15.381,
+    38.697
    ],
    "tris": 584,
    "class": "small",
@@ -3072,14 +3188,14 @@
    "layer": "base",
    "passed": true,
    "boundsMin": [
-    -29.483,
-    10.0,
-    -28.57
+    -41.276,
+    14.0,
+    -39.998
    ],
    "boundsMax": [
-    6.6,
-    20.986,
-    -0.929
+    9.24,
+    29.381,
+    -1.301
    ],
    "origin": [
     0.0,
@@ -4195,11 +4311,11 @@
   "Rookie_Face_Busted": {
    "model": "Rookie_Faces",
    "size": [
-    0.923,
-    0.646,
-    0.105
+    1.119,
+    0.827,
+    0.261
    ],
-   "tris": 96,
+   "tris": 248,
    "class": "small",
    "collision": "Box",
    "material": "SmoothPlastic",
@@ -4211,14 +4327,14 @@
    "layer": "base",
    "passed": true,
    "boundsMin": [
-    -0.461,
+    -0.56,
     -0.413,
-    0.004
+    -0.07
    ],
    "boundsMax": [
-    0.461,
-    0.233,
-    0.109
+    0.56,
+    0.413,
+    0.191
    ],
    "origin": [
     -2.0,
@@ -4242,11 +4358,11 @@
   "Rookie_Face_Idle": {
    "model": "Rookie",
    "size": [
-    1.023,
-    0.834,
-    0.252
+    1.119,
+    0.775,
+    0.273
    ],
-   "tris": 368,
+   "tris": 544,
    "class": "small",
    "collision": "Box",
    "material": "SmoothPlastic",
@@ -4258,13 +4374,13 @@
    "layer": "base",
    "passed": true,
    "boundsMin": [
-    -0.511,
-    -0.406,
-    -0.058
+    -0.56,
+    -0.382,
+    -0.079
    ],
    "boundsMax": [
-    0.511,
-    0.428,
+    0.56,
+    0.393,
     0.194
    ],
    "origin": [
@@ -4289,11 +4405,11 @@
   "Rookie_Face_Shocked": {
    "model": "Rookie_Faces",
    "size": [
-    1.023,
-    1.004,
-    0.252
+    1.119,
+    0.983,
+    0.262
    ],
-   "tris": 408,
+   "tris": 544,
    "class": "small",
    "collision": "Box",
    "material": "SmoothPlastic",
@@ -4305,13 +4421,13 @@
    "layer": "base",
    "passed": true,
    "boundsMin": [
-    -0.511,
+    -0.56,
     -0.48,
-    -0.058
+    -0.068
    ],
    "boundsMax": [
-    0.511,
-    0.524,
+    0.56,
+    0.503,
     0.194
    ],
    "origin": [
@@ -4336,11 +4452,11 @@
   "Rookie_Face_Smug": {
    "model": "Rookie_Faces",
    "size": [
-    1.021,
-    0.911,
-    0.29
+    1.119,
+    0.848,
+    0.319
    ],
-   "tris": 496,
+   "tris": 680,
    "class": "small",
    "collision": "Box",
    "material": "SmoothPlastic",
@@ -4352,13 +4468,13 @@
    "layer": "base",
    "passed": true,
    "boundsMin": [
-    -0.51,
-    -0.437,
-    -0.058
+    -0.56,
+    -0.38,
+    -0.086
    ],
    "boundsMax": [
-    0.511,
-    0.474,
+    0.56,
+    0.468,
     0.232
    ],
    "origin": [
@@ -5350,11 +5466,11 @@
   "Rookie_Scarf_Long": {
    "model": "Rookie_Outfits",
    "size": [
-    2.48,
-    1.165,
-    3.135
+    1.72,
+    1.16,
+    1.69
    ],
-   "tris": 268,
+   "tris": 224,
    "class": "small",
    "collision": "Box",
    "material": "SmoothPlastic",
@@ -5366,14 +5482,14 @@
    "layer": "base",
    "passed": true,
    "boundsMin": [
-    -1.62,
+    -0.86,
     -0.96,
     -0.95
    ],
    "boundsMax": [
     0.86,
-    0.205,
-    2.185
+    0.2,
+    0.74
    ],
    "origin": [
     4.0,
@@ -5391,6 +5507,104 @@
      0.0,
      1.05,
      0.0
+    ]
+   },
+   "slot": "scarf",
+   "variant": "Long"
+  },
+  "Rookie_Scarf_Long_Tail1": {
+   "model": "Rookie_Outfits",
+   "size": [
+    0.78,
+    0.851,
+    1.047
+   ],
+   "tris": 36,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.572,
+    -0.657,
+    -0.239
+   ],
+   "boundsMax": [
+    0.207,
+    0.194,
+    0.808
+   ],
+   "origin": [
+    -6.7,
+    0.48,
+    0.58
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "attach": {
+    "part": "UpperTorso",
+    "offset": [
+     -0.3,
+     1.13,
+     0.58
+    ]
+   },
+   "slot": "scarf",
+   "variant": "Long"
+  },
+  "Rookie_Scarf_Long_Tail2": {
+   "model": "Rookie_Outfits",
+   "size": [
+    1.265,
+    0.547,
+    1.335
+   ],
+   "tris": 72,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.053,
+    -0.371,
+    -0.227
+   ],
+   "boundsMax": [
+    0.211,
+    0.176,
+    1.108
+   ],
+   "origin": [
+    -9.66,
+    0.0,
+    1.16
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "attach": {
+    "part": "UpperTorso",
+    "offset": [
+     -0.66,
+     0.65,
+     1.16
     ]
    },
    "slot": "scarf",
@@ -7684,6 +7898,14 @@
   "Intro_Vacuum_Lights": {
    "idle": "#4E5675",
    "runtime": "Bulb Warm #F6C0A2 while the vacuum runs"
+  },
+  "Intro_Tower_Windows": {
+   "idle": "#F6C0A2",
+   "runtime": "fixed; Vault Steel shade #4E5675 once the presents are gone"
+  },
+  "Intro_Tower_Sign": {
+   "idle": "#FFB85C",
+   "runtime": "fixed: Hoardsworth's giant H stays lit all night"
   }
  }
 }

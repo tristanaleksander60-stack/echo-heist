@@ -268,6 +268,48 @@ return function(test)
 		end
 	end)
 
+	test("framing: the vacuum reads big in shot 3, shot 2 is not crowded by the globe", function()
+		local ST = IntroPlan.STAGE
+		local function shotNamed(id: string): any
+			for _, sh in IntroPlan.SHOTS do
+				if sh.id == id then
+					return sh
+				end
+			end
+			error("no shot " .. id)
+		end
+		local function angle(from: { number }, look: { number }, p: { number }): number
+			local a = { look[1] - from[1], look[2] - from[2], look[3] - from[3] }
+			local b = { p[1] - from[1], p[2] - from[2], p[3] - from[3] }
+			local la, lb = dist(look, from), dist(p, from)
+			return math.deg(math.acos(math.clamp((a[1] * b[1] + a[2] * b[2] + a[3] * b[3]) / (la * lb), -1, 1)))
+		end
+		-- the giant vacuum: its mouth hangs out over the town past the terrace, above the deck
+		Assert.truthy(ST.nozzle[2] > ST.deckY + 10 and ST.nozzle[3] > ST.tower.base[3] + 24, "the mouth over the town")
+		Assert.truthy(dist(ST.nozzle, ST.globe.centre) > ST.globe.radius + 30, "clear of the Snow Globe")
+		local aim = ST.aim
+		Assert.near(math.sqrt(aim[1] ^ 2 + aim[2] ^ 2 + aim[3] ^ 2), 1, 1e-3, "the aim is a unit vector")
+		Assert.truthy(aim[2] < -0.5 and aim[3] > 0.5, "the mouth looks down at the town")
+		local every = shotNamed("every")
+		local k0 = every.keys[1]
+		local mouthDeg = 2 * math.deg(math.atan(9.7 / dist(k0.pos, ST.nozzle))) -- the kit mouth's radius x VAC_S
+		Assert.truthy(
+			mouthDeg > 0.6 * k0.fov,
+			string.format("shot 3 opens on the mouth: %.0f deg of %d", mouthDeg, k0.fov)
+		)
+		Assert.truthy(angle(k0.pos, k0.look, ST.nozzle) < 5, "looking into it")
+		for _, k in every.keys do
+			Assert.truthy(dist(k.pos, ST.vacuum.at) < 120, "the machine never shrinks to a speck")
+		end
+		-- shot 2: Hoardsworth framed close, the Snow Globe off his shoulder (not a dark disc filling the frame)
+		local hoard = shotNamed("hoard")
+		local head = { ST.hoardsworth.at[1], ST.hoardsworth.at[2] + 7, ST.hoardsworth.at[3] }
+		for _, k in hoard.keys do
+			Assert.truthy(dist(k.pos, head) < 18.5, "close on Hoardsworth")
+			Assert.truthy(angle(k.pos, k.look, ST.globe.centre) > 40, "the globe is not behind him filling the frame")
+		end
+	end)
+
 	test("the stage sits far from every heist slot and its backdrop", function()
 		local o = I.STAGE_ORIGIN
 		local H = Config.Heist

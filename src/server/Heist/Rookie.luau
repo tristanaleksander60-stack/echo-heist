@@ -260,7 +260,8 @@ function Rookie.assemble(pieces: Instance?, joints: Joints?): Model
 	animator.Parent = hum
 	hum.Parent = model
 	Rookie.setFace(model, "idle")
-	Rookie.apply(model, Outfit.default(), Palette.hueFor(1))
+	-- the same piece source as the body: while publishNow builds the template, the kit folder is not parented yet
+	Rookie.apply(model, Outfit.default(), Palette.hueFor(1), pieces)
 	return model
 end
 
@@ -284,8 +285,9 @@ function Rookie.setFace(model: Model, mood: string)
 end
 
 -- Dresses a Rookie in an outfit and a crew hue (idempotent: the previous outfit pieces go). Works on a live
--- character in any pose (pieces weld by pivot), on templates and on the StarterCharacter.
-function Rookie.apply(model: Model, outfit: Outfit.Outfit, hue: Color3)
+-- character in any pose (pieces weld by pivot), on templates and on the StarterCharacter. source: where the
+-- pieces come from (default: the published kit folder's Pieces).
+function Rookie.apply(model: Model, outfit: Outfit.Outfit, hue: Color3, source: Instance?)
 	local clean = Outfit.clean(outfit)
 	local key = Outfit.key(clean)
 	if model:GetAttribute("EH_Outfit") ~= key then
@@ -294,7 +296,7 @@ function Rookie.apply(model: Model, outfit: Outfit.Outfit, hue: Color3)
 				d:Destroy()
 			end
 		end
-		local pieces = piecesFolder()
+		local pieces = source or piecesFolder()
 		for _, name in Outfit.pieces(clean) do
 			local p = pieceFrom(pieces, name)
 			if p then

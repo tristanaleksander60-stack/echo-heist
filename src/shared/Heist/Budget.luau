@@ -289,6 +289,13 @@ function Budget.auroraBeams(tier: number): number
 	return n
 end
 
+-- Characters whose long-scarf tail sways at `tier` (Config.Rookie.SCARF; Heist/ScarfSway): the nearest MAX_RIGS
+-- below OFF_TIER, none from it (the tail holds its modelled pose).
+function Budget.scarfRigs(tier: number): number
+	local S = Config.Rookie.SCARF
+	return if clampTier(tier) >= S.OFF_TIER then 0 else S.MAX_RIGS
+end
+
 -- Measured view counts against a tier: a list of "what: measured > budget" lines (empty = within budget).
 -- `m` holds any of: drawCalls, tris, lights, shadowed, liveParticles, highlights.
 function Budget.over(tier: number, m: { [string]: number }): { string }

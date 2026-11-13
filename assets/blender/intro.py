@@ -319,12 +319,16 @@ def lever(k):
         notes="The vacuum's switch: a brass-topped burgundy pillar with a ball-knob lever.")
 
 
-# ------------------------------------------------------------------ the giant vacuum (on the tower roof)
-# Asset space: origin = the motor's bottom centre on the roof deck; front -Y faces the town (the cinematic turns it
-# 180 deg: Shared/Heist/IntroPlan.STAGE.vacuum). NOZZLE / INLET: where the intake mouth and the globe inlet sit.
-NOZZLE = Vector((23.0, -24.0, 16.0))
+# ------------------------------------------------------------------ the giant vacuum (on the tower's gantry)
+# Asset space: origin = the motor's bottom centre on the gantry; front -Y faces the town (the cinematic turns it
+# 180 deg: Shared/Heist/IntroPlan.STAGE.vacuum). The machine is authored at unit size and scaled by VAC_S (it has to
+# read as GIANT next to Hoardsworth); the outlet pipe is routed after the scaling to INLET, the Snow Globe's cap.
+# NOZZLE: where the intake mouth sits (IntroPlan.STAGE.nozzle = vacuum.at + the turned NOZZLE).
+VAC_S = 1.4
+NOZZLE0 = Vector((23.0, -24.0, 16.0))
+NOZZLE = NOZZLE0 * VAC_S
 AIM = Vector((-0.15, -0.74, -0.65)).normalized()   # the mouth looks down at the town
-INLET = Vector((-11.0, 13.0, 36.0))                 # the Snow Globe's top (its cap) in vacuum space
+INLET = Vector((-23.0, 17.0, 36.0))                 # the Snow Globe's top (its cap) in vacuum space
 
 
 def vacuum(k):
@@ -355,7 +359,7 @@ def vacuum(k):
                 part="StackCap")
     # the hose: ribbed, from the motor top, arching up and over to the intake
     hose = [(1.5, -2.5, 13.8), (3.0, -6.0, 18.5), (8.0, -11.5, 22.5), (14.0, -16.5, 23.0), (18.5, -20.5, 20.5),
-            (NOZZLE.x - AIM.x * 5.4, NOZZLE.y - AIM.y * 5.4, NOZZLE.z - AIM.z * 5.4)]
+            (NOZZLE0.x - AIM.x * 5.4, NOZZLE0.y - AIM.y * 5.4, NOZZLE0.z - AIM.z * 5.4)]
     pts = []
     for a, b in zip(hose, hose[1:]):
         for s in (0.0, 0.25, 0.5, 0.75):
@@ -366,30 +370,33 @@ def vacuum(k):
     mb.cylinder((1.5, -2.5, 13.0), (0, 0, 1), 2.7, 0.0, 1.6, 16, "steel", chamfer=0.15, cham_col="steel_hi",
                 part="HoseCollar")
     # the intake: a huge flared mouth, a closed shell (outer flare, rim, dark throat back to the neck)
-    back = NOZZLE - AIM * 5.6
+    back = NOZZLE0 - AIM * 5.6
     mb.lathe([(2.2, 0.0), (2.5, 1.6), (3.2, 3.2), (5.0, 4.6), (6.6, 5.4), (6.9, 5.75), (6.4, 5.9), (4.8, 5.0),
               (3.0, 3.9), (1.6, 2.4), (1.2, 0.4)], 24,
              ["steel", "steel", "steel", "steel_hi", "marble_lo", "marble", "ink_hi", "ink", "ink", "ink", "steel_lo"],
              tuple(back), tuple(AIM), closed=True, part="Mouth")
     mb.cylinder(tuple(back), tuple(AIM), 2.6, -0.6, 0.6, 16, "marble_lo", chamfer=0.12, cham_col="marble",
                 part="MouthCollar")
-    # the outlet into the Snow Globe: up from the motor's back, over, and down into the globe's cap
-    out = [(-1.5, 3.0, 13.8), (-1.8, 3.6, 22.0), (-4.0, 6.0, 36.0), (-7.5, 10.0, 40.5), (-10.4, 12.6, 40.6),
-           (INLET.x, INLET.y, INLET.z + 2.4), (INLET.x, INLET.y, INLET.z - 0.4)]
-    L.tube(mb, out, 1.5, 12, "marble_lo", cols=["steel_lo", "marble_lo", "steel_lo", "marble_lo", "steel_lo",
-                                                "marble_lo", "steel_lo"], cap_col="steel_lo", part="Outlet")
     mb.cylinder((-1.5, 3.0, 13.0), (0, 0, 1), 2.1, 0.0, 1.6, 12, "steel", chamfer=0.12, cham_col="steel_hi",
                 part="OutletCollar")
+    mb.xform(list(mb.bm.verts), Matrix.Scale(VAC_S, 4))
+    # the outlet into the Snow Globe (routed at full size): up from the motor's back, over, and down into the cap
+    s = VAC_S
+    out = [(-1.5 * s, 3.0 * s, 13.8 * s), (-1.8 * s, 3.6 * s, 24.0), (-6.0, 7.0, 36.0), (-12.0, 11.0, 41.0),
+           (-18.5, 14.6, 41.4), (INLET.x, INLET.y, INLET.z + 2.6), (INLET.x, INLET.y, INLET.z - 0.4)]
+    L.tube(mb, out, 1.5 * s, 12, "marble_lo", cols=["steel_lo", "marble_lo", "steel_lo", "marble_lo", "steel_lo",
+                                                    "marble_lo", "steel_lo"], cap_col="steel_lo", part="Outlet")
     body = k.finalize(mb, pivot=(0, 0, 0))
 
     ml = k.MB("Intro_Vacuum_Lights")
-    rim = NOZZLE - AIM * 0.0
+    rim = NOZZLE0 - AIM * 0.0
     ml.lathe([(6.25, 0.0), (6.55, 0.0), (6.55, 0.3), (6.25, 0.3)], 32, ["white"] * 4, tuple(rim - AIM * 0.05),
              tuple(AIM), closed=True, part="RimLight")
     for x in (-6.0, 6.0):
         ml.sphere((x, -1.5, 14.45), 0.6, 10, 6, "white", part="Lamp")
     for x in (-3.4, 3.4):
         ml.sphere((x, -7.75, 10.4), 0.4, 8, 5, "white", part="PanelLamp")
+    ml.xform(list(ml.bm.verts), Matrix.Scale(VAC_S, 4))
     lights = k.finalize(ml, pivot=(0, 0, 0))
     return k.Asset("Intro_Vacuum", [
         k.Obj(body, "hero", role="villain", pivot="point", collision="Box", can_collide=False, cast_shadow=True,
@@ -402,6 +409,194 @@ def vacuum(k):
               notes="the intake's rim ring and three lamps on the motor"),
     ], seats=[("Intro_Vacuum_Lights", "Intro_Vacuum")],
         notes="Hoardsworth's giant vacuum on the tower roof: motor, hose and intake; the outlet fills the Snow Globe.")
+
+
+# ------------------------------------------------------------------ Hoardsworth Tower (the landmark)
+# Asset space: origin = the tower's foot centre on the ground; front -Y faces the town (the cinematic turns it 180
+# deg: Shared/Heist/IntroPlan.STAGE.tower). The roof terrace's top is at DECK_Z (IntroPlan.STAGE.deckY): Hoardsworth,
+# the lever and the Snow Globe stand on it; the vacuum stands on the steel gantry off its +X side (Blender +X =
+# Roblox -X before the turn, the stage's +X after it).
+DECK_Z = 130.0
+DECK_HALF = 24.0
+GANTRY = (24.0, 41.0, -25.0, 1.0)     # x0, x1, y0, y1 of the vacuum's gantry (top at DECK_Z)
+# (z0, z1, half width) of the stacked shafts: a podium, two setbacks, the crown block under the terrace
+TIERS = [(0.0, 14.0, 26.0), (14.0, 64.0, 19.0), (64.0, 100.0, 15.0), (100.0, 118.0, 11.0)]
+SIGN = (84.0, 20.0, 16.0)             # the giant H on the front of shaft 2: centre z, width, height
+
+
+def tower(k):
+    """Hoardsworth Tower: an art-deco toy-tycoon skyscraper. A burgundy podium with a gold-framed portal, two
+    setbacks with gold cornices, corner piers that rise past every setback into stepped gold caps, pilasters between
+    columns of lit windows, a giant gold-framed "H" sign on the second shaft, a flared crown of gold corbels and
+    sunburst fins under the roof terrace, a low balustrade, and a steel gantry for the vacuum. The Snow Globe Vault
+    (Intro_SnowGlobe) stands on the terrace. Windows and the H are separate Neon objects (code colours them)."""
+    mb = k.MB("Intro_Tower")
+
+    def bx(lo, hi, col, ch=0.0, chc=None, part="Box", flat=()):
+        return mb.box(lo, hi, col, chamfer=ch, cham_col=chc or col, part=part, flat=flat)
+
+    # the ground plinth and the stepped base
+    bx((-27.5, -27.5, -0.5), (27.5, 27.5, 1.6), "ink_hi", 0.3, "ink", part="Plinth")
+    for i, (z0, z1, h) in enumerate(TIERS):
+        body = "ribbon" if i else "ribbon_hi"
+        bx((-h, -h, z0 - 0.2), (h, h, z1 + 0.2), body, 0.4, "ribbon_hi", part=f"Shaft{i}")
+        # the gold cornice on top of each tier (a step out, a fillet in)
+        bx((-h - 1.2, -h - 1.2, z1 - 0.4), (h + 1.2, h + 1.2, z1 + 1.4), "marble_lo", 0.3, "marble", part=f"Cornice{i}")
+        bx((-h - 0.5, -h - 0.5, z1 - 1.6), (h + 0.5, h + 0.5, z1 - 0.3), "ribbon_hi", 0.15, "marble_lo",
+           part=f"Fillet{i}")
+        if i == 0:
+            continue
+        # corner piers: rise 5 studs past the tier, each topped with a stepped gold cap (a little ziggurat)
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                cx, cy = sx * (h - 0.4), sy * (h - 0.4)
+                bx((cx - 2.2, cy - 2.2, z0 + 0.6), (cx + 2.2, cy + 2.2, z1 + 4.0), "ribbon_hi", 0.3, "ribbon",
+                   part="Pier")
+                for j, (r, dz) in enumerate(((2.6, 0.9), (1.8, 0.9), (1.0, 1.2))):
+                    zz = z1 + 4.0 + sum(d for _r, d in ((2.6, 0.9), (1.8, 0.9), (1.0, 1.2))[:j])
+                    bx((cx - r, cy - r, zz - 0.1), (cx + r, cy + r, zz + dz), "marble_lo" if j != 1 else "marble",
+                       0.15, "marble", part="PierCap")
+                # a gold strip up the pier's outer corner
+                bx((cx + sx * 1.6 - 0.35, cy + sy * 1.6 - 0.35, z0 + 2.0), (cx + sx * 1.6 + 0.35, cy + sy * 1.6 + 0.35,
+                                                                            z1 + 3.0), "marble_lo", part="PierStrip")
+        # pilasters between the window columns on every face (the sign face keeps only its outer ones)
+        cols = WIN_COLS[i]
+        for face in range(4):
+            for c in range(len(cols) + 1):
+                if c == 0 or c == len(cols):
+                    continue
+                x = (cols[c - 1] + cols[c]) / 2
+                if i == 2 and face == 0 and abs(x) < SIGN[1] / 2 + 1:
+                    continue
+                lo, hi = (x - 0.45, -h - 0.5, z0 + 1.0), (x + 0.45, -h + 0.3, z1 - 1.8)
+                v = bx(lo, hi, "ribbon_hi", 0.12, "marble_lo", part="Pilaster")
+                mb.rotate(v, 90 * face, "Z")
+    # the portal: a stepped gold frame, dark doors with a gold H transom, two lamps
+    bx((-8.0, -26.6, 1.0), (8.0, -25.6, 12.6), "marble_lo", 0.3, "marble", part="PortalFrame")
+    bx((-6.6, -26.9, 1.0), (6.6, -26.2, 11.2), "marble", 0.15, "marble_hi", part="PortalStep")
+    bx((-5.0, -27.2, 1.5), (5.0, -26.6, 9.6), "ink", 0.1, "ink_hi", part="Doors")
+    bx((-0.12, -27.35, 1.5), (0.12, -27.0, 8.2), "marble_lo", part="DoorSplit")
+    bx((-5.0, -27.3, 8.2), (5.0, -26.8, 9.6), "marble_lo", part="Transom")
+    bx((-3.6, -28.2, 0.0), (3.6, -26.4, 0.9), "marble_lo", 0.1, "marble", part="DoorStep")
+    # the giant H sign on the front of shaft 2: a gold frame round a dark board, rays fanning out above it
+    zc, sw, sh = SIGN
+    h2 = TIERS[2][2]
+    bx((-sw / 2 - 1.0, -h2 - 1.6, zc - sh / 2 - 1.0), (sw / 2 + 1.0, -h2 + 0.3, zc + sh / 2 + 1.0), "marble_lo", 0.4,
+       "marble", part="SignFrame")
+    bx((-sw / 2, -h2 - 2.0, zc - sh / 2), (sw / 2, -h2 - 1.2, zc + sh / 2), "ink", 0.15, "ink_hi", part="SignBoard")
+    for j in range(7):   # the sunburst over the sign: gold rays
+        a = math.radians(-60 + 20 * j)
+        base = Vector((0.0, -h2 - 0.2, zc + sh / 2 + 1.0))
+        tip = base + Vector((math.sin(a) * 8.0, 0.0, math.cos(a) * 7.0))
+        side = Vector((math.cos(a), 0.0, -math.sin(a))) * 0.7
+        vs = mb.prism([(base.x - side.x, base.z - side.z), (base.x + side.x, base.z + side.z), (tip.x, tip.z)], "Y",
+                      -h2 - 0.6, -h2 + 0.2, "marble_lo", "marble", part=f"Ray{j}")
+        del vs
+    # the crown: three gold-banded corbel steps flaring out to the terrace, sunburst fins on each face
+    z = TIERS[-1][1]
+    for j, (h, dz) in enumerate(((13.5, 3.0), (17.5, 3.0), (21.5, 3.0))):
+        bx((-h, -h, z - 0.2), (h, h, z + dz), "ribbon" if j % 2 == 0 else "ribbon_hi", 0.3, "ribbon_hi",
+           part=f"Corbel{j}")
+        bx((-h - 0.4, -h - 0.4, z + dz - 0.9), (h + 0.4, h + 0.4, z + dz + 0.1), "marble_lo", 0.15, "marble",
+           part=f"CorbelBand{j}")
+        z += dz
+    for face in range(4):
+        for j in range(5):
+            x = -9.0 + 4.5 * j
+            fin = [(x - 1.0, TIERS[-1][1] - 6.0), (x + 1.0, TIERS[-1][1] - 6.0), (x * 2.2 + 1.2, z - 0.4),
+                   (x * 2.2 - 1.2, z - 0.4)]
+            vs = mb.prism(fin, "Y", -TIERS[-1][2] - 0.8 - (j % 2) * 0.0, -TIERS[-1][2] + 0.4, "marble_lo", "marble",
+                          part=f"Fin{face}_{j}")
+            # lean the fin's top out with the corbels
+            for v in vs:
+                if v.co.z > TIERS[-1][1] - 0.5:
+                    v.co.y -= (v.co.z - TIERS[-1][1]) * 0.9
+            mb.rotate(vs, 90 * face, "Z")
+    # the roof terrace: a slab with a gold edge, a dark deck with a gold inlay border
+    bx((-DECK_HALF, -DECK_HALF, DECK_Z - 2.8), (DECK_HALF, DECK_HALF, DECK_Z - 0.6), "ribbon_hi", 0.3, "marble_lo",
+       part="Terrace")
+    bx((-DECK_HALF - 0.5, -DECK_HALF - 0.5, DECK_Z - 1.6), (DECK_HALF + 0.5, DECK_HALF + 0.5, DECK_Z - 0.5),
+       "marble_lo", 0.2, "marble", part="TerraceBand")
+    bx((-DECK_HALF + 0.6, -DECK_HALF + 0.6, DECK_Z - 0.9), (DECK_HALF - 0.6, DECK_HALF - 0.6, DECK_Z), "ink_hi",
+       0.1, "ink", part="Deck")
+    for sx in (-1, 1):   # the gold inlay: a border band just proud of the deck
+        bx((sx * (DECK_HALF - 2.4) - 0.4, -DECK_HALF + 2.0, DECK_Z - 0.2), (sx * (DECK_HALF - 2.4) + 0.4,
+                                                                         DECK_HALF - 2.0, DECK_Z + 0.06),
+           "marble_lo", part="Inlay")
+        bx((-DECK_HALF + 2.0, sx * (DECK_HALF - 2.4) - 0.4, DECK_Z - 0.2), (DECK_HALF - 2.0,
+                                                                         sx * (DECK_HALF - 2.4) + 0.4, DECK_Z + 0.06),
+           "marble_lo", part="Inlay")
+    # a low balustrade on the back and the -X side (the front and the gantry side stay open for the shots)
+    for side in ("back", "left"):
+        for j in range(9):
+            t = -DECK_HALF + 3.0 + j * (2 * DECK_HALF - 6.0) / 8
+            x, y = (t, DECK_HALF - 1.0) if side == "back" else (-DECK_HALF + 1.0, t)
+            bx((x - 0.35, y - 0.35, DECK_Z - 0.2), (x + 0.35, y + 0.35, DECK_Z + 1.6), "marble", 0.1, "marble_hi",
+               part="Baluster")
+        if side == "back":
+            bx((-DECK_HALF + 1.6, DECK_HALF - 1.6, DECK_Z + 1.5), (DECK_HALF - 1.6, DECK_HALF - 0.4, DECK_Z + 2.1),
+               "marble_lo", 0.15, "marble", part="Rail")
+        else:
+            bx((-DECK_HALF + 0.4, -DECK_HALF + 1.6, DECK_Z + 1.5), (-DECK_HALF + 1.6, DECK_HALF - 1.6, DECK_Z + 2.1),
+               "marble_lo", 0.15, "marble", part="Rail")
+    # the vacuum's gantry: steel grating on two girders, two braces down to the crown
+    x0, x1, y0, y1 = GANTRY
+    bx((x0 - 1.0, y0, DECK_Z - 1.2), (x1, y1, DECK_Z), "steel_lo", 0.12, "steel", part="Grating")
+    for y in (y0 + 1.0, y1 - 1.0):
+        bx((x0 - 1.0, y - 0.6, DECK_Z - 3.2), (x1, y + 0.6, DECK_Z - 1.1), "steel", 0.12, "steel_hi", part="Girder")
+        L.tube(mb, [(x1 - 1.0, y, DECK_Z - 2.6), (TIERS[-1][2] + 0.6, y * 0.5, TIERS[-1][1] - 12.0)], 0.6, 6,
+               "steel", part="Brace")
+    for j in range(5):   # rivets of bolts on the girder fronts
+        x = x0 + 1.0 + j * (x1 - x0 - 2.0) / 4
+        bx((x - 0.25, y0 - 0.15, DECK_Z - 2.4), (x + 0.25, y0 + 0.5, DECK_Z - 1.9), "steel_hi", part="Bolt")
+    body = k.finalize(mb, pivot=(0, 0, 0))
+
+    # lit windows (Neon): tall deco slots in columns on every face, rows per tier; the sign face of shaft 2 keeps
+    # its two outer columns
+    mw = k.MB("Intro_Tower_Windows")
+    for i, (z0, z1, h) in enumerate(TIERS):
+        if i == 0:
+            continue
+        rows = WIN_ROWS[i]
+        for face in range(4):
+            for x in WIN_COLS[i]:
+                if i == 2 and face == 0 and abs(x) < SIGN[1] / 2 + 1:
+                    continue
+                for zr in rows:
+                    v = mw.box((x - 0.95, -h - 0.25, zr), (x + 0.95, -h + 0.3, zr + 4.4), "white", part="Win")
+                    mw.rotate(v, 90 * face, "Z")
+    for x in (-3.0, 3.0):   # the podium's two tall lobby windows beside the portal
+        mw.box((x * 3.0 - 1.4, -26.25, 3.0), (x * 3.0 + 1.4, -25.7, 11.0), "white", part="Lobby")
+    windows = k.finalize(mw, pivot=(0, 0, 0))
+
+    # the giant H (Neon): two uprights and the bar, on the sign board
+    ms = k.MB("Intro_Tower_Sign")
+    lo_y, hi_y = -h2 - 2.45, -h2 - 1.8
+    for sx in (-1, 1):
+        ms.box((sx * 5.0 - 1.6, lo_y, zc - 6.0), (sx * 5.0 + 1.6, hi_y, zc + 6.0), "white", part="Upright")
+    ms.box((-3.6, lo_y, zc - 1.3), (3.6, hi_y, zc + 1.3), "white", part="Bar")
+    sign = k.finalize(ms, pivot=(0, 0, 0))
+    return k.Asset("Intro_Tower", [
+        k.Obj(body, "hero", role="villain", pivot="point", collision="Box", can_collide=False, tags=["EH_Intro"],
+              sim="none",
+              notes="Hoardsworth Tower: art-deco setbacks, corner piers with gold caps, pilasters, the crown's corbels "
+                    "and sunburst fins, the roof terrace (top at the origin + 130) and the vacuum's steel gantry"),
+        k.Obj(windows, "medium", role="villain", pivot="point", collision="Box", material="Neon", can_collide=False,
+              cast_shadow=False, atlas=False, free_shells=True, tags=["EH_Intro"], sim="none",
+              tint="Bulb Warm #F6C0A2; Vault Steel shade #4E5675 once the presents are gone (eh_palette.NEON)",
+              notes="lit windows (Neon), out on '...GONE.' with the town's"),
+        k.Obj(sign, "small", role="villain", pivot="point", collision="Box", material="Neon", can_collide=False,
+              cast_shadow=False, atlas=False, free_shells=True, tags=["EH_Intro"], sim="none",
+              tint="Sign Gold #FFB85C (eh_palette.NEON); it stays lit all night",
+              notes="the giant H on the sign board (Neon)"),
+    ], seats=[("Intro_Tower_Windows", "Intro_Tower"), ("Intro_Tower_Sign", "Intro_Tower")],
+        notes="Hoardsworth Tower: art-deco toy-tycoon landmark, setbacks, gold crown, lit windows, the giant H.")
+
+
+# window columns (x across a face) and row bottoms (z) per tier (tier 0, the podium, has the lobby windows)
+WIN_COLS = {1: [-13.5, -9.0, -4.5, 0.0, 4.5, 9.0, 13.5], 2: [-11.0, -5.5, 0.0, 5.5, 11.0],
+            3: [-6.0, -2.0, 2.0, 6.0]}
+WIN_ROWS = {1: [17.5, 24.5, 31.5, 38.5, 45.5, 52.5], 2: [68.5, 75.5, 82.5, 89.5], 3: [104.5, 110.5]}
 
 
 # ------------------------------------------------------------------ the Snow Globe Vault (hero)
@@ -622,7 +817,7 @@ def houses(k):
 
 def build(k):
     return [
-        hoardsworth(k), lever(k), vacuum(k), snow_globe(k),
+        hoardsworth(k), lever(k), vacuum(k), snow_globe(k), tower(k),
         flying(k, "Intro_Present_A", (2.4, 2.4, 3.2), "ribbon", "snow", "flying present A: tall, burgundy paper, snow ribbon"),
         flying(k, "Intro_Present_B", (3.6, 2.6, 1.8), "holly", "gold", "flying present B: wide, holly paper, gold ribbon"),
         flying(k, "Intro_Present_C", (2.6, 2.6, 2.6), "snow", "holly_lo", "flying present C: cube, snow paper, holly ribbon"),

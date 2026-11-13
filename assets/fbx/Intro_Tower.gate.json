@@ -1,0 +1,272 @@
+{
+ "asset": "Intro_Tower",
+ "objects": [
+  {
+   "name": "Intro_Tower",
+   "class": "hero",
+   "tris": 7088,
+   "budget": [
+    10000,
+    20000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    68.5,
+    55.7,
+    132.6
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -27.5,
+     -28.2,
+     -0.5
+    ],
+    "local_max": [
+     41.0,
+     27.5,
+     132.1
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 4934,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": null,
+   "role": "villain",
+   "notes": "Hoardsworth Tower: art-deco setbacks, corner piers with gold caps, pilasters, the crown's corbels and sunburst fins, the roof terrace (top at the origin + 130) and the vacuum's steel gantry",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Intro_Tower_Windows",
+   "class": "medium",
+   "tris": 3240,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    38.5,
+    45.5,
+    111.9
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -19.25,
+     -26.25,
+     3.0
+    ],
+    "local_max": [
+     19.25,
+     19.25,
+     114.9
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Bulb Warm #F6C0A2; Vault Steel shade #4E5675 once the presents are gone (eh_palette.NEON)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": null,
+   "role": "villain",
+   "notes": "lit windows (Neon), out on '...GONE.' with the town's",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Intro_Tower_Sign",
+   "class": "small",
+   "tris": 36,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    13.2,
+    0.65,
+    12.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -6.6,
+     -17.45,
+     78.0
+    ],
+    "local_max": [
+     6.6,
+     -16.8,
+     90.0
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 17,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Sign Gold #FFB85C (eh_palette.NEON); it stays lit all night",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": null,
+   "role": "villain",
+   "notes": "the giant H on the sign board (Neon)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 10364,
+ "seats": [
+  {
+   "name": "Intro_Tower_Windows",
+   "gap": 0.0,
+   "penetration": 0.3,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Intro_Tower_Sign",
+   "gap": 0.0,
+   "penetration": 0.0,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "c5aeb693e044f443eb8a",
+ "fbx": {
+  "path": "assets/fbx/Intro_Tower.fbx",
+  "bytes": 160940,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Intro_Tower",
+   "Intro_Tower_Sign",
+   "Intro_Tower_Windows"
+  ],
+  "geometry_extents": [
+   [
+    0.65,
+    12.0,
+    13.2
+   ],
+   [
+    38.5,
+    45.5,
+    111.9
+   ],
+   [
+    55.7,
+    68.5,
+    132.6
+   ]
+  ]
+ },
+ "spec": "assets/blender/intro.py",
+ "notes": "Hoardsworth Tower: art-deco toy-tycoon landmark, setbacks, gold crown, lit windows, the giant H.",
+ "turntable": "docs/art/turntables/Intro_Tower.png",
+ "seconds": 111.9
+}
