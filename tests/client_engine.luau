@@ -2754,8 +2754,8 @@ local okPlay, playErr = pcall(function()
 	local samples = math.floor(steps / 30)
 	assert(moved >= samples * 0.8, string.format("the camera moves over time (%d of %d half-seconds)", moved, samples))
 	assert(worst * 1000 <= B.INTRO_FRAME_MS, string.format("worst frame %.1f ms <= %d", worst * 1000, B.INTRO_FRAME_MS))
-	assert(cam.CameraType == Enum.CameraType.Custom, "camera restored after the end")
 	cine.destroy()
+	assert(cam.CameraType == Enum.CameraType.Custom, "camera restored once torn down")
 
 	-- (2) play() with a real per-frame connection
 	local cam2 = newCam()
