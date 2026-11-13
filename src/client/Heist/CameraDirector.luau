@@ -40,6 +40,15 @@
 -- shot over the frame by a weight, so they ease in and out of play (premium H1) while you keep control; the
 -- golden staging and the level intro (setShot) replace the frame, then hand back to the run-start beat,
 -- which in first person holds on the objective from above and eases into your eyes.
+--
+-- Crew View (REVIEW_STEAM_PLUS gap 5; Config.Heist.CAMERA.CREW, pure maths in Shared/Heist/CrewView): in a first-
+-- person run, while setCrewHeld(who, true) holds (Q / LB / the touch CREW button, Hud/CrewView), the camera eases
+-- from your eyes up to an overhead diorama shot centred on you that frames your clones and the objective (the
+-- points setCrewSource gives), at your look yaw so movement keeps its meaning; release eases back. Your body shows
+-- (the camera left your eyes: state.fpView goes false, so the hands hide), walls between the camera and you fade
+-- as in the diorama and Heist/CutAway opens the ceilings (crewShot()). Never in the lobby, between runs or under a
+-- presentation moment (CrewView.allowed): a moment, the rewind or a suspend drops it at once. Reduced motion: no
+-- flight, a cut under a quick veil (crew()).
 
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
@@ -51,6 +60,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 
 local CameraMath = require(script.Parent:WaitForChild("CameraMath"))
+local CrewView = require(Shared:WaitForChild("Heist"):WaitForChild("CrewView"))
 local FpMath = require(script.Parent:WaitForChild("FpMath"))
 local Settings = require(script.Parent:WaitForChild("Settings"))
 
@@ -84,7 +94,7 @@ end
 
 function CameraDirector.new(state: any): any
 	local C = Config.Heist.CAMERA
-	local D, CL, F, FP = C.DIORAMA, C.CLASSIC, C.FADE, C.FP
+	local D, CL, F, FP, CR = C.DIORAMA, C.CLASSIC, C.FADE, C.FP, C.CREW
 	local player = Players.LocalPlayer
 	local director = {}
 
@@ -117,6 +127,15 @@ function CameraDirector.new(state: any): any
 	local bodyHidden = false
 	local hiddenParts: { [Instance]: boolean } = {}
 	local eyeCf: CFrame? = nil -- the fp eye this frame (before a moment's blend)
+
+	-- Crew View.
+	local crewHold = CrewView.newHold()
+	local crewKeys: { [string]: boolean } = {} -- who holds it: "key", "pad", "touch"
+	local crewSource: any = nil -- { points: () -> { Vector3 }, objective: () -> Vector3?, rewinding: () -> boolean }
+	local crewFocus: Vector3? = nil -- the smoothed shot (snaps when a hold starts from your eyes)
+	local crewDist = CR.DIST_MIN
+	local crewShotCf: CFrame? = nil -- the full crew shot this frame (Heist/CutAway decides from it)
+	local crewPoints: { { number } } = {}
 
 	---------------------------------------------------------------------------
 	-- Helpers
@@ -341,6 +360,95 @@ function CameraDirector.new(state: any): any
 	end
 
 	---------------------------------------------------------------------------
+	-- Crew View
+	---------------------------------------------------------------------------
+	local function crewGate(): (boolean, string)
+		local src = crewSource
+		local sheet = false
+		local probe = cursorProbe
+		if probe then
+			local ok, open = pcall(probe)
+			sheet = ok and open == true
+		end
+		local hum = humanoidOf()
+		return CrewView.allowed({
+			where = state.where,
+			phase = state.phase,
+			mode = mode,
+			presenting = shotFn ~= nil or momentFn ~= nil or beat ~= nil or suspended(),
+			rewinding = src ~= nil and src.rewinding ~= nil and src.rewinding() == true,
+			sheet = sheet,
+			alive = if hum then hum.Health > 0 else nil,
+		})
+	end
+
+	-- Drops Crew View at once (a moment, the rewind, a suspend, the run's end): the next frame is at your eyes.
+	local function dropCrew()
+		if CrewView.active(crewHold) or next(crewKeys) ~= nil then
+			CrewView.cancel(crewHold)
+			table.clear(crewKeys)
+		end
+		crewFocus = nil
+		crewShotCf = nil
+		state.crewView = false
+	end
+
+	-- Steps the hold (before any shot is written); returns the camera blend 0..1.
+	local function updateCrew(dt: number): number
+		local ok = crewGate()
+		if not ok then
+			dropCrew()
+			return 0
+		end
+		CrewView.step(crewHold, next(crewKeys) ~= nil, dt, reduced(), CR)
+		local w = CrewView.weight(crewHold)
+		state.crewView = CrewView.active(crewHold)
+		if not state.crewView then
+			crewFocus = nil
+			crewShotCf = nil
+		end
+		return w
+	end
+
+	-- The crew shot this frame from your root (world space): centred on you, framing your clones and the objective
+	-- (CrewView.frame), smoothed so walking clones never jolt it.
+	local function crewFrame(dt: number, root: BasePart): (CFrame, number)
+		local cam = workspace.CurrentCamera
+		local vp = if cam then cam.ViewportSize else Vector2.new(16, 9)
+		local aspect = vp.X / math.max(vp.Y, 1)
+		table.clear(crewPoints)
+		local src = crewSource
+		if src then
+			local okP, pts = pcall(src.points)
+			if okP and type(pts) == "table" then
+				for _, p in pts :: { Vector3 } do
+					table.insert(crewPoints, t3(p))
+				end
+			end
+			local okO, obj = pcall(src.objective)
+			if okO and typeof(obj) == "Vector3" then
+				table.insert(crewPoints, t3(obj))
+			end
+		end
+		local you = root.Position + Vector3.new(0, CR.FOCUS_HEIGHT, 0)
+		local focusT, distT = CrewView.frame(t3(you), crewPoints, fpYaw, aspect, CR)
+		local want = v3(focusT)
+		local f = crewFocus
+		if not f or crewHold.w <= 0 then
+			crewFocus, crewDist = want, distT
+		else
+			local k = CameraMath.damp(CR.FOLLOW_RATE, dt)
+			crewFocus = f:Lerp(want, k)
+			crewDist += (distT - crewDist) * k
+		end
+		local focus = crewFocus :: Vector3
+		local pos, look = CrewView.orbit(t3(focus), fpYaw, CR.PITCH, crewDist)
+		local cf = CFrame.lookAt(v3(pos), v3(look))
+		crewShotCf = cf
+		return cf, CR.FOV
+	end
+
+	---------------------------------------------------------------------------
 	-- Mode
 	---------------------------------------------------------------------------
 	local function notify()
@@ -374,6 +482,7 @@ function CameraDirector.new(state: any): any
 		end
 		if was == "fp" then
 			leaveFp()
+			dropCrew()
 		end
 		customReady = false
 		restoreFades()
@@ -395,6 +504,7 @@ function CameraDirector.new(state: any): any
 	function director.suspend(who: string)
 		holds[who] = true
 		beat = nil
+		dropCrew()
 		restoreFades()
 		leaveFp()
 	end
@@ -484,6 +594,40 @@ function CameraDirector.new(state: any): any
 	-- director holding the camera (the Line-up).
 	function director.presenting(): boolean
 		return shotFn ~= nil or momentFn ~= nil or beat ~= nil or suspended()
+	end
+
+	-- Crew View: `who` ("key", "pad", "touch") holds it or lets go. Ignored where it may not run (CrewView.allowed).
+	function director.setCrewHeld(who: string, on: boolean)
+		if on then
+			if crewGate() then
+				crewKeys[who] = true
+			end
+		else
+			crewKeys[who] = nil
+		end
+	end
+
+	-- Crew View: what to frame (world space): points() your clones, objective() the run's objective (nil when there
+	-- is none), rewinding() true while the rewind finish plays.
+	function director.setCrewSource(src: any)
+		crewSource = src
+	end
+
+	-- Crew View now: the camera blend (0 = your eyes .. 1 = the crew shot), the reduced-motion veil (0..1) and
+	-- whether it is active (held, or still easing back).
+	function director.crew(): (number, number, boolean)
+		return CrewView.weight(crewHold), CrewView.veil(crewHold, reduced(), CR), CrewView.active(crewHold)
+	end
+
+	-- Crew View: may it start now (the touch button shows only then)?
+	function director.crewAllowed(): boolean
+		return (crewGate())
+	end
+
+	-- Crew View: the full crew shot this frame (world space), or nil when it is not active. Heist/CutAway decides
+	-- the cut from it, so the ceilings open as the camera starts to rise, not once it is through them.
+	function director.crewShot(): CFrame?
+		return if CrewView.active(crewHold) then crewShotCf else nil
 	end
 
 	-- First person: the plate "stomp" glance (a short look down and back; reduced motion: none).
@@ -812,12 +956,19 @@ function CameraDirector.new(state: any): any
 		if not cam or suspended() then
 			return
 		end
-		-- Wall fade: diorama and classic (in first person the camera is at your eyes).
-		if mode ~= "fp" then
+		local crewW = updateCrew(dt)
+		-- Wall fade: diorama, classic and Crew View (in first person the camera is at your eyes).
+		local fadeOn = mode ~= "fp" or crewW > 0
+		if fadeOn then
 			fadeClock += dt
 			if fadeClock >= 1 / math.max(F.HZ, 1) then
 				fadeClock = 0
 				scanFades(cam)
+			end
+			stepFades(dt)
+		elseif next(faded) ~= nil then
+			for _, f in faded do
+				f.target = 0 -- Crew View let go: the faded walls come back
 			end
 			stepFades(dt)
 		end
@@ -878,8 +1029,20 @@ function CameraDirector.new(state: any): any
 					skipBeat()
 				end
 			end
+			local focusAt = eye.Position
+			local root = rootOf()
+			if state.crewView == true and root then
+				-- Crew View: from your eyes up to the crew shot (and back), at your look yaw. The shot is worked out
+				-- from the first frame of a hold (reduced motion: before its cut), so CutAway can open the ceilings.
+				local crewCf, crewFov = crewFrame(dt, root)
+				if crewW > 0 then
+					cf = cf:Lerp(crewCf, crewW)
+					fov += (crewFov - fov) * crewW
+					focusAt = focusAt:Lerp((crewFocus :: Vector3), crewW)
+				end
+			end
 			write(cf, fov + kick)
-			cam.Focus = CFrame.new(eye.Position)
+			cam.Focus = CFrame.new(focusAt)
 			setBodyHidden((cam.CFrame.Position - eye.Position).Magnitude <= FP.HIDE_BODY_WITHIN)
 			return
 		end

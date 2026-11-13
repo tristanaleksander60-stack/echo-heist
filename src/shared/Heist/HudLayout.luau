@@ -68,6 +68,14 @@ HudLayout.SCREEN_CENTRED = table.freeze({ RETICLE = true, PROMPT = true })
 HudLayout.RAIL_FP = box(0.5, 1, 0.5, -68, 1, -8, 336, 98)
 HudLayout.OBJECTIVE_FP = box(0.5, 1, 0.5, -68, 1, -114, 360, 28)
 HudLayout.ALARM_FP = box(0.5, 1, 0.5, -68, 1, -114, 360, 30)
+-- Crew View (first person; Hud/CrewView, REVIEW_STEAM_PLUS gap 5): the touch CREW button (hold) sits above Interact,
+-- left of REWIND, clear of the jump button (on the right, under your right thumb: the left one keeps moving you);
+-- while held, "CREW VIEW" sits under the clone strip (where the diorama's objective line goes: in first person that
+-- line is at the bottom) and the reticle and its prompt chip hide. On the narrowest notched phones the prompt chip
+-- (right of the screen centre) reaches the button's corner: there the button steps aside while the chip is up
+-- (HudLayout.crewYields; you are looking at something to use, not peeking).
+HudLayout.CREW = box(1, 1, 1, -124, 1, -(16 + H.INTERACT_BUTTON + 10), 80, TAP)
+HudLayout.CREW_LABEL = box(0.5, 0, 0.5, 0, 0, 98, 168, 28)
 
 -- Centred sheets (they cover the run HUD, so each is a scene of its own): the job sheet (results),
 -- the garage with its job board, the MENU sheet and the settings panel (PLAN_STEAM_PLUS §4.3 U5-U7).
@@ -131,6 +139,7 @@ HudLayout.SCENES = table.freeze({
 		"HIDDEN",
 		"END_RUN",
 		"INTERACT",
+		"CREW",
 		"RETICLE",
 		"PROMPT",
 		"RAIL_FP",
@@ -146,8 +155,40 @@ HudLayout.SCENES = table.freeze({
 		"HIDDEN",
 		"END_RUN",
 		"INTERACT",
+		"CREW",
 		"RETICLE",
 		"PROMPT",
+		"RAIL_FP",
+		"HELP_CHIP",
+	},
+	-- Crew View held: the first-person HUD without the reticle and its chip, with the CREW VIEW label.
+	fpCrew = {
+		"LOOT",
+		"TOP",
+		"STRIP",
+		"MENU",
+		"FAST_FORWARD",
+		"OBJECTIVE_FP",
+		"HIDDEN",
+		"END_RUN",
+		"INTERACT",
+		"CREW",
+		"CREW_LABEL",
+		"RAIL_FP",
+		"HELP_CHIP",
+	},
+	fpCrewAlarm = {
+		"LOOT",
+		"TOP",
+		"STRIP",
+		"MENU",
+		"FAST_FORWARD",
+		"ALARM_FP",
+		"HIDDEN",
+		"END_RUN",
+		"INTERACT",
+		"CREW",
+		"CREW_LABEL",
 		"RAIL_FP",
 		"HELP_CHIP",
 	},
@@ -195,6 +236,23 @@ function HudLayout.rect(b: Box, w: number, h: number): (number, number, number, 
 	local x0 = b.sx * w + b.ox - b.ax * b.w
 	local y0 = b.sy * h + b.oy - b.ay * b.h
 	return x0, y0, x0 + b.w, y0 + b.h
+end
+
+-- The least gap between two HUD boxes (design px; tests/hud_layout.luau checks every scene against it).
+HudLayout.GAP = 8
+
+-- Whether the touch CREW button steps aside while the prompt chip is up, on a screen of w x h px with safe-area
+-- insets (left, top, right, bottom): true when the two come closer than GAP (Hud/CrewView and the layout check both
+-- ask this, so they agree).
+function HudLayout.crewYields(w: number, h: number, left: number, top: number, right: number, bottom: number): boolean
+	local cw, ch = HudLayout.canvas(w - left - right, h - top - bottom)
+	local dx, dy = HudLayout.centreShift(w, h, left, top, right, bottom)
+	local a0, b0, a1, b1 = HudLayout.rect(HudLayout.CREW, cw, ch)
+	local p0, q0, p1, q1 = HudLayout.rect(HudLayout.PROMPT, cw, ch)
+	p0, p1, q0, q1 = p0 + dx, p1 + dx, q0 + dy, q1 + dy
+	local gx = math.max(p0 - a1, a0 - p1)
+	local gy = math.max(q0 - b1, b0 - q1)
+	return math.max(gx, gy) < HudLayout.GAP
 end
 
 return table.freeze(HudLayout)

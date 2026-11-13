@@ -612,6 +612,16 @@ Strings.FAIL_TIMEOUT_BY = table.freeze({
 	pad = "Press Y to REWIND when you're done.",
 	touch = "Tap REWIND when you're done.",
 } :: { [string]: string })
+-- Crew View (first person, Hud/CrewView): the touch button, the label over the lifted view and the one-time hint
+-- (the first run with 2+ clones).
+Strings.CREW = "CREW"
+Strings.CREW_VIEW = "CREW VIEW"
+Strings.CREW_VIEW_HINT = "Hold Q to see your crew."
+Strings.CREW_VIEW_HINT_BY = table.freeze({
+	key = "Hold Q to see your crew.",
+	pad = "Hold LB to see your crew.",
+	touch = "Tap and hold CREW to see your crew.",
+} :: { [string]: string })
 -- The plain line `key` (a Strings key) for a device in first person; other cameras get the plain line.
 function Strings.forDevice(key: string, device: string, firstPerson: boolean): string
 	local plain = (Strings :: any)[key]

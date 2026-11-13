@@ -458,6 +458,32 @@ Config.Heist.CAMERA = {
 		INVISIBLE = 0.95, -- parts at least this transparent are colliders, never faded
 		POINTS = { 2.4, 0, -1.8 }, -- studs above the root: head, root, feet (three cast points: no flicker)
 	},
+	-- Crew View (docs/audit/REVIEW_STEAM_PLUS.md gap 5; pure maths in Shared/Heist/CrewView): in first person,
+	-- hold Q / LB / the touch CREW button and the camera lifts from your eyes to an overhead diorama shot centred
+	-- on you that frames your clones and the objective (Heist/CutAway opens the ceilings); release drops back.
+	-- You keep moving (the shot keeps your look yaw, so the stick and WASD mean the same). Only in a run, never
+	-- during a presentation moment (rewind, 8 OF ME, busted, the Line-up, the level intro, the run-start beat).
+	CREW = {
+		PITCH = 60, -- degrees down: steeper than the diorama's 52, so it looks over the walls round you
+		FOV = 50, -- vertical degrees
+		DIST_MIN = 22, -- studs from the focus: the closest shot (you alone)
+		DIST_MAX = 46, -- the widest (a crew spread over the level)
+		DIST_STEP = 1, -- studs per step of the fit search
+		SHARE = 0.78, -- every framed point within this share of the half width ...
+		SHARE_Y = 0.72, -- ... and of the half height (clear of the run bar and the bottom HUD)
+		RADIUS = 40, -- studs (flat): clones and the objective farther from you than this are not framed
+		PULL = 0.35, -- the focus moves this share of the way from you toward the framed points' middle
+		FOCUS_HEIGHT = 1.5, -- studs above the HumanoidRootPart
+		FOLLOW_RATE = 6, -- 1/s: the focus and the distance follow (a clone walking never jolts the frame)
+		IN_SECONDS = 0.25, -- the lift from your eyes
+		OUT_SECONDS = 0.2, -- the drop back on release
+		-- Reduced motion: no flight; a quick dim crossfade, the camera cuts at its peak.
+		REDUCED = { CUT_AT = 0.08, OUT = 0.14, PEAK = 0.6 },
+		VIGNETTE = 0.45, -- the edge darkness at full Crew View (0 = none, 1 = black)
+		VIGNETTE_DEPTH = 0.16, -- share of the screen's short side each edge band covers
+		HINT_MIN_CLONES = 2, -- the one-time hint: the first run with at least this many clones (any owner)
+		HINT_DELAY = 3, -- s after control returns
+	},
 	-- C1: the run-start framing beat (eases from the objective to you; any input skips it). It
 	-- always ends when the transition ends (control returns), so it never delays first control.
 	BEAT_SECONDS = 0.8,

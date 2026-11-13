@@ -11,13 +11,17 @@
 -- First person (fpRun, fpRunAlarm): the reticle and its prompt chip are centred on the WHOLE screen (the
 -- camera ray), so they are moved by HudLayout.centreShift before the check; the reticle must also land on
 -- the screen centre within 0.5 px.
+-- Crew View: the touch CREW button must clear the jump button and REWIND in every first-person scene; where the prompt
+-- chip would come too close to it (HudLayout.crewYields, the same rule the HUD uses) the button steps aside while the
+-- chip is up, so a scene with PROMPT drops CREW on those screens (fpCrew checks it without the chip).
 -- Run from the repo root: lune run tests/hud_layout.luau
 
 local process = require("@lune/process")
 
 local HudLayout = require("../src/shared/Heist/HudLayout")
 
-local GAP = 8
+local GAP = HudLayout.GAP
+assert(GAP >= 8, "the HUD gap is at least 8 design px")
 local TOP_BAR = 58
 
 type Viewport = {
@@ -115,9 +119,15 @@ for _, vp in VIEWPORTS do
 			fail(string.format("%s: the reticle is not at the screen centre (%.1f, %.1f)", vp.name, cx, cy))
 		end
 	end
+	local yields = HudLayout.crewYields(vp.w, vp.h, vp.left, vp.top, vp.right, vp.bottom)
+	print(string.format("  CREW button %s", if yields then "steps aside while the prompt chip is up" else "stays up"))
 	for _, scene in sceneNames do
 		local rects: { Rect } = {}
+		local withPrompt = table.find(HudLayout.SCENES[scene], "PROMPT") ~= nil
 		for _, name in HudLayout.SCENES[scene] do
+			if name == "CREW" and yields and withPrompt then
+				continue
+			end
 			local box = (HudLayout :: any)[name]
 			assert(box, "HudLayout has no box " .. name)
 			local x0, y0, x1, y1 = HudLayout.rect(box, W, H)
