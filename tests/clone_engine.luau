@@ -672,14 +672,19 @@ for _, c in cases do
 			and pillFrame:FindFirstChildOfClass("UICorner") ~= nil,
 		c.name .. ": numbered pill badge (" .. tostring(number and (number :: any).Text) .. ")"
 	)
-	-- you walk through your clones: every body part is in the no-collision group and not CanCollide
-	local solid = 0
+	-- you walk through your clones: every body part is in the no-collision group (the Humanoid turns CanCollide
+	-- back on for the torso by itself, so the group is what makes it walk-through)
+	local solid, names = 0, {}
 	for _, d in (c.rig and c.rig:GetDescendants() or {}) do
-		if d:IsA("BasePart") and (d.CanCollide or d.CollisionGroup ~= Config.Heist.CLONE_COLLISION_GROUP) then
+		if d:IsA("BasePart") and d.CollisionGroup ~= Config.Heist.CLONE_COLLISION_GROUP then
 			solid += 1
+			table.insert(names, d.Name .. "/" .. d.CollisionGroup)
 		end
 	end
-	check(c.rig ~= nil and solid == 0, c.name .. ": walk-through (" .. solid .. " solid parts)")
+	check(
+		c.rig ~= nil and solid == 0,
+		c.name .. ": walk-through (" .. solid .. " solid parts " .. table.concat(names, ", ") .. ")"
+	)
 end
 local lights = 0
 for _, d in (workspace:FindFirstChild("HeistClones") or workspace):GetDescendants() do
