@@ -1809,7 +1809,7 @@ local okHide, hideErr = pcall(function(): string
 			local target = (a.CFrame * CFrame.new(t[1], t[2], -t[3])).Position
 			-- a kid standing 4.5 studs in front of the station, eyes 5 up
 			local flat = Vector3.new(a.CFrame.LookVector.X, 0, a.CFrame.LookVector.Z).Unit
-			local stand = Vector3.new(target.X, garage:GetPivot().Position.Y, target.Z) + flat * 4.5
+			local stand = Vector3.new(target.X, Cfg.Heist.LOBBY_ORIGIN[2], target.Z) + flat * 4.5
 			local eye = stand + Vector3.new(0, 5, 0)
 			local dist = (target - eye).Magnitude
 			local seen = LookTarget.lineOfSight(eye, target, t[4], a, exclude)
