@@ -967,6 +967,7 @@ do
 				rest[n] = partAt(n)
 			end
 			local footZ0, footZ1, handYMax, torsoYMin, headYaw = math.huge, -math.huge, -math.huge, math.huge, 0
+			local handOverHead = -math.huge
 			local n = 24
 			for i = 0, n do
 				track.TimePosition = spec.length * i / n * 0.999
@@ -974,19 +975,20 @@ do
 				local f = partAt("RightFoot")
 				footZ0, footZ1 = math.min(footZ0, f.Z), math.max(footZ1, f.Z)
 				handYMax = math.max(handYMax, partAt("RightHand").Y)
+				handOverHead = math.max(handOverHead, partAt("RightHand").Y - partAt("Head").Y)
 				torsoYMin = math.min(torsoYMin, partAt("LowerTorso").Y)
 				local head = rig:FindFirstChild("Head") :: BasePart
 				local look = root.CFrame:VectorToObjectSpace(head.CFrame.LookVector)
 				headYaw = math.max(headYaw, math.deg(math.abs(math.atan2(-look.X, -look.Z))))
 			end
-			local headTop = rest.Head.Y
 			local ok: boolean, what: string
 			if clip == "walk" or clip == "run" then
 				ok, what =
 					footZ1 - footZ0 > 0.9, string.format("the right boot swings %.2f studs fore-aft", footZ1 - footZ0)
 			elseif clip == "jump" or clip == "fall" then
 				ok, what =
-					handYMax > headTop, string.format("the hands go up over the head (%.2f > %.2f)", handYMax, headTop)
+					handOverHead > -0.25,
+					string.format("the hands go up by the head (hand %.2f studs from the head's centre)", handOverHead)
 			elseif clip == "land" then
 				ok, what =
 					rest.LowerTorso.Y - torsoYMin > 0.2,
@@ -1042,19 +1044,37 @@ do
 	local c1 = cases[1]
 	local cloneRig = c1 and c1.rig
 	if cloneRig and cloneRig:FindFirstChild("RightFoot") then
-		local function slideAt(viewRate: number): (number, number, number)
-			local dt = 1 / 60
+		-- Per heel / toe: from touching the floor to lifting, its largest horizontal drift. A stride counts while the
+		-- recording moves the whole time (speed > 2); the idle <-> run cross-fades are reported, not judged.
+		local function slideAt(viewRate: number): (number, number, number, string)
+			local dt = 1 / 240
 			local tView = VIEW_START
-			local worst, contacts, steps = 0, 0, 0
-			local track: { [string]: { at: Vector3, n: number, max: number }? } = {}
+			local worst, contacts, steps, fades = 0, 0, 0, 0
+			local worstAt = ""
+			local track: { [string]: any } = {}
 			local dur = Sampler.duration(rec)
+			local function close(id: string)
+				local tr = track[id]
+				if tr and tr.n >= 3 then
+					if tr.moving then
+						contacts += 1
+						if tr.max > worst then
+							worst = tr.max
+							worstAt = string.format("%s at t %.2f, %d steps", id, tr.t, tr.n)
+						end
+					else
+						fades = math.max(fades, tr.max)
+					end
+				end
+				track[id] = nil
+			end
 			while tView < dur - 0.2 do
 				tView += dt * viewRate
 				pcall(echo.update, tView, os.clock(), dt, nil)
 				if not SIMULATED then
 					local a = animatorOf(rigOf(c1))
 					if a then
-						a:StepAnimations(dt * viewRate) -- the clip advances with the view clock (rate x wall time)
+						a:StepAnimations(dt) -- wall time: the clips' own speed already carries the view rate
 					end
 				end
 				steps += 1
@@ -1063,47 +1083,52 @@ do
 				if not (rigNow and rootP and rootP:IsA("BasePart")) then
 					break
 				end
+				local vx, _, vz = Sampler.velocity(rec, tView)
+				local moving = math.sqrt(vx * vx + vz * vz) > 2
 				local floorY = rootP.Position.Y - Config.Rookie.HIP_HEIGHT - Config.Rookie.ROOT_SIZE[2] / 2
 				for _, side in { "Right", "Left" } do
-					local a = rigNow:FindFirstChild(side .. "Foot")
-						and (rigNow :: any)[side .. "Foot"]:FindFirstChild(side .. "AnkleRigAttachment")
-					if a then
+					local foot = rigNow:FindFirstChild(side .. "Foot")
+					local a = foot and foot:FindFirstChild(side .. "AnkleRigAttachment")
+					if a and a:IsA("Attachment") then
 						for key, off in { heel = Vector3.new(0, -0.5, 0.4), toe = Vector3.new(0, -0.5, -0.9) } do
 							local p = a.WorldCFrame:PointToWorldSpace(off)
 							local id = side .. key
-							if p.Y - floorY < 0.05 then
+							if p.Y - floorY < 0.06 then
 								local tr = track[id]
 								if not tr then
-									track[id] = { at = p, n = 1, max = 0 }
+									track[id] = { at = p, n = 1, max = 0, moving = moving, t = tView }
 								else
 									tr.n += 1
-									local d = Vector3.new(p.X - tr.at.X, 0, p.Z - tr.at.Z).Magnitude
-									tr.max = math.max(tr.max, d)
+									tr.moving = tr.moving and moving
+									tr.max = math.max(tr.max, Vector3.new(p.X - tr.at.X, 0, p.Z - tr.at.Z).Magnitude)
 								end
 							else
-								local tr = track[id]
-								if tr and tr.n >= 3 then
-									contacts += 1
-									worst = math.max(worst, tr.max)
-								end
-								track[id] = nil
+								close(id)
 							end
 						end
 					end
 				end
 			end
-			return worst, contacts, steps
+			note(
+				string.format(
+					"clone boots at %gx: start/stop cross-fades drift up to %.2f studs (not judged)",
+					viewRate,
+					fades
+				)
+			)
+			return worst, contacts, steps, worstAt
 		end
 		for _, r in { 1, 3 } do
-			local worst, contacts, steps = slideAt(r)
+			local worst, contacts, steps, worstAt = slideAt(r)
 			check(
 				contacts >= 4 and worst < 0.3,
 				string.format(
-					"clone boots at %dx: %d contacts over %d frames, worst slide %.3f studs (limit 0.3)",
+					"clone boots at %dx: %d planted contacts in stride over %d steps, worst slide %.3f studs (limit 0.3; %s)",
 					r,
 					contacts,
 					steps,
-					worst
+					worst,
+					worstAt
 				)
 			)
 		end

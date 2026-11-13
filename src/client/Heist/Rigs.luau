@@ -541,7 +541,8 @@ local LOCO_SLOTS: { [string]: { string } } = {
 -- Plays the clip set for `loco` ("idle" | "move" | "jump" | "fall" | "none"), cross-fading from the
 -- last one. For "move": the walk and run clip rates and weights (Shared/Heist/CloneGait, the R15 Animate's blend),
 -- sent only when `sendSpeed` / `sendWeights` say they changed; `walkPhase` / `runPhase` (0..1) start fresh clips in
--- step with the distance walked.
+-- step with the distance walked. `rate`: the view's clock rate; cross-fades shrink with it, so a fade covers the
+-- same ground at 3x as at 1x (no extra foot slide when fast-forwarded).
 function Rigs.locomote(
 	rig: Rig,
 	loco: string,
@@ -552,13 +553,14 @@ function Rigs.locomote(
 	sendSpeed: boolean,
 	sendWeights: boolean,
 	walkPhase: number?,
-	runPhase: number?
+	runPhase: number?,
+	rate: number?
 )
 	local tracks = rig.tracks
 	if not tracks then
 		return
 	end
-	local fade = Config.Clone.ANIM_FADE
+	local fade = Config.Clone.ANIM_FADE / math.max(rate or 1, 1)
 	local started = false
 	if loco ~= rig.loco then
 		local want = LOCO_SLOTS[loco] or LOCO_SLOTS.none

@@ -1133,7 +1133,8 @@ function EchoView.new(state: any): any
 				sendSpeed,
 				sendWeights,
 				walkPhase0,
-				runPhase0
+				runPhase0,
+				rate
 			)
 			-- the landing squash after a real fall (recording time in the air, so 3x lands like 1x)
 			local airborne = f.loco == "jump" or f.loco == "fall"

@@ -384,10 +384,9 @@ function Viewmodel.fromKit(source: Model): Rig?
 		for _, h in (RookieData.hands or {})[sideName] or {} do
 			local seg = groups[h.joint]
 			if seg then
-				table.insert(
-					spec,
-					{ h.joint, h.parent ~= "Palm" and h.parent or nil, grip:ToObjectSpace(seg[1]:GetPivot()) }
-				)
+				local mark = seg[1]:FindFirstChild("EH_Hinge")
+				local at = if mark and mark:IsA("Attachment") then mark.WorldCFrame else seg[1]:GetPivot()
+				table.insert(spec, { h.joint, h.parent ~= "Palm" and h.parent or nil, grip:ToObjectSpace(at) })
 			end
 		end
 		addFingers(hand, grip, spec, groups, 1, Vector3.zAxis * (if sideName == "Right" then 1 else -1))
@@ -466,7 +465,15 @@ function Viewmodel.fromOutfit(folder: Instance, outfitKey: string?, hue: Color3)
 		local hand: BasePart?
 		if hinged then
 			for _, h in segs do
-				local p = add(h.piece, CFrame.new(wristAt + v3(h.offset)), glove)
+				local at = CFrame.new(wristAt + v3(h.offset))
+				local p = add(h.piece, at, glove)
+				if p then
+					-- the hinge, as an attachment: it scales with the rig (Viewmodel.fromKit reads it)
+					local hinge = Instance.new("Attachment")
+					hinge.Name = "EH_Hinge"
+					hinge.CFrame = p.CFrame:ToObjectSpace(at)
+					hinge.Parent = p
+				end
 				if h.joint == "Palm" then
 					hand = p
 				end
