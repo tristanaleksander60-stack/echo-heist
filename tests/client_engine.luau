@@ -1039,20 +1039,81 @@ do
 			local farRoot = to + Vector3.new(0, -1, Cfg.Sim.INTERACT_RANGE + 0.5)
 			local _, c3 = pickFrom(farRoot + Vector3.new(0, 1.65, 0), farRoot, 50)
 			assert(c3[1].ok == false, "beyond the sim's range")
-			return string.format("cash at %.1f studs from the front eye", (to - frontEye).Magnitude)
+			-- GOLDEN_FRAMES G1 in first person: from the staged stand on the street (GOLDEN.G1.STAND, the eye at 3.8)
+			-- the staged look keeps the cash in a 16:9 frame, the frame's top runs well up the tenement, and the
+			-- stand is clear of the van and the kerb props
+			local Scenario = require(shared:WaitForChild("Heist"):WaitForChild("Scenario"))
+			local CameraDirector = require(clientHeist:WaitForChild("CameraDirector")) :: any
+			local G1 = Cfg.Heist.CAMERA.GOLDEN.G1
+			local standEye = origin1 + Vector3.new(G1.STAND[1], (l1.floorY or 0) + 3.8, G1.STAND[2])
+			local yawG, pitchG = Scenario.fpLook(G1, { standEye.X, standEye.Y, standEye.Z }, { to.X, to.Y, to.Z })
+			local camG = CameraDirector.lookFrame(standEye, yawG, pitchG)
+			assert(inFrame(camG, to, G1.FOV), "G1: the cash is in the frame")
+			assert(-pitchG + G1.FOV / 2 > 45, "G1: the frame looks up the tenement")
+			local free = workspace:GetPartBoundsInRadius(standEye - Vector3.new(0, 1.5, 0), 1.2)
+			local blocking = 0
+			for _, bp in free do
+				if bp.CanCollide and bp:IsDescendantOf(b1.model) then
+					blocking += 1
+				end
+			end
+			assert(blocking == 0, "G1: the stand is clear (" .. blocking .. " solid parts)")
+			local top = to + Vector3.new(0, cashPart.Size.Y / 2, 0)
+			local seen = sightTo(standEye, top, cashPart)
+			return string.format(
+				"cash at %.1f studs from the front eye; G1 stand %.0f studs away, cash top %s",
+				(to - frontEye).Magnitude,
+				(to - standEye).Magnitude,
+				if seen then "in sight" else "behind the sill"
+			)
 		end)
 		check(
 			okPick,
-			"first person: kit L1 cash picked from in front, not through the back wall (" .. tostring(pickErr) .. ")"
+			"first person: kit L1 cash picked from in front, not through the back wall; G1 staged look ("
+				.. tostring(pickErr)
+				.. ")"
 		)
 	else
 		check(false, "first person: L1 builds for the look-to-interact checks")
 	end
 end
 
+-- Golden-frame staging helpers (docs/GOLDEN_FRAMES.md, REVIEW_STEAM_PLUS #4): is a world point inside a first-person
+-- frame (CameraDirector.lookFrame at yaw / pitch down, vertical FOV, 16:9), and the first opaque thing on a ray from
+-- the eye toward it (glass and see-through parts let the eye through).
+local function inFrame(cf: CFrame, p: Vector3, vfov: number): boolean
+	local lp = cf:PointToObjectSpace(p)
+	local depth = -lp.Z
+	local tv = math.tan(math.rad(vfov / 2))
+	return depth > 0.5 and math.abs(lp.Y / depth) <= tv and math.abs(lp.X / depth) <= tv * 16 / 9
+end
+local function sightTo(eye: Vector3, p: Vector3, target: Instance?): boolean
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	local skip: { Instance } = {}
+	for _ = 1, 24 do
+		params.FilterDescendantsInstances = skip
+		local hit = workspace:Raycast(eye, p - eye, params)
+		if not hit then
+			return true
+		end
+		local inst = hit.Instance
+		if (target and inst:IsDescendantOf(target)) or inst == target or (hit.Position - p).Magnitude < 0.6 then
+			return true
+		end
+		if inst.Transparency > 0.2 or inst.Material == Enum.Material.Glass or not inst.CanCollide then
+			table.insert(skip, inst)
+		else
+			return false
+		end
+	end
+	return false
+end
+
 -- H. Signature moments (PLAN_STEAM_PLUS §4.4 F2, §5 "8 OF ME"): the G2 staging's seven Clone Party
--- tapes (src/server/Heist/StagingTapes.luau) drawn by EchoView + you (a mannequin stand-in on the
--- spawn) = 8 rigs. MomentDirector's 8 OF ME moment runs on hand-stepped frames (Luau Execution
+-- tapes (src/server/Heist/StagingTapes.luau) drawn by EchoView + you (a copy of your template on the
+-- spawn) = 8 rigs, all Rookies (docs/GOLDEN_FRAMES.md G2, REVIEW_STEAM_PLUS #4: your clone template is the Rookie
+-- in your outfit, server Heist/Avatars.buildRookie, so every copy is a Rookie with its crew pieces in your hue). MomentDirector's 8 OF ME moment runs on hand-stepped frames (Luau Execution
 -- servers do not simulate or render): the roll call hops each clone 60 ms apart in record order and
 -- lights 8 numbered pills, the world dims 15 %, and the camera shot it hands to CameraDirector keeps
 -- every one of the 8 rigs (their real parts) inside the central 32 % of a 16:9 frame. Then the
@@ -1094,11 +1155,16 @@ local okMoment, momentInfo = pcall(function()
 		reduced = false,
 		particleScale = 1,
 	}
+	local Avatars = require(heistServer:WaitForChild("Avatars"))
+	local Outfit = require(shared:WaitForChild("Heist"):WaitForChild("Outfit"))
+	local Palette = require(shared:WaitForChild("Heist"):WaitForChild("Palette"))
+	local template = Avatars.buildRookie(OWNER, Outfit.default(), nil)
+	assert(template and template:GetAttribute("EH_Rookie") == true, "your clone template is the Rookie")
 	local echo = EchoView.new(vstate)
 	echo.setRun(msg, recs, os.clock() - 5)
-	-- you: a mannequin on the spawn with a HumanoidRootPart, the 8th rig
+	-- you: a copy of your Rookie template on the spawn with a HumanoidRootPart, the 8th rig
 	local spawn = party.spawns[1]
-	local youRig = Rigs.buildMannequin()
+	local youRig = Rigs.buildAvatar(template :: Model) or Rigs.buildMannequin()
 	youRig.model.Parent = scratch
 	local youModel = Instance.new("Model")
 	youModel.Name = "You"
@@ -1212,11 +1278,26 @@ local okMoment, momentInfo = pcall(function()
 			worst = math.max(worst, math.abs(lp.X) / (depth * tv * 16 / 9))
 		end
 	end
+	local seatHue = Palette.hueFor(1)
 	for i = 1, 7 do
 		local rig = echo.rigOf(i)
 		assert(rig, "clone " .. i .. " has a rig")
+		assert(rig.model:GetAttribute("EH_Rookie") == true, "clone " .. i .. " is a Rookie (not a mannequin)")
+		local crewPieces, hueish = 0, 0
+		for _, d in rig.model:GetDescendants() do
+			if d:IsA("BasePart") and d:GetAttribute("EH_Tint") == "crew" then
+				crewPieces += 1
+				local h = d.Color:ToHSV()
+				local sh = seatHue:ToHSV()
+				if math.min(math.abs(h - sh), 1 - math.abs(h - sh)) < 0.12 then
+					hueish += 1
+				end
+			end
+		end
+		assert(crewPieces >= 3 and hueish == crewPieces, "clone " .. i .. ": crew pieces in your crew colour")
 		check8(rig.model)
 	end
+	assert(youRig.model:GetAttribute("EH_Rookie") == true, "you are a Rookie too")
 	check8(youRig.model)
 	assert(worst <= SHARE + 0.02, string.format("all 8 inside the central 32 %% (widest %.3f)", worst))
 	-- BIG: the tall Toy Shop over the swarm: the pull-back sees all 8 through the cut-away
@@ -1275,8 +1356,10 @@ local okMoment, momentInfo = pcall(function()
 	assert(vstate.replayT == nil and vstate.actorFx ~= nil, "view time and fx restored")
 	moments.stop()
 	echo.clear()
+	youRig.model:Destroy()
+	template:Destroy()
 	return string.format(
-		"hops %.3f s apart, widest %.3f of the width, tint %.2f",
+		"8 Rookies; hops %.3f s apart, widest %.3f of the width, tint %.2f",
 		(hopAt[7] - hopAt[1]) / 6,
 		worst,
 		minTint
@@ -2006,6 +2089,38 @@ local okHide, hideErr = pcall(function(): string
 		end
 	end
 	assert(vansOk == HD.BAYS, "van side doors in sight: " .. vansOk)
+	-- GOLDEN_FRAMES G3 in first person: from the staged stand in the aisle (GOLDEN.G3.STAND, the eye at 3.8) the
+	-- staged look holds the job board's NEXT card and your van (bay 1) in a 16:9 frame and in sight, and the stand
+	-- is clear of every solid
+	do
+		local Scenario = require(shared:WaitForChild("Heist"):WaitForChild("Scenario"))
+		local CameraDirector = require(clientHeist:WaitForChild("CameraDirector")) :: any
+		local G3 = Cfg.Heist.CAMERA.GOLDEN.G3
+		local o = Vector3.new(table.unpack(Cfg.Heist.LOBBY_ORIGIN))
+		local eye3 = o + Vector3.new(G3.STAND[1], 3.8, G3.STAND[2])
+		local la = o + Vector3.new(G3.LOOK_AT[1], G3.LOOK_AT[2], G3.LOOK_AT[3])
+		local yaw3, pitch3 = Scenario.fpLook(G3, { eye3.X, eye3.Y, eye3.Z }, { la.X, la.Y, la.Z })
+		local cam3 = CameraDirector.lookFrame(eye3, yaw3, pitch3)
+		local card = garage:FindFirstChild("JobCard", true)
+		assert(card and card:IsA("BasePart"), "the job board's NEXT card")
+		assert(inFrame(cam3, card.Position, G3.FOV), "G3: the NEXT card in frame")
+		assert(sightTo(eye3, card.Position, card), "G3: the NEXT card in sight")
+		local van1: BasePart? = nil
+		for _, d in garage:GetChildren() do
+			if d:IsA("BasePart") and d:GetAttribute("EH_Kind") == "garageVan" and d:GetAttribute("EH_Bay") == 1 then
+				van1 = d
+			end
+		end
+		assert(van1, "bay 1's van")
+		assert(inFrame(cam3, (van1 :: BasePart).Position, G3.FOV), "G3: your van in frame")
+		local clear = 0
+		for _, bp in workspace:GetPartBoundsInRadius(eye3 - Vector3.new(0, 1.5, 0), 1.2) do
+			if bp.CanCollide and bp:IsDescendantOf(garage) then
+				clear += 1
+			end
+		end
+		assert(clear == 0, "G3: the stand is clear (" .. clear .. " solid parts)")
+	end
 	-- the drive's stage
 	local st = Drive.build(2)
 	local loud, stageParts = 0, 0
