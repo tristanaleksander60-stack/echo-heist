@@ -776,8 +776,8 @@ do
 				for _, dsc in b6.model:GetDescendants() do
 					if dsc:IsA("Light") then
 						table.insert(lights, dsc)
-						local holder = dsc:FindFirstAncestorWhichIsA("BasePart")
-						if holder and holder:GetAttribute("EH_LampKind") == "wash" then
+						local washHolder = dsc:FindFirstAncestorWhichIsA("BasePart")
+						if washHolder and washHolder:GetAttribute("EH_LampKind") == "wash" then
 							washes += 1 -- INTERIORS: a wall wash is a light only (no fixture, no pool)
 						end
 					elseif

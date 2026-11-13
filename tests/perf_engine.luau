@@ -1407,13 +1407,12 @@ do
 						end
 					end
 				end
-			elseif
-				d:IsA("SpotLight")
-				and d:FindFirstAncestorWhichIsA("BasePart") ~= nil
-				and (d:FindFirstAncestorWhichIsA("BasePart") :: BasePart):GetAttribute("EH_LampKind") == "wash"
-			then
-				washes += 1
-				washShadow += if d.Shadows then 1 else 0
+			elseif d:IsA("SpotLight") then
+				local washHolder = d:FindFirstAncestorWhichIsA("BasePart")
+				if washHolder and washHolder:GetAttribute("EH_LampKind") == "wash" then
+					washes += 1
+					washShadow += if d.Shadows then 1 else 0
+				end
 			end
 		end
 		check(
