@@ -566,6 +566,87 @@ Config.FirstPerson = {
 		PUSH_CONE = 50, -- degrees off the look
 		PUSH_COOLDOWN = 1.5,
 		REACH_DEDUPE = 0.4, -- s: your Grab event does not replay the reach the GRAB press just played
+		-- Finger poses (REVIEW_STEAM_PLUS #10): the kit gloves (Rookie_Hands: palm + index, finger block and thumb in
+		-- two hinged segments each) or the placeholder's fingers turn about their hinges. Per joint { curl, across }
+		-- in degrees: curl folds toward the palm (- bends back), across swings the thumb over the palm. The hands
+		-- blend like the arms (rest, carry, then each action by its envelope, then the look-cue point) and every
+		-- joint follows its target through a spring (ViewmodelMath.fingers, Heist/Viewmodel).
+		HANDS = {
+			FREQ = 9, -- spring Hz
+			DAMPING = 0.8,
+			POSES = {
+				open = { -- relaxed: a soft curl, the thumb loose
+					Index1 = { 14, 0 },
+					Index2 = { 12, 0 },
+					Fingers1 = { 22, 0 },
+					Fingers2 = { 18, 0 },
+					Thumb1 = { 8, 12 },
+					Thumb2 = { 8, 0 },
+				},
+				reach = { -- spread wide as the hand goes for the loot
+					Index1 = { -6, 0 },
+					Index2 = { 2, 0 },
+					Fingers1 = { -4, 0 },
+					Fingers2 = { 4, 0 },
+					Thumb1 = { -10, -20 },
+					Thumb2 = { 0, 0 },
+				},
+				grip = { -- holding the loot: wrapped round it
+					Index1 = { 74, 0 },
+					Index2 = { 66, 0 },
+					Fingers1 = { 80, 0 },
+					Fingers2 = { 72, 0 },
+					Thumb1 = { 30, 40 },
+					Thumb2 = { 30, 0 },
+				},
+				push = { -- a flat palm on the door, fingers a touch bent back
+					Index1 = { -8, 0 },
+					Index2 = { -4, 0 },
+					Fingers1 = { -8, 0 },
+					Fingers2 = { -4, 0 },
+					Thumb1 = { 0, -8 },
+					Thumb2 = { 0, 0 },
+				},
+				point = { -- the index straight out, the rest folded, the thumb over them
+					Index1 = { -4, 0 },
+					Index2 = { 0, 0 },
+					Fingers1 = { 86, 0 },
+					Fingers2 = { 82, 0 },
+					Thumb1 = { 32, 44 },
+					Thumb2 = { 30, 0 },
+				},
+				press = { -- the index presses (the REWIND watch tap, a switch): its tip bent onto the button
+					Index1 = { 16, 0 },
+					Index2 = { 24, 0 },
+					Fingers1 = { 86, 0 },
+					Fingers2 = { 82, 0 },
+					Thumb1 = { 32, 44 },
+					Thumb2 = { 30, 0 },
+				},
+				handsUp = { -- caught: fingers splayed
+					Index1 = { -10, 0 },
+					Index2 = { -4, 0 },
+					Fingers1 = { -10, 0 },
+					Fingers2 = { -6, 0 },
+					Thumb1 = { -14, -26 },
+					Thumb2 = { -4, 0 },
+				},
+			},
+			ORDER = { "open", "reach", "grip", "push", "point", "press", "handsUp" }, -- renders and tests
+			REST = "open",
+			CARRY = "grip",
+			-- What each arm action does with the fingers, per hand (R / L).
+			ACTIONS = {
+				reach = { R = "reach" },
+				push = { R = "push" },
+				press = { R = "press" },
+				stomp = { R = "open", L = "open" },
+				watch = { R = "press", L = "push" }, -- the left wrist flat to show the watch, the right index taps
+				handsUp = { R = "handsUp", L = "handsUp" },
+			},
+			POINT = "point", -- while the onboarding look cue shows (state.fpPointing), the right hand points
+			POINT_BLEND = 0.25, -- s
+		},
 	},
 	LOOK = {
 		-- A ray from the camera centre picks what you look at (FpMath.pick). REACH: studs from the eye to the

@@ -132,7 +132,7 @@ def main(argv):
         out = []
         for i, name in enumerate(hands["order"]):
             p = os.path.join(tmp, f"hand_{i}.png")
-            render(p, a.size, a.samples, lambda n=name: hand_tile(n, hands), (0, -1.6, 0.0), 0, 0, 3.4, 40)
+            render(p, a.size, a.samples, lambda n=name: hand_tile(n, hands), (0, -0.4, 0.85), 0, 30, 3.3, 34)
             out.append((p, "hands: " + name))
         rows.append(("first-person hands (Rookie_Hands kit pieces, posed by Config.FirstPerson.VIEWMODEL.HANDS)", out))
     print(sheet(rows, a.size, OUT))

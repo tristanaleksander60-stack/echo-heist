@@ -24,6 +24,12 @@
 -- the right index taps the watch), handsUp (caught). Carry: the loot you hold rides between your hands in
 -- view (a local copy of the loot model, scaled with the rig; WorldView hides the world one for you).
 -- Reduced motion: no breathing or bob, a quarter of the lag; actions still play (they are the feedback).
+--
+-- Fingers (REVIEW_STEAM_PLUS #10): the kit gloves are hinged (Rookie_Hands: palm + index, finger block and thumb, two
+-- segments each; the placeholder's fingers turn at the knuckles). Poses in Config.FirstPerson.VIEWMODEL.HANDS: open
+-- at rest, grip while carrying, reach (spread) on a grab, push (flat palm) on a door, press (the REWIND watch tap, a
+-- switch), point (while the onboarding look cue shows: state.fpPointing), hands-up when caught; every joint follows
+-- its target through a spring.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -45,7 +51,19 @@ local Viewmodel = {}
 local RENDER_NAME = "EH_Viewmodel"
 Viewmodel.MODEL_NAME = "EH_Viewmodel"
 
-export type Hand = { parts: { BasePart }, offsets: { CFrame } } -- offsets: part relative to the grip (scaled)
+-- A hinged finger segment (REVIEW_STEAM_PLUS #10): its parts turn about `hinge` (grip space, rest), after the
+-- parent segment's turn. rot = curl about X (x sign) then `across` about acrossAxis (the thumb over the palm).
+export type Finger = {
+	joint: string, -- Index1, Index2, Fingers1, Fingers2, Thumb1, Thumb2 (Config.FirstPerson.VIEWMODEL.HANDS)
+	parts: { BasePart },
+	rests: { CFrame }, -- each part relative to the hinge frame
+	link: CFrame, -- the hinge from the parent segment's hinge (or from the grip for a root segment)
+	parent: number?, -- index in Hand.fingers (parents come first)
+	sign: number, -- +1 when +X folds toward the palm
+	acrossAxis: Vector3,
+}
+-- offsets: rigid part relative to the grip (scaled); fingers: the hinged segments (not in `parts`)
+export type Hand = { parts: { BasePart }, offsets: { CFrame }, fingers: { Finger } }
 export type Rig = { model: Model, R: Hand, L: Hand, kit: boolean }
 
 local function colour(key: string): Color3
@@ -200,13 +218,78 @@ local function buildHand(model: Model, side: number, hue: Color3, withWatch: boo
 	return out
 end
 
--- Offsets of parts relative to a grip frame, after the rig has been scaled.
-local function handOf(parts: { BasePart }, grip: CFrame): Hand
-	local offsets = {}
-	for i, p in parts do
-		offsets[i] = grip:ToObjectSpace(p.CFrame)
+-- Offsets of parts relative to a grip frame, after the rig has been scaled. Parts that belong to a finger
+-- segment (fingerOf(part) -> segment key) are left out of the rigid list and grouped by key.
+local function handOf(
+	parts: { BasePart },
+	grip: CFrame,
+	fingerOf: ((BasePart) -> string?)?
+): (Hand, { [string]: { BasePart } })
+	local rigid, offsets = {}, {}
+	local groups: { [string]: { BasePart } } = {}
+	for _, p in parts do
+		local key = if fingerOf then fingerOf(p) else nil
+		if key then
+			groups[key] = groups[key] or {}
+			table.insert(groups[key], p)
+		else
+			table.insert(rigid, p)
+			table.insert(offsets, grip:ToObjectSpace(p.CFrame))
+		end
 	end
-	return { parts = parts, offsets = offsets }
+	return { parts = rigid, offsets = offsets, fingers = {} }, groups
+end
+
+-- Adds finger segments to a hand. spec: { { joint, parent joint?, hinge (grip space) } } in chain order (parents
+-- first); groups: joint -> its parts.
+local function addFingers(
+	hand: Hand,
+	grip: CFrame,
+	spec: { { any } },
+	groups: { [string]: { BasePart } },
+	sign: number,
+	acrossAxis: Vector3
+)
+	local index: { [string]: number } = {}
+	local hinges: { [string]: CFrame } = {}
+	for _, row in spec do
+		local joint, parentJoint, hinge = row[1] :: string, row[2] :: string?, row[3] :: CFrame
+		local parts = groups[joint]
+		if parts then
+			local rests = {}
+			for i, p in parts do
+				rests[i] = hinge:ToObjectSpace(grip:ToObjectSpace(p.CFrame))
+			end
+			local parent = if parentJoint then index[parentJoint] else nil
+			local link = if parent and parentJoint then hinges[parentJoint]:ToObjectSpace(hinge) else hinge
+			table.insert(hand.fingers, {
+				joint = joint,
+				parts = parts,
+				rests = rests,
+				link = link,
+				parent = parent,
+				sign = sign,
+				acrossAxis = acrossAxis,
+			})
+			index[joint] = #hand.fingers
+			hinges[joint] = hinge
+		end
+	end
+end
+
+-- The grip-space frame of every finger segment for a set of angles (degrees: joint -> { curl, across }); the
+-- placeholder and the kit gloves alike. Pure CFrame maths (also what the engine test checks).
+function Viewmodel.fingerFrames(hand: Hand, angles: { [string]: { number } }): { CFrame }
+	local out: { CFrame } = {}
+	for i, f in hand.fingers do
+		local a = angles[f.joint] or { 0, 0 }
+		local base = if f.parent then out[f.parent] else CFrame.identity
+		out[i] = base
+			* f.link
+			* CFrame.fromAxisAngle(Vector3.xAxis, math.rad(a[1]) * f.sign)
+			* CFrame.fromAxisAngle(f.acrossAxis, math.rad(a[2]))
+	end
+	return out
 end
 
 -- The placeholder rig (both hands, scaled by VIEWMODEL.SCALE), not parented. `hue`: the sleeve stripe.
@@ -225,7 +308,31 @@ function Viewmodel.buildPlaceholder(hue: Color3?): Rig
 			p.CFrame = CFrame.new(p.Position * s) * p.CFrame.Rotation
 		end
 	end
-	return { model = model, R = handOf(rParts, CFrame.identity), L = handOf(lParts, CFrame.identity), kit = false }
+	-- Fingers: each finger + tip turns at its knuckle (one segment), the thumb at its base. In the grip frame the
+	-- fingers run along -Z with the back of the hand +Y, so -X folds toward the palm.
+	local function placeholderHand(parts: { BasePart }, side: number): Hand
+		local tag = if side > 0 then "R" else "L"
+		local function fingerOf(p: BasePart): string?
+			local k = string.match(p.Name, "^Finger(%d)" .. tag .. "$")
+				or string.match(p.Name, "^Tip(%d)" .. tag .. "$")
+			if k then
+				return if k == "1" then "Index1" else "Fingers1"
+			end
+			if p.Name == "Thumb" .. tag or p.Name == "ThumbTip" .. tag then
+				return "Thumb1"
+			end
+			return nil
+		end
+		local hand, groups = handOf(parts, CFrame.identity, fingerOf)
+		local spec = {
+			{ "Index1", nil, CFrame.new(0, 0, -0.8 * s) },
+			{ "Fingers1", nil, CFrame.new(0, 0, -0.8 * s) },
+			{ "Thumb1", nil, CFrame.new(-0.42 * side * s, -0.06 * s, -0.46 * s) },
+		}
+		addFingers(hand, CFrame.identity, spec, groups, -1, Vector3.yAxis * -side)
+		return hand
+	end
+	return { model = model, R = placeholderHand(rParts, 1), L = placeholderHand(lParts, -1), kit = false }
 end
 
 -- The kit rig (CharacterKit.Rookie_Viewmodel): a scaled copy; each part follows the grip it is nearest to
@@ -265,7 +372,28 @@ function Viewmodel.fromKit(source: Model): Rig?
 			table.insert(if right then r else l, d)
 		end
 	end
-	return { model = model, R = handOf(r, wr), L = handOf(l, wl), kit = true }
+	-- The kit gloves with fingers (Rookie_Hands, RookieData.hands): each segment turns about its pivot (the hinge).
+	-- Rest axes are the body's (the arm hanging, palm forward): +X folds toward the palm, Z swings the thumb across.
+	local function kitHand(parts: { BasePart }, grip: CFrame, sideName: string): Hand
+		local function fingerOf(p: BasePart): string?
+			local joint = string.match(p.Name, "Hand_" .. sideName .. "_(%w+)$")
+			return if joint and joint ~= "Palm" then joint else nil
+		end
+		local hand, groups = handOf(parts, grip, fingerOf)
+		local spec = {}
+		for _, h in (RookieData.hands or {})[sideName] or {} do
+			local seg = groups[h.joint]
+			if seg then
+				table.insert(
+					spec,
+					{ h.joint, h.parent ~= "Palm" and h.parent or nil, grip:ToObjectSpace(seg[1]:GetPivot()) }
+				)
+			end
+		end
+		addFingers(hand, grip, spec, groups, 1, Vector3.zAxis * (if sideName == "Right" then 1 else -1))
+		return hand
+	end
+	return { model = model, R = kitHand(r, wr, "Right"), L = kitHand(l, wl, "Left"), kit = true }
 end
 
 local function v3(t: { number }): Vector3
@@ -327,7 +455,25 @@ function Viewmodel.fromOutfit(folder: Instance, outfitKey: string?, hue: Color3)
 		end
 		local elbow = CFrame.new(elbowAt)
 		add("Rookie_" .. s .. "LowerArm", elbow)
-		local hand = add("Rookie_" .. s .. "Hand", CFrame.new(wristAt), glove)
+		-- the glove: the hinged Rookie_Hands segments when the kit has them (REVIEW #10), else the closed mitt
+		local segs = (RookieData.hands or {})[s]
+		local hinged = segs ~= nil and #segs > 0
+		for _, h in segs or {} do
+			if not pieces:FindFirstChild(h.piece) then
+				hinged = false
+			end
+		end
+		local hand: BasePart?
+		if hinged then
+			for _, h in segs do
+				local p = add(h.piece, CFrame.new(wristAt + v3(h.offset)), glove)
+				if h.joint == "Palm" then
+					hand = p
+				end
+			end
+		else
+			hand = add("Rookie_" .. s .. "Hand", CFrame.new(wristAt), glove)
+		end
 		-- the outfit's pieces on the forearm and the hand: the glove cuff, the colour-block cuff
 		for _, n in names do
 			local a = RookieData.attach[n]
@@ -431,6 +577,9 @@ function Viewmodel.new(state: any, deps: any): any
 	local heldCopy: BasePart? = nil
 	local lastPush = -math.huge
 	local shown = false
+	-- finger springs: hand ("R" / "L") -> joint -> { curl, curl speed, across, across speed } (degrees)
+	local springs: { [string]: { [string]: { number } } } = { R = {}, L = {} }
+	local point, forcedPose = 0, nil :: string?
 	local frozen: (() -> boolean)? = deps.frozen
 	local rayParams = RaycastParams.new()
 	rayParams.FilterType = Enum.RaycastFilterType.Exclude
@@ -669,16 +818,45 @@ function Viewmodel.new(state: any, deps: any): any
 		local fit = ViewmodelMath.fovFit(cam.FieldOfView, VM.FOV_REF)
 		local rCf = poseFrame(camCf, R, fit)
 		local lCf = poseFrame(camCf, Lh, fit)
+		-- Fingers (REVIEW #10): targets layered like the arms, each joint through a spring.
+		local H = VM.HANDS
+		point += ((if state.fpPointing then 1 else 0) - point) * FpMath.damp(1 / math.max(H.POINT_BLEND, 1e-3) * 3, dt)
+		local fR, fL = ViewmodelMath.fingers(VM, { carry = carry, actions = w, point = point } :: any)
+		if forcedPose then
+			fR, fL = H.POSES[forcedPose], H.POSES[forcedPose]
+		end
 		local parts: { BasePart } = {}
 		local cfs: { CFrame } = {}
-		for i, p in rig.R.parts do
-			table.insert(parts, p)
-			table.insert(cfs, rCf * rig.R.offsets[i])
+		local function place(hand: Hand, handCf: CFrame, key: string, target: { [string]: { number } })
+			for i, p in hand.parts do
+				table.insert(parts, p)
+				table.insert(cfs, handCf * hand.offsets[i])
+			end
+			if #hand.fingers == 0 then
+				return
+			end
+			local sp = springs[key]
+			local angles: { [string]: { number } } = {}
+			for joint, t in target do
+				local st = sp[joint]
+				if not st then
+					st = { t[1], 0, t[2], 0 }
+					sp[joint] = st
+				end
+				st[1], st[2] = FpMath.spring(st[1], st[2], t[1], dt, H.FREQ, H.DAMPING)
+				st[3], st[4] = FpMath.spring(st[3], st[4], t[2], dt, H.FREQ, H.DAMPING)
+				angles[joint] = { st[1], st[3] }
+			end
+			local frames = Viewmodel.fingerFrames(hand, angles)
+			for i, f in hand.fingers do
+				for j, p in f.parts do
+					table.insert(parts, p)
+					table.insert(cfs, handCf * frames[i] * f.rests[j])
+				end
+			end
 		end
-		for i, p in rig.L.parts do
-			table.insert(parts, p)
-			table.insert(cfs, lCf * rig.L.offsets[i])
-		end
+		place(rig.R, rCf, "R", fR)
+		place(rig.L, lCf, "L", fL)
 		if loot then
 			-- between the hands: the carry pose's loot point, moved with the hands' midpoint
 			local C = VM.CARRY
@@ -716,7 +894,22 @@ function Viewmodel.new(state: any, deps: any): any
 		for _ in actions do
 			n += 1
 		end
-		return { shown = shown, kit = rig.kit, carry = carry, actions = n, holding = heldCopy ~= nil }
+		local fingers = #rig.R.fingers + #rig.L.fingers
+		local curl = springs.R.Fingers1
+		return {
+			shown = shown,
+			kit = rig.kit,
+			carry = carry,
+			actions = n,
+			holding = heldCopy ~= nil,
+			fingers = fingers,
+			curl = if curl then curl[1] else nil, -- the right finger block's current curl (degrees)
+		}
+	end
+
+	-- Tests and renders: hold every finger at one pose of Config.FirstPerson.VIEWMODEL.HANDS.POSES (nil = live).
+	function vm.forcePose(name: string?)
+		forcedPose = if name and VM.HANDS.POSES[name] then name else nil
 	end
 
 	function vm.rig(): Rig

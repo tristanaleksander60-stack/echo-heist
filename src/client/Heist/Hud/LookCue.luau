@@ -74,12 +74,21 @@ function LookCue.build(ctx: any): any
 		ZIndex = 5,
 	})
 
+	-- your first-person right hand points along while the cue shows (Heist/Viewmodel, state.fpPointing)
+	local function pointing(on: boolean)
+		local st = ctx.state
+		if st and st.fpPointing ~= on then
+			st.fpPointing = on
+		end
+	end
+
 	local shownText = ""
 	-- `target` (a world position) and its word; nil hides the cue. Call every frame while it applies.
 	function cue.set(target: Vector3?, text: string?, now: number)
 		local cam = workspace.CurrentCamera
 		if not (target and cam) then
 			layer.Visible = false
+			pointing(false)
 			return
 		end
 		local vp = cam.ViewportSize
@@ -89,9 +98,11 @@ function LookCue.build(ctx: any): any
 			FpMath.edgeCue({ rel.X, rel.Y, rel.Z }, tanV, vp.X / math.max(vp.Y, 1), O.LOOK_CUE_INSET, O.LOOK_CUE_MARGIN)
 		if not (u and v and angle) then
 			layer.Visible = false
+			pointing(false)
 			return
 		end
 		layer.Visible = true
+		pointing(true)
 		-- The finger taps toward the target (held still under reduced motion).
 		local tap = if Ui.reducedMotion() then 0 else (0.5 - 0.5 * math.cos(now * 2 * math.pi / O.POINTER_PERIOD))
 		local r = math.rad(angle)
@@ -111,6 +122,7 @@ function LookCue.build(ctx: any): any
 
 	function cue.hide()
 		layer.Visible = false
+		pointing(false)
 	end
 
 	return cue
