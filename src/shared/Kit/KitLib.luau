@@ -94,6 +94,32 @@ function KitLib.groups(parts: { [string]: PartSpec }): ({ [string]: { string } }
 	return groups, order
 end
 
+-- The boot phases over `order` (KitLib.groups): the priority groups (a name starting with one of `prefixes`: the
+-- Rookie, every first spawn waits for it), then the intro's groups (`introGroups`, exact names, not already in the
+-- first phase), then the rest. Each list keeps `order`'s order; a group is in exactly one list.
+function KitLib.phases(
+	order: { string },
+	prefixes: { string }?,
+	introGroups: { string }?
+): ({ string }, { string }, { string })
+	local intro: { [string]: boolean } = {}
+	for _, name in introGroups or {} do
+		intro[name] = true
+	end
+	local first, second, rest = {}, {}, {}
+	for _, model in order do
+		local isFirst = false
+		for _, prefix in prefixes or {} do
+			if string.sub(model, 1, #prefix) == prefix then
+				isFirst = true
+				break
+			end
+		end
+		table.insert(if isFirst then first elseif intro[model] then second else rest, model)
+	end
+	return first, second, rest
+end
+
 -- Name map of kit pieces among `items` (any instance-like values with .Name and :IsA). Only
 -- MeshParts count: an uploaded group nests Model > Model > MeshPart and many MeshParts share
 -- their Model's name (CashBag in CashBag), so a recursive FindFirstChild(name, true) can return

@@ -139,6 +139,7 @@ end
 local PRELOADS: { [string]: string } = {
 	["src/first/Loading.client.luau"] = "FONT_WAIT",
 	["src/client/Heist/Loading.luau"] = "PRELOAD_MAX_SECONDS",
+	["src/client/Heist/Cinematic.luau"] = "KIT_PRELOAD_SECONDS", -- the intro kit's textures (waitForKit)
 	["src/client/Heist/Aurora.luau"] = "async (task.spawn), nothing waits on it",
 	["src/client/Audio/AudioDirector.luau"] = "async (task.spawn), nothing waits on it",
 }

@@ -2854,5 +2854,195 @@ check(
 		.. ")"
 )
 
+-- Q. Intro polish (owner on v125: "PICK A VAN gets in the way in the intro"; "the characters are just blocks").
+-- (1) No stand-ins with the kit: with EH_IntroKit and CharacterKit as the server publishes them, Cinematic.kitStatus
+-- is ready and the whole intro, stepped through every shot (and a SKIP), never falls back to a Part stand-in:
+-- Hoardsworth is the kit's MeshParts with the atlas texture, the Rookie and every clone are the CharacterKit
+-- template's MeshParts, and every hero prop (tower, vacuum, globe, lever, van, houses, presents, letter) is a kit
+-- mesh. (2) The HUD hides during the intro and comes back after: on a stand-in PlayerGui and world, the HUD, PICK A
+-- VAN and a world billboard on top are hidden, the intro's own gui and the title card are not, a layer added or turned
+-- on again meanwhile is hidden on the next frame, the CoreGui player list / chat / backpack go off; after the end
+-- every layer is back as it was (one that was off stays off) and so is the CoreGui.
+local okPolish, polishErr = pcall(function()
+	local Cinematic = require(clientHeist:WaitForChild("Cinematic"))
+	local IntroKit = require(heistServer:WaitForChild("IntroKit"))
+	local Config = require(shared:WaitForChild("Config")) :: any
+	local I = Config.Intro
+	if IntroKit.folder() == nil then
+		IntroKit.publishNow(KitService)
+	end
+	if ReplicatedStorage:FindFirstChild(I.CHARACTER_KIT) == nil then
+		require(heistServer:WaitForChild("Rookie")).publishNow(KitService)
+	end
+	local ready, missing = Cinematic.kitStatus()
+	assert(ready, "the intro kit is complete: missing " .. table.concat(missing, ", "))
+	assert(Cinematic.waitForKit(1), "waitForKit returns at once with the kit here")
+	local introFolder = ReplicatedStorage:FindFirstChild(I.KIT_FOLDER)
+	assert(introFolder and introFolder.Parent == ReplicatedStorage, "EH_IntroKit in ReplicatedStorage (not streamed)")
+
+	local holder = Instance.new("Folder")
+	holder.Name = "IntroPolishTest"
+	holder.Parent = scratch
+	local cam = Instance.new("Camera")
+	cam.CameraType = Enum.CameraType.Custom
+	cam.Parent = holder
+
+	-- a stand-in PlayerGui, world and CoreGui
+	local pg = Instance.new("Folder")
+	pg.Name = "FakePlayerGui"
+	pg.Parent = holder
+	local function screen(name: string, enabled: boolean): ScreenGui
+		local g = Instance.new("ScreenGui")
+		g.Name = name
+		g.Enabled = enabled
+		g.Parent = pg
+		return g
+	end
+	local hud = screen("HeistHUD", true)
+	local fx = screen("HeistFX", true)
+	local off = screen("SomethingOff", false)
+	local loadingCard = screen("EH_Loading", true)
+	local pick = Instance.new("BillboardGui")
+	pick.Name = "EH_PickAVan"
+	pick.AlwaysOnTop = true
+	pick.Parent = pg
+	local worldF = Instance.new("Folder")
+	worldF.Name = "FakeWorld"
+	worldF.Parent = holder
+	local anchor = Instance.new("Part")
+	anchor.Anchored = true
+	anchor.Parent = worldF
+	local onTop = Instance.new("BillboardGui")
+	onTop.AlwaysOnTop = true
+	onTop.Parent = anchor
+	local plainBoard = Instance.new("BillboardGui")
+	plainBoard.AlwaysOnTop = false
+	plainBoard.Parent = anchor
+	local coreState: { [string]: boolean } = { PlayerList = true, Chat = true, Backpack = true, EmotesMenu = false }
+	local fakeCore = {
+		get = function(name: string): boolean?
+			return coreState[name]
+		end,
+		set = function(name: string, on: boolean)
+			coreState[name] = on
+		end,
+	}
+
+	local cine = Cinematic.new({
+		parent = holder,
+		gui = pg,
+		camera = cam,
+		tier = 1,
+		reduced = function()
+			return false
+		end,
+		hud = { root = pg, world = worldF, core = fakeCore },
+	})
+	local introGui = cine.gui()
+	assert(introGui.Parent == pg and introGui.Enabled, "the intro's own gui shows")
+	assert(not hud.Enabled and not fx.Enabled, "the HUD is hidden during the intro")
+	assert(not pick.Enabled, "PICK A VAN is hidden during the intro")
+	assert(not onTop.Enabled, "a world billboard drawn on top is hidden")
+	assert(plainBoard.Enabled, "a world billboard not on top is left alone")
+	assert(loadingCard.Enabled, "the loading card is not touched")
+	assert(
+		not coreState.PlayerList and not coreState.Chat and not coreState.Backpack,
+		"CoreGui player list, chat and backpack off"
+	)
+	-- the game adds and re-enables layers meanwhile (the hideout's per-frame hint, a toast)
+	local late = screen("LateToast", true)
+	local title = screen("EH_Title", true) -- the title card at the intro's end
+	hud.Enabled = true
+	coreState.Chat = true
+	cine.step(1 / 30)
+	assert(not late.Enabled, "a layer added during the intro is hidden")
+	assert(title.Enabled, "the title card that takes over is not hidden")
+	assert(not hud.Enabled, "the HUD turned on again is hidden on the next frame")
+	assert(not coreState.Chat, "chat turned on again is hidden on the next frame")
+	assert(not off.Enabled, "an already hidden layer stays hidden")
+
+	-- every shot (no stand-in anywhere), then SKIP's end state
+	local dt = 1 / 20
+	local textured, hoardParts = 0, 0
+	while not cine.isDone() do
+		cine.step(dt)
+		local h = cine.stage():FindFirstChild("Hoardsworth")
+		if h and hoardParts == 0 then -- Hoardsworth on the stage: his kit meshes with the palette atlas texture
+			for _, d in h:GetDescendants() do
+				if d:IsA("BasePart") and string.sub(d.Name, 1, 12) == "Hoardsworth_" then
+					hoardParts += 1
+					if d:IsA("MeshPart") and d.TextureID ~= "" then
+						textured += 1
+					end
+				end
+			end
+		end
+	end
+	cine.skip()
+	assert(hoardParts > 0, "Hoardsworth came on stage")
+	assert(
+		textured >= hoardParts - 3,
+		string.format("Hoardsworth is textured kit meshes (%d/%d)", textured, hoardParts)
+	)
+	local used = cine.standIns()
+	assert(#used == 0, "no stand-ins with the kit: " .. table.concat(used, ", "))
+	assert(cine.hoardKind() == "mesh", "Hoardsworth on his kit meshes (" .. cine.hoardKind() .. ")")
+	assert(cine.rookieKind() == "characterKit", "the Rookie is the CharacterKit template (" .. cine.rookieKind() .. ")")
+	local stage = cine.stage()
+	for _, d in stage:GetDescendants() do
+		assert(not string.find(d.Name, "StandIn", 1, true), "no stand-in part: " .. d:GetFullName())
+	end
+	-- characters: every body part a kit MeshPart (the Rookie's HumanoidRootPart is an invisible box)
+	local garage = stage:FindFirstChild("Garage", true) or stage
+	local rookieModel = garage:FindFirstChild("Rookie", true)
+	assert(rookieModel and rookieModel:IsA("Model"), "the Rookie on the stage")
+	local function meshBody(m: Instance, what: string)
+		local meshes, boxes = 0, {}
+		for _, d in m:GetDescendants() do
+			if d:IsA("MeshPart") then
+				meshes += 1
+			elseif d:IsA("BasePart") and d.Name ~= "HumanoidRootPart" and d.Transparency < 1 then
+				table.insert(boxes, d.Name)
+			end
+		end
+		assert(meshes >= 6, what .. " is kit meshes (" .. meshes .. ")")
+		assert(#boxes == 0, what .. " has no visible block parts: " .. table.concat(boxes, ", "))
+	end
+	meshBody(rookieModel, "the Rookie")
+	local crew = stage:FindFirstChild("Crew", true)
+	local clones = 0
+	for _, c in (if crew then crew:GetChildren() else {}) do
+		if c:IsA("Model") and string.sub(c.Name, 1, 5) == "Clone" then
+			clones += 1
+			meshBody(c, c.Name)
+		end
+	end
+	assert(clones >= 1, "the clones are on the stage (" .. clones .. ")")
+	-- hero props: kit models on the stage
+	for _, name in { "Intro_Tower", "Intro_Vacuum", "Intro_SnowGlobe", "Intro_Lever", "Van", "Intro_House_A" } do
+		local m = stage:FindFirstChild(name, true)
+		assert(m and m:FindFirstChildWhichIsA("MeshPart", true), name .. " is the kit mesh")
+	end
+
+	cine.destroy()
+	assert(hud.Enabled and fx.Enabled and late.Enabled, "the HUD is back after the intro")
+	assert(pick.Enabled and onTop.Enabled, "PICK A VAN and the world billboard are back")
+	assert(not off.Enabled, "a layer that was off before stays off")
+	assert(coreState.PlayerList and coreState.Chat and coreState.Backpack, "CoreGui back on")
+	assert(coreState.EmotesMenu == false, "a CoreGui piece that was off stays off")
+	assert(cam.CameraType == Enum.CameraType.Custom, "camera restored")
+	holder:Destroy()
+	return string.format(
+		"0 stand-ins, %d clones on kit meshes, Hoardsworth %d/%d textured meshes",
+		clones,
+		textured,
+		hoardParts
+	)
+end)
+check(
+	okPolish,
+	"intro polish: no stand-ins with the kit, HUD hidden during the intro and restored (" .. tostring(polishErr) .. ")"
+)
+
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))

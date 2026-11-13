@@ -173,11 +173,15 @@ function Loading.boot(doors: any, reduced: () -> boolean, camera: any?, tier: ((
 		-- cards above them showed: owner capture 2026-11-13). The title at the intro's end covers them again.
 		doors.clear()
 		intro = true -- reserved while the kit arrives (the card stays up meanwhile, at most KIT_WAIT_SECONDS)
+		setAttr(A.HOLD, true) -- the card holds (its reel turning) while the intro's meshes and textures arrive
 		task.spawn(function()
 			-- Every step is guarded: an error here used to leave `intro` reserved for good (no Ready, the card on
 			-- "Finding your van" until its watchdog, then closed doors that never opened).
 			local ok, res = pcall(function()
-				Cinematic.waitForKit()
+				-- the real meshes or no intro: never a story told with grey blocks (owner on v125)
+				if not Cinematic.waitForKit() then
+					return "nokit"
+				end
 				return Cinematic.play({
 					gui = pg,
 					director = camera,
@@ -195,6 +199,10 @@ function Loading.boot(doors: any, reduced: () -> boolean, camera: any?, tier: ((
 			end)
 			if not ok then
 				introFailed(tostring(res))
+				return
+			end
+			if res == "nokit" then -- the kit did not arrive in KIT_WAIT_SECONDS: the title card, not blocks
+				introFailed("the intro kit did not arrive")
 				return
 			end
 			if res == nil then -- could not play (another one running): straight to the title

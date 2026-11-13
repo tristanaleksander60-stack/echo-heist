@@ -204,7 +204,8 @@ return function(test)
 			Assert.le(Config.Boot.JOIN_TO_CONTROL_SECONDS, P.CONTROL_LIMIT_SECONDS, "the budget is the 10 s rule")
 			Assert.eq(Config.Intro.SERVER_HOLD_SECONDS, nil, "no server hold: the intro plays over the hideout")
 			-- a new account: the intro's kit wait is the only extra time before its first frame
-			Assert.le(server + Config.Intro.KIT_WAIT_SECONDS, P.CONTROL_LIMIT_SECONDS, "the intro starts within 10 s")
+			local kitWait = Config.Intro.KIT_WAIT_SECONDS + Config.Intro.KIT_PRELOAD_SECONDS
+			Assert.le(server + kitWait, P.CONTROL_LIMIT_SECONDS, "the intro starts within 10 s")
 			-- the card's held watchdog is a safety net, not a wait anyone should meet
 			Assert.le(P.LOADING.HOLD_MAX_SECONDS, 15, "a stuck boot shows the game within 15 s")
 		end

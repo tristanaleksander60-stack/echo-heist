@@ -35,10 +35,19 @@
 --                                      (Config.Intro.START_WATCHDOG_SECONDS / STALL_SECONDS) it ends at once
 --                                      ("stalled") so the caller shows the title, never a frozen frame.
 --   Cinematic.isPlaying() -> boolean
+--   Cinematic.kitStatus() -> (ready, missing)   every intro group (Config.Kit.INTRO_GROUPS) in EH_IntroKit and the
+--                                      Rookie in CharacterKit
+--   Cinematic.waitForKit(timeout?) -> boolean   waits for kitStatus (Config.Intro.KIT_WAIT_SECONDS), then preloads
+--                                      their textures (KIT_PRELOAD_SECONDS); false: do not play (the title instead)
+--     cine.standIns() -> { string }    every stand-in the stage fell back to (empty with the kit: client_engine Q)
+--   While a cinematic exists every other HUD layer and the CoreGui player list / chat / backpack are hidden
+--   (Heist/HudHide, Shared/Heist/IntroHud) and restored on destroy.
 -- opts: { parent: Instance? (workspace), gui: Instance? (PlayerGui), camera: Camera?, director: any? (CameraDirector),
 --         reduced: (() -> boolean)?, tier: number?, onEnd: ((how: string) -> ())? ("finished" | "skipped" |
---         "stalled"), bind: ((step: (dt: number) -> ()) -> () -> ())? (play only: the frame driver, returns unbind) }
+--         "stalled"), bind: ((step: (dt: number) -> ()) -> () -> ())? (play only: the frame driver, returns unbind),
+--         hud: false | { root: Instance?, world: Instance?, core: any? }? (Heist/HudHide.begin's opts; false: none) }
 
+local ContentProvider = game:GetService("ContentProvider")
 local GuiService = game:GetService("GuiService")
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
@@ -58,6 +67,7 @@ local Strings = require(HeistShared:WaitForChild("Strings"))
 
 local Aurora = require(script.Parent:WaitForChild("Aurora"))
 local FlashLimit = require(script.Parent:WaitForChild("FlashLimit"))
+local HudHide = require(script.Parent:WaitForChild("HudHide"))
 local Particles = require(script.Parent:WaitForChild("Particles"))
 local PlayerHalo = require(script.Parent:WaitForChild("PlayerHalo"))
 local Settings = require(script.Parent:WaitForChild("Settings"))
@@ -434,6 +444,11 @@ function Cinematic.new(opts: any?): any
 
 	local stage = Instance.new("Model")
 	stage.Name = "EH_IntroStage"
+	-- every stand-in the stage falls back to (none with the kit: the intro never plays on blocks, client_engine Q)
+	local standIns: { string } = {}
+	local function usedStandIn(what: string)
+		table.insert(standIns, what)
+	end
 	local function at(p: { number }, yawDeg: number?): CFrame
 		return stageCF * CFrame.new(p[1], p[2], p[3]) * CFrame.Angles(0, rad(yawDeg or 0), 0)
 	end
@@ -557,6 +572,7 @@ function Cinematic.new(opts: any?): any
 					end
 				end
 			else -- stand-in: walls, roof, lit panes
+				usedStandIn(name)
 				local w = if h[4] == 1 then 12 else 15
 				boxLH(
 					f,
@@ -604,6 +620,7 @@ function Cinematic.new(opts: any?): any
 				m:PivotTo(at({ l[1], 0, l[2] }))
 				m.Parent = f
 			else
+				usedStandIn("StreetLamp")
 				part(f, "LampPost", Vector3.new(0.6, 11, 0.6), at({ l[1], 5.5, l[2] }), Palette.steelLo)
 				part(f, "LampBulb", Vector3.new(1, 1, 1), at({ l[1], 10.6, l[2] }), WARM, Enum.Material.Neon)
 			end
@@ -613,6 +630,8 @@ function Cinematic.new(opts: any?): any
 			tree:PivotTo(at(ST.tree))
 			tree:ScaleTo(2.6)
 			tree.Parent = f
+		else
+			usedStandIn("Xmas_Tree") -- none drawn: the town has no tree
 		end
 		-- Hoardsworth Tower: the kit's art-deco landmark (setbacks, gold crown, lit windows, the giant H), turned to
 		-- face the town; the Part stand-in (burgundy tiers, gold cornices, lit windows) only without the kit
@@ -632,6 +651,7 @@ function Cinematic.new(opts: any?): any
 			end
 			tower.Parent = f
 		else
+			usedStandIn("Intro_Tower")
 			towerStandIn(f)
 		end
 		-- the H sign's floodlight (warm gold; it stays on when the town goes dark): from tier 2 down only
@@ -680,6 +700,7 @@ function Cinematic.new(opts: any?): any
 				pilePivot = p:GetPivot()
 			end
 		else
+			usedStandIn("Intro_SnowGlobe")
 			local glass = part(f, "GlobeGlass", Vector3.new(32, 32, 32), at(gc), Palette.steelHi, Enum.Material.Glass)
 			glass.Shape = Enum.PartType.Ball
 			glass.Transparency = 0.6
@@ -708,6 +729,7 @@ function Cinematic.new(opts: any?): any
 				vacuumLights.Color = OFF
 			end
 		else
+			usedStandIn("Intro_Vacuum")
 			local k = ST.vacuum.scale
 			part(
 				f,
@@ -826,6 +848,7 @@ function Cinematic.new(opts: any?): any
 			lever.Parent = f
 			leverHandle = partsByName(lever).Intro_Lever_Handle
 		else
+			usedStandIn("Intro_Lever")
 			part(f, "LeverStandIn", Vector3.new(1.8, 2.8, 1.2), lcf * CFrame.new(0, 1.4, 0), Color3.fromHex("#8C2F4B"))
 			local h = part(f, "Handle", Vector3.new(0.2, 2.2, 0.2), lcf * CFrame.new(0, 3.95, 0), Palette.steelHi)
 			h.PivotOffset = CFrame.new(0, -1.1, 0)
@@ -917,6 +940,7 @@ function Cinematic.new(opts: any?): any
 			mp.Size *= 2.2
 			p = mp
 		else
+			usedStandIn(name)
 			local colors = { Color3.fromHex("#8C2F4B"), Color3.fromHex("#2FBF71"), Color3.fromHex("#C0C3D5") }
 			p = part(stage, "Present", Vector3.new(5, 5, 5), stageCF, colors[(k - 1) % 3 + 1])
 		end
@@ -1096,6 +1120,7 @@ function Cinematic.new(opts: any?): any
 			end
 			van.Parent = f
 		else
+			usedStandIn("Van")
 			part(f, "VanStandIn", Vector3.new(6.8, 7.6, 14.9), vcf * CFrame.new(0, 3.9, 0), Color3.fromHex("#8C6448"))
 		end
 		local anchor = part(f, "LightAnchor", Vector3.new(1, 1, 1), stageCF, OFF)
@@ -1315,6 +1340,7 @@ function Cinematic.new(opts: any?): any
 			rookieModel = m
 			setRookieFace(m, "idle")
 		else
+			usedStandIn("Rookie")
 			rookie = buildStandIn(f, "RookieStandIn", nil)
 		end
 		-- The clones: copies of the Rookie drawn the way EchoView draws your clones (PLAN_STEAM_PLUS §4.4 A2): the
@@ -1347,6 +1373,7 @@ function Cinematic.new(opts: any?): any
 				m.Parent = crew
 				setRookieFace(m, "idle")
 			else
+				usedStandIn("Clone" .. k)
 				rig = buildStandIn(crew, "Clone" .. k, hue)
 				m = (rig :: Rig).model
 			end
@@ -1446,6 +1473,7 @@ function Cinematic.new(opts: any?): any
 	end)
 	HudCommon.keyCap(skipBtn, "skipIntro") -- any key (Space shown) or B / Start
 	gui.Parent = o.gui or (Players.LocalPlayer and Players.LocalPlayer:FindFirstChildOfClass("PlayerGui")) or stage
+	local hudHide: any = nil -- Heist/HudHide, from the end of the build (below) until destroy
 
 	local function showWordmark()
 		if wordmark then
@@ -1539,6 +1567,9 @@ function Cinematic.new(opts: any?): any
 			if e.id == "hoardsworth" and not hoard then
 				local r, mono, ring, mouth = buildHoardsworth(stage)
 				hoard, monocle, ringPart, mouthParts = r, mono, ring, mouth
+				if r.kind ~= "mesh" then
+					usedStandIn("Hoardsworth")
+				end
 				laughShown = false
 				buildVillainLights()
 			elseif e.id == "presents" then
@@ -1557,6 +1588,7 @@ function Cinematic.new(opts: any?): any
 					p.Size *= IntroPlan.LETTER_SCALE
 					m:Destroy()
 				else
+					usedStandIn("Intro_Letter")
 					p = part(stage, "Letter", Vector3.new(2.4, 1.6, 0.1), stageCF, Palette.marbleHi)
 				end
 				letter = p
@@ -1848,6 +1880,9 @@ function Cinematic.new(opts: any?): any
 		Aurora.release(aurora) -- the session's aurora shows again
 		aurora.destroy()
 		Particles.setSteady("introSnow", nil)
+		if hudHide then
+			hudHide.restore() -- every HUD layer and CoreGui piece back as it was
+		end
 		if o.director then
 			o.director.resume("intro")
 		end
@@ -1880,6 +1915,9 @@ function Cinematic.new(opts: any?): any
 	function cine.step(dt: number)
 		if destroyed or st.done then
 			return
+		end
+		if hudHide then
+			hudHide.enforce() -- a layer the game turned on again meanwhile (PICK A VAN's hint, a toast) hides again
 		end
 		run(IntroPlan.advance(st, dt))
 		if not st.done then
@@ -1927,6 +1965,16 @@ function Cinematic.new(opts: any?): any
 		return if hoard then hoard.kind else "none"
 	end
 
+	-- Every stand-in the stage fell back to so far (kit group names, "Rookie", "CloneN", "Hoardsworth").
+	function cine.standIns(): { string }
+		return table.clone(standIns)
+	end
+
+	-- The HUD hider (Heist/HudHide) while the intro holds it (nil with opts.hud = false).
+	function cine.hud(): any
+		return hudHide
+	end
+
 	function cine.counts(): any
 		return { presents = #presents, windows = #windows, clones = #clones, letter = letter ~= nil }
 	end
@@ -1952,6 +2000,14 @@ function Cinematic.new(opts: any?): any
 	stage.Parent = o.parent or workspace
 	applyMood(IntroPlan.SHOTS[1].mood)
 	cine.skipButton = skipBtn
+	-- Only the intro's own captions, letterbox and SKIP show while it plays: the HUD, the lobby chips, PICK A VAN, the
+	-- touch controls, world billboards drawn on top and the CoreGui player list / chat / backpack hide until destroy.
+	-- Begun last, so a build error never leaves the HUD hidden.
+	if o.hud ~= false then
+		local hudOpts = if type(o.hud) == "table" then table.clone(o.hud) else {}
+		hudOpts.stage = stage
+		hudHide = HudHide.begin(hudOpts)
+	end
 	return cine
 end
 
@@ -1968,17 +2024,59 @@ for _, name in I.SKIP.KEYS do
 	end
 end
 
--- Waits up to Config.Intro.KIT_WAIT_SECONDS for the intro kit (the server publishes it once the art kit loads).
-function Cinematic.waitForKit(): boolean
-	local untilAt = os.clock() + I.KIT_WAIT_SECONDS
-	while os.clock() < untilAt do
-		local f = ReplicatedStorage:FindFirstChild(I.KIT_FOLDER)
-		if f then
-			return true
+-- Is the whole intro kit here: every intro group (Config.Kit.INTRO_GROUPS) in EH_IntroKit (the server's Heist/IntroKit)
+-- and the Rookie template in CharacterKit (server Heist/Rookie)? Both live in ReplicatedStorage: never streamed.
+-- Returns (ready, the missing names).
+function Cinematic.kitStatus(): (boolean, { string })
+	local missing = {}
+	local f = ReplicatedStorage:FindFirstChild(I.KIT_FOLDER)
+	for _, name in Config.Kit.INTRO_GROUPS do
+		local m = f and f:FindFirstChild(name)
+		if not (m and m:IsA("Model")) then
+			table.insert(missing, name)
 		end
-		task.wait(0.1)
 	end
-	return false
+	local ck = ReplicatedStorage:FindFirstChild(I.CHARACTER_KIT)
+	local rk = ck and ck:FindFirstChild(I.ROOKIE_TEMPLATE)
+	if not (rk and rk:IsA("Model")) then
+		table.insert(missing, I.CHARACTER_KIT .. "." .. I.ROOKIE_TEMPLATE)
+	end
+	return #missing == 0, missing
+end
+
+-- Waits up to `timeout` (Config.Intro.KIT_WAIT_SECONDS) for the whole intro kit (kitStatus), then fetches its meshes
+-- and textures for at most KIT_PRELOAD_SECONDS. False when the kit did not come: the caller shows the title card
+-- instead of an intro on block stand-ins (owner on v125).
+function Cinematic.waitForKit(timeout: number?): boolean
+	local untilAt = os.clock() + (timeout or I.KIT_WAIT_SECONDS)
+	local ready, missing = Cinematic.kitStatus()
+	while not ready and os.clock() < untilAt do
+		task.wait(0.1)
+		ready, missing = Cinematic.kitStatus()
+	end
+	if not ready then
+		warn("[Cinematic] the intro kit is missing " .. table.concat(missing, ", ") .. ": no intro")
+		return false
+	end
+	if RunService:IsClient() and I.KIT_PRELOAD_SECONDS > 0 then
+		local roots = {}
+		for _, name in { I.KIT_FOLDER, I.CHARACTER_KIT } do
+			local f = ReplicatedStorage:FindFirstChild(name)
+			if f then
+				table.insert(roots, f)
+			end
+		end
+		local done = false
+		task.spawn(function()
+			pcall(ContentProvider.PreloadAsync, ContentProvider, roots)
+			done = true
+		end)
+		local preloadUntil = os.clock() + I.KIT_PRELOAD_SECONDS
+		while not done and os.clock() < preloadUntil do
+			task.wait()
+		end
+	end
+	return true
 end
 
 function Cinematic.isPlaying(): boolean
