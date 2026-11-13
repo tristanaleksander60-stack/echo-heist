@@ -422,7 +422,7 @@ The game may show the RSVP prompt (`SocialService:PromptRsvpToEventAsync`, curre
 - [ ] Title with `[🎄] `, description §3 pasted, character count under the limit.
 - [ ] Danish title and description (§4) if the language is offered.
 - [ ] Genre Survival / Escape (or the decided one); questionnaire done (Mild).
-- [ ] Icon (Santa-hat version), Home pool **T5 + T3**, details page order (ICON_THUMBNAILS.md §6), alt text on every image.
+- [ ] Icon (the Christmas version, ICON_THUMBNAILS.md §3.1 "Christmas"), Home pool **T5 + T3**, details page order (ICON_THUMBNAILS.md §6), alt text on every image.
 - [ ] Private servers on at 0.
 - [ ] No handle, link, Discord name or QR code anywhere in the description, images or the game.
 - [ ] E1 drafted (private), ready to make public after 15:00.

@@ -613,7 +613,7 @@ def th2(W, Hh, samples, name, out_dir):
     cl_at = (0.0, 0.0, -33.5)
     by = level_gus(lv, doors, 6.0, -26.5, 41, pose="doubletake", torch_at=IS.rb(cl_at[0], 3.0, cl_at[2]))
     clone(cl_at, 300, "walk", hue=CYAN, face="smug")
-    hero = rookie((10.0, 0.0, -21.5), 75, "sneak", face="smug")
+    hero = rookie((4.6, 0.0, -22.3), 80, "sneak", face="smug")
     in_hand(hero, "CashBag", "Right", drop=0.75, yaw=10, scale=0.8, loc="CornerShop")
     LS.cut(lv["tower"], groups, cam_r, [])
     LS._apply_fade(cam_r)

@@ -392,7 +392,7 @@ Ad creatives are uploaded on **Mon Nov 30** (LAUNCH_CHECKLIST) for the Dec 3-6 P
 
 | Date | Home pool (personalisation) | Details page gallery (order) | Ads (creative set) |
 |---|---|---|---|
-| **Thu Dec 3** | **T5 + T3** | Video v1 (if approved) · T5 · T3 · 3 plain screenshots, no text: L1's first clone with the real "◀ YOU, 10 SEC AGO" label, Clone Party aisles with clones, the bank vault with 4 clones on plates | Plays test (Dec 3-6): **T1, T2, T3, T5**, plus **T4** only if it was shot with 4 test accounts by Nov 29 (§4.0). Engagement: T5 + T3 + T1 |
+| **Thu Dec 3** | **T5 + T3** | Video v1 (if approved) · T5 · T3 · 4 plain screenshots, no added text (revised 2026-11-13): first person in L1 with your clone walking out of the shop toward you (CAPTURE.md A6), Crew View over L2 (A8), the hideout with your van and the job board (G3), Clone Party at 8 OF ME (G2) | Plays test (Dec 3-6): **T1, T2, T3, T5**, plus **T4** only if it was shot with 4 test accounts by Nov 29 (§4.0). Engagement: T5 + T3 + T1 |
 | SwarmSeen ≥ 60 % by minute 10 confirmed | **+ T1** (3 active) | + T1 after T3 | — |
 | After the Dec 4-5 friend capture (if T4 wasn't shot by Nov 29) | unchanged | — | T4 joins the next ad round (a new Plays campaign or the Engagement set), never as a mid-test change |
 | Fri Dec 11 | unchanged (don't start a round on an update day) | + one Wrapping Room screenshot (the "new thing") | + Wrapping Room screenshot |
