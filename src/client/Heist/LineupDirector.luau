@@ -319,7 +319,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 	local function rigFor(e: any, hue: Color3, light: boolean?): any
 		local rig: any = nil
 		if light then
-			rig = Rigs.buildMannequin()
+			rig = Rigs.buildMannequin(true)
 			Rigs.tint(rig, hue)
 			return rig
 		end

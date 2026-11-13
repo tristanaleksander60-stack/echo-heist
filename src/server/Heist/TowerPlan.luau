@@ -18,7 +18,8 @@
 -- Every piece belongs to one cut-away group (the client Heist/CutAway hides groups between the camera and its subject:
 -- "ceiling", "roof", and the four faces "front" / "back" / "left" / "right" with their outward normals) and one layer
 -- ("base"; "detail": hidden from Config.Big.DETAIL_OFF_TIER, the back and side faces' trims and crowns and the
--- curtains; "fine": hidden from FINE_OFF_TIER, the coffered ceiling tiles (a flat slab inside them takes over), the
+-- curtains; "trim": hidden from TRIM_OFF_TIER, the street front's window trims; "order": hidden from ORDER_OFF_TIER, the
+-- Bank's giant order of columns; "fine": hidden from FINE_OFF_TIER, the coffered ceiling tiles (a flat slab inside them takes over), the
 -- fire escapes and rooftop props; "xmas": the dressing layer's light strings, hidden like "fine").
 -- Nothing here collides or is queried; the sim never sees it. The playable footprint is never touched: everything
 -- is at or above the wall tops, or outside the outer faces above the street front's 12-stud storey.
@@ -314,7 +315,8 @@ function TowerPlan.plan(level: any, specs: { [string]: any }?, opts: Options?, d
 				local pivot = modulePivot(f, s, 8, yb)
 				local lit = rnd() < G.litShare
 				local curtain = lit and rnd() < G.curtainShare
-				local trimLayer = if f.name == "front" then "base" else "detail"
+				-- the street front keeps its window trims until TRIM_OFF_TIER; the other faces' are detail
+				local trimLayer = if f.name == "front" then "trim" else "detail"
 				if kitFacade then
 					local it = item({ bodyPieces[1] }, pivot, { 1, 1, 1 }, f.name, "base", "facade")
 					it.color = body
@@ -481,7 +483,7 @@ function TowerPlan.plan(level: any, specs: { [string]: any }?, opts: Options?, d
 			for k = 0, nCol - 1 do
 				local x = cx - span / 2 + 2 + k * (span - 4) / (nCol - 1)
 				local pivot = KP.place(lo, hi, x, y0, z1 + 2, 0)
-				item({ "Column_2x12" }, pivot, { cs[1], hgt, cs[3] }, "front", "base", "column")
+				item({ "Column_2x12" }, pivot, { cs[1], hgt, cs[3] }, "front", "order", "column")
 			end
 		end
 		local ent = part(
@@ -540,12 +542,17 @@ function TowerPlan.plan(level: any, specs: { [string]: any }?, opts: Options?, d
 	return plan
 end
 
--- Whether a layer shows at a performance tier (client Heist/CutAway keeps to the same rule).
+-- Whether a layer shows at a performance tier (client Heist/CutAway keeps to the same rule, Shared/Heist/Budget
+-- .layerOffTier).
 function TowerPlan.layerOn(layer: string, tier: number, cfg: any): boolean
 	if layer == "detail" then
 		return tier < cfg.DETAIL_OFF_TIER
 	elseif layer == "fine" or layer == "xmas" then
 		return tier < cfg.FINE_OFF_TIER
+	elseif layer == "trim" then
+		return tier < cfg.TRIM_OFF_TIER
+	elseif layer == "order" then
+		return tier < cfg.ORDER_OFF_TIER
 	end
 	return true
 end

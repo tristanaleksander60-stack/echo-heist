@@ -3,7 +3,8 @@
 -- REWIND on the right edge (it ends your run; the remote stays Heist.EndRun) with its
 -- 1.5 s lock ring, the contextual Interact (GRAB) lower right, the hold-to-skip FAST
 -- pill, and the keyboard / gamepad bindings (R / ButtonY REWIND or the next run,
--- E / ButtonX Interact, Q / ButtonL1 Clone Deck, hold F / ButtonB fast-forward, M the MENU sheet).
+-- E / ButtonX Interact, Q / ButtonL1 Clone Deck between runs and, in a first-person run, hold Q / ButtonL1 for
+-- Crew View (Hud/CrewView has its touch button), hold F / ButtonB fast-forward, M the MENU sheet).
 -- First person: a left click with the cursor locked also interacts (with what you look at:
 -- Heist/LookTarget), and the Interact button is the touch fallback, labelled for the looked-at
 -- target (GRAB $100, OPEN).
@@ -155,6 +156,18 @@ function Controls.bind(ctx: any)
 		end
 		return Enum.ContextActionResult.Pass
 	end, false, Enum.KeyCode.M)
+	-- Crew View: held in a first-person run (CameraDirector ignores it anywhere else; between runs Q is the deck's).
+	ContextActionService:BindAction("HeistCrewView", function(_, inputState, input)
+		if actions.crewHold then
+			local who = if input.UserInputType == Enum.UserInputType.Keyboard then "key" else "pad"
+			if inputState == Enum.UserInputState.Begin then
+				actions.crewHold(who, gui.Enabled and state.phase == "Run")
+			elseif inputState == Enum.UserInputState.End or inputState == Enum.UserInputState.Cancel then
+				actions.crewHold(who, false)
+			end
+		end
+		return Enum.ContextActionResult.Pass
+	end, false, Enum.KeyCode.Q, Enum.KeyCode.ButtonL1)
 	ContextActionService:BindAction("HeistDeck", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin then
 			hud.toggleDeck()

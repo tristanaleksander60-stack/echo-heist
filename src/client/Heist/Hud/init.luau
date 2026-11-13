@@ -20,6 +20,7 @@
 --             finger pointer, failure counterplay and the first-time beats
 --   Run       run state, events and the per-frame update (and first person's reduced layout)
 --   Reticle   first person: the centre reticle and the look-to-interact prompt chip (on the fx layer)
+--   CrewView  first person: the hold-to-peek Crew View's touch CREW button, vignette, label and one-time hint
 --   Lobby     the hideout's minimal HUD: the reticle's prompt, the touch USE button, the drive's SKIP
 --   Wardrobe  the hideout's outfit picker (Data.Equip), opened at the wardrobe station
 --   Common    shared helpers
@@ -41,6 +42,7 @@ local Ui = require(script.Parent:WaitForChild("Ui"))
 local TypeSpecimen = require(script.Parent:WaitForChild("TypeSpecimen"))
 local BankFly = require(script:WaitForChild("BankFly"))
 local Controls = require(script:WaitForChild("Controls"))
+local CrewView = require(script:WaitForChild("CrewView"))
 local Deck = require(script:WaitForChild("Deck"))
 local Garage = require(script:WaitForChild("Garage"))
 local Hints = require(script:WaitForChild("Hints"))
@@ -156,6 +158,7 @@ function Hud.new(state: any, actions: Actions): any
 	ctx.settings = SettingsPanel.build(ctx)
 	BankFly.build(ctx)
 	Run.build(ctx)
+	ctx.crew = CrewView.build(ctx) -- after Reticle (the prompt chip) and Run
 	ctx.lobby = Lobby.build(ctx) -- after Run: it uses ctx.fpLayout
 	ctx.wardrobe = Wardrobe.build(ctx)
 	-- The hideout (Heist/Hideout): the lobby HUD, the station sheets.
@@ -177,6 +180,12 @@ function Hud.new(state: any, actions: Actions): any
 	hud.onRunEnd = function(p: any)
 		ctx.deck.noteRunEnd(p)
 		runEnd(p)
+	end
+	-- Crew View's one-time hint looks at each run's clones.
+	local runStart = hud.onRun
+	hud.onRun = function(m: any)
+		runStart(m)
+		ctx.crew.onRun(m)
 	end
 	-- The stuck tracker counts a run once its deck is in (Hud/Hints).
 	local deckOnDeck = hud.onDeck

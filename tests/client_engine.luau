@@ -1966,5 +1966,157 @@ local okHide, hideErr = pcall(function(): string
 end)
 check(okHide, "hideout: stations in reach and sight, van doors, the drive's stage (" .. tostring(hideErr) .. ")")
 
+-- M. Crew View (REVIEW_STEAM_PLUS gap 5; Shared/Heist/CrewView, Config.Heist.CAMERA.CREW): on the real kit L2 (BIG
+-- building, Christmas layer on), you standing on plate A and two clones at work (plate B, the door between) plus the
+-- objective: the crew shot frames you, both clones and the objective inside SHARE / SHARE_Y on 16:9 and a 19.5:9
+-- phone, from above the ceiling; the cut-away rule (CutMath on the built Overhead) leaves no roof, ceiling or storey
+-- between the shot and you or a clone; and Heist/CutAway itself, ticked by hand with a director that reports the crew
+-- shot, hides the ceiling over you, then shows it all again once the shot is gone and the camera is at your eyes
+-- (first person never cuts).
+local okCrew, crewErr = pcall(function(): string
+	local CrewViewM = require(shared:WaitForChild("Heist"):WaitForChild("CrewView"))
+	local CutAwayM = require(clientHeist:WaitForChild("CutAway"))
+	local CR = camCfg.CREW
+	local l2Index = Protocol.catalogIndex("cs2_two_doors") :: number
+	local l2 = HeistInstance.levelData(l2Index)
+	local origin2 = Vector3.new(-12000, 0, 3000)
+	local b2 = LevelBuilder.build(l2, origin2, scratch, { kit = KitService, dressing = true })
+	assert(b2 and b2.model, "L2 builds with the kit")
+	local overL2 = b2.model:FindFirstChild("Overhead")
+	assert(overL2, "L2 has its BIG Overhead")
+	local ceilY = overL2:GetAttribute("CeilY") :: number
+	local function centre(b: any, y: number): Vector3
+		return origin2 + Vector3.new((b.minX + b.maxX) / 2, y, (b.minZ + b.maxZ) / 2)
+	end
+	assert(#l2.plates >= 2, "L2 has two plates")
+	local floorY = l2.floorY or 0
+	local youRoot = centre(l2.plates[1].box, floorY + 3)
+	local clones = { centre(l2.plates[2].box, floorY + 3) }
+	if l2.doors and l2.doors[1] then
+		table.insert(clones, centre(l2.doors[1].box, floorY + 3))
+	end
+	local obj = CameraMath.objective(l2)
+	assert(obj, "L2 has an objective")
+	local objective = origin2 + Vector3.new(obj[1], obj[2], obj[3])
+	local you = youRoot + Vector3.new(0, CR.FOCUS_HEIGHT, 0)
+	local points = {}
+	for _, c in clones do
+		table.insert(points, { c.X, c.Y, c.Z })
+	end
+	table.insert(points, { objective.X, objective.Y, objective.Z })
+	local spawn = l2.spawns[1]
+	local yaw = math.deg(spawn.yaw)
+	local shotCf: CFrame? = nil
+	for name, aspect in { ["16:9"] = 16 / 9, ["19.5:9"] = 19.5 / 9 } do
+		local focus, d, framed = CrewViewM.frame({ you.X, you.Y, you.Z }, points, yaw, aspect, CR)
+		assert(framed == #points, string.format("%s: frames %d of %d points", name, framed, #points))
+		local pos, look = CrewViewM.orbit(focus, yaw, CR.PITCH, d)
+		for i, p in { { you.X, you.Y, you.Z }, table.unpack(points) } do
+			local nx, ny, depth = CrewViewM.project(pos, yaw, CR.PITCH, p, CR.FOV, aspect)
+			assert(
+				depth > 0 and math.abs(nx) <= CR.SHARE + 1e-6 and math.abs(ny) <= CR.SHARE_Y + 1e-6,
+				string.format("%s: point %d at (%.2f, %.2f) depth %.1f", name, i, nx, ny, depth)
+			)
+		end
+		assert(pos[2] > ceilY, name .. ": the shot is above the ceiling")
+		local camPos = Vector3.new(pos[1], pos[2], pos[3])
+		local lookPos = Vector3.new(look[1], look[2], look[3])
+		local targets = { you, youRoot - Vector3.new(0, 2.2, 0) }
+		for _, c in clones do
+			table.insert(targets, c)
+		end
+		local ok, by, hid = cutSees(b2.model, camPos, lookPos, youRoot, targets)
+		assert(ok, string.format("%s: the cut-away clears the shot (%s; hides %s)", name, by, hid))
+		if name == "16:9" then
+			shotCf = CFrame.lookAt(camPos, lookPos)
+		end
+	end
+	-- Heist/CutAway on the built level, ticked by hand: the crew shot opens the ceiling; your eyes close it again.
+	local eye = CFrame.new(youRoot + Vector3.new(0, 1.6, 0))
+	local current: CFrame? = shotCf
+	local stub = {
+		mode = function(): string
+			return "fp"
+		end,
+		presenting = function(): boolean
+			return false
+		end,
+		eye = function(): CFrame?
+			return eye
+		end,
+		crewShot = function(): CFrame?
+			return current
+		end,
+	}
+	local cam = workspace.CurrentCamera
+	if not cam then
+		local c = Instance.new("Camera")
+		c.Parent = workspace
+		local ws: any = workspace
+		ws.CurrentCamera = c
+		cam = c
+	end
+	(cam :: Camera).CFrame = eye
+	local cut = CutAwayM.new(stub)
+	cut.bind(b2.model)
+	for _ = 1, 20 do
+		cut.tick(1 / 30)
+	end
+	local open = cut.debugState()
+	assert(open.groups > 0, "CutAway binds the L2 Overhead")
+	assert(open.hidden > 0, "the crew shot opens the building")
+	-- the ceiling right over you is one of the hidden groups (a ray straight up from your head meets nothing shown)
+	local over: Instance = overL2
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Include
+	params.FilterDescendantsInstances = { over }
+	local saved = {}
+	for _, d in over:GetDescendants() do
+		if d:IsA("BasePart") then
+			saved[d] = d.CanQuery
+			d.CanQuery = true
+		end
+	end
+	local from = you
+	local blockedBy: string? = nil
+	local hitCeiling = false
+	for _ = 1, 30 do
+		local hit = workspace:Raycast(from, Vector3.new(0, 200, 0), params)
+		if not hit then
+			break
+		end
+		hitCeiling = true
+		if (hit.Instance :: BasePart).LocalTransparencyModifier < 0.99 then
+			blockedBy = hit.Instance:GetFullName()
+			break
+		end
+		from = hit.Position + Vector3.new(0, 0.05, 0)
+	end
+	for p, q in saved do
+		p.CanQuery = q
+	end
+	assert(hitCeiling, "there is a ceiling over plate A")
+	assert(blockedBy == nil, "the ceiling over you is open (" .. tostring(blockedBy) .. ")")
+	-- let go: the camera is back at your eyes, first person never cuts
+	current = nil
+	for _ = 1, 20 do
+		cut.tick(1 / 30)
+	end
+	local closed = cut.debugState()
+	assert(closed.hidden == 0, "back at your eyes everything shows (" .. closed.hidden .. " hidden)")
+	cut.clear()
+	b2.model:Destroy()
+	return string.format(
+		"%d clones + objective framed, %d of %d groups hidden from the shot, all back at your eyes",
+		#clones,
+		open.hidden,
+		open.groups
+	)
+end)
+check(
+	okCrew,
+	"Crew View on the kit L2: the shot frames you and the clones, the cut-away opens (" .. tostring(crewErr) .. ")"
+)
+
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))

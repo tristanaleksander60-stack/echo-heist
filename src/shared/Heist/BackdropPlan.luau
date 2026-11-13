@@ -232,6 +232,15 @@ function BackdropPlan.layerOn(layer: string, tier: number): boolean
 	return true
 end
 
+-- Whether a skyline ring ("near" | "far") draws at a tier: the far one goes from FAR_RING_OFF_TIER (phones), the near
+-- one from NEAR_RING_OFF_TIER (the lowest tier; the 4-8 storey town hides most of it from the street).
+function BackdropPlan.ringOn(name: string, tier: number): boolean
+	if name == "far" then
+		return tier < B.FAR_RING_OFF_TIER
+	end
+	return tier < B.NEAR_RING_OFF_TIER
+end
+
 -- Instances a pool costs on the client: its part, the SurfaceGui, the gradient image, two fallback discs + corners.
 BackdropPlan.POOL_INSTANCES = 7
 
@@ -274,7 +283,7 @@ function BackdropPlan.budget(plan: Plan, tier: number, kitTris: { [string]: numb
 	end
 	for _, r in plan.rings do
 		instances += 2 * #r.yaws
-		if r.name == "far" and tier >= B.FAR_RING_OFF_TIER then
+		if not BackdropPlan.ringOn(r.name, tier) then
 			continue
 		end
 		for _, piece in { r.piece, r.windows } do

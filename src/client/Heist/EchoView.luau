@@ -386,7 +386,7 @@ function EchoView.new(state: any): any
 		if entry.lodRig or entry.rig.kind ~= "avatar" then
 			return
 		end
-		local m = Rigs.buildMannequin()
+		local m = Rigs.buildMannequin(true)
 		m.model.Name = "Lod"
 		Rigs.setFade(m, 1)
 		if entry.hue then
@@ -1321,6 +1321,17 @@ function EchoView.new(state: any): any
 			end
 		end
 		return n
+	end
+
+	-- Where every visible clone is drawn (world space), appended to `out` (Crew View frames them; no allocation
+	-- beyond the caller's list).
+	function view.positions(out: { Vector3 }): { Vector3 }
+		for _, entry in order do
+			if entry.fade < 1 and entry.lastPos then
+				table.insert(out, entry.lastPos)
+			end
+		end
+		return out
 	end
 
 	-- Hides every clone at once (the Line-up figures replace them) without a new run.

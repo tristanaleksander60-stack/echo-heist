@@ -15,7 +15,8 @@
 -- fallback (if it has one) and is swapped in when the kit is Ready.
 -- Static decoration: every part is Anchored with CanCollide / CanQuery / CanTouch / CastShadow off (the lot fence
 -- alone collides, for your own character), so the sim, Poppercam and Gus's fan never see it. Tier-aware like
--- Heist/LightDirector (Telemetry.onTier): the far ring goes from Config.Backdrop.FAR_RING_OFF_TIER, props and the
+-- Heist/LightDirector (Telemetry.onTier): the far ring goes from Config.Backdrop.FAR_RING_OFF_TIER and the near one
+-- from NEAR_RING_OFF_TIER (BackdropPlan.ringOn), props and the
 -- Christmas pieces from TOWN.PROPS_OFF_TIER, the pools from TOWN.POOLS_OFF_TIER, the snow halves from SNOW.LOW_TIER
 -- and stays under the tier's snowAlive (Shared/Heist/Budget). The snowfield, the streets, every building and its
 -- windows stay at every tier: the frame is never black. Reduced motion: the snow falls slower and sparser.
@@ -92,7 +93,7 @@ function Backdrop.new(): any
 	local tierNow = 1
 	local reduced = false
 	local folder: Folder? = nil
-	local farParts: { BasePart } = {}
+	local ringParts: { { part: BasePart, ring: string } } = {}
 	local shown: { Shown } = {}
 	local pools: { SurfaceGui } = {}
 	local footprint: BackdropPlan.Rect? = nil -- world space
@@ -162,9 +163,8 @@ function Backdrop.new(): any
 	end
 
 	local function applyTier()
-		local farOn = tierNow < B.FAR_RING_OFF_TIER
-		for _, p in farParts do
-			p.Transparency = if farOn then 0 else 1
+		for _, r in ringParts do
+			r.part.Transparency = if BackdropPlan.ringOn(r.ring, tierNow) then 0 else 1
 		end
 		for _, s in shown do
 			local on = BackdropPlan.layerOn(s.layer, tierNow)
@@ -428,9 +428,7 @@ function Backdrop.new(): any
 						* CFrame.Angles(0, math.rad(yaw), 0)
 				)
 				p.Parent = parent
-				if ring.name == "far" then
-					table.insert(farParts, p)
-				end
+				table.insert(ringParts, { part = p, ring = ring.name })
 			end
 		end
 	end
@@ -453,7 +451,7 @@ function Backdrop.new(): any
 			folder:Destroy()
 			folder = nil
 		end
-		table.clear(farParts)
+		table.clear(ringParts)
 		table.clear(shown)
 		table.clear(pools)
 		table.clear(skins)

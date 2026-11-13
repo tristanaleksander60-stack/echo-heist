@@ -185,7 +185,9 @@ for _, spec in MANNEQUIN do
 	MANNEQUIN_BY_NAME[spec[1]] = spec
 end
 
-function Rigs.buildMannequin(): Rig
+-- `light`: the clone LOD's light rig (EchoView past the LOD distance, the Line-up's back rows from its tier): a block
+-- head instead of the ball (Config.Perf.CLONE_LOD.BLOCK_HEAD; a ball is ~400 triangles, the other parts 12 each).
+function Rigs.buildMannequin(light: boolean?): Rig
 	local model = Instance.new("Model")
 	model.Name = "Mannequin"
 	local limbs: { Limb } = {}
@@ -198,7 +200,9 @@ function Rigs.buildMannequin(): Rig
 		p.Size = size
 		quiet(p)
 		if name == "Head" then
-			p.Shape = Enum.PartType.Ball
+			if not (light and Config.Perf.CLONE_LOD.BLOCK_HEAD) then
+				p.Shape = Enum.PartType.Ball
+			end
 			head = p
 		end
 		if trim then

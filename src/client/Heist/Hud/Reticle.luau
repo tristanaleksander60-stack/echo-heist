@@ -160,6 +160,12 @@ function Reticle.build(ctx: any): any
 	local shownText, shownVerb, shownKey = "", "", ""
 	local onTarget = false
 
+	-- Is the prompt chip up (a target under the reticle)? Hud/CrewView's touch button steps aside for it on the
+	-- narrowest phones (HudLayout.crewYields).
+	function reticle.promptUp(): boolean
+		return onTarget
+	end
+
 	-- Shown in first person during a run; `prompt` nil = no target (the bare dot).
 	function reticle.set(shown: boolean, prompt: Prompt?)
 		if layer.Visible ~= shown then

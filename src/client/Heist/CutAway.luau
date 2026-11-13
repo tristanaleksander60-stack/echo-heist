@@ -6,13 +6,16 @@
 -- camera and its subject fade out locally (LocalTransparencyModifier), and the whole top of the building you stand in
 -- opens like a dollhouse once the camera rises above its ceiling. First person never hides them: while the camera is
 -- at your eyes everything is shown, so you always have a ceiling over you indoors and the storeys over the street.
+-- Crew View (CameraDirector.crewShot) is the exception: while it is held the cut is decided from the crew shot (the
+-- full overhead, not the camera half way up), so the ceilings open as the camera starts to rise.
 --
 -- What it binds: the "Overhead" models of the heist level (server Heist/Overhead) or of the garage (Heist/Lobby), each
 -- child Model a group with EH_CutKind / EH_CutMin / EH_CutMax (+ EH_CutNormal / EH_CutPlane for faces), and the town's
 -- tall buildings (Heist/Backdrop.addOccluders: occlusion rule only). Batched: one decision pass at CUT.HZ, then each
 -- group's parts are written only while its fade moves; no per-frame allocation (the subject buffer and the decision
--- table are reused). It also hides the "detail" layer from Config.Big.DETAIL_OFF_TIER and the "fine" / "xmas" layers
--- from FINE_OFF_TIER (Transparency 1,
+-- table are reused). It also hides the "detail" layer from Config.Big.DETAIL_OFF_TIER, the "fine" / "xmas" layers
+-- from FINE_OFF_TIER, the street front's "trim" from TRIM_OFF_TIER and the giant "order" from ORDER_OFF_TIER
+-- (Transparency 1,
 -- restored when the tier steps back up). Binds after the camera (RenderPriority.Camera + 10), so it sees the frame
 -- every camera writer produced this frame.
 
@@ -22,6 +25,7 @@ local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
+local Budget = require(Shared:WaitForChild("Heist"):WaitForChild("Budget"))
 local CutMath = require(Shared:WaitForChild("Heist"):WaitForChild("CutMath"))
 
 local CutAway = {}
@@ -70,7 +74,7 @@ local function groupMath(m: Instance): CutMath.Group?
 	}
 end
 
--- director: Heist/CameraDirector (mode(), eye(), presenting()); nil in tests.
+-- director: Heist/CameraDirector (mode(), eye(), presenting(), crewShot()); nil in tests.
 function CutAway.new(director: any?): any
 	local self = {}
 	local buildings: { Building } = {}
@@ -82,11 +86,10 @@ function CutAway.new(director: any?): any
 	local clock = 0
 	local player = Players.LocalPlayer
 
+	-- The Overhead's tier layers ("detail", "fine", "xmas", "trim", "order"; Shared/Heist/Budget.layerOffTier).
 	local function offTier(layer: any): number?
-		if layer == "detail" then
-			return BIG.DETAIL_OFF_TIER
-		elseif layer == "fine" or layer == "xmas" then
-			return BIG.FINE_OFF_TIER
+		if layer == "detail" or layer == "fine" or layer == "xmas" or layer == "trim" or layer == "order" then
+			return Budget.layerOffTier(layer)
 		end
 		return nil
 	end
@@ -270,14 +273,15 @@ function CutAway.new(director: any?): any
 	-- The subjects this frame (into `subj`): your feet and head, and where the camera's look ray meets the floor (the
 	-- diorama's focus, a shot's subject). Returns how many points, and whether the camera is at your eyes (first
 	-- person: nothing hides).
-	local function subjects(cam: Camera): (number, boolean)
+	local function subjects(view: CFrame): (number, boolean)
 		local presenting = director ~= nil and director.presenting()
-		local cp = cam.CFrame.Position
-		if director ~= nil and director.mode() == "fp" and not presenting then
+		local crew = director ~= nil and director.crewShot ~= nil and director.crewShot() ~= nil
+		local cp = view.Position
+		if director ~= nil and director.mode() == "fp" and not presenting and not crew then
 			return 0, true
 		end
 		local eye = director and director.eye()
-		if eye and (eye.Position - cp).Magnitude <= CUT.EYE_WITHIN then
+		if not crew and eye and (eye.Position - cp).Magnitude <= CUT.EYE_WITHIN then
 			return 0, true
 		end
 		local n = 0
@@ -291,7 +295,7 @@ function CutAway.new(director: any?): any
 		end
 		do
 			local floorY = if #buildings > 0 then buildings[1].floorY else 0
-			local lv = cam.CFrame.LookVector
+			local lv = view.LookVector
 			local x, y, z =
 				CutMath.lookPoint(cp.X, cp.Y, cp.Z, lv.X, lv.Y, lv.Z, floorY + CUT.LOOK_HEIGHT, CUT.LOOK_MAX)
 			if x and y and z then
@@ -306,15 +310,18 @@ function CutAway.new(director: any?): any
 		if #buildings == 0 then
 			return
 		end
+		-- Crew View decides from its full overhead shot; everything else from the camera itself.
 		local cam = workspace.CurrentCamera
-		if not cam then
+		local crewShot: CFrame? = if director ~= nil and director.crewShot ~= nil then director.crewShot() else nil
+		local view: CFrame? = crewShot or (cam and cam.CFrame)
+		if not view then
 			return
 		end
 		clock += dt
 		if clock >= 1 / CUT.HZ then
 			clock = 0
-			local n, eyes = subjects(cam)
-			local cp = cam.CFrame.Position
+			local n, eyes = subjects(view)
+			local cp = view.Position
 			for _, b in buildings do
 				if eyes or n == 0 then
 					for _, st in b.groups do
@@ -338,11 +345,18 @@ function CutAway.new(director: any?): any
 		end
 	end
 
-	RunService:BindToRenderStep(RENDER_NAME, Enum.RenderPriority.Camera.Value + 10, function(dt: number)
-		debug.profilebegin("EH.CutAway")
+	if RunService:IsClient() then
+		RunService:BindToRenderStep(RENDER_NAME, Enum.RenderPriority.Camera.Value + 10, function(dt: number)
+			debug.profilebegin("EH.CutAway")
+			step(dt)
+			debug.profileend()
+		end)
+	end
+
+	-- Tests (tests/client_engine.luau, a server with no render loop): one frame of the cut-away by hand.
+	function self.tick(dt: number)
 		step(dt)
-		debug.profileend()
-	end)
+	end
 
 	-- Tests and the debug chip: what is bound and what is hidden now.
 	function self.debugState(): any

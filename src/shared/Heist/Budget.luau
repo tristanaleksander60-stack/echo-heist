@@ -296,6 +296,38 @@ function Budget.scarfRigs(tier: number): number
 	return if clampTier(tier) >= S.OFF_TIER then 0 else S.MAX_RIGS
 end
 
+---------------------------------------------------------------------------
+-- Tier layers (EH_Layer on a level's parts): which tier each hides from. Heist/CutAway hides the BIG building's
+-- (Overhead) layers, Heist/LightDirector the interior and kit ones, tests/perf_engine.luau counts the view with the
+-- same rule.
+---------------------------------------------------------------------------
+
+-- The tier an EH_Layer hides from, or nil for a layer that never hides (or is not a tier layer at all).
+function Budget.layerOffTier(layer: any): number?
+	if layer == "detail" then
+		return Config.Big.DETAIL_OFF_TIER -- the BIG back and side faces' trims and crowns, the curtains
+	elseif layer == "fine" or layer == "xmas" then
+		return Config.Big.FINE_OFF_TIER -- coffered tiles, fire escapes, rooftop props, the light strings
+	elseif layer == "trim" then
+		return Config.Big.TRIM_OFF_TIER -- the BIG street front's window trims
+	elseif layer == "order" then
+		return Config.Big.ORDER_OFF_TIER -- the Bank's giant order of columns
+	elseif layer == "decorHeavy" then
+		return Config.Interior.HEAVY_OFF_TIER -- the heaviest interior props (the Bank's deposit walls, brass, palms)
+	elseif layer == "decor" then
+		return Config.Interior.DECOR_OFF_TIER -- every other interior prop, the frieze
+	elseif layer == "festive" then
+		return Config.Interior.FESTIVE_OFF_TIER -- the base kit's Christmas pieces (garlands, front lights)
+	end
+	return nil
+end
+
+-- Whether a part on EH_Layer `layer` shows at `tier`.
+function Budget.layerOn(layer: any, tier: number): boolean
+	local off = Budget.layerOffTier(layer)
+	return off == nil or clampTier(tier) < off
+end
+
 -- Measured view counts against a tier: a list of "what: measured > budget" lines (empty = within budget).
 -- `m` holds any of: drawCalls, tris, lights, shadowed, liveParticles, highlights.
 function Budget.over(tier: number, m: { [string]: number }): { string }

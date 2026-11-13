@@ -255,4 +255,38 @@ return function(test: (string, () -> ()) -> ())
 			Assert.eq(g.topY, a.topY, level.id .. ": same height")
 		end
 	end)
+
+	test("phone budget: the street front's window trims go at tier 3, the giant order at tier 4", function()
+		for _, level in levels() do
+			local plan = planFor(level, true)
+			if not plan then
+				continue
+			end
+			local trims = 0
+			for _, it in plan.items do
+				if it.role == "trim" then
+					Assert.eq(it.layer, if it.group == "front" then "trim" else "detail", level.id .. " " .. it.group)
+					trims += if it.group == "front" then 1 else 0
+				end
+			end
+			local columns = 0
+			for _, it in plan.items do
+				if it.role == "column" then
+					Assert.eq(it.layer, "order", level.id .. ": the giant order")
+					columns += 1
+				end
+			end
+			local _, t2 = TowerPlan.budget(plan, 2, kitTris, BIG)
+			local _, t3 = TowerPlan.budget(plan, 3, kitTris, BIG)
+			local _, t4 = TowerPlan.budget(plan, 4, kitTris, BIG)
+			if trims > 0 then
+				Assert.truthy(t3 < t2, level.id .. ": tier 3 sheds the front's trims")
+			end
+			if columns > 0 then
+				Assert.truthy(t4 < t3, level.id .. ": tier 4 sheds the giant order")
+			end
+			Assert.truthy(TowerPlan.layerOn("trim", 2, BIG) and not TowerPlan.layerOn("trim", 3, BIG), "trim to tier 2")
+			Assert.truthy(TowerPlan.layerOn("order", 3, BIG) and not TowerPlan.layerOn("order", 4, BIG), "order to 3")
+		end
+	end)
 end

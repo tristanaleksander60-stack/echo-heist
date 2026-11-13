@@ -458,6 +458,32 @@ Config.Heist.CAMERA = {
 		INVISIBLE = 0.95, -- parts at least this transparent are colliders, never faded
 		POINTS = { 2.4, 0, -1.8 }, -- studs above the root: head, root, feet (three cast points: no flicker)
 	},
+	-- Crew View (docs/audit/REVIEW_STEAM_PLUS.md gap 5; pure maths in Shared/Heist/CrewView): in first person,
+	-- hold Q / LB / the touch CREW button and the camera lifts from your eyes to an overhead diorama shot centred
+	-- on you that frames your clones and the objective (Heist/CutAway opens the ceilings); release drops back.
+	-- You keep moving (the shot keeps your look yaw, so the stick and WASD mean the same). Only in a run, never
+	-- during a presentation moment (rewind, 8 OF ME, busted, the Line-up, the level intro, the run-start beat).
+	CREW = {
+		PITCH = 60, -- degrees down: steeper than the diorama's 52, so it looks over the walls round you
+		FOV = 50, -- vertical degrees
+		DIST_MIN = 22, -- studs from the focus: the closest shot (you alone)
+		DIST_MAX = 46, -- the widest (a crew spread over the level)
+		DIST_STEP = 1, -- studs per step of the fit search
+		SHARE = 0.78, -- every framed point within this share of the half width ...
+		SHARE_Y = 0.72, -- ... and of the half height (clear of the run bar and the bottom HUD)
+		RADIUS = 40, -- studs (flat): clones and the objective farther from you than this are not framed
+		PULL = 0.35, -- the focus moves this share of the way from you toward the framed points' middle
+		FOCUS_HEIGHT = 1.5, -- studs above the HumanoidRootPart
+		FOLLOW_RATE = 6, -- 1/s: the focus and the distance follow (a clone walking never jolts the frame)
+		IN_SECONDS = 0.25, -- the lift from your eyes
+		OUT_SECONDS = 0.2, -- the drop back on release
+		-- Reduced motion: no flight; a quick dim crossfade, the camera cuts at its peak.
+		REDUCED = { CUT_AT = 0.08, OUT = 0.14, PEAK = 0.6 },
+		VIGNETTE = 0.45, -- the edge darkness at full Crew View (0 = none, 1 = black)
+		VIGNETTE_DEPTH = 0.16, -- share of the screen's short side each edge band covers
+		HINT_MIN_CLONES = 2, -- the one-time hint: the first run with at least this many clones (any owner)
+		HINT_DELAY = 3, -- s after control returns
+	},
 	-- C1: the run-start framing beat (eases from the objective to you; any input skips it). It
 	-- always ends when the transition ends (control returns), so it never delays first control.
 	BEAT_SECONDS = 0.8,
@@ -2046,6 +2072,7 @@ Config.Backdrop = {
 	-- Performance tiers (Config.Heist.PERF_TIERS): roblox_quality §6.4. Low phones keep the snowfield, the
 	-- streets, every building and its lit windows, the near ring and the sky: the frame is never black.
 	FAR_RING_OFF_TIER = 2, -- BIG: the taller town and its towers hide most of the far ring; phones (tier 2+) skip it
+	NEAR_RING_OFF_TIER = 4, -- the near ring too on the lowest tier (~5k tris, 2 draws; mostly behind the 4-8 storey town)
 	-- The sky: the Heist City cubemap (tools/blender/sky_city.py) has Hoardsworth's tower at this yaw (degrees,
 	-- Roblox -Z = 0, turning toward -X). The client turns Lighting.Sky so the tower stands behind the building
 	-- the spawn faces (Sky.SkyboxOrientation), so every level and the garage get it in the first view.
@@ -2642,8 +2669,10 @@ Config.Perf = {
 	-- The worst moment the particle budget is checked against (Budget.worstParticles): snow + these at once.
 	WORST_MOMENT = { "ribbons", "sparks", "coins", "goldRain", "doorDust", "laserSparks" },
 	-- Measured / estimated costs (docs/PERF.md; tests/perf_engine.luau prints the measured ones).
-	AVATAR_TRIS_EST = 7000, -- a catalog R15 avatar with hair and 2-3 accessories (not readable from Luau)
-	MANNEQUIN_TRIS = 216, -- 18 box parts
+	-- A catalog R15 avatar with hair and 2-3 accessories (not readable from Luau): only a fallback since every player
+	-- and clone is a Rookie (3,632-tri body + an outfit, 5.3-5.8k; perf_engine counts the real rigs' kit meshes).
+	AVATAR_TRIS_EST = 7000,
+	MANNEQUIN_TRIS = 96, -- the clone LOD's light rig: 8 box parts (the full mannequin's ball head adds ~400)
 
 	-- Clone LOD (roblox_quality §6.4; Budget.cloneFar / Budget.lineupLight): from TIER, a clone drawn from an
 	-- avatar template is the textured avatar within NEAR studs of the camera and the 216-tri mannequin in its crew
@@ -2655,6 +2684,9 @@ Config.Perf = {
 		NEAR = 15,
 		FAR = 18,
 		MANNEQUIN_DRAWS = 3, -- estimate: every mannequin in view batches into a few primitive draws (perf_engine)
+		-- the light rig's head is a block, not a ball (a ball is ~400 triangles, 80 % of the rig; past 18 studs a
+		-- chunky cube head reads the same, like the Rookie's): Rigs.buildMannequin(true)
+		BLOCK_HEAD = true,
 	},
 
 	-- The start tier (Budget.startTier / Budget.probeTier, Heist/Telemetry): picked at boot from what a client
@@ -3065,6 +3097,11 @@ Config.Big = {
 	BUDGET = { instances = 560, draws = 26, tris = 72000, lights = 0 },
 	DETAIL_OFF_TIER = 2,
 	FINE_OFF_TIER = 3,
+	-- Phone frame budget (REVIEW_STEAM_PLUS gap 15): the street front's window trims (Facade_8x10, ~5k tris on the
+	-- Big Score; layer "trim") hide from TRIM_OFF_TIER (recipe C phones), the Bank's giant order of columns (~4k;
+	-- layer "order") from ORDER_OFF_TIER; the facade bodies, panes, crown, pediment and clock stay.
+	TRIM_OFF_TIER = 3,
+	ORDER_OFF_TIER = 4,
 }
 
 -- Interiors (INTERIORS track, docs/audit/REVIEW_STEAM_PLUS.md gaps 8, 9 and 12; STYLE_BIBLE §19): eye-level props in every
@@ -3079,6 +3116,16 @@ Config.Interior = {
 	-- Client (Heist/LightDirector): parts with EH_Layer "decor" (the props, the teller brass and the frieze) hide from
 	-- this tier; the hero display, the ceiling colour, the room light and the fascia stay at every tier.
 	DECOR_OFF_TIER = 3,
+	-- Phone frame budget (REVIEW_STEAM_PLUS gap 15): the heaviest props (EH_Layer "decorHeavy": the Bank's deposit-box
+	-- walls 1,220 tris each, the teller brass 768, the palms 504 and the queue rope 600) hide from this tier, where a
+	-- phone starts (the Big Score's tier 2 view was ~3 % over its triangle estimate). The rooms keep their benches,
+	-- desks, clocks and boxes until DECOR_OFF_TIER.
+	HEAVY_OFF_TIER = 2,
+	HEAVY = { Decor_DepositWall_8 = true, Decor_BrassRail_8 = true, Decor_Palm = true, Decor_QueueRope_8 = true },
+	-- The base kit's Christmas pieces (EH_Layer "festive": the garlands on the inner walls, ~15k tris in the Big
+	-- Score, the street front's fairy lights, snow caps, wreath and snow piles) hide from this tier: only a phone
+	-- still slow at tier 3 gets there (the BIG building's light strings already go at Config.Big.FINE_OFF_TIER).
+	FESTIVE_OFF_TIER = 4,
 	-- First-person pools (client LightDirector): a pool's strength x a share from `min` (the camera looks across it at
 	-- an elevation of `from` degrees or less over its centre, e.g. a pool 10+ studs ahead of the 3.8-stud eye) to `max`
 	-- (`to` degrees or more: standing in it), smoothstep between. `max` is 1 once the camera is `high` studs or more

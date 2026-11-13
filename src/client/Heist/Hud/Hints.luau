@@ -128,7 +128,8 @@ function Hints.build(ctx: any): any
 
 	-- A line that names a button, for this device in first person (Strings.forDevice); the plain line otherwise.
 	local function say(key: string): string
-		return Strings.forDevice(key, Common.device(), state.fpView == true)
+		-- Crew View keeps the first-person lines (the camera left your eyes only for the peek)
+		return Strings.forDevice(key, Common.device(), state.fpView == true or state.crewView == true)
 	end
 
 	-- L1 FTUE lines, the help lines and the generic objective. Returns the line, whether REWIND
