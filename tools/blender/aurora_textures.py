@@ -16,6 +16,7 @@ What is in a tile (all in float, then dithered to 8 bits: no banding in the long
   * fine rays rising from the hem: a few hundred thin Gaussian streaks, each with its own height, width and
     strength, so the curtain thins out upward in rays rather than as a flat gradient;
   * a soft body glow behind the rays (low-frequency, also wandering);
+  * a faint diffuse violet glow high up, over the ray bunches;
   * colour by height above the hem: green core -> green -> teal -> a violet tip (STYLE_BIBLE §16 hues: green
     h 150-160, teal h <= 185, violet h 300-315 in Oklch, clear of the clone hues' reserved bands);
   * RGB is the colour everywhere (never black where alpha is 0, so bilinear filtering cannot draw a dark fringe);
@@ -135,6 +136,11 @@ def tile(w, h, variant_seed):
     ray_field = (1 - wgt)[None, :] * field(rays(base, 460, cl_base)) + wgt[None, :] * field(rays(var, 460, cl))
     ray_field /= max(1e-6, np.percentile(ray_field, 99.5))
     inten += 0.62 * np.clip(ray_field, 0, 1.5)
+
+    # The violet tips: a faint diffuse glow high in the curtain, strongest over the ray bunches (it survives the
+    # height falloff below, so the tops read violet rather than just fading out).
+    tips = np.exp(-((s - 0.62) / 0.16) ** 2) * (0.3 + 0.7 * cl[None, :])
+    inten += 0.16 * tips * (0.6 + 0.4 * np.clip(ray_field, 0, 1))
 
     # Fine vertical shimmer (thin brighter/darker columns), low amplitude, wraps.
     shimmer = 1 + 0.10 * periodic_noise(var, w, 18, 30, 120, 0.2)[None, :] * wgt[None, :] \

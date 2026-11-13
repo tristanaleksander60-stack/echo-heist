@@ -1698,9 +1698,9 @@ Config.Aurora = {
 	-- resolved to image ids with --resolve-sky (assets/sky/sky_ids.json). The three tiles share their edge columns,
 	-- so a chain may mix them without a seam.
 	TEXTURES = {
-		"rbxassetid://114658167481459",
-		"rbxassetid://111319134560419",
-		"rbxassetid://90786809529777",
+		"rbxassetid://110364872208024",
+		"rbxassetid://112410864664438",
+		"rbxassetid://80686493108095",
 	},
 	-- The tiles are authored with image x along the beam and image top = the curtain's top. If Studio shows the
 	-- violet tips at the bottom, set this: the chains are built from the other end, which flips the image.
@@ -1709,7 +1709,7 @@ Config.Aurora = {
 	UPDATE_HZ = 15, -- sway and breathing writes a second (the shimmer is the engine's TextureSpeed)
 	REVEAL_SECONDS = 3, -- the fade-in once every texture has loaded (an unloaded Beam texture draws a solid bar)
 	PRELOAD_RETRY_SECONDS = 30, -- one more preload after a failure; until then nothing is shown
-	BRIGHTNESS = 1.6, -- Beam.Brightness before each layer's own factor (LightInfluence 0: unlit)
+	BRIGHTNESS = 1.4, -- Beam.Brightness before each layer's own factor (LightInfluence 0: unlit)
 	REDUCED_MOTION = 0.35, -- sway, scroll and breathing speed under reduced motion (slower, never off)
 	-- Never reachable, never in a room (unit spec over every sway phase): every ribbon's lower edge stays at least
 	-- MIN_CLEARANCE studs over the anchor and MIN_ELEVATION degrees over the viewer's horizon.
@@ -1720,9 +1720,12 @@ Config.Aurora = {
 	TINT_A = { 255, 255, 255 },
 	TINT_B = { 190, 255, 238 }, -- a teal lean
 	TINT_WAVE = 2, -- tint waves along a whole band
+	END_FADE = 0.55, -- a band's second point from each end shows this much (its end points: nothing)
 	-- The layers in priority order: a tier keeps the first Budget.auroraLayers(tier). Fields:
-	--   dist / height: the band's middle, studs ahead of and above the viewer; radius: its circle (bigger = straighter);
-	--   span: studs of band left and right of the middle; points: spine control points (points - 1 Beams);
+	--   dist / side / height: the band's middle, studs ahead of, right of and above the viewer; radius: its circle
+	--   (bigger = straighter); span: studs of band left and right of the middle; turn: degrees the band swings about
+	--   its middle (+ brings the right end nearer); tilt: studs the right end rises over the left; points: spine
+	--   control points (points - 1 Beams);
 	--   width: the ribbon's width (the curtain's height on screen); fold / foldWaves / foldPhase: the band's static
 	--   folds toward and away from the viewer; lift: a static height wave;
 	--   sway = { z, y, period }: the control points' slow drift (studs, studs, seconds per cycle);
@@ -1731,73 +1734,85 @@ Config.Aurora = {
 	--   horizontal moves the band follows (1 = a sky element; less = slight parallax between the bands).
 	LAYERS = {
 		{
-			name = "Veil", -- ahead, high: the showpiece over the landmark (kept on every tier)
-			dist = 330,
-			height = 360,
-			radius = 1500,
-			span = 900,
-			points = 7,
-			width = 280,
+			name = "Veil", -- the hero band: rises from low on the left to high on the right, over the landmark (every tier)
+			dist = 360,
+			side = 0,
+			height = 320,
+			radius = 1600,
+			span = 950,
+			turn = 24,
+			tilt = 150,
+			points = 8,
+			width = 230,
 			fold = 70,
-			foldWaves = 1.5,
+			foldWaves = 1.6,
 			foldPhase = 0.2,
-			lift = 30,
+			lift = 26,
 			sway = { 34, 18, 31 },
 			breathe = { 0.18, 13 },
 			scroll = 0.012,
-			transparency = 0.12,
+			transparency = 0.18,
 			brightness = 1,
 			texture = 1,
 			follow = 0.95,
 		},
 		{
-			name = "Crown", -- nearly overhead: first person looking up
-			dist = 70,
-			height = 470,
-			radius = 1800,
+			name = "Crown", -- crosses the zenith the other way: first person looking up
+			dist = 40,
+			side = 0,
+			height = 480,
+			radius = 2200,
 			span = 1000,
+			turn = -55,
+			tilt = -90,
 			points = 7,
-			width = 340,
+			width = 260,
 			fold = 90,
 			foldWaves = 1.2,
 			foldPhase = 0.65,
-			lift = 40,
+			lift = 34,
 			sway = { 40, 22, 37 },
-			breathe = { 0.2, 17 },
+			breathe = { 0.22, 17 },
 			scroll = -0.009,
-			transparency = 0.3,
+			transparency = 0.5,
 			brightness = 0.85,
 			texture = 2,
 			follow = 0.9,
 		},
 		{
-			name = "Drape", -- far ahead, lower: depth behind the Veil
-			dist = 640,
-			height = 300,
+			name = "Drape", -- a shorter curtain far off to the right: depth behind the Veil
+			dist = 620,
+			side = 260,
+			height = 255,
 			radius = 1700,
-			span = 1100,
-			points = 8,
-			width = 230,
+			span = 700,
+			turn = 35,
+			tilt = 60,
+			points = 7,
+			width = 200,
 			fold = 60,
 			foldWaves = 2,
 			foldPhase = 0.45,
-			lift = 26,
+			lift = 22,
 			sway = { 30, 14, 27 },
-			breathe = { 0.22, 11 },
+			breathe = { 0.24, 11 },
 			scroll = 0.015,
-			transparency = 0.32,
+			transparency = 0.45,
 			brightness = 0.9,
 			texture = 3,
 			follow = 0.97,
 		},
 		{
-			name = "Glow", -- low over the horizon: the soft glow at the top of the classic frame
-			dist = 820,
-			height = 200,
+			name = "Glow", -- low and wide over the horizon: the soft glow at the top of the classic frame
+			dist = 850,
+			side = -150,
+			height = 210,
 			radius = 2000,
 			span = 1300,
+			turn = -10,
+			tilt = -40,
 			points = 8,
-			width = 190,
+			width = 180,
 			fold = 50,
 			foldWaves = 2.5,
 			foldPhase = 0.1,
@@ -1805,7 +1820,7 @@ Config.Aurora = {
 			sway = { 26, 10, 23 },
 			breathe = { 0.25, 9 },
 			scroll = -0.011,
-			transparency = 0.45,
+			transparency = 0.55,
 			brightness = 0.8,
 			texture = 2,
 			follow = 1,

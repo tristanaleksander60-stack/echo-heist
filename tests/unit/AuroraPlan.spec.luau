@@ -89,16 +89,12 @@ return function(test)
 		-- the first-person look up reaches it: FP pitches up to PITCH_MIN, plus half the FOV
 		Assert.truthy(-CAM.FP.PITCH_MIN + CAM.FP.FOV / 2 >= crownElev, "first person can look at the Crown")
 		-- the classic camera's frame top (pitch down, half its vertical FOV up) is over the Glow's hem
-		local glow = layerNamed("Glow")
-		local p = AuroraPlan.spine(glow, 0)[(glow.points + 1) // 2]
-		local hem = math.deg(math.atan2(p.y - glow.width / 2, math.sqrt(p.x * p.x + p.z * p.z)))
+		local _, _, glowHem = AuroraPlan.middle(layerNamed("Glow"))
 		local classicTop = CAM.CLASSIC.FOV / 2 - CAM.CLASSIC.PITCH
-		Assert.truthy(hem < classicTop, string.format("the Glow's hem (%.1f deg) under the frame top", hem))
+		Assert.truthy(glowHem < classicTop, string.format("the Glow's hem (%.1f deg) under the frame top", glowHem))
 		-- the Snow Globe (13-19.5 deg, STYLE_BIBLE §14) stays under the Veil's hem
-		local v = layerNamed("Veil")
-		local vp = AuroraPlan.spine(v, 0)[(v.points + 1) // 2]
-		local vHem = math.deg(math.atan2(vp.y - v.width / 2, math.sqrt(vp.x * vp.x + vp.z * vp.z)))
-		Assert.truthy(vHem > 19.5, string.format("the Veil's hem (%.1f deg) over the globe", vHem))
+		local _, _, veilHem = AuroraPlan.middle(layerNamed("Veil"))
+		Assert.truthy(veilHem > 19.5, string.format("the Veil's hem (%.1f deg) over the globe", veilHem))
 	end)
 
 	test("the chains are smooth: each Beam's curve starts and ends on its points, tangents shared", function()
@@ -172,7 +168,8 @@ return function(test)
 			end
 			Assert.eq(AuroraPlan.endFade(l, 1), 0, "left end fades")
 			Assert.eq(AuroraPlan.endFade(l, l.points), 0, "right end fades")
-			Assert.eq(AuroraPlan.endFade(l, 2), 1, "inside is whole")
+			Assert.eq(AuroraPlan.endFade(l, 2), A.END_FADE, "the next point fades in")
+			Assert.eq(AuroraPlan.endFade(l, 3), 1, "inside is whole")
 			Assert.truthy(l.transparency >= 0 and l.transparency < 1, "a visible base")
 		end
 		local f0 = AuroraPlan.toWorld({ x = 0, y = 0, z = 10 }, 0)

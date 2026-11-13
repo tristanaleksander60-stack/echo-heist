@@ -6,7 +6,8 @@
 -- A layer is a band of curtain along a spine of control points. The frame is the viewer's ground point turned to
 -- the landmark: x to the right, y up, z forward (toward Hoardsworth's tower). The spine lies on a big circle whose
 -- centre is behind the viewer, so the band passes `dist` studs ahead at its middle and curves back at its ends, the
--- way real aurora arcs cross the sky in parallel bands. Static folds and slow sway push the points along the
+-- way real aurora arcs cross the sky; `turn` swings a band about its middle and `tilt` raises one end, so the bands
+-- sweep across the sky at angles instead of stacking. Static folds and slow sway push the points along the
 -- circle's radius (toward / away from the viewer) and up and down. One Beam joins two neighbouring points; its
 -- curve comes from Catmull-Rom tangents (AuroraPlan.handles), so the chain is smooth through every shared point.
 
@@ -54,6 +55,23 @@ local function phaseOf(layer: Layer, k: number): number
 	return TAU * (0.37 * k + layer.foldPhase)
 end
 
+-- A band point's ground position (x, z) at share u, pushed `push` studs along the circle's radius (+ away from the
+-- viewer at the middle), with the band turned `turn` degrees about its own middle (side, dist), which stays put.
+local function ground(layer: Layer, u: number, push: number): (number, number)
+	local phi = (2 * u - 1) * layer.span / layer.radius
+	local r = layer.radius + push
+	local x, z = r * math.sin(phi), r * math.cos(phi) - layer.radius -- relative to the middle (0, dist)
+	local c, sn = math.cos(math.rad(layer.turn)), math.sin(math.rad(layer.turn))
+	return layer.side + x * c + z * sn, layer.dist - x * sn + z * c
+end
+
+-- The band's height at share u before the sway: its height, the static lift wave and the tilt (end to end).
+local function restHeight(layer: Layer, u: number): number
+	return layer.height
+		+ layer.lift * math.sin(TAU * (0.7 * layer.foldWaves * u + layer.foldPhase + 0.3))
+		+ layer.tilt * (u - 0.5)
+end
+
 -- The spine at time `t` (seconds of motion: the caller scales real time by the reduced-motion factor and holds it
 -- at 0 when the tier is static). Points left to right; with `reverse`, right to left (Config.Aurora.REVERSE_SPINE).
 function AuroraPlan.spine(layer: Layer, t: number, reverse: boolean?): { Vec }
@@ -61,16 +79,12 @@ function AuroraPlan.spine(layer: Layer, t: number, reverse: boolean?): { Vec }
 	local sz, sy, period = layer.sway[1], layer.sway[2], layer.sway[3]
 	for k = 1, layer.points do
 		local u = share(layer, k)
-		local s = (2 * u - 1) * layer.span
-		local phi = s / layer.radius
 		local ph = phaseOf(layer, k)
 		local push = layer.fold * math.sin(TAU * (layer.foldWaves * u + layer.foldPhase))
 			+ sz * math.sin(TAU * t / period + ph)
-		local r = layer.radius + push
-		local y = layer.height
-			+ layer.lift * math.sin(TAU * (0.7 * layer.foldWaves * u + layer.foldPhase + 0.3))
-			+ sy * math.sin(TAU * t / (period * 1.37) + 1.7 * ph)
-		pts[k] = vec(r * math.sin(phi), y, layer.dist - layer.radius + r * math.cos(phi))
+		local x, z = ground(layer, u, push)
+		local y = restHeight(layer, u) + sy * math.sin(TAU * t / (period * 1.37) + 1.7 * ph)
+		pts[k] = vec(x, y, z)
 	end
 	if reverse then
 		local n = #pts
@@ -128,9 +142,15 @@ function AuroraPlan.tintMix(layer: Layer, u: number, t: number): number
 	return 0.5 + 0.5 * math.sin(TAU * (A.TINT_WAVE * u - t / period + layer.foldPhase))
 end
 
--- How visible point k is (0..1): the band fades out at both ends, so it never stops with a hard edge.
+-- How visible point k is (0..1): the band fades out over its last two points at both ends, so it never stops with a
+-- hard edge (and its ends, where the curve turns toward the viewer, stay faint).
 function AuroraPlan.endFade(layer: Layer, k: number): number
-	return if k == 1 or k == layer.points then 0 else 1
+	if k == 1 or k == layer.points then
+		return 0
+	elseif k == 2 or k == layer.points - 1 then
+		return A.END_FADE
+	end
+	return 1
 end
 
 -- Which Config.Aurora.TEXTURES tile Beam k of a layer shows (the tiles alternate; they share their edge columns).
@@ -142,26 +162,28 @@ end
 -- the viewer's horizon in degrees). A bound, not a sample: every displacement at its worst at once, and the
 -- ribbon's half width taken straight down.
 function AuroraPlan.lowest(layer: Layer): (number, number)
-	local low = layer.height - math.abs(layer.lift) - layer.sway[2] - layer.width / 2
-	local minElev = math.huge
+	local minH, minElev = math.huge, math.huge
 	for k = 1, layer.points do
-		local phi = (2 * share(layer, k) - 1) * layer.span / layer.radius
+		local u = share(layer, k)
+		local low = restHeight(layer, u) - layer.sway[2] - layer.width / 2
 		local far = 0
 		for _, push in { -1, 1 } do
-			local r = layer.radius + push * (math.abs(layer.fold) + layer.sway[1])
-			local x, z = r * math.sin(phi), layer.dist - layer.radius + r * math.cos(phi)
+			local x, z = ground(layer, u, push * (math.abs(layer.fold) + layer.sway[1]))
 			far = math.max(far, math.sqrt(x * x + z * z))
 		end
+		minH = math.min(minH, low)
 		minElev = math.min(minElev, math.deg(math.atan2(low, far)))
 	end
-	return low, minElev
+	return minH, minElev
 end
 
--- The elevation (degrees over the horizon) and bearing (degrees, + to the right of the landmark) of a layer's
--- middle at rest: where it sits on screen.
-function AuroraPlan.middle(layer: Layer): (number, number)
-	local p = AuroraPlan.spine(layer, 0)[(layer.points + 1) // 2]
-	return math.deg(math.atan2(p.y, math.sqrt(p.x * p.x + p.z * p.z))), math.deg(math.atan2(p.x, p.z))
+-- Where a layer's middle (share 0.5, at rest, before its folds) sits on screen: the elevation of its spine and of its
+-- lower edge (the hem), in degrees over the horizon, and its bearing (degrees, + to the right of the landmark).
+function AuroraPlan.middle(layer: Layer): (number, number, number)
+	local x, z = ground(layer, 0.5, 0)
+	local y = restHeight(layer, 0.5)
+	local d = math.sqrt(x * x + z * z)
+	return math.deg(math.atan2(y, d)), math.deg(math.atan2(x, z)), math.deg(math.atan2(y - layer.width / 2, d))
 end
 
 -- A local point (x right, y up, z forward) as a world offset for a landmark yaw (degrees; 0 = toward -Z, positive
