@@ -266,7 +266,15 @@ return function(test)
 			"pickable from in front (" .. tostring(LevelBoxes.blocked(boxes, front, target, onTarget)) .. ")"
 		)
 		-- Behind the back wall (just outside the shop): even with a reach that long, the wall is in the way.
-		local back = { cash.x, cash.y + 2, l1.bounds.minZ - 0.8 }
+		local wallZ = math.huge
+		for _, sd in l1.solids do
+			local bx = sd
+			if bx.minX <= cash.x and bx.maxX >= cash.x and bx.maxZ < cash.z and bx.maxY > cash.y + 2 then
+				wallZ = math.min(wallZ, bx.minZ)
+			end
+		end
+		Assert.truthy(wallZ < math.huge, "L1 has a back wall behind the cash")
+		local back = { cash.x, cash.y + 2, wallZ - 0.8 }
 		local dirB = norm(FpMath.sub(target, back))
 		local long = FpMath.len(FpMath.sub(target, back)) + 2
 		local through = FpMath.pick(back, dirB, c, opts({ reach = long, blocked = blockedFn(back) }))

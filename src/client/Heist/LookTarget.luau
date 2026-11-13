@@ -77,6 +77,45 @@ function LookTarget.candidates(entries: { any }, root: Vector3, ctx: any): { FpM
 	return out
 end
 
+-- Can the eye see `part` (centre `to`, radius `radius`)? A workspace ray, excluding `exclude` (your character,
+-- the camera's viewmodel): clear when it reaches the part, or hits within radius + LOS_SLACK of its centre
+-- (its own counter top, its glow). See-through parts that do not collide (zones, glows) are looked through,
+-- up to three; anything else in the way blocks. The engine test runs this on the built L1 (client_engine J).
+function LookTarget.lineOfSight(
+	from: Vector3,
+	to: Vector3,
+	radius: number,
+	part: BasePart,
+	exclude: { Instance },
+	params: RaycastParams?
+): boolean
+	local p = params or RaycastParams.new()
+	p.FilterType = Enum.RaycastFilterType.Exclude
+	local excl = table.clone(exclude)
+	local at = from
+	for _ = 1, 4 do
+		p.FilterDescendantsInstances = excl
+		local hit = workspace:Raycast(at, to - at, p)
+		if not hit then
+			return true
+		end
+		local inst = hit.Instance
+		if inst == part or inst:IsDescendantOf(part) or part:IsDescendantOf(inst) then
+			return true
+		end
+		if (hit.Position - to).Magnitude <= radius + LK.LOS_SLACK then
+			return true -- the target's own surface (its pad, its glow)
+		end
+		if inst:IsA("BasePart") and inst.Transparency >= 0.95 and not inst.CanCollide then
+			table.insert(excl, inst) -- a zone or a glow: look through it
+			at = hit.Position
+		else
+			return false
+		end
+	end
+	return false
+end
+
 -- deps: world (Heist/WorldView), isTouch () -> boolean, usingGamepad () -> boolean.
 function LookTarget.new(state: any, deps: any): any
 	local look = {}
@@ -134,38 +173,15 @@ function LookTarget.new(state: any, deps: any): any
 		return LK.ASSIST.mouse
 	end
 
-	-- Something solid between the eye and the candidate? Skips see-through parts that do not collide (zones,
-	-- glows) up to three times.
 	local function blocked(eye: { number }, c: FpMath.Candidate, part: BasePart): boolean
-		local from = Vector3.new(eye[1], eye[2], eye[3])
-		local to = Vector3.new(c.pos[1], c.pos[2], c.pos[3])
 		local excl: { Instance } = { workspace.CurrentCamera :: Instance }
 		local char = player and player.Character
 		if char then
 			table.insert(excl, char)
 		end
-		for _ = 1, 4 do
-			params.FilterDescendantsInstances = excl
-			local dir = to - from
-			local hit = workspace:Raycast(from, dir, params)
-			if not hit then
-				return false
-			end
-			local inst = hit.Instance
-			if inst == part or inst:IsDescendantOf(part) or part:IsDescendantOf(inst) then
-				return false
-			end
-			if (hit.Position - to).Magnitude <= c.radius + LK.LOS_SLACK then
-				return false -- the target's own surface (its pad, its glow)
-			end
-			if inst:IsA("BasePart") and inst.Transparency >= 0.95 and not inst.CanCollide then
-				table.insert(excl, inst) -- a zone or a glow: look through it
-				from = hit.Position
-			else
-				return true
-			end
-		end
-		return true
+		local from = Vector3.new(eye[1], eye[2], eye[3])
+		local to = Vector3.new(c.pos[1], c.pos[2], c.pos[3])
+		return not LookTarget.lineOfSight(from, to, c.radius, part, excl, params)
 	end
 
 	-- Picks this frame's target (or none) at loop time tView; allowed = false (your run ended, the run has
