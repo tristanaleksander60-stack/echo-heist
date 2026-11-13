@@ -1,0 +1,175 @@
+{
+ "asset": "Decor_Trim",
+ "objects": [
+  {
+   "name": "Decor_Frieze_8",
+   "class": "tiny",
+   "tris": 108,
+   "budget": [
+    150,
+    300
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.0,
+    0.2,
+    0.85
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -4.0,
+     -0.2,
+     0.0
+    ],
+    "local_max": [
+     4.0,
+     0.0,
+     0.85
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 32,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "runtime (Config.Interior theme frieze)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "tintable wall frieze 8 x 0.85, tiles along X (code sets the colour)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Ceiling_8x8_Tin",
+   "class": "module",
+   "tris": 168,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.0,
+    8.0,
+    0.55
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.0,
+     0.0,
+     -0.55
+    ],
+    "local_max": [
+     8.0,
+     8.0,
+     0.0
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.55
+   ],
+   "symmetry_error": {
+    "X": 0.0,
+    "Y": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 68,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "runtime (Config.Interior ceiling)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "tintable pressed-tin ceiling tile (same frame as Ceiling_8x8): the level's ceiling colour",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 276,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "c2809017b0eb92fcf01b",
+ "fbx": {
+  "path": "assets/fbx/Decor_Trim.fbx",
+  "bytes": 24796,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Ceiling_8x8_Tin",
+   "Decor_Frieze_8"
+  ],
+  "geometry_extents": [
+   [
+    0.2,
+    0.85,
+    8.0
+   ],
+   [
+    0.55,
+    8.0,
+    8.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/interior.py",
+ "notes": "Tintable trims: the level's wall frieze and its ceiling tile colour.",
+ "turntable": "docs/art/turntables/Decor_Trim.png",
+ "seconds": 100.8
+}

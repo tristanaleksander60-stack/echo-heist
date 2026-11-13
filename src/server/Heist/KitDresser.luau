@@ -22,6 +22,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 
+local DecorPlan = require(script.Parent:WaitForChild("DecorPlan"))
 local KitPlan = require(script.Parent:WaitForChild("KitPlan"))
 local LevelDress = require(script.Parent:WaitForChild("LevelDress"))
 
@@ -141,6 +142,19 @@ function KitDresser.dress(level: any, built: any, origin: Vector3, kit: any, opt
 		dress = LevelDress[level.id],
 		lighting = Config.Lighting,
 	})
+	-- The eye-level interior props, the theme's hero display, the frieze and the teller brass (Heist/DecorPlan,
+	-- Config.Interior): visual only, planned clear of every gameplay box and the base kit's own props.
+	if Config.Interior.ENABLED then
+		local decor = DecorPlan.plan(level, specs, {
+			location = o.location,
+			dressing = o.dressing,
+			dress = LevelDress[level.id],
+			base = plan.items,
+		}, { KP = KitPlan, cfg = Config.Interior, lighting = Config.Lighting })
+		for _, it in decor.items do
+			table.insert(plan.items, it :: any)
+		end
+	end
 	result.items = #plan.items
 	local atlas = o.location
 	-- the van's runtime paint (Van_Paint is a tintable, atlas-free piece): a mid value, never Getaway White
@@ -158,7 +172,12 @@ function KitDresser.dress(level: any, built: any, origin: Vector3, kit: any, opt
 			local parts: { Instance } = {}
 			local good = true
 			for _, name in item.pieces do
-				local part = kit.clone(name, { atlas = atlas, color = if name == "Van_Paint" then vanPaint else nil })
+				local tint: Color3? = if name == "Van_Paint" then vanPaint else nil
+				local ic = (item :: any).color
+				if ic then
+					tint = Color3.fromRGB(ic[1], ic[2], ic[3])
+				end
+				local part = kit.clone(name, { atlas = atlas, color = tint })
 				if part == nil then
 					good = false
 					break
@@ -181,6 +200,14 @@ function KitDresser.dress(level: any, built: any, origin: Vector3, kit: any, opt
 				if item.mode == "skin" then
 					part:SetAttribute("EH_Alpha", part.Transparency)
 					part.Transparency = 1
+				end
+				local tierLayer = (item :: any).tier
+				if tierLayer then
+					-- client Heist/LightDirector hides it from Config.Interior.DECOR_OFF_TIER
+					part:SetAttribute("EH_Layer", tierLayer)
+				end
+				if item.role == "decor" or item.role == "hero" or item.role == "frieze" or item.role == "brass" then
+					part.CastShadow = false -- props never shadow a plate, loot or the floor light
 				end
 				table.insert(parts, part)
 			end

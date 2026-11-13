@@ -235,6 +235,106 @@
    "sha256": "be7900fdd81cf941811e6e9addae1647686d3b68651c5ee9a86be5b568c0b4d1",
    "uploaded": "2026-11-12T11:22:23Z"
   },
+  "Decor_Bank": {
+   "assetId": 131978587202698,
+   "file": "assets/fbx/Decor_Bank.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Decor_Bench_6",
+    "Decor_BrassRail_8",
+    "Decor_DepositWall_8",
+    "Decor_Palm",
+    "Decor_QueueRope_8"
+   ],
+   "revisionId": "1",
+   "sha256": "6434976ef4137b3d8bd97ac73e9f7b89e7772fbf8bd272e893d4c2bdc0ca9106",
+   "uploaded": "2026-11-13T10:03:54Z"
+  },
+  "Decor_Office": {
+   "assetId": 135477529261406,
+   "file": "assets/fbx/Decor_Office.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Decor_Boxes",
+    "Decor_CoatHooks_4",
+    "Decor_Corkboard_4",
+    "Decor_Desk_6"
+   ],
+   "revisionId": "1",
+   "sha256": "6c00864a68363874494ed77e2adc3cf3dd2498d0bb426ff99e55eaa821daa2da",
+   "uploaded": "2026-11-13T10:04:10Z"
+  },
+  "Decor_Shop": {
+   "assetId": 91028263704595,
+   "file": "assets/fbx/Decor_Shop.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Decor_CandyCounter_6",
+    "Decor_CardString_8",
+    "Decor_CatBed",
+    "Decor_Fridge_4",
+    "Decor_Fridge_4_Glass",
+    "Decor_Fridge_4_Light",
+    "Decor_MagRack_3",
+    "Decor_MopBucket",
+    "Decor_Poster_A",
+    "Decor_Poster_B",
+    "Decor_StockShelf_8",
+    "Decor_WallClock"
+   ],
+   "revisionId": "1",
+   "sha256": "9884aec9a0472739b1c36daa66c6f85a7be5e9346ac9be0d055dcb8ce2542057",
+   "uploaded": "2026-11-13T10:04:35Z"
+  },
+  "Decor_Theme": {
+   "assetId": 85349649451904,
+   "file": "assets/fbx/Decor_Theme.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Decor_Bakery_Cakes",
+    "Decor_Deli_Case",
+    "Decor_Grocer_Fruit",
+    "Decor_Jeweller_Case",
+    "Decor_Pharmacy_Counter",
+    "Decor_Repair_Bench"
+   ],
+   "revisionId": "1",
+   "sha256": "58176c1039cc5dc6e4c016a25f0006007b6f0fc0061e3ba0e2922ab8375978c7",
+   "uploaded": "2026-11-13T10:04:51Z"
+  },
+  "Decor_Toy": {
+   "assetId": 82072781186740,
+   "file": "assets/fbx/Decor_Toy.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Decor_CandyCane_Giant",
+    "Decor_GiftWrap_6",
+    "Decor_RockingHorse",
+    "Decor_ToyShelf_8",
+    "Decor_TrainLoop_6"
+   ],
+   "revisionId": "1",
+   "sha256": "4e9cd45dcd1fa111fe106d8f6fbcf038b1efc8dffcdb7373e50d9c7664531939",
+   "uploaded": "2026-11-13T10:05:16Z"
+  },
+  "Decor_Trim": {
+   "assetId": 97847720569448,
+   "file": "assets/fbx/Decor_Trim.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Ceiling_8x8_Tin",
+    "Decor_Frieze_8"
+   ],
+   "revisionId": "1",
+   "sha256": "ae2b591048e3c0978253651c8a9831bfc4bb2b76eb4a6322165924c87179eb48",
+   "uploaded": "2026-11-13T10:05:32Z"
+  },
   "Diamond": {
    "assetId": 92218379891720,
    "file": "assets/fbx/Diamond.fbx",

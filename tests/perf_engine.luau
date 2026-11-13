@@ -67,6 +67,41 @@ local MB = 1 -- Stats reports MB already
 local TRIS: { [string]: number } = {
 	BankFront_24x12 = 2244,
 	BankersLamp = 328,
+	-- INTERIORS (assets/blender/interior.py)
+	Ceiling_8x8_Tin = 168,
+	Decor_Bakery_Cakes = 1084,
+	Decor_Bench_6 = 160,
+	Decor_Boxes = 340,
+	Decor_BrassRail_8 = 768,
+	Decor_CandyCane_Giant = 696,
+	Decor_CandyCounter_6 = 472,
+	Decor_CardString_8 = 264,
+	Decor_CatBed = 404,
+	Decor_CoatHooks_4 = 288,
+	Decor_Corkboard_4 = 272,
+	Decor_Deli_Case = 572,
+	Decor_DepositWall_8 = 1220,
+	Decor_Desk_6 = 488,
+	Decor_Fridge_4 = 988,
+	Decor_Fridge_4_Glass = 12,
+	Decor_Fridge_4_Light = 12,
+	Decor_Frieze_8 = 108,
+	Decor_GiftWrap_6 = 444,
+	Decor_Grocer_Fruit = 1524,
+	Decor_Jeweller_Case = 1128,
+	Decor_MagRack_3 = 372,
+	Decor_MopBucket = 192,
+	Decor_Palm = 504,
+	Decor_Pharmacy_Counter = 524,
+	Decor_Poster_A = 100,
+	Decor_Poster_B = 72,
+	Decor_QueueRope_8 = 600,
+	Decor_Repair_Bench = 552,
+	Decor_RockingHorse = 436,
+	Decor_StockShelf_8 = 1324,
+	Decor_ToyShelf_8 = 1648,
+	Decor_TrainLoop_6 = 452,
+	Decor_WallClock = 328,
 	-- BIG buildings (assets/blender/tower.py)
 	Ceiling_8x8 = 168,
 	Clock_6 = 400,
@@ -305,6 +340,21 @@ local function bigDetailTris(model: Instance, tier: number): number
 		local layer = d:GetAttribute("EH_Layer")
 		local off = if layer == "detail" then B.DETAIL_OFF_TIER elseif layer then B.FINE_OFF_TIER else nil
 		if d:IsA("BasePart") and off and tier >= off then
+			n += if d:IsA("MeshPart") then TRIS[d:GetAttribute("KitPiece") or d.Name] or 0 else 12
+		end
+	end
+	return n
+end
+
+-- INTERIORS: the triangles of the interior props the client hides at a tier (Heist/LightDirector: EH_Layer "decor"
+-- from Config.Interior.DECOR_OFF_TIER).
+local function decorTris(model: Instance, tier: number): number
+	if tier < Config.Interior.DECOR_OFF_TIER then
+		return 0
+	end
+	local n = 0
+	for _, d in model:GetDescendants() do
+		if d:IsA("BasePart") and d:GetAttribute("EH_Layer") == "decor" then
 			n += if d:IsA("MeshPart") then TRIS[d:GetAttribute("KitPiece") or d.Name] or 0 else 12
 		end
 	end
@@ -950,7 +1000,7 @@ if cloneActor and six then
 		local glows = echo.glowCount()
 		local hl = clonesT.highlightsOn
 		-- BIG: from Config.Big.DETAIL_OFF_TIER the client (Heist/CutAway) hides the Overhead's detail layer
-		local levelTris = l6T.kitTris + l6T.primTris - bigDetailTris(levelModel, tier)
+		local levelTris = l6T.kitTris + l6T.primTris - bigDetailTris(levelModel, tier) - decorTris(levelModel, tier)
 		local avatarTris = (12 - lodFar + 4) * P.AVATAR_TRIS_EST + lodFar * P.MANNEQUIN_TRIS
 		local tris = levelTris + bdT.kitTris + bdT.primTris + avatarTris + 2 * gusTris
 		local draws = batchCount(l6T)
@@ -1108,7 +1158,63 @@ if cloneActor and six then
 	)
 	lights.setTier(4)
 	check(bloom == nil or bloom.Enabled == false, "tier 4: Bloom off")
-	lights.setTier(2)
+	-- INTERIORS: tier 4 hides every decor part (LightDirector), tier 2 shows them again; the wall washes are off
+	-- from tier 2; the pool fade: full from above, capped at eye height, lowest across a pool far ahead
+	do
+		local decorParts, hidden4 = {}, 0
+		for _, d in levelModel:GetDescendants() do
+			if d:IsA("BasePart") and d:GetAttribute("EH_Layer") == "decor" then
+				table.insert(decorParts, d)
+				hidden4 += if d.Transparency >= 1 then 1 else 0
+			end
+		end
+		local washOn = 0
+		for _, d in levelModel:GetDescendants() do
+			local holder = d:IsA("Light") and d:FindFirstAncestorWhichIsA("BasePart") or nil
+			if holder and holder:GetAttribute("EH_LampKind") == "wash" and (d :: Light).Enabled then
+				washOn += 1
+			end
+		end
+		lights.setTier(2)
+		local shown2 = 0
+		for _, d in decorParts do
+			shown2 += if d.Transparency < 1 then 1 else 0
+		end
+		local pool: BasePart? = nil
+		for _, d in levelModel:GetDescendants() do
+			if d:IsA("BasePart") and d:GetAttribute("EH_Kind") == "lightPool" then
+				pool = d
+				break
+			end
+		end
+		local high, stand, far = -1, -1, -1
+		if pool then
+			local c = pool.Position
+			high = lights.poolFade(c + Vector3.new(0, 24, 18), pool)
+			stand = lights.poolFade(c + Vector3.new(0, 3.8, 0), pool)
+			far = lights.poolFade(c + Vector3.new(0, 3.8, 20), pool)
+		end
+		local F = Config.Interior.POOL_FADE
+		check(
+			#decorParts > 0
+				and hidden4 == #decorParts
+				and shown2 == #decorParts
+				and washOn == 0
+				and math.abs(high - 1) < 1e-6
+				and math.abs(stand - F.max) < 1e-3
+				and math.abs(far - F.min) < 1e-3,
+			string.format(
+				"interiors: %d decor parts hidden at tier 4 (%d), shown at tier 2 (%d); wall washes on at tier 4: %d; pool fade from above %.2f, standing in it %.2f, 20 studs ahead %.2f",
+				#decorParts,
+				hidden4,
+				shown2,
+				washOn,
+				high,
+				stand,
+				far
+			)
+		)
+	end
 	lights.setTier(1)
 	recipe = lights.recipe()
 	check(
@@ -1275,6 +1381,55 @@ do
 				BB.draws,
 				t.lights,
 				loud
+			)
+		)
+	end
+	-- INTERIORS (Config.Interior, Heist/DecorPlan): the props of every kit-built level are visual only, within the
+	-- per-level budget, and at least one carries the client's tier layer; the wall washes never shadow.
+	local IB = Config.Interior.BUDGET
+	for i = 1, math.min(6, #instances) do
+		local e = instances[i]
+		local model = e.inst.built.model
+		local parts, tris, loud, tiered = 0, 0, 0, 0
+		local washes, washShadow = 0, 0
+		for _, d in model:GetDescendants() do
+			if d:IsA("MeshPart") then
+				local piece = d:GetAttribute("KitPiece")
+				if type(piece) == "string" and (string.sub(piece, 1, 6) == "Decor_" or piece == "Xmas_Tree") then
+					if string.sub(piece, 1, 6) == "Decor_" or d:GetAttribute("EH_Layer") == "decor" then
+						parts += 1
+						tris += TRIS[piece] or 0
+						if d.CanCollide or d.CanQuery or d.CanTouch then
+							loud += 1
+						end
+						if d:GetAttribute("EH_Layer") == "decor" then
+							tiered += 1
+						end
+					end
+				end
+			elseif d:IsA("SpotLight") then
+				local washHolder = d:FindFirstAncestorWhichIsA("BasePart")
+				if washHolder and washHolder:GetAttribute("EH_LampKind") == "wash" then
+					washes += 1
+					washShadow += if d.Shadows then 1 else 0
+				end
+			end
+		end
+		check(
+			parts > 0 and parts <= IB.instances and tris <= IB.tris and loud == 0 and tiered > 0 and washShadow == 0,
+			string.format(
+				"interiors: instance %d %s: %d props / %d, ~%dk tris / %dk (%d hidden from tier %d), %d loud, %d wall washes (%d shadowed)",
+				i,
+				e.id,
+				parts,
+				IB.instances,
+				tris // 1000,
+				IB.tris // 1000,
+				tiered,
+				Config.Interior.DECOR_OFF_TIER,
+				loud,
+				washes,
+				washShadow
 			)
 		)
 	end

@@ -88,6 +88,8 @@ function Overhead.build(level: any, origin: Vector3, parent: Instance, kit: any?
 	local plan = TowerPlan.plan(level, specs, {
 		location = o.location,
 		dressing = o.dressing,
+		ceiling = o.ceiling, -- INTERIORS: the level's ceiling colour (Config.Interior.THEMES)
+		sign = o.sign, -- INTERIORS: the level's shop name on the blade sign
 	}, { cfg = Config.Big, KP = KitPlan, signs = Strings.BIG_SIGN })
 	if plan == nil then
 		return nil, nil

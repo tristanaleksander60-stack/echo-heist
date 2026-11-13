@@ -1214,6 +1214,19 @@ Config.Lighting = {
 			poolRings = { { size = 1, alpha = 0.86 }, { size = 0.66, alpha = 0.8 }, { size = 0.36, alpha = 0.76 } },
 		},
 		hero = { range = 36, brightness = 3, angle = 60, color = { 255, 214, 160 }, shadows = true },
+		-- wash (INTERIORS, KitPlan.lamps): a warm SpotLight near the ceiling aimed down a wall, so the walls carry
+		-- the room's light in first person instead of the ceiling (no shadows, no pool, no fixture; tier 1 only)
+		wash = {
+			range = 20,
+			brightness = 1.8,
+			angle = 100,
+			color = { 255, 200, 150 },
+			shadows = false,
+			pool = 0,
+			lightY = 10.6, -- over the floor, under the ceiling (12)
+			off = 1.6, -- studs out from the kit wall face
+			tilt = 40, -- degrees below horizontal, toward the wall
+		},
 		-- Golden-frame warm pass (GOLDEN_FRAMES G1, PLAN_STEAM_PLUS §3.1): street lamps (LevelDress `street`) on the
 		-- pavement: a warm PointLight at the StreetLamp lantern (lightY / bulbY: the manifest light point) that
 		-- washes the shop front and the snow, and a bigger, denser warm pool (pool / poolRings / poolColor).
@@ -2558,7 +2571,7 @@ Config.Perf = {
 			haloLight = true,
 			particleScale = 1,
 			snowAlive = 240,
-			lightKindsOff = { "street" }, -- the Big Score's busiest view: 8 + your halo = 9
+			lightKindsOff = { "street", "wash" }, -- the Big Score's busiest view: 8 + your halo = 9
 		},
 		{ -- 3 performance: recipe C "Soft Toybox"
 			drawCalls = 250,
@@ -2576,7 +2589,7 @@ Config.Perf = {
 			haloLight = false,
 			particleScale = 0.5,
 			snowAlive = 60,
-			lightKindsOff = { "street", "accent" }, -- their bulbs and floor pools stay (unlit, no light object)
+			lightKindsOff = { "street", "accent", "wash" }, -- their bulbs and floor pools stay (unlit, no light object)
 		},
 		{ -- 4 minimum
 			drawCalls = 200,
@@ -2592,7 +2605,7 @@ Config.Perf = {
 			haloLight = false,
 			particleScale = 0.35,
 			snowAlive = 40,
-			lightKindsOff = { "street", "accent", "room" },
+			lightKindsOff = { "street", "accent", "room", "wash" },
 		},
 	},
 	-- Recipe C "Soft Toybox" (roblox_quality §1.4): LightDirector switches the Lighting service to it from this
@@ -3052,6 +3065,221 @@ Config.Big = {
 	BUDGET = { instances = 560, draws = 26, tris = 72000, lights = 0 },
 	DETAIL_OFF_TIER = 2,
 	FINE_OFF_TIER = 3,
+}
+
+-- Interiors (INTERIORS track, docs/audit/REVIEW_STEAM_PLUS.md gaps 8, 9 and 12; STYLE_BIBLE §19): eye-level props in every
+-- room (server Heist/DecorPlan, pure; kit assets/blender/interior.py), each level its own shop (a theme: the shop's
+-- name on the fascia and the blade sign, a hero window display, a wall frieze, the ceiling colour and the room light),
+-- and the first-person light look (the floor pools fade at grazing angles, client LightDirector; a dimmer tintable
+-- ceiling; warm wall washes). Visual only: every prop is CanCollide / CanQuery / CanTouch off and planned clear of every
+-- plate, door, loot point, hide, laser, switch, spawn, nav point, Gus's route, the van zone, the floor cables and the
+-- sightlines from the crew seats (tests/unit/HeistInterior.spec.luau, incl. a walk-grid route check).
+Config.Interior = {
+	ENABLED = true,
+	-- Client (Heist/LightDirector): parts with EH_Layer "decor" (the props, the teller brass and the frieze) hide from
+	-- this tier; the hero display, the ceiling colour, the room light and the fascia stay at every tier.
+	DECOR_OFF_TIER = 3,
+	-- First-person pools (client LightDirector): a pool's strength x a share from `min` (the camera looks across it at
+	-- an elevation of `from` degrees or less over its centre, e.g. a pool 10+ studs ahead of the 3.8-stud eye) to `max`
+	-- (`to` degrees or more: standing in it), smoothstep between. `max` is 1 once the camera is `high` studs or more
+	-- over the floor (diorama, classic, presentation shots keep the pools as they were); `hz` updates a second.
+	POOL_FADE = { from = 12, to = 40, min = 0.3, max = 0.62, high = 7, hz = 15 },
+	-- Per level at tier 1 (unit spec; perf_engine counts the real build): props, hero, frieze and brass together.
+	BUDGET = { tris = 22000, instances = 90 },
+	-- Placement (studs). WALL_GAP: a prop's back to the kit wall face (the kit wall is 2 thick, centred on the sim
+	-- line). STEP: candidate spacing along a wall. SPREAD: props of one room prefer slots far from each other.
+	WALL_GAP = 0.12,
+	KIT_WALL_HALF = 1.0,
+	WALL_PAD = 0.6, -- every wall's sim box grows this much for the overlap test (the kit wall's extra half)
+	STEP = 1.0,
+	PROP_GAP = 0.6, -- between two props
+	MAX_DEPTH = 3.4, -- floor props deeper than this never stand on a wall (keeps the room's middle open)
+	-- Keep-outs (2D, studs). door: along the door's normal (both sides) / across it (its frame).
+	CLEAR = {
+		plate = 1.5,
+		doorNormal = 5,
+		doorAcross = 1.5,
+		doorAcrossWall = 5, -- wall props and the frieze keep this far from a door's centre line ends (frames, lamps)
+		loot = 2.2,
+		hide = 3.5, -- a hide is walked into: its whole front stays open
+		laser = 2,
+		switch = 2.5,
+		spawn = 3,
+		nav = 1.5,
+		guard = 2.2, -- Gus's route legs and posts
+		van = 1,
+		cable = 0.7,
+		sight = 1.1, -- the line from crew seat 1 to every plate, door and the goal
+		rug = 0.2,
+		windowLow = 4.5, -- on a LevelDress window line only props under this height (the sill is 4.85)
+	},
+	-- Wall props: the height of the piece's bottom over the floor.
+	MOUNT = {
+		Decor_Poster_A = 5.3,
+		Decor_Poster_B = 5.3,
+		Decor_WallClock = 8.0,
+		Decor_Corkboard_4 = 5.2,
+		Decor_CardString_8 = 7.9,
+		Decor_CoatHooks_4 = 0, -- the coats hang to 2.6: planned like a floor prop (its footprint is checked)
+		Decor_DepositWall_8 = 0,
+	},
+	FRIEZE = { piece = "Decor_Frieze_8", y = 10.05 }, -- under the crown cove (10.95)
+	-- Room kinds per location: floor props in priority order, then wall props. A theme may swap pieces. "front" is the
+	-- band behind the street front, "goal" the band holding the goal loot, "back" any other.
+	ROOMS = {
+		CornerShop = {
+			front = {
+				floor = {
+					"Decor_StockShelf_8",
+					"Decor_Fridge_4",
+					"Decor_StockShelf_8",
+					"Decor_CandyCounter_6",
+					"Decor_MagRack_3",
+					"Decor_CatBed",
+				},
+				wall = { "Decor_Poster_A", "Decor_WallClock", "Decor_Poster_B", "Decor_CardString_8" },
+			},
+			back = {
+				floor = { "Decor_Boxes", "Decor_StockShelf_8", "Decor_MopBucket", "Decor_Boxes" },
+				wall = { "Decor_CoatHooks_4", "Decor_Corkboard_4", "Decor_WallClock" },
+			},
+			goal = {
+				floor = { "Decor_Desk_6", "Decor_Boxes", "Decor_MopBucket" },
+				wall = { "Decor_Corkboard_4", "Decor_CoatHooks_4", "Decor_Poster_B" },
+			},
+		},
+		ToyShop = {
+			front = {
+				floor = {
+					"Decor_ToyShelf_8",
+					"Decor_GiftWrap_6",
+					"Decor_TrainLoop_6",
+					"Decor_ToyShelf_8",
+					"Decor_CandyCane_Giant",
+					"Decor_CandyCane_Giant",
+				},
+				wall = { "Decor_Poster_A", "Decor_WallClock", "Decor_CardString_8" },
+			},
+			back = {
+				floor = { "Decor_Boxes", "Decor_ToyShelf_8", "Decor_Boxes" },
+				wall = { "Decor_CoatHooks_4", "Decor_Corkboard_4" },
+			},
+			goal = {
+				floor = { "Decor_Desk_6", "Decor_Boxes" },
+				wall = { "Decor_Corkboard_4", "Decor_WallClock" },
+			},
+		},
+		Bank = {
+			front = {
+				floor = { "Decor_Palm", "Decor_Bench_6", "Decor_QueueRope_8", "Decor_Palm", "Decor_Bench_6" },
+				wall = { "Decor_WallClock", "Decor_Poster_B" },
+			},
+			back = {
+				floor = { "Decor_DepositWall_8", "Decor_Desk_6", "Decor_Palm", "Decor_Boxes" },
+				wall = { "Decor_CoatHooks_4", "Decor_Corkboard_4", "Decor_WallClock" },
+			},
+			goal = {
+				floor = { "Decor_DepositWall_8", "Decor_DepositWall_8", "Decor_Boxes" },
+				wall = { "Decor_WallClock" },
+			},
+		},
+	},
+	-- Christmas pieces (planned only with the dressing layer).
+	XMAS = { Decor_CardString_8 = true, Decor_CandyCane_Giant = true, Xmas_Tree = true },
+	-- Bank teller counters carry the brass rail (Decor_BrassRail_8) along their top.
+	TELLER_BRASS = "Decor_BrassRail_8",
+	-- Each level's own shop. name: the fascia over the entrance and the BIG blade sign. hero: the window display (in
+	-- the front room against the street front, beside the entrance). swap: room pieces replaced. frieze / ceiling:
+	-- runtime colours of Decor_Frieze_8 and Ceiling_8x8_Tin (the ceiling about 0.6x the wall value in first person).
+	-- light: the room lamps' colour(s), pool and brightness (Config.Lighting.LOCATION's role, per level; nil brightness:
+	-- LAMP.room's). board / text: the fascia colours.
+	THEMES = {
+		grocer = {
+			name = "PIP'S GROCERY",
+			hero = "Decor_Grocer_Fruit",
+			frieze = { 58, 118, 82 },
+			ceiling = { 70, 54, 48 },
+			light = { room = { { 255, 186, 112 } }, pool = { 236, 196, 150 } },
+			board = { 36, 74, 54 },
+			text = { 255, 226, 150 },
+		},
+		bakery = {
+			name = "SUGAR & CRUMB BAKERY",
+			hero = "Decor_Bakery_Cakes",
+			swap = { Decor_MagRack_3 = "Decor_Bakery_Cakes" },
+			frieze = { 214, 150, 160 },
+			ceiling = { 68, 50, 54 },
+			light = { room = { { 255, 196, 160 } }, pool = { 242, 206, 184 } },
+			board = { 132, 58, 82 },
+			text = { 255, 232, 214 },
+		},
+		toyrepair = {
+			name = "TICK-TOCK TOY REPAIR",
+			hero = "Decor_Repair_Bench",
+			swap = { Decor_Fridge_4 = "Decor_ToyShelf_8", Decor_CandyCounter_6 = "Decor_RockingHorse" },
+			frieze = { 52, 100, 86 },
+			ceiling = { 48, 42, 48 },
+			-- Lights Out: deeper amber, a little dimmer; never near-black (LEVELS §13)
+			light = { room = { { 255, 168, 96 } }, pool = { 230, 176, 120 }, brightness = 1.35 },
+			board = { 32, 62, 58 },
+			text = { 250, 214, 140 },
+		},
+		pharmacy = {
+			name = "NIGHT OWL PHARMACY",
+			hero = "Decor_Pharmacy_Counter",
+			swap = { Decor_CandyCounter_6 = "Decor_StockShelf_8", Decor_CatBed = "Decor_Boxes" },
+			frieze = { 118, 170, 146 },
+			ceiling = { 52, 56, 60 },
+			light = { room = { { 236, 232, 204 } }, pool = { 216, 222, 196 } },
+			board = { 44, 92, 76 },
+			text = { 236, 250, 236 },
+		},
+		deli = {
+			name = "BIG CHEESE DELI",
+			hero = "Decor_Deli_Case",
+			swap = { Decor_MagRack_3 = "Decor_Boxes" },
+			frieze = { 150, 60, 66 },
+			ceiling = { 64, 50, 44 },
+			light = { room = { { 255, 196, 126 } }, pool = { 240, 204, 156 } },
+			board = { 120, 40, 52 },
+			text = { 255, 236, 200 },
+		},
+		jeweller = {
+			name = "GLINT & CO. JEWELLERS",
+			hero = "Decor_Jeweller_Case",
+			swap = { Decor_Fridge_4 = "Decor_Jeweller_Case", Decor_MopBucket = "Decor_Boxes" },
+			frieze = { 104, 84, 126 },
+			ceiling = { 56, 48, 64 },
+			light = { room = { { 255, 214, 172 } }, pool = { 236, 214, 196 } },
+			board = { 40, 34, 60 },
+			text = { 236, 226, 200 },
+		},
+		toystore = {
+			name = "HOARDSWORTH'S TOYS",
+			hero = "Decor_RockingHorse", -- in the window beside the door (the train loop needs more room than L5 has)
+			frieze = { 226, 172, 188 }, -- candy pink (the store's raspberry band is too near Alarm Red at eye level)
+			ceiling = { 70, 42, 54 },
+			board = { 140, 47, 75 },
+			text = { 255, 226, 150 },
+		},
+		bank = {
+			name = "HOARDSWORTH & CO.",
+			hero = "Xmas_Tree", -- the waiting-room tree beside the doors (dressing layer only)
+			frieze = { 176, 160, 128 },
+			ceiling = { 54, 52, 74 },
+			board = { 42, 45, 82 },
+			text = { 236, 226, 200 },
+		},
+	},
+	-- Which theme each level is. A Corner Shop daily vault takes DAILY_SHOPS[(num - 300 - 1) % #DAILY_SHOPS + 1]
+	-- (DV01 = the deli); the Toy Shop always toystore, the Bank always bank.
+	LEVELS = {
+		cs1_back_room = "grocer",
+		cs2_two_doors = "bakery",
+		cs3_lights_out = "toyrepair",
+		cs4_night_clerk = "pharmacy",
+	},
+	DAILY_SHOPS = { "deli", "jeweller", "grocer", "bakery", "pharmacy", "toyrepair" },
 }
 
 -- The story intro (docs/PLAN_FIRST_PERSON.md §5 "INTRO", docs/art/intro/STORYBOARD.md; MASTERPLAN §4.3): a

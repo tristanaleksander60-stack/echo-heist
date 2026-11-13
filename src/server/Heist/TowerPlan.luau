@@ -77,6 +77,8 @@ export type Options = {
 	location: string?, -- KitPlan.location (default: the spec's)
 	dressing: boolean?, -- Christmas layer (light strings)
 	seed: number?, -- default: the level's num
+	ceiling: { number }?, -- INTERIORS: the level's ceiling colour (Ceiling_8x8_Tin and the flat slab; nil: cfg.TRIM tiles)
+	sign: string?, -- INTERIORS: the blade sign's text (the level's own shop; nil: deps.signs)
 }
 
 local function box(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number): Box
@@ -243,19 +245,27 @@ function TowerPlan.plan(level: any, specs: { [string]: any }?, opts: Options?, d
 	end
 
 	---------------------------------------------------------------- the ceiling
-	if has("Ceiling_8x8") then
-		local lo, hi = scene("Ceiling_8x8")
+	-- INTERIORS: with a level ceiling colour the tintable Ceiling_8x8_Tin takes over (the coffers in the level's own,
+	-- dimmer colour: the ceiling never outshines the walls in first person), and the slabs take the same colour
+	local tint = o.ceiling
+	local tile = if tint and has("Ceiling_8x8_Tin") then "Ceiling_8x8_Tin" else "Ceiling_8x8"
+	local flat = tint or cfg.TRIM
+	if has(tile) then
+		local lo, hi = scene(tile)
 		for _, tx in KP.tiles(lx0, lx1) do
 			for _, tz in KP.tiles(lz0, lz1) do
 				local pivot, scale = KP.fit(lo, hi, box(tx[1], ceilY, tz[1], tx[2], ceilY + cfg.CEIL_DEPTH, tz[2]), 0)
-				item({ "Ceiling_8x8" }, pivot, scale, "ceiling", "fine", "ceiling")
+				local it = item({ tile }, pivot, scale, "ceiling", "fine", "ceiling")
+				if tile == "Ceiling_8x8_Tin" then
+					it.color = tint
+				end
 			end
 		end
 		-- the low tiers' ceiling: one flat slab inside the tiles' plates (hidden by them until FINE_OFF_TIER hides the
 		-- tiles; then its underside, 0.3 over the wall tops, is the ceiling: still never the sky)
-		slab("CeilingFlat", box(lx0, ceilY + 0.3, lz0, lx1, ceilY + 0.4, lz1), cfg.TRIM, "ceiling")
+		slab("CeilingFlat", box(lx0, ceilY + 0.3, lz0, lx1, ceilY + 0.4, lz1), flat, "ceiling")
 	else
-		slab("Ceiling", box(lx0, ceilY, lz0, lx1, ceilY + cfg.CEIL_DEPTH, lz1), cfg.TRIM, "ceiling")
+		slab("Ceiling", box(lx0, ceilY, lz0, lx1, ceilY + cfg.CEIL_DEPTH, lz1), flat, "ceiling")
 	end
 	-- the hollow between the ceiling and the roof is never seen; a lid over the ceiling hides the shell's inside from
 	-- the diorama's high angles while the faces are cut away and the ceiling stays (subject outside, camera above)
@@ -419,7 +429,7 @@ function TowerPlan.plan(level: any, specs: { [string]: any }?, opts: Options?, d
 
 	---------------------------------------------------------------- the street front's signature
 	local sign = S.sign
-	local signText = deps.signs and deps.signs[styleName] or ""
+	local signText = o.sign or (deps.signs and deps.signs[styleName]) or ""
 	if S.kind == "tenement" and sign then
 		-- a blade sign off the front's left end, over the band (seen down the street)
 		local sx = x0 + 3.2

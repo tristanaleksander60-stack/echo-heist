@@ -32,6 +32,40 @@ The table below shows what Studio must show after the import (generated from `as
 | Counter_4x4.fbx | Counter_4x4 | 4.3 x 3.5 x 4.3 | 208 | Box | SmoothPlastic | on | on | base |
 | Counter_8x2.fbx | Counter_8x2 | 8.3 x 3.5 x 2.3 | 244 | Box | SmoothPlastic | on | on | base |
 | Counter_8x4.fbx | Counter_8x4 | 8.3 x 3.5 x 4.3 | 316 | Box | SmoothPlastic | on | on | base |
+| Decor_Bank.fbx | Decor_Bench_6 | 6 x 2.05 x 1.8 | 160 | Box | SmoothPlastic | off | on | base |
+| Decor_Bank.fbx | Decor_BrassRail_8 | 7.96 x 3.03 x 0.965 | 768 | Box | SmoothPlastic | off | on | base |
+| Decor_Bank.fbx | Decor_DepositWall_8 | 8.2 x 7 x 0.55 | 1220 | Box | SmoothPlastic | off | off | base |
+| Decor_Bank.fbx | Decor_Palm | 3.235 x 6.093 x 3.235 | 504 | Box | SmoothPlastic | off | on | base |
+| Decor_Bank.fbx | Decor_QueueRope_8 | 8.1 x 3.22 x 0.9 | 600 | Box | SmoothPlastic | off | on | base |
+| Decor_Office.fbx | Decor_Boxes | 3.6 x 4.42 x 2.45 | 340 | Box | SmoothPlastic | off | on | base |
+| Decor_Office.fbx | Decor_CoatHooks_4 | 4 x 3.4 x 0.75 | 288 | Box | SmoothPlastic | off | off | base |
+| Decor_Office.fbx | Decor_Corkboard_4 | 4 x 3 x 0.24 | 272 | Box | SmoothPlastic | off | off | base |
+| Decor_Office.fbx | Decor_Desk_6 | 6 x 4.95 x 3 | 488 | Box | SmoothPlastic | off | on | base |
+| Decor_Shop.fbx | Decor_CandyCounter_6 | 6.3 x 4.3 x 2.7 | 472 | Box | SmoothPlastic | off | on | base |
+| Decor_Shop.fbx | Decor_CardString_8 | 8.16 x 1.529 x 0.14 | 264 | Box | SmoothPlastic | off | off | xmas |
+| Decor_Shop.fbx | Decor_CatBed | 2.7 x 1.01 x 2.632 | 404 | Box | SmoothPlastic | off | on | base |
+| Decor_Shop.fbx | Decor_Fridge_4 | 4.4 x 8 x 2.95 | 988 | Box | SmoothPlastic | off | on | base |
+| Decor_Shop.fbx | Decor_Fridge_4_Glass | 3.74 x 6.05 x 0.04 | 12 | Box | Glass (T 0.6) | off | off | base |
+| Decor_Shop.fbx | Decor_Fridge_4_Light | 3.8 x 0.2 x 0.2 | 12 | Box | Neon | off | off | base |
+| Decor_Shop.fbx | Decor_MagRack_3 | 3.44 x 4.6 x 1.6 | 372 | Box | SmoothPlastic | off | on | base |
+| Decor_Shop.fbx | Decor_MopBucket | 1.7 x 5.999 x 2.298 | 192 | Box | SmoothPlastic | off | on | base |
+| Decor_Shop.fbx | Decor_Poster_A | 2.4 x 3.2 x 0.11 | 100 | Box | SmoothPlastic | off | off | base |
+| Decor_Shop.fbx | Decor_Poster_B | 2.4 x 3.2 x 0.11 | 72 | Box | SmoothPlastic | off | off | base |
+| Decor_Shop.fbx | Decor_StockShelf_8 | 8.2 x 7.5 x 2.1 | 1324 | Box | SmoothPlastic | off | on | base |
+| Decor_Shop.fbx | Decor_WallClock | 2 x 2 x 0.35 | 328 | Box | SmoothPlastic | off | off | base |
+| Decor_Theme.fbx | Decor_Bakery_Cakes | 2.8 x 4.26 x 2.73 | 1084 | Box | SmoothPlastic | off | on | base |
+| Decor_Theme.fbx | Decor_Deli_Case | 6 x 6.35 x 2.58 | 572 | Box | SmoothPlastic | off | on | base |
+| Decor_Theme.fbx | Decor_Grocer_Fruit | 5 x 3.26 x 3.12 | 1524 | Box | SmoothPlastic | off | on | base |
+| Decor_Theme.fbx | Decor_Jeweller_Case | 5.05 x 5.3 x 2.35 | 1128 | Box | SmoothPlastic | off | on | base |
+| Decor_Theme.fbx | Decor_Pharmacy_Counter | 6.3 x 7 x 2.75 | 524 | Box | SmoothPlastic | off | on | base |
+| Decor_Theme.fbx | Decor_Repair_Bench | 6 x 7 x 2.6 | 552 | Box | SmoothPlastic | off | on | base |
+| Decor_Toy.fbx | Decor_CandyCane_Giant | 3.256 x 9.191 x 1.8 | 696 | Box | SmoothPlastic | off | on | xmas |
+| Decor_Toy.fbx | Decor_GiftWrap_6 | 6 x 4.544 x 3 | 444 | Box | SmoothPlastic | off | on | base |
+| Decor_Toy.fbx | Decor_RockingHorse | 4.03 x 3.587 x 1.3 | 436 | Box | SmoothPlastic | off | on | base |
+| Decor_Toy.fbx | Decor_ToyShelf_8 | 8.2 x 7.5 x 2.1 | 1648 | Box | SmoothPlastic | off | on | base |
+| Decor_Toy.fbx | Decor_TrainLoop_6 | 6 x 2.43 x 3.2 | 452 | Box | SmoothPlastic | off | on | base |
+| Decor_Trim.fbx | Ceiling_8x8_Tin | 8 x 0.55 x 8 | 168 | Box | SmoothPlastic | off | off | base |
+| Decor_Trim.fbx | Decor_Frieze_8 | 8 x 0.85 x 0.2 | 108 | Box | SmoothPlastic | off | off | base |
 | Diamond.fbx | Diamond | 2 x 1.75 x 2 | 94 | Box | SmoothPlastic | off | off | base |
 | Facade_8x10.fbx | Facade_8x10 | 8 x 9.15 x 1.4 | 360 | Box | SmoothPlastic | off | off | base |
 | Facade_8x10.fbx | Facade_8x10_Body | 8 x 10 x 1 | 48 | Box | SmoothPlastic | off | off | base |
@@ -232,7 +266,7 @@ The table below shows what Studio must show after the import (generated from `as
 | Xmas_Tree.fbx | Xmas_Tree_Lights | 4.119 x 5.64 x 4.033 | 400 | Box | Neon | off | off | xmas |
 | Xmas_Wreath.fbx | Xmas_Wreath | 2.826 x 3.56 x 1.135 | 548 | Box | SmoothPlastic | off | off | xmas |
 
-**90 FBX files, 214 MeshParts, 98,838 triangles in all.** Christmas layer: 17 parts.
+**96 FBX files, 248 MeshParts, 117,354 triangles in all.** Christmas layer: 19 parts.
 <!-- kit-table:end -->
 
 ---
@@ -533,5 +567,5 @@ Use this if the meshes, sizes or collision do not survive `rojo build`. Then we 
    ```
    Then it sets Size, TextureID, Material, PivotOffset and the other flags from the manifest. Each heist clones the cached parts.
 <!-- fallback-cost:start -->
-4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 214 MeshParts and 98,838 triangles about **4.7 s** at boot (generated by kit_docs.py). Boot only, never per heist.
+4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 248 MeshParts and 117,354 triangles about **5.5 s** at boot (generated by kit_docs.py). Boot only, never per heist.
 <!-- fallback-cost:end -->

@@ -16,6 +16,7 @@ local Catalog = require("../../src/shared/Levels/Catalog")
 local Config = require("../../src/shared/Config")
 local LevelDress = require("../../src/server/Heist/LevelDress")
 local DailyVaults = require("../../src/shared/Levels/DailyVaults")
+local DecorPlan = require("../../src/server/Heist/DecorPlan")
 local Guards = require("../../src/shared/Sim/Guards")
 local KitData = require("../../src/server/Kit/KitData")
 local KitPlan = require("../../src/server/Heist/KitPlan")
@@ -29,6 +30,8 @@ type Box = { minX: number, minY: number, minZ: number, maxX: number, maxY: numbe
 local specs: { [string]: any } = (KitData :: any).parts
 local dressing = table.find(process.args, "plain") == nil
 local withDaily = table.find(process.args, "daily") ~= nil
+-- "nodecor": the level as it was before the INTERIORS track (no props, no theme, no wall washes): the before frames
+local interiors = Config.Interior.ENABLED and table.find(process.args, "nodecor") == nil
 
 local function box(b: Box): { number }
 	return { b.minX, b.minY, b.minZ, b.maxX, b.maxY, b.maxZ }
@@ -66,15 +69,21 @@ local function lamps(level: any, location: string): { any }
 	local L = Config.Lighting
 	local out = {}
 	local list = KitPlan.lamps(level, LevelDress[level.id], L)
-	local looks = KitPlan.lampLooks(list, location, L)
+	local themeLight = if interiors then DecorPlan.light(level, location, Config.Interior) else nil
+	local looks = KitPlan.lampLooks(list, location, L, themeLight)
 	for k, l in list do
 		local spec = L.LAMP[l.kind]
+		if l.kind == "wash" and not interiors then
+			continue
+		end
 		table.insert(out, {
 			x = l.x,
 			z = l.z,
 			kind = l.kind,
 			range = spec.range,
-			brightness = spec.brightness,
+			brightness = looks[k].brightness or spec.brightness,
+			dir = if l.kind == "wash" then { l.dx, l.dz } else nil,
+			tilt = spec.tilt,
 			angle = spec.angle,
 			color = looks[k].color,
 			poolColor = looks[k].pool,
@@ -98,12 +107,14 @@ end
 -- The BIG building (Heist/TowerPlan, what Heist/Overhead builds): kit pieces with their part frames, plain parts,
 -- the cut-away groups.
 local function tower(level: any, location: string): any
-	local plan = TowerPlan.plan(
-		level,
-		specs,
-		{ location = location, dressing = dressing },
-		{ cfg = Config.Big, KP = KitPlan, signs = Strings.BIG_SIGN }
-	)
+	local _, theme = DecorPlan.theme(level, location, Config.Interior)
+	local useTheme = interiors and theme ~= nil
+	local plan = TowerPlan.plan(level, specs, {
+		location = location,
+		dressing = dressing,
+		ceiling = if useTheme then theme.ceiling else nil,
+		sign = if useTheme and location == "CornerShop" then theme.name else nil,
+	}, { cfg = Config.Big, KP = KitPlan, signs = Strings.BIG_SIGN })
 	if plan == nil then
 		return nil
 	end
@@ -151,6 +162,18 @@ local function dump(spec: any): any
 		lighting = Config.Lighting,
 	})
 
+	-- the interiors (Heist/DecorPlan, what KitDresser adds): props, the hero display, the frieze, the teller brass
+	local decor = if interiors
+		then DecorPlan.plan(level, specs, {
+			location = location,
+			dressing = dressing,
+			dress = LevelDress[level.id],
+			base = plan.items,
+		}, { KP = KitPlan, cfg = Config.Interior, lighting = Config.Lighting })
+		else nil
+	for _, it in (decor and decor.items) or {} do
+		table.insert(plan.items, it :: any)
+	end
 	local kit = {}
 	for _, item in plan.items do
 		local pieces = {}
@@ -167,6 +190,8 @@ local function dump(spec: any): any
 			pivot = { item.pivot.x, item.pivot.y, item.pivot.z, item.pivot.yaw },
 			scale = item.scale,
 			pieces = pieces,
+			color = (item :: any).color,
+			tier = (item :: any).tier,
 		})
 	end
 	local covered = {}
@@ -286,6 +311,9 @@ local function dump(spec: any): any
 		kit = kit,
 		tower = tower(level, location),
 		warnings = plan.warnings,
+		theme = decor and decor.theme,
+		fascia = if interiors then DecorPlan.fascia(level, location, { KP = KitPlan, cfg = Config.Interior }) else nil,
+		interior = Config.Interior,
 	}
 end
 

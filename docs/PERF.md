@@ -201,3 +201,19 @@ Measured (perf_engine on v72; section E per kit-built instance, section B the bu
 Tier 4 stays over its triangle and draw estimates (±50 %): the L6 interior (~84k) dominates; the BIG
 building adds ~15k there. If the phone bench (§8) shows tier 4 frame time trouble, the next cut is the front's window
 trims and the giant order at tier 4.
+
+## 10. INTERIORS (2026-11-13; Saved v87)
+
+Eye-level props in every room (`Heist/DecorPlan`, STYLE_BIBLE §19), a tintable frieze and ceiling, warm wall washes.
+All visual only: CanCollide / CanQuery / CanTouch / CastShadow off (perf_engine "interiors": 0 loud parts on 6 levels).
+
+| | Tier 1 | Tier 2 | Tier 3 | Tier 4 |
+|---|---|---|---|---|
+| Props per level (L1-L6) | 39-52 parts, ~10-15k tris | same | hidden (EH_Layer "decor"); the hero display stays | as tier 3 |
+| Wall washes (SpotLight, no shadows) | 4-8 per level, every view <= 9 lights (+ halo = 10) | off | off | off |
+| Busiest view (L6, 4 players, 12 clones, 2 Gus) | ~346k / 450k tris, ~319 draws / 450, 9 lights (+1 halo) | **~310k / 300k** ⚠, ~317 / 350, 8 (+1) | ~151k / 150k, ~234 / 250 | ~151k / 120k ⚠, ~231 / 200 ⚠ |
+
+Before this track: tier 1 ~333k, tier 2 ~297k, tiers 3-4 ~150k. Tier 2 is now ~3 % over its triangle estimate: the
+estimate counts the whole L6 (every room's props), not the view, and is ±50 %. If the phone bench shows tier 2 trouble,
+the next cut is the bank's heavy props at tier 2 (`Decor_DepositWall_8` 1,220 tris, `Decor_BrassRail_8` 768).
+Tiers 3-4 are where they were before (+1k: the hero displays and the tintable ceiling).

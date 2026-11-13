@@ -1,0 +1,418 @@
+{
+ "asset": "Decor_Toy",
+ "objects": [
+  {
+   "name": "Decor_ToyShelf_8",
+   "class": "module",
+   "tris": 1648,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    8.2,
+    2.1,
+    7.5
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -4.1,
+     -1.1,
+     0.0
+    ],
+    "local_max": [
+     4.1,
+     1.0,
+     7.5
+    ]
+   },
+   "swatches": [
+    "holly",
+    "holly_lo",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi",
+    "snow",
+    "steel",
+    "steel_hi",
+    "wood",
+    "wood_hi",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 513,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "toy shelf 8 x 2 x 7.5: teddies, trains, blocks and boxed dolls",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_RockingHorse",
+   "class": "small",
+   "tris": 436,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    4.03,
+    1.3,
+    3.587
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -2.15,
+     -0.65,
+     -0.0866
+    ],
+    "local_max": [
+     1.8796,
+     0.65,
+     3.5
+    ]
+   },
+   "swatches": [
+    "marble_hi",
+    "ribbon",
+    "ribbon_hi",
+    "snow",
+    "steel_lo",
+    "wood",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 180,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "rocking horse 4.6 long (cream, dappled, a red saddle)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_GiftWrap_6",
+   "class": "module",
+   "tris": 444,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    6.0,
+    3.0,
+    4.544
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.0,
+     -1.5,
+     0.0
+    ],
+    "local_max": [
+     3.0,
+     1.5,
+     4.544
+    ]
+   },
+   "swatches": [
+    "holly",
+    "holly_lo",
+    "marble_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi",
+    "snow",
+    "steel_hi",
+    "wood",
+    "wood_hi",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 174,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "gift-wrap table 6 x 3: rolls, spools, wrapped boxes",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_CandyCane_Giant",
+   "class": "small",
+   "tris": 696,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    3.256,
+    1.8,
+    9.191
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.9,
+     -0.9,
+     0.0
+    ],
+    "local_max": [
+     2.3559,
+     0.9,
+     9.1907
+    ]
+   },
+   "swatches": [
+    "ribbon",
+    "snow"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 260,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "xmas",
+   "tags": [],
+   "joint": null,
+   "role": "xmas",
+   "notes": "giant candy cane 9.5 tall (dressing layer)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_TrainLoop_6",
+   "class": "small",
+   "tris": 452,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    6.0,
+    3.2,
+    2.43
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.0,
+     -1.6,
+     0.0
+    ],
+    "local_max": [
+     3.0,
+     1.6,
+     2.43
+    ]
+   },
+   "swatches": [
+    "holly",
+    "holly_lo",
+    "ink_hi",
+    "marble_hi",
+    "ribbon",
+    "snow",
+    "steel"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 266,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "toy train loop on an oval plinth 6 x 3.2 x 2.4",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 3676,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "9ecd0bca665a9c57d99f",
+ "fbx": {
+  "path": "assets/fbx/Decor_Toy.fbx",
+  "bytes": 91484,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Decor_CandyCane_Giant",
+   "Decor_GiftWrap_6",
+   "Decor_RockingHorse",
+   "Decor_ToyShelf_8",
+   "Decor_TrainLoop_6"
+  ],
+  "geometry_extents": [
+   [
+    1.3,
+    3.587,
+    4.03
+   ],
+   [
+    1.8,
+    3.256,
+    9.191
+   ],
+   [
+    2.1,
+    7.5,
+    8.2
+   ],
+   [
+    2.43,
+    3.2,
+    6.0
+   ],
+   [
+    3.0,
+    4.544,
+    6.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/interior.py",
+ "notes": "Toy Shop eye-level props: toy shelf, rocking horse, gift-wrap table, giant candy cane, train loop.",
+ "turntable": "docs/art/turntables/Decor_Toy.png",
+ "seconds": 26.9
+}

@@ -1,0 +1,503 @@
+{
+ "asset": "Decor_Theme",
+ "objects": [
+  {
+   "name": "Decor_Bakery_Cakes",
+   "class": "small",
+   "tris": 1084,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    2.8,
+    2.73,
+    4.26
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.4,
+     -1.3649,
+     0.0
+    ],
+    "local_max": [
+     1.4,
+     1.3649,
+     4.26
+    ]
+   },
+   "swatches": [
+    "holly",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi",
+    "snow",
+    "wood_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 344,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "bakery window display: tiered stand, cupcakes and a layer cake (4.3 tall)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_Pharmacy_Counter",
+   "class": "module",
+   "tris": 524,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    6.3,
+    2.75,
+    7.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.15,
+     -1.35,
+     0.0
+    ],
+    "local_max": [
+     3.15,
+     1.4,
+     7.0
+    ]
+   },
+   "swatches": [
+    "holly",
+    "holly_lo",
+    "leaf_hi",
+    "marble",
+    "marble_hi",
+    "snow",
+    "steel",
+    "steel_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 146,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "pharmacy counter 6.3 x 2.75 with jars and a green cross sign (7 tall)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_Deli_Case",
+   "class": "module",
+   "tris": 572,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    6.0,
+    2.58,
+    6.35
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.0,
+     -1.28,
+     0.0
+    ],
+    "local_max": [
+     3.0,
+     1.3,
+     6.35
+    ]
+   },
+   "swatches": [
+    "holly_lo",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi",
+    "snow",
+    "steel",
+    "steel_hi",
+    "steel_lo",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 204,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "deli case 6 x 2.6: cheeses and hams, salamis on a rail (6.4 tall)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_Jeweller_Case",
+   "class": "module",
+   "tris": 1128,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    5.05,
+    2.35,
+    5.3
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -2.5,
+     -1.15,
+     0.0
+    ],
+    "local_max": [
+     2.55,
+     1.2,
+     5.3
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "marble_hi",
+    "ribbon",
+    "steel_hi",
+    "wood",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 317,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "jeweller's velvet case 5 x 2.3 with rings, watches and a bust",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_Repair_Bench",
+   "class": "module",
+   "tris": 552,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    6.0,
+    2.6,
+    7.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.0,
+     -1.3,
+     0.0
+    ],
+    "local_max": [
+     3.0,
+     1.3,
+     7.0
+    ]
+   },
+   "swatches": [
+    "holly",
+    "ink",
+    "ink_hi",
+    "marble_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi",
+    "snow",
+    "steel",
+    "steel_hi",
+    "steel_lo",
+    "wood",
+    "wood_hi",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 163,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "toy-repair workbench 6 x 2.6 with a pegboard, a teddy and a robot (7 tall)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_Grocer_Fruit",
+   "class": "module",
+   "tris": 1524,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    5.0,
+    3.12,
+    3.26
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -2.5,
+     -1.62,
+     0.0
+    ],
+    "local_max": [
+     2.5,
+     1.5,
+     3.26
+    ]
+   },
+   "swatches": [
+    "holly",
+    "leaf_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi",
+    "wood",
+    "wood_hi",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 357,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "grocer's stepped fruit stand 5 x 3 x 3.2",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 5384,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "4b025131ce3753777966",
+ "fbx": {
+  "path": "assets/fbx/Decor_Theme.fbx",
+  "bytes": 116204,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Decor_Bakery_Cakes",
+   "Decor_Deli_Case",
+   "Decor_Grocer_Fruit",
+   "Decor_Jeweller_Case",
+   "Decor_Pharmacy_Counter",
+   "Decor_Repair_Bench"
+  ],
+  "geometry_extents": [
+   [
+    2.35,
+    5.05,
+    5.3
+   ],
+   [
+    2.58,
+    6.0,
+    6.35
+   ],
+   [
+    2.6,
+    6.0,
+    7.0
+   ],
+   [
+    2.73,
+    2.8,
+    4.26
+   ],
+   [
+    2.75,
+    6.3,
+    7.0
+   ],
+   [
+    3.12,
+    3.26,
+    5.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/interior.py",
+ "notes": "Each level's own shop: bakery, pharmacy, deli, jeweller, toy repair, grocer hero props.",
+ "turntable": "docs/art/turntables/Decor_Theme.png",
+ "seconds": 83.9
+}

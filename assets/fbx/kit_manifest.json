@@ -337,6 +337,42 @@
    ],
    "sim": "none"
   },
+  "Ceiling_8x8_Tin": {
+   "model": "Decor_Trim",
+   "size": [
+    8.0,
+    0.55,
+    8.0
+   ],
+   "tris": 168,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.0,
+    -0.55,
+    0.0
+   ],
+   "boundsMax": [
+    0.0,
+    0.0,
+    8.0
+   ],
+   "origin": [
+    0.0,
+    0.55,
+    0.0
+   ],
+   "sim": "none",
+   "tint": "runtime (Config.Interior ceiling)"
+  },
   "Clock_6": {
    "model": "Clock_6",
    "size": [
@@ -554,6 +590,1164 @@
     "EH_Counter"
    ],
    "sim": "solid, sight = false (Gus sees over), 3.5 tall"
+  },
+  "Decor_Bakery_Cakes": {
+   "model": "Decor_Theme",
+   "size": [
+    2.8,
+    4.26,
+    2.73
+   ],
+   "tris": 1084,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.4,
+    0.0,
+    -1.365
+   ],
+   "boundsMax": [
+    1.4,
+    4.26,
+    1.365
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Bench_6": {
+   "model": "Decor_Bank",
+   "size": [
+    6.0,
+    2.05,
+    1.8
+   ],
+   "tris": 160,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -3.0,
+    0.0,
+    -0.9
+   ],
+   "boundsMax": [
+    3.0,
+    2.05,
+    0.9
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Boxes": {
+   "model": "Decor_Office",
+   "size": [
+    3.6,
+    4.42,
+    2.45
+   ],
+   "tris": 340,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.8,
+    0.0,
+    -1.23
+   ],
+   "boundsMax": [
+    1.8,
+    4.42,
+    1.22
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_BrassRail_8": {
+   "model": "Decor_Bank",
+   "size": [
+    7.96,
+    3.03,
+    0.965
+   ],
+   "tris": 768,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -3.98,
+    -0.03,
+    -0.785
+   ],
+   "boundsMax": [
+    3.98,
+    3.0,
+    0.18
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_CandyCane_Giant": {
+   "model": "Decor_Toy",
+   "size": [
+    3.256,
+    9.191,
+    1.8
+   ],
+   "tris": 696,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "xmas",
+   "passed": true,
+   "boundsMin": [
+    -2.356,
+    0.0,
+    -0.9
+   ],
+   "boundsMax": [
+    0.9,
+    9.191,
+    0.9
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_CandyCounter_6": {
+   "model": "Decor_Shop",
+   "size": [
+    6.3,
+    4.3,
+    2.7
+   ],
+   "tris": 472,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -3.15,
+    0.0,
+    -1.35
+   ],
+   "boundsMax": [
+    3.15,
+    4.3,
+    1.35
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_CardString_8": {
+   "model": "Decor_Shop",
+   "size": [
+    8.16,
+    1.529,
+    0.14
+   ],
+   "tris": 264,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "xmas",
+   "passed": true,
+   "boundsMin": [
+    -4.08,
+    0.171,
+    -0.14
+   ],
+   "boundsMax": [
+    4.08,
+    1.7,
+    0.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_CatBed": {
+   "model": "Decor_Shop",
+   "size": [
+    2.7,
+    1.01,
+    2.632
+   ],
+   "tris": 404,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.35,
+    0.0,
+    -1.316
+   ],
+   "boundsMax": [
+    1.35,
+    1.01,
+    1.316
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_CoatHooks_4": {
+   "model": "Decor_Office",
+   "size": [
+    4.0,
+    3.4,
+    0.75
+   ],
+   "tris": 288,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.0,
+    2.6,
+    -0.75
+   ],
+   "boundsMax": [
+    2.0,
+    6.0,
+    0.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Corkboard_4": {
+   "model": "Decor_Office",
+   "size": [
+    4.0,
+    3.0,
+    0.24
+   ],
+   "tris": 272,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.0,
+    0.0,
+    -0.24
+   ],
+   "boundsMax": [
+    2.0,
+    3.0,
+    0.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Deli_Case": {
+   "model": "Decor_Theme",
+   "size": [
+    6.0,
+    6.35,
+    2.58
+   ],
+   "tris": 572,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -3.0,
+    0.0,
+    -1.28
+   ],
+   "boundsMax": [
+    3.0,
+    6.35,
+    1.3
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_DepositWall_8": {
+   "model": "Decor_Bank",
+   "size": [
+    8.2,
+    7.0,
+    0.55
+   ],
+   "tris": 1220,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -4.1,
+    0.0,
+    -0.55
+   ],
+   "boundsMax": [
+    4.1,
+    7.0,
+    0.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Desk_6": {
+   "model": "Decor_Office",
+   "size": [
+    6.0,
+    4.95,
+    3.0
+   ],
+   "tris": 488,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -3.0,
+    0.0,
+    -1.5
+   ],
+   "boundsMax": [
+    3.0,
+    4.95,
+    1.5
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Fridge_4": {
+   "model": "Decor_Shop",
+   "size": [
+    4.4,
+    8.0,
+    2.95
+   ],
+   "tris": 988,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.2,
+    0.0,
+    -1.65
+   ],
+   "boundsMax": [
+    2.2,
+    8.0,
+    1.3
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Fridge_4_Glass": {
+   "model": "Decor_Shop",
+   "size": [
+    3.74,
+    6.05,
+    0.04
+   ],
+   "tris": 12,
+   "class": "tiny",
+   "collision": "Box",
+   "material": "Glass",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.87,
+    0.83,
+    -1.36
+   ],
+   "boundsMax": [
+    1.87,
+    6.88,
+    -1.32
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none",
+   "transparency": 0.6,
+   "tint": "Vault Steel light #A9B2CC"
+  },
+  "Decor_Fridge_4_Light": {
+   "model": "Decor_Shop",
+   "size": [
+    3.8,
+    0.2,
+    0.2
+   ],
+   "tris": 12,
+   "class": "tiny",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.9,
+    6.75,
+    -1.1
+   ],
+   "boundsMax": [
+    1.9,
+    6.95,
+    -0.9
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Frieze_8": {
+   "model": "Decor_Trim",
+   "size": [
+    8.0,
+    0.85,
+    0.2
+   ],
+   "tris": 108,
+   "class": "tiny",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -4.0,
+    0.0,
+    -0.2
+   ],
+   "boundsMax": [
+    4.0,
+    0.85,
+    0.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none",
+   "tint": "runtime (Config.Interior theme frieze)"
+  },
+  "Decor_GiftWrap_6": {
+   "model": "Decor_Toy",
+   "size": [
+    6.0,
+    4.544,
+    3.0
+   ],
+   "tris": 444,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -3.0,
+    0.0,
+    -1.5
+   ],
+   "boundsMax": [
+    3.0,
+    4.544,
+    1.5
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Grocer_Fruit": {
+   "model": "Decor_Theme",
+   "size": [
+    5.0,
+    3.26,
+    3.12
+   ],
+   "tris": 1524,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.5,
+    0.0,
+    -1.62
+   ],
+   "boundsMax": [
+    2.5,
+    3.26,
+    1.5
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Jeweller_Case": {
+   "model": "Decor_Theme",
+   "size": [
+    5.05,
+    5.3,
+    2.35
+   ],
+   "tris": 1128,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.55,
+    0.0,
+    -1.15
+   ],
+   "boundsMax": [
+    2.5,
+    5.3,
+    1.2
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_MagRack_3": {
+   "model": "Decor_Shop",
+   "size": [
+    3.44,
+    4.6,
+    1.6
+   ],
+   "tris": 372,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.72,
+    0.0,
+    -0.8
+   ],
+   "boundsMax": [
+    1.72,
+    4.6,
+    0.8
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_MopBucket": {
+   "model": "Decor_Shop",
+   "size": [
+    1.7,
+    5.999,
+    2.298
+   ],
+   "tris": 192,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.85,
+    0.0,
+    -0.808
+   ],
+   "boundsMax": [
+    0.85,
+    5.999,
+    1.49
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Palm": {
+   "model": "Decor_Bank",
+   "size": [
+    3.235,
+    6.093,
+    3.235
+   ],
+   "tris": 504,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.618,
+    0.0,
+    -1.618
+   ],
+   "boundsMax": [
+    1.618,
+    6.093,
+    1.618
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Pharmacy_Counter": {
+   "model": "Decor_Theme",
+   "size": [
+    6.3,
+    7.0,
+    2.75
+   ],
+   "tris": 524,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -3.15,
+    0.0,
+    -1.35
+   ],
+   "boundsMax": [
+    3.15,
+    7.0,
+    1.4
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Poster_A": {
+   "model": "Decor_Shop",
+   "size": [
+    2.4,
+    3.2,
+    0.11
+   ],
+   "tris": 100,
+   "class": "tiny",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.2,
+    0.0,
+    -0.11
+   ],
+   "boundsMax": [
+    1.2,
+    3.2,
+    0.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Poster_B": {
+   "model": "Decor_Shop",
+   "size": [
+    2.4,
+    3.2,
+    0.11
+   ],
+   "tris": 72,
+   "class": "tiny",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.2,
+    0.0,
+    -0.11
+   ],
+   "boundsMax": [
+    1.2,
+    3.2,
+    0.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_QueueRope_8": {
+   "model": "Decor_Bank",
+   "size": [
+    8.1,
+    3.22,
+    0.9
+   ],
+   "tris": 600,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -4.05,
+    0.0,
+    -0.45
+   ],
+   "boundsMax": [
+    4.05,
+    3.22,
+    0.45
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_Repair_Bench": {
+   "model": "Decor_Theme",
+   "size": [
+    6.0,
+    7.0,
+    2.6
+   ],
+   "tris": 552,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -3.0,
+    0.0,
+    -1.3
+   ],
+   "boundsMax": [
+    3.0,
+    7.0,
+    1.3
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_RockingHorse": {
+   "model": "Decor_Toy",
+   "size": [
+    4.03,
+    3.587,
+    1.3
+   ],
+   "tris": 436,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.88,
+    -0.087,
+    -0.65
+   ],
+   "boundsMax": [
+    2.15,
+    3.5,
+    0.65
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_StockShelf_8": {
+   "model": "Decor_Shop",
+   "size": [
+    8.2,
+    7.5,
+    2.1
+   ],
+   "tris": 1324,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -4.1,
+    0.0,
+    -1.1
+   ],
+   "boundsMax": [
+    4.1,
+    7.5,
+    1.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_ToyShelf_8": {
+   "model": "Decor_Toy",
+   "size": [
+    8.2,
+    7.5,
+    2.1
+   ],
+   "tris": 1648,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -4.1,
+    0.0,
+    -1.1
+   ],
+   "boundsMax": [
+    4.1,
+    7.5,
+    1.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_TrainLoop_6": {
+   "model": "Decor_Toy",
+   "size": [
+    6.0,
+    2.43,
+    3.2
+   ],
+   "tris": 452,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -3.0,
+    0.0,
+    -1.6
+   ],
+   "boundsMax": [
+    3.0,
+    2.43,
+    1.6
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Decor_WallClock": {
+   "model": "Decor_Shop",
+   "size": [
+    2.0,
+    2.0,
+    0.35
+   ],
+   "tris": 328,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.0,
+    0.0,
+    -0.35
+   ],
+   "boundsMax": [
+    1.0,
+    2.0,
+    0.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
   },
   "Diamond": {
    "model": "Diamond",
@@ -9091,6 +10285,10 @@
   "Intro_Tower_Sign": {
    "idle": "#FFB85C",
    "runtime": "fixed: Hoardsworth's giant H stays lit all night"
+  },
+  "Decor_Fridge_4_Light": {
+   "idle": "#F6C0A2",
+   "runtime": "fixed (the fridge's lit shelves; no Light object)"
   }
  }
 }
