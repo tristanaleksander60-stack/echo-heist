@@ -353,7 +353,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "a2fefe4af5eb494d247f",
+ "contentHash": "5ed4a01410ee91e28bb1",
  "fbx": {
   "path": "assets/fbx/Decor_Bank.fbx",
   "bytes": 80636,
@@ -397,5 +397,6 @@
  },
  "spec": "assets/blender/interior.py",
  "notes": "Bank eye-level props: teller brass, queue rope, marble bench, potted palm, deposit boxes.",
- "seconds": 0.7
+ "turntable": "docs/art/turntables/Decor_Bank.png",
+ "seconds": 45.7
 }
