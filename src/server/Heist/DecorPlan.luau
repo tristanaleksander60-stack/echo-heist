@@ -580,8 +580,8 @@ function DecorPlan.plan(level: any, specs: { [string]: any }, opts: Options?, de
 			if isWall and (f.front or onWindowLine(f)) then
 				continue
 			end
-			if not isWall and onWindowLine(f) and h > C.windowLow then
-				continue
+			if not isWall and (onWindowLine(f) or (f.front and role ~= "hero")) and h > C.windowLow then
+				continue -- never a tall prop against glass (the display windows belong to the hero)
 			end
 			for _, s in slots(f, w, d, back) do
 				local b = bandOf(s.cz)
