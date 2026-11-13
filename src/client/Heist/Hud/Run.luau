@@ -673,7 +673,7 @@ function Run.build(ctx: any)
 		if ctx.reticle then
 			ctx.reticle.set(fp and can, prompt)
 		end
-		ctx.fpLayout(fp)
+		ctx.fpLayout(fp or state.crewView == true) -- Crew View keeps the first-person layout (nothing jumps)
 		controls.ffPill.Visible = folder ~= nil and folder:GetAttribute("CanFF") == true and not myEnded
 		hints.update(now, dt)
 	end

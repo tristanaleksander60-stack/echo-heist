@@ -441,8 +441,8 @@ function CameraDirector.new(state: any): any
 			crewFocus = f:Lerp(want, k)
 			crewDist += (distT - crewDist) * k
 		end
-		local focus = crewFocus :: Vector3
-		local pos, look = CrewView.orbit(t3(focus), fpYaw, CR.PITCH, crewDist)
+		local at = crewFocus :: Vector3
+		local pos, look = CrewView.orbit(t3(at), fpYaw, CR.PITCH, crewDist)
 		local cf = CFrame.lookAt(v3(pos), v3(look))
 		crewShotCf = cf
 		return cf, CR.FOV
@@ -1038,7 +1038,7 @@ function CameraDirector.new(state: any): any
 				if crewW > 0 then
 					cf = cf:Lerp(crewCf, crewW)
 					fov += (crewFov - fov) * crewW
-					focusAt = focusAt:Lerp((crewFocus :: Vector3), crewW)
+					focusAt = focusAt:Lerp(crewFocus :: Vector3, crewW)
 				end
 			end
 			write(cf, fov + kick)

@@ -144,8 +144,11 @@ end
 -- Camera position for a focus, yaw, pitch and distance, and the point it looks at (the focus).
 function CrewView.orbit(focus: V3, yawDeg: number, pitchDeg: number, distance: number): (V3, V3)
 	local d = CrewView.look(yawDeg, pitchDeg)
-	return { focus[1] - d[1] * distance, focus[2] - d[2] * distance, focus[3] - d[3] * distance },
-		{ focus[1], focus[2], focus[3] }
+	return { focus[1] - d[1] * distance, focus[2] - d[2] * distance, focus[3] - d[3] * distance }, {
+		focus[1],
+		focus[2],
+		focus[3],
+	}
 end
 
 -- A point in normalised screen space (-1..1 both ways, +y up) for a camera at `pos` with a view yaw and pitch;
@@ -178,7 +181,14 @@ function CrewView.project(
 end
 
 -- The framed points' screen extent from a focus at distance d: the middle (x, y) and whether all fit.
-local function extent(focus: V3, pts: { V3 }, yaw: number, d: number, aspect: number, cfg: any): (number, number, boolean)
+local function extent(
+	focus: V3,
+	pts: { V3 },
+	yaw: number,
+	d: number,
+	aspect: number,
+	cfg: any
+): (number, number, boolean)
 	local pos = CrewView.orbit(focus, yaw, cfg.PITCH, d)
 	local x0, x1, y0, y1 = math.huge, -math.huge, math.huge, -math.huge
 	local ok = true

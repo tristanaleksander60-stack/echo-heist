@@ -293,6 +293,16 @@ function HeistClient.start()
 		cursorLocked = function(): boolean
 			return camera.cursorLocked()
 		end,
+		-- Crew View (Hud/CrewView, Hud/Controls): hold / release, the camera blend + veil + active, may it start.
+		crewHold = function(who: string, on: boolean)
+			camera.setCrewHeld(who, on)
+		end,
+		crewState = function(): (number, number, boolean)
+			return camera.crew()
+		end,
+		crewAllowed = function(): boolean
+			return camera.crewAllowed()
+		end,
 		-- Your newest clone this run, where it is drawn (world space), or nil: the L1 look cue (Hud/Hints).
 		ownClone = function(): Vector3?
 			local id = echo.newestOwn()
@@ -311,6 +321,21 @@ function HeistClient.start()
 	local director = RewindDirector.new(hud.fxGui, fovKick, function()
 		return state.origin, if state.level then state.level.floorY or 0 else 0, state.lastRunT, echo.paths()
 	end)
+	-- Crew View frames every visible clone and the run's objective; the rewind finish drops it.
+	local crewList: { Vector3 } = {}
+	camera.setCrewSource({
+		points = function(): { Vector3 }
+			table.clear(crewList)
+			return if state.where == "heist" then echo.positions(crewList) else crewList
+		end,
+		objective = function(): Vector3?
+			local o = CameraDirector.objectiveOf(state.level)
+			return if o then (state.origin or Vector3.zero) + Vector3.new(o[1], o[2], o[3]) else nil
+		end,
+		rewinding = function(): boolean
+			return director.isPlaying()
+		end,
+	})
 	hud.bigStamp = function(text: string, color: Color3, hold: number?)
 		director.stamp(text, color, hold or 1.2, not state.reduced)
 	end

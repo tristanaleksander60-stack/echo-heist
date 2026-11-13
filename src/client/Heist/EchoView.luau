@@ -1323,6 +1323,17 @@ function EchoView.new(state: any): any
 		return n
 	end
 
+	-- Where every visible clone is drawn (world space), appended to `out` (Crew View frames them; no allocation
+	-- beyond the caller's list).
+	function view.positions(out: { Vector3 }): { Vector3 }
+		for _, entry in order do
+			if entry.fade < 1 and entry.lastPos then
+				table.insert(out, entry.lastPos)
+			end
+		end
+		return out
+	end
+
 	-- Hides every clone at once (the Line-up figures replace them) without a new run.
 	function view.hideAll()
 		for _, entry in order do
