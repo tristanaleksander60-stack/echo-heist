@@ -2775,7 +2775,7 @@ do
 			f:SetAttribute("UserId", id)
 			return f
 		end
-		local OWNER, A, B = -101, -102, -103
+		local OWNER, A, B = 9000000101, 9000000102, 9000000103 -- fake ids (bossIds takes positive ids only)
 		local boss, pa, pb = fakePlayer(OWNER), fakePlayer(A), fakePlayer(B)
 		local here = { boss, pa, pb }
 		local calls = { award = 0, has = 0, info = 0 }
