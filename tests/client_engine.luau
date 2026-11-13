@@ -3048,5 +3048,74 @@ check(
 	"intro polish: no stand-ins with the kit, HUD hidden during the intro and restored (" .. tostring(polishErr) .. ")"
 )
 
+-- Q. The run coach (RUN2 CLARITY track, Hud/Coach): built in the engine on L1 with a clone that ends on plate A; run 2's
+-- frozen transition shows the card ("Clone holds the plate!"), the clone's path (dashes + the end ring) and a camera
+-- focus between its start and its stop; after control the card goes and the world arrow (3 parts) stands over the
+-- target; clear() leaves nothing in workspace.EH_Coach.
+local okCoach, coachErr = pcall(function()
+	local Coach = require(clientHeist:WaitForChild("Hud"):WaitForChild("Coach"))
+	local Catalog = require(shared:WaitForChild("Levels"):WaitForChild("Catalog"))
+	local LevelSpec = require(shared:WaitForChild("Sim"):WaitForChild("LevelSpec"))
+	local Sampler = require(shared:WaitForChild("Rec"):WaitForChild("Sampler"))
+	local CodecQ = require(shared:WaitForChild("Rec"):WaitForChild("Codec"))
+	local Help = require(shared:WaitForChild("Heist"):WaitForChild("Help"))
+	local level = LevelSpec.compile(Catalog[1])
+	local rec = Sampler.new(nil, nil, 20)
+	local sp = level.spawns[1]
+	for i = 0, 60 do
+		local u = math.min(i / 30, 1)
+		Sampler.push(rec, sp.x + (10 - sp.x) * u, level.rootY, sp.z + (-8 - sp.z) * u, 0, 0)
+	end
+	Sampler.finish(rec, CodecQ.END.EndRun)
+	local gui = Instance.new("ScreenGui")
+	gui.Parent = scratch
+	local runHud = Instance.new("Frame")
+	runHud.Size = UDim2.fromOffset(720, 330)
+	runHud.Parent = gui
+	local state = {
+		level = level,
+		origin = Vector3.new(0, 500, 0),
+		recs = { [7] = rec },
+		mySeat = 1,
+		fpView = true,
+		phase = "Run",
+	}
+	local ctx: any = { state = state, runHud = runHud }
+	local coach = Coach.build(ctx)
+	assert(coach.active(), "L1 is coached")
+	local m = {
+		run = 2,
+		transition = 2,
+		beat = 1,
+		actors = { { id = 2, kind = "clone", owner = -7, seat = 1, slot = 1, key = 7, run = 1 } },
+	}
+	local held = Help.deckPlates(level, { { rec = rec, status = "OK" } })
+	coach.onRun(m, held, -7)
+	local st = coach.state()
+	assert(st.card == "Clone holds the plate!", "card: " .. tostring(st.card))
+	assert(st.path > 3, "the clone's path is drawn (" .. st.path .. " parts)")
+	assert(st.focus ~= nil, "the camera focus")
+	local hasCam = workspace.CurrentCamera ~= nil -- the arrow faces the camera (a server DataModel has one)
+	coach.point({ kind = "plate", index = 1 })
+	coach.update(os.clock() + 2.5) -- after control: the card goes, the arrow shows
+	st = coach.state()
+	assert(st.card == nil, "control hides the card")
+	local f = workspace:FindFirstChild("EH_Coach")
+	local arrows = 0
+	for _, p in (f and f:GetChildren() or {}) do
+		if string.sub(p.Name, 1, 5) == "Arrow" and p:IsA("BasePart") and p.Transparency < 1 then
+			arrows += 1
+		end
+	end
+	assert(arrows == 3 or not hasCam, "the world arrow stands over the plate (" .. arrows .. " parts)")
+	coach.clear()
+	assert(f == nil or #f:GetChildren() == 0, "clear() leaves nothing")
+	if f then
+		f:Destroy()
+	end
+	return string.format("card + path %d parts + arrow %d parts", st.path, arrows)
+end)
+check(okCoach, "run coach: card, clone path, camera focus, world arrow (" .. tostring(coachErr) .. ")")
+
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))

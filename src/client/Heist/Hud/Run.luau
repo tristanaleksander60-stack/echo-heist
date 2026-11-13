@@ -101,6 +101,9 @@ function Run.build(ctx: any)
 			alarmSeenHeist = false
 			ctx.stopsLineUntil = 0
 			ctx.l1ArmedRuns = 0
+			-- A new heist's strip starts from its own (empty) deck: L1's clone pill used to stay up through L2's run 1
+			-- (the strip was only redrawn when a deck arrived, after run 1: owner screenshot, v125).
+			top.renderStrip()
 		end
 		l1Counted = false
 		-- A redo run says so (§7.4): "REDO 3" in the run label colour.
@@ -167,6 +170,9 @@ function Run.build(ctx: any)
 	end
 
 	function hud.onRunEnd(p: any)
+		if ctx.coach then
+			ctx.coach.clear() -- the coach's card, clone path and arrow belong to the run
+		end
 		interactBtn.Visible = false
 		controls.ffPill.Visible = false
 		ffPill = FfPill.new()
@@ -600,6 +606,7 @@ function Run.build(ctx: any)
 				if hintStage > 0 then
 					hints.show(world, now, hintStage)
 				end
+				ctx.l1HintStage = hintStage -- the beam (stage 2+) is the pointer then: the coach's arrow steps aside
 			else
 				hints.clear()
 			end
@@ -610,6 +617,7 @@ function Run.build(ctx: any)
 				hintStage = 0
 				hints.clear()
 			end
+			ctx.l1HintStage = nil
 		end
 
 		-- Contextual Interact. First person: what you look at (Heist/LookTarget: loot, a switch, the van while

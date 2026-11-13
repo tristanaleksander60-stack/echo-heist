@@ -83,7 +83,9 @@ Config.Sim = {
 	MAX_LEVEL_CAP = 8, -- Clone Party, Big Scores and the finale grant 8
 
 	-- Run lifecycle (§3.1)
-	L1_AUTO_END_SECONDS = 2.0, -- tutorial: run 1 auto-ends after this long on the plate (§7.5)
+	-- tutorial: run 1 auto-ends after this long on the plate (§7.5). 3 s (was 2): "Now press R" gives the kid
+	-- time to press REWIND themselves (the tutorial teaches it by doing); nobody fails, it rewinds anyway.
+	L1_AUTO_END_SECONDS = 3.0,
 	STANDING_EPS = 0.05, -- studs per tick under which a live player counts as standing (fast-forward)
 
 	-- Mechanisms (§3.1, §6.7, §8.10)
@@ -2793,6 +2795,32 @@ Config.Onboarding = {
 	-- The L1 clone's "YOU, 10 SEC AGO" label in first person: studs over its head anchor (3.6 in the other
 	-- cameras), so it is in frame from a few studs behind the clone as it walks out of you.
 	YOU_LABEL_FP_LIFT = 1.5,
+	-- The run coach (RUN2 CLARITY track; Shared/Heist/RunCoach, Hud/Coach): one thing to do at a time on the
+	-- coached levels, computed from the level and what your clones hold.
+	COACH = {
+		-- LevelSpec ids that are coached (L1 is the mandatory ~10 s tutorial, L2 its staged follow-up).
+		LEVELS = { cs1_back_room = true, cs2_two_doors = true },
+		-- The run-start beat on runs 2..BEAT_MAX_RUN of a coached level: the server adds BEAT_SECONDS to the
+		-- frozen transition (no run clock, nobody moves), the camera holds on your newest clone's path with
+		-- "YOU, 10 SEC AGO" over it, and the card says what it will do. Then control.
+		BEAT_SECONDS = 1.0,
+		BEAT_MAX_RUN = 3,
+		-- The clone's path on the floor (dashes in its colour, a ring where it stops): shown from the beat until
+		-- the clone has stopped + PATH_HOLD_SECONDS (at most PATH_MAX_SECONDS after control).
+		PATH_DASH_SPACING = 1.4, -- studs between dashes
+		PATH_DASH_MAX = 48,
+		PATH_HOLD_SECONDS = 1.0,
+		PATH_MAX_SECONDS = 8,
+		PATH_RING_SIZE = 5, -- studs across the end ring
+		-- The world arrow over your next target (a plate, a door, the goal loot, the van): a chevron this
+		-- many studs above it, bobbing BOB studs at BOB_HZ (still under reduced motion).
+		ARROW_HEIGHT = 7.5,
+		ARROW_SIZE = 2.2,
+		ARROW_BOB = 0.6,
+		ARROW_BOB_HZ = 1.2,
+		-- The coach card (HudLayout.COACH_CARD) during the frozen transition only (control hides it).
+		CARD_TEXT = 24,
+	},
 }
 
 -- Performance track (PLAN_STEAM_PLUS §4.7, MASTERPLAN §6.8 / §8.6, roblox_quality §1.4 / §6.4; docs/PERF.md).

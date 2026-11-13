@@ -33,6 +33,7 @@ local Config = require("../../src/shared/Config")
 local EventLog = require("../../src/shared/Sim/EventLog")
 local Harness = require("./Harness")
 local NaiveKid = require("./NaiveKid")
+local RunCoach = require("../../src/shared/Heist/RunCoach")
 local Solutions = require("./Solutions")
 
 local H = Config.Heist
@@ -62,12 +63,15 @@ local STORY_LEVEL = { -- L2, L3, L4 each: an even share of the plan's L1-L4 afte
 local LEVER_L2 = 4 * 60
 local OLD_PARTY_PAUSE = H.BETWEEN_MAX_SECONDS
 
+-- The rewind before run `run` of launch level L<designNum>, plus the run coach's beat on the coached levels
+-- (Shared/Heist/RunCoach.beatSeconds: L1 and L2, runs 2-3).
 local function rewind(designNum: number, run: number): number
 	local T = H.REWIND_TRANSITION
+	local beat = RunCoach.beatSeconds(Harness.spec(designNum).id, run)
 	if designNum == 1 or run > H.QUICK_REWIND_FROM_RUN then
-		return T[2]
+		return T[2] + beat
 	end
-	return T[1]
+	return T[1] + beat
 end
 
 -- First run of the party whose log has a Swarm event for seat 1 with at least `copies`
@@ -148,35 +152,46 @@ end
 return function(test)
 	local party = Harness.level(5)
 
-	-- MASTERPLAN §7.5's bars (first clone <= 30 s, first bank <= 45 s), for the scripted run and the
-	-- median of 40 naive kids (who follow the §7.5 hints; the cash shows through the right window).
-	test("L1: first clone <= 30 s and first bank <= 45 s (bot, and the naive kids' median)", function()
+	-- MASTERPLAN §7.5's bars (first clone <= 30 s, first bank <= 45 s), for the scripted run and the median of 40
+	-- coached kids (since the RUN2 CLARITY track the HUD's run coach points at the plate from second 0:
+	-- NaiveKid.coachedBrain follows it). The old naive kids, who ignore the coach until the 16 s stuck hint, keep a
+	-- floor: their median first bank stays within §10.3's gate (60 s; L1's auto-end now waits 3 s on the plate, so
+	-- a kid who only wanders across it no longer makes a clone by accident).
+	test("L1: first clone <= 30 s and first bank <= 45 s (bot, and the coached kids' median)", function()
 		local level = Harness.level(1)
 		local _, runs = Harness.play(level, Solutions.planFor(level))
 		local c, b = l1Times(runs)
 		Assert.truthy(c and c <= 30, "bot: first clone within 30 s")
 		Assert.truthy(b and b <= 45, "bot: first bank within 45 s")
-		local cs, bs = {}, {}
-		for seed = 1, 40 do
-			local _, kr = Harness.play(level, NaiveKid.plan(level, seed, 3))
-			local kc, kb = l1Times(kr)
-			table.insert(cs, kc or math.huge)
-			table.insert(bs, kb or math.huge)
+		local function kids(opts: any?): ({ number }, { number })
+			local cs, bs = {}, {}
+			for seed = 1, 40 do
+				local _, kr = Harness.play(level, NaiveKid.plan(level, seed, 3, opts))
+				local kc, kb = l1Times(kr)
+				table.insert(cs, kc or math.huge)
+				table.insert(bs, kb or math.huge)
+			end
+			table.sort(cs)
+			table.sort(bs)
+			return cs, bs
 		end
-		table.sort(cs)
-		table.sort(bs)
+		local cs, bs = kids({ kind = "coached" })
+		local ns, nb = kids(nil)
 		print(
 			string.format(
-				"        [L1] bot: clone %.1f s, bank %.1f s; kids' median: clone %.1f s, bank %.1f s (p90 %.1f s)",
+				"        [L1] bot: clone %.1f s, bank %.1f s; coached kids' median: clone %.1f s, bank %.1f s (p90 %.1f s); uncoached: clone %.1f s, bank %.1f s",
 				c :: number,
 				b :: number,
 				cs[20],
 				bs[20],
-				bs[36]
+				bs[36],
+				ns[20],
+				nb[20]
 			)
 		)
-		Assert.le(cs[20], 30, "kids' median first clone within 30 s")
-		Assert.le(bs[20], 45, "kids' median first bank within 45 s")
+		Assert.le(cs[20], 30, "coached kids' median first clone within 30 s")
+		Assert.le(bs[20], 45, "coached kids' median first bank within 45 s")
+		Assert.le(nb[20], 60, "uncoached kids' median first bank within the 60 s gate")
 	end)
 
 	test("play order: L1, L2, the Clone Party break, L3, L4, then the Big Score", function()

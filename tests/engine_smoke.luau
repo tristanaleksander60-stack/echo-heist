@@ -288,7 +288,7 @@ do
 			end
 		end
 
-		-- Run 1 (FTUE): stand on the plate; the run auto-ends after 2 s there.
+		-- Run 1 (FTUE): stand on the plate; the run auto-ends after Config.Sim.L1_AUTO_END_SECONDS (3 s) there.
 		step(0.05)
 		check(inst.sim.phase == "Run" and inst.sim.runIndex == 1, "sim: run 1 started")
 		waitFor(1.1) -- intro transition
@@ -297,7 +297,7 @@ do
 		check(inst.folder:GetAttribute("P1Held") == true, "sim: plate A held (attribute)")
 		check(inst.folder:GetAttribute("D1Open") == true, "sim: plate A opens the back-room door (attribute)")
 		local waited = 0
-		while inst.sim.phase == "Run" and waited < 3 do
+		while inst.sim.phase == "Run" and waited < 4.5 do
 			step(0.05)
 			waited += 0.05
 		end
@@ -314,7 +314,7 @@ do
 		-- Run 2: the clone walks to the plate and holds the door; grab the cash, bank it.
 		waitFor(0.5) -- L1 starts the next run by itself
 		check(inst.sim.phase == "Run" and inst.sim.runIndex == 2, "sim: run 2 started by itself (L1)")
-		waitFor(1.1) -- quick rewind
+		waitFor(1.1 + (inst.runMsg.beat or 0)) -- quick rewind + the coach's run-start beat (RunCoach.beatSeconds)
 		walkTo(0, 4)
 		waitFor(1.0)
 		check(

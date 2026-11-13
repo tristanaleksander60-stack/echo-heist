@@ -26,6 +26,8 @@ local Config = require("../../src/shared/Config")
 local Geom = require("../../src/shared/Sim/Geom")
 local HeistSim = require("../../src/shared/Sim/HeistSim")
 local Mechanisms = require("../../src/shared/Sim/Mechanisms")
+local Help = require("../../src/shared/Heist/Help")
+local RunCoach = require("../../src/shared/Heist/RunCoach")
 
 local NaiveKid = {}
 
@@ -360,10 +362,112 @@ function NaiveKid.confusedBrain(level: any, seed: number, run: number, after: nu
 	return { decide = decide }
 end
 
--- One run's brain for any kid (opts.kind: nil = naive, "greedy", "confused").
+-- What the HUD's run coach sees (Hud/Coach builds the same World from attributes): your carry, the plate under you,
+-- the plates the clones of this run end on, the open doors and the loot at home.
+function NaiveKid.coachWorld(level: any, sim: any, playerId: number): any
+	local a = HeistSim.liveActor(sim, playerId)
+	local onPlate = nil
+	if a then
+		for i, p in level.plates do
+			if Geom.contains(p.box, a.x, a.y, a.z) then
+				onPlate = i
+			end
+		end
+	end
+	local slots = {}
+	for _, c in sim.actors do
+		if c.kind == "clone" and c.rec then
+			table.insert(slots, { rec = c.rec, status = "OK" })
+		end
+	end
+	local doorOpen, lootHome = {}, {}
+	for i, d in sim.mech.doors do
+		doorOpen[i] = d.open == true
+	end
+	for i, item in sim.loot.items do
+		lootHome[i] = item.state == "Home" or item.state == "Dropped"
+	end
+	return {
+		carrying = a ~= nil and a.carrying ~= 0,
+		onPlate = onPlate,
+		held = Help.deckPlates(level, slots),
+		doorOpen = doorOpen,
+		lootHome = lootHome,
+	}
+end
+
+-- The coached kid (opts.kind = "coached"; RUN2 CLARITY track): a kid who reads the coach's line and follows its one
+-- world arrow (Shared/Heist/RunCoach.goal: the same decision the HUD draws), slowly and imperfectly:
+--   * a reading pause (READ s) each time the line changes, and a look-around wander now and then (opts.wander,
+--     default 0.12 per decision, in the first runs only);
+--   * on the plate ("Now press R") it presses REWIND after a beat with chance opts.press (default 0.8) per look,
+--     else just stands there (L1 rewinds by itself after Config.Sim.L1_AUTO_END_SECONDS);
+--   * walks re-decide every LEG s, so a shut door ("YOU: through the door!") is bumped into until its clone opens it.
+-- `log` (opts.log, optional) collects {run, t, key} each time the coach's line changes, for the specs.
+local READ = { 0.3, 0.8 }
+local LEG = 1.2
+function NaiveKid.coachedBrain(level: any, seed: number, run: number, opts: any?): any
+	local o = opts or {}
+	local rnd = lcg(seed * 4241 + run * 30011 + 5)
+	local wander = if o.wander ~= nil then o.wander else 0.12
+	local press = if o.press ~= nil then o.press else 0.8
+	local area = NaiveKid.AREAS[level.spec.location] or NaiveKid.AREAS.CornerShop
+	local lastKey = ""
+	local decide
+	decide = function(bot: any, sim: any, _view: any, t: number): { any }
+		local goal = RunCoach.goal(level, NaiveKid.coachWorld(level, sim, bot.id))
+		local key = goal.line.key .. (goal.line.plate or "")
+		local steps: { any } = {}
+		if key ~= lastKey then
+			lastKey = key
+			if o.log then
+				table.insert(o.log, { run = run, t = t, key = key })
+			end
+			table.insert(steps, { wait = rnd(READ[1], READ[2]) })
+		end
+		if run <= 2 and rnd(0, 1) < wander then
+			table.insert(steps, { go = { rnd(area[1], area[2]), rnd(area[3], area[4]) }, timeout = rnd(0.6, 1.5) })
+			table.insert(steps, { decide = decide })
+			return steps
+		end
+		if goal.rewind then
+			table.insert(steps, { wait = rnd(0.4, 1.0) })
+			if rnd(0, 1) < press then
+				table.insert(steps, { endRun = true })
+				table.insert(steps, { stay = true })
+			else
+				table.insert(steps, { decide = decide })
+			end
+			return steps
+		end
+		local target = goal.target
+		if not target then
+			table.insert(steps, { wait = 0.3 })
+			table.insert(steps, { decide = decide })
+			return steps
+		end
+		local x, _, z = RunCoach.targetPos(level, target)
+		if target.kind == "door" then
+			z -= 1 -- into the doorway (it opens toward the back of the shop)
+		end
+		for _, s in walkTo(level, bot, nil, t, x, z, LEG, 0.4) do
+			table.insert(steps, s)
+		end
+		if target.kind == "loot" then
+			table.insert(steps, { grab = level.loot[target.index].id })
+		end
+		table.insert(steps, { decide = decide })
+		return steps
+	end
+	return { decide = decide }
+end
+
+-- One run's brain for any kid (opts.kind: nil = naive, "greedy", "confused", "coached").
 function NaiveKid.brainFor(level: any, seed: number, run: number, opts: any?): any
 	local kind = opts and opts.kind
-	if kind == "greedy" then
+	if kind == "coached" then
+		return NaiveKid.coachedBrain(level, seed, run, opts)
+	elseif kind == "greedy" then
 		return NaiveKid.greedyBrain(level, seed, run)
 	elseif kind == "confused" then
 		return NaiveKid.confusedBrain(level, seed, run)

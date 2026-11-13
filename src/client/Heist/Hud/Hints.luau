@@ -16,6 +16,9 @@
 --   * every failure says why and what to try: one counterplay line per cause (Help.advice),
 --     within ADVICE_DELAY s of the event (≤ 1 s);
 --   * the bigger first-time beats (Heist/FirstTime): first plate press, rewind, clone, bank;
+--   * the run coach on the coached levels (L1, the mandatory tutorial, and L2; RUN2 CLARITY track): the objective
+--     line is Shared/Heist/RunCoach.goal's one next move for the world as it is, and its target gets the one world
+--     arrow (Hud/Coach, which also draws the run-start card, the beat's clone path and its camera focus);
 --   * first person (the default camera, PLAN_FIRST_PERSON wave C): lines that name a button name this
 --     device's (Strings.forDevice: "Look at the cash. Press E." / X / "Tap GRAB."); the look cue (Hud/LookCue)
 --     points at your L1 clone walking out of your own body, and at the chalk ghost, while out of view; the
@@ -35,6 +38,7 @@ local GhostTapes = require(HeistShared:WaitForChild("GhostTapes"))
 local Help = require(HeistShared:WaitForChild("Help"))
 local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
+local RunCoach = require(HeistShared:WaitForChild("RunCoach"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
 local FirstTime = require(script.Parent.Parent:WaitForChild("FirstTime"))
@@ -126,6 +130,31 @@ function Hints.build(ctx: any): any
 
 	local ghost: any = nil -- the chalk ghost while it plays (below)
 
+	-- What the run coach reads (RunCoach.World), from the instance attributes: the plate under you, the plates this
+	-- run's clones end on, the doors open now and the loot at home.
+	function hints.coachWorld(pos: Vector3?, carrying: boolean): RunCoach.World
+		local folder = state.folder
+		local level = state.level
+		local doorOpen: { [number]: boolean } = {}
+		local lootHome: { [number]: boolean } = {}
+		if folder and level then
+			for i in level.doors do
+				doorOpen[i] = folder:GetAttribute("D" .. i .. "Open") == true
+			end
+			for i in level.loot do
+				local st = folder:GetAttribute("K" .. i .. "State")
+				lootHome[i] = st == nil or st == "Home" or st == "Dropped"
+			end
+		end
+		return {
+			carrying = carrying,
+			onPlate = plateUnder(pos),
+			held = runDeckHeld,
+			doorOpen = doorOpen,
+			lootHome = lootHome,
+		}
+	end
+
 	-- A line that names a button, for this device in first person (Strings.forDevice); the plain line otherwise.
 	local function say(key: string): string
 		-- Crew View keeps the first-person lines (the camera left your eyes only for the peek)
@@ -146,6 +175,24 @@ function Hints.build(ctx: any): any
 		end
 		if now < gusIntroUntil then
 			return Strings.GUS_INTRO, false, true
+		end
+		local coach = ctx.coach
+		if coach and coach.active() then
+			-- The run coach (Shared/Heist/RunCoach): one next move from the world as it is, its target under the
+			-- one world arrow. While the coach card holds the line (the transition) the objective line stays empty.
+			local goal = RunCoach.goal(state.level, hints.coachWorld(pos, carrying))
+			coach.point(if ghost or ctx.l1HintStage ~= nil and ctx.l1HintStage >= 2 then nil else goal.target)
+			if ctx.coachCardUp then
+				return "", false, true
+			end
+			-- L1: REWIND pulses on the plate (the Run HUD's tutorial rule); L2: REWIND breathes (the right move).
+			rewindRight = goal.rewind and not Common.isTutorial(state)
+			local device = Common.device()
+			local fp = state.fpView == true or state.crewView == true
+			return Strings.coachLine(goal.line, device, fp), goal.rewind, true
+		end
+		if coach then
+			coach.point(nil)
 		end
 		if Common.isTutorial(state) then
 			if hints.autoEndArmed() then
@@ -650,8 +697,13 @@ function Hints.build(ctx: any): any
 			end
 		end
 		runDeckHeld = if level then Help.deckPlates(level, slots) else {}
-		if mine and FirstTime.firstTime("clone") then
+		local coached = RunCoach.coached(level)
+		if mine and FirstTime.firstTime("clone") and not coached then
+			-- (a coached level's run-start beat says it instead: the card and "YOU, 10 SEC AGO")
 			firstCloneUntil = runStart + O.FIRST_CLONE_LINE_SECONDS
+		end
+		if ctx.coach then
+			ctx.coach.onRun(m, runDeckHeld, localPlayer.UserId)
 		end
 		-- L1: your clone walks out of your own body ("YOU, 10 SEC AGO"); in first person the look cue points
 		-- at it whenever it is out of view, until it has had time to reach the plate.
@@ -754,6 +806,9 @@ function Hints.build(ctx: any): any
 	-- Per frame (Hud/Run.update, after the objective line).
 	function hints.update(now: number, dt: number)
 		updateGhost(now, dt)
+		if ctx.coach then
+			ctx.coach.update(now)
+		end
 		updateLookCue(now)
 		updateChip()
 		if ctx.rewindRightMoveFromHelp ~= rewindRight then
@@ -777,6 +832,9 @@ function Hints.build(ctx: any): any
 	-- Off the run HUD (garage, cut-scenes): drop the chip, the finger and the ghost.
 	function hints.hideHelp()
 		stopGhost()
+		if ctx.coach then
+			ctx.coach.clear()
+		end
 		lookCue.hide()
 		chipMode = ""
 		chip.Visible = false

@@ -681,7 +681,11 @@ function HeistClient.start()
 			-- C1: the run-start beat eases from the objective to you inside the transition.
 			local spawns = state.level and state.level.spawns
 			local spawn = spawns and spawns[((state.mySeat or 1) - 1) % #spawns + 1]
-			camera.frameRunStart(CameraDirector.objectiveOf(state.level), transition, spawn and spawn.yaw)
+			-- The run coach's beat (L1 / L2 runs 2-3, Hud/Coach): the camera holds on your newest clone's walk, then
+			-- eases into your eyes; otherwise the level's objective.
+			local focus = hud.coachFocus()
+			local objective = if focus then { focus.X, focus.Y, focus.Z } else CameraDirector.objectiveOf(state.level)
+			camera.frameRunStart(objective, transition, spawn and spawn.yaw)
 			if msg.run == 1 then
 				-- C2: the level's first look, inside this transition (once per level, never on L1)
 				local info = state.levelInfo
@@ -698,7 +702,9 @@ function HeistClient.start()
 			if state.reduced and kind ~= "Intro" then
 				kind = "Reduced"
 			end
-			director.play(kind, transition, msg.run, function(u: number)
+			-- The rewind plays in the transition's first part; the coach's beat (msg.beat s) is its last.
+			local beat = math.clamp(tonumber(msg.beat) or 0, 0, transition)
+			director.play(kind, transition - beat, msg.run, function(u: number)
 				state.reelT = reelEnd * (1 - u)
 			end, function()
 				state.reelT = nil
