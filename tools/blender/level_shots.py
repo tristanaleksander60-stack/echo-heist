@@ -1378,7 +1378,7 @@ def tower(t, lib):
                     o2.data.space_line = 0.95
                     file(o2, p["group"])
             else:
-                size = min(s[1] * 0.62, s[0] / max(1, len(sg["text"])) * 1.7)
+                size = min(s[1] * 0.62, s[0] / max(1, len(sg["text"])) * 1.4)   # TextScaled fits it in game
                 o2 = text3(sg["text"], size, col, 2.5 if col != "#3C3246" else 0.0,
                            rb(c[0], c[1], c[2] + s[2] / 2 + 0.03), (math.pi / 2, 0, math.pi))
                 file(o2, p["group"])
@@ -1466,8 +1466,8 @@ def big_level(level, samples, out_dir):
     shots = [
         # first person: the shop from the street spawn, up the facade from the van, inside up at the ceiling and round
         ("fp_street", _fp(sp["x"] - 9.0, oz1 + 15.0, fy, -0.33, 14.0), FP_FOV, (sp["x"] - 9.0, oz1 + 15.0), True),
-        ("fp_up", _fp(sp["x"] + 14.0, oz1 + 21.0, fy, 0.38, 36.0), FP_FOV, (sp["x"] + 14.0, oz1 + 21.0), True),
-        ("fp_ceiling", _fp(0.0, mid_z + 6.0, fy, 0.0, 50.0), FP_FOV, (0.0, mid_z + 6.0), False),
+        ("fp_up", _fp(sp["x"] + 14.0, oz1 + 21.0, fy, 0.38, 29.0), FP_FOV, (sp["x"] + 14.0, oz1 + 21.0), True),
+        ("fp_ceiling", _fp(4.0, oz1 - 12.0, fy, 0.0, 50.0), FP_FOV, (4.0, oz1 - 12.0), False),
         ("fp_inside", _fp(0.0, oz1 - 6.0, fy, 0.0, 6.0), FP_FOV, (0.0, oz1 - 6.0), False),
         ("fp_corner", _fp(ox1 + 9.0, oz1 + 13.0, fy, math.radians(30), 26.0), FP_FOV, (ox1 + 9.0, oz1 + 13.0), True),
     ]
