@@ -2962,40 +2962,6 @@ local okPolish, polishErr = pcall(function()
 	assert(not off.Enabled, "an already hidden layer stays hidden")
 
 	-- every shot (no stand-in anywhere), then SKIP's end state
-	local dt = 1 / 20
-	local textured, hoardParts = 0, 0
-	while not cine.isDone() do
-		cine.step(dt)
-		local h = cine.stage():FindFirstChild("Hoardsworth")
-		if h and hoardParts == 0 then -- Hoardsworth on the stage: his kit meshes with the palette atlas texture
-			for _, d in h:GetDescendants() do
-				if d:IsA("BasePart") and string.sub(d.Name, 1, 12) == "Hoardsworth_" then
-					hoardParts += 1
-					if d:IsA("MeshPart") and d.TextureID ~= "" then
-						textured += 1
-					end
-				end
-			end
-		end
-	end
-	cine.skip()
-	assert(hoardParts > 0, "Hoardsworth came on stage")
-	assert(
-		textured >= hoardParts - 3,
-		string.format("Hoardsworth is textured kit meshes (%d/%d)", textured, hoardParts)
-	)
-	local used = cine.standIns()
-	assert(#used == 0, "no stand-ins with the kit: " .. table.concat(used, ", "))
-	-- (Hoardsworth has left the stage by the end: his meshes and textures were checked while he was on it)
-	assert(cine.rookieKind() == "characterKit", "the Rookie is the CharacterKit template (" .. cine.rookieKind() .. ")")
-	local stage = cine.stage()
-	for _, d in stage:GetDescendants() do
-		assert(not string.find(d.Name, "StandIn", 1, true), "no stand-in part: " .. d:GetFullName())
-	end
-	-- characters: every body part a kit MeshPart (the Rookie's HumanoidRootPart is an invisible box)
-	local garage = stage:FindFirstChild("Garage", true) or stage
-	local rookieModel = garage:FindFirstChild("Rookie", true)
-	assert(rookieModel and rookieModel:IsA("Model"), "the Rookie on the stage")
 	local function meshBody(m: Instance, what: string)
 		local meshes, boxes = 0, {}
 		for _, d in m:GetDescendants() do
@@ -3008,21 +2974,59 @@ local okPolish, polishErr = pcall(function()
 		assert(meshes >= 6, what .. " is kit meshes (" .. meshes .. ")")
 		assert(#boxes == 0, what .. " has no visible block parts: " .. table.concat(boxes, ", "))
 	end
-	meshBody(rookieModel, "the Rookie")
-	local crew = stage:FindFirstChild("Crew", true)
-	local clones = 0
-	for _, c in (if crew then crew:GetChildren() else {}) do
-		if c:IsA("Model") and string.sub(c.Name, 1, 5) == "Clone" then
-			clones += 1
-			meshBody(c, c.Name)
-		end
-	end
-	assert(clones >= 1, "the clones are on the stage (" .. clones .. ")")
-	-- hero props: kit models on the stage
-	for _, name in { "Intro_Tower", "Intro_Vacuum", "Intro_SnowGlobe", "Intro_Lever", "Van", "Intro_House_A" } do
-		local m = stage:FindFirstChild(name, true)
+	-- hero props: kit models on the stage (the town and the tower top are built with the stage)
+	for _, name in { "Intro_Tower", "Intro_Vacuum", "Intro_SnowGlobe", "Intro_Lever", "Intro_House_A" } do
+		local m = cine.stage():FindFirstChild(name, true)
 		assert(m and m:FindFirstChildWhichIsA("MeshPart", true), name .. " is the kit mesh")
 	end
+	local dt = 1 / 20
+	local textured, hoardParts, clones = 0, 0, 0
+	local garageSeen = false
+	while not cine.isDone() do
+		cine.step(dt)
+		local stage = cine.stage()
+		for _, d in stage:GetDescendants() do
+			assert(not string.find(d.Name, "StandIn", 1, true), "no stand-in part: " .. d:GetFullName())
+		end
+		local h = stage:FindFirstChild("Hoardsworth")
+		if h and hoardParts == 0 then -- Hoardsworth on the stage: his kit meshes with the palette atlas texture
+			for _, d in h:GetDescendants() do
+				if d:IsA("BasePart") and string.sub(d.Name, 1, 12) == "Hoardsworth_" then
+					hoardParts += 1
+					if d:IsA("MeshPart") and d.TextureID ~= "" then
+						textured += 1
+					end
+				end
+			end
+		end
+		local garage = stage:FindFirstChild("Garage")
+		if garage and not garageSeen then -- the Rookie, the clones and the van, built with the garage
+			garageSeen = true
+			local rookieModel = garage:FindFirstChild("Rookie")
+			assert(rookieModel and rookieModel:IsA("Model"), "the Rookie in the garage")
+			meshBody(rookieModel, "the Rookie")
+			local crew = garage:FindFirstChild("Crew")
+			for _, c in (if crew then crew:GetChildren() else {}) do
+				if c:IsA("Model") and string.sub(c.Name, 1, 5) == "Clone" then
+					clones += 1
+					meshBody(c, c.Name)
+				end
+			end
+			local van = garage:FindFirstChild("Van")
+			assert(van and van:FindFirstChildWhichIsA("MeshPart", true), "the van is the kit mesh")
+		end
+	end
+	cine.skip()
+	assert(hoardParts > 0, "Hoardsworth came on stage")
+	assert(
+		textured >= hoardParts - 3,
+		string.format("Hoardsworth is textured kit meshes (%d/%d)", textured, hoardParts)
+	)
+	assert(garageSeen, "the garage came on stage")
+	assert(clones >= 1, "the clones are on the stage (" .. clones .. ")")
+	local used = cine.standIns()
+	assert(#used == 0, "no stand-ins with the kit: " .. table.concat(used, ", "))
+	assert(cine.rookieKind() == "characterKit", "the Rookie is the CharacterKit template (" .. cine.rookieKind() .. ")")
 
 	cine.destroy()
 	assert(hud.Enabled and fx.Enabled and late.Enabled, "the HUD is back after the intro")
