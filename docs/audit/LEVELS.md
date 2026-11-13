@@ -746,6 +746,5 @@ spawn, up at the trusses, at the mezzanine, the stations, the diorama and the ya
   sized in whole bays and storeys, so either origin lines up, unverified); tier 4's triangle estimate stays over budget
   (PERF.md §9).
 
-**Engine (Saved v74):** engine_smoke 170 ok / 0 (section 11: the BIG buildings on 8 sites, the warehouse checks),
-client_engine 55 / 0, clone_engine 0 failures, perf_engine 0 failures (section E), kit_engine 480 ok / 12, the 12 all from
-the INTRO polish track's in-place re-uploads (Intro_Vacuum, Rookie faces, scarf, outfit count).
+**Engine (Saved v76, after merging main):** engine_smoke 170 ok / 0 (section 11: the BIG buildings on 8 sites, the
+warehouse checks), client_engine 56 / 0, clone_engine 0 failures, perf_engine 0 failures (section E), kit_engine 503 ok / 0.
