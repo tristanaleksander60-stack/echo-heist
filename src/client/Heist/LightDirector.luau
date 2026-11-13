@@ -17,7 +17,9 @@
 -- INTERIORS (Config.Interior; docs/audit/LEVELS.md §13): the floor pools fade at grazing view angles (in first person a
 -- pool ten studs ahead read as painted fog; the room's real light carries the floor there), at full strength again
 -- when you look down into one or the camera is above (diorama, classic); and the interior props (EH_Layer "decor")
--- hide from Config.Interior.DECOR_OFF_TIER. The wall washes are lamp kind "wash" (lightKindsOff from tier 2).
+-- hide from Config.Interior.DECOR_OFF_TIER, the heaviest ("decorHeavy") from HEAVY_OFF_TIER and the base kit's Christmas
+-- pieces ("festive") from FESTIVE_OFF_TIER (Shared/Heist/Budget.layerOffTier, the phone frame budget). The wall washes
+-- are lamp kind "wash" (lightKindsOff from tier 2).
 
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -194,7 +196,8 @@ function LightDirector.new(): any
 	local levelLights: { LevelLight } = {}
 	local pools: { SurfaceGui } = {}
 	local fades: { PoolFade } = {}
-	local decor: { { part: BasePart, base: number } } = {}
+	-- the level's interior and kit tier layers (EH_Layer "decor", "decorHeavy", "festive"): off from Budget.layerOffTier
+	local decor: { { part: BasePart, base: number, layer: string } } = {}
 	local addedConn: RBXScriptConnection? = nil
 	local fadeConn: RBXScriptConnection? = nil
 	local fadeClock = 0
@@ -244,9 +247,8 @@ function LightDirector.new(): any
 				gui.Enabled = poolsOn
 			end
 		end
-		local decorOn = tierNow < IN.DECOR_OFF_TIER
 		for _, d in decor do
-			local want = if decorOn then d.base else 1
+			local want = if Budget.layerOn(d.layer, tierNow) then d.base else 1
 			if d.part.Transparency ~= want then
 				d.part.Transparency = want
 			end
@@ -317,8 +319,11 @@ function LightDirector.new(): any
 					f.alpha = -1 -- the next step writes the fade onto what was just captured
 				end)
 			end
-		elseif d:IsA("BasePart") and d:GetAttribute("EH_Layer") == "decor" then
-			table.insert(decor, { part = d, base = d.Transparency })
+		elseif d:IsA("BasePart") then
+			local layer = d:GetAttribute("EH_Layer")
+			if layer == "decor" or layer == "decorHeavy" or layer == "festive" then
+				table.insert(decor, { part = d, base = d.Transparency, layer = layer :: string })
+			end
 		end
 	end
 

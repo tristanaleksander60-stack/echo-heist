@@ -51,6 +51,7 @@ export type Item = {
 	ref: string?, -- solid | door | laser | plate | loot | hide | switch | van | lamp
 	index: number?,
 	layer: string, -- "base" | "xmas"
+	tier: string?, -- the client's tier layer (EH_Layer): "festive" on the Christmas pieces (Config.Interior.FESTIVE_OFF_TIER)
 	openYaw: number?, -- skin: degrees about the hinge
 	hinge: string?, -- skin: the piece whose pivot is the hinge
 }
@@ -1122,6 +1123,8 @@ function KitPlan.plan(level: any, specs: { [string]: PartSpec }, opts: Options?)
 			ref = ref,
 			index = index,
 			layer = layer or "base",
+			-- the Christmas pieces hide on the lowest tier (Shared/Heist/Budget.layerOffTier "festive")
+			tier = if layer == "xmas" then "festive" else nil,
 		}
 	end
 

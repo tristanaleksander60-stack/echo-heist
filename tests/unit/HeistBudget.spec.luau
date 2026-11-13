@@ -3,6 +3,9 @@
 -- every tier, the light kinds a tier switches off bring every level's busiest view under its light budget, the
 -- glow set keeps your own clones first, and recipe C "Soft Toybox" is the one in roblox_quality §1.4.
 
+local fs = require("@lune/fs")
+local serde = require("@lune/serde")
+
 local BackdropPlan = require("../../src/shared/Heist/BackdropPlan")
 local Budget = require("../../src/shared/Heist/Budget")
 local Catalog = require("../../src/shared/Levels/Catalog")
@@ -338,6 +341,49 @@ return function(test)
 					end
 				end
 			end
+		end
+	)
+
+	test(
+		"tier layers: each hides from one tier and stays hidden below it; the cuts land where the budget needs them",
+		function()
+			local layers = { "detail", "fine", "xmas", "trim", "decorHeavy", "decor", "festive" }
+			for _, layer in layers do
+				local off = Budget.layerOffTier(layer)
+				Assert.truthy(type(off) == "number" and off >= 2 and off <= 4, layer .. ": hides from a phone tier")
+				for tier = 1, 4 do
+					Assert.eq(Budget.layerOn(layer, tier), tier < (off :: number), layer .. " at tier " .. tier)
+				end
+			end
+			for _, layer in { "base", "ink", "body", "core", nil :: any, 3 :: any } do
+				Assert.eq(Budget.layerOffTier(layer), nil, tostring(layer) .. ": never hides")
+				Assert.truthy(Budget.layerOn(layer, 4), tostring(layer) .. ": shown at tier 4")
+			end
+			-- the phone frame budget (REVIEW_STEAM_PLUS gap 15): the heavy props at tier 2 (where a phone starts), the
+			-- kit's Christmas, the front's window trims and the near skyline only at tier 4
+			Assert.eq(Budget.layerOffTier("decorHeavy"), 2, "heavy props from tier 2")
+			Assert.truthy(
+				(Budget.layerOffTier("decorHeavy") :: number) <= (Budget.layerOffTier("decor") :: number),
+				"heavy before the rest"
+			)
+			Assert.eq(Budget.layerOffTier("festive"), 4, "the kit's Christmas from tier 4")
+			Assert.eq(Budget.layerOffTier("trim"), 4, "the front's window trims from tier 4")
+			Assert.truthy(BackdropPlan.ringOn("near", 3) and not BackdropPlan.ringOn("near", 4), "near ring to tier 3")
+			Assert.truthy(
+				BackdropPlan.ringOn("far", 1) and not BackdropPlan.ringOn("far", 2),
+				"far ring at tier 1 only"
+			)
+			-- the town's own tier 4 budget drops by the near ring
+			local level = LevelSpec.compile(Catalog[#Catalog])
+			local plan = BackdropPlan.plan(BackdropPlan.levelSite(level), true)
+			local kitTris = {}
+			for name, e in serde.decode("json", fs.readFile("assets/fbx/kit_manifest.json")).parts do
+				kitTris[name] = e.tris
+			end
+			local d3, t3 = BackdropPlan.budget(plan, 3, kitTris)
+			local d4, t4 = BackdropPlan.budget(plan, 4, kitTris)
+			Assert.truthy(t3 - t4 >= 4000, string.format("tier 4 sheds the near ring (%d -> %d tris)", t3, t4))
+			Assert.eq(d3 - d4, 2, "and its 2 draws")
 		end
 	)
 end

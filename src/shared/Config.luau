@@ -2072,6 +2072,7 @@ Config.Backdrop = {
 	-- Performance tiers (Config.Heist.PERF_TIERS): roblox_quality §6.4. Low phones keep the snowfield, the
 	-- streets, every building and its lit windows, the near ring and the sky: the frame is never black.
 	FAR_RING_OFF_TIER = 2, -- BIG: the taller town and its towers hide most of the far ring; phones (tier 2+) skip it
+	NEAR_RING_OFF_TIER = 4, -- the near ring too on the lowest tier (~5k tris, 2 draws; mostly behind the 4-8 storey town)
 	-- The sky: the Heist City cubemap (tools/blender/sky_city.py) has Hoardsworth's tower at this yaw (degrees,
 	-- Roblox -Z = 0, turning toward -X). The client turns Lighting.Sky so the tower stands behind the building
 	-- the spawn faces (Sky.SkyboxOrientation), so every level and the garage get it in the first view.
@@ -2668,7 +2669,9 @@ Config.Perf = {
 	-- The worst moment the particle budget is checked against (Budget.worstParticles): snow + these at once.
 	WORST_MOMENT = { "ribbons", "sparks", "coins", "goldRain", "doorDust", "laserSparks" },
 	-- Measured / estimated costs (docs/PERF.md; tests/perf_engine.luau prints the measured ones).
-	AVATAR_TRIS_EST = 7000, -- a catalog R15 avatar with hair and 2-3 accessories (not readable from Luau)
+	-- A catalog R15 avatar with hair and 2-3 accessories (not readable from Luau): only a fallback since every player
+	-- and clone is a Rookie (3,632-tri body + an outfit, 5.3-5.8k; perf_engine counts the real rigs' kit meshes).
+	AVATAR_TRIS_EST = 7000,
 	MANNEQUIN_TRIS = 216, -- 18 box parts
 
 	-- Clone LOD (roblox_quality §6.4; Budget.cloneFar / Budget.lineupLight): from TIER, a clone drawn from an
@@ -3091,6 +3094,9 @@ Config.Big = {
 	BUDGET = { instances = 560, draws = 26, tris = 72000, lights = 0 },
 	DETAIL_OFF_TIER = 2,
 	FINE_OFF_TIER = 3,
+	-- Phone frame budget (REVIEW_STEAM_PLUS gap 15): the street front's window trims (Facade_8x10, ~5k tris on the
+	-- Big Score; layer "trim") hide from this tier; the facade bodies, panes, columns and crown stay.
+	TRIM_OFF_TIER = 4,
 }
 
 -- Interiors (INTERIORS track, docs/audit/REVIEW_STEAM_PLUS.md gaps 8, 9 and 12; STYLE_BIBLE §19): eye-level props in every
@@ -3105,6 +3111,16 @@ Config.Interior = {
 	-- Client (Heist/LightDirector): parts with EH_Layer "decor" (the props, the teller brass and the frieze) hide from
 	-- this tier; the hero display, the ceiling colour, the room light and the fascia stay at every tier.
 	DECOR_OFF_TIER = 3,
+	-- Phone frame budget (REVIEW_STEAM_PLUS gap 15): the heaviest props (EH_Layer "decorHeavy": the Bank's deposit-box
+	-- walls 1,220 tris each, the teller brass 768, the palms 504 and the queue rope 600) hide from this tier, where a
+	-- phone starts (the Big Score's tier 2 view was ~3 % over its triangle estimate). The rooms keep their benches,
+	-- desks, clocks and boxes until DECOR_OFF_TIER.
+	HEAVY_OFF_TIER = 2,
+	HEAVY = { Decor_DepositWall_8 = true, Decor_BrassRail_8 = true, Decor_Palm = true, Decor_QueueRope_8 = true },
+	-- The base kit's Christmas pieces (EH_Layer "festive": the garlands on the inner walls, ~15k tris in the Big
+	-- Score, the street front's fairy lights, snow caps, wreath and snow piles) hide from this tier: only a phone
+	-- still slow at tier 3 gets there (the BIG building's light strings already go at Config.Big.FINE_OFF_TIER).
+	FESTIVE_OFF_TIER = 4,
 	-- First-person pools (client LightDirector): a pool's strength x a share from `min` (the camera looks across it at
 	-- an elevation of `from` degrees or less over its centre, e.g. a pool 10+ studs ahead of the 3.8-stud eye) to `max`
 	-- (`to` degrees or more: standing in it), smoothstep between. `max` is 1 once the camera is `high` studs or more

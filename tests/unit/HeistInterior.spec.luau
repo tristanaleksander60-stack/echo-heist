@@ -393,7 +393,9 @@ return function(test)
 						what .. ": role " .. tostring(m.role)
 					)
 				end
-				if it.role == "decor" or it.role == "brass" or it.role == "frieze" then
+				if (it.role == "decor" or it.role == "brass") and IN.HEAVY[it.pieces[1]] then
+					Assert.eq(it.tier, "decorHeavy", what .. ": a heavy prop, hidden from HEAVY_OFF_TIER")
+				elseif it.role == "decor" or it.role == "brass" or it.role == "frieze" then
 					Assert.eq(it.tier, "decor", what .. ": hidden from DECOR_OFF_TIER")
 				else
 					Assert.eq(it.tier, nil, what .. ": stays at every tier")
@@ -401,7 +403,54 @@ return function(test)
 			end
 		end
 		Assert.eq(IN.DECOR_OFF_TIER, 3, "props drop from tier 3")
+		Assert.truthy(IN.HEAVY_OFF_TIER <= IN.DECOR_OFF_TIER, "the heavy props go no later than the rest")
 	end)
+
+	test(
+		"phone budget: the heavy props go at tier 2, the kit's Christmas at tier 4; the Big Score's tier 2 cut",
+		function()
+			Assert.eq(IN.HEAVY_OFF_TIER, 2, "a phone starts at tier 2 without the heaviest props")
+			Assert.eq(IN.FESTIVE_OFF_TIER, 4, "the kit's Christmas pieces stay to tier 3")
+			for name in IN.HEAVY do
+				Assert.truthy(
+					manifest[name] ~= nil and (manifest[name].tris or 0) >= 500,
+					name .. ": heavy (>= 500 tris)"
+				)
+			end
+			-- the Big Score sheds at least 5k triangles of props at tier 2 (its tier 2 view was ~3 % over), and never
+			-- every prop: the rooms keep benches, desks, clocks and boxes
+			for _, level in levels() do
+				if level.id ~= "bk1_big_score" then
+					continue
+				end
+				local plan = decorOf(level, true)
+				local heavy, kept = 0, 0
+				for _, it in plan.items do
+					for _, n in it.pieces do
+						local t = (manifest[n] and manifest[n].tris) or 0
+						if it.tier == "decorHeavy" then
+							heavy += t
+						elseif it.tier == "decor" then
+							kept += 1
+						end
+					end
+				end
+				Assert.truthy(heavy >= 5000, string.format("tier 2 sheds %d tris of props", heavy))
+				Assert.truthy(kept >= 10, string.format("%d props stay at tier 2", kept))
+			end
+			-- the base kit's Christmas pieces carry the festive layer on every level
+			for _, level in levels() do
+				local _, base = decorOf(level, true)
+				for _, it in base.items do
+					if it.layer == "xmas" then
+						Assert.eq(it.tier, "festive", level.id .. " " .. it.pieces[1] .. ": festive")
+					else
+						Assert.eq(it.tier, nil, level.id .. " " .. it.pieces[1] .. ": no tier layer")
+					end
+				end
+			end
+		end
+	)
 
 	test("budget: props per level within the kit budget (tris and instances at tier 1)", function()
 		for _, level in levels() do

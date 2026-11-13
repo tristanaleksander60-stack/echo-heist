@@ -13,8 +13,8 @@
 -- child Model a group with EH_CutKind / EH_CutMin / EH_CutMax (+ EH_CutNormal / EH_CutPlane for faces), and the town's
 -- tall buildings (Heist/Backdrop.addOccluders: occlusion rule only). Batched: one decision pass at CUT.HZ, then each
 -- group's parts are written only while its fade moves; no per-frame allocation (the subject buffer and the decision
--- table are reused). It also hides the "detail" layer from Config.Big.DETAIL_OFF_TIER and the "fine" / "xmas" layers
--- from FINE_OFF_TIER (Transparency 1,
+-- table are reused). It also hides the "detail" layer from Config.Big.DETAIL_OFF_TIER, the "fine" / "xmas" layers
+-- from FINE_OFF_TIER and the street front's "trim" from TRIM_OFF_TIER (Transparency 1,
 -- restored when the tier steps back up). Binds after the camera (RenderPriority.Camera + 10), so it sees the frame
 -- every camera writer produced this frame.
 
@@ -24,6 +24,7 @@ local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
+local Budget = require(Shared:WaitForChild("Heist"):WaitForChild("Budget"))
 local CutMath = require(Shared:WaitForChild("Heist"):WaitForChild("CutMath"))
 
 local CutAway = {}
@@ -84,11 +85,10 @@ function CutAway.new(director: any?): any
 	local clock = 0
 	local player = Players.LocalPlayer
 
+	-- The Overhead's tier layers ("detail", "fine", "xmas", "trim"; Shared/Heist/Budget.layerOffTier).
 	local function offTier(layer: any): number?
-		if layer == "detail" then
-			return BIG.DETAIL_OFF_TIER
-		elseif layer == "fine" or layer == "xmas" then
-			return BIG.FINE_OFF_TIER
+		if layer == "detail" or layer == "fine" or layer == "xmas" or layer == "trim" then
+			return Budget.layerOffTier(layer)
 		end
 		return nil
 	end

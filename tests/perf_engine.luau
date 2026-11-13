@@ -15,7 +15,6 @@
 -- C. Recipe C "Soft Toybox" at tier 3 and back to recipe A (LightDirector), streaming settings and model modes.
 -- Lines start with "ok", "FAIL", "warn" or "info"; tools/cloud_test.py exits 1 when any says FAIL.
 
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
@@ -59,8 +58,6 @@ local KitService = require(server:WaitForChild("Kit"):WaitForChild("KitService")
 local P = Config.Perf
 local LIGHT = Config.Lighting
 local TIERS = #P.TIERS
-local OWNER_ID = 10346200733 -- the game owner's account (a real avatar with layered clothing)
-local SECOND_ID = 156 -- a second real catalog avatar
 local MB = 1 -- Stats reports MB already
 
 -- kit tris (from assets/fbx/kit_manifest.json "tris"; regenerate when the kit changes)
@@ -219,6 +216,103 @@ local TRIS: { [string]: number } = {
 	Xmas_Tree = 312,
 	Xmas_Tree_Lights = 400,
 	Xmas_Wreath = 548,
+	-- the rest of the manifest (the Rookie and its outfits, the town's cars, snowmen and gables, the intro set)
+	Car_Parked = 476,
+	Car_Parked_Paint = 88,
+	Hoardsworth_Hat = 364,
+	Hoardsworth_Head = 756,
+	Hoardsworth_LeftFoot = 140,
+	Hoardsworth_LeftHand = 116,
+	Hoardsworth_LeftLowerArm = 160,
+	Hoardsworth_LeftLowerLeg = 80,
+	Hoardsworth_LeftUpperArm = 180,
+	Hoardsworth_LeftUpperLeg = 80,
+	Hoardsworth_LowerTorso = 308,
+	Hoardsworth_Monocle = 192,
+	Hoardsworth_RightFoot = 140,
+	Hoardsworth_RightHand = 116,
+	Hoardsworth_RightLowerArm = 160,
+	Hoardsworth_RightLowerLeg = 80,
+	Hoardsworth_RightUpperArm = 180,
+	Hoardsworth_RightUpperLeg = 80,
+	Hoardsworth_UpperTorso = 552,
+	Intro_House_A = 984,
+	Intro_House_A_Windows = 108,
+	Intro_House_B = 984,
+	Intro_House_B_Windows = 108,
+	Intro_Letter = 160,
+	Intro_Lever = 200,
+	Intro_Lever_Handle = 188,
+	Intro_Present_A = 196,
+	Intro_Present_B = 196,
+	Intro_Present_C = 196,
+	Intro_SnowGlobe = 1008,
+	Intro_SnowGlobe_Cap = 240,
+	Intro_SnowGlobe_Glass = 960,
+	Intro_SnowGlobe_Presents = 4044,
+	Intro_Tower = 7088,
+	Intro_Tower_Sign = 36,
+	Intro_Tower_Windows = 3240,
+	Intro_Vacuum = 3752,
+	Intro_Vacuum_Lights = 584,
+	Roof_Gable = 32,
+	Rookie_Block_LeftCuff = 80,
+	Rookie_Block_RightCuff = 80,
+	Rookie_Block_Torso = 192,
+	Rookie_Cap_Beanie = 384,
+	Rookie_Cap_Bobble = 484,
+	Rookie_Cap_Flat = 336,
+	Rookie_Cap_Trapper = 284,
+	Rookie_Face_Busted = 248,
+	Rookie_Face_Idle = 544,
+	Rookie_Face_Shocked = 544,
+	Rookie_Face_Smug = 680,
+	Rookie_Gloves_Knit_Left = 168,
+	Rookie_Gloves_Knit_Right = 168,
+	Rookie_Gloves_Leather_Left = 132,
+	Rookie_Gloves_Leather_Right = 132,
+	Rookie_Hand_Left_Fingers1 = 192,
+	Rookie_Hand_Left_Fingers2 = 384,
+	Rookie_Hand_Left_Index1 = 64,
+	Rookie_Hand_Left_Index2 = 128,
+	Rookie_Hand_Left_Palm = 160,
+	Rookie_Hand_Left_Thumb1 = 64,
+	Rookie_Hand_Left_Thumb2 = 128,
+	Rookie_Hand_Right_Fingers1 = 192,
+	Rookie_Hand_Right_Fingers2 = 384,
+	Rookie_Hand_Right_Index1 = 64,
+	Rookie_Hand_Right_Index2 = 128,
+	Rookie_Hand_Right_Palm = 160,
+	Rookie_Hand_Right_Thumb1 = 64,
+	Rookie_Hand_Right_Thumb2 = 128,
+	Rookie_Head = 644,
+	Rookie_LeftFoot = 152,
+	Rookie_LeftHand = 244,
+	Rookie_LeftLowerArm = 120,
+	Rookie_LeftLowerLeg = 120,
+	Rookie_LeftUpperArm = 180,
+	Rookie_LeftUpperLeg = 80,
+	Rookie_LowerTorso = 184,
+	Rookie_Mask_Eye = 328,
+	Rookie_RightFoot = 152,
+	Rookie_RightHand = 244,
+	Rookie_RightLowerArm = 120,
+	Rookie_RightLowerLeg = 120,
+	Rookie_RightUpperArm = 180,
+	Rookie_RightUpperLeg = 80,
+	Rookie_Scarf_Bandana = 256,
+	Rookie_Scarf_Chunky = 320,
+	Rookie_Scarf_Knot = 284,
+	Rookie_Scarf_Long = 224,
+	Rookie_Scarf_Long_Tail1 = 36,
+	Rookie_Scarf_Long_Tail2 = 72,
+	Rookie_Stripes_LeftArm = 160,
+	Rookie_Stripes_RightArm = 160,
+	Rookie_Stripes_Torso = 384,
+	Rookie_UpperTorso = 772,
+	Rookie_VM_LeftArm = 460,
+	Rookie_VM_RightArm = 460,
+	Snowman = 724,
 }
 local SHAPE_TRIS = { Block = 12, Wedge = 8, CornerWedge = 6, Cylinder = 96, Ball = 400 } -- engine primitives, approx.
 
@@ -270,7 +364,9 @@ local function add(t: Tally, root: Instance, includeRoot: boolean?)
 		t.instances += 1
 		if d:IsA("BasePart") then
 			t.parts += 1
-			if d.Transparency < 1 then
+			-- a clone rig EchoView hides (the avatar beyond the LOD distance, the light rig inside it) is faded by
+			-- LocalTransparencyModifier (Heist/Rigs.setFade): not drawn
+			if d.Transparency < 1 and d.LocalTransparencyModifier < 0.99 then
 				t.visibleParts += 1
 				if d:IsA("MeshPart") then
 					t.meshParts += 1
@@ -330,15 +426,13 @@ local function tallyOf(root: Instance?): Tally
 	return t
 end
 
--- BIG: the triangles of a level's Overhead layers the client hides at a tier (Heist/CutAway, Config.Big: "detail" from
--- DETAIL_OFF_TIER, "fine" and "xmas" from FINE_OFF_TIER).
+-- BIG: the triangles of a level's Overhead layers the client hides at a tier (Heist/CutAway, Shared/Heist/Budget
+-- .layerOffTier: "detail" from DETAIL_OFF_TIER, "fine" and "xmas" from FINE_OFF_TIER, "trim" from TRIM_OFF_TIER).
 local function bigDetailTris(model: Instance, tier: number): number
 	local over = model:FindFirstChild("Overhead")
-	local B = Config.Big
 	local n = 0
 	for _, d in (over and over:GetDescendants()) or {} do
-		local layer = d:GetAttribute("EH_Layer")
-		local off = if layer == "detail" then B.DETAIL_OFF_TIER elseif layer then B.FINE_OFF_TIER else nil
+		local off = Budget.layerOffTier(d:GetAttribute("EH_Layer"))
 		if d:IsA("BasePart") and off and tier >= off then
 			n += if d:IsA("MeshPart") then TRIS[d:GetAttribute("KitPiece") or d.Name] or 0 else 12
 		end
@@ -346,19 +440,23 @@ local function bigDetailTris(model: Instance, tier: number): number
 	return n
 end
 
--- INTERIORS: the triangles of the interior props the client hides at a tier (Heist/LightDirector: EH_Layer "decor"
--- from Config.Interior.DECOR_OFF_TIER).
-local function decorTris(model: Instance, tier: number): number
-	if tier < Config.Interior.DECOR_OFF_TIER then
-		return 0
-	end
-	local n = 0
-	for _, d in model:GetDescendants() do
-		if d:IsA("BasePart") and d:GetAttribute("EH_Layer") == "decor" then
-			n += if d:IsA("MeshPart") then TRIS[d:GetAttribute("KitPiece") or d.Name] or 0 else 12
+-- A level model as a client draws it at `tier`: every part on a tier layer that is off there (Shared/Heist/Budget
+-- .layerOffTier: the BIG building's detail / fine / xmas / trim layers, which Heist/CutAway hides; the interior's
+-- decor / decorHeavy and the kit's festive layer, which Heist/LightDirector hides) costs no triangles and no batch.
+local function tallyAt(root: Instance, tier: number): Tally
+	local t = newTally()
+	local hidden: { [Instance]: number } = {}
+	for _, d in root:GetDescendants() do
+		if d:IsA("BasePart") and not Budget.layerOn(d:GetAttribute("EH_Layer"), tier) then
+			hidden[d] = d.Transparency
+			d.Transparency = 1
 		end
 	end
-	return n
+	add(t, root, true)
+	for d, was in hidden do
+		(d :: BasePart).Transparency = was
+	end
+	return t
 end
 
 local function batchCount(t: Tally): number
@@ -762,39 +860,66 @@ local Palette = require(shared:WaitForChild("Heist"):WaitForChild("Palette"))
 
 if cloneActor and six then
 	local memV0 = memory()
-	-- four crew members on real templates (the owner's layered avatar, a catalog avatar, default, Rthro)
+	-- four crew members on their real templates: every player and clone is a Rookie (Avatars.buildRookie), in four
+	-- outfits (the default, and the heaviest: bobble cap, chunky scarf, stripes, knit gloves, eye mask)
 	local owners = { -601, -602, -603, -604 }
-	local descs: { any } = {}
-	for i, uid in { OWNER_ID, SECOND_ID } do
-		local ok, d = pcall(function()
-			return Players:GetHumanoidDescriptionFromUserIdAsync(uid)
-		end)
-		descs[i] = if ok then d else Instance.new("HumanoidDescription")
-	end
-	descs[3] = Instance.new("HumanoidDescription")
-	local rthro = Instance.new("HumanoidDescription")
-	rthro.HeightScale = 1.05
-	rthro.BodyTypeScale = 1
-	rthro.ProportionScale = 1
-	descs[4] = rthro
-	local folder = Avatars.folder()
+	local outfits = {
+		Config.Rookie.DEFAULT_OUTFIT,
+		{
+			cap = "Cap_Bobble",
+			scarf = "Scarf_Chunky",
+			sweater = "Sweater_Stripes",
+			gloves = "Gloves_Knit",
+			mask = "Mask_Eye",
+		},
+		{
+			cap = "Cap_Trapper",
+			scarf = "Scarf_Bandana",
+			sweater = "Sweater_Block",
+			gloves = "Gloves_Leather",
+			mask = "Mask_Eye",
+		},
+		{
+			cap = "Cap_Beanie",
+			scarf = "Scarf_Knot",
+			sweater = "Sweater_Stripes",
+			gloves = "Gloves_Knit",
+			mask = "Mask_None",
+		},
+	}
+	local RookieServer = require(heistServer:WaitForChild("Rookie"))
+	pcall(RookieServer.publishNow, KitService)
 	local templates = {}
 	for i, uid in owners do
-		local ok, rig = pcall(function()
-			return Players:CreateHumanoidModelFromDescriptionAsync(descs[i], Enum.HumanoidRigType.R15)
-		end)
+		local ok, rig = pcall(Avatars.buildRookie, uid, outfits[i], nil)
 		if ok and rig then
-			Avatars.strip(rig)
-			rig.Name = tostring(uid)
-			rig.Parent = folder
 			templates[i] = rig
 		end
 	end
+	check(#templates == 4, string.format("four Rookie clone templates built (%d)", #templates))
 	local tplSizes = {}
+	-- each template's own cost (the live character in that outfit costs the same): kit triangles, mesh batches
+	local tplTris: { number } = {}
+	local tplBatches: { [string]: boolean } = {}
 	for i, t in templates do
 		tplSizes[i] = #t:GetDescendants()
+		local tt = tallyOf(t)
+		tplTris[i] = tt.kitTris + tt.primTris + tt.avatarMeshes * P.AVATAR_TRIS_EST // 17
+		for k in tt.batches do
+			tplBatches[k] = true
+		end
 	end
-	info("avatar templates (ReplicatedStorage, one per player): " .. table.concat(tplSizes, ", ") .. " instances")
+	local rookieAvg = 0
+	for _, n in tplTris do
+		rookieAvg += n / math.max(#tplTris, 1)
+	end
+	info(
+		string.format(
+			"Rookie templates (ReplicatedStorage, one per player): %s instances, %s tris",
+			table.concat(tplSizes, ", "),
+			table.concat(tplTris, ", ")
+		)
+	)
 
 	local rec = Codec.decode(l1.recBufs[cloneActor.key])
 	local msg = table.clone(l1.runMsg)
@@ -999,19 +1124,36 @@ if cloneActor and six then
 		local bdT = tallyOf(bdFolder)
 		local glows = echo.glowCount()
 		local hl = clonesT.highlightsOn
-		-- BIG: from Config.Big.DETAIL_OFF_TIER the client (Heist/CutAway) hides the Overhead's detail layer
-		local levelTris = l6T.kitTris + l6T.primTris - bigDetailTris(levelModel, tier) - decorTris(levelModel, tier)
-		local avatarTris = (12 - lodFar + 4) * P.AVATAR_TRIS_EST + lodFar * P.MANNEQUIN_TRIS
+		-- The level as this tier draws it (tallyAt: Heist/CutAway's and Heist/LightDirector's tier layers off).
+		local lvT = tallyAt(levelModel, tier)
+		local levelTris = lvT.kitTris + lvT.primTris
+		-- Avatars, measured: the 12 clones as EchoView draws them at this tier (Rookie kit meshes, the light rigs
+		-- beyond the LOD distance) + the 4 live characters (one Rookie each, its template's cost). Kit meshes
+		-- instance: a clone in a crewmate's outfit draws in the same batches as that crewmate's live character.
+		local liveTris = 0
+		for _, n in tplTris do
+			liveTris += n
+		end
+		local avatarTris = clonesT.kitTris
+			+ clonesT.primTris
+			+ clonesT.avatarMeshes * P.AVATAR_TRIS_EST // 17
+			+ liveTris
+		local avatarBatches: { [string]: boolean } = table.clone(tplBatches)
+		for k in clonesT.batches do
+			avatarBatches[k] = true
+		end
+		local avatarDraws = 0
+		for _ in avatarBatches do
+			avatarDraws += 1
+		end
 		local tris = levelTris + bdT.kitTris + bdT.primTris + avatarTris + 2 * gusTris
-		local draws = batchCount(l6T)
+		local draws = batchCount(lvT)
 			+ batchCount(bdT)
-			+ (if lodFar >= 12 then 0 else 4 * 17) -- 12 clones of 4 avatars instance together: ~17 meshes per avatar
-			+ (if lodFar > 0 then LOD.MANNEQUIN_DRAWS else 0) -- the light rigs: primitive boxes and balls
-			+ 4 * 17 -- the 4 live characters
+			+ avatarDraws
 			+ 2 * 18 -- Gus
 			+ clonesT.surfaceGuisOn
 			+ clonesT.billboardsOn
-			+ l6T.surfaceGuisOn
+			+ lvT.surfaceGuisOn
 			+ gusT.billboardsOn
 		local instTotal = garageT.instances
 			+ l6T.instances
@@ -1025,7 +1167,7 @@ if cloneActor and six then
 		table.insert(results, "      " .. line(string.format("tier %d clones (12) + halo", tier), clonesT))
 		info(
 			string.format(
-				"tier %d view: lights %d (+%d halo) / shadowed %d, glows %d, Highlights %d, snow %.0f + worst bursts %d = %d particles, ~%dk tris (level %dk, backdrop %dk, avatars %dk est. with %d of 12 clones light, Gus %dk), ~%d draws (estimate), %d live instances (streaming on)",
+				"tier %d view: lights %d (+%d halo) / shadowed %d, glows %d, Highlights %d, snow %.0f + worst bursts %d = %d particles, ~%dk tris (level %dk, backdrop %dk, Rookies %dk measured with %d of 12 clones light, Gus %dk), ~%d draws (estimate; Rookies %d), %d live instances (streaming on)",
 				tier,
 				lit,
 				haloLight,
@@ -1042,6 +1184,7 @@ if cloneActor and six then
 				lodFar,
 				math.floor(2 * gusTris / 1000 + 0.5),
 				draws,
+				avatarDraws,
 				instTotal
 			)
 		)
@@ -1082,14 +1225,38 @@ if cloneActor and six then
 			Particles.setSteady("snow", nil)
 		end
 		check(instTotal <= 25000, string.format("tier %d: live client instances %d <= 25k (§6.8)", tier, instTotal))
-		if tris > b.tris then
+		-- The phone frame budget (REVIEW_STEAM_PLUS gap 15): the busiest view within every tier's estimate.
+		check(
+			tris <= b.tris,
+			string.format("tier %d: ~%.1fk tris (estimate) within the %dk budget", tier, tris / 1000, b.tris // 1000)
+		)
+		check(
+			draws <= b.drawCalls,
+			string.format("tier %d: ~%d draws (estimate) within the %d budget", tier, draws, b.drawCalls)
+		)
+		if tris <= b.tris and tris > 0.95 * b.tris then
 			warnLine(
-				string.format("tier %d: ~%dk tris (estimate) over the %dk budget", tier, tris // 1000, b.tris // 1000)
+				string.format(
+					"tier %d: ~%.1fk tris is within 5 %% of the %dk budget",
+					tier,
+					tris / 1000,
+					b.tris // 1000
+				)
 			)
 		end
-		if draws > b.drawCalls then
-			warnLine(string.format("tier %d: ~%d draws (estimate) over the %d budget", tier, draws, b.drawCalls))
-		end
+		-- what the old catalog-avatar estimate (16 x AVATAR_TRIS_EST, 17 meshes each) would have said, for PERF.md
+		info(
+			string.format(
+				"tier %d: with the old catalog-avatar estimate ~%.1fk tris, ~%d draws",
+				tier,
+				(tris - avatarTris + (16 - lodFar) * P.AVATAR_TRIS_EST + lodFar * P.MANNEQUIN_TRIS) / 1000,
+				draws
+					- avatarDraws
+					+ (if lodFar >= 12 then 0 else 4 * 17)
+					+ (if lodFar > 0 then LOD.MANNEQUIN_DRAWS else 0)
+					+ 4 * 17
+			)
+		)
 		camera.CFrame = camWas
 	end
 	do
@@ -1105,11 +1272,11 @@ if cloneActor and six then
 		check(light == backRow - 1, string.format("Line-up tier 3: %d of 16 figures light (back row, not you)", light))
 		info(
 			string.format(
-				"Line-up tier 3: ~%dk tris saved (%d figures light at ~%d tris instead of ~%dk)",
-				light * (P.AVATAR_TRIS_EST - P.MANNEQUIN_TRIS) // 1000,
+				"Line-up tier 3: ~%.1fk tris saved (%d figures light at ~%d tris instead of a ~%.1fk Rookie)",
+				light * (rookieAvg - P.MANNEQUIN_TRIS) / 1000,
 				light,
 				P.MANNEQUIN_TRIS,
-				P.AVATAR_TRIS_EST // 1000
+				rookieAvg / 1000
 			)
 		)
 	end
@@ -1180,6 +1347,42 @@ if cloneActor and six then
 		for _, d in decorParts do
 			shown2 += if d.Transparency < 1 then 1 else 0
 		end
+		-- The phone frame budget: the heavy props (decorHeavy) are already gone at tier 2; the kit's Christmas pieces
+		-- (festive) stay to tier 3 and go at tier 4.
+		local heavy, heavyHidden2, festive = 0, 0, {}
+		for _, d in levelModel:GetDescendants() do
+			if d:IsA("BasePart") then
+				local layer = d:GetAttribute("EH_Layer")
+				if layer == "decorHeavy" then
+					heavy += 1
+					heavyHidden2 += if d.Transparency >= 1 then 1 else 0
+				elseif layer == "festive" then
+					table.insert(festive, d)
+				end
+			end
+		end
+		lights.setTier(3)
+		local festive3 = 0
+		for _, d in festive do
+			festive3 += if d.Transparency < 1 then 1 else 0
+		end
+		lights.setTier(4)
+		local festive4 = 0
+		for _, d in festive do
+			festive4 += if d.Transparency >= 1 then 1 else 0
+		end
+		lights.setTier(2)
+		check(
+			heavy > 0 and heavyHidden2 == heavy and #festive > 0 and festive3 == #festive and festive4 == #festive,
+			string.format(
+				"phone budget: %d heavy props hidden at tier 2 (%d); %d festive parts shown at tier 3 (%d), hidden at tier 4 (%d)",
+				heavy,
+				heavyHidden2,
+				#festive,
+				festive3,
+				festive4
+			)
+		)
 		local pool: BasePart? = nil
 		for _, d in levelModel:GetDescendants() do
 			if d:IsA("BasePart") and d:GetAttribute("EH_Kind") == "lightPool" then

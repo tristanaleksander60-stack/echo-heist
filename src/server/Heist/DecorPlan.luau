@@ -34,7 +34,8 @@ export type Item = {
 	pivot: { x: number, y: number, z: number, yaw: number },
 	scale: { number },
 	layer: string, -- "base" | "xmas"
-	tier: string?, -- "decor": hidden on the client from Config.Interior.DECOR_OFF_TIER
+	tier: string?, -- "decor": hidden on the client from Config.Interior.DECOR_OFF_TIER; "decorHeavy" (the pieces in
+	-- Config.Interior.HEAVY) from HEAVY_OFF_TIER
 	color: { number }?, -- runtime colour of a tintable piece (the frieze)
 	room: string?, -- the room kind it dresses
 	band: number?,
@@ -622,7 +623,7 @@ function DecorPlan.plan(level: any, specs: { [string]: any }, opts: Options?, de
 			pivot = pivot,
 			scale = { 1, 1, 1 },
 			layer = if cfg.XMAS[name] then "xmas" else "base",
-			tier = if role == "decor" then "decor" else nil,
+			tier = if role ~= "decor" then nil elseif cfg.HEAVY and cfg.HEAVY[name] then "decorHeavy" else "decor",
 			room = roomKind,
 			band = bandOf(sl.cz),
 		})
@@ -671,7 +672,7 @@ function DecorPlan.plan(level: any, specs: { [string]: any }, opts: Options?, de
 					pivot = pivot,
 					scale = scale,
 					layer = "base",
-					tier = "decor",
+					tier = if cfg.HEAVY and cfg.HEAVY[cfg.TELLER_BRASS] then "decorHeavy" else "decor",
 					room = "front",
 				})
 			end
