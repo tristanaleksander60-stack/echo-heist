@@ -1737,12 +1737,22 @@ def interiors_level(level, samples, out_dir, before=False):
                        for b in (sd["box"] for sd in level["solids"])):
                 return x + dx
         return x
+
+    def clear_z(x, z):
+        """A z near the band's middle with no tall solid within 6 studs to the left of the eye (the gondolas)."""
+        for zz in (z, z + 4.0, z + 8.0, z + 12.0, z - 4.0):
+            if zz < fz1 - 2.0 and not any(b[0] < x and b[3] > x - 6.0 and b[2] - 1.0 < zz < b[5] + 1.0
+                                           and b[4] > fy + 4.5 and b[3] - b[0] < 3.0
+                                           for b in (sd["box"] for sd in level["solids"])):
+                return zz
+        return z
+    fl = clear_z(2.0, fm)
     shots = [
         ("fp_spawn", _fp(sp["x"], sp["z"], fy, 0.0, -2.0), (sp["x"], sp["z"]), True),
         ("fp_front", _fp(0.0, fz1 - 3.0, fy, 0.0, 3.0), (0.0, fz1 - 3.0), False),
-        ("fp_left", _fp(free_x(2.0, fm), fm, fy, math.pi / 2, 4.0), (free_x(2.0, fm), fm), False),
+        ("fp_left", _fp(free_x(2.0, fl), fl, fy, math.pi / 2, 4.0), (free_x(2.0, fl), fl), False),
         ("fp_window", _fp(0.0, fz0 + 3.0, fy, math.pi, 3.0), (0.0, fz0 + 3.0), False),
-        ("fp_ceiling", _fp(free_x(0.0, fm), fm, fy, 0.0, 32.0), (free_x(0.0, fm), fm), False),
+        ("fp_ceiling", _fp(free_x(0.0, fl), fl, fy, 0.0, 32.0), (free_x(0.0, fl), fl), False),
         ("fp_loot", _fp(cx, cz, fy, math.atan2(-(gx - cx), -(gz - cz)), -6.0), (cx, cz), False),
         # beside the loot, turned to look across its room (the room round the goal at eye level)
         ("fp_loot_round", _fp(gx - (2.0 if gx >= 0 else -2.0), gz, fy, math.pi / 2 if gx >= 0 else -math.pi / 2, 2.0),
