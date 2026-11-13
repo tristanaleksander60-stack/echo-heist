@@ -493,6 +493,11 @@ Config.FirstPerson = {
 		KIT = "CharacterKit", -- ReplicatedStorage folder the CHARACTER track publishes
 		KIT_MODEL = "Rookie_Viewmodel", -- forearms + gloved hands with GripR / GripL attachments
 		KIT_CHECK_SECONDS = 2, -- the placeholder hands are swapped for the kit model once it arrives
+		-- Kit arms in your outfit (Viewmodel.fromOutfit): Breton stripes down the sleeve, as shares of the elbow ->
+		-- wrist line, their width and radii (just over the sleeve's 0.27 -> 0.25 studs).
+		SLEEVE_STRIPES = { 0.3, 0.56 },
+		STRIPE_WIDTH = 0.09,
+		STRIPE_RADIUS = { 0.29, 0.283 },
 		-- The placeholder hands (until the kit model lands): Palette keys; the stripe is your crew hue.
 		COLOURS = {
 			glove = "plumHi",
@@ -2682,6 +2687,32 @@ Config.Rookie = {
 		Leg = "#4E5675",
 		Foot = "#5A493E",
 	},
+	-- The long scarf's swaying tail (Shared/Heist/ScarfMath, client Heist/ScarfSway): a cheap Lua secondary motion
+	-- on your character and your clones' rigs (welds of Rookie_Scarf_Long_Tail1 / _Tail2), off from OFF_TIER.
+	SCARF = {
+		PIECES = { "Rookie_Scarf_Long_Tail1", "Rookie_Scarf_Long_Tail2" }, -- hinge order (root first)
+		OFF_TIER = 3, -- perf tiers >= this: the tail holds the modelled pose (no Lua per frame)
+		MAX_RIGS = 8, -- characters swayed a frame at most (the nearest to the camera)
+		RANGE = 70, -- studs from the camera
+		RUN_SPEED = 14, -- studs/s at which the tail streams out as modelled
+		DROOP = 62, -- degrees the root segment hangs at rest (+ = down)
+		DROOP2 = 28, -- the end segment's extra hang at rest
+		VERTICAL = 2.2, -- degrees per stud/s of vertical speed (a fall lifts it, a jump drops it)
+		VERTICAL_MAX = 30,
+		LATERAL = 2.4, -- degrees per stud/s of strafe (it swings the other way)
+		TURN = 9, -- degrees per rad/s of turn (it trails to the outside)
+		YAW_MAX = 40,
+		PITCH_MIN = -20,
+		PITCH_MAX = 75,
+		FOLLOW = 0.6, -- the end segment's share of the root's swing
+		FLUTTER = 7, -- degrees of flutter on the end segment at full speed
+		FLUTTER_HZ = 2.3,
+		STIFFNESS = 70, -- spring k (1/s^2): about 1.3 Hz
+		DAMPING = 9, -- spring c (1/s): a little under critical, so a stop swings once
+		END_STIFFNESS = 1.6, -- the end segment is lighter: stiffer, quicker
+		MAX_DT = 0.1, -- s of motion integrated a frame at most (a hitch never flings it)
+		SUBSTEP = 1 / 60,
+	},
 	PORTRAIT = { -- crew cards: a ViewportFrame of your clone template's head (Hud/Deck)
 		FOV = 30,
 		DISTANCE = 4.6, -- studs from the head centre
@@ -2821,7 +2852,28 @@ Config.Intro = {
 	PRESENT_SPIN = 2.2, -- rad/s tumble
 	SWIRL_PARTICLES = 60, -- asked of Heist/Particles per sparkle burst (the budget may grant fewer)
 	TOWN_LIGHTS = { 8, 6, 3, 0 }, -- PointLights in the town per tier (windows are Neon either way)
-	AURORA_LAYERS = { 3, 3, 2, 1 }, -- curtain layers per tier
+	-- The sky: the game's own Heist/Aurora (its layers per tier: Budget.auroraLayers), anchored to the stage with its
+	-- landmark direction toward the tower (degrees, 0 = -Z).
+	AURORA_YAW = 0,
+	-- Hoardsworth Tower's giant H (Neon, eh_palette.NEON Intro_Tower_Sign) and its warm floodlight (tiers 1-2).
+	SIGN_COLOUR = "#FFB85C",
+	SIGN_LIGHT = { RANGE = 34, BRIGHTNESS = 1.6 },
+	-- The suction vortex at the vacuum's mouth while it runs: spiral arms of additive Beams on a funnel along the
+	-- mouth's aim (IntroPlan.STAGE.aim), spun about it. ARMS per perf tier (0 = none); radii and length in studs.
+	VORTEX = {
+		ARMS = { 8, 6, 4, 0 },
+		POINTS = 6, -- control points per arm (POINTS - 1 Beams)
+		MOUTH_RADIUS = 3.5, -- where the arms pour into the throat
+		FAR_RADIUS = 17, -- the funnel's wide end, LENGTH studs out toward the town
+		LENGTH = 32,
+		FLARE = 1.4, -- radius growth exponent (> 1: a trumpet)
+		TURNS = 0.85, -- turns of an arm from the far end to the mouth
+		CURVE = 0.35, -- Beam curve size per stud of radius (round spirals between the points)
+		WIDTH = { 0.7, 2.4 }, -- Beam width at the mouth, at the far end
+		ALPHA = { 0.5, 0.97 }, -- Beam transparency at the mouth, at the far end
+		COLOURS = { "#FFF1D8", "#C9C2FF" }, -- warm white into a pale violet
+		SPIN = 2.6, -- rad/s (x Config.Aurora.REDUCED_MOTION under reduced motion)
+	},
 	SNOW_RATE = 60, -- flakes/s in the stage snow (x0.5 under reduced motion)
 	SNOW_MAX = 240, -- alive at most (rate x lifetime is reported to Heist/Particles as steady)
 	HANDOFF_SECONDS = 0.35, -- the wordmark rests this long before the title card takes over

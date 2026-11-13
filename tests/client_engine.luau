@@ -4,6 +4,8 @@
 -- 2026-11-12, place v21: 22 checks, 0 failed. Section F (camera track) and H (presentation shell) not yet run in the engine.
 -- Section J: first person (PLAN_FIRST_PERSON FP). 2026-11-13, Saved v50 and v52: 49 checks, 0 failed (J: 3 / 3).
 -- Section K: the northern lights (SKY track). 2026-11-13, Saved v59: 50 checks, 0 failed (K: 26 / 26 / 13 / 7 Beams).
+-- Section J (intro) + L: CH and intro polish (Rookie-copy clones, the real aurora, the kit tower, the vortex, the
+-- arms in your outfit, the scarf sway).
 -- Loads every client module, builds L6 with the uploaded kit + Christmas layer and runs
 -- WorldView on it (vault door skin swing + dial, alarm beacons), the L5 till lock label,
 -- Gus on his mesh (every beat attached, head lead, Santa hat), the Line-up arrangement against the real van body, and
@@ -1441,8 +1443,22 @@ local okIntro, introErr = pcall(function()
 		"stage parts"
 	)
 	assert(cine.gui():FindFirstChild("Skip"), "SKIP from the first frame")
+	local auroraFolder = stage:FindFirstChild("Aurora")
+	assert(auroraFolder and auroraFolder:FindFirstChild("EH_Aurora"), "the sky is the game's Heist/Aurora")
+	local town = stage:FindFirstChild("Town")
+	local towerModel = town and town:FindFirstChild("Intro_Tower")
+	assert(towerModel and towerModel:FindFirstChild("Intro_Tower_Sign", true), "Hoardsworth Tower is the kit landmark")
 	local counts = cine.counts()
-	assert(counts.windows > 40, "lit windows: " .. counts.windows)
+	assert(counts.windows > #ST.houses, "lit windows (the town's and the tower's): " .. counts.windows)
+	local vortexBeams = 0
+	local vortexPart = stage:FindFirstChild("Vortex", true)
+	for _, d in (if vortexPart then vortexPart:GetChildren() else {}) do
+		if d:IsA("Beam") then
+			vortexBeams += 1
+		end
+	end
+	local V = Config.Intro.VORTEX
+	assert(vortexBeams == V.ARMS[1] * (V.POINTS - 1), "the suction vortex at tier 1: " .. vortexBeams .. " Beams")
 	for _, d in stage:GetDescendants() do
 		if d:IsA("BasePart") then
 			assert(d.Anchored and not d.CanCollide and not d.CanQuery, d:GetFullName() .. " is quiet")
@@ -1472,6 +1488,8 @@ local okIntro, introErr = pcall(function()
 		end
 	end
 	assert(inAir > 0, "presents in the air")
+	local vortexBeam = if vortexPart then vortexPart:FindFirstChildOfClass("Beam") else nil
+	assert(vortexBeam and vortexBeam.Enabled, "the vortex runs with the vacuum")
 	stepTo(28.6) -- shot 5: the garage, headlights on, the Rookie
 	assert(cine.counts().presents == 0, "presents swallowed")
 	local rookieKind = cine.rookieKind()
@@ -1491,11 +1509,44 @@ local okIntro, introErr = pcall(function()
 	end
 	assert(cine.counts().clones == #ST.clones, "clones built")
 	assert((cam.CFrame.Position - world(ST.rookie.at)).Magnitude < 20, "the camera is on the Rookie")
-	stepTo(33.0) -- shot 6: the clones printed in
+	stepTo(31.45) -- shot 6: clone 4 mid tape-print
 	local garage = stage:FindFirstChild("Garage")
-	local clone1 = garage and garage:FindFirstChild("Clone1")
-	local clonePart = clone1 and clone1:FindFirstChildWhichIsA("BasePart")
-	assert(clonePart == nil or clonePart.LocalTransparencyModifier < 0.5, "clone 1 printed in")
+	local crew = garage and garage:FindFirstChild("Crew")
+	assert(crew, "the crew group")
+	local hl = crew:FindFirstChildOfClass("Highlight")
+	assert(hl and hl.Enabled and hl.Adornee == crew, "one crew-hue Highlight over the clones")
+	assert(math.abs(hl.FillTransparency - Config.Heist.CLONE_FILL_TRANSPARENCY) < 1e-6, "EchoView's fill")
+	if hasRookie then
+		local c4 = crew:FindFirstChild("Clone4")
+		local shownLow, hiddenHigh = false, false
+		for _, d in (if c4 then c4:GetDescendants() else {}) do
+			if d:IsA("BasePart") and d.Transparency < 1 and d.Name ~= "HumanoidRootPart" then
+				if d.Name == "LeftFoot" and d.LocalTransparencyModifier == 0 then
+					shownLow = true
+				elseif d.Name == "Head" and d.LocalTransparencyModifier == 1 then
+					hiddenHigh = true
+				end
+			end
+		end
+		assert(shownLow and hiddenHigh, "clone 4 prints from the feet up (feet in, head not yet)")
+	end
+	stepTo(33.0) -- shot 6: the clones printed in
+	local clone1 = crew:FindFirstChild("Clone1")
+	if hasRookie then
+		local crewHue, kept, printed = 0, 0, true
+		for _, d in (clone1 :: Model):GetDescendants() do
+			if d:IsA("BasePart") and d.Transparency < 1 then
+				printed = printed and d.LocalTransparencyModifier < 0.5
+				if d:GetAttribute("EH_Tint") == "crew" then
+					crewHue += 1
+				elseif d.Name == "Rookie_Cap_Flat" then
+					kept += 1
+				end
+			end
+		end
+		assert(printed, "clone 1 printed in")
+		assert(crewHue >= 3 and kept == 1, "a Rookie copy: crew pieces tinted, the outfit kept")
+	end
 	stepTo(35.0) -- the title smash
 	assert(cine.gui():FindFirstChild("Title"), "the wordmark is up")
 	stepTo(IntroPlan.total() + 1)
@@ -1539,6 +1590,95 @@ local okIntro, introErr = pcall(function()
 	return string.format("stage built in %.0f ms, %d kit groups, rookie %s", buildMs, groups, rookieKind)
 end)
 check(okIntro, "story intro: kit, stage, every shot stepped, SKIP end state, restore (" .. tostring(introErr) .. ")")
+-- L. CH polish: on the real CharacterKit, the first-person arms are built in your outfit (Viewmodel.fromOutfit: the
+-- glove variant's cuff and the glove colour on the hands, the crew stripes or the colour-block cuff on the sleeve,
+-- both grips bound), and the long scarf's two tail pieces sway (ScarfSway.bind finds the welds, a pose bends them,
+-- the budget picks the nearest, a low tier puts the modelled pose back).
+local okCh, chErr = pcall(function(): string
+	local Viewmodel = require(clientHeist:WaitForChild("Viewmodel"))
+	local ScarfSway = require(clientHeist:WaitForChild("ScarfSway"))
+	local Outfit = require(shared:WaitForChild("Heist"):WaitForChild("Outfit"))
+	local Config = require(shared:WaitForChild("Config")) :: any
+	local kit = ReplicatedStorage:WaitForChild(Config.Rookie.KIT_FOLDER, 20)
+	assert(kit and kit:FindFirstChild("Pieces"), "CharacterKit.Pieces")
+	local hue = Color3.fromHex("#FF4FD8")
+	local leather = Outfit.default()
+	leather.gloves = "Gloves_Leather"
+	leather.sweater = "Sweater_Block"
+	local looks = {}
+	for _, o in { Outfit.default(), leather } do
+		local rig = Viewmodel.fromOutfit(kit, Outfit.key(o), hue)
+		assert(rig and rig.kit, "arms built for " .. Outfit.key(o))
+		local glove = Color3.fromHex(Outfit.gloveHex(o))
+		local cuffs, hands, crew, loud = 0, 0, 0, 0
+		for _, d in rig.model:GetDescendants() do
+			if d:IsA("BasePart") then
+				if string.find(d.Name, "Rookie_Gloves_" .. string.sub(o.gloves, 8), 1, true) then
+					cuffs += 1
+					assert(d.Color == glove, d.Name .. " in the glove colour")
+				elseif string.find(d.Name, "Hand", 1, true) then
+					hands += 1
+					assert(d.Color == glove, d.Name .. " in the glove colour")
+				elseif d.Color == hue then
+					crew += 1
+				end
+				if d.CanCollide or d.CanQuery or d.CastShadow or not d.Anchored then
+					loud += 1
+				end
+			end
+		end
+		assert(cuffs == 2 and hands == 2, string.format("two gloves and their cuffs (%d, %d)", hands, cuffs))
+		assert(crew >= 2, "the sleeve's crew stripes or cuffs: " .. crew)
+		assert(loud == 0, "quiet parts")
+		assert(#rig.R.parts >= 3 and #rig.L.parts >= 3, "both hands bound to their grips")
+		table.insert(looks, string.format("%s %d parts", o.gloves, #rig.R.parts + #rig.L.parts))
+		rig.model:Destroy()
+	end
+	-- the scarf tail on the template (default outfit: the long scarf)
+	local tplI = kit:FindFirstChild("Rookie")
+	assert(tplI and tplI:IsA("Model"), "the Rookie template")
+	local m = tplI:Clone()
+	m.Parent = scratch
+	local rootI = m:FindFirstChild("HumanoidRootPart")
+	assert(rootI and rootI:IsA("BasePart"), "its root")
+	local root = rootI :: BasePart
+	root.Anchored = true
+	local rig = ScarfSway.bind(m)
+	assert(rig and #rig.welds == 2, "the long scarf's two tail welds")
+	local tip = m:FindFirstChild(Config.Rookie.SCARF.PIECES[2])
+	assert(tip, "the tail's end piece")
+	local rest = (rig :: any).welds[2].C0
+	ScarfSway.pose(rig :: any, 60, 0, 25, 0)
+	assert((rig :: any).welds[2].C0 ~= rest, "a pose bends the tail")
+	ScarfSway.pose(rig :: any, 0, 0, 0, 0)
+	local rr = rig :: any
+	assert((rr.welds[2].C0.Position - rest.Position).Magnitude < 1e-4, "angles 0: the modelled pose")
+	rr.welds[1].C0 = rr.rest[1]
+	rr.welds[2].C0 = rest
+	local sway = ScarfSway.new({
+		autoStep = false,
+		models = function()
+			return { m }
+		end,
+	})
+	sway.setTier(1)
+	sway.step(1 / 30, root.Position + Vector3.new(0, 2, 8))
+	sway.step(1 / 30, root.Position + Vector3.new(0, 2, 8))
+	assert(sway.count() == 1, "the nearest character sways")
+	local swayed = m:FindFirstChild(Config.Rookie.SCARF.PIECES[2])
+	local w2 = swayed and swayed:FindFirstChildOfClass("Weld")
+	assert(w2 and w2.C0 ~= rest, "standing: the tail hangs (bent from the modelled pose)")
+	sway.setTier(Config.Rookie.SCARF.OFF_TIER)
+	assert(w2.C0 == rest, "a low tier puts the modelled pose back")
+	sway.setTier(1)
+	sway.step(1 / 30, root.Position + Vector3.new(0, 2, 500))
+	assert(sway.count() == 0, "beyond RANGE: none")
+	sway.destroy()
+	assert(tip.Parent == m, "the tail piece stays")
+	m:Destroy()
+	return table.concat(looks, ", ")
+end)
+check(okCh, "CH polish: arms in your outfit, the scarf tail sways (" .. tostring(chErr) .. ")")
 -- K. The northern lights (PLAN_FIRST_PERSON "SKY"): Heist/Aurora builds every layer of Config.Aurora as a chain of
 -- additive Beams (valid uploaded image ids: Image assets), unlit, never colliding or queried, high over the anchor;
 -- the tier switches change how many draw (Budget.auroraLayers: 4 / 4 / 2 / 1) and tier 4 holds still; the layers

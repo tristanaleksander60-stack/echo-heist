@@ -1,7 +1,7 @@
 --!strict
 -- Heist/IntroKit: hands the client the story intro's meshes (docs/art/intro/STORYBOARD.md, Heist/Cinematic).
 -- KitService keeps its templates in ServerStorage, which clients cannot see. Once the kit is loaded this copies
--- the intro groups (assets/blender/intro.py: Hoardsworth, the lever, the vacuum, the Snow Globe Vault, three
+-- the intro groups (assets/blender/intro.py: Hoardsworth, the lever, the vacuum, the Snow Globe Vault, the tower, three
 -- presents, the letter, two houses) and the launch-kit pieces the stage reuses (the van, street lamps, the tree)
 -- into ReplicatedStorage/<Config.Intro.KIT_FOLDER>, like Heist/GusTemplate. The folder is filled before it is
 -- parented, so a client never sees half a kit. Clients build the stage from it (stand-ins until it arrives).
@@ -18,6 +18,7 @@ IntroKit.MODELS = table.freeze({
 	"Intro_Lever",
 	"Intro_Vacuum",
 	"Intro_SnowGlobe",
+	"Intro_Tower",
 	"Intro_Present_A",
 	"Intro_Present_B",
 	"Intro_Present_C",

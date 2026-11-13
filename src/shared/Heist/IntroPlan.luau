@@ -80,11 +80,23 @@ IntroPlan.STAGE = table.freeze({
 	houses = houses(),
 	lamps = { { -88, 12 }, { -44, -12 }, { 0, 12 }, { 44, -12 }, { 88, 12 } },
 	tree = { 0, 0, 0 },
-	tower = { base = { 0, 0, -200 }, tiers = { { 36, 60 }, { 28, 40 }, { 22, 28 } }, deck = { 40, 2, 40 } },
+	-- Hoardsworth Tower (the kit's Intro_Tower, turned 180 deg to face the town; its roof terrace's top is deckY);
+	-- tiers / deck: the Part stand-in when the kit never arrived. sign: the giant H's centre (its floodlight).
+	tower = {
+		base = { 0, 0, -200 },
+		yaw = 180,
+		tiers = { { 36, 60 }, { 28, 40 }, { 22, 28 } },
+		deck = { 48, 2, 48 },
+		sign = { 0, 84, -183 },
+	},
 	deckY = 130,
 	globe = { centre = { 0, 150, -205 }, radius = 16 },
-	vacuum = { at = { 11, 130, -192 }, yaw = 0 },
-	nozzle = { 34, 146, -168 }, -- the intake's mouth (presents vanish into it)
+	-- the giant vacuum on the tower's gantry (the kit's Intro_Vacuum, authored at VAC_S 1.4, turned 180 deg); scale:
+	-- the Part stand-in's size factor. nozzle: the intake's mouth (presents vanish into it); aim: the way the mouth
+	-- looks (down at the town), the suction vortex's axis.
+	vacuum = { at = { 23, 130, -188 }, yaw = 180, scale = 1.4 },
+	nozzle = { 55.2, 152.4, -154.4 },
+	aim = { -0.1506, -0.6524, 0.7428 },
 	lever = { at = { -12.6, 130, -184.6 }, yaw = 180 }, -- at his right hand
 	hoardsworth = { at = { -9, 130, -185 }, yaw = 180 }, -- faces +Z: the town
 	garage = { centre = { 130, 0, 46 }, size = { 36, 14, 24 } },
@@ -198,8 +210,8 @@ IntroPlan.SHOTS = table.freeze({
 		captionAt = 0.9,
 		keys = {
 			{ t = 0, pos = { 26, 112, 168 }, look = { 0, 178, -110 }, fov = 56 },
-			{ t = 0.55, pos = { 16, 50, 112 }, look = { 0, 74, -150 }, fov = 52 },
-			{ t = 1, pos = { 8, 23, 74 }, look = { 0, 66, -200 }, fov = 48 },
+			{ t = 0.55, pos = { 16, 50, 112 }, look = { 0, 82, -150 }, fov = 52 },
+			{ t = 1, pos = { 8, 23, 74 }, look = { 0, 80, -200 }, fov = 48 },
 		},
 		events = {
 			{ at = 0, kind = "spawn", id = "town" },
@@ -219,8 +231,8 @@ IntroPlan.SHOTS = table.freeze({
 		caption = "HOARD",
 		captionAt = 0.6,
 		keys = {
-			{ t = 0, pos = { -6.2, 130.9, -173.5 }, look = { -9.6, 136.6, -185 }, fov = 52 },
-			{ t = 1, pos = { -7.6, 131.4, -177.6 }, look = { -9.4, 136.9, -185 }, fov = 42 },
+			{ t = 0, pos = { 7.0, 130.9, -178.5 }, look = { -9.6, 137.0, -185 }, fov = 50 },
+			{ t = 1, pos = { 3.5, 131.3, -180.5 }, look = { -9.4, 137.3, -185 }, fov = 40 },
 		},
 		events = {
 			{ at = 0, kind = "spawn", id = "hoardsworth" },
@@ -240,9 +252,9 @@ IntroPlan.SHOTS = table.freeze({
 		caption = "EVERY",
 		captionAt = 1.3,
 		keys = {
-			{ t = 0, pos = { 54, 128, -134 }, look = { 34, 146, -168 }, fov = 55 },
-			{ t = 0.5, pos = { 66, 96, -86 }, look = { 30, 118, -160 }, fov = 52 },
-			{ t = 1, pos = { 74, 66, -30 }, look = { 6, 138, -200 }, fov = 50 },
+			{ t = 0, pos = { 69.7, 140.6, -142.2 }, look = { 55.2, 152.4, -154.4 }, fov = 55 },
+			{ t = 0.5, pos = { 72, 121, -110 }, look = { 50, 146, -160 }, fov = 50 },
+			{ t = 1, pos = { 78, 104, -86 }, look = { 30, 140, -178 }, fov = 46 },
 		},
 		events = {
 			{ at = 0, kind = "cue", cue = "IntroWhoosh" },

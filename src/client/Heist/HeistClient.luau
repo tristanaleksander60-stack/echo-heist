@@ -48,6 +48,7 @@ local Net = require(ReplicatedStorage:WaitForChild("LihFolk"):WaitForChild("Net"
 
 local Heist = script.Parent
 local Aurora = require(Heist:WaitForChild("Aurora"))
+local ScarfSway = require(Heist:WaitForChild("ScarfSway"))
 local Backdrop = require(Heist:WaitForChild("Backdrop"))
 local EchoView = require(Heist:WaitForChild("EchoView"))
 local CameraDirector = require(Heist:WaitForChild("CameraDirector"))
@@ -200,6 +201,18 @@ function HeistClient.start()
 	if Config.Aurora.ENABLED then
 		lights.setExteriorTint(Config.Aurora.OUTDOOR_ADD)
 	end
+	-- The long scarf's tail sways on your character and your clones' rigs (CH polish; off from a low tier).
+	local swayList: { Model } = {}
+	local scarves = ScarfSway.new({
+		models = function(): { Model }
+			table.clear(swayList)
+			local ch = Players.LocalPlayer and Players.LocalPlayer.Character
+			if ch then
+				table.insert(swayList, ch)
+			end
+			return if state.where == "heist" then echo.swayModels(swayList) else swayList
+		end,
+	})
 	local ffOn = false
 	local doors: any = nil -- Heist/Transition, once the HUD's fx layer exists
 	-- A level pick: the doors start closing at once and hold while the server builds the heist
@@ -384,6 +397,7 @@ function HeistClient.start()
 		backdrop.setTier(tier)
 		cutaway.setTier(tier)
 		aurora.setTier(tier)
+		scarves.setTier(tier)
 	end)
 	DebugChip.start(echo, Telemetry.tier) -- Studio only: clones drawn / healthy / tier / avatar
 	GoldenShots.start(camera, state, echo) -- Studio only: golden-frame staging (EH_Scenario)

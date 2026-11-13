@@ -599,6 +599,20 @@
    "sha256": "0ddb0e2443f09742287ff373309d3c09e9d9a13cee6f51f9c10a15ad1f380a4d",
    "uploaded": "2026-11-13T00:26:26Z"
   },
+  "Intro_Tower": {
+   "assetId": 133572245411117,
+   "file": "assets/fbx/Intro_Tower.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Intro_Tower",
+    "Intro_Tower_Sign",
+    "Intro_Tower_Windows"
+   ],
+   "revisionId": "1",
+   "sha256": "d68acc466fc047e61333fea52d1ab052ff403208f6a1d92b267ae720a675c7a4",
+   "uploaded": "2026-11-13T02:57:06Z"
+  },
   "Intro_Vacuum": {
    "assetId": 81402106868569,
    "file": "assets/fbx/Intro_Vacuum.fbx",
@@ -608,9 +622,9 @@
     "Intro_Vacuum",
     "Intro_Vacuum_Lights"
    ],
-   "revisionId": "1",
-   "sha256": "ad2d866e2232474fb5e4c3dc1019f8abdfb5e73cb81077e511344890a6c6642a",
-   "uploaded": "2026-11-13T00:26:46Z"
+   "revisionId": "2",
+   "sha256": "20ed691a21b50eda0e03866e05ca45574abdc992e99bae393814935b5b343005",
+   "uploaded": "2026-11-13T02:57:25Z"
   },
   "JobBoard": {
    "assetId": 112136984753667,
@@ -825,9 +839,9 @@
     "Rookie_RightUpperLeg",
     "Rookie_UpperTorso"
    ],
-   "revisionId": "1",
-   "sha256": "1852ca2723ef5f5112e53697b71f4b30ddc4532104aa1c07c8a06af38c4db1d3",
-   "uploaded": "2026-11-13T00:21:20Z"
+   "revisionId": "2",
+   "sha256": "36e356e58d414e158d6afa88263adf25ce2e92342d67fe8690e015fabccaa4f4",
+   "uploaded": "2026-11-13T02:57:45Z"
   },
   "Rookie_Faces": {
    "assetId": 115892166045394,
@@ -839,9 +853,9 @@
     "Rookie_Face_Shocked",
     "Rookie_Face_Smug"
    ],
-   "revisionId": "1",
-   "sha256": "e71ed6f6eaada69276f0d0e4f59292a42f6e1caa17c1c9cb625c4d0c52bbf535",
-   "uploaded": "2026-11-13T00:19:44Z"
+   "revisionId": "2",
+   "sha256": "3d6553b9b914ff21c2d3ea55f21dde37f0342796beab0c7972b607cd049b9da0",
+   "uploaded": "2026-11-13T02:57:55Z"
   },
   "Rookie_Outfits": {
    "assetId": 88500778373104,
@@ -865,13 +879,15 @@
     "Rookie_Scarf_Chunky",
     "Rookie_Scarf_Knot",
     "Rookie_Scarf_Long",
+    "Rookie_Scarf_Long_Tail1",
+    "Rookie_Scarf_Long_Tail2",
     "Rookie_Stripes_LeftArm",
     "Rookie_Stripes_RightArm",
     "Rookie_Stripes_Torso"
    ],
-   "revisionId": "1",
-   "sha256": "aa6d247cdc470d44a9a6a011ee7ea40b886c0c8ca485e7d4be226d433ee326d8",
-   "uploaded": "2026-11-13T00:21:45Z"
+   "revisionId": "2",
+   "sha256": "73d46157359ee57e60fbd1031148dc8713a0805ea87e6671c4305e1f954c9867",
+   "uploaded": "2026-11-13T02:58:14Z"
   },
   "Rookie_Viewmodel": {
    "assetId": 122428778963718,

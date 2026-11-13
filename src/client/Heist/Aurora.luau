@@ -16,8 +16,11 @@
 -- Textures: an unloaded Beam texture draws a solid bar, so every layer stays invisible until ContentProvider has
 -- every tile, then fades in over REVEAL_SECONDS.
 --
--- API (HeistClient; the INTRO track's Cinematic may make its own):
---   Aurora.new(parent?) -> director   parent defaults to workspace
+-- API (HeistClient; the story intro's Heist/Cinematic makes its own, anchored to its stage):
+--   Aurora.new(parent?, opts?) -> director   parent defaults to workspace; opts.revealSeconds: the fade-in once the
+--                                     textures load (default Config.Aurora.REVEAL_SECONDS; 0 = at once)
+--   Aurora.solo(director) / Aurora.release(director)   while a director is solo, every other one draws nothing (the
+--                                     intro's sky hides the session's; release hands it back)
 --   director.setAnchor(origin, yaw?)  the site (heist instance origin or the garage); yaw = the landmark direction in
 --                                     degrees (0 = toward -Z, + toward -X); nil reads it from Lighting.Sky
 --   director.setTier(tier) / director.setReducedMotion(on) / director.setVisible(on)
@@ -57,8 +60,31 @@ type LayerRig = {
 
 local Aurora = {}
 
-function Aurora.new(parent: Instance?): any
+local live: { [any]: () -> () } = {} -- every director -> its applyTier (a solo switch re-applies them all)
+local soloDirector: any = nil
+
+local function reapply()
+	for _, apply in live do
+		apply()
+	end
+end
+
+-- Only `director` draws until Aurora.release(director) (the story intro over the session's sky).
+function Aurora.solo(director: any)
+	soloDirector = director
+	reapply()
+end
+
+function Aurora.release(director: any)
+	if soloDirector == director then
+		soloDirector = nil
+		reapply()
+	end
+end
+
+function Aurora.new(parent: Instance?, opts: any?): any
 	local director = {}
+	local revealSeconds = if opts and opts.revealSeconds ~= nil then opts.revealSeconds else A.REVEAL_SECONDS
 	local folder = Instance.new("Folder")
 	folder.Name = "EH_Aurora"
 	local rigs: { LayerRig } = {}
@@ -130,6 +156,9 @@ function Aurora.new(parent: Instance?): any
 	end
 
 	local function shownLayers(): number
+		if soloDirector ~= nil and soloDirector ~= director then
+			return 0
+		end
 		return if visible then Budget.auroraLayers(tierNow) else 0
 	end
 
@@ -198,7 +227,7 @@ function Aurora.new(parent: Instance?): any
 			motionT += dt * motion()
 		end
 		if loaded and reveal < 1 then
-			reveal = math.min(1, reveal + dt / A.REVEAL_SECONDS)
+			reveal = if revealSeconds <= 0 then 1 else math.min(1, reveal + dt / revealSeconds)
 			lastUpdate = -math.huge
 		end
 		local cam = camPos
@@ -283,6 +312,8 @@ function Aurora.new(parent: Instance?): any
 
 	function director.destroy()
 		destroyed = true
+		live[director] = nil
+		Aurora.release(director)
 		if stepConn then
 			stepConn:Disconnect()
 			stepConn = nil
@@ -316,6 +347,7 @@ function Aurora.new(parent: Instance?): any
 	end
 
 	folder.Parent = parent or workspace
+	live[director] = applyTier
 	applyTier()
 	if RunService:IsClient() and A.ENABLED then
 		task.spawn(preload, 1)

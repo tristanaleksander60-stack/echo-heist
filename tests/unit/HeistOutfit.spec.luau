@@ -146,30 +146,41 @@ return function(test)
 		Assert.eq(Outfit.gloveHex(o), R.GLOVES.Gloves_Leather, "glove colour")
 	end)
 
-	test("an outfit's pieces: one cap and one scarf, 3 sweater pieces, 2 cuffs, the mask only when worn", function()
-		local d = Outfit.pieces(Outfit.default())
-		Assert.eq(#d, 1 + 1 + 3 + 2, "default pieces (no mask)")
-		local masked = Outfit.default()
-		masked.mask = "Mask_Eye"
-		local m = Outfit.pieces(masked)
-		Assert.eq(#m, #d + 1, "the mask adds one piece")
-		Assert.truthy(table.find(m, "Rookie_Mask_Eye") ~= nil, "mask piece")
-		for id, def in R.OUTFIT do
-			if def.variant ~= "" then
-				local list = RookieData.outfit[def.slot] and RookieData.outfit[def.slot][def.variant]
-				Assert.truthy(list ~= nil and #list > 0, id .. " has kit pieces")
+	test(
+		"an outfit's pieces: one cap, the scarf (+ the long one's 2 tail pieces), 3 sweater pieces, 2 cuffs, the mask only when worn",
+		function()
+			local d = Outfit.pieces(Outfit.default())
+			Assert.eq(#d, 1 + 3 + 3 + 2, "default pieces (no mask; the long scarf is the wrap + its two-segment tail)")
+			for _, name in Config.Rookie.SCARF.PIECES do
+				Assert.truthy(table.find(d, name) ~= nil, "the long scarf's tail piece " .. name)
+				Assert.eq(RookieData.tint[name], "crew", name .. " takes the crew hue")
+				Assert.eq(RookieData.attach[name].part, "UpperTorso", name .. " welds to the UpperTorso (ScarfSway)")
 			end
-		end
-		for slot, variants in RookieData.outfit do
-			for variant in variants do
-				local found = false
-				for _, def in R.OUTFIT do
-					found = found or (def.slot == slot and def.variant == variant)
+			local chunky = Outfit.default()
+			chunky.scarf = "Scarf_Chunky"
+			Assert.eq(#Outfit.pieces(chunky), #d - 2, "other scarves have no tail")
+			local masked = Outfit.default()
+			masked.mask = "Mask_Eye"
+			local m = Outfit.pieces(masked)
+			Assert.eq(#m, #d + 1, "the mask adds one piece")
+			Assert.truthy(table.find(m, "Rookie_Mask_Eye") ~= nil, "mask piece")
+			for id, def in R.OUTFIT do
+				if def.variant ~= "" then
+					local list = RookieData.outfit[def.slot] and RookieData.outfit[def.slot][def.variant]
+					Assert.truthy(list ~= nil and #list > 0, id .. " has kit pieces")
 				end
-				Assert.truthy(found, "kit variant " .. slot .. "/" .. variant .. " has an OUTFIT id")
+			end
+			for slot, variants in RookieData.outfit do
+				for variant in variants do
+					local found = false
+					for _, def in R.OUTFIT do
+						found = found or (def.slot == slot and def.variant == variant)
+					end
+					Assert.truthy(found, "kit variant " .. slot .. "/" .. variant .. " has an OUTFIT id")
+				end
 			end
 		end
-	end)
+	)
 
 	test("RookieData: an R15 rig (15 parts, R15 joints and parents) that matches the kit manifest", function()
 		local man = serde.decode("json", fs.readFile("assets/fbx/kit_manifest.json")).parts
