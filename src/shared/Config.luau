@@ -2070,4 +2070,56 @@ Config.Moments = {
 	},
 }
 
+-- The story intro (docs/PLAN_FIRST_PERSON.md §5 "INTRO", docs/art/intro/STORYBOARD.md; MASTERPLAN §4.3): a
+-- 30-40 s cinematic on first join only, before L1 or the lobby, with SKIP from the first frame. The shot list
+-- is data in Shared/Heist/IntroPlan (pure, unit-tested); the client Heist/Cinematic builds the stage locally
+-- (never replicated, never collides, never queried) and plays it. Numbers here; story and framing there.
+Config.Intro = {
+	ENABLED = true, -- replaces the 3 s title beat for new players (Heist/Loading)
+	-- Where the client builds its stage: far from every heist slot (Heist.INSTANCE_SPACING grid) and their
+	-- backdrop rings, so nothing of a level is ever in a shot. Client-made parts are never streamed.
+	STAGE_ORIGIN = { 0, 0, 7500 },
+	KIT_FOLDER = "EH_IntroKit", -- ReplicatedStorage folder the server fills (Heist/IntroKit)
+	KIT_WAIT_SECONDS = 4, -- the loading card holds this long at most for the meshes; then stand-ins
+	-- The CHARACTER track's folder; its "Rookie" model replaces the stand-in as soon as it exists.
+	CHARACTER_KIT = "CharacterKit",
+	ROOKIE_TEMPLATE = "Rookie",
+	-- The server holds a new account's first heist until the client says the intro is over (Heist.Ready
+	-- while preparing) or this long (a client that never answers never traps anyone).
+	SERVER_HOLD_SECONDS = 48,
+	-- Studio without data (offline) plays it only when staged (EH_Scenario = "INTRO"): every Play would
+	-- otherwise open on 36 s of cinematic.
+	STUDIO_AUTOPLAY = false,
+	-- Caption cards (big, short, sound-off readable: the MASTERPLAN §9.2 clip rules).
+	CAPTION = {
+		SIZE = 72, -- design px at UI scale 1
+		MIN_SIZE = 34, -- never smaller on a phone
+		IN = 0.22, -- s fade + punch in
+		OUT = 0.25, -- s fade out
+		PUNCH = 1.18, -- scale at the first frame, settling to 1
+		Y = 0.8, -- screen fraction of the card's centre (lower third, clear of the SKIP button)
+		WORDS_MAX = 6, -- unit-tested on every caption
+		BAR = 0.16, -- letterbox bars, screen-height fraction each (0 under reduced motion: no slide)
+	},
+	SKIP = {
+		ANY_KEY = true, -- any keyboard key skips too (PC); touch and gamepad use the button (or ButtonB)
+		HOLD_OFF = 0.35, -- s after the start in which a key is ignored (the press that started the game)
+		SIZE = { 150, 52 }, -- design px
+		MARGIN = 24, -- px from the top-right safe corner
+	},
+	FADE_IN = 0.6, -- s from ink at the start
+	WHIP_SECONDS = 0.32, -- a whip-pan between shots (reduced motion: a cut)
+	WHIP_BLUR = 18, -- BlurEffect size at the middle of a whip
+	FLASH_SECONDS = 0.18, -- white flashes (vacuum switch, title smash); FlashLimit applies
+	SHAKE = { AMP = 0.35, FREQ = 13 }, -- studs, Hz (Settings "shake" off or reduced motion: none)
+	PRESENTS = { 30, 20, 12, 6 }, -- flying presents per perf tier 1..4
+	PRESENT_SPIN = 2.2, -- rad/s tumble
+	SWIRL_PARTICLES = 60, -- asked of Heist/Particles per sparkle burst (the budget may grant fewer)
+	TOWN_LIGHTS = { 8, 6, 3, 0 }, -- PointLights in the town per tier (windows are Neon either way)
+	AURORA_LAYERS = { 3, 3, 2, 1 }, -- curtain layers per tier
+	SNOW_RATE = 60, -- flakes/s in the stage snow (x0.5 under reduced motion)
+	SNOW_MAX = 240, -- alive at most (rate x lifetime is reported to Heist/Particles as steady)
+	HANDOFF_SECONDS = 0.35, -- the wordmark rests this long before the title card takes over
+}
+
 return Config
