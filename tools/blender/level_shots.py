@@ -1404,6 +1404,15 @@ def cut(t, groups, cam, subjects):
     return hidden
 
 
+def _look(pos, tgt, fy):
+    """Heist/CutAway's look subject: where the camera's look ray meets the floor + CUT.LOOK_HEIGHT (3)."""
+    d = tuple(tgt[k] - pos[k] for k in range(3))
+    if d[1] >= -1e-3:
+        return []
+    t = (fy + 3.0 - pos[1]) / d[1]
+    return [tuple(pos[k] + d[k] * t for k in range(3))] if t > 0 else []
+
+
 def _fp(x, z, fy, yaw, pitch):
     """The first-person eye at (x, z) looking along yaw (0 = -Z) and pitch (up positive): Roblox (pos, target)."""
     p = math.radians(pitch)
@@ -1443,7 +1452,7 @@ def big_level(level, samples, out_dir):
     shots = [
         # first person: the shop from the street spawn, up the facade from the van, inside up at the ceiling and round
         ("fp_street", _fp(sp["x"] - 3.0, oz1 + 15.0, fy, -0.12, 16.0), FP_FOV, (sp["x"] - 3.0, oz1 + 15.0), True),
-        ("fp_up", _fp(sp["x"] + 11.0, oz1 + 20.0, fy, 0.3, 44.0), FP_FOV, (sp["x"] + 11.0, oz1 + 20.0), True),
+        ("fp_up", _fp(sp["x"] + 14.0, oz1 + 21.0, fy, 0.38, 36.0), FP_FOV, (sp["x"] + 14.0, oz1 + 21.0), True),
         ("fp_ceiling", _fp(0.0, mid_z + 6.0, fy, 0.0, 50.0), FP_FOV, (0.0, mid_z + 6.0), False),
         ("fp_inside", _fp(0.0, oz1 - 6.0, fy, 0.0, 6.0), FP_FOV, (0.0, oz1 - 6.0), False),
         ("fp_corner", _fp(ox1 + 9.0, oz1 + 13.0, fy, math.radians(30), 26.0), FP_FOV, (ox1 + 9.0, oz1 + 13.0), True),
@@ -1457,16 +1466,16 @@ def big_level(level, samples, out_dir):
     move(J, level, sp["x"], sp["z"], sp["yaw"])
     you = [(sp["x"], fy + 4.5, sp["z"]), (sp["x"], fy + 0.8, sp["z"])]
     pos, tgt = _diorama(level["camera"], *at, sp["yaw"])
-    print("cut", tag, "diorama", sorted(cut(t, groups, pos, you)))
+    print("cut", tag, "diorama", sorted(cut(t, groups, pos, you + _look(pos, tgt, fy))))
     _w2_shoot(s, cam, f"{tag}_diorama", pos, tgt, DF, at, cfg, out_dir, level=level)
     pos, tgt = _classic(*at, sp["yaw"], CC["ZOOM"], CC["PITCH"])
-    print("cut", tag, "classic", sorted(cut(t, groups, pos, you)))
+    print("cut", tag, "classic", sorted(cut(t, groups, pos, you + _look(pos, tgt, fy))))
     _w2_shoot(s, cam, f"{tag}_classic", pos, tgt, CC["FOV"], at, cfg, out_dir, level=level)
     # the diorama with you inside: the dollhouse opens (ceiling, roof and the storeys on the camera's side)
     move(J, level, 0.0, mid_z, 0.0)
     you = [(0.0, fy + 4.5, mid_z), (0.0, fy + 0.8, mid_z)]
     pos, tgt = _diorama(level["camera"], 0.0, fy + 4.5, mid_z, 0.0)
-    print("cut", tag, "diorama_mid", sorted(cut(t, groups, pos, you)))
+    print("cut", tag, "diorama_mid", sorted(cut(t, groups, pos, you + _look(pos, tgt, fy))))
     _w2_shoot(s, cam, f"{tag}_diorama_mid", pos, tgt, DF, None, cfg, out_dir, level=level)
     # a high establishing view of the block from across the street (presentation height, nothing cut)
     cut(t, groups, (0, 999, 999), [])
@@ -1508,7 +1517,7 @@ def big_garage(g, samples, out_dir):
         _w2_shoot(s, cam, name, pos, tgt, FP_FOV, None, cfg, out_dir)
     J["root"].location = rb(sx, 0, sz)
     pos, tgt = _diorama(g["camera"], sx, 4.5, sz, 0.0)
-    print("cut GA diorama", sorted(cut(t, groups, pos, [(sx, 4.5, sz), (sx, 0.8, sz)])))
+    print("cut GA diorama", sorted(cut(t, groups, pos, [(sx, 4.5, sz), (sx, 0.8, sz)] + _look(pos, tgt, 0.0))))
     _w2_shoot(s, cam, "GA_diorama", pos, tgt, DF, None, cfg, out_dir)
     # out in the snowy yard, looking back at the warehouse and its big roll-up door
     yz = -g["lobby"]["HALF_Z"] - g["lobby"]["WALL_T"] - g["lobby"]["STREET_DEPTH"] * 0.8

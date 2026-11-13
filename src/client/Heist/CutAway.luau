@@ -262,8 +262,9 @@ function CutAway.new(director: any?): any
 		end
 	end
 
-	-- The subjects this frame (into `subj`): your feet and head; in a presentation shot also where its look ray meets
-	-- the floor. Returns how many points, and whether the camera is at your eyes (first person: nothing hides).
+	-- The subjects this frame (into `subj`): your feet and head, and where the camera's look ray meets the floor (the
+	-- diorama's focus, a shot's subject). Returns how many points, and whether the camera is at your eyes (first
+	-- person: nothing hides).
 	local function subjects(cam: Camera): (number, boolean)
 		local presenting = director ~= nil and director.presenting()
 		local cp = cam.CFrame.Position
@@ -283,7 +284,7 @@ function CutAway.new(director: any?): any
 			subj[4], subj[5], subj[6] = p.X, p.Y - 2.2, p.Z
 			n = 2
 		end
-		if presenting or n == 0 then
+		do
 			local floorY = if #buildings > 0 then buildings[1].floorY else 0
 			local lv = cam.CFrame.LookVector
 			local x, y, z =

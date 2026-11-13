@@ -67,6 +67,20 @@ local MB = 1 -- Stats reports MB already
 local TRIS: { [string]: number } = {
 	BankFront_24x12 = 2244,
 	BankersLamp = 328,
+	-- BIG buildings (assets/blender/tower.py)
+	Ceiling_8x8 = 168,
+	Clock_6 = 400,
+	Cornice_8 = 152,
+	Facade_8x10 = 360,
+	Facade_8x10_Body = 48,
+	Facade_Curtain = 132,
+	FireEscape_8x10 = 296,
+	Pediment_24 = 228,
+	Railing_8 = 60,
+	Roof_Antenna = 72,
+	Roof_Chimney = 204,
+	Roof_WaterTank = 412,
+	Truss_8 = 60,
 	Candy = 336,
 	CashBag = 600,
 	CashRegister = 1032,
@@ -279,6 +293,19 @@ local function tallyOf(root: Instance?): Tally
 		add(t, root, true)
 	end
 	return t
+end
+
+-- BIG: the triangles of a level's Overhead detail layer (curtains, fire escapes, rooftop props, light strings):
+-- what the client hides from Config.Big.DETAIL_OFF_TIER.
+local function bigDetailTris(model: Instance): number
+	local over = model:FindFirstChild("Overhead")
+	local n = 0
+	for _, d in (over and over:GetDescendants()) or {} do
+		if d:IsA("BasePart") and d:GetAttribute("EH_Layer") ~= nil then
+			n += if d:IsA("MeshPart") then TRIS[d:GetAttribute("KitPiece") or d.Name] or 0 else 12
+		end
+	end
+	return n
 end
 
 local function batchCount(t: Tally): number
@@ -919,7 +946,10 @@ if cloneActor and six then
 		local bdT = tallyOf(bdFolder)
 		local glows = echo.glowCount()
 		local hl = clonesT.highlightsOn
-		local levelTris = l6T.kitTris + l6T.primTris
+		-- BIG: from Config.Big.DETAIL_OFF_TIER the client (Heist/CutAway) hides the Overhead's detail layer
+		local levelTris = l6T.kitTris
+			+ l6T.primTris
+			- (if tier >= Config.Big.DETAIL_OFF_TIER then bigDetailTris(levelModel) else 0)
 		local avatarTris = (12 - lodFar + 4) * P.AVATAR_TRIS_EST + lodFar * P.MANNEQUIN_TRIS
 		local tris = levelTris + bdT.kitTris + bdT.primTris + avatarTris + 2 * gusTris
 		local draws = batchCount(l6T)
@@ -1203,6 +1233,62 @@ do
 		)
 		town.clear()
 	end
+end
+
+-- E. BIG buildings (PLAN_FIRST_PERSON §5, Config.Big.BUDGET): each kit-built instance's Overhead (ceiling, storeys,
+-- roof) counted on the real build: instances, triangles and batches at tier 1 and from the detail tier, no Light,
+-- nothing colliding, queried, touched or casting a shadow; and the warehouse garage's Overhead.
+do
+	local BB = Config.Big.BUDGET
+	for i = 1, math.min(6, #instances) do
+		local e = instances[i]
+		local over = e.inst.built.model:FindFirstChild("Overhead")
+		local t = tallyOf(over)
+		local detail = bigDetailTris(e.inst.built.model)
+		local loud = 0
+		for _, d in (over and over:GetDescendants()) or {} do
+			if d:IsA("BasePart") and (d.CanCollide or d.CanQuery or d.CanTouch or d.CastShadow) then
+				loud += 1
+			end
+		end
+		local tris = t.kitTris + t.primTris
+		check(
+			over ~= nil
+				and t.instances <= BB.instances
+				and tris <= BB.tris
+				and batchCount(t) <= BB.draws
+				and t.lights == 0
+				and loud == 0,
+			string.format(
+				"big: instance %d %s building (%s): %d instances / %d, ~%dk tris / %dk (tier %d+: ~%dk), ~%d batches / %d, %d lights, %d loud parts",
+				i,
+				e.id,
+				tostring(over and over:GetAttribute("Style")),
+				t.instances,
+				BB.instances,
+				tris // 1000,
+				BB.tris // 1000,
+				Config.Big.DETAIL_OFF_TIER,
+				(tris - detail) // 1000,
+				batchCount(t),
+				BB.draws,
+				t.lights,
+				loud
+			)
+		)
+	end
+	local gOver = garage:FindFirstChild("Overhead")
+	local gt = tallyOf(gOver)
+	check(
+		gOver ~= nil and gt.lights == 0,
+		string.format(
+			"big: the warehouse garage's Overhead: %d instances, ~%dk tris, ~%d batches, %d lights",
+			gt.instances,
+			(gt.kitTris + gt.primTris) // 1000,
+			batchCount(gt),
+			gt.lights
+		)
+	)
 end
 
 for _, e in instances do

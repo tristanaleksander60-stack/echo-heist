@@ -109,14 +109,34 @@ return function(test: (string, () -> ()) -> ())
 			near({ o.maxX - 4, 3, -20 }, 90, "right", "left")
 		end)
 
-		test(level.id .. ": at the street spawn the diorama hides nothing (the tall front behind you)", function()
-			local sp = level.spawns[1]
-			local you = { sp.x, sp.y, sp.z }
-			local h = byName(names, decide(b, groups, diorama(you, 0), you) :: any)
-			for _, n in names do
-				Assert.falsy(h[n], "spawn view: " .. n .. " shown")
+		test(
+			level.id .. ": at the street spawn: you alone open nothing; the diorama's focus in the shop opens it",
+			function()
+				local sp = level.spawns[1]
+				local you = { sp.x, sp.y, sp.z }
+				local cam = diorama(you, 0)
+				local h = byName(names, decide(b, groups, cam, you) :: any)
+				for _, n in names do
+					Assert.falsy(h[n], "you on the street: " .. n .. " shown")
+				end
+				-- Heist/CutAway adds the look ray's floor point (the focus leads you into the shop's door): the L1 spawn
+				-- view must see plate A inside, so the ceiling, the roof and the street front open; the back stays
+				local focus = CameraMath.ahead(
+					{ sp.x, sp.y + D.FOCUS_HEIGHT, sp.z },
+					0,
+					CameraMath.lead(D.FOV, D.PITCH, D.DISTANCE, D.SUBJECT_SCREEN_Y)
+				)
+				local dx, dy, dz = focus[1] - cam[1], focus[2] - cam[2], focus[3] - cam[3]
+				local m = math.sqrt(dx * dx + dy * dy + dz * dz)
+				local lx, ly, lz =
+					CutMath.lookPoint(cam[1], cam[2], cam[3], dx / m, dy / m, dz / m, CUT.LOOK_HEIGHT, CUT.LOOK_MAX)
+				local subj = { you[1], you[2] + 1.5, you[3], you[1], you[2] - 2.2, you[3], lx, ly, lz }
+				local out = {}
+				CutMath.decide(b, groups, cam[1], cam[2], cam[3], subj, 3, CUT.MARGIN, CUT.INSIDE_PAD, out)
+				local hf = byName(names, out)
+				Assert.truthy(hf.ceiling and hf.roof and hf.front and not hf.back, "the shop opens toward the street")
 			end
-		end)
+		)
 
 		test(level.id .. ": below the ceiling nothing opens; a storey in the way hides by occlusion", function()
 			local you = { 0, 3, -20 }
