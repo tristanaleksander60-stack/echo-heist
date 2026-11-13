@@ -2323,5 +2323,113 @@ check(
 	"Crew View on the kit L2: the shot frames you and the clones, the cut-away opens (" .. tostring(crewErr) .. ")"
 )
 
+-- N. The PARTY sheet (PARTY track, Hud/Party): it builds in the engine and draws a van from its server-written
+-- attributes (a fake van model: crew size 3, OPEN, one seated member not READY, one seat held): the CREW row (size 3
+-- on, 2 off below the seats taken), the JOIN row (OPEN on), the seat list (KICK on seat 2, seat 4 faded past the
+-- size), GO waiting then GO once everyone is READY (it sends { go, bay }); the van card for someone else's van.
+local okParty, partyErr = pcall(function()
+	local Party = require(clientHeist:WaitForChild("Hud"):WaitForChild("Party"))
+	local LobbyLook = require(shared:WaitForChild("Heist"):WaitForChild("LobbyLook"))
+	local Palette = require(shared:WaitForChild("Heist"):WaitForChild("Palette"))
+	local function need(parent: Instance, name: string): any
+		local x = parent:FindFirstChild(name, true)
+		assert(x ~= nil, "missing " .. name)
+		return x
+	end
+	local gui = Instance.new("ScreenGui")
+	gui.Parent = scratch
+	local root = Instance.new("Frame")
+	root.Size = UDim2.fromOffset(720, 330)
+	root.Parent = gui
+	local sent = {}
+	local party = Party.build({
+		root = root,
+		hud = {},
+		actions = {
+			lobbyAction = function(a: any)
+				table.insert(sent, a)
+			end,
+		},
+	})
+	-- a fake van under workspace.Garage.Vans (made here when the garage is not there)
+	local garage = workspace:FindFirstChild("Garage")
+	local madeGarage = garage == nil
+	if not garage then
+		local g = Instance.new("Model")
+		g.Name = "Garage"
+		g.Parent = workspace
+		garage = g
+	end
+	local g = garage :: Instance
+	local vans = g:FindFirstChild("Vans")
+	local madeVans = vans == nil
+	if not vans then
+		local f = Instance.new("Folder")
+		f.Name = "Vans"
+		f.Parent = g
+		vans = f
+	end
+	local bay = 99
+	local m = Instance.new("Model")
+	m.Name = "Van" .. bay
+	m:SetAttribute("Bay", bay)
+	m:SetAttribute("Mode", "crew")
+	m:SetAttribute("CrewId", 1)
+	m:SetAttribute("LeaderId", -1)
+	m:SetAttribute("Seats", "-1,1,0,0;-2,2,1,0")
+	m:SetAttribute("Waiting", 1)
+	m:SetAttribute("Size", 3)
+	m:SetAttribute("Privacy", "open")
+	m:SetAttribute("Held", 1)
+	m:SetAttribute("Paint", 0)
+	m:SetAttribute("Style", 1)
+	m.Parent = vans
+	party.open(bay, function() end)
+	local sheet = party.sheet :: Frame
+	assert(party.isOpen(), "the sheet opens")
+	assert(need(sheet, "Size3").BackgroundColor3 == Palette.gold, "size 3 on")
+	assert(need(sheet, "Size2").Active == false, "size 2 is under the seats taken")
+	assert(need(sheet, "Privacy_open").BackgroundColor3 == Palette.gold, "OPEN on")
+	assert(need(need(sheet, "Seat2"), "Kick").Visible, "KICK on the seated member")
+	assert(need(sheet, "Seat4").BackgroundTransparency > 0.5, "seat 4 past the size")
+	local go = need(sheet, "Go") :: TextButton
+	assert(string.find(go.Text, "WAITING", 1, true) ~= nil, "GO waits: " .. go.Text)
+	-- the attributes change: everyone READY, GO lights up and sends
+	m:SetAttribute("Seats", "-1,1,0,0;-2,2,1,1")
+	m:SetAttribute("Waiting", 0)
+	task.wait()
+	assert(string.find(go.Text, "GO", 1, true) == 1, "GO: " .. go.Text)
+	party.go()
+	assert(#sent == 1 and sent[1].op == "go" and sent[1].bay == bay, "GO sends { go, bay }")
+	party.close()
+	assert(not party.isOpen(), "the sheet closes")
+	-- the read-only card
+	local view = {
+		bay = bay,
+		mode = "crew",
+		crewId = 1,
+		leaderId = -1,
+		waiting = 0,
+		size = 2,
+		cap = 3,
+		privacy = "friends",
+		held = 0,
+	}
+	local me = { userId = -9, crewId = 9, leader = true, crewSize = 1, seatedBay = nil, ready = false }
+	party.setCard(LobbyLook.vanCard(view, me, { friend = true }), function() end)
+	local card = need(root, "VanCard") :: Frame
+	assert(card.Visible and need(card, "Sit").Visible, "the card with SIT")
+	party.setCard(nil, nil)
+	m:Destroy()
+	if madeVans and vans then
+		vans:Destroy()
+	end
+	if madeGarage then
+		g:Destroy()
+	end
+	return "sheet + card"
+end)
+check(okParty, "PARTY sheet builds and draws a van from its attributes (" .. tostring(partyErr) .. ")")
+
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))
