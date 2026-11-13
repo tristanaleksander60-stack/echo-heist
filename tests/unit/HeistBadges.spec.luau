@@ -42,7 +42,11 @@ return function(test: (string, () -> ()) -> ())
 			tiers[def.tier] = (tiers[def.tier] or 0) + 1
 			Assert.truthy(#def.name <= B.NAME_MAX, def.key .. " name")
 			Assert.truthy(#def.description <= B.DESCRIPTION_MAX, def.key .. " description")
-			Assert.eq(Badges.idOf(def.key), 0, def.key .. " id is a placeholder until the owner creates it")
+			local id = Badges.idOf(def.key)
+			Assert.truthy(
+				id == 0 or (math.floor(id) == id and id > 0),
+				def.key .. " id is 0 (not created yet) or a real badge id"
+			)
 		end
 		Assert.truthy(Badges.def("met_the_boss") ~= nil, "Met the Boss is in the set")
 		Assert.eq(tiers.boss, 1, "one boss badge")

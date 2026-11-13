@@ -86,14 +86,14 @@ Badges.LIST = table.freeze({
 
 -- BEGIN BADGE IDS (tools/badge_upload.py rewrites this block; 0 = not created yet)
 Badges.IDS = table.freeze({
-	welcome = 0,
-	first_heist = 0,
-	first_clone = 0,
-	eight_of_me = 0,
+	welcome = 3214798741459120,
+	first_heist = 1080509505629504,
+	first_clone = 747296253511609,
+	eight_of_me = 2180491198746315,
 	crew_up = 0,
 	daily_streak_3 = 0,
 	ghost = 0,
-	met_the_boss = 0,
+	met_the_boss = 1036280259639840,
 } :: { [string]: number })
 Badges.ICONS = table.freeze({
 	welcome = 0,
