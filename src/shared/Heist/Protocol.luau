@@ -14,7 +14,10 @@
 --                                      hideout a lobby action table { op, bay?, n? } (Shared/Heist/VanRules:
 --                                      claim, paint, crew, park, solo, go, sit, ready, unready, stand, and (LOBBY 2)
 --                                      style (bay, n), quick, unquick, open (bay), shut (bay); the
---                                      validator is VanRules.validReadyArg, the server re-checks every rule)
+--                                      validator is VanRules.validReadyArg, the server re-checks every rule).
+--                                      Also, anywhere: { op = "look", n } = your first-person camera pitch
+--                                      (Shared/Heist/LookPitch n = 1..41, at most 10 Hz, only on a change;
+--                                      the server's Heist/LookSync writes the character attribute LookPitch)
 --   Heist.FastForward(on)              hold-to-skip pill
 --   Heist.SelectLevel(index, relaxed?) crew leader picks a tape (garage or results card);
 --                                      index = Levels/Catalog index (PLAY order, not design n).

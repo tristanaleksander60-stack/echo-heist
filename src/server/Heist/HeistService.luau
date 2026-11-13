@@ -51,8 +51,10 @@ local Scenario = require(Shared:WaitForChild("Heist"):WaitForChild("Scenario"))
 local LihFolk = ReplicatedStorage:WaitForChild("LihFolk")
 local Net = require(LihFolk:WaitForChild("Net"))
 local Signal = require(LihFolk:WaitForChild("Signal"))
+local RateLimit = require(LihFolk:WaitForChild("RateLimit"))
 
 local HeistInstance = require(script.Parent:WaitForChild("HeistInstance"))
+local LookSync = require(script.Parent:WaitForChild("LookSync"))
 local Avatars = require(script.Parent:WaitForChild("Avatars"))
 local Characters = require(script.Parent:WaitForChild("Characters"))
 local Lobby = require(script.Parent:WaitForChild("Lobby"))
@@ -1688,10 +1690,20 @@ local function declareRemotes()
 	})
 	-- Heist.Ready(arg?): arg = the reduced-motion flag ("▶ RUN n"), or a hideout lobby action table
 	-- { op, bay?, n? } (Shared/Heist/VanRules.validReadyArg: the exact keys, ops and ranges; no new remote names)
+	-- { op = "look", n } is the first-person look pitch (Heist/LookSync, at most 10 Hz); everything else still
+	-- passes the old Ready limit (RATE.ReadyOps), the remote's own limit being sized for the look.
+	local readyOps = RateLimit.new(RATE.ReadyOps.burst, RATE.ReadyOps.perSecond)
 	Net.Listen(R.Ready, {
 		rate = RATE.Ready,
 		args = { VanRules.validReadyArg },
 		handler = function(player: Player, arg: any)
+			if type(arg) == "table" and arg.op == "look" then
+				LookSync.accept(player, player.Character, arg.n, os.clock())
+				return
+			end
+			if not readyOps:Allow(player) then
+				return
+			end
 			if type(arg) == "table" then
 				lobbyAction(player, arg)
 				return
@@ -2005,6 +2017,7 @@ local function onPlayerAdded(player: Player)
 end
 
 local function onPlayerRemoving(player: Player)
+	LookSync.forget(player)
 	local crew = crewOf[player]
 	local inst = crew and crew.instance
 	if inst then

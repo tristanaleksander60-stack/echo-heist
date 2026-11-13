@@ -2323,5 +2323,85 @@ check(
 	"Crew View on the kit L2: the shot frames you and the clones, the cut-away opens (" .. tostring(crewErr) .. ")"
 )
 
+-- M. Look up / down on other screens (Heist/LookTilt, Config.Rookie.LOOK): on a Motor6D Rookie (the template) and an
+-- AnimationConstraint Rookie (the clone-template joints, as after the engine's joint upgrade) a tilt turns the face
+-- up through the Neck and the chest through the Waist, the follow walks a replicated LookPitch in clamped, and 0
+-- puts the rest pose back.
+local okLook, lookErr = pcall(function(): string
+	local LookTilt = require(clientHeist:WaitForChild("LookTilt"))
+	local LookPitch = require(shared:WaitForChild("Heist"):WaitForChild("LookPitch"))
+	local Rookie = require(server:WaitForChild("Heist"):WaitForChild("Rookie"))
+	local Config = require(shared:WaitForChild("Config")) :: any
+	local L = Config.Rookie.LOOK
+	local out = {}
+	for _, joints in { "motor", "constraint" } do
+		local m = Rookie.build(nil, nil, joints :: any)
+		m.Parent = scratch
+		local rootI, headI, chestI =
+			m:FindFirstChild("HumanoidRootPart"), m:FindFirstChild("Head"), m:FindFirstChild("UpperTorso")
+		assert(rootI and headI and chestI, joints .. ": root, head and chest")
+		local root, head, chest = rootI :: BasePart, headI :: BasePart, chestI :: BasePart
+		root.Anchored = true
+		local rig = LookTilt.bind(m)
+		assert(rig, joints .. ": Neck and Waist found")
+		local function settle()
+			task.wait() -- let the joints place the parts (kinematic constraints solve on the step)
+			task.wait()
+		end
+		settle()
+		local headY0, chestY0 = head.CFrame.LookVector.Y, chest.CFrame.LookVector.Y
+		LookTilt.pose(rig :: any, 30, 0)
+		settle()
+		local headUp = head.CFrame.LookVector.Y
+		assert(
+			headUp > headY0 + 0.3,
+			string.format("%s: neck +30 turns the face up (%.2f -> %.2f)", joints, headY0, headUp)
+		)
+		assert(math.abs(chest.CFrame.LookVector.Y - chestY0) < 0.02, joints .. ": the neck alone leaves the chest")
+		LookTilt.pose(rig :: any, 0, 15)
+		settle()
+		assert(chest.CFrame.LookVector.Y > chestY0 + 0.15, joints .. ": waist +15 lifts the chest")
+		LookTilt.pose(rig :: any, -30, 0)
+		settle()
+		assert(head.CFrame.LookVector.Y < headY0 - 0.3, joints .. ": neck -30 looks down")
+		LookTilt.pose(rig :: any, 0, 0)
+		settle()
+		assert(math.abs(head.CFrame.LookVector.Y - headY0) < 0.02, joints .. ": 0, 0 is the rest pose")
+		-- the follow: a replicated pitch far past the limits walks in clamped (driven by hand: no other player here)
+		local current = 0
+		m:SetAttribute(L.ATTRIBUTE, L.MAX_DEG)
+		for _ = 1, 90 do
+			current = LookPitch.follow(current, m:GetAttribute(L.ATTRIBUTE) :: number, 1 / 30)
+		end
+		local n, w = LookPitch.split(current)
+		assert(n <= L.NECK_MAX and w <= L.WAIST_MAX and n > L.NECK_MAX - 1, "the follow settles at the clamp")
+		LookTilt.pose(rig :: any, n, w)
+		settle()
+		table.insert(out, string.format("%s up %.2f", joints, head.CFrame.LookVector.Y))
+		m:Destroy()
+	end
+	-- the sender: a level look goes out once when not at your eyes; no player here, so nothing is sent
+	local sent = 0
+	local tilt = LookTilt.new({
+		autoStep = false,
+		camera = {
+			inEyes = function()
+				return true
+			end,
+			fpLook = function()
+				return 0, -20
+			end,
+		},
+		send = function()
+			sent += 1
+		end,
+	})
+	tilt.step(1 / 30, Vector3.zero)
+	assert(tilt.count() == 0, "no other players: nothing tilted")
+	tilt.destroy()
+	return table.concat(out, ", ") .. string.format(", %d sent without a character", sent)
+end)
+check(okLook, "look tilt: neck and waist on Motor6D and AnimationConstraint Rookies (" .. tostring(lookErr) .. ")")
+
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))

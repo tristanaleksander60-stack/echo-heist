@@ -79,6 +79,7 @@ local LevelIntro = require(Heist:WaitForChild("LevelIntro"))
 local Viewmodel = require(Heist:WaitForChild("Viewmodel"))
 local RookieAnim = require(Heist:WaitForChild("RookieAnim"))
 local LookTarget = require(Heist:WaitForChild("LookTarget"))
+local LookTilt = require(Heist:WaitForChild("LookTilt"))
 local FpWarn = require(Heist:WaitForChild("FpWarn"))
 local HudCommon = require(Heist:WaitForChild("Hud"):WaitForChild("Common"))
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
@@ -217,6 +218,13 @@ function HeistClient.start()
 				table.insert(swayList, ch)
 			end
 			return if state.where == "heist" then echo.swayModels(swayList) else swayList
+		end,
+	})
+	-- Look up / down: your first-person pitch goes out (Heist.Ready "look"); other players' heads and chests follow.
+	LookTilt.new({
+		camera = camera,
+		send = function(n: number)
+			Net.Send(Protocol.REMOTE.Ready, { op = "look", n = n })
 		end,
 	})
 	local ffOn = false

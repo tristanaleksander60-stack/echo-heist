@@ -17,8 +17,11 @@
 -- "unquick" (Quick Crew: a solo player opts in at the crew sign / opts out anywhere), "open" / "shut" (bay: the leader
 -- opens their CREW van to Quick Crew strangers, or closes it). A van never takes a stranger unless it is open
 -- (canSit: a friend of the leader, or a Quick Crew seat the server reserved in an open van; Shared/Heist/QuickCrew).
+-- "look" (n = Shared/Heist/LookPitch's 1..STEPS) is not a van op: your first-person camera pitch, anywhere, at most
+-- 10 Hz (HeistService hands it to Heist/LookSync before the lobby).
 
 local Config = require("../Config")
+local LookPitch = require("./LookPitch")
 
 local HD = Config.Hideout
 
@@ -49,6 +52,7 @@ VanRules.OPS = table.freeze({
 	"unquick",
 	"open",
 	"shut",
+	"look",
 })
 local NEEDS_BAY: { [string]: boolean } = {
 	claim = true,
@@ -63,7 +67,7 @@ local NEEDS_BAY: { [string]: boolean } = {
 	shut = true,
 }
 -- ops that take n (and need it)
-local NEEDS_N: { [string]: boolean } = { paint = true, style = true }
+local NEEDS_N: { [string]: boolean } = { paint = true, style = true, look = true }
 
 export type Seat = { userId: number, seat: number, seated: boolean, ready: boolean }
 export type Van = {
@@ -126,6 +130,9 @@ function VanRules.validAction(v: any): boolean
 		return false
 	end
 	if v.bay ~= nil and not NEEDS_BAY[op] then
+		return false
+	end
+	if op == "look" and not LookPitch.validN(v.n) then
 		return false
 	end
 	return true
