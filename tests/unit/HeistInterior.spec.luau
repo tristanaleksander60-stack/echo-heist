@@ -168,120 +168,126 @@ local SIGNALS = {
 }
 
 return function(test)
-	test("every prop is visual only and clear of every sim box, plate, door, loot, hide, laser, switch, spawn", function()
-		local total = 0
-		for _, level in levels() do
-			for _, dressing in { true, false } do
-				local plan = decorOf(level, dressing)
-				for _, it in plan.items do
-					total += 1
-					local b = KitPlan.itemBox(it, specs)
-					local what = string.format("%s %s %s at %s", level.id, it.role, it.pieces[1], boxText(b))
-					Assert.eq(it.mode, "visual", what .. ": visual only")
-					for _, n in it.pieces do
-						Assert.truthy(specs[n] ~= nil, what .. ": a kit piece " .. n)
-						Assert.falsy(specs[n].canCollide, what .. ": " .. n .. " never collides")
-					end
-					if it.role == "frieze" then
-						-- a band under the crown: inside the room, above every door (10) and laser (10)
-						Assert.truthy(b.minY >= level.floorY + 10, what .. ": over the doors and lasers")
-						continue
-					end
-					if it.layer == "xmas" then
-						Assert.truthy(dressing, what .. ": Christmas pieces only with the dressing layer")
-					end
-					local function clear(box: any, label: string, tol: number)
-						Assert.falsy(overlap2(b, box, tol), what .. " overlaps " .. label)
-					end
-					if b.minY < level.floorY + 2 then -- a wall prop high over a plate near a wall is fine
-						for i, p in level.plates do
-							clear(p.box, "plate " .. i, -1.0)
+	test(
+		"every prop is visual only and clear of every sim box, plate, door, loot, hide, laser, switch, spawn",
+		function()
+			local total = 0
+			for _, level in levels() do
+				for _, dressing in { true, false } do
+					local plan = decorOf(level, dressing)
+					for _, it in plan.items do
+						total += 1
+						local b = KitPlan.itemBox(it, specs)
+						local what = string.format("%s %s %s at %s", level.id, it.role, it.pieces[1], boxText(b))
+						Assert.eq(it.mode, "visual", what .. ": visual only")
+						for _, n in it.pieces do
+							Assert.truthy(specs[n] ~= nil, what .. ": a kit piece " .. n)
+							Assert.falsy(specs[n].canCollide, what .. ": " .. n .. " never collides")
 						end
-					end
-					for i, d in level.doors do
-						local db = d.box
-						local alongX = (db.maxX - db.minX) >= (db.maxZ - db.minZ)
-						local approach = if alongX
-							then { minX = db.minX, maxX = db.maxX, minZ = db.minZ - 3, maxZ = db.maxZ + 3 }
-							else { minX = db.minX - 3, maxX = db.maxX + 3, minZ = db.minZ, maxZ = db.maxZ }
-						clear(approach, "door " .. i .. " or its approach", 0)
-					end
-					for i, l in level.lasers or {} do
-						if b.minY < l.box.maxY then
-							clear(l.box, "laser " .. i, -1)
+						if it.role == "frieze" then
+							-- a band under the crown: inside the room, above every door (10) and laser (10)
+							Assert.truthy(b.minY >= level.floorY + 10, what .. ": over the doors and lasers")
+							continue
 						end
-					end
-					for i, h in level.hides or {} do
-						if b.minY < h.box.maxY then -- a clock high over a coat rack is fine
-							clear(h.box, "hide " .. i, -1)
+						if it.layer == "xmas" then
+							Assert.truthy(dressing, what .. ": Christmas pieces only with the dressing layer")
 						end
-					end
-					clear(level.van, "the van zone", -1)
-					for i, s in level.solids do
-						if it.role == "brass" and not isWall(s) and s.maxY <= level.floorY + 5 then
-							continue -- the teller brass stands on its counter
+						local function clear(box: any, label: string, tol: number)
+							Assert.falsy(overlap2(b, box, tol), what .. " overlaps " .. label)
 						end
-						if b.minY >= s.maxY - 1e-3 then
-							continue -- a wall prop over a counter
+						if b.minY < level.floorY + 2 then -- a wall prop high over a plate near a wall is fine
+							for i, p in level.plates do
+								clear(p.box, "plate " .. i, -1.0)
+							end
 						end
-						clear(s, "sim solid " .. i .. " " .. boxText(s), 0.01)
-					end
-					local function far(x: number, z: number, r: number, label: string)
-						local dx = math.max(b.minX - x, 0, x - b.maxX)
-						local dz = math.max(b.minZ - z, 0, z - b.maxZ)
-						Assert.truthy(dx * dx + dz * dz >= r * r - 1e-6, what .. " within " .. r .. " of " .. label)
-					end
-					for _, def in level.loot do
-						far(def.x, def.z, 2, "loot " .. tostring(def.id))
-					end
-					for _, sw in level.switches or {} do
-						far(sw.x, sw.z, 2, "a switch")
-					end
-					for _, sp in level.spawns do
-						far(sp.x, sp.z, 3, "a spawn")
+						for i, d in level.doors do
+							local db = d.box
+							local alongX = (db.maxX - db.minX) >= (db.maxZ - db.minZ)
+							local approach = if alongX
+								then { minX = db.minX, maxX = db.maxX, minZ = db.minZ - 3, maxZ = db.maxZ + 3 }
+								else { minX = db.minX - 3, maxX = db.maxX + 3, minZ = db.minZ, maxZ = db.maxZ }
+							clear(approach, "door " .. i .. " or its approach", 0)
+						end
+						for i, l in level.lasers or {} do
+							if b.minY < l.box.maxY then
+								clear(l.box, "laser " .. i, -1)
+							end
+						end
+						for i, h in level.hides or {} do
+							if b.minY < h.box.maxY then -- a clock high over a coat rack is fine
+								clear(h.box, "hide " .. i, -1)
+							end
+						end
+						clear(level.van, "the van zone", -1)
+						for i, s in level.solids do
+							if it.role == "brass" and not isWall(s) and s.maxY <= level.floorY + 5 then
+								continue -- the teller brass stands on its counter
+							end
+							if b.minY >= s.maxY - 1e-3 then
+								continue -- a wall prop over a counter
+							end
+							clear(s, "sim solid " .. i .. " " .. boxText(s), 0.01)
+						end
+						local function far(x: number, z: number, r: number, label: string)
+							local dx = math.max(b.minX - x, 0, x - b.maxX)
+							local dz = math.max(b.minZ - z, 0, z - b.maxZ)
+							Assert.truthy(dx * dx + dz * dz >= r * r - 1e-6, what .. " within " .. r .. " of " .. label)
+						end
+						for _, def in level.loot do
+							far(def.x, def.z, 2, "loot " .. tostring(def.id))
+						end
+						for _, sw in level.switches or {} do
+							far(sw.x, sw.z, 2, "a switch")
+						end
+						for _, sp in level.spawns do
+							far(sp.x, sp.z, 3, "a spawn")
+						end
 					end
 				end
 			end
+			Assert.truthy(total > 400, "props planned (" .. total .. ")")
 		end
-		Assert.truthy(total > 400, "props planned (" .. total .. ")")
-	end)
+	)
 
-	test("routes: every plate, door, loot point and hide stays reachable, by a path no longer than without props", function()
-		for _, level in levels() do
-			local plan = decorOf(level, true)
-			local props = {}
-			for _, it in plan.items do
-				local b = KitPlan.itemBox(it, specs)
-				if b.minY < level.floorY + 6 and it.role ~= "frieze" and it.role ~= "brass" then
-					table.insert(props, b) -- anything a walker would bump into (wall props up high are not)
+	test(
+		"routes: every plate, door, loot point and hide stays reachable, by a path no longer than without props",
+		function()
+			for _, level in levels() do
+				local plan = decorOf(level, true)
+				local props = {}
+				for _, it in plan.items do
+					local b = KitPlan.itemBox(it, specs)
+					if b.minY < level.floorY + 6 and it.role ~= "frieze" and it.role ~= "brass" then
+						table.insert(props, b) -- anything a walker would bump into (wall props up high are not)
+					end
 				end
-			end
-			local _, bare = walk(level, {})
-			local _, dressed = walk(level, props)
-			local function check(x: number, z: number, label: string, reach: number?)
-				local a, d = bare(x, z, reach), dressed(x, z, reach)
-				if a == nil then
-					return -- not reachable on foot in the sim data either (on a counter, behind a wall)
+				local _, bare = walk(level, {})
+				local _, dressed = walk(level, props)
+				local function check(x: number, z: number, label: string, reach: number?)
+					local a, d = bare(x, z, reach), dressed(x, z, reach)
+					if a == nil then
+						return -- not reachable on foot in the sim data either (on a counter, behind a wall)
+					end
+					Assert.truthy(d ~= nil, level.id .. ": " .. label .. " unreachable with the props")
+					-- 4-neighbour walk cells of 0.5: at most a 3-stud detour (never a blocked way)
+					Assert.le(d :: number, a + 6, level.id .. ": " .. label .. " detour with the props (cells)")
 				end
-				Assert.truthy(d ~= nil, level.id .. ": " .. label .. " unreachable with the props")
-				-- 4-neighbour walk cells of 0.5: at most a 3-stud detour (never a blocked way)
-				Assert.le(d :: number, a + 6, level.id .. ": " .. label .. " detour with the props (cells)")
+				for i, p in level.plates do
+					check((p.box.minX + p.box.maxX) / 2, (p.box.minZ + p.box.maxZ) / 2, "plate " .. i)
+				end
+				for i, d in level.doors do
+					check((d.box.minX + d.box.maxX) / 2, (d.box.minZ + d.box.maxZ) / 2, "door " .. i)
+				end
+				for _, def in level.loot do
+					check(def.x, def.z, "loot " .. tostring(def.id), 3)
+				end
+				for i, h in level.hides or {} do
+					check((h.box.minX + h.box.maxX) / 2, (h.box.minZ + h.box.maxZ) / 2, "hide " .. i, 4)
+				end
+				check(level.van.minX + 5, level.van.minZ + 4, "the van zone")
 			end
-			for i, p in level.plates do
-				check((p.box.minX + p.box.maxX) / 2, (p.box.minZ + p.box.maxZ) / 2, "plate " .. i)
-			end
-			for i, d in level.doors do
-				check((d.box.minX + d.box.maxX) / 2, (d.box.minZ + d.box.maxZ) / 2, "door " .. i)
-			end
-			for _, def in level.loot do
-				check(def.x, def.z, "loot " .. tostring(def.id), 3)
-			end
-			for i, h in level.hides or {} do
-				check((h.box.minX + h.box.maxX) / 2, (h.box.minZ + h.box.maxZ) / 2, "hide " .. i, 4)
-			end
-			check(level.van.minX + 5, level.van.minZ + 4, "the van zone")
 		end
-	end)
+	)
 
 	test("density: every room band of every level has props at eye level; launch shop fronts are full", function()
 		for _, level in levels() do
@@ -295,7 +301,10 @@ return function(test)
 			for k, r in plan.rooms do
 				local n = per[k] or 0
 				local want = if r.kind == "front" and level.num < 200 and level.kind ~= "party" then 8 else 2
-				Assert.truthy(n >= want, string.format("%s band %d (%s): %d props, want >= %d", level.id, k, r.kind, n, want))
+				Assert.truthy(
+					n >= want,
+					string.format("%s band %d (%s): %d props, want >= %d", level.id, k, r.kind, n, want)
+				)
 			end
 		end
 	end)
@@ -409,30 +418,36 @@ return function(test)
 		end
 	end)
 
-	test("light: wall washes keep every view within budget, never shadow, and only from the kinds tier 1 keeps", function()
-		local washes = 0
-		for _, level in levels() do
-			local lamps = KitPlan.lamps(level, LevelDress[level.id], LIGHT)
-			for _, a in lamps do
-				local lit = 0
-				for _, b in lamps do
-					local dx, dz = a.x - b.x, a.z - b.z
-					if dx * dx + dz * dz <= LIGHT.VIEW_RADIUS * LIGHT.VIEW_RADIUS then
-						lit += 1
+	test(
+		"light: wall washes keep every view within budget, never shadow, and only from the kinds tier 1 keeps",
+		function()
+			local washes = 0
+			for _, level in levels() do
+				local lamps = KitPlan.lamps(level, LevelDress[level.id], LIGHT)
+				for _, a in lamps do
+					local lit = 0
+					for _, b in lamps do
+						local dx, dz = a.x - b.x, a.z - b.z
+						if dx * dx + dz * dz <= LIGHT.VIEW_RADIUS * LIGHT.VIEW_RADIUS then
+							lit += 1
+						end
+					end
+					Assert.le(lit, LIGHT.MAX_LIGHTS_PER_VIEW, level.id .. ": lights in one view")
+					if a.kind == "wash" then
+						washes += 1
+						Assert.falsy(LIGHT.LAMP.wash.shadows, "washes never shadow")
 					end
 				end
-				Assert.le(lit, LIGHT.MAX_LIGHTS_PER_VIEW, level.id .. ": lights in one view")
-				if a.kind == "wash" then
-					washes += 1
-					Assert.falsy(LIGHT.LAMP.wash.shadows, "washes never shadow")
-				end
+			end
+			Assert.truthy(washes >= 12, "wall washes planned (" .. washes .. ")")
+			for tier = 2, #Config.Perf.TIERS do
+				Assert.truthy(
+					table.find(Config.Perf.TIERS[tier].lightKindsOff, "wash") ~= nil,
+					"washes off at tier " .. tier
+				)
 			end
 		end
-		Assert.truthy(washes >= 12, "wall washes planned (" .. washes .. ")")
-		for tier = 2, #Config.Perf.TIERS do
-			Assert.truthy(table.find(Config.Perf.TIERS[tier].lightKindsOff, "wash") ~= nil, "washes off at tier " .. tier)
-		end
-	end)
+	)
 
 	test("the theme light: L3 Lights Out is the dimmest Corner Shop room light, still warm", function()
 		local l3 = IN.THEMES.toyrepair.light

@@ -834,11 +834,7 @@ function LevelBuilder.build(level: any, origin: Vector3, parent: Instance, opts:
 	-- The shop's name over the entrance (Config.Interior.THEMES: each level its own shop; DecorPlan.fascia): a thin
 	-- board on the kit front's sign board, its SurfaceGui toward the street. Visual only.
 	local fascia = if Config.Interior.ENABLED
-		then DecorPlan.fascia(
-			level,
-			buildLocation,
-			{ KP = KitPlan, cfg = Config.Interior }
-		)
+		then DecorPlan.fascia(level, buildLocation, { KP = KitPlan, cfg = Config.Interior })
 		else nil
 	if fascia then
 		local board = part({

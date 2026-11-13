@@ -2880,8 +2880,14 @@ Config.Interior = {
 	ROOMS = {
 		CornerShop = {
 			front = {
-				floor = { "Decor_StockShelf_8", "Decor_Fridge_4", "Decor_StockShelf_8", "Decor_CandyCounter_6",
-					"Decor_MagRack_3", "Decor_CatBed" },
+				floor = {
+					"Decor_StockShelf_8",
+					"Decor_Fridge_4",
+					"Decor_StockShelf_8",
+					"Decor_CandyCounter_6",
+					"Decor_MagRack_3",
+					"Decor_CatBed",
+				},
 				wall = { "Decor_Poster_A", "Decor_WallClock", "Decor_Poster_B", "Decor_CardString_8" },
 			},
 			back = {
@@ -2895,8 +2901,14 @@ Config.Interior = {
 		},
 		ToyShop = {
 			front = {
-				floor = { "Decor_ToyShelf_8", "Decor_GiftWrap_6", "Decor_TrainLoop_6", "Decor_ToyShelf_8",
-					"Decor_CandyCane_Giant", "Decor_CandyCane_Giant" },
+				floor = {
+					"Decor_ToyShelf_8",
+					"Decor_GiftWrap_6",
+					"Decor_TrainLoop_6",
+					"Decor_ToyShelf_8",
+					"Decor_CandyCane_Giant",
+					"Decor_CandyCane_Giant",
+				},
 				wall = { "Decor_Poster_A", "Decor_WallClock", "Decor_CardString_8" },
 			},
 			back = {

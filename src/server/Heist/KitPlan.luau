@@ -700,7 +700,8 @@ function KitPlan.lampLooks(
 			color = loc.room[(rooms - 1) % #loc.room + 1]
 			pool = loc.pool or pool
 		end
-		out[k] = { color = color, pool = pool, brightness = if l.kind == "room" and theme then theme.brightness else nil }
+		out[k] =
+			{ color = color, pool = pool, brightness = if l.kind == "room" and theme then theme.brightness else nil }
 	end
 	return out
 end

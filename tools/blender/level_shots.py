@@ -102,6 +102,9 @@ def load_plan(dressing, daily):
     args = ["lune", "run", os.path.join("tools", "blender", "level_plan.luau"), "xmas" if dressing else "plain"]
     if daily:
         args.append("daily")
+    if os.environ.get("EH_NODECOR"):          # --interiors --before: the level as it was before the INTERIORS track
+        args.append("nodecor")
+        path = path.replace(".json", "_nodecor.json")
     with open(path, "w") as f:
         subprocess.run(args, cwd=REPO, check=True, stdout=f)
     return json.load(open(path))
@@ -180,6 +183,7 @@ def gbox(name, b, hexc, emit=0.0, alpha=1.0, shadow=True):
 
 
 HELD = None   # golden(): a plate-id list held for one frame (L6's vault row at "VAULT 2/4")
+POOL_FADE = None   # --interiors: [{node, peak, rect, y}] so each shot fades the pools like LightDirector
 
 
 def state_for(level, solved):
@@ -252,6 +256,8 @@ def build(level, solved, lib):
                 tint(o, CYAN if doors.get(idx) else "#A8987A", emit=3.0)
             elif n == "Van_Paint":                       # KitDresser: Config.Lighting.VAN.paint (a mid value)
                 tint(o, "#%02X%02X%02X" % tuple(level["lighting"]["VAN"]["paint"]), rough=0.5)
+            elif it.get("color"):                        # KitDresser: a tintable piece's runtime colour (the frieze)
+                tint(o, "#%02X%02X%02X" % tuple(it["color"]), rough=0.7)
     # cables (KitPlan.cables: near jamb, 0.5 wide, idle Vault Steel)
     cw = level["lighting"]["CABLE_WIDTH"]
     for cb in level["cables"]:
@@ -310,6 +316,15 @@ def build(level, solved, lib):
     # plates inside hides: their letter on a disc over the hide (LevelBuilder.plaque, read from both sides)
     for hp in level.get("hidePlates") or []:
         plaque(hp["letters"], rb(hp["x"], hp["top"] + level["lighting"]["HIDE_PLAQUE_Y"], hp["z"]), 0.1)
+    # the shop's name over the entrance (LevelBuilder fascia, Config.Interior.THEMES)
+    fa = level.get("fascia")
+    if fa:
+        b = [fa["x"] - fa["w"] / 2, fa["y"] - fa["h"] / 2, fa["z"] - 0.025, fa["x"] + fa["w"] / 2, fa["y"] + fa["h"] / 2,
+             fa["z"] + 0.025]
+        gbox("Fascia", b, "#%02X%02X%02X" % tuple(fa["board"]), shadow=False)
+        size = min(fa["h"] * 0.62, fa["w"] / max(1, len(fa["text"])) * 1.45)
+        text3(fa["text"], size, "#%02X%02X%02X" % tuple(fa["color"]), 1.2, rb(fa["x"], fa["y"], fa["z"] + 0.04),
+              (math.pi / 2, 0, math.pi))
     # lamps: real lights (Config.Lighting) and the unlit floor pools
     for lp in level["lamps"]:
         lamp_light(level, lp)
@@ -456,6 +471,15 @@ def lamp_light(level, lp):
     LG = level["lighting"]
     col = "#%02X%02X%02X" % tuple(lp["color"])
     pos = rb(lp["x"], fy + lp.get("lightY", LG["LIGHT_Y"]), lp["z"])
+    if lp["kind"] == "wash":   # a wall wash (LevelBuilder): a SpotLight aimed down the wall it faces, no pool
+        dx, dz = lp["dir"]
+        t = math.radians(lp.get("tilt") or 40)
+        aim = (lp["x"] + dx * math.cos(t) * 10, fy + lp["lightY"] - math.sin(t) * 10, lp["z"] + dz * math.cos(t) * 10)
+        o = MR.light("SPOT", tuple(pos), tuple(rb(*aim)), col, lp["brightness"] * LAMP_W, size=0.3,
+                     spot=min(lp["angle"] * 1.6, 179), blend=0.8, shadow=False)
+        o.data.use_custom_distance = True
+        o.data.cutoff_distance = lp["range"]
+        return
     if lp["kind"] == "hero":
         o = MR.light("SPOT", tuple(pos), tuple(rb(lp["x"], fy, lp["z"])), col, lp["brightness"] * LAMP_W,
                      size=0.3, spot=lp["angle"] * 1.6, blend=0.7, shadow=lp["shadows"])
@@ -483,6 +507,15 @@ def lamp_light(level, lp):
         else:
             d = MR.cyl("pool", r, r, 0.01, m, None, tuple(rb(lp["x"], fy + P["lift"], lp["z"])), seg=64)
         d.visible_shadow = False
+        if POOL_FADE is not None:   # --interiors: each pool its own material, so a shot can fade it (LightDirector)
+            m2 = m.copy()
+            d.data = d.data.copy()
+            d.data.materials.clear()
+            d.data.materials.append(m2)
+            bsdf = next(n for n in m2.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+            node = bsdf.inputs["Alpha"].links[0].from_node
+            rc = lp.get("rect") or [lp["x"] - r, lp["x"] + r, lp["z"] - r, lp["z"] + r]
+            POOL_FADE.append({"node": node, "peak": node.inputs[1].default_value, "rect": rc, "y": fy + P["lift"]})
         return
     for k, rg in enumerate(lp.get("rings") or P["rings"]):
         r = lp["pool"] * rg["size"] / 2
@@ -1358,7 +1391,7 @@ def tower(t, lib):
     for it in t["items"]:
         for piece in it["pieces"]:
             o = put(lib, piece, it["pivot"], it["scale"])
-            if o is not None and it.get("color") and piece["name"].endswith("_Body"):
+            if o is not None and it.get("color") and piece["name"].endswith(("_Body", "_Tin")):
                 tint(o, _hexc(it["color"]), rough=0.75)
             file(o, it["group"])
     for p in t["parts"]:
@@ -1538,6 +1571,249 @@ def big_garage(g, samples, out_dir):
     pos, tgt = _fp(6.0, yz, 0.0, math.pi, 22.0)
     cut(t, groups, pos, [])
     _w2_shoot(s, cam, "GA_fp_yard", pos, tgt, FP_FOV, pos, cfg, out_dir)
+
+
+# ------------------------------------------------------------------ INTERIORS (docs/audit/LEVELS.md 13)
+INT_SITES = ("L1", "L2", "L3", "L4", "L5", "L6", "DV01")
+INT = os.path.join(OUT, "interiors")
+# The surface mask (one flat colour per surface class, 0/255 channels, the sky transparent): what the interior grade
+# compares: the ceiling against the walls (gap 9: ~0.6x in first person) and the signals against the props (A1).
+SURF_COLOURS = {"ceiling": (255, 0, 0), "wall": (0, 255, 0), "decor": (0, 0, 255), "floor": (255, 255, 0),
+                "signal": (255, 0, 255), "lamp": (0, 255, 255), "other": (0, 0, 0)}
+SURF_PREFIX = (   # first match wins
+    ("lamp", ("Lamp_Ceiling", "StreetLamp", "Lamp")),
+    ("signal", ("Plate_4x4", "CashBag", "CashRegister", "GoldBar", "GoldStack", "Diamond", "Present", "Candy",
+                "Teddy", "Safe", "Beam", "LaserEmitter_Lens", "RowLamp", "Wall_Door_8x12_Leaf", "Shutter",
+                "VaultDoor_Door", "VaultDoor_Dial", "Stand", "Text")),
+    ("ceiling", ("Ceiling_8x8", "TowerCeiling")),
+    ("decor", ("Decor_Frieze",)),   # the frieze is wall trim: counted with the walls below
+    ("decor", ("Decor_", "Xmas_Tree")),
+    ("wall", ("Wall_", "Storefront", "BankFront", "Pillar", "VaultDoor_Frame", "Column", "Solid")),
+    ("floor", ("Floor", "Rug_", "pool", "Cable")),
+)
+
+
+def _surf_of(name):
+    if name.startswith("Decor_Frieze"):
+        return "wall"
+    if name.startswith("Toy") and not name.startswith("ToySoldier"):
+        return "signal"
+    for cls, prefixes in SURF_PREFIX:
+        if name.startswith(prefixes):
+            return cls
+    return "other"
+
+
+def surf_mask(s, cam, path):
+    keep = (s.render.engine, s.render.film_transparent, s.view_settings.view_transform, s.view_settings.exposure)
+    colours = {}
+    for o in bpy.data.objects:
+        if o.type not in ("MESH", "FONT", "CURVE"):
+            continue
+        colours[o.name] = tuple(o.color)
+        col = SURF_COLOURS[_surf_of(o.name)]
+        o.color = (*(c / 255 for c in col), 1.0)
+    s.render.engine = "BLENDER_WORKBENCH"
+    sh = s.display.shading
+    sh.light = "FLAT"
+    sh.color_type = "OBJECT"
+    s.display.render_aa = "OFF"
+    s.render.film_transparent = True
+    s.view_settings.view_transform = "Standard"
+    s.view_settings.exposure = 0.0
+    s.camera = cam
+    s.render.filepath = path
+    bpy.ops.render.render(write_still=True)
+    for o in bpy.data.objects:
+        if o.name in colours:
+            o.color = colours[o.name]
+    s.render.engine, s.render.film_transparent, s.view_settings.view_transform, s.view_settings.exposure = keep
+
+
+def surf_grade(frame, mask):
+    """Per surface class: share, median luma and median HSV value of the finished frame; the ceiling / wall luma
+    ratio and the signals' value lead over the props (premium A1: >= 0.15)."""
+    import numpy as np
+    from PIL import Image
+    a = np.asarray(Image.open(frame).convert("RGB"), np.float32)
+    m = np.asarray(Image.open(mask).convert("RGBA").resize((a.shape[1], a.shape[0]), Image.NEAREST), np.int32)
+    y = (0.2126 * a[..., 0] + 0.7152 * a[..., 1] + 0.0722 * a[..., 2]) / 255.0
+    v = a.max(axis=-1) / 255.0
+    out = {}
+    for name, col in SURF_COLOURS.items():
+        mk = np.all(np.abs(m[..., :3] - np.array(col)) < 40, axis=-1) & (m[..., 3] > 128)
+        if mk.sum() < 50:
+            continue
+        out[name] = {"share": round(float(mk.mean()) * 100, 1), "median_luma": round(float(np.median(y[mk])), 3),
+                     "median_value": round(float(np.median(v[mk])), 3)}
+    res = {"surfaces": out}
+    if "ceiling" in out and "wall" in out and out["wall"]["median_luma"] > 0:
+        res["ceiling_wall"] = round(out["ceiling"]["median_luma"] / out["wall"]["median_luma"], 2)
+    if "signal" in out and "decor" in out:
+        res["signal_over_decor"] = round(out["signal"]["median_value"] - out["decor"]["median_value"], 3)
+    return res
+
+
+def _bands(level):
+    """The X-axis wall lines of the building (descending): the room bands (DecorPlan's rule)."""
+    lines = []
+    t = level["tower"]
+    ox0, ox1, oz0, oz1 = t["outer"]
+    for sd in level["solids"]:
+        b = sd["box"]
+        wx, wz, h = b[3] - b[0], b[5] - b[2], b[4] - b[1]
+        if h >= 8 and wz <= 1.5 and wx > wz and b[0] >= ox0 - 1 and b[3] <= ox1 + 1:
+            z = (b[2] + b[5]) / 2
+            if not any(abs(z - q) < 0.5 for q in lines):
+                lines.append(z)
+    return sorted(lines, reverse=True)
+
+
+def _apply_fade(pos):
+    """LightDirector's first-person pool fade (Config.Interior.POOL_FADE) for a camera at `pos` (Roblox)."""
+    if POOL_FADE is None:
+        return
+    F = POOL_FADE_CFG
+    for p in POOL_FADE:
+        x0, x1, z0, z1 = p["rect"]
+        dx = max(x0 - pos[0], 0, pos[0] - x1)
+        dz = max(z0 - pos[2], 0, pos[2] - z1)
+        elev = math.degrees(math.atan2(pos[1] - p["y"], math.hypot(dx, dz)))
+        t = min(1.0, max(0.0, (elev - F["from"]) / (F["to"] - F["from"])))
+        t = t * t * (3 - 2 * t)
+        p["node"].inputs[1].default_value = p["peak"] * (F["min"] + (1 - F["min"]) * t)
+
+
+POOL_FADE_CFG = None
+
+
+def interiors_level(level, samples, out_dir, before=False):
+    """INTERIORS: first person at the spawn, inside the shop round the room (left, right, back toward the window,
+    up at the ceiling), at the loot and turned round from it, the shop front from the street; the diorama and the
+    classic camera at the spawn and the diorama mid-run. Graded like BIG plus the surface mask (ceiling / wall, the
+    signals over the props)."""
+    global POOL_FADE, POOL_FADE_CFG
+    import backdrop_shots as BS
+    W, Hh = W2_SIZE
+    os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(TMP, exist_ok=True)
+    tag = short(level) + ("_before" if before else "")
+    fy = level["floorY"]
+    sp = level["spawns"][0]
+    cfg = level["backdropConfig"]
+    CC = level["camera"]["CLASSIC"]
+    DF = level["camera"]["DIORAMA"]["FOV"]
+    t = level["tower"]
+    POOL_FADE = None if before else []
+    POOL_FADE_CFG = None if before else level["interior"]["POOL_FADE"]
+    s = MR.reset(samples)
+    s.view_settings.exposure = 0.3
+    lib = Lib(level["location"])
+    _held, doors, _lasers = build(level, False, lib)
+    gus_and_cone(level, doors, level["location"], level["dressing"])
+    groups = tower(t, lib)
+    BS.backdrop(level, lib, put, soft_pool_mat)
+    lighting(s)
+    BS.world_sky(s, TMP)
+    cam = _w2_camera(s, W, Hh)
+    J = player(level)
+    ox0, ox1, oz0, oz1 = t["outer"]
+    lines = _bands(level)
+    fz1, fz0 = lines[0], lines[1]
+    fm = (fz0 + fz1) / 2
+    g = goal_of(level)
+    gx, gz = g["x"], g["z"]
+    cz = gz + 5.0 if gz + 5.0 < max(z for z in lines if z > gz) - 1.0 else gz + 3.0
+    cx = gx * 0.4
+    shots = [
+        ("fp_spawn", _fp(sp["x"], sp["z"], fy, 0.0, -2.0), (sp["x"], sp["z"]), True),
+        ("fp_front", _fp(0.0, fz1 - 3.0, fy, 0.0, 3.0), (0.0, fz1 - 3.0), False),
+        ("fp_left", _fp(2.0, fm, fy, math.pi / 2, 4.0), (2.0, fm), False),
+        ("fp_right", _fp(-2.0, fm, fy, -math.pi / 2, 4.0), (-2.0, fm), False),
+        ("fp_window", _fp(0.0, fz0 + 3.0, fy, math.pi, 3.0), (0.0, fz0 + 3.0), False),
+        ("fp_ceiling", _fp(0.0, fm, fy, 0.0, 32.0), (0.0, fm), False),
+        ("fp_loot", _fp(cx, cz, fy, math.atan2(-(gx - cx), -(gz - cz)), -6.0), (cx, cz), False),
+        ("fp_loot_round", _fp(gx * 0.8, gz + 2.0, fy, math.pi, 3.0), (gx * 0.8, gz + 2.0), False),
+        ("fp_street", _fp(sp["x"] + 3.0, oz1 + 9.0, fy, -0.15, 10.0), (sp["x"] + 3.0, oz1 + 9.0), True),
+    ]
+    surf = {}
+    for name, (pos, tgt), (px, pz), outdoors in shots:
+        move(J, level, px, pz + 40.0, 0.0)            # first person hides your body
+        cut(t, groups, pos, [])                       # first person never cuts
+        _apply_fade(pos)
+        _w2_shoot(s, cam, f"{tag}_{name}", pos, tgt, FP_FOV, pos if outdoors else None, cfg, out_dir, level=level)
+        only = os.environ.get("EH_W2_SHOTS")
+        if only and not any(name == k for k in only.split(",")):
+            continue
+        mk = os.path.join(TMP, f"int_{tag}_{name}_surf.png")
+        surf_mask(s, cam, mk)
+        surf[f"{tag}_{name}"] = surf_grade(os.path.join(out_dir, f"{tag}_{name}.png"), mk)
+    at = (sp["x"], fy + 4.5, sp["z"])
+    move(J, level, sp["x"], sp["z"], sp["yaw"])
+    you = [(sp["x"], fy + 4.5, sp["z"]), (sp["x"], fy + 0.8, sp["z"])]
+    for name, (pos, tgt), fov in (("diorama", _diorama(level["camera"], *at, sp["yaw"]), DF),
+                                  ("classic", _classic(*at, sp["yaw"], CC["ZOOM"], CC["PITCH"]), CC["FOV"])):
+        cut(t, groups, pos, you + _look(pos, tgt, fy))
+        _apply_fade(pos)
+        _w2_shoot(s, cam, f"{tag}_{name}", pos, tgt, fov, at, cfg, out_dir, level=level)
+    move(J, level, 0.0, fm, 0.0)
+    you = [(0.0, fy + 4.5, fm), (0.0, fy + 0.8, fm)]
+    pos, tgt = _diorama(level["camera"], 0.0, fy + 4.5, fm, 0.0)
+    cut(t, groups, pos, you + _look(pos, tgt, fy))
+    _apply_fade(pos)
+    _w2_shoot(s, cam, f"{tag}_diorama_mid", pos, tgt, DF, None, cfg, out_dir, level=level)
+    if os.path.isfile(os.path.join(out_dir, f"{tag}_diorama_mid.png")):
+        mk = os.path.join(TMP, f"int_{tag}_diorama_mid_surf.png")
+        surf_mask(s, cam, mk)
+        surf[f"{tag}_diorama_mid"] = surf_grade(os.path.join(out_dir, f"{tag}_diorama_mid.png"), mk)
+    path = os.path.join(out_dir, "surfaces.json")
+    allg = json.load(open(path)) if os.path.isfile(path) else {}
+    allg.update(surf)
+    json.dump(allg, open(path, "w"), indent=1, sort_keys=True)
+
+
+INT_COLS = ("fp_spawn", "fp_front", "fp_left", "fp_right", "fp_window", "fp_ceiling", "fp_loot", "fp_loot_round",
+            "fp_street", "diorama", "classic", "diorama_mid")
+
+
+def interiors_sheet(folder):
+    """The INTERIORS contact sheet: one row per site (after), each frame with near-black % / median luma, and the
+    ceiling / wall ratio and the signals' lead over the props where the frame shows them."""
+    from PIL import Image, ImageDraw
+    g = json.load(open(os.path.join(folder, "grades.json")))
+    sg = json.load(open(os.path.join(folder, "surfaces.json"))) if os.path.isfile(os.path.join(folder, "surfaces.json")) else {}
+    tw, th = 300, 139
+    rows = []
+    for tag in INT_SITES:
+        for suffix in ("_before", ""):
+            cols = [f"{tag}{suffix}_{c}" for c in INT_COLS]
+            if any(os.path.isfile(os.path.join(folder, c + ".png")) for c in cols):
+                rows.append((tag + suffix, cols))
+    sheet = Image.new("RGB", (tw * len(INT_COLS), (th + 40) * len(rows) + 30), (24, 25, 36))
+    d = ImageDraw.Draw(sheet)
+    f, _ = MR._font(12)
+    d.text((8, 7), "INTERIORS (LEVELS.md 13): first person (eye 3.8), diorama, classic; near-black % / median luma; "
+           "c/w = ceiling / wall luma; s-d = signals' value over the props", font=f, fill=(230, 232, 245))
+    for r, (tag, cols) in enumerate(rows):
+        y = 30 + r * (th + 40)
+        for c, name in enumerate(cols):
+            p = os.path.join(folder, name + ".png")
+            if not os.path.isfile(p):
+                continue
+            sheet.paste(Image.open(p).convert("RGB").resize((tw, th), Image.LANCZOS), (c * tw, y))
+            q = g.get(name, {})
+            sq = sg.get(name, {})
+            d.text((c * tw + 4, y + th + 3), name, font=f, fill=(230, 232, 245))
+            extra = ""
+            if "ceiling_wall" in sq:
+                extra += " c/w %.2f" % sq["ceiling_wall"]
+            if "signal_over_decor" in sq:
+                extra += " s-d %+.2f" % sq["signal_over_decor"]
+            d.text((c * tw + 4, y + th + 19), "%.1f%% / %.2f%s" % (q.get("near_black", -1), q.get("median_luma", -1),
+                                                                  extra), font=f, fill=(200, 205, 225))
+    out = os.path.join(folder, "contact_sheet.png")
+    sheet.save(out, optimize=True)
+    print("wrote", out)
 
 
 BIG_COLS = ("fp_street", "fp_up", "fp_corner", "fp_ceiling", "fp_inside", "diorama", "classic", "diorama_mid",
@@ -1728,11 +2004,33 @@ def main(argv):
     ap.add_argument("--world2-sheet", nargs=3, metavar=("BEFORE", "AFTER", "OUT"),
                     help="the WORLD 2.0 before / after contact sheet")
     ap.add_argument("--big-sheet", action="store_true", help="the BIG contact sheet from --out (default big/)")
+    ap.add_argument("--interiors", action="store_true",
+                    help="INTERIORS (LEVELS.md 13): INT_SITES (or --only one) in first person round the rooms, the "
+                         "diorama and classic; graded with the surface mask into --out (default docs/audit/levels/interiors)")
+    ap.add_argument("--before", action="store_true", help="--interiors: the levels without the INTERIORS track")
+    ap.add_argument("--interiors-sheet", action="store_true", help="the INTERIORS contact sheet from --out")
     ap.add_argument("--big", action="store_true",
                     help="BIG buildings (LEVELS.md 11): BIG_SITES (or --only one) from the first-person eye and the "
                          "diorama / classic cameras with the cut-away, graded into --out (default docs/audit/levels/big)")
     a = ap.parse_args(argv)
     global OUT, STEPPED
+    if a.interiors_sheet:
+        interiors_sheet(os.path.abspath(a.out) if a.out else INT)
+        return
+    if a.interiors:
+        out = os.path.abspath(a.out) if a.out else INT
+        if a.before:
+            os.environ["EH_NODECOR"] = "1"
+        if not a.only:
+            for tag in INT_SITES:   # one Blender process per site
+                subprocess.run([sys.executable, os.path.abspath(__file__), "--interiors", "--only", tag, "--samples",
+                                str(a.samples), "--out", out] + (["--before"] if a.before else []), check=True)
+            interiors_sheet(out)
+            return
+        plan = load_plan(not a.plain, a.only.upper().startswith("DV"))
+        lv = next(lv for lv in plan["levels"] if short(lv).upper() == a.only.upper() or lv["id"] == a.only)
+        interiors_level(lv, a.samples, out, before=a.before)
+        return
     STEPPED = a.stepped
     if a.out:
         OUT = os.path.abspath(a.out)

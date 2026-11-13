@@ -194,7 +194,16 @@ function DecorPlan.entrance(level: any, KP: any): (number?, number?)
 	return nil, nil
 end
 
-export type Fascia = { x: number, y: number, z: number, w: number, h: number, text: string, board: { number }, color: { number } }
+export type Fascia = {
+	x: number,
+	y: number,
+	z: number,
+	w: number,
+	h: number,
+	text: string,
+	board: { number },
+	color: { number },
+}
 
 -- The fascia sign over the entrance (on the kit front's sign board: Storefront_24x12 9.6 x 1.4 at 10.55-11.95, its
 -- face 0.45 proud of the front plane; BankFront_24x12 9.2 x 1.4 at 10.45-11.85, 0.5 proud). Level space; the text
@@ -332,7 +341,10 @@ function DecorPlan.plan(level: any, specs: { [string]: any }, opts: Options?, de
 	end
 	for _, sw in level.switches or {} do
 		table.insert(circles, { sw.x, sw.z, C.switch })
-		table.insert(wallRects, { x0 = sw.x - C.switch, x1 = sw.x + C.switch, z0 = sw.z - C.switch, z1 = sw.z + C.switch })
+		table.insert(
+			wallRects,
+			{ x0 = sw.x - C.switch, x1 = sw.x + C.switch, z0 = sw.z - C.switch, z1 = sw.z + C.switch }
+		)
 	end
 	for _, sp in level.spawns do
 		table.insert(circles, { sp.x, sp.z, C.spawn })
