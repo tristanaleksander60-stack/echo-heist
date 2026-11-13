@@ -95,15 +95,18 @@ Cues.cues = {
 		note = "fast film rewind (1 s) under the 0.10-1.35 s scrub; alt is a rising fishing-reel zuzz",
 	},
 	RewindStinger = {
-		ids = {},
+		ids = { 9040537602 },
+		alt = { 9040531832, 9046338511 },
 		search = "owner upload: the reversed last bar of each heist track + rewind whirr, 1.2 s",
 		bus = "Music",
 		volume = 0.7,
+		pitch = 1.9,
 		pitchJitter = FIXED,
 		maxVoices = 1,
 		choke = true,
 		priority = 4,
-		note = "Roblox cannot play audio backwards: render it reversed offline from owned music (§7.1)",
+		note = "stand-in: APM reverse swell at 1.9x (2.59 s -> 1.36 s, peaks on the clunk); the owner's reversed "
+			.. "last bar of owned music replaces it (Roblox cannot play audio backwards, §7.1)",
 	},
 	RewindClunk = {
 		ids = { 9126019188, 9119725282, 9119725132 },
@@ -164,7 +167,8 @@ Cues.cues = {
 		note = "last 10 s of a run, one per second, opts.step = 10 - secondsLeft (caption only on the first)",
 	},
 	Heartbeat = {
-		ids = {},
+		ids = { 9043367376 },
+		alt = { 9043367283, 9119882039 },
 		search = "heartbeat single thump low",
 		bus = "Warnings",
 		volume = 0.6,
@@ -172,7 +176,7 @@ Cues.cues = {
 		maxVoices = 1,
 		cooldown = 0.25,
 		priority = 3,
-		note = "no Roblox-licensed heartbeat found in the partner catalogue on 2026-11-12: owner picks one",
+		note = "APM Horror Tools kick (0.44 s): one low thump per call; alts are a second kick and a PSE synth thud",
 	},
 	-- The hideout's departure (Config.Hideout.DRIVE): the van's engine under the short drive. Empty until the
 	-- owner's audio pass.
@@ -211,10 +215,11 @@ Cues.cues = {
 		cloneable = true,
 		note = "wall light switch clicks: the plate pops up and the cable starts to drain",
 	},
-	-- World feedback track (docs/FEEDBACK_TABLE.md "Plate"): the low hum under a held plate. Empty until the
-	-- owner's audio pass (docs/AUDIO.md "Missing (world feedback)").
+	-- World feedback track (docs/FEEDBACK_TABLE.md "Plate"): the low hum under a held plate. Licensed ids
+	-- 2026-11-13 (docs/AUDIO.md "World feedback").
 	PlateHum = {
-		ids = {},
+		ids = { 9119807517 },
+		alt = { 9116389843 },
 		search = "low electric hum loop soft toy",
 		bus = "SFX",
 		volume = 0.18,
@@ -311,10 +316,12 @@ Cues.cues = {
 		note = "3 flickers over 0.3 s before the beams come back",
 	},
 	LaserWhine = {
-		ids = {},
+		ids = { 9125980435, 9125980784, 9125980459 },
+		alt = { 9125980113, 9125980176 },
 		search = "electric charge up whine short rising",
 		bus = "Warnings",
 		volume = 0.4,
+		pitch = 1.8,
 		pitchJitter = 0.02,
 		maxVoices = 3,
 		cooldown = 0.3,
@@ -348,7 +355,7 @@ Cues.cues = {
 		cooldown = 0.15,
 		priority = 1,
 		rolloff = "near",
-		note = "no human footsteps in the Pro Sound Effects partner set on 2026-11-12: owner picks 4-6 takes",
+		note = "no human footsteps in the APM / PSE / Roblox partner sets (re-searched 2026-11-13): owner picks 4-6",
 	},
 	GusRadio = {
 		ids = { 9120456889, 9120458059, 9120456241 },
@@ -386,10 +393,11 @@ Cues.cues = {
 		caption = "[Spotted!]",
 		note = "'Sneaky Schemes - Hit1': the '!' when Gus catches someone",
 	},
-	-- Gus's acting beats (PLAN_STEAM_PLUS §4.4 A4, §5; Heist/GusView). All wait for the owner's audio
-	-- pass (docs/AUDIO.md "Missing"): silent until ids are pasted. Barks are his own voice, positional.
+	-- Gus's acting beats (PLAN_STEAM_PLUS §4.4 A4, §5; Heist/GusView). Licensed library stand-ins 2026-11-13
+	-- (docs/AUDIO.md "Gus beats"); one recorded actor can replace the barks. Positional.
 	GusKeys = {
-		ids = {},
+		ids = { 9116177077, 9116177509, 9125616843, 9125616819 },
+		alt = { 9116177238 },
 		search = "keys jingle keyring walking",
 		bus = "SFX",
 		volume = 0.4,
@@ -401,10 +409,12 @@ Cues.cues = {
 		note = "key ring jingle every 2nd step while Gus patrols: 'you hear his keys, so hide' (premium §6.3)",
 	},
 	GusSnore = {
-		ids = {},
+		ids = { 9113862562, 9113862741, 9113862894 },
+		alt = { 9113862899, 9113862891 },
 		search = "cartoon snore single comedic",
 		bus = "SFX",
 		volume = 0.5,
+		pitch = 1.15,
 		pitchJitter = 0.05,
 		maxVoices = 1,
 		cooldown = 2,
@@ -414,10 +424,11 @@ Cues.cues = {
 		note = "one snore per head nod while Gus dozes (L5's back office, DV09)",
 	},
 	GusBarkHey = {
-		ids = {},
+		ids = { 9118909467, 9118910037, 9118910062 },
+		alt = { 9118909743 },
 		search = "man shout hey cartoon guard",
 		bus = "SFX",
-		volume = 0.8,
+		volume = 0.65,
 		pitchJitter = 0.04,
 		maxVoices = 1,
 		cooldown = 1,
@@ -427,7 +438,8 @@ Cues.cues = {
 		note = "Gus's bark when he wakes or starts a chase (Alarm Run)",
 	},
 	GusBarkHm = {
-		ids = {},
+		ids = { 9116453449, 9116453436, 9116453647 },
+		alt = { 9116453396, 9116453659 },
 		search = "man hmm curious cartoon",
 		bus = "SFX",
 		volume = 0.6,
@@ -440,10 +452,11 @@ Cues.cues = {
 		note = "the 2-note 'hm?' on the double-take snap (premium §6.3)",
 	},
 	GusBarkGotcha = {
-		ids = {},
+		ids = { 9120415730, 9120416707, 9120416355 },
+		alt = { 9120416077, 9120415788 },
 		search = "man gotcha cartoon voice",
 		bus = "SFX",
-		volume = 0.8,
+		volume = 0.65,
 		pitchJitter = 0.04,
 		maxVoices = 1,
 		cooldown = 1,
@@ -453,7 +466,7 @@ Cues.cues = {
 		note = "the grab lunge when Gus catches you (with the BUSTED stamp)",
 	},
 	GusBarkWrongOne = {
-		ids = {},
+		ids = { 9114877032, 9114877145, 9114877072 },
 		search = "man confused huh what cartoon",
 		bus = "SFX",
 		volume = 0.7,
@@ -494,7 +507,8 @@ Cues.cues = {
 		note = "'Cash Movement, Pick Up Cash Bundle': grabbing cash loot",
 	},
 	LootTinkle = {
-		ids = {},
+		ids = { 9116394545, 9116394876, 9116395089 },
+		alt = { 9116394756 },
 		search = "tiny bell tinkle sparkle short",
 		bus = "SFX",
 		volume = 0.3,
@@ -608,7 +622,8 @@ Cues.cues = {
 		note = "the getaway driver honks: 'VAN LEAVES' warnings",
 	},
 	VanToot = {
-		ids = {},
+		ids = { 9113438364, 9113438365, 9113438679 },
+		alt = { 9113438543, 9113439393 },
 		search = "cartoon car horn double toot happy",
 		bus = "SFX",
 		volume = 0.6,
@@ -619,7 +634,8 @@ Cues.cues = {
 		note = "a cheerful double toot when loot is banked (WorldView bank moment), not the VanHorn warning",
 	},
 	VanDoor = {
-		ids = {},
+		ids = { 9119200218, 9119200415, 9119200399 },
+		alt = { 9119200216, 9114153584, 9119203830 },
 		search = "van sliding door close slam",
 		bus = "UI",
 		volume = 0.5,
@@ -670,21 +686,24 @@ Cues.cues = {
 
 	-------------------------------------------------------------------------------------------------------
 	-- Signature moments (Heist/MomentDirector, Heist/LineupDirector; docs/AUDIO.md "Missing (signature
-	-- moments)"): empty until the owner's audio pass.
+	-- moments)"): licensed ids 2026-11-13.
 	-------------------------------------------------------------------------------------------------------
 	ChoirHit = {
-		ids = {},
+		ids = { 1843088383 },
+		alt = { 1843054115 },
 		search = "choir hit stab short bright",
 		bus = "Music",
-		volume = 0.7,
+		volume = 0.6,
 		pitchJitter = FIXED,
 		maxVoices = 1,
 		choke = true,
 		priority = 4,
-		note = "8 OF ME: the clone arpeggio's roll call lands on it (one bright choir stab, < 1 s)",
+		note = "8 OF ME: the arpeggio lands on it; APM Orchestra Hit High C with choir (in key with the C ladder, "
+			.. "a 10 s ring-out under the beat)",
 	},
 	SnareRoll = {
-		ids = {},
+		ids = { 9120365379 },
+		alt = { 9120365917, 1836342006 },
 		search = "snare drum roll short build",
 		bus = "SFX",
 		volume = 0.55,
@@ -692,10 +711,12 @@ Cues.cues = {
 		maxVoices = 1,
 		choke = true,
 		priority = 3,
-		note = "Line-up: a 0.6 s snare roll whose last hit lands on the crew's pose",
+		note = "Line-up: a snare roll whose last hit lands on the crew's pose (Vaudeville roll, 3.2 s: audition and "
+			.. "set Config.Moments.LINEUP.SNARE_SECONDS to its hit)",
 	},
 	VaultSlam = {
-		ids = {},
+		ids = { 9119630175, 9119630452 },
+		alt = { 9119632615 },
 		search = "heavy metal door slam vault clang",
 		bus = "SFX",
 		volume = 0.8,
@@ -826,11 +847,12 @@ Cues.cues = {
 	},
 
 	-------------------------------------------------------------------------------------------------------
-	-- The story intro (Heist/Cinematic, Shared/Heist/IntroPlan; docs/AUDIO.md "Missing (intro)"). 2D. Empty
-	-- until the owner's licensed ids (or the music commission) arrive; every caption card reads without them.
+	-- The story intro (Heist/Cinematic, Shared/Heist/IntroPlan; docs/AUDIO.md "Intro"). 2D. Licensed library
+	-- ids 2026-11-13 until the music commission; every caption card reads without them.
 	-------------------------------------------------------------------------------------------------------
 	IntroMusic = {
-		ids = {},
+		ids = { 9038463810 },
+		alt = { 9038464849 },
 		search = "christmas orchestral heist trailer 36 seconds build to stinger",
 		bus = "Music",
 		volume = 0.6,
@@ -842,7 +864,8 @@ Cues.cues = {
 			.. "garage hush + caper bass (22-34), the title hit at 34.0 s; stopped on SKIP",
 	},
 	IntroBells = {
-		ids = {},
+		ids = { 9119447936 },
+		alt = { 9041824834 },
 		search = "christmas music box chime twinkle",
 		bus = "Ambience",
 		volume = 0.45,
@@ -851,7 +874,8 @@ Cues.cues = {
 		note = "a soft music-box twinkle under CHRISTMAS EVE.",
 	},
 	IntroHoardSting = {
-		ids = {},
+		ids = { 9045808575 },
+		alt = { 9042306864 },
 		search = "villain reveal brass sting low",
 		bus = "Music",
 		volume = 0.6,
@@ -861,7 +885,8 @@ Cues.cues = {
 		note = "Hoardsworth's low brass 'dun-dun' as the camera finds him (funny-sinister, not scary)",
 	},
 	IntroMonocle = {
-		ids = {},
+		ids = { 9116224608 },
+		alt = { 9116224180 },
 		search = "cartoon twinkle glint ding",
 		bus = "SFX",
 		volume = 0.5,
@@ -870,7 +895,7 @@ Cues.cues = {
 		note = "the monocle glint: one bright 'ting'",
 	},
 	IntroLever = {
-		ids = {},
+		ids = { 9116259834, 9116260154 },
 		search = "big metal lever pull clunk",
 		bus = "SFX",
 		volume = 0.6,
@@ -878,7 +903,7 @@ Cues.cues = {
 		note = "the brass lever yanked down",
 	},
 	IntroWhoosh = {
-		ids = {},
+		ids = { 9126228631, 9126229255 },
 		search = "fast whoosh swish transition",
 		bus = "SFX",
 		volume = 0.5,
@@ -886,7 +911,8 @@ Cues.cues = {
 		note = "the whip-pan to the vacuum",
 	},
 	IntroVacuumOn = {
-		ids = {},
+		ids = { 9117882918 },
+		alt = { 9114583503 },
 		search = "giant machine power up vacuum start",
 		bus = "SFX",
 		volume = 0.7,
@@ -896,7 +922,8 @@ Cues.cues = {
 		note = "the giant vacuum switching on: a clunk, a rising whine, a roar",
 	},
 	IntroSuction = {
-		ids = {},
+		ids = { 9119462099 },
+		alt = { 9125742262 },
 		search = "vacuum cleaner loop wind suction",
 		bus = "SFX",
 		volume = 0.45,
@@ -906,15 +933,18 @@ Cues.cues = {
 		note = "the suction roar under the swirl; stopped as the last present lands",
 	},
 	IntroGlobeThunk = {
-		ids = {},
+		ids = { 9114588782 },
+		alt = { 9116897176 },
 		search = "glass dome thud muffled clunk",
 		bus = "SFX",
 		volume = 0.6,
+		pitch = 0.85,
 		maxVoices = 1,
 		note = "the last present thunks into the Snow Globe, then silence for ...GONE.",
 	},
 	IntroLetter = {
-		ids = {},
+		ids = { 9125633461 },
+		alt = { 9126143225 },
 		search = "paper flutter wind soft",
 		bus = "SFX",
 		volume = 0.4,
@@ -922,7 +952,8 @@ Cues.cues = {
 		note = "the kid's letter fluttering down",
 	},
 	IntroHeadlights = {
-		ids = {},
+		ids = { 9119717074 },
+		alt = { 9119727134, 9112953597 },
 		search = "car headlights switch clunk on",
 		bus = "SFX",
 		volume = 0.6,
@@ -931,7 +962,7 @@ Cues.cues = {
 		note = "two heavy clunks as the van's headlights flick on",
 	},
 	IntroTapePrint = {
-		ids = {},
+		ids = { 9116458170, 9125388626 },
 		search = "vhs tape glitch print rewind short",
 		bus = "Clone",
 		volume = 0.5,
@@ -939,7 +970,8 @@ Cues.cues = {
 		note = "the clones tape-print in behind the Rookie (CloneChime notes ride on top)",
 	},
 	IntroTitleSmash = {
-		ids = {},
+		ids = { 9045118430 },
+		alt = { 9045118436, 9045734444 },
 		search = "trailer title hit impact boom",
 		bus = "Music",
 		volume = 0.75,

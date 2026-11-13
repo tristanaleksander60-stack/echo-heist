@@ -2,15 +2,16 @@
 
 _Audio track, 2026-11-12. MASTERPLAN §7.1-7.3, docs/research/feel.md D2-D5, lihfolk-sfx._
 
-**Status.** 61 cues and 7 music sets. **47 of 61 cues have real, Roblox-licensed ids** and every
-music set has real tracks; 14 cues wait for the owner (GusStep, Heartbeat, RewindStinger, Gus's six beat
-cues added by the Gus track, the world feedback track's PlateHum, LaserWhine, LootTinkle and VanToot, and the
-presentation track's VanDoor: see "Missing" under the Gus cue sheet). 100 distinct ids in
-`src/shared/Audio/Manifest.luau` (89 used + 11 audition alternates), every one returned by the Creator Store
-API and every one **loaded in a real Roblox server** (live load check, place version 19: 100/100 ready, store
-and engine lengths agree). The AudioDirector built its graph in the same server (77 wires, all connected,
-`GetMixerTime` available) and ran every API call without an error. Nothing is wired into the views yet
-(src/client/Heist belongs to the wiring agent): see "Call sites".
+**Status.** 77 cues and 7 music sets. **76 of 77 cues have real, Roblox-licensed ids** and every music set
+has real tracks. The audio pass of 2026-11-13 filled the 29 cues that were empty (Gus's beats, world feedback,
+signature moments, the van-door wipe, the 13 intro cues, Heartbeat and a stand-in RewindStinger) from the APM
+and Pro Sound Effects partner catalogues: see "Audio pass 2026-11-13" under the Gus cue sheet and the **owner
+audition list** (§13). Only **GusStep** is still empty (no human footsteps in any partner catalogue). 191 distinct
+ids in `src/shared/Audio/Manifest.luau` (143 used + 48 audition alternates), every one returned by the Creator Store
+API from a licensed creator and every one **loaded in a real Roblox server** (`tests/audio_engine.luau`, Saved
+place version 78: 191/191 ready, every cue and set with ids loads at least one take, store and engine lengths
+agree). The AudioDirector built its graph in a real server (77 wires, all connected, `GetMixerTime` available)
+and ran every API call without an error.
 
 | File | What |
 |---|---|
@@ -108,7 +109,7 @@ CueCheck rejects a set whose mixes differ by more than 2 s.
 | input | `play("RewindClack")` in the END RUN action | tape-deck clack, locally, before any server reply |
 | 0.00 | `AudioDirector.rewind()` when the transition starts | music `PlaybackSpeed` 1.0 -> 0.25 over 0.3 s and out (plain fade under reduced motion), TapeStop cue, Ambience + Clone duck 9 dB |
 | 0.00 | `AudioDirector.muffle(true)` (Heist/RewindDirector, `Config.Moments.REWIND.MUFFLE`) | the world muffled: SFX (with the Clone bus) and Ambience through the `WorldMuffle` low-pass, 20 kHz -> 800 Hz in 0.1 s (`Config.Audio.MUFFLE_*`); UI, Warnings and music stay clear |
-| 0.10 | `play("RewindWhirr")` (+ `play("RewindStinger")` once uploaded) at scrub start | fast film rewind whirr |
+| 0.10 | `play("RewindWhirr")` + `play("RewindStinger")` at scrub start | fast film rewind whirr; the stinger (a licensed reverse swell at 1.9x, 1.36 s) until the owner's reversed bar |
 | 1.35 | `AudioDirector.muffle(false)`, `play("RewindClunk")`, `AudioDirector.arpeggio(clones)` | the world opens again over 0.25 s; clunk on the bar line, then one chime per clone, 60 ms apart, C D E G A c d e (squeezed to 0.4 s) |
 | 1.55 | `play("RunStamp")` | the "RUN n" stamp |
 | 1.80 | `AudioDirector.go(clones)` when control returns | music restarts from the top on the downbeat at the new tier; ducks release |
@@ -126,13 +127,13 @@ audition and swap. Volumes are starting levels for un-normalised library files.
 | RewindClack | SFX | 9119716019 "Switch Cassette Deck Dbx Buttons Clicks 7 (SFX)" (ProSoundEffects, 0 s); 9119716036 "Switch Cassette Deck Dbx Buttons Clicks 9 (SFX)" (ProSoundEffects, 0 s); 9119715824 "Switch Cassette Deck Dbx Buttons Clicks 6 (SFX)" (ProSoundEffects, 0 s) |  | 0.70 | 0.03 | 2 | 0.1 |  |
 | TapeStop | SFX | 9120059083 "Time Wave Intense Fluttering Slow Down 2 (SFX)" (ProSoundEffects, 1 s) | 9120059060 "Time Wave Intense Fluttering Slow Down 1 (SFX)" (ProSoundEffects, 3 s) | 0.60 | 0 | 1 | default |  |
 | RewindWhirr | SFX | 9114413015 "Film Rewind 2 (SFX)" (ProSoundEffects, 1 s) | 9114452629 "Fishing Reel 6 (SFX)" (ProSoundEffects, 1 s) | 0.55 | 0.02 | 1 | default |  |
-| RewindStinger | Music | **none yet**: search "owner upload: the reversed last bar of each heist track + rewind whirr, 1.2 s" |  | 0.70 | 0 | 1 | default |  |
+| RewindStinger | Music | 9040537602 "Existence Is Futile Short Swell" (APM, 2.59 s) | 9040531832 "Anarchy Reverse Swell" (APM, 2.74 s); 9046338511 "Smoldering Fate Swell" (APM, 3.08 s) | 0.70 | 0 | 1 | default | pitch 1.9 |
 | RewindClunk | SFX | 9126019188 "Switches Otari Tape Recorder Turn On Clicks  (SFX)" (ProSoundEffects, 1 s); 9119725282 "Switches Otari Tape Recorder Clicks 9 (SFX)" (ProSoundEffects, 1 s); 9119725132 "Switches Otari Tape Recorder Clicks 7 (SFX)" (ProSoundEffects, 1 s) |  | 0.70 | 0.03 | 2 | default |  |
 | RunStamp | UI | 9114026047 "Date Stamp Big Office Impact Good Squeak 2 (SFX)" (ProSoundEffects, 1 s); 9114025631 "Date Stamp Big Office Impact Good Squeak 2 (SFX)" (ProSoundEffects, 1 s); 9114025813 "Date Stamp Big Office Impact Good Squeak 8 (SFX)" (ProSoundEffects, 1 s) |  | 0.80 | 0.03 | 3 | 0.08 |  |
 | CloneChime | Clone | 9126073001 "Synth Sparkle Tone High Pitch Bell Tone Ding (SFX)" (ProSoundEffects, 1 s) |  | 0.55 | 0 | 8 | 0 | stepped |
 | CloneBusted | SFX | 9119901860 "Synth Zap High Pitch Video Breakup Glitch 4 (SFX)" (ProSoundEffects, 1 s); 9119901748 "Synth Zap High Pitch Video Breakup Glitch 2 (SFX)" (ProSoundEffects, 1 s); 9119902088 "Synth Zap High Pitch Video Breakup Glitch 6 (SFX)" (ProSoundEffects, 1 s) |  | 0.60 | default | 3 | default | 3D mid, clone bus, caption [Clone busted] |
 | CountdownTick | Warnings | 9114071134 "Dial Switch Twisting Sharp Ticking 79 (SFX)" (ProSoundEffects, 0 s); 9114069409 "Dial Switch Twisting Sharp Ticking 48 (SFX)" (ProSoundEffects, 0 s) |  | 0.50 | 0 | 2 | 0.2 | stepped, caption [10 seconds] |
-| Heartbeat | Warnings | **none yet**: search "heartbeat single thump low" |  | 0.60 | 0 | 1 | 0.25 |  |
+| Heartbeat | Warnings | 9043367376 "PERCUSSIVE NOISE 05-Kick 02" (APM, 0.44 s) | 9043367283 "PERCUSSIVE NOISE 04-Kick 01" (APM, 0.44 s); 9119882039 "Synth Whomps 38" (PSE, 0.94 s) | 0.60 | 0 | 1 | 0.25 |  |
 
 ### Mechanisms
 
@@ -159,91 +160,110 @@ audition and swap. Volumes are starting levels for un-normalised library files.
 | GusHuh | Warnings | 9045118824 "Sneaky Schemes - Hit2" (APMOfficial, 2 s) |  | 0.60 | 0 | 1 | 0.5 | caption [Guard suspicious] |
 | GusAlert | Warnings | 9045118821 "Sneaky Schemes - Hit1" (APMOfficial, 2 s) |  | 0.80 | 0 | 1 | 0.5 | ducks music, caption [Spotted!] |
 | Busted | Warnings | 1840568386 "Trumpet Wah-Wah (N)" (APMOfficial, 4 s); 1840568339 "Trumpet Wah-Wah (L)" (APMOfficial, 4 s) |  | 0.70 | 0 | 1 | 0.5 | ducks music, caption [Guard spotted you] |
-| GusKeys | SFX | **missing**: search "keys jingle keyring walking" |  | 0.40 | 0.08 | 1 | 0.3 | 3D near; every 2nd step on patrol |
-| GusSnore | SFX | **missing**: search "cartoon snore single comedic" |  | 0.50 | 0.05 | 1 | 2 | 3D near; one per nod while he dozes, caption [Gus snores] |
-| GusBarkHey | SFX | **missing**: search "man shout hey cartoon guard" |  | 0.80 | 0.04 | 1 | 1 | 3D mid; wake-startle and chase start, caption [Gus: Hey!] |
-| GusBarkHm | SFX | **missing**: search "man hmm curious cartoon" |  | 0.60 | 0.04 | 1 | 1 | 3D mid; the double-take snap, caption [Gus: Hm?] |
-| GusBarkGotcha | SFX | **missing**: search "man gotcha cartoon voice" |  | 0.80 | 0.04 | 1 | 1 | 3D mid; the catch lunge, caption [Gus: Gotcha!] |
-| GusBarkWrongOne | SFX | **missing**: search "man confused huh what cartoon" |  | 0.70 | 0.04 | 1 | 1 | 3D mid; busted a clone, caption [Gus: Wrong one?!] |
+| GusKeys | SFX | 9116177077 "Keys Movement 2" (PSE, 1.43 s); 9116177509 "Keys Movement 9" (PSE, 1.37 s); 9125616843 "Keys Handling Small Ring With Metal Clinks G" (PSE, 0.84 s); 9125616819 "Keys Handling Small Ring With Metal Clinks G" (PSE, 1.20 s) | 9116177238 "Keys Movement 6" (PSE, 1.76 s) | 0.40 | 0.08 | 1 | 0.3 | 3D near; every 2nd step on patrol |
+| GusSnore | SFX | 9113862562 "Comic Snoring Male Vocals Steady Pace 1" (PSE, 4.76 s); 9113862741 "Comic Snoring Male Vocals Steady Pace 4" (PSE, 5.54 s); 9113862894 "Comic Snoring Male Vocals Steady Pace 6" (PSE, 5.90 s) | 9113862899 "Comic Snoring Male Vocals Steady Pace 8" (PSE, 5.88 s); 9113862891 "Comic Snoring Male Vocals Steady Pace 7" (PSE, 5.73 s) | 0.50 | 0.05 | 1 | 2 | 3D near; one per nod while he dozes, caption [Gus snores]; pitch 1.15 |
+| GusBarkHey | SFX | 9118909467 "Sergeant Shouts 3" (PSE, 0.77 s); 9118910037 "Sergeant Shouts 11" (PSE, 0.95 s); 9118910062 "Sergeant Shouts 9" (PSE, 0.96 s) | 9118909743 "Sergeant Shouts 6" (PSE, 1.20 s) | 0.65 | 0.04 | 1 | 1 | 3D mid; wake-startle and chase start, caption [Gus: Hey!] |
+| GusBarkHm | SFX | 9116453449 "Male Reaction 2" (PSE, 0.73 s); 9116453436 "Male Reaction 3" (PSE, 0.65 s); 9116453647 "Male Reaction 4" (PSE, 0.61 s) | 9116453396 "Male Reaction 1" (PSE, 1.39 s); 9116453659 "Male Reaction 5" (PSE, 0.81 s) | 0.60 | 0.04 | 1 | 1 | 3D mid; the double-take snap, caption [Gus: Hm?] |
+| GusBarkGotcha | SFX | 9120415730 "Video Game Effects 1" (PSE, 0.84 s); 9120416707 "Video Game Effects 15" (PSE, 0.67 s); 9120416355 "Video Game Effects 11" (PSE, 0.73 s) | 9120416077 "Video Game Effects 6" (PSE, 1.00 s); 9120415788 "Video Game Effects 2" (PSE, 0.56 s) | 0.65 | 0.04 | 1 | 1 | 3D mid; the catch lunge, caption [Gus: Gotcha!] |
+| GusBarkWrongOne | SFX | 9114877032 "Intercom Vocals Male What Huh Pa Clicks 1" (PSE, 1.04 s); 9114877145 "Intercom Vocals Male What Huh Pa Clicks 4" (PSE, 1.11 s); 9114877072 "Intercom Vocals Male What Huh Pa Clicks 2" (PSE, 1.27 s) |  | 0.70 | 0.04 | 1 | 1 | 3D mid; busted a clone, caption [Gus: Wrong one?!] |
 
-#### Missing (owner's audio pass)
+#### Audio pass 2026-11-13 (the cues that were empty)
 
-Gus track, 2026-11-12: the acting beats call these cues (Heist/GusView); they are in `Cues.luau` with empty
-`ids` and play nothing until the owner pastes licensed ids (one take is enough; barks want 2-3 takes so a
-repeat does not sound canned). Gus's voice should be one actor across all four barks: a warm, slightly
-puffed-out night guard, funny not scary.
+The tracks that added these cues (Gus, world feedback, signature moments, presentation, intro) left them with empty
+`ids`. Every id below came back from `toolbox-service/v1/marketplace/3` with `creatorTargetId` set to a licensed
+partner, its row in Manifest.luau is the `items/details` response, and it loaded in a real server (AudioPlayer
+`IsReady`, engine `TimeLength` in the tables; `GetProductInfoAsync` names the same creator). Licence: Roblox-only
+partner audio ("owned and uploaded by Roblox or our music and SFX partners will remain public and usable by anyone in
+any experience"); never download, re-upload or use off-platform. No id is shared with another cue (one meaning, one
+sound, premium E2); repeating cues have at least 3 takes (E4); volumes follow the existing family levels (shouts and
+fight yells 0.65, one-shot stings 0.6-0.7, beds 0.18-0.45) until the loudness pass. The owner auditions them in the
+order of §13.
 
-| Cue | What | Takes wanted |
+**Gus beats** (Heist/GusView). Gus's barks are library stand-ins from Pro Sound Effects voice sets: the "Hm?" and
+"What?/Huh?" are real words, "Hey!" and "Gotcha!" are a sergeant's shouts and fight yells read with the caption. One
+recorded actor (D10) replaces all four barks when there is one.
+
+| Cue | Bus | Takes (id "title" (source, engine s)) | Alternates | Vol | Pitch | Source / licence | What it is |
+|---|---|---|---|---|---|---|---|
+| GusKeys | SFX | 9116177077 "Keys Movement 2" (PSE, 1.43 s); 9116177509 "Keys Movement 9" (PSE, 1.37 s); 9125616843 "Keys Handling Small Ring With Metal Clinks G" (PSE, 0.84 s); 9125616819 "Keys Handling Small Ring With Metal Clinks G" (PSE, 1.20 s) | 9116177238 "Keys Movement 6" (PSE, 1.76 s) | 0.4 | 1 | Pro Sound Effects (ProSoundEffects) | a metal key ring jingling (shake/rattle and two small-ring grabs) every 2nd patrol step |
+| GusSnore | SFX | 9113862562 "Comic Snoring Male Vocals Steady Pace 1" (PSE, 4.76 s); 9113862741 "Comic Snoring Male Vocals Steady Pace 4" (PSE, 5.54 s); 9113862894 "Comic Snoring Male Vocals Steady Pace 6" (PSE, 5.90 s) | 9113862899 "Comic Snoring Male Vocals Steady Pace 8" (PSE, 5.88 s); 9113862891 "Comic Snoring Male Vocals Steady Pace 7" (PSE, 5.73 s) | 0.5 | 1.15 | Pro Sound Effects (ProSoundEffects) | a comic male snore at 1.15x (4.8-5.9 s files, the next nod cuts the tail) |
+| GusBarkHey | SFX | 9118909467 "Sergeant Shouts 3" (PSE, 0.77 s); 9118910037 "Sergeant Shouts 11" (PSE, 0.95 s); 9118910062 "Sergeant Shouts 9" (PSE, 0.96 s) | 9118909743 "Sergeant Shouts 6" (PSE, 1.20 s) | 0.65 | 1 | Pro Sound Effects (ProSoundEffects) | a drill-sergeant shout (English orders, words not checked): the startled 'Hey!' |
+| GusBarkHm | SFX | 9116453449 "Male Reaction 2" (PSE, 0.73 s); 9116453436 "Male Reaction 3" (PSE, 0.65 s); 9116453647 "Male Reaction 4" (PSE, 0.61 s) | 9116453396 "Male Reaction 1" (PSE, 1.39 s); 9116453659 "Male Reaction 5" (PSE, 0.81 s) | 0.6 | 1 | Pro Sound Effects (ProSoundEffects) | one man's breathy 'Hmm' reactions: the double-take |
+| GusBarkGotcha | SFX | 9120415730 "Video Game Effects 1" (PSE, 0.84 s); 9120416707 "Video Game Effects 15" (PSE, 0.67 s); 9120416355 "Video Game Effects 11" (PSE, 0.73 s) | 9120416077 "Video Game Effects 6" (PSE, 1.00 s); 9120415788 "Video Game Effects 2" (PSE, 0.56 s) | 0.65 | 1 | Pro Sound Effects (ProSoundEffects) | short fight-effort yells ('attacking'): the catch lunge |
+| GusBarkWrongOne | SFX | 9114877032 "Intercom Vocals Male What Huh Pa Clicks 1" (PSE, 1.04 s); 9114877145 "Intercom Vocals Male What Huh Pa Clicks 4" (PSE, 1.11 s); 9114877072 "Intercom Vocals Male What Huh Pa Clicks 2" (PSE, 1.27 s) |  | 0.7 | 1 | Pro Sound Effects (ProSoundEffects) | a man's 'What?' / 'Huh?' through a PA click: baffled over his radio |
+
+**World feedback** (Heist/WorldView, docs/FEEDBACK_TABLE.md).
+
+| Cue | Bus | Takes (id "title" (source, engine s)) | Alternates | Vol | Pitch | Source / licence | What it is |
+|---|---|---|---|---|---|---|---|
+| PlateHum | SFX | 9119807517 "Synth Drone Low Slightly Pulsing Idle 1" (PSE, 36.01 s) | 9116389843 "Magic Glow Constant Deep Ticking Bassy Hum 1" (PSE, 18.02 s) | 0.18 | 1 | Pro Sound Effects (ProSoundEffects) | a low, slightly pulsing synth drone loop (36 s) under a held plate |
+| LaserWhine | Warnings | 9125980435 "Spaceship Pre Blast Electric Charge Up Buzzy" (PSE, 1.35 s); 9125980784 "Spaceship Pre Blast Electric Charge Up Buzzy" (PSE, 1.75 s); 9125980459 "Spaceship Pre Blast Electric Charge Up Buzzy" (PSE, 1.77 s) | 9125980113 "Spaceship Pre Blast Electric Charge Up Buzzy" (PSE, 1.80 s); 9125980176 "Spaceship Pre Blast Electric Charge Up Buzzy" (PSE, 1.91 s) | 0.4 | 1.8 | Pro Sound Effects (ProSoundEffects) | a buzzy, ringy electric charge-up at 1.8x (0.75-0.97 s) before the beams re-arm |
+| LootTinkle | SFX | 9116394545 "Magic Glows Soft Clusters Of Chiming Hits 1" (PSE, 1.43 s); 9116394876 "Magic Glows Soft Clusters Of Chiming Hits 2" (PSE, 2.01 s); 9116395089 "Magic Glows Soft Clusters Of Chiming Hits 4" (PSE, 2.46 s) | 9116394756 "Magic Glows Soft Clusters Of Chiming Hits 3" (PSE, 3.33 s) | 0.3 | 1 | Pro Sound Effects (ProSoundEffects) | soft clusters of chiming, twinkling hits (magic glow) |
+| VanToot | SFX | 9113438364 "Bike Horn Squeeze 1" (PSE, 1.53 s); 9113438365 "Bike Horn Squeeze 2" (PSE, 1.26 s); 9113438679 "Bike Horn Squeeze 3" (PSE, 0.73 s) | 9113438543 "Bike Horn Squeeze 4" (PSE, 0.60 s); 9113439393 "Bike Horn Squeeze 5" (PSE, 0.68 s) | 0.6 | 1 | Pro Sound Effects (ProSoundEffects) | a classic toy bike horn, squeezed (several honks per file): cheerful, nothing like the VanHorn warning |
+
+**Signature moments** (Heist/MomentDirector, Heist/LineupDirector; PLAN_STEAM_PLUS §4.4 F1-F5). The 8 OF ME roll
+call plays one `CloneChime` per copy and lands on `ChoirHit`; heist complete adds `VaultSlam` to the fanfare.
+
+| Cue | Bus | Takes (id "title" (source, engine s)) | Alternates | Vol | Pitch | Source / licence | What it is |
+|---|---|---|---|---|---|---|---|
+| ChoirHit | Music | 1843088383 "Orchestra Hit High C" (APM, 10.28 s) | 1843054115 "Orchestra Hit C" (APM, 9.31 s) | 0.6 | 1 | APM Music (APMOfficial) | an orchestra + choir hit on high C (in key with the C pentatonic arpeggio), 10 s ring-out |
+| SnareRoll | SFX | 9120365379 "Vaudeville Drum Stings 1" (PSE, 3.23 s) | 9120365917 "Vaudeville Drum Stings 1" (PSE, 4.22 s); 1836342006 "Short Roll" (APM, 4.54 s) | 0.55 | 1 | APM Music (APMOfficial) + Pro Sound Effects (ProSoundEffects) | a vaudeville snare roll into a muted cymbal hit with kick (3.2 s) |
+| VaultSlam | SFX | 9119630175 "Steel Door 4" (PSE, 2.14 s); 9119630452 "Steel Door 6" (PSE, 2.11 s) | 9119632615 "Steel Door 8" (PSE, 2.61 s) | 0.8 | 1 | Pro Sound Effects (ProSoundEffects) | a steel door: big hollow hits with a rattling decay |
+
+**Presentation shell** (Heist/Transition, the van-door wipe, 2D UI bus).
+
+| Cue | Bus | Takes (id "title" (source, engine s)) | Alternates | Vol | Pitch | Source / licence | What it is |
+|---|---|---|---|---|---|---|---|
+| VanDoor | UI | 9119200218 "Sliding Door Grab Door Impacts Rub 2" (PSE, 0.56 s); 9119200415 "Sliding Door Grab Door Impacts Rub 3" (PSE, 0.67 s); 9119200399 "Sliding Door Grab Door Impacts Rub 5" (PSE, 0.73 s) | 9119200216 "Sliding Door Grab Door Impacts Rub 1" (PSE, 0.64 s); 9114153584 "Door Slide Open Close 1" (PSE, 1.70 s); 9119203830 "Sliding Glass Door 1" (PSE, 1.49 s) | 0.5 | 1 | Pro Sound Effects (ProSoundEffects) | a sliding door grabbed shut: short wooden impact and rub (0.56-0.73 s); alts include a slide that bangs shut |
+
+**Time** (the rewind and the warning heartbeat; also in the Time table above).
+
+| Cue | Bus | Takes (id "title" (source, engine s)) | Alternates | Vol | Pitch | Source / licence | What it is |
+|---|---|---|---|---|---|---|---|
+| RewindStinger | Music | 9040537602 "Existence Is Futile Short Swell" (APM, 2.59 s) | 9040531832 "Anarchy Reverse Swell" (APM, 2.74 s); 9046338511 "Smoldering Fate Swell" (APM, 3.08 s) | 0.7 | 1.9 | APM Music (APMOfficial) | a reverse swell at 1.9x (1.36 s), peaking on the clunk: stand-in for the owner's reversed bar |
+| Heartbeat | Warnings | 9043367376 "PERCUSSIVE NOISE 05-Kick 02" (APM, 0.44 s) | 9043367283 "PERCUSSIVE NOISE 04-Kick 01" (APM, 0.44 s); 9119882039 "Synth Whomps 38" (PSE, 0.94 s) | 0.6 | 1 | APM Music (APMOfficial) + Pro Sound Effects (ProSoundEffects) | a dry kick drum from APM's Horror Tools: one low thump per call |
+
+**Intro** (Heist/Cinematic at the times in `Shared/Heist/IntroPlan`; SKIP stops the two loops). Library stand-ins
+until the D10 music commission (one 36.5 s score with these hit points); every caption card reads without sound.
+
+| Cue | Bus | When (s from the first frame) | What |
+|---|---|---|---|
+| IntroMusic | Music, loop | 0.0 (stopped at 36.5 or on SKIP) | the score: music-box town (0-6), villain brass (6-12), suction build (12-22), a hush (22-26), caper bass (26-34), the title hit at 34.0 |
+| IntroBells | Ambience | 0.2 | a soft music-box twinkle under CHRISTMAS EVE. |
+| IntroHoardSting | Music | 6.0 | Hoardsworth's low brass "dun-dun" (funny-sinister, not scary) |
+| IntroMonocle | SFX | 7.3 | the monocle glint: one bright "ting" |
+| IntroLever | SFX | 9.2 | a big brass lever yanked down |
+| IntroWhoosh | SFX | 12.0 | the whip-pan to the vacuum |
+| IntroVacuumOn | SFX (ducks music) | 12.35 | the giant vacuum switching on: clunk, rising whine, roar |
+| IntroSuction | SFX, loop | 12.7 (stopped at 20.0) | the suction roar under the swirl |
+| IntroGlobeThunk | SFX | 20.0 | the last present thunks into the Snow Globe, then silence for ...GONE. |
+| IntroLetter | SFX | 22.6 | the kid's letter fluttering down |
+| IntroHeadlights | SFX | 26.4 | two heavy clunks as the van's headlights flick on |
+| IntroTapePrint | Clone | 30.5 | a VHS glitch-print under the clones' entrance |
+| IntroTitleSmash | Music | 34.0 | the HEIST YOURSELF title hit |
+
+| Cue | Bus | Takes (id "title" (source, engine s)) | Alternates | Vol | Pitch | Source / licence | What it is |
+|---|---|---|---|---|---|---|---|
+| IntroMusic | Music | 9038463810 "Carefree Christmas" (APM, 36.36 s) | 9038464849 "Down The Chimney" (APM, 28.63 s) | 0.6 | 1 | APM Music (APMOfficial) | "Carefree Christmas" (Kosinus, Folky Christmas 2): glockenspiel, pizzicato, bells, 36.4 s |
+| IntroBells | Ambience | 9119447936 "Sparkle Bell Tree Wind Chimes 1" (PSE, 5.28 s) | 9041824834 "Winter Bells" (APM, 5.56 s) | 0.45 | 1 | APM Music (APMOfficial) + Pro Sound Effects (ProSoundEffects) | a bell tree / wind-chime sparkle burst |
+| IntroHoardSting | Music | 9045808575 "Sliced, Diced and Heist (sting)" (APM, 2.56 s) | 9042306864 "Evil Genius - Sting 1" (APM, 2.38 s) | 0.6 | 1 | APM Music (APMOfficial) | "Sliced, Diced and Heist": a big, brash brass drop (KPM, Cool and Quirky Horns) |
+| IntroMonocle | SFX | 9116224608 "Large Metal Triangle Single Ringing Hits 13" (PSE, 0.90 s) | 9116224180 "Large Metal Triangle Single Ringing Hits 7" (PSE, 1.39 s) | 0.5 | 1 | Pro Sound Effects (ProSoundEffects) | one large triangle hit, muted by hand: a bright 'ting' |
+| IntroLever | SFX | 9116259834 "Lever Two Large Metal Pulls 1" (PSE, 1.10 s); 9116260154 "Lever Two Large Metal Pulls 2" (PSE, 0.91 s) |  | 0.6 | 1 | Pro Sound Effects (ProSoundEffects) | two large metal lever pulls |
+| IntroWhoosh | SFX | 9126228631 "Whoosh Back Zoom Swoosh Fast Camera In And O" (PSE, 1.93 s); 9126229255 "Whoosh By Fast Airy Swooshing Whipping Thuds" (PSE, 1.02 s) |  | 0.5 | 1 | Pro Sound Effects (ProSoundEffects) | a fast camera zoom whoosh (in and out) and an airy whip with a thud |
+| IntroVacuumOn | SFX | 9117882918 "Power Up Accelerating Motors 2" (PSE, 3.52 s) | 9114583503 "Giant Servo Motor Powering Up 2" (PSE, 4.90 s) | 0.7 | 1 | Pro Sound Effects (ProSoundEffects) | accelerating motors powering up: whirring tone, airy hiss |
+| IntroSuction | SFX | 9119462099 "Spiraling Wind Data Tunnel Travelling 1" (PSE, 18.00 s) | 9125742262 "Plasma Trails Constant Airy Whooshing Windy" (PSE, 33.16 s) | 0.45 | 1 | Pro Sound Effects (ProSoundEffects) | a spiraling wind tunnel loop (18 s) |
+| IntroGlobeThunk | SFX | 9114588782 "Glass Boom 2" (PSE, 1.76 s) | 9116897176 "Metal Thunk 22" (PSE, 2.25 s) | 0.6 | 0.85 | Pro Sound Effects (ProSoundEffects) | a huge glass boom with plate rattle at 0.85x |
+| IntroLetter | SFX | 9125633461 "Magazine Paper Flutter Single Page Passing B" (PSE, 1.85 s) | 9126143225 "Typing Paper Flutter Single Sheet Passing By" (PSE, 2.75 s) | 0.4 | 1 | Pro Sound Effects (ProSoundEffects) | a single magazine page fluttering past |
+| IntroHeadlights | SFX | 9119717074 "Switch Circuit Breaker Clicks 5" (PSE, 1.50 s) | 9119727134 "Switch Impact On Flip Up Large Metal 2" (PSE, 0.44 s); 9112953597 "1965 Jaguar E- Type Car Headlight Switch 1" (PSE, 0.77 s) | 0.6 | 1 | Pro Sound Effects (ProSoundEffects) | circuit-breaker switch clicks (two clunks in 1.5 s) |
+| IntroTapePrint | Clone | 9116458170 "Malfunction Beeps Glitch Staticky 2" (PSE, 1.13 s); 9125388626 "Beeps Short Multi Tone Beeps Squelch Glitchy" (PSE, 0.68 s) |  | 0.5 | 1 | Pro Sound Effects (ProSoundEffects) | staticky malfunction glitch beeps and a short squelchy glitch |
+| IntroTitleSmash | Music | 9045118430 "Sneaky Schemes - Tag2" (APM, 5.51 s) | 9045118436 "Sneaky Schemes - Tag3" (APM, 7.00 s); 9045734444 "Hustle and Heist (sting b)" (APM, 4.47 s) | 0.75 | 1 | APM Music (APMOfficial) | "Sneaky Schemes - Tag2": the Caper theme's own 5.5 s button (pizzicato, woodwinds) |
+
+#### Still missing
+
+| Cue | Why | What to do |
 |---|---|---|
-| GusKeys | a key ring jingling with a step | 3-4 |
-| GusSnore | one cartoon snore (in, out) | 1-2 |
-| GusBarkHey | "Hey!" (startled, then cross) | 2-3 |
-| GusBarkHm | "Hm?" (two notes, curious) | 2 |
-| GusBarkGotcha | "Gotcha!" | 2 |
-| GusBarkWrongOne | "Wrong one?!" (baffled) | 1-2 |
-
-#### Missing (world feedback)
-
-Levels and world feedback track, 2026-11-12 (docs/FEEDBACK_TABLE.md): `Heist/WorldView` calls these cues; they are
-in `Cues.luau` with empty `ids` and play nothing until the owner pastes licensed ids. Everything else the table asks
-for already had a cue (PlatePress, DoorOpen, LaserFlicker, Grab, DropThud, BankKaching, BankCoins).
-
-| Cue | What | Takes wanted |
-|---|---|---|
-| PlateHum | a soft low hum loop under a held plate (stops on release; the toy click is PlatePress) | 1 loop |
-| LaserWhine | a 0.5 s rising whine as a laser starts its flicker, before it re-arms (Warnings bus) | 1-2 |
-| LootTinkle | a tiny bell tinkle with a loot glint, when you are within 8 studs | 3 |
-| VanToot | a cheerful double toot as loot is banked (not the VanHorn "van leaves" warning) | 2 |
-
-#### Missing (signature moments)
-
-Signature moments track, 2026-11-12 (PLAN_STEAM_PLUS §4.4 F1-F5, §5): `Heist/MomentDirector` and
-`Heist/LineupDirector` call these cues; they are in `Cues.luau` with empty `ids` and play nothing until the owner
-pastes licensed ids. The 8 OF ME roll call plays one `CloneChime` per copy (stepped C D E G A c d e, exactly 60 ms
-apart, in time with each clone's pose beat) and lands on `ChoirHit`; the busted view uses the existing Caught
-cues and `RunStamp`; heist complete adds `VaultSlam` to the existing fanfare; the trophy lands on `CountDone`.
-
-| Cue | What | Takes wanted |
-|---|---|---|
-| ChoirHit | one bright choir stab (< 1 s), Music bus: the top of the 8 OF ME roll call | 1 |
-| SnareRoll | a 0.6 s snare roll whose last hit lands on the Line-up pose | 1-2 |
-| VaultSlam | a heavy metal door slam / vault clang as every door slams shut at heist complete | 2 |
-
-#### Missing (presentation shell)
-
-Presentation track, 2026-11-12 (PLAN_STEAM_PLUS §3.4, §4.1 W7): `Heist/Transition` plays `VanDoor` each time the
-van-door wipe closes (garage → heist, heist → results, results → garage). It is in `Cues.luau` with empty `ids`
-and plays nothing until the owner pastes a licensed id. The title beat's sound logo is the existing clone arpeggio
-(`CloneChime`, one pentatonic step per wordmark copy), so it needs no new cue.
-
-| Cue | What | Takes wanted |
-|---|---|---|
-| VanDoor | a toy-like sliding-door roll ending in a soft slam (UI bus, 2D), under 0.4 s | 2 |
-
-#### Missing (intro)
-
-Intro track, 2026-11-13 (docs/art/intro/STORYBOARD.md, PLAN_FIRST_PERSON §5): `Heist/Cinematic` plays these cues at
-the times in `Shared/Heist/IntroPlan` (the shot list). They are in `Cues.luau` with empty `ids` and play nothing until
-the owner pastes licensed ids; every caption card reads without sound. The clones' entrance reuses `CloneChime`
-(steps 0-3, the sound logo). SKIP stops the two loops (`IntroMusic`, `IntroSuction`). The ideal is one commissioned
-36.5 s score with the hit points below (the D10 music commission); until then `IntroMusic` can be a library cue and
-the stings carry the beats.
-
-| Cue | Bus | When (s from the first frame) | What | Takes wanted |
-|---|---|---|---|---|
-| IntroMusic | Music, loop | 0.0 (stopped at 36.5 or on SKIP) | the score: music-box town (0-6), villain brass (6-12), suction build (12-22), a hush (22-26), caper bass (26-34), the title hit at 34.0 | 1 |
-| IntroBells | Ambience | 0.2 | a soft music-box twinkle under CHRISTMAS EVE. | 1 |
-| IntroHoardSting | Music | 6.0 | Hoardsworth's low brass "dun-dun" (funny-sinister, not scary) | 1 |
-| IntroMonocle | SFX | 7.3 | the monocle glint: one bright "ting" | 1 |
-| IntroLever | SFX | 9.2 | a big brass lever yanked down | 1-2 |
-| IntroWhoosh | SFX | 12.0 | the whip-pan to the vacuum | 1-2 |
-| IntroVacuumOn | SFX (ducks music) | 12.35 | the giant vacuum switching on: clunk, rising whine, roar | 1 |
-| IntroSuction | SFX, loop | 12.7 (stopped at 20.0) | the suction roar under the swirl | 1 loop |
-| IntroGlobeThunk | SFX | 20.0 | the last present thunks into the Snow Globe, then silence for ...GONE. | 1 |
-| IntroLetter | SFX | 22.6 | the kid's letter fluttering down | 1 |
-| IntroHeadlights | SFX | 26.4 | two heavy clunks as the van's headlights flick on | 1 |
-| IntroTapePrint | Clone | 30.5 | a VHS glitch-print under the clones' entrance | 1-2 |
-| IntroTitleSmash | Music | 34.0 | the HEIST YOURSELF title hit | 1 |
+| GusStep | no human footsteps in the APM, Pro Sound Effects or Roblox catalogues (re-searched 2026-11-13: footsteps, shoes, boots, heels, walking, stairs; only robot, creature, animal and puddle steps); `GusKeys` every 2nd step already carries "you hear him coming" | owner records or buys 4-6 hard-shoe-on-concrete takes and uploads them under the experience owner (manifest row + `LICENSED_CREATORS` for the owner id) |
+| (lobby) | no lobby engine / drive cue exists yet; the LOBBY track adds one if it wants it | no clean licensed van idle loop was found: PSE "Go Kart Exhaust Constant" (toy putt-putt) and "Pod Idle Or Cruising" are the closest; "Cartoon Jalopy" has vocal gags and the pickup idles drive away mid-file |
 
 ### Loot and bank
 
@@ -265,7 +285,7 @@ the stings carry the beats.
 | AlarmBell | Warnings | 9125544264 "Elevator Alarm Bell Emergency Several Rings  (SFX)" (ProSoundEffects, 8 s) | 9125544285 "Elevator Alarm Bell Emergency Several Rings  (SFX)" (ProSoundEffects, 12 s) | 0.35 | 0 | 1 | default | loop, caption [Alarm!] |
 | VanHorn | SFX | 9113018513 "2007 Dodge Charger Horn Honking 2 (SFX)" (ProSoundEffects, 1 s); 9113019386 "2007 Dodge Charger Horn Honking 9 (SFX)" (ProSoundEffects, 1 s) |  | 0.70 | default | 2 | 0.4 | 3D far, caption [Van horn] |
 | VanEngine | SFX | 9125657802 "Mercedes- Benz 280 Sl Failed Starts Engine S (SFX)" (ProSoundEffects, 3 s) |  | 0.70 | 0 | 1 | default | 3D far, caption [Van leaving] |
-| VanDoor | UI | **missing**: search "van sliding door close slam" |  | 0.50 | default | 1 | 0.2 | the van-door wipe closing (Heist/Transition) |
+| VanDoor | UI | 9119200218 "Sliding Door Grab Door Impacts Rub 2" (PSE, 0.56 s); 9119200415 "Sliding Door Grab Door Impacts Rub 3" (PSE, 0.67 s); 9119200399 "Sliding Door Grab Door Impacts Rub 5" (PSE, 0.73 s) | 9119200216 "Sliding Door Grab Door Impacts Rub 1" (PSE, 0.64 s); 9114153584 "Door Slide Open Close 1" (PSE, 1.70 s); 9119203830 "Sliding Glass Door 1" (PSE, 1.49 s) | 0.50 | default | 1 | 0.2 | the van-door wipe closing (Heist/Transition) |
 
 ### Complete
 
@@ -325,8 +345,13 @@ the stings carry the beats.
   The partner status of the two accounts is inferred from those facts; the web did not return an official
   page naming them (owner check, below).
 - Searched and **not found** in the partner catalogue: human footsteps (only robot, creature, animal steps),
-  a heartbeat, a tape rewind or cassette rewind (closest: "Film Rewind"), a cash-register "cha-ching" with
-  bell (the ones found are electronic hatch sounds).
+  a single heartbeat (APM's are 60 s 96 BPM loops; the cue uses an APM Horror Tools kick), a tape rewind or
+  cassette rewind (closest: "Film Rewind"), a cash-register "cha-ching" with bell (the ones found are
+  electronic hatch sounds), spoken "Hey!" / "Gotcha!" lines (PSE has "Hmm", "What", "Huh", sergeant shouts and
+  fight yells), a choir stab under 1 s (APM's orchestra + choir hits ring for 9-10 s), a clean van idle loop.
+- Audio pass 2026-11-13: the search helper lives in the session scratchpad, not the repo; it is the two calls
+  above (marketplace search with `creatorTargetId` 7462718749 / 7462895450 / 1, then `items/details`), and the
+  engine check is `tests/audio_engine.luau`. `tools/rbx_search.py` searches experiences, not audio.
 - Re-verify an id: `curl -s "https://apis.roblox.com/toolbox-service/v1/items/details?assetIds=<id>"` and
   check `creator.id` is in `LICENSED_CREATORS`. A new id goes into Manifest.luau only with the fields from
   that response; CueCheck refuses any id that is not in the manifest or not from a licensed creator.
@@ -402,7 +427,7 @@ Line numbers are from 2026-11-12.
 8. `director.play` (line 188): replace `sound("Clack")` with `AudioDirector.rewind()` (the clack already
    played on input; the rewind call plays TapeStop and dives the music).
 9. Stage 1 (line 221): `sound("Stinger")` -> `AudioDirector.play("RewindWhirr")` and
-   `AudioDirector.play("RewindStinger")` (silent until uploaded).
+   `AudioDirector.play("RewindStinger")` (a licensed reverse-swell stand-in until the owner's render).
 10. Stage 2 (lines 249-250): `sound("Clunk")` -> `AudioDirector.play("RewindClunk")`; `sound("Arpeggio")` ->
     `AudioDirector.arpeggio(cloneCount)`.
 11. The stamp (line 254, `u >= snapTo`, first frame): `AudioDirector.play("RunStamp")`; `u >= 1` (line 260, control returns, the
@@ -460,17 +485,20 @@ caption handler. `uiVolume`, `alertsVolume` and `muteAll` are not built.
 
 ## 11. Live load check
 
-`src/shared/Audio/LoadCheck.luau` loads every manifest id into a throwaway AudioPlayer and reports ids that
-never become ready (takedowns and permission problems are silent in Roblox). 2026-11-12, place version 19:
-**100/100 ready**, no store/engine length mismatch over 1.5 s. Re-run before each release (lihfolk-sfx review 8):
+`src/shared/Audio/LoadCheck.luau` loads every manifest id into a throwaway AudioPlayer and reports ids that never
+become ready (takedowns and permission problems are silent in Roblox). `tests/audio_engine.luau` runs it in a real
+server and also checks that every cue and music set with ids has at least one take that loads, warns on a store /
+engine length gap over 1.5 s, and asks `MarketplaceService:GetProductInfoAsync` for the creator of 12 first takes.
+2026-11-13, Saved place version 78: **191/191 ready, 83 cues and sets each load, 12/12 licensed creators, no
+length gap**; only GusStep is empty. Re-run before each release (lihfolk-sfx review 8):
 
 ```
-rojo build -o build/EchoHeist.rbxlx
-ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960 --place 70772627070328 --script <file>
--- <file>: return require(game.ReplicatedStorage.Shared.Audio.LoadCheck).run(30).text
+ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960 --place 70772627070328 \
+    --script tests/audio_engine.luau --timeout 180          # add --version N to test an existing build
 ```
 
-(The wiring agent can add that line to `tests/engine_smoke.luau`.)
+A Luau Execution server does not render audio (an AudioAnalyzer reads 0 there), so loudness and where a hit falls
+inside a file are audition work (§13), not engine checks.
 
 ## 12. Owner actions
 
@@ -478,11 +506,12 @@ ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960
    swap a take with its alternate in `Cues.luau` (only ids already in the manifest). Most important: the
    Caper ladder order (does each mix sound fuller than the last?), CloneChime (glassy, dry, pitched cleanly
    up an octave and a third), RewindWhirr, BankKaching, Busted.
-2. **Pick the missing sounds** (Toolbox search words in the sheet; Gus's six beat cues are listed under
-   "Missing" in the Gus cue sheet): GusStep (4-6 takes, hard shoes on
-   concrete), Heartbeat (one thump), and render **RewindStinger** (reversed last bar of each heist track +
-   whirr, 1.2 s) from owned music; upload under the experience owner and paste the ids. A non-partner id
-   needs its manifest row with `creatorId` added to `LICENSED_CREATORS` only for your own uploads.
+2. **Audition the audio pass** (§13, most-heard first) and swap takes with their alternates in `Cues.luau`
+   (only ids in the manifest). Still to source: **GusStep** (4-6 takes, hard shoes on concrete), and render
+   **RewindStinger** (reversed last bar of each heist track + whirr, 1.2 s) from owned music to replace the
+   licensed reverse swell; upload under the experience owner and paste the ids. A non-partner id needs its
+   manifest row with `creatorId` added to `LICENSED_CREATORS` only for your own uploads. Gus's four barks want one
+   recorded actor eventually (the library takes are stand-ins).
 3. **Confirm the partner accounts** (APMOfficial, ProSoundEffects) are Roblox's licensed partners in the
    Creator Store UI (they show as the publishers of the free licensed catalogue).
 4. **Loudness pass**: measure the used files in Studio (AudioAnalyzer RMS on a test bus) and re-level the
@@ -493,3 +522,34 @@ ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960
 6. **S4 spike**: paste two mixes of one Caper track (e.g. 9045117610 and 9045109623, both 130 s) into
    `src/spikes/stems/shared/StemsConfig.luau` as STEM_A / STEM_B (`rbxassetid://<id>`) to test drift with
    real music.
+
+## 13. Owner audition list (audio pass 2026-11-13)
+
+Sorted by how often players hear each cue, so the first rows matter most. In Studio: Toolbox > Creator Store >
+Audio, paste the id (or play the cue with `AudioDirector.play`); swap a take with an alternate in `Cues.luau`.
+Bold items need a decision, not just a listen.
+
+| # | Cue | Heard | Listen for |
+|---|---|---|---|
+| 1 | GusKeys | every 2nd step of every patrolling Gus | does it read as a guard's key ring at 3D near range? not too busy every 2nd step |
+| 2 | RewindStinger | every rewind (every run) | does the swell peak on the clunk at 1.35 s? pitch 1.9 is a guess from the length; replace with the reversed last bar when rendered |
+| 3 | LootTinkle | every loot glint within 8 studs | soft enough to repeat; not confused with CloneChime / DiamondShimmer (synth sparkle) |
+| 4 | Heartbeat | every '?' on you and the last seconds of every run | a heartbeat, not a kick drum? try alt 9119882039 (synth thud) |
+| 5 | PlateHum | every held plate | a toy hum under PlatePress, not the CableWhum / LaserHum buzz |
+| 6 | VanToot | every bank | cheerful double toot? each file holds a few squeezes: keep the ones with two |
+| 7 | VanDoor | every garage/heist/results wipe (0.35 s) | a door, not a drawer? toy-like enough? alt 9114153584 is a longer slide that bangs shut |
+| 8 | LaserWhine | every laser flicker | rising and short at 1.8x; alts are longer variants of the same charge-up |
+| 9 | GusBarkHm | every double-take | a curious 'hm?', same man as the other barks? |
+| 10 | GusBarkHey | every wake and chase start | **check the words**: drill-sergeant orders, not yet heard; keep only takes that sound like 'Hey!' or a wordless shout |
+| 11 | GusBarkGotcha | every catch | **check**: game fight yells may include laughs or pain; keep the triumphant ones |
+| 12 | GusBarkWrongOne | every busted clone | 'What?' / 'Huh?' through a PA click: does the radio colour fit Gus? |
+| 13 | GusSnore | each nod while Gus dozes (L5) | male comic snore at 1.15x; the 4 s nod cuts the tail |
+| 14 | VaultSlam | heist complete | heavy enough; distinct from DoorClose's alt (Steel Door 3) |
+| 15 | SnareRoll | every Line-up | **align**: the hit must land on the pose; measure where the hit is and set Config.Moments.LINEUP.SNARE_SECONDS (0.6 now) |
+| 16 | ChoirHit | 8 OF ME roll calls | in key with the C ladder? the 10 s ring-out is long: try alt 1843054115 (C) |
+| 17 | IntroMusic | once per new player (the intro) | fits the 36.5 s shot list? sweet throughout: the stings carry the villain beats |
+| 18 | IntroTitleSmash | intro, 34.0 s | a title 'smash'? it is the theme's button; alt Tag3 or the 'Hustle and Heist' piano sting |
+| 19 | IntroHoardSting | intro, 6.0 s | funny-sinister brass, not scary |
+| 20 | IntroVacuumOn + IntroSuction | intro, 12.35-20 s | a giant vacuum, not a spaceship |
+| 21 | IntroBells, IntroMonocle, IntroLever, IntroWhoosh, IntroGlobeThunk, IntroLetter, IntroHeadlights, IntroTapePrint | intro | each one beat; skip with SKIP to check the loops stop |
+
