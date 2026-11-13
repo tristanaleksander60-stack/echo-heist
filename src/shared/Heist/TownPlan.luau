@@ -123,6 +123,8 @@ function TownPlan.build(input: Input): Town
 
 	-- The street ----------------------------------------------------------------------------------------------
 	local P, R = T.PAVEMENT, T.ROAD
+	local PAVE = theme.pave or C.pave -- a theme may pave its street in its own stone (the Toy Shop: rose)
+	local YARD = theme.yard or C.yard
 	local F = input.front
 	local kerbZ = F + P
 	local roadEnd = math.max(kerbZ + R, lot.maxZ + T.ROAD_PAST_LOT)
@@ -130,12 +132,12 @@ function TownPlan.build(input: Input): Town
 	local X0, X1 = (lot.minX + lot.maxX) / 2 - T.SPAN, (lot.minX + lot.maxX) / 2 + T.SPAN
 	-- outside the lot: the near pavement and the road beside it, the road past the lot's street edge, the far
 	-- pavement; inside the lot the same bands are the "lot" layer (the client's snow over the level floor)
-	slab("Pavement", X0, lot.minX, F, kerbZ, top, 0.4, C.pave, "ground", "ground")
-	slab("Pavement", lot.maxX, X1, F, kerbZ, top, 0.4, C.pave, "ground", "ground")
+	slab("Pavement", X0, lot.minX, F, kerbZ, top, 0.4, PAVE, "ground", "ground")
+	slab("Pavement", lot.maxX, X1, F, kerbZ, top, 0.4, PAVE, "ground", "ground")
 	slab("Road", X0, lot.minX, kerbZ, roadEnd, top, 0.4, C.road, "ground", "ground")
 	slab("Road", lot.maxX, X1, kerbZ, roadEnd, top, 0.4, C.road, "ground", "ground")
 	slab("Road", lot.minX, lot.maxX, math.max(lot.maxZ, kerbZ), roadEnd, top, 0.4, C.road, "ground", "ground")
-	slab("Pavement", X0, X1, roadEnd, acrossZ, top, 0.4, C.pave, "ground", "ground")
+	slab("Pavement", X0, X1, roadEnd, acrossZ, top, 0.4, PAVE, "ground", "ground")
 	-- kerbs: a raised stone line where each pavement meets the road (the near one only outside the lot)
 	local kw, kh = T.KERB.width, T.KERB.height
 	slab("Kerb", X0, lot.minX, kerbZ - kw, kerbZ, top + kh, kh + 0.4, C.kerb, "ground", "ground")
@@ -160,14 +162,14 @@ function TownPlan.build(input: Input): Town
 		end
 	end
 	-- The lot's outdoor floor: the pavement and road bands in front of the building, the yards round it
-	slab("LotPavement", lot.minX, lot.maxX, F, math.min(kerbZ, lot.maxZ), top, 0.2, C.pave, "lot", "lot")
+	slab("LotPavement", lot.minX, lot.maxX, F, math.min(kerbZ, lot.maxZ), top, 0.2, PAVE, "lot", "lot")
 	slab("LotRoad", lot.minX, lot.maxX, kerbZ, lot.maxZ, top, 0.2, C.road, "lot", "lot")
 	if fp then
 		local f = fp :: Rect
-		slab("LotYard", lot.minX, f.minX, lot.minZ, F, top, 0.2, C.yard, "lot", "lot")
-		slab("LotYard", f.maxX, lot.maxX, lot.minZ, F, top, 0.2, C.yard, "lot", "lot")
-		slab("LotYard", f.minX, f.maxX, lot.minZ, f.minZ, top, 0.2, C.yard, "lot", "lot")
-		slab("LotYard", f.minX, f.maxX, f.maxZ, F, top, 0.2, C.yard, "lot", "lot")
+		slab("LotYard", lot.minX, f.minX, lot.minZ, F, top, 0.2, YARD, "lot", "lot")
+		slab("LotYard", f.maxX, lot.maxX, lot.minZ, F, top, 0.2, YARD, "lot", "lot")
+		slab("LotYard", f.minX, f.maxX, lot.minZ, f.minZ, top, 0.2, YARD, "lot", "lot")
+		slab("LotYard", f.minX, f.maxX, f.maxZ, F, top, 0.2, YARD, "lot", "lot")
 	end
 	-- the lot fence (client-only, invisible, CanQuery off)
 	do

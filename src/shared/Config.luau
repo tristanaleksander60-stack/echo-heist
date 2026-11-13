@@ -1510,16 +1510,18 @@ Config.Backdrop = {
 				back = { "townhouse", "house", "townhouse" },
 				bodies = {
 					{ 222, 130, 160 },
-					{ 132, 198, 172 },
+					{ 232, 128, 112 }, -- coral (every Toy Shop body is a warm candy: the shop front is storybook navy)
 					{ 232, 200, 112 },
-					{ 172, 142, 212 },
+					{ 200, 92, 132 }, -- raspberry
 					{ 236, 162, 122 },
-					{ 124, 172, 220 },
+					{ 238, 214, 168 }, -- vanilla
 				},
 				awnings = { { 236, 96, 140 }, { 64, 170, 140 }, { 236, 190, 70 }, { 130, 100, 200 } },
 				heights = { shop = { 13, 16 }, house = { 10, 12 }, townhouse = { 17, 21 }, civic = { 18, 20 } },
 				widths = { 16, 18, 20, 16 },
 				signature = "lights", -- fairy-light strings on every front, two trees
+				pave = { 182, 140, 146 }, -- rose paving (the lot and the pavements: warm under the pink lamps)
+				yard = { 178, 150, 160 },
 			},
 			Bank = { -- "Bank plaza": stone fronts and a plaza with a big Christmas tree across the street
 				near = { "townhouse", "civic", "townhouse" },
