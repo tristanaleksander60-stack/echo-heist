@@ -157,9 +157,34 @@ def head(k):
     return k.finalize(mb, pivot=J["Neck"])
 
 
+def brow_path(ex, sx, pts):
+    """A brow along the head's front: pts = (u, dz) pairs, u from the inner end (0) to the outer end (1) across the
+    eye, dz above EYE_Z. Returns 3D points just proud of the face."""
+    out = []
+    for u, dz in pts:
+        x = ex + sx * (-0.2 + 0.42 * u)
+        z = EYE_Z + dz
+        out.append((x, head_front_y(x, z) - 0.08, z))     # proud of the eye whites where they overlap
+    return out
+
+
+# Brow shapes per expression: (u, dz) inner -> outer; the width tapers to the tail (a brush stroke, thick inner end).
+# sx = -1 is the Rookie's right (Blender -X).
+BROWS = {
+    "idle": {1: [(0, 0.21), (0.35, 0.25), (0.7, 0.255), (1, 0.21)], -1: [(0, 0.2), (0.35, 0.24), (0.7, 0.245), (1, 0.2)]},
+    # smug: the right brow cocked high in an arch, the left one low and flat on the lid over the side-eye
+    "smug": {-1: [(0, 0.24), (0.3, 0.31), (0.65, 0.335), (1, 0.27)], 1: [(0, 0.15), (0.35, 0.165), (0.7, 0.17), (1, 0.15)]},
+    "shocked": {1: [(0, 0.3), (0.3, 0.36), (0.65, 0.37), (1, 0.31)], -1: [(0, 0.3), (0.3, 0.36), (0.65, 0.37), (1, 0.31)]},
+    # busted: worried, the inner ends pushed up over the squeezed eyes
+    "busted": {1: [(0, 0.27), (0.35, 0.22), (0.7, 0.16), (1, 0.11)], -1: [(0, 0.27), (0.35, 0.22), (0.7, 0.16), (1, 0.11)]},
+}
+BROW_TAPER = [1.0, 0.95, 0.8, 0.55]
+
+
 def face(k, name, mood):
-    """Eyes, brows and mouth on the head's front (one face shows at a time; Heist/Rookie swaps them by state).
-    Readable at 48 px: two light eye shapes and one dark brow line each, as Gus's beady eyes."""
+    """Eyes, brows, cheeks and mouth on the head's front (one face shows at a time; Heist/Rookie swaps them by state).
+    Readable at 48 px: two light eye shapes with a shine, a dark brush-stroke brow over each (its shape is the
+    expression), a light cheek highlight under each eye, and one dark mouth line."""
     mb = k.MB(name)
     ez = EYE_Z
     for sx in (-1, 1):
@@ -171,32 +196,40 @@ def face(k, name, mood):
                 bar = mb.box((-0.15, -0.035, -0.035), (0.15, 0.035, 0.035), "ink", part="Squint")
                 mb.xform(bar, Matrix.Translation(Vector((ex, yf - 0.01, ez + s * 0.06))) @
                          Matrix.Rotation(math.radians(s * sx * 24), 4, "Y"))
-            continue
-        big = mood == "shocked"
-        rw, rh = (0.2, 0.26) if big else (0.18, 0.22)
-        ellipsoid(mb, (ex, yf + 0.04, ez), 1.0, rw, 0.11, rh, "marble_hi", part="EyeWhite")
-        if mood == "shocked":
-            px, pz, pr = ex, ez, 0.07                           # pinprick pupils, centred
-        elif mood == "smug":
-            px, pz, pr = ex + 0.09, ez - 0.05, 0.095            # hard side-eye, low under the lid
         else:
-            px, pz, pr = ex + 0.06, ez - 0.01, 0.1              # idle: the relaxed side-eye
-        ellipsoid(mb, (px, yf - 0.06, pz), 1.0, pr, 0.05, pr * 1.1, "ink", part="Pupil")
-        if mood == "smug":                                       # half-lidded: a skin lid over the top half
-            ellipsoid(mb, (ex, yf + 0.04, ez + 0.08), 1.0, rw + 0.03, 0.15, rh * 0.62, "skin_lo", part="Lid")
-        # brows: idle level and cocky, smug one raised, shocked both high
-        if mood == "shocked":
-            bz, tilt = ez + 0.36, -10 * sx
-        elif mood == "smug":
-            bz, tilt = (ez + 0.3, -14) if sx > 0 else (ez + 0.2, 10)
-        else:
-            bz, tilt = ez + 0.27, 8 * sx
-        byf = head_front_y(ex, bz)
-        brow = mb.box((-0.2, -0.06, -0.055), (0.2, 0.06, 0.055), "hair", chamfer=0.03, cham_col="hair", part="Brow")
-        mb.xform(brow, Matrix.Translation(Vector((ex, byf - 0.01, bz))) @ Matrix.Rotation(math.radians(tilt), 4, "Y"))
+            big = mood == "shocked"
+            rw, rh = (0.2, 0.26) if big else (0.18, 0.22)
+            ellipsoid(mb, (ex, yf + 0.04, ez), 1.0, rw, 0.11, rh, "marble_hi", part="EyeWhite")
+            if mood == "shocked":
+                px, pz, pr = ex, ez, 0.075                          # small pupils, centred
+            elif mood == "smug":
+                px, pz, pr = ex + 0.09, ez - 0.05, 0.095            # hard side-eye, low under the lid
+            else:
+                px, pz, pr = ex + 0.06, ez - 0.01, 0.1              # idle: the relaxed side-eye
+            ellipsoid(mb, (px, yf - 0.06, pz), 1.0, pr, 0.05, pr * 1.1, "ink", part="Pupil")
+            # the shine: one light fleck high on the pupil, the same side on both eyes (one key light)
+            ellipsoid(mb, (px - 0.035, yf - 0.1, pz + 0.045), 1.0, 0.032, 0.02, 0.036, "marble_hi", segs=6, rings=4,
+                      part="Shine")
+            if mood == "smug":                                       # half-lidded: a skin lid over the top half
+                ellipsoid(mb, (ex, yf + 0.04, ez + 0.08), 1.0, rw + 0.03, 0.15, rh * 0.62, "skin_lo", part="Lid")
+        # the brow: a tapered brush stroke along the face; its shape carries the expression
+        strip(mb, brow_path(ex, sx, BROWS[mood][sx]), 0.13, 0.08, "hair", normal=(0, 1, 0), part="Brow",
+              taper=BROW_TAPER)
+        # the cheek highlight: a soft light oval on the cheekbone, under and outside the eye (the face's roundness)
+        cx, cz = sx * 0.47, ez - 0.29
+        cyf = head_front_y(cx, cz)
+        cheek = ellipsoid(mb, (0, 0, 0), 1.0, 0.1, 0.025, 0.045, "marble_hi", segs=8, rings=4, part="Cheek")
+        n = Vector((cx, cyf / HEAD_SQ ** 2, 0)).normalized()          # the head's outward normal there (squashed)
+        yaw = math.atan2(n.x, -n.y)
+        mb.xform(cheek, Matrix.Translation(Vector((cx, cyf + 0.005, cz))) @ Matrix.Rotation(yaw, 4, "Z"))
     # mouth
     mz = 3.4
     myf = head_front_y(0.0, mz)
+
+    def arc(pts, w, t, col, part, taper=None):
+        path = [(x, head_front_y(x, z) - 0.02, z) for x, z in pts]
+        return strip(mb, path, w, t, col, normal=(0, 1, 0), part=part, taper=taper)
+
     if mood == "shocked":
         ellipsoid(mb, (0.0, myf + 0.02, mz - 0.02), 1.0, 0.11, 0.07, 0.14, "ink_hi", part="Mouth")
     elif mood == "busted":
@@ -204,14 +237,16 @@ def face(k, name, mood):
             dash = mb.box((-0.075, -0.03, -0.03), (0.075, 0.03, 0.03), "ink_hi", part=f"Grimace{i}")
             mb.xform(dash, Matrix.Translation(Vector((x, head_front_y(x, mz) - 0.015, mz + (0.03 if i % 2 else -0.03)))) @
                      Matrix.Rotation(math.radians(30 if i % 2 else -30), 4, "Y"))
+    elif mood == "smug":
+        # the smug smirk: flat on the left, hooking up on the Rookie's right (Blender -X), a dimple at that corner
+        arc([(0.15, mz + 0.0), (0.04, mz - 0.02), (-0.08, mz - 0.012), (-0.17, mz + 0.045), (-0.22, mz + 0.1)], 0.08,
+            0.08, "ink_hi", "Mouth", taper=[0.6, 1.0, 1.0, 0.95, 0.6])
+        mb.sphere((-0.25, head_front_y(-0.25, mz + 0.12) - 0.01, mz + 0.12), 0.035, 6, 4, "ink_hi", part="Corner")
     else:
-        # the smirk: a short bar, one corner pulled up (the Rookie's right side for idle, deeper for smug)
-        up = 22 if mood == "smug" else 12
-        bar = mb.box((-0.2, -0.04, -0.045), (0.16, 0.04, 0.045), "ink_hi", part="Mouth")
-        mb.xform(bar, Matrix.Translation(Vector((0.02, myf - 0.01, mz))) @ Matrix.Rotation(math.radians(-up), 4, "Y"))
-        dimple = mb.box((-0.035, -0.035, -0.06), (0.035, 0.035, 0.06), "ink_hi", part="Corner")
-        mb.xform(dimple, Matrix.Translation(Vector((-0.15, head_front_y(-0.15, mz + 0.06) - 0.01, mz + 0.07))) @
-                 Matrix.Rotation(math.radians(20), 4, "Y"))
+        # idle: a relaxed half smile, the right corner up a little
+        arc([(0.16, mz + 0.0), (0.05, mz - 0.025), (-0.07, mz - 0.02), (-0.18, mz + 0.05)], 0.075, 0.08, "ink_hi",
+            "Mouth", taper=[0.6, 1.0, 1.0, 0.65])
+        mb.sphere((-0.2, head_front_y(-0.2, mz + 0.07) - 0.01, mz + 0.07), 0.03, 6, 4, "ink_hi", part="Corner")
     return k.finalize(mb, pivot=J["FaceFront"])
 
 
@@ -372,18 +407,41 @@ def scarf_loop(mb, r_in=0.5, r_out=0.86, z0=SCARF_Z0, z1=SCARF_Z1, part="Loop"):
 
 
 def scarf_long(k):
-    """The signature long scarf: the wrap, a short end on the chest and a LONG end that flies out behind (it reads
-    as speed when the Rookie runs, and gives the 48 px silhouette its tail)."""
+    """The signature long scarf: the wrap and a short end on the chest. Its LONG end that flies out behind (it reads
+    as speed when the Rookie runs, and gives the 48 px silhouette its tail) is two separate pieces, scarf_tail()."""
     mb = k.MB("Rookie_Scarf_Long")
     scarf_loop(mb)
     strip(mb, [(-0.34, -0.66, 3.08), (-0.4, -0.86, 2.82), (-0.42, -0.9, 2.5), (-0.4, -0.88, 2.2)], 0.36, 0.1, "white",
           normal=(0, 1, 0), part="FrontEnd", taper=[1.0, 1.0, 0.95, 0.9])
-    strip(mb, [(0.3, 0.6, 3.1), (0.42, 0.86, 2.92), (0.62, 1.12, 2.62), (0.9, 1.44, 2.42), (1.2, 1.78, 2.34),
-               (1.5, 2.06, 2.4)], 0.38, 0.1, "white", normal=(0, -0.6, 1), part="BackEnd",
-          taper=[1.0, 1.0, 0.96, 0.92, 0.9, 0.88])
     for i, dx in enumerate((-0.12, 0.0, 0.12)):     # fringe on the chest end
         mb.box((-0.4 + dx - 0.035, -0.92, 2.04), (-0.4 + dx + 0.035, -0.84, 2.2), "white", part=f"Fringe{i}")
     return k.finalize(mb, pivot=J["Neck"])
+
+
+# The long scarf's tail: two segments, each pivoting at its hinge (Heist/ScarfSway bends them with your movement:
+# it hangs when you stand, streams out as modelled when you run). Blender coordinates; the tail leaves the wrap at
+# the back of the neck (TAIL_HINGE[0]) and bends at TAIL_HINGE[1].
+TAIL_HINGE = [(0.3, 0.58, 3.08), (0.66, 1.16, 2.6)]
+
+
+def scarf_tail(k):
+    """Rookie_Scarf_Long_Tail1 (wrap -> the bend) and _Tail2 (the bend -> the fringed end). Each overlaps the next
+    a little past its hinge so the bend never opens a gap."""
+    m1 = k.MB("Rookie_Scarf_Long_Tail1")
+    strip(m1, [(0.24, 0.48, 3.16), (0.3, 0.58, 3.08), (0.44, 0.86, 2.9), (0.66, 1.16, 2.6), (0.74, 1.26, 2.54)], 0.38,
+          0.1, "white", normal=(0, -0.6, 1), part="Tail1", taper=[1.0, 1.0, 1.0, 0.96, 0.95])
+    t1 = k.finalize(m1, pivot=TAIL_HINGE[0])
+    m2 = k.MB("Rookie_Scarf_Long_Tail2")
+    end = [(0.58, 1.06, 2.66), (0.66, 1.16, 2.6), (0.92, 1.46, 2.42), (1.2, 1.78, 2.34), (1.48, 2.04, 2.38)]
+    strip(m2, end, 0.37, 0.1, "white", normal=(0, -0.6, 1), part="Tail2", taper=[0.97, 0.96, 0.93, 0.9, 0.88])
+    d = (Vector(end[-1]) - Vector(end[-2])).normalized()
+    side = d.cross(Vector((0, -0.6, 1)).normalized()).normalized()
+    for i, s in enumerate((-0.11, 0.0, 0.11)):      # fringe on the flying end
+        c = Vector(end[-1]) + side * s + d * 0.08
+        strip(m2, [tuple(c - d * 0.06), tuple(c + d * 0.1)], 0.07, 0.07, "white", normal=(0, -0.6, 1),
+              part=f"TailFringe{i}")
+    t2 = k.finalize(m2, pivot=TAIL_HINGE[1])
+    return t1, t2
 
 
 def scarf_chunky(k):
@@ -613,12 +671,14 @@ def build(k):
     # ---- outfits: built on the body, seat-checked against it, then laid out for the turntable
     caps = [cap_flat(k), cap_beanie(k), cap_bobble(k), cap_trapper(k)]
     scarves = [scarf_long(k), scarf_chunky(k), scarf_bandana(k), scarf_knot(k)]
+    tail = scarf_tail(k)
     st_torso, st_arms = sweater_stripes(k)
     bl_torso, bl_cuffs = sweater_block(k)
     knit = glove_cuffs(k, "Knit")
     leather = glove_cuffs(k, "Leather")
     mask = mask_eye(k)
     pairs = [(c, body["Head"]) for c in caps] + [(s, body["UpperTorso"]) for s in scarves]
+    pairs += [(tail[0], scarves[0]), (tail[1], tail[0])]
     pairs += [(st_torso, body["UpperTorso"]), (bl_torso, body["UpperTorso"]), (mask, body["Head"])]
     pairs += [(st_arms[0], body["RightUpperArm"]), (st_arms[1], body["LeftUpperArm"])]
     pairs += [(bl_cuffs[0], body["RightLowerArm"]), (bl_cuffs[1], body["LeftLowerArm"])]
@@ -642,6 +702,8 @@ def build(k):
         o.append(outfit(ob, "cap", v, "Head", J["HatAttach"], sym="X"))
     for ob, v in zip(scarves, ("Long", "Chunky", "Bandana", "Knot")):
         o.append(outfit(ob, "scarf", v, "UpperTorso", J["Neck"], tint=crew))
+    for i, ob in enumerate(tail):   # the long scarf's swaying tail (Heist/ScarfSway): pivot = its hinge
+        o.append(outfit(ob, "scarf", "Long", "UpperTorso", TAIL_HINGE[i], tint=crew, bands=i == 1))
     o.append(outfit(st_torso, "sweater", "Stripes", "UpperTorso", J["Waist"], tint=crew, sym="X", bands=True))
     o.append(outfit(st_arms[0], "sweater", "Stripes", "RightUpperArm", J["RightShoulder"], tint=crew, bands=True))
     o.append(outfit(st_arms[1], "sweater", "Stripes", "LeftUpperArm", J["LeftShoulder"], tint=crew, bands=True))

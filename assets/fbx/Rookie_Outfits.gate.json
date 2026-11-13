@@ -285,16 +285,16 @@
   {
    "name": "Rookie_Scarf_Long",
    "class": "small",
-   "tris": 268,
+   "tris": 224,
    "budget": [
     600,
     1500
    ],
    "budget_note": "ok",
    "dims": [
-    2.48,
-    3.135,
-    1.165
+    1.72,
+    1.69,
+    1.16
    ],
    "pivot": {
     "rule": "point",
@@ -304,9 +304,9 @@
      -0.96
     ],
     "local_max": [
-     1.6204,
-     2.1851,
-     0.2048
+     0.86,
+     0.7396,
+     0.2
     ]
    },
    "swatches": [
@@ -319,7 +319,7 @@
    ],
    "symmetry_error": null,
    "self_intersections": 0,
-   "cross_shell_overlaps": 24,
+   "cross_shell_overlaps": 16,
    "cap_overlaps": 0,
    "flipped_faces": 0,
    "boundary_edges": 0,
@@ -547,6 +547,140 @@
    "joint": null,
    "role": "char",
    "notes": "outfit scarf: Knot",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Scarf_Long_Tail1",
+   "class": "small",
+   "tris": 36,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.78,
+    1.047,
+    0.851
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.2074,
+     -0.2389,
+     -0.6566
+    ],
+    "local_max": [
+     0.5721,
+     0.8076,
+     0.1941
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    6.7,
+    0.58,
+    0.48
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit scarf: Long",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Scarf_Long_Tail2",
+   "class": "small",
+   "tris": 72,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.265,
+    1.335,
+    0.547
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.2115,
+     -0.2269,
+     -0.3712
+    ],
+    "local_max": [
+     1.0532,
+     1.1079,
+     0.1761
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    9.66,
+    1.16,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit scarf: Long",
    "fails": [],
    "passed": true
   },
@@ -1296,7 +1430,7 @@
  ],
  "asset_fails": [],
  "lihfolk_bpy": "LihFolk plugin",
- "tris_total": 4600,
+ "tris_total": 4664,
  "seats": [],
  "align": [],
  "A11_atlas": [
@@ -1305,10 +1439,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "141f96125e34ee872008",
+ "contentHash": "d37d1102578c04764650",
  "fbx": {
   "path": "assets/fbx/Rookie_Outfits.fbx",
-  "bytes": 147100,
+  "bytes": 153404,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -1329,6 +1463,8 @@
    "Rookie_Scarf_Chunky",
    "Rookie_Scarf_Knot",
    "Rookie_Scarf_Long",
+   "Rookie_Scarf_Long_Tail1",
+   "Rookie_Scarf_Long_Tail2",
    "Rookie_Stripes_LeftArm",
    "Rookie_Stripes_RightArm",
    "Rookie_Stripes_Torso"
@@ -1385,6 +1521,11 @@
     1.96
    ],
    [
+    0.547,
+    1.265,
+    1.335
+   ],
+   [
     0.62,
     1.541,
     2.028
@@ -1398,6 +1539,11 @@
     0.713,
     1.763,
     2.02
+   ],
+   [
+    0.78,
+    0.851,
+    1.047
    ],
    [
     0.78,
@@ -1415,9 +1561,9 @@
     2.18
    ],
    [
-    1.165,
-    2.48,
-    3.135
+    1.16,
+    1.69,
+    1.72
    ],
    [
     1.48,
@@ -1434,5 +1580,5 @@
  "spec": "assets/blender/rookie.py",
  "notes": "Outfit slots: cap x4 (atlas), scarf x4 + sweater x2 (crew colour), gloves x2 (glove colour), mask x1 (+ none). Pivot = attach point.",
  "turntable": "docs/art/turntables/Rookie_Outfits.png",
- "seconds": 8.4
+ "seconds": 24.8
 }

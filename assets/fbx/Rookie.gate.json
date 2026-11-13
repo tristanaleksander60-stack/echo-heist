@@ -1059,28 +1059,28 @@
   {
    "name": "Rookie_Face_Idle",
    "class": "small",
-   "tris": 368,
+   "tris": 544,
    "budget": [
     600,
     1500
    ],
    "budget_note": "ok",
    "dims": [
-    1.023,
-    0.252,
-    0.834
+    1.119,
+    0.273,
+    0.775
    ],
    "pivot": {
     "rule": "point",
     "local_min": [
-     -0.5115,
-     -0.058,
-     -0.4056
+     -0.5596,
+     -0.0791,
+     -0.3824
     ],
     "local_max": [
-     0.5115,
+     0.5596,
      0.1942,
-     0.4281
+     0.3926
     ]
    },
    "swatches": [
@@ -1096,7 +1096,7 @@
    ],
    "symmetry_error": null,
    "self_intersections": 0,
-   "cross_shell_overlaps": 73,
+   "cross_shell_overlaps": 94,
    "cap_overlaps": 0,
    "flipped_faces": 0,
    "boundary_edges": 0,
@@ -1129,7 +1129,7 @@
  ],
  "asset_fails": [],
  "lihfolk_bpy": "LihFolk plugin",
- "tris_total": 3632,
+ "tris_total": 3808,
  "asset_budget": {
   "class": "creature",
   "target": 5000,
@@ -1249,10 +1249,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "4cd7e1fa16d7268ae11f",
+ "contentHash": "a70065892c6f212e1c5c",
  "fbx": {
   "path": "assets/fbx/Rookie.fbx",
-  "bytes": 132204,
+  "bytes": 137324,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -1276,9 +1276,9 @@
   ],
   "geometry_extents": [
    [
-    0.252,
-    0.834,
-    1.023
+    0.273,
+    0.775,
+    1.119
    ],
    [
     0.533,
@@ -1360,5 +1360,5 @@
  "spec": "assets/blender/rookie.py",
  "notes": "The Rookie: R15-compatible rigid body (15 parts, R15 joint pivots) + the idle face. Scarf and stripes are outfit parts (crew colour).",
  "turntable": "docs/art/turntables/Rookie.png",
- "seconds": 6.5
+ "seconds": 5.9
 }

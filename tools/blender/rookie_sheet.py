@@ -62,7 +62,8 @@ def rookie(look, crew, at):
     cap = "Rookie_Cap_" + look["cap"]
     objs += put("Rookie_Outfits", cap, at + blender_point(cap))
     sc = "Rookie_Scarf_" + look["scarf"]
-    objs += put("Rookie_Outfits", sc, at + blender_point(sc), crew)
+    for n in [sc] + ([sc + "_Tail1", sc + "_Tail2"] if look["scarf"] == "Long" else []):
+        objs += put("Rookie_Outfits", n, at + blender_point(n), crew)
     for n in SWEATER[look["sweater"]]:
         objs += put("Rookie_Outfits", n, at + blender_point(n), crew)
     if look["mask"]:
