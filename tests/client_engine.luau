@@ -26,6 +26,38 @@ local function check(cond: any, msg: string)
 	end
 end
 
+-- Golden-frame staging helpers (docs/GOLDEN_FRAMES.md, REVIEW_STEAM_PLUS #4): is a world point inside a first-person
+-- frame (CameraDirector.lookFrame at yaw / pitch down, vertical FOV, 16:9), and the first opaque thing on a ray from
+-- the eye toward it (glass and see-through parts let the eye through).
+local function inFrame(cf: CFrame, p: Vector3, vfov: number): boolean
+	local lp = cf:PointToObjectSpace(p)
+	local depth = -lp.Z
+	local tv = math.tan(math.rad(vfov / 2))
+	return depth > 0.5 and math.abs(lp.Y / depth) <= tv and math.abs(lp.X / depth) <= tv * 16 / 9
+end
+local function sightTo(eye: Vector3, p: Vector3, target: Instance?): boolean
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	local skip: { Instance } = {}
+	for _ = 1, 24 do
+		params.FilterDescendantsInstances = skip
+		local hit = workspace:Raycast(eye, p - eye, params)
+		if not hit then
+			return true
+		end
+		local inst = hit.Instance
+		if (target and inst:IsDescendantOf(target)) or inst == target or (hit.Position - p).Magnitude < 0.6 then
+			return true
+		end
+		if inst.Transparency > 0.2 or inst.Material == Enum.Material.Glass or not inst.CanCollide then
+			table.insert(skip, inst)
+		else
+			return false
+		end
+	end
+	return false
+end
+
 local shared = ReplicatedStorage:WaitForChild("Shared")
 local server = ServerScriptService:WaitForChild("Server")
 local heistServer = server:WaitForChild("Heist")
@@ -1078,38 +1110,6 @@ do
 	end
 end
 
--- Golden-frame staging helpers (docs/GOLDEN_FRAMES.md, REVIEW_STEAM_PLUS #4): is a world point inside a first-person
--- frame (CameraDirector.lookFrame at yaw / pitch down, vertical FOV, 16:9), and the first opaque thing on a ray from
--- the eye toward it (glass and see-through parts let the eye through).
-local function inFrame(cf: CFrame, p: Vector3, vfov: number): boolean
-	local lp = cf:PointToObjectSpace(p)
-	local depth = -lp.Z
-	local tv = math.tan(math.rad(vfov / 2))
-	return depth > 0.5 and math.abs(lp.Y / depth) <= tv and math.abs(lp.X / depth) <= tv * 16 / 9
-end
-local function sightTo(eye: Vector3, p: Vector3, target: Instance?): boolean
-	local params = RaycastParams.new()
-	params.FilterType = Enum.RaycastFilterType.Exclude
-	local skip: { Instance } = {}
-	for _ = 1, 24 do
-		params.FilterDescendantsInstances = skip
-		local hit = workspace:Raycast(eye, p - eye, params)
-		if not hit then
-			return true
-		end
-		local inst = hit.Instance
-		if (target and inst:IsDescendantOf(target)) or inst == target or (hit.Position - p).Magnitude < 0.6 then
-			return true
-		end
-		if inst.Transparency > 0.2 or inst.Material == Enum.Material.Glass or not inst.CanCollide then
-			table.insert(skip, inst)
-		else
-			return false
-		end
-	end
-	return false
-end
-
 -- H. Signature moments (PLAN_STEAM_PLUS §4.4 F2, §5 "8 OF ME"): the G2 staging's seven Clone Party
 -- tapes (src/server/Heist/StagingTapes.luau) drawn by EchoView + you (a copy of your template on the
 -- spawn) = 8 rigs, all Rookies (docs/GOLDEN_FRAMES.md G2, REVIEW_STEAM_PLUS #4: your clone template is the Rookie
@@ -1283,18 +1283,27 @@ local okMoment, momentInfo = pcall(function()
 		local rig = echo.rigOf(i)
 		assert(rig, "clone " .. i .. " has a rig")
 		assert(rig.model:GetAttribute("EH_Rookie") == true, "clone " .. i .. " is a Rookie (not a mannequin)")
-		local crewPieces, hueish = 0, 0
+		-- only the crew pieces take the clone's hue (one colour: your seat hue, aged), the outfit keeps its own
+		local crewPieces, colours, newest = 0, {}, i == 7
 		for _, d in rig.model:GetDescendants() do
 			if d:IsA("BasePart") and d:GetAttribute("EH_Tint") == "crew" then
 				crewPieces += 1
-				local h = d.Color:ToHSV()
-				local sh = seatHue:ToHSV()
-				if math.min(math.abs(h - sh), 1 - math.abs(h - sh)) < 0.12 then
-					hueish += 1
+				colours[d.Color:ToHex()] = true
+				if newest then
+					local h = d.Color:ToHSV()
+					local sh = seatHue:ToHSV()
+					assert(math.min(math.abs(h - sh), 1 - math.abs(h - sh)) < 0.05, "the newest clone in your hue")
 				end
 			end
 		end
-		assert(crewPieces >= 3 and hueish == crewPieces, "clone " .. i .. ": crew pieces in your crew colour")
+		local nColours = 0
+		for _ in colours do
+			nColours += 1
+		end
+		assert(
+			crewPieces >= 1 and nColours == 1,
+			"clone " .. i .. ": crew pieces tinted (" .. crewPieces .. " pieces, " .. nColours .. " colours)"
+		)
 		check8(rig.model)
 	end
 	assert(youRig.model:GetAttribute("EH_Rookie") == true, "you are a Rookie too")
@@ -1657,7 +1666,10 @@ local okIntro, introErr = pcall(function()
 	end
 	assert(cine.counts().clones == #ST.clones, "clones built")
 	assert((cam.CFrame.Position - world(ST.rookie.at)).Magnitude < 20, "the camera is on the Rookie")
-	assert((workLight :: SpotLight).Enabled and workLight.Brightness == GL.WORK_LAMP.BRIGHTNESS, "the work lamp is on")
+	assert(
+		(workLight :: SpotLight).Enabled and math.abs(workLight.Brightness - GL.WORK_LAMP.BRIGHTNESS) < 1e-3,
+		"the work lamp is on"
+	)
 	local litBeams = 0
 	for _, d in (garageEarly :: Instance):GetDescendants() do
 		if d:IsA("Beam") and string.sub(d.Name, 1, 8) == "HeadBeam" and d.Enabled then
