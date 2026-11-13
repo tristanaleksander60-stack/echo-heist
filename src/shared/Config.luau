@@ -2713,6 +2713,74 @@ Config.Rookie = {
 		MAX_DT = 0.1, -- s of motion integrated a frame at most (a hitch never flings it)
 		SUBSTEP = 1 / 60,
 	},
+	-- The Rookie's own locomotion (REVIEW_STEAM_PLUS #6): clips authored for his proportions by the pure
+	-- Shared/Heist/RookieMoves (legs by 2-bone IK on planted feet), baked by tools/rookie_clips.luau and uploaded
+	-- as Animation assets (python3 tools/anim_upload.py --rookie build/rookie_clips; ids in Shared/Heist/RookieClips).
+	-- The player's Animate plays them (server Heist/Characters + client Heist/RookieAnim) and the clones play the
+	-- same clips (Heist/Rigs, CloneGait mirrors the Animate's speed blend), so a clone walks exactly like you.
+	-- Re-bake and re-upload (new ids) after changing a number here.
+	ANIM = {
+		-- The R15 Animate's speed maths (vault "The Default Animate Script"): runSpeed = speed / SCALE x ROOT_MOTION;
+		-- walk alone at runSpeed <= 0.5 (walk rate = runSpeed / 0.5), blend to run alone at 1 (run rate = runSpeed).
+		-- So the walk clip covers WALK_BASE = 6.4 studs/s at rate 1 and the run RUN_BASE = 12.8: the strides below.
+		SCALE = 16,
+		ROOT_MOTION = 1.25,
+		WALK_NORM = 0.5,
+		RUN_NORM = 1,
+		SMALL = 1e-4, -- the Animate's "small but not zero" weight
+		CYCLE = 0.4, -- s per walk and per run cycle at rate 1 (equal, so the Animate's blend stays in step)
+		KEYS_PER_SECOND = 60, -- bake density (linear keys)
+		KEYS_PER_SECOND_SLOW = 20, -- idle and look (slow motion)
+		MAX_REACH = 0.965, -- studs hip to ankle (thigh 0.5 + shin 0.48): a planted leg never straightens past this
+		FOOT_TOE = { 0, -0.5, -0.9 }, -- the boot's toe tip from the ankle (rest, Roblox axes)
+		FOOT_HEEL = { 0, -0.5, 0.4 }, -- the heel
+		WALK = {
+			duty = 0.56, -- share of the cycle a foot is on the floor (> 0.5: both feet down at the switch)
+			front = 0.42, -- studs ahead of the hip where the boot lands (flat)
+			peelAt = 0.24, -- share of the cycle the boot rolls onto its toe
+			peel = 0.75, -- rad of toe roll at lift-off
+			lift = 0.3, -- studs the ankle rises in the swing (a bouncy step)
+			swingToe = 0.35, -- rad toes up mid-swing
+			drop = 0.17, -- studs of crouch (sneaky)
+			bob = 0.07, -- bounce: lowest as a foot lands
+			sway = 0.05, -- studs over the planted foot
+			roll = 0.06,
+			yaw = 0.16, -- pelvis turn with the legs; the chest turns back (cocky swagger)
+			chestYaw = -0.26,
+			lean = 0.16,
+			armSwing = 0.62, -- rad fore-aft
+			armOut = 0.46, -- arms wide
+			elbow = 0.45,
+			elbowSwing = 0.3,
+			headUp = 0.1, -- chin up (smug)
+			headTilt = 0.07,
+		},
+		RUN = {
+			duty = 0.27,
+			front = 0.34,
+			peelAt = 0.1,
+			peel = 1.1,
+			lift = 0.78, -- high knees and a heel kick: the funny sprint
+			kick = 0.42, -- studs the foot flicks back early in the swing
+			swingToe = 0.2,
+			drop = 0.16,
+			bob = 0.1,
+			yaw = 0.18,
+			chestYaw = -0.3,
+			lean = 0.44, -- root + waist share it
+			armSwing = 1.35, -- big pumps
+			armOut = 0.2,
+			elbow = 1.45,
+			elbowSwing = 0.35,
+			headUp = 0.14, -- world chin-up: the head keeps the eyes forward over the lean
+		},
+		IDLE = { length = 3.2, breath = 0.03, sway = 0.06, roll = 0.04, headTilt = 0.09, headUp = 0.06 },
+		LOOK = { length = 4.0, yaw = 0.85, chest = 0.22 },
+		JUMP = { length = 0.36, tuck = 0.14 },
+		FALL = { length = 0.5, flail = 0.35 },
+		LAND = { length = 0.42, squash = 0.3, minFall = 0.32, fade = 0.05 }, -- minFall: s of fall before a land plays
+		FADE = 0.15, -- cross-fade into a clone's land / idle variant
+	},
 	PORTRAIT = { -- crew cards: a ViewportFrame of your clone template's head (Hud/Deck)
 		FOV = 30,
 		DISTANCE = 4.6, -- studs from the head centre
