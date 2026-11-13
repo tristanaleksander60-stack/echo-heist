@@ -2523,1828 +2523,6 @@
    ],
    "sim": "none"
   },
-  "Rug_8x6": {
-   "model": "Rug_8x6",
-   "size": [
-    8.64,
-    0.036,
-    6.0
-   ],
-   "tris": 264,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": true,
-   "pivot": "bottom",
-   "role": "story",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -4.32,
-    0.0,
-    -3.0
-   ],
-   "boundsMax": [
-    4.32,
-    0.036,
-    3.0
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "sim": "none"
-  },
-  "Safe": {
-   "model": "Safe",
-   "size": [
-    3.2,
-    3.95,
-    2.92
-   ],
-   "tris": 452,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -1.6,
-    0.0,
-    -1.42
-   ],
-   "boundsMax": [
-    1.6,
-    3.95,
-    1.5
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Safe"
-   ],
-   "sim": "solid: footprint 3.2 x 3, 3.95 tall (Gus sees over it)"
-  },
-  "Safe_Door": {
-   "model": "Safe",
-   "size": [
-    2.71,
-    2.94,
-    0.7
-   ],
-   "tris": 548,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -2.57,
-    0.0,
-    -0.7
-   ],
-   "boundsMax": [
-    0.14,
-    2.94,
-    0.0
-   ],
-   "origin": [
-    1.3,
-    0.68,
-    -1.42
-   ],
-   "tags": [
-    "EH_SafeDoor"
-   ]
-  },
-  "Shelf_8x2": {
-   "model": "Shelf_8x2",
-   "size": [
-    8.1,
-    7.85,
-    2.08
-   ],
-   "tris": 776,
-   "class": "module",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -8.05,
-    0.0,
-    -0.08
-   ],
-   "boundsMax": [
-    0.05,
-    7.85,
-    2.0
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Shelf"
-   ],
-   "sim": "solid (blocks sight: 7.85 tall)"
-  },
-  "Shelf_Gondola_8x2": {
-   "model": "Shelf_Gondola_8x2",
-   "size": [
-    8.0,
-    7.85,
-    2.16
-   ],
-   "tris": 744,
-   "class": "module",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -8.0,
-    0.0,
-    -0.08
-   ],
-   "boundsMax": [
-    0.0,
-    7.85,
-    2.08
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Shelf"
-   ],
-   "sim": "solid, blocks sight: L5 shelf rows (footprint 2 x 16, 7 tall) = two modules end to end along their X"
-  },
-  "Shutter_8x10": {
-   "model": "Shutter_8x10",
-   "size": [
-    8.1,
-    10.35,
-    1.46
-   ],
-   "tris": 556,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -4.05,
-    -10.35,
-    -0.73
-   ],
-   "boundsMax": [
-    4.05,
-    0.0,
-    0.73
-   ],
-   "origin": [
-    0.0,
-    10.35,
-    0.0
-   ],
-   "tags": [
-    "EH_Door"
-   ],
-   "sim": "door: the 8 x 10 entrance box (wall line +- 0.5), solid when down"
-  },
-  "Skyline_Far": {
-   "model": "Skyline_Far",
-   "size": [
-    604.401,
-    100.949,
-    638.695
-   ],
-   "tris": 352,
-   "class": "medium",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -634.987,
-    0.0,
-    -0.0
-   ],
-   "boundsMax": [
-    -30.586,
-    100.949,
-    638.695
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "Skyline_Far_Windows": {
-   "model": "Skyline_Far",
-   "size": [
-    561.626,
-    86.0,
-    596.373
-   ],
-   "tris": 1236,
-   "class": "hero",
-   "collision": "Box",
-   "material": "Neon",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": false,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -595.617,
-    3.0,
-    3.731
-   ],
-   "boundsMax": [
-    -33.992,
-    89.0,
-    600.104
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tint": "Bulb Warm #F6C0A2"
-  },
-  "Skyline_Near": {
-   "model": "Skyline_Near",
-   "size": [
-    316.773,
-    55.878,
-    323.381
-   ],
-   "tris": 292,
-   "class": "medium",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -323.535,
-    0.0,
-    0.0
-   ],
-   "boundsMax": [
-    -6.761,
-    55.878,
-    323.381
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "Skyline_Near_Windows": {
-   "model": "Skyline_Near",
-   "size": [
-    288.575,
-    44.4,
-    297.02
-   ],
-   "tris": 996,
-   "class": "hero",
-   "collision": "Box",
-   "material": "Neon",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": false,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -299.792,
-    3.0,
-    4.453
-   ],
-   "boundsMax": [
-    -11.217,
-    47.4,
-    301.474
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tint": "Bulb Warm #F6C0A2"
-  },
-  "Snowman": {
-   "model": "Snowman",
-   "size": [
-    4.005,
-    6.24,
-    2.568
-   ],
-   "tris": 724,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": true,
-   "pivot": "point",
-   "role": "story",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -2.006,
-    0.01,
-    -1.284
-   ],
-   "boundsMax": [
-    1.999,
-    6.25,
-    1.284
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "sim": "none"
-  },
-  "Storefront_24x12": {
-   "model": "Storefront_24x12",
-   "size": [
-    24.0,
-    12.0,
-    4.75
-   ],
-   "tris": 1980,
-   "class": "medium",
-   "collision": "PreciseConvexDecomposition",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -24.0,
-    0.0,
-    -2.45
-   ],
-   "boundsMax": [
-    0.0,
-    12.0,
-    2.3
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Wall"
-   ],
-   "sim": "solid except the entrance local X -16..-8, Y 0-10 (8 x 10); awnings (street side, -Z) above 7.9",
-   "opening": {
-    "x": [
-     -16.0,
-     -8.0
-    ],
-    "y": [
-     0.0,
-     10.0
-    ]
-   }
-  },
-  "Storefront_24x12_Glass": {
-   "model": "Storefront_24x12",
-   "size": [
-    22.4,
-    6.08,
-    0.06
-   ],
-   "tris": 24,
-   "class": "small",
-   "collision": "Box",
-   "material": "Glass",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": false,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -23.2,
-    2.32,
-    0.97
-   ],
-   "boundsMax": [
-    -0.8,
-    8.4,
-    1.03
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "transparency": 0.6,
-   "tint": "Vault Steel light #A9B2CC"
-  },
-  "StreetLamp": {
-   "model": "StreetLamp",
-   "size": [
-    1.5,
-    11.05,
-    1.4
-   ],
-   "tris": 468,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "bottom",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -0.75,
-    0.0,
-    -0.7
-   ],
-   "boundsMax": [
-    0.75,
-    11.05,
-    0.7
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_StreetLamp"
-   ],
-   "sim": "none",
-   "light": [
-    0,
-    9.43,
-    0
-   ]
-  },
-  "StreetLamp_Bulb": {
-   "model": "StreetLamp",
-   "size": [
-    0.6,
-    1.0,
-    0.571
-   ],
-   "tris": 80,
-   "class": "tiny",
-   "collision": "Box",
-   "material": "Neon",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": false,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -0.3,
-    8.93,
-    -0.285
-   ],
-   "boundsMax": [
-    0.3,
-    9.93,
-    0.285
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tint": "Bulb Warm #F6C0A2 (eh_palette.NEON); PointLight here, same colour, Shadows off"
-  },
-  "Switch_Wall": {
-   "model": "Switch_Wall",
-   "size": [
-    1.6,
-    2.52,
-    0.84
-   ],
-   "tris": 224,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -0.8,
-    3.0,
-    -0.84
-   ],
-   "boundsMax": [
-    0.8,
-    5.52,
-    0.0
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Switch"
-   ],
-   "sim": "none (a `switches` point at the lever: wall face, y 4.2)"
-  },
-  "Switch_Wall_Lamp": {
-   "model": "Switch_Wall",
-   "size": [
-    0.4,
-    0.2,
-    0.38
-   ],
-   "tris": 58,
-   "class": "tiny",
-   "collision": "Box",
-   "material": "Neon",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": false,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -0.2,
-    0.0,
-    -0.19
-   ],
-   "boundsMax": [
-    0.2,
-    0.2,
-    0.19
-   ],
-   "origin": [
-    0.0,
-    5.52,
-    -0.25
-   ],
-   "tint": "Vault Steel shade #4E5675 off; the presser's clone hue on"
-  },
-  "Switch_Wall_Lever": {
-   "model": "Switch_Wall",
-   "size": [
-    0.52,
-    1.472,
-    1.156
-   ],
-   "tris": 172,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -0.26,
-    -0.152,
-    -0.996
-   ],
-   "boundsMax": [
-    0.26,
-    1.32,
-    0.16
-   ],
-   "origin": [
-    0.0,
-    4.2,
-    -0.8
-   ]
-  },
-  "Teddy": {
-   "model": "Teddy",
-   "size": [
-    2.057,
-    2.266,
-    1.6
-   ],
-   "tris": 596,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": false,
-   "atlas": true,
-   "pivot": "point",
-   "role": "loot",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -1.028,
-    0.0,
-    -0.88
-   ],
-   "boundsMax": [
-    1.028,
-    2.266,
-    0.72
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Loot"
-   ],
-   "sim": "loot point (LevelSpec loot x, y, z)"
-  },
-  "TellerCounter_8x4": {
-   "model": "TellerCounter_8x4",
-   "size": [
-    8.3,
-    8.25,
-    4.35
-   ],
-   "tris": 412,
-   "class": "module",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -8.15,
-    0.0,
-    -0.2
-   ],
-   "boundsMax": [
-    0.15,
-    8.25,
-    4.15
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Counter"
-   ],
-   "sim": "solid to 4 tall, sight = false (glass screen: Gus sees through); NO LOOT on the marble top"
-  },
-  "TellerCounter_8x4_Glass": {
-   "model": "TellerCounter_8x4",
-   "size": [
-    7.1,
-    3.2,
-    0.06
-   ],
-   "tris": 24,
-   "class": "small",
-   "collision": "Box",
-   "material": "Glass",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": false,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -7.55,
-    4.7,
-    1.87
-   ],
-   "boundsMax": [
-    -0.45,
-    7.9,
-    1.93
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "transparency": 0.6,
-   "tint": "Vault Steel light #A9B2CC"
-  },
-  "Toy": {
-   "model": "Toy",
-   "size": [
-    1.586,
-    2.8,
-    1.19
-   ],
-   "tris": 580,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": false,
-   "atlas": true,
-   "pivot": "point",
-   "role": "loot",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -0.793,
-    0.0,
-    -0.47
-   ],
-   "boundsMax": [
-    0.793,
-    2.8,
-    0.72
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Loot"
-   ],
-   "sim": "loot point (LevelSpec loot x, y, z)"
-  },
-  "ToySoldier": {
-   "model": "ToySoldier",
-   "size": [
-    3.5,
-    11.32,
-    4.02
-   ],
-   "tris": 2736,
-   "class": "medium",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "toy",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -1.75,
-    0.0,
-    -2.27
-   ],
-   "boundsMax": [
-    1.75,
-    11.32,
-    1.75
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ]
-  },
-  "Van": {
-   "model": "Van",
-   "size": [
-    14.9,
-    7.689,
-    7.08
-   ],
-   "tris": 1704,
-   "class": "medium",
-   "collision": "PreciseConvexDecomposition",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "exit",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -7.45,
-    0.061,
-    -3.74
-   ],
-   "boundsMax": [
-    7.45,
-    7.75,
-    3.34
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Van"
-   ],
-   "sim": "solid body; the bank zone is the kerb in front of the open door (LevelSpec van box)"
-  },
-  "Van_Paint": {
-   "model": "Van",
-   "size": [
-    14.0,
-    5.7,
-    6.8
-   ],
-   "tris": 164,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": true,
-   "atlas": false,
-   "pivot": "point",
-   "role": "exit",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -7.0,
-    1.55,
-    -3.6
-   ],
-   "boundsMax": [
-    7.0,
-    7.25,
-    3.2
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tint": "van paint: a mid value by MeshPart.Color (Config.Lighting.VAN.paint in a heist, the bay's crew colour in the garage); never Getaway White",
-   "tintable": true
-  },
-  "Van_Shelf": {
-   "model": "Van",
-   "size": [
-    6.0,
-    4.06,
-    0.98
-   ],
-   "tris": 124,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -2.8,
-    1.89,
-    1.9
-   ],
-   "boundsMax": [
-    3.2,
-    5.95,
-    2.88
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_TrophyShelf"
-   ]
-  },
-  "VaultDoor_Dial": {
-   "model": "VaultDoor",
-   "size": [
-    4.55,
-    4.55,
-    0.924
-   ],
-   "tris": 1104,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "hero",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -2.275,
-    -2.275,
-    -0.8
-   ],
-   "boundsMax": [
-    2.275,
-    2.275,
-    0.124
-   ],
-   "origin": [
-    -8.0,
-    3.6,
-    -0.67
-   ]
-  },
-  "VaultDoor_DialFace": {
-   "model": "VaultDoor",
-   "size": [
-    2.16,
-    2.16,
-    0.06
-   ],
-   "tris": 384,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": false,
-   "pivot": "point",
-   "role": "hero",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -1.08,
-    -1.08,
-    -0.46
-   ],
-   "boundsMax": [
-    1.08,
-    1.08,
-    -0.4
-   ],
-   "origin": [
-    -8.0,
-    3.6,
-    -0.67
-   ],
-   "texture": "VaultDoor_DialFace",
-   "tint": "SurfaceAppearance: ColorMap + RoughnessMap + EmissiveMaskContent; EmissiveTint = the ring colour (code)"
-  },
-  "VaultDoor_DialRing": {
-   "model": "VaultDoor",
-   "size": [
-    3.5,
-    3.5,
-    0.24
-   ],
-   "tris": 384,
-   "class": "small",
-   "collision": "Box",
-   "material": "Neon",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": false,
-   "pivot": "point",
-   "role": "hero",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -1.75,
-    -1.75,
-    -0.2
-   ],
-   "boundsMax": [
-    1.75,
-    1.75,
-    0.04
-   ],
-   "origin": [
-    -8.0,
-    3.6,
-    -0.67
-   ],
-   "tint": "Warm Marble shade #A8987A idle; opener's clone hue; Alarm Red (eh_palette.NEON)"
-  },
-  "VaultDoor_Door": {
-   "model": "VaultDoor",
-   "size": [
-    11.96,
-    8.65,
-    3.46
-   ],
-   "tris": 3832,
-   "class": "medium",
-   "collision": "Hull",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "hero",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -11.3,
-    -0.0,
-    -0.66
-   ],
-   "boundsMax": [
-    0.66,
-    8.65,
-    2.8
-   ],
-   "origin": [
-    -1.75,
-    0.0,
-    -0.95
-   ],
-   "tags": [
-    "EH_Door"
-   ],
-   "sim": "door: the 6 x 10 door box, solid only while SHUT; open = visual only (CanCollide off from the first frame of the swing until it is shut again)",
-   "open": {
-    "yawDeg": -175,
-    "about": "this part's pivot (the hinge)",
-    "swing": "outward (toward -Z), onto the wall face on the viewer's left (+X)",
-    "footprintMin": [
-     -2.7,
-     0.0,
-     -4.75
-    ],
-    "footprintMax": [
-     9.6,
-     8.65,
-     -0.2
-    ],
-    "sweepRadius": 11.4,
-    "follow": [
-     "VaultDoor_Dial",
-     "VaultDoor_DialFace",
-     "VaultDoor_DialRing"
-    ]
-   }
-  },
-  "VaultDoor_Frame": {
-   "model": "VaultDoor",
-   "size": [
-    16.0,
-    12.0,
-    3.7
-   ],
-   "tris": 2452,
-   "class": "medium",
-   "collision": "PreciseConvexDecomposition",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "hero",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -16.0,
-    0.0,
-    -0.85
-   ],
-   "boundsMax": [
-    0.0,
-    12.0,
-    2.85
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Wall"
-   ],
-   "sim": "solid except the round opening (9-stud circle at local X -8, Y 3.6; 5.4 threshold); door box = the opening",
-   "opening": {
-    "x": [
-     -10.7,
-     -5.3
-    ],
-    "y": [
-     0.0,
-     8.1
-    ],
-    "shape": "circle r 4.5 at (X -8, Y 3.6), cut flat by the floor"
-   }
-  },
-  "Wall_4x12": {
-   "model": "Wall_4x12",
-   "size": [
-    4.0,
-    12.0,
-    2.0
-   ],
-   "tris": 196,
-   "class": "module",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "corner",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -4.0,
-    0.0,
-    0.0
-   ],
-   "boundsMax": [
-    0.0,
-    12.0,
-    2.0
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Wall"
-   ],
-   "sim": "solid"
-  },
-  "Wall_8x12": {
-   "model": "Wall_8x12",
-   "size": [
-    8.0,
-    12.0,
-    2.0
-   ],
-   "tris": 284,
-   "class": "module",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "corner",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -8.0,
-    0.0,
-    0.0
-   ],
-   "boundsMax": [
-    0.0,
-    12.0,
-    2.0
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Wall"
-   ],
-   "sim": "solid"
-  },
-  "Wall_Door_8x12": {
-   "model": "Wall_Door_8x12",
-   "size": [
-    8.0,
-    12.0,
-    2.06
-   ],
-   "tris": 664,
-   "class": "module",
-   "collision": "PreciseConvexDecomposition",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -8.0,
-    0.0,
-    -0.03
-   ],
-   "boundsMax": [
-    0.0,
-    12.0,
-    2.03
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Wall"
-   ],
-   "sim": "solid except the opening local X -7..-1, Y 0-10 (6 x 10)",
-   "opening": {
-    "x": [
-     -7.0,
-     -1.0
-    ],
-    "y": [
-     0.0,
-     10.0
-    ]
-   }
-  },
-  "Wall_Door_8x12_Leaf": {
-   "model": "Wall_Door_8x12",
-   "size": [
-    6.0,
-    9.96,
-    1.34
-   ],
-   "tris": 508,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -6.0,
-    0.02,
-    -0.67
-   ],
-   "boundsMax": [
-    0.0,
-    9.98,
-    0.67
-   ],
-   "origin": [
-    -1.0,
-    0.0,
-    1.0
-   ],
-   "tags": [
-    "EH_Door"
-   ],
-   "sim": "door: solid when shut (LevelSpec door box)"
-  },
-  "Wall_Window_8x12": {
-   "model": "Wall_Window_8x12",
-   "size": [
-    8.0,
-    12.0,
-    2.5
-   ],
-   "tris": 768,
-   "class": "module",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": true,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -8.0,
-    0.0,
-    -0.25
-   ],
-   "boundsMax": [
-    0.0,
-    12.0,
-    2.25
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Wall"
-   ],
-   "sim": "solid; Gus sees through the glass band Y 4.85-9.85"
-  },
-  "Wall_Window_8x12_Glass": {
-   "model": "Wall_Window_8x12",
-   "size": [
-    5.0,
-    5.0,
-    0.06
-   ],
-   "tris": 12,
-   "class": "small",
-   "collision": "Box",
-   "material": "Glass",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": false,
-   "pivot": "point",
-   "role": "env",
-   "layer": "base",
-   "passed": true,
-   "boundsMin": [
-    -6.5,
-    4.85,
-    0.97
-   ],
-   "boundsMax": [
-    -1.5,
-    9.85,
-    1.03
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "transparency": 0.6,
-   "tint": "Vault Steel light #A9B2CC"
-  },
-  "Xmas_Garland_8": {
-   "model": "Xmas_Garland_8",
-   "size": [
-    8.825,
-    1.738,
-    0.923
-   ],
-   "tris": 736,
-   "class": "module",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": true,
-   "pivot": "point",
-   "role": "xmas",
-   "layer": "xmas",
-   "passed": true,
-   "boundsMin": [
-    -7.902,
-    9.362,
-    -0.653
-   ],
-   "boundsMax": [
-    0.923,
-    11.1,
-    0.27
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Xmas"
-   ],
-   "sim": "none"
-  },
-  "Xmas_Lights_8": {
-   "model": "Xmas_Lights_8",
-   "size": [
-    8.24,
-    0.857,
-    0.25
-   ],
-   "tris": 286,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": true,
-   "pivot": "point",
-   "role": "xmas",
-   "layer": "xmas",
-   "passed": true,
-   "boundsMin": [
-    -8.12,
-    10.113,
-    0.06
-   ],
-   "boundsMax": [
-    0.12,
-    10.97,
-    0.31
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Xmas"
-   ],
-   "sim": "none"
-  },
-  "Xmas_Lights_8_Bulbs": {
-   "model": "Xmas_Lights_8",
-   "size": [
-    7.529,
-    0.958,
-    0.285
-   ],
-   "tris": 400,
-   "class": "small",
-   "collision": "Box",
-   "material": "Neon",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": false,
-   "pivot": "point",
-   "role": "xmas",
-   "layer": "xmas",
-   "passed": true,
-   "boundsMin": [
-    -7.764,
-    9.68,
-    0.037
-   ],
-   "boundsMax": [
-    -0.235,
-    10.638,
-    0.323
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tint": "Bulb Warm #F6C0A2 (eh_palette.NEON; a slow 2-step twinkle by brightness only)"
-  },
-  "Xmas_SnowCap_8": {
-   "model": "Xmas_SnowCap_8",
-   "size": [
-    8.0,
-    0.67,
-    2.5
-   ],
-   "tris": 512,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": true,
-   "pivot": "point",
-   "role": "xmas",
-   "layer": "xmas",
-   "passed": true,
-   "boundsMin": [
-    -8.0,
-    11.85,
-    -0.35
-   ],
-   "boundsMax": [
-    0.0,
-    12.52,
-    2.15
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Xmas"
-   ],
-   "sim": "none"
-  },
-  "Xmas_SnowPile": {
-   "model": "Xmas_SnowPile",
-   "size": [
-    4.85,
-    3.535,
-    3.105
-   ],
-   "tris": 576,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": true,
-   "pivot": "point",
-   "role": "xmas",
-   "layer": "xmas",
-   "passed": true,
-   "boundsMin": [
-    -2.464,
-    -0.308,
-    -1.291
-   ],
-   "boundsMax": [
-    2.386,
-    3.227,
-    1.814
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Xmas"
-   ],
-   "sim": "none"
-  },
-  "Xmas_Tree": {
-   "model": "Xmas_Tree",
-   "size": [
-    4.1,
-    6.0,
-    3.899
-   ],
-   "tris": 312,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": true,
-   "atlas": true,
-   "pivot": "bottom",
-   "role": "xmas",
-   "layer": "xmas",
-   "passed": true,
-   "boundsMin": [
-    -2.05,
-    0.0,
-    -1.95
-   ],
-   "boundsMax": [
-    2.05,
-    6.0,
-    1.95
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Xmas",
-    "EH_OrnamentTree"
-   ],
-   "sim": "none",
-   "hooks": [
-    [
-     -1.886,
-     1.47,
-     0.0
-    ],
-    [
-     -1.526,
-     1.47,
-     1.109
-    ],
-    [
-     -0.583,
-     1.47,
-     1.794
-    ],
-    [
-     0.583,
-     1.47,
-     1.794
-    ],
-    [
-     1.526,
-     1.47,
-     1.109
-    ],
-    [
-     1.886,
-     1.47,
-     0.0
-    ],
-    [
-     1.526,
-     1.47,
-     -1.109
-    ],
-    [
-     0.583,
-     1.47,
-     -1.794
-    ],
-    [
-     -0.583,
-     1.47,
-     -1.794
-    ],
-    [
-     -1.526,
-     1.47,
-     -1.109
-    ],
-    [
-     -1.36,
-     2.87,
-     0.563
-    ],
-    [
-     -0.563,
-     2.87,
-     1.36
-    ],
-    [
-     0.563,
-     2.87,
-     1.36
-    ],
-    [
-     1.36,
-     2.87,
-     0.563
-    ],
-    [
-     1.36,
-     2.87,
-     -0.563
-    ],
-    [
-     0.563,
-     2.87,
-     -1.36
-    ],
-    [
-     -0.563,
-     2.87,
-     -1.36
-    ],
-    [
-     -1.36,
-     2.87,
-     -0.563
-    ],
-    [
-     -1.03,
-     4.12,
-     0.0
-    ],
-    [
-     0.0,
-     4.12,
-     1.03
-    ],
-    [
-     1.03,
-     4.12,
-     0.0
-    ],
-    [
-     0.0,
-     4.12,
-     -1.03
-    ]
-   ],
-   "ornamentScale": 0.65
-  },
-  "Xmas_Tree_Lights": {
-   "model": "Xmas_Tree",
-   "size": [
-    4.119,
-    5.64,
-    4.033
-   ],
-   "tris": 400,
-   "class": "small",
-   "collision": "Box",
-   "material": "Neon",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": false,
-   "pivot": "point",
-   "role": "xmas",
-   "layer": "xmas",
-   "passed": true,
-   "boundsMin": [
-    -2.071,
-    1.33,
-    -2.115
-   ],
-   "boundsMax": [
-    2.048,
-    6.97,
-    1.917
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tint": "Bulb Warm #F6C0A2 (eh_palette.NEON)"
-  },
-  "Xmas_Wreath": {
-   "model": "Xmas_Wreath",
-   "size": [
-    2.826,
-    3.56,
-    1.135
-   ],
-   "tris": 548,
-   "class": "small",
-   "collision": "Box",
-   "material": "SmoothPlastic",
-   "canCollide": false,
-   "castShadow": false,
-   "atlas": true,
-   "pivot": "point",
-   "role": "xmas",
-   "layer": "xmas",
-   "passed": true,
-   "boundsMin": [
-    -1.413,
-    -1.86,
-    -1.095
-   ],
-   "boundsMax": [
-    1.413,
-    1.7,
-    0.04
-   ],
-   "origin": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "tags": [
-    "EH_Xmas"
-   ],
-   "sim": "none"
-  },
   "Rookie_Block_LeftCuff": {
    "model": "Rookie_Outfits",
    "size": [
@@ -6167,6 +4345,1828 @@
      -0.09
     ]
    }
+  },
+  "Rug_8x6": {
+   "model": "Rug_8x6",
+   "size": [
+    8.64,
+    0.036,
+    6.0
+   ],
+   "tris": 264,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -4.32,
+    0.0,
+    -3.0
+   ],
+   "boundsMax": [
+    4.32,
+    0.036,
+    3.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Safe": {
+   "model": "Safe",
+   "size": [
+    3.2,
+    3.95,
+    2.92
+   ],
+   "tris": 452,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.6,
+    0.0,
+    -1.42
+   ],
+   "boundsMax": [
+    1.6,
+    3.95,
+    1.5
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Safe"
+   ],
+   "sim": "solid: footprint 3.2 x 3, 3.95 tall (Gus sees over it)"
+  },
+  "Safe_Door": {
+   "model": "Safe",
+   "size": [
+    2.71,
+    2.94,
+    0.7
+   ],
+   "tris": 548,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.57,
+    0.0,
+    -0.7
+   ],
+   "boundsMax": [
+    0.14,
+    2.94,
+    0.0
+   ],
+   "origin": [
+    1.3,
+    0.68,
+    -1.42
+   ],
+   "tags": [
+    "EH_SafeDoor"
+   ]
+  },
+  "Shelf_8x2": {
+   "model": "Shelf_8x2",
+   "size": [
+    8.1,
+    7.85,
+    2.08
+   ],
+   "tris": 776,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.05,
+    0.0,
+    -0.08
+   ],
+   "boundsMax": [
+    0.05,
+    7.85,
+    2.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Shelf"
+   ],
+   "sim": "solid (blocks sight: 7.85 tall)"
+  },
+  "Shelf_Gondola_8x2": {
+   "model": "Shelf_Gondola_8x2",
+   "size": [
+    8.0,
+    7.85,
+    2.16
+   ],
+   "tris": 744,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.0,
+    0.0,
+    -0.08
+   ],
+   "boundsMax": [
+    0.0,
+    7.85,
+    2.08
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Shelf"
+   ],
+   "sim": "solid, blocks sight: L5 shelf rows (footprint 2 x 16, 7 tall) = two modules end to end along their X"
+  },
+  "Shutter_8x10": {
+   "model": "Shutter_8x10",
+   "size": [
+    8.1,
+    10.35,
+    1.46
+   ],
+   "tris": 556,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -4.05,
+    -10.35,
+    -0.73
+   ],
+   "boundsMax": [
+    4.05,
+    0.0,
+    0.73
+   ],
+   "origin": [
+    0.0,
+    10.35,
+    0.0
+   ],
+   "tags": [
+    "EH_Door"
+   ],
+   "sim": "door: the 8 x 10 entrance box (wall line +- 0.5), solid when down"
+  },
+  "Skyline_Far": {
+   "model": "Skyline_Far",
+   "size": [
+    604.401,
+    100.949,
+    638.695
+   ],
+   "tris": 352,
+   "class": "medium",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -634.987,
+    0.0,
+    -0.0
+   ],
+   "boundsMax": [
+    -30.586,
+    100.949,
+    638.695
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "Skyline_Far_Windows": {
+   "model": "Skyline_Far",
+   "size": [
+    561.626,
+    86.0,
+    596.373
+   ],
+   "tris": 1236,
+   "class": "hero",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -595.617,
+    3.0,
+    3.731
+   ],
+   "boundsMax": [
+    -33.992,
+    89.0,
+    600.104
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tint": "Bulb Warm #F6C0A2"
+  },
+  "Skyline_Near": {
+   "model": "Skyline_Near",
+   "size": [
+    316.773,
+    55.878,
+    323.381
+   ],
+   "tris": 292,
+   "class": "medium",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -323.535,
+    0.0,
+    0.0
+   ],
+   "boundsMax": [
+    -6.761,
+    55.878,
+    323.381
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "Skyline_Near_Windows": {
+   "model": "Skyline_Near",
+   "size": [
+    288.575,
+    44.4,
+    297.02
+   ],
+   "tris": 996,
+   "class": "hero",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -299.792,
+    3.0,
+    4.453
+   ],
+   "boundsMax": [
+    -11.217,
+    47.4,
+    301.474
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tint": "Bulb Warm #F6C0A2"
+  },
+  "Snowman": {
+   "model": "Snowman",
+   "size": [
+    4.005,
+    6.24,
+    2.568
+   ],
+   "tris": 724,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.006,
+    0.01,
+    -1.284
+   ],
+   "boundsMax": [
+    1.999,
+    6.25,
+    1.284
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "sim": "none"
+  },
+  "Storefront_24x12": {
+   "model": "Storefront_24x12",
+   "size": [
+    24.0,
+    12.0,
+    4.75
+   ],
+   "tris": 1980,
+   "class": "medium",
+   "collision": "PreciseConvexDecomposition",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -24.0,
+    0.0,
+    -2.45
+   ],
+   "boundsMax": [
+    0.0,
+    12.0,
+    2.3
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Wall"
+   ],
+   "sim": "solid except the entrance local X -16..-8, Y 0-10 (8 x 10); awnings (street side, -Z) above 7.9",
+   "opening": {
+    "x": [
+     -16.0,
+     -8.0
+    ],
+    "y": [
+     0.0,
+     10.0
+    ]
+   }
+  },
+  "Storefront_24x12_Glass": {
+   "model": "Storefront_24x12",
+   "size": [
+    22.4,
+    6.08,
+    0.06
+   ],
+   "tris": 24,
+   "class": "small",
+   "collision": "Box",
+   "material": "Glass",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -23.2,
+    2.32,
+    0.97
+   ],
+   "boundsMax": [
+    -0.8,
+    8.4,
+    1.03
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "transparency": 0.6,
+   "tint": "Vault Steel light #A9B2CC"
+  },
+  "StreetLamp": {
+   "model": "StreetLamp",
+   "size": [
+    1.5,
+    11.05,
+    1.4
+   ],
+   "tris": 468,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.75,
+    0.0,
+    -0.7
+   ],
+   "boundsMax": [
+    0.75,
+    11.05,
+    0.7
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_StreetLamp"
+   ],
+   "sim": "none",
+   "light": [
+    0,
+    9.43,
+    0
+   ]
+  },
+  "StreetLamp_Bulb": {
+   "model": "StreetLamp",
+   "size": [
+    0.6,
+    1.0,
+    0.571
+   ],
+   "tris": 80,
+   "class": "tiny",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.3,
+    8.93,
+    -0.285
+   ],
+   "boundsMax": [
+    0.3,
+    9.93,
+    0.285
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tint": "Bulb Warm #F6C0A2 (eh_palette.NEON); PointLight here, same colour, Shadows off"
+  },
+  "Switch_Wall": {
+   "model": "Switch_Wall",
+   "size": [
+    1.6,
+    2.52,
+    0.84
+   ],
+   "tris": 224,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.8,
+    3.0,
+    -0.84
+   ],
+   "boundsMax": [
+    0.8,
+    5.52,
+    0.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Switch"
+   ],
+   "sim": "none (a `switches` point at the lever: wall face, y 4.2)"
+  },
+  "Switch_Wall_Lamp": {
+   "model": "Switch_Wall",
+   "size": [
+    0.4,
+    0.2,
+    0.38
+   ],
+   "tris": 58,
+   "class": "tiny",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.2,
+    0.0,
+    -0.19
+   ],
+   "boundsMax": [
+    0.2,
+    0.2,
+    0.19
+   ],
+   "origin": [
+    0.0,
+    5.52,
+    -0.25
+   ],
+   "tint": "Vault Steel shade #4E5675 off; the presser's clone hue on"
+  },
+  "Switch_Wall_Lever": {
+   "model": "Switch_Wall",
+   "size": [
+    0.52,
+    1.472,
+    1.156
+   ],
+   "tris": 172,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.26,
+    -0.152,
+    -0.996
+   ],
+   "boundsMax": [
+    0.26,
+    1.32,
+    0.16
+   ],
+   "origin": [
+    0.0,
+    4.2,
+    -0.8
+   ]
+  },
+  "Teddy": {
+   "model": "Teddy",
+   "size": [
+    2.057,
+    2.266,
+    1.6
+   ],
+   "tris": 596,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "loot",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.028,
+    0.0,
+    -0.88
+   ],
+   "boundsMax": [
+    1.028,
+    2.266,
+    0.72
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Loot"
+   ],
+   "sim": "loot point (LevelSpec loot x, y, z)"
+  },
+  "TellerCounter_8x4": {
+   "model": "TellerCounter_8x4",
+   "size": [
+    8.3,
+    8.25,
+    4.35
+   ],
+   "tris": 412,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.15,
+    0.0,
+    -0.2
+   ],
+   "boundsMax": [
+    0.15,
+    8.25,
+    4.15
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Counter"
+   ],
+   "sim": "solid to 4 tall, sight = false (glass screen: Gus sees through); NO LOOT on the marble top"
+  },
+  "TellerCounter_8x4_Glass": {
+   "model": "TellerCounter_8x4",
+   "size": [
+    7.1,
+    3.2,
+    0.06
+   ],
+   "tris": 24,
+   "class": "small",
+   "collision": "Box",
+   "material": "Glass",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.55,
+    4.7,
+    1.87
+   ],
+   "boundsMax": [
+    -0.45,
+    7.9,
+    1.93
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "transparency": 0.6,
+   "tint": "Vault Steel light #A9B2CC"
+  },
+  "Toy": {
+   "model": "Toy",
+   "size": [
+    1.586,
+    2.8,
+    1.19
+   ],
+   "tris": 580,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "loot",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.793,
+    0.0,
+    -0.47
+   ],
+   "boundsMax": [
+    0.793,
+    2.8,
+    0.72
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Loot"
+   ],
+   "sim": "loot point (LevelSpec loot x, y, z)"
+  },
+  "ToySoldier": {
+   "model": "ToySoldier",
+   "size": [
+    3.5,
+    11.32,
+    4.02
+   ],
+   "tris": 2736,
+   "class": "medium",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "toy",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.75,
+    0.0,
+    -2.27
+   ],
+   "boundsMax": [
+    1.75,
+    11.32,
+    1.75
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "Van": {
+   "model": "Van",
+   "size": [
+    14.9,
+    7.689,
+    7.08
+   ],
+   "tris": 1704,
+   "class": "medium",
+   "collision": "PreciseConvexDecomposition",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.45,
+    0.061,
+    -3.74
+   ],
+   "boundsMax": [
+    7.45,
+    7.75,
+    3.34
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Van"
+   ],
+   "sim": "solid body; the bank zone is the kerb in front of the open door (LevelSpec van box)"
+  },
+  "Van_Paint": {
+   "model": "Van",
+   "size": [
+    14.0,
+    5.7,
+    6.8
+   ],
+   "tris": 164,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.0,
+    1.55,
+    -3.6
+   ],
+   "boundsMax": [
+    7.0,
+    7.25,
+    3.2
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tint": "van paint: a mid value by MeshPart.Color (Config.Lighting.VAN.paint in a heist, the bay's crew colour in the garage); never Getaway White",
+   "tintable": true
+  },
+  "Van_Shelf": {
+   "model": "Van",
+   "size": [
+    6.0,
+    4.06,
+    0.98
+   ],
+   "tris": 124,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.8,
+    1.89,
+    1.9
+   ],
+   "boundsMax": [
+    3.2,
+    5.95,
+    2.88
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_TrophyShelf"
+   ]
+  },
+  "VaultDoor_Dial": {
+   "model": "VaultDoor",
+   "size": [
+    4.55,
+    4.55,
+    0.924
+   ],
+   "tris": 1104,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "hero",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.275,
+    -2.275,
+    -0.8
+   ],
+   "boundsMax": [
+    2.275,
+    2.275,
+    0.124
+   ],
+   "origin": [
+    -8.0,
+    3.6,
+    -0.67
+   ]
+  },
+  "VaultDoor_DialFace": {
+   "model": "VaultDoor",
+   "size": [
+    2.16,
+    2.16,
+    0.06
+   ],
+   "tris": 384,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "hero",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.08,
+    -1.08,
+    -0.46
+   ],
+   "boundsMax": [
+    1.08,
+    1.08,
+    -0.4
+   ],
+   "origin": [
+    -8.0,
+    3.6,
+    -0.67
+   ],
+   "texture": "VaultDoor_DialFace",
+   "tint": "SurfaceAppearance: ColorMap + RoughnessMap + EmissiveMaskContent; EmissiveTint = the ring colour (code)"
+  },
+  "VaultDoor_DialRing": {
+   "model": "VaultDoor",
+   "size": [
+    3.5,
+    3.5,
+    0.24
+   ],
+   "tris": 384,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "hero",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.75,
+    -1.75,
+    -0.2
+   ],
+   "boundsMax": [
+    1.75,
+    1.75,
+    0.04
+   ],
+   "origin": [
+    -8.0,
+    3.6,
+    -0.67
+   ],
+   "tint": "Warm Marble shade #A8987A idle; opener's clone hue; Alarm Red (eh_palette.NEON)"
+  },
+  "VaultDoor_Door": {
+   "model": "VaultDoor",
+   "size": [
+    11.96,
+    8.65,
+    3.46
+   ],
+   "tris": 3832,
+   "class": "medium",
+   "collision": "Hull",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "hero",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -11.3,
+    -0.0,
+    -0.66
+   ],
+   "boundsMax": [
+    0.66,
+    8.65,
+    2.8
+   ],
+   "origin": [
+    -1.75,
+    0.0,
+    -0.95
+   ],
+   "tags": [
+    "EH_Door"
+   ],
+   "sim": "door: the 6 x 10 door box, solid only while SHUT; open = visual only (CanCollide off from the first frame of the swing until it is shut again)",
+   "open": {
+    "yawDeg": -175,
+    "about": "this part's pivot (the hinge)",
+    "swing": "outward (toward -Z), onto the wall face on the viewer's left (+X)",
+    "footprintMin": [
+     -2.7,
+     0.0,
+     -4.75
+    ],
+    "footprintMax": [
+     9.6,
+     8.65,
+     -0.2
+    ],
+    "sweepRadius": 11.4,
+    "follow": [
+     "VaultDoor_Dial",
+     "VaultDoor_DialFace",
+     "VaultDoor_DialRing"
+    ]
+   }
+  },
+  "VaultDoor_Frame": {
+   "model": "VaultDoor",
+   "size": [
+    16.0,
+    12.0,
+    3.7
+   ],
+   "tris": 2452,
+   "class": "medium",
+   "collision": "PreciseConvexDecomposition",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "hero",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -16.0,
+    0.0,
+    -0.85
+   ],
+   "boundsMax": [
+    0.0,
+    12.0,
+    2.85
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Wall"
+   ],
+   "sim": "solid except the round opening (9-stud circle at local X -8, Y 3.6; 5.4 threshold); door box = the opening",
+   "opening": {
+    "x": [
+     -10.7,
+     -5.3
+    ],
+    "y": [
+     0.0,
+     8.1
+    ],
+    "shape": "circle r 4.5 at (X -8, Y 3.6), cut flat by the floor"
+   }
+  },
+  "Wall_4x12": {
+   "model": "Wall_4x12",
+   "size": [
+    4.0,
+    12.0,
+    2.0
+   ],
+   "tris": 196,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "corner",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -4.0,
+    0.0,
+    0.0
+   ],
+   "boundsMax": [
+    0.0,
+    12.0,
+    2.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Wall"
+   ],
+   "sim": "solid"
+  },
+  "Wall_8x12": {
+   "model": "Wall_8x12",
+   "size": [
+    8.0,
+    12.0,
+    2.0
+   ],
+   "tris": 284,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "corner",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.0,
+    0.0,
+    0.0
+   ],
+   "boundsMax": [
+    0.0,
+    12.0,
+    2.0
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Wall"
+   ],
+   "sim": "solid"
+  },
+  "Wall_Door_8x12": {
+   "model": "Wall_Door_8x12",
+   "size": [
+    8.0,
+    12.0,
+    2.06
+   ],
+   "tris": 664,
+   "class": "module",
+   "collision": "PreciseConvexDecomposition",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.0,
+    0.0,
+    -0.03
+   ],
+   "boundsMax": [
+    0.0,
+    12.0,
+    2.03
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Wall"
+   ],
+   "sim": "solid except the opening local X -7..-1, Y 0-10 (6 x 10)",
+   "opening": {
+    "x": [
+     -7.0,
+     -1.0
+    ],
+    "y": [
+     0.0,
+     10.0
+    ]
+   }
+  },
+  "Wall_Door_8x12_Leaf": {
+   "model": "Wall_Door_8x12",
+   "size": [
+    6.0,
+    9.96,
+    1.34
+   ],
+   "tris": 508,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -6.0,
+    0.02,
+    -0.67
+   ],
+   "boundsMax": [
+    0.0,
+    9.98,
+    0.67
+   ],
+   "origin": [
+    -1.0,
+    0.0,
+    1.0
+   ],
+   "tags": [
+    "EH_Door"
+   ],
+   "sim": "door: solid when shut (LevelSpec door box)"
+  },
+  "Wall_Window_8x12": {
+   "model": "Wall_Window_8x12",
+   "size": [
+    8.0,
+    12.0,
+    2.5
+   ],
+   "tris": 768,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": true,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -8.0,
+    0.0,
+    -0.25
+   ],
+   "boundsMax": [
+    0.0,
+    12.0,
+    2.25
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Wall"
+   ],
+   "sim": "solid; Gus sees through the glass band Y 4.85-9.85"
+  },
+  "Wall_Window_8x12_Glass": {
+   "model": "Wall_Window_8x12",
+   "size": [
+    5.0,
+    5.0,
+    0.06
+   ],
+   "tris": 12,
+   "class": "small",
+   "collision": "Box",
+   "material": "Glass",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -6.5,
+    4.85,
+    0.97
+   ],
+   "boundsMax": [
+    -1.5,
+    9.85,
+    1.03
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "transparency": 0.6,
+   "tint": "Vault Steel light #A9B2CC"
+  },
+  "Xmas_Garland_8": {
+   "model": "Xmas_Garland_8",
+   "size": [
+    8.825,
+    1.738,
+    0.923
+   ],
+   "tris": 736,
+   "class": "module",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "xmas",
+   "passed": true,
+   "boundsMin": [
+    -7.902,
+    9.362,
+    -0.653
+   ],
+   "boundsMax": [
+    0.923,
+    11.1,
+    0.27
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Xmas"
+   ],
+   "sim": "none"
+  },
+  "Xmas_Lights_8": {
+   "model": "Xmas_Lights_8",
+   "size": [
+    8.24,
+    0.857,
+    0.25
+   ],
+   "tris": 286,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "xmas",
+   "passed": true,
+   "boundsMin": [
+    -8.12,
+    10.113,
+    0.06
+   ],
+   "boundsMax": [
+    0.12,
+    10.97,
+    0.31
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Xmas"
+   ],
+   "sim": "none"
+  },
+  "Xmas_Lights_8_Bulbs": {
+   "model": "Xmas_Lights_8",
+   "size": [
+    7.529,
+    0.958,
+    0.285
+   ],
+   "tris": 400,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "xmas",
+   "passed": true,
+   "boundsMin": [
+    -7.764,
+    9.68,
+    0.037
+   ],
+   "boundsMax": [
+    -0.235,
+    10.638,
+    0.323
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tint": "Bulb Warm #F6C0A2 (eh_palette.NEON; a slow 2-step twinkle by brightness only)"
+  },
+  "Xmas_SnowCap_8": {
+   "model": "Xmas_SnowCap_8",
+   "size": [
+    8.0,
+    0.67,
+    2.5
+   ],
+   "tris": 512,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "xmas",
+   "passed": true,
+   "boundsMin": [
+    -8.0,
+    11.85,
+    -0.35
+   ],
+   "boundsMax": [
+    0.0,
+    12.52,
+    2.15
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Xmas"
+   ],
+   "sim": "none"
+  },
+  "Xmas_SnowPile": {
+   "model": "Xmas_SnowPile",
+   "size": [
+    4.85,
+    3.535,
+    3.105
+   ],
+   "tris": 576,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "xmas",
+   "passed": true,
+   "boundsMin": [
+    -2.464,
+    -0.308,
+    -1.291
+   ],
+   "boundsMax": [
+    2.386,
+    3.227,
+    1.814
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Xmas"
+   ],
+   "sim": "none"
+  },
+  "Xmas_Tree": {
+   "model": "Xmas_Tree",
+   "size": [
+    4.1,
+    6.0,
+    3.899
+   ],
+   "tris": 312,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "bottom",
+   "role": "xmas",
+   "layer": "xmas",
+   "passed": true,
+   "boundsMin": [
+    -2.05,
+    0.0,
+    -1.95
+   ],
+   "boundsMax": [
+    2.05,
+    6.0,
+    1.95
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Xmas",
+    "EH_OrnamentTree"
+   ],
+   "sim": "none",
+   "hooks": [
+    [
+     -1.886,
+     1.47,
+     0.0
+    ],
+    [
+     -1.526,
+     1.47,
+     1.109
+    ],
+    [
+     -0.583,
+     1.47,
+     1.794
+    ],
+    [
+     0.583,
+     1.47,
+     1.794
+    ],
+    [
+     1.526,
+     1.47,
+     1.109
+    ],
+    [
+     1.886,
+     1.47,
+     0.0
+    ],
+    [
+     1.526,
+     1.47,
+     -1.109
+    ],
+    [
+     0.583,
+     1.47,
+     -1.794
+    ],
+    [
+     -0.583,
+     1.47,
+     -1.794
+    ],
+    [
+     -1.526,
+     1.47,
+     -1.109
+    ],
+    [
+     -1.36,
+     2.87,
+     0.563
+    ],
+    [
+     -0.563,
+     2.87,
+     1.36
+    ],
+    [
+     0.563,
+     2.87,
+     1.36
+    ],
+    [
+     1.36,
+     2.87,
+     0.563
+    ],
+    [
+     1.36,
+     2.87,
+     -0.563
+    ],
+    [
+     0.563,
+     2.87,
+     -1.36
+    ],
+    [
+     -0.563,
+     2.87,
+     -1.36
+    ],
+    [
+     -1.36,
+     2.87,
+     -0.563
+    ],
+    [
+     -1.03,
+     4.12,
+     0.0
+    ],
+    [
+     0.0,
+     4.12,
+     1.03
+    ],
+    [
+     1.03,
+     4.12,
+     0.0
+    ],
+    [
+     0.0,
+     4.12,
+     -1.03
+    ]
+   ],
+   "ornamentScale": 0.65
+  },
+  "Xmas_Tree_Lights": {
+   "model": "Xmas_Tree",
+   "size": [
+    4.119,
+    5.64,
+    4.033
+   ],
+   "tris": 400,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "xmas",
+   "passed": true,
+   "boundsMin": [
+    -2.071,
+    1.33,
+    -2.115
+   ],
+   "boundsMax": [
+    2.048,
+    6.97,
+    1.917
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tint": "Bulb Warm #F6C0A2 (eh_palette.NEON)"
+  },
+  "Xmas_Wreath": {
+   "model": "Xmas_Wreath",
+   "size": [
+    2.826,
+    3.56,
+    1.135
+   ],
+   "tris": 548,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "xmas",
+   "passed": true,
+   "boundsMin": [
+    -1.413,
+    -1.86,
+    -1.095
+   ],
+   "boundsMax": [
+    1.413,
+    1.7,
+    0.04
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Xmas"
+   ],
+   "sim": "none"
   }
  },
  "note": "Generated by tools/blender/build_asset.py; read by tests/kit_check.luau and the level layout pipeline. size = Roblox X, Y, Z (Y up, front -Z). Sizes are what Studio shows after Import 3D.",
