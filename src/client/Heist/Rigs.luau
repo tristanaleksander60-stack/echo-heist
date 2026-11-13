@@ -187,6 +187,18 @@ end
 
 -- `light`: the clone LOD's light rig (EchoView past the LOD distance, the Line-up's back rows from its tier): a block
 -- head instead of the ball (Config.Perf.CLONE_LOD.BLOCK_HEAD; a ball is ~400 triangles, the other parts 12 each).
+-- Clones are ghosts to physics: every part in the no-collision group (the Humanoid turns CanCollide back on for
+-- the torso and head, so CanCollide = false alone is not enough). Registered on the server at boot.
+function Rigs.ghost(model: Instance)
+	local group = Config.Heist.CLONE_COLLISION_GROUP
+	for _, d in model:GetDescendants() do
+		if d:IsA("BasePart") then
+			d.CanCollide = false
+			d.CollisionGroup = group
+		end
+	end
+end
+
 function Rigs.buildMannequin(light: boolean?): Rig
 	local model = Instance.new("Model")
 	model.Name = "Mannequin"

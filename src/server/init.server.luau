@@ -37,6 +37,17 @@ local function startAnalytics(dataService: any, heistService: any)
 end
 
 if Config.GAME_MODE == "sim" then
+	-- Clones never collide with anything (players walk through their clones): one collision group, client rigs
+	-- join it through Heist/Rigs.ghost.
+	pcall(function()
+		local PhysicsService = game:GetService("PhysicsService")
+		local group = Config.Heist.CLONE_COLLISION_GROUP
+		if not PhysicsService:IsCollisionGroupRegistered(group) then
+			PhysicsService:RegisterCollisionGroup(group)
+		end
+		PhysicsService:CollisionGroupSetCollidable(group, "Default", false)
+		PhysicsService:CollisionGroupSetCollidable(group, group, false)
+	end)
 	-- Every player is a Rookie (Heist/Characters): no avatar spawns before the Rookie StarterCharacter exists.
 	game:GetService("Players").CharacterAutoLoads = false
 	local HeistService = require(script:WaitForChild("Heist"):WaitForChild("HeistService"))

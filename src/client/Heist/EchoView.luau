@@ -387,6 +387,7 @@ function EchoView.new(state: any): any
 			return
 		end
 		local m = Rigs.buildMannequin(true)
+		Rigs.ghost(m.model)
 		m.model.Name = "Lod"
 		Rigs.setFade(m, 1)
 		if entry.hue then
@@ -431,6 +432,7 @@ function EchoView.new(state: any): any
 			rig = Rigs.buildAvatar(t)
 		end
 		rig = rig or Rigs.buildMannequin()
+		Rigs.ghost(rig.model)
 		rig.model.Parent = pool.group
 		Rigs.loadPack(rig, Rigs.packOf(t))
 		local anchor = Rigs.anchorPart(rig)

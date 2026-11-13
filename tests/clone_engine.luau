@@ -672,6 +672,14 @@ for _, c in cases do
 			and pillFrame:FindFirstChildOfClass("UICorner") ~= nil,
 		c.name .. ": numbered pill badge (" .. tostring(number and (number :: any).Text) .. ")"
 	)
+	-- you walk through your clones: every body part is in the no-collision group and not CanCollide
+	local solid = 0
+	for _, d in (c.rig and c.rig:GetDescendants() or {}) do
+		if d:IsA("BasePart") and (d.CanCollide or d.CollisionGroup ~= Config.Heist.CLONE_COLLISION_GROUP) then
+			solid += 1
+		end
+	end
+	check(c.rig ~= nil and solid == 0, c.name .. ": walk-through (" .. solid .. " solid parts)")
 end
 local lights = 0
 for _, d in (workspace:FindFirstChild("HeistClones") or workspace):GetDescendants() do

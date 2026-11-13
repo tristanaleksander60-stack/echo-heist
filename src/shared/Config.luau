@@ -280,6 +280,7 @@ Config.Heist = {
 	-- Clone visibility (PLAN_STEAM_PLUS §1 S1, §4.4 A1): never invisible by design.
 	CLONE_FILL_TRANSPARENCY = 0.55, -- owner Highlight fill in the crew hue (your own clones keep it at every tier)
 	CLONE_MIN_JOINTS = 15, -- an avatar template with fewer whole joints (R15 has 15) draws as the mannequin
+	CLONE_COLLISION_GROUP = "EH_Clones", -- clone rigs never collide (you walk through your clones; owner, Nov 13)
 	CLONE_HEALTH_INTERVAL = 1, -- s between CloneHealth checks of the drawn avatar rigs
 	CLONE_HEALTH_MAX_LIMB = 10, -- a part farther than this from its root (studs, x rig scale) = broken rig
 	CLONE_KEEP_TEXTURES = true, -- keep face decals and mesh textures (shared per asset: cheap)
