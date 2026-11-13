@@ -2024,7 +2024,7 @@ Config.Perf = {
 			OutdoorAmbient = { 184, 170, 196 },
 			EnvironmentDiffuseScale = 0.3,
 			EnvironmentSpecularScale = 0,
-			ExposureCompensation = 0.45, -- WORLD 2.0: recipe A's 0.5 less the Soft style's flatter fill
+			ExposureCompensation = 0.35, -- WORLD 2.0: recipe A's 0.4 less the Soft style's flatter fill
 			GlobalShadows = false, -- no sun shadow pass on low phones (was HeistClient's tier >= 3 rule)
 		},
 		Bloom = { Intensity = 0.9, Size = 24, Threshold = 1.0 }, -- Lighting.Bloom (the project file's)

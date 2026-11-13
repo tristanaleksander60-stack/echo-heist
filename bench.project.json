@@ -17,7 +17,7 @@
         "OutdoorAmbient": [0.682353, 0.627451, 0.729412],
         "EnvironmentDiffuseScale": 0.36,
         "EnvironmentSpecularScale": 0.4,
-        "ExposureCompensation": 0.5,
+        "ExposureCompensation": 0.4,
         "ShadowSoftness": 0.3
       },
       "Sky": {

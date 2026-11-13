@@ -89,7 +89,7 @@ expectProps(lighting, "Lighting", {
 	OutdoorAmbient = { 174, 160, 186 },
 	EnvironmentDiffuseScale = 0.36,
 	EnvironmentSpecularScale = 0.4,
-	ExposureCompensation = 0.5,
+	ExposureCompensation = 0.4,
 	ShadowSoftness = 0.3,
 })
 -- Lighting.Technology must agree with the LightingStyle + PrioritizeLightingQuality pair. Rojo writes only the

@@ -65,13 +65,16 @@ def luma(a):
     return (0.2126 * a[..., 0] + 0.7152 * a[..., 1] + 0.0722 * a[..., 2]) / 255.0
 
 
-def _pop(a, mask, h):
-    """Median HSV value of the masked pixels minus the median of the band around them (None when too small)."""
+def _pop(a, mask, h, other=None):
+    """Median HSV value of the masked pixels minus the median of the band around them (None when too small). `other`:
+    pixels of other signals, left out of the band (a ring's surround is the world, not the clone standing on it)."""
     if mask.sum() < 12:
         return None
     r = max(3, int(h * SURROUND_PX))
     grown = Image.fromarray((mask * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(r * 2 + 1))
     band = (np.asarray(grown) > 0) & ~mask
+    if other is not None:
+        band &= ~other
     if band.sum() < 12:
         return None
     v = a.max(axis=-1) / 255.0
@@ -136,9 +139,9 @@ def grade(path, ids=None, src=None):
                            "dark": round(float((dk & mask).mean()) * 100, 1)}
         out["sources"] = table
         if masks["clone"].any():
-            out["clone_pop"] = _pop(a, masks["clone"], a.shape[0])
+            out["clone_pop"] = _pop(a, masks["clone"], a.shape[0], masks["signal"])
         if masks["signal"].any():
-            out["signal_pop"] = _pop(a, masks["signal"], a.shape[0])
+            out["signal_pop"] = _pop(a, masks["signal"], a.shape[0], masks["clone"])
     return out
 
 
