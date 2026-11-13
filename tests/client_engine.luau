@@ -1267,7 +1267,7 @@ local okIntro, introErr = pcall(function()
 	local towerModel = town and town:FindFirstChild("Intro_Tower")
 	assert(towerModel and towerModel:FindFirstChild("Intro_Tower_Sign", true), "Hoardsworth Tower is the kit landmark")
 	local counts = cine.counts()
-	assert(counts.windows > 40, "lit windows: " .. counts.windows)
+	assert(counts.windows > #ST.houses, "lit windows (the town's and the tower's): " .. counts.windows)
 	local vortexBeams = 0
 	local vortexPart = stage:FindFirstChild("Vortex", true)
 	for _, d in (if vortexPart then vortexPart:GetChildren() else {}) do
