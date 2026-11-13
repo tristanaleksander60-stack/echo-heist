@@ -3,6 +3,7 @@
 --      --place 70772627070328 --script tests/client_engine.luau   (add --version N to skip publishing)
 -- 2026-11-12, place v21: 22 checks, 0 failed. Section F (camera track) and H (presentation shell) not yet run in the engine.
 -- Section J: first person (PLAN_FIRST_PERSON FP). 2026-11-13, Saved v50 and v52: 49 checks, 0 failed (J: 3 / 3).
+-- Section K: the northern lights (SKY track). 2026-11-13, Saved v57: 50 checks, 0 failed (K: 26 / 26 / 12 / 6 Beams).
 -- Loads every client module, builds L6 with the uploaded kit + Christmas layer and runs
 -- WorldView on it (vault door skin swing + dial, alarm beacons), the L5 till lock label,
 -- Gus on his mesh (every beat attached, head lead, Santa hat), the Line-up arrangement against the real van body, and
@@ -65,6 +66,7 @@ for _, name in
 		"LookTarget",
 		"FpWarn",
 		"Loading",
+		"Aurora",
 		"HeistClient",
 	}
 do
@@ -1198,6 +1200,105 @@ local okShell, shellErr = pcall(function()
 	return string.format("card built in %.1f ms", buildMs)
 end)
 check(okShell, "presentation shell: loading card, title card, reel, hint, van doors (" .. tostring(shellErr) .. ")")
+
+-- K. The northern lights (PLAN_FIRST_PERSON "SKY"): Heist/Aurora builds every layer of Config.Aurora as a chain of
+-- additive Beams (valid uploaded image ids: Image assets), unlit, never colliding or queried, high over the anchor;
+-- the tier switches change how many draw (Budget.auroraLayers: 4 / 4 / 2 / 1) and tier 4 holds still; the layers
+-- follow the camera horizontally. Luau Execution servers render nothing (RenderStepped never fires), so the test
+-- steps it by hand and marks the textures loaded (ContentProvider preloads only on a client).
+local okSky, skyErr = pcall(function(): string
+	local Aurora = require(clientHeist:WaitForChild("Aurora"))
+	local Budget = require(shared:WaitForChild("Heist"):WaitForChild("Budget"))
+	local Config = require(shared:WaitForChild("Config")) :: any
+	local A = Config.Aurora
+	local MarketplaceService = game:GetService("MarketplaceService")
+	-- every tile is an uploaded Image (a Decal id here would draw nothing)
+	for _, id in A.TEXTURES do
+		local n = tonumber(string.match(id, "%d+"))
+		local okInfo, info = pcall(function()
+			return MarketplaceService:GetProductInfoAsync(n :: number, Enum.InfoType.Asset)
+		end)
+		assert(okInfo and info and info.AssetTypeId == 1, id .. " is an Image asset (" .. tostring(info) .. ")")
+	end
+	local holder = Instance.new("Folder")
+	holder.Name = "AuroraTest"
+	holder.Parent = workspace
+	local aurora = Aurora.new(holder)
+	local origin = Vector3.new(6000, 0, 0)
+	aurora.setAnchor(origin, 0)
+	local beams = aurora.beams()
+	local want = 0
+	for _, l in A.LAYERS do
+		want += l.points - 1
+	end
+	assert(#beams == want and aurora.layersBuilt() == #A.LAYERS, "every layer built: " .. #beams .. " Beams")
+	assert(aurora.layerCount() == 0, "nothing shows before the textures load")
+	for _, b in beams do
+		assert(b.Enabled == false, "hidden until loaded")
+	end
+	aurora.markLoaded()
+	local function enabled(): number
+		local n = 0
+		for _, b in beams do
+			if b.Enabled then
+				n += 1
+			end
+		end
+		return n
+	end
+	local counts = {}
+	for tier = 1, 4 do
+		aurora.setTier(tier)
+		counts[tier] = enabled()
+		assert(counts[tier] == Budget.auroraBeams(tier), "tier " .. tier .. ": " .. counts[tier] .. " Beams")
+		assert(aurora.layerCount() == Budget.auroraLayers(tier), "tier " .. tier .. " layers")
+	end
+	assert(counts[1] > counts[3] and counts[3] > counts[4] and counts[4] > 0, "the tiers change the count")
+	aurora.setTier(1)
+	local cam = origin + Vector3.new(40, 6, -25)
+	aurora.step(0, cam)
+	aurora.step(10, cam) -- past the 3 s fade-in
+	for _, b in beams do
+		local a0, a1 = b.Attachment0, b.Attachment1
+		assert(a0 and a1 and a0 ~= a1 and a0:IsDescendantOf(workspace), b:GetFullName() .. " has two attachments")
+		assert(table.find(A.TEXTURES, b.Texture) ~= nil, b.Name .. " shows an aurora tile")
+		assert(b.LightEmission == 1 and b.LightInfluence == 0 and b.FaceCamera, "additive and unlit")
+		assert(b.Segments == A.SEGMENTS and b.CurveSize0 > 0 and b.CurveSize1 > 0, "curved")
+		local holderPart = a0.Parent :: BasePart
+		assert(not holderPart.CanCollide and not holderPart.CanQuery and not holderPart.CanTouch, "quiet holder")
+		assert(holderPart.Transparency == 1 and not holderPart.CastShadow, "an invisible holder")
+		local low = math.min(a0.WorldPosition.Y, a1.WorldPosition.Y) - b.Width0 / 2
+		assert(low >= origin.Y + A.MIN_CLEARANCE - 1e-3, b:GetFullName() .. " never reachable (" .. low .. ")")
+	end
+	local first = beams[1]
+	local mid = first.Transparency.Keypoints[2].Value
+	assert(mid < 1, "revealed after the fade-in")
+	-- the layer that follows the camera fully sits over it
+	local glowHolder = holder:FindFirstChild("Aurora_Glow", true) :: BasePart
+	assert(glowHolder, "the Glow layer's holder")
+	assert(
+		math.abs(glowHolder.Position.X - cam.X) < 1e-3 and math.abs(glowHolder.Position.Z - cam.Z) < 1e-3,
+		"the Glow follows the camera horizontally"
+	)
+	-- animated: the spine sways; tier 4: it holds still
+	local a = first.Attachment0 :: Attachment
+	local before = a.Position
+	aurora.step(14, cam)
+	assert((a.Position - before).Magnitude > 0.01, "tier 1 sways")
+	aurora.setTier(4)
+	aurora.step(20, cam)
+	local still = a.Position
+	aurora.step(40, cam)
+	assert((a.Position - still).Magnitude < 1e-6 and first.TextureSpeed == 0, "tier 4 is static")
+	aurora.setReducedMotion(true)
+	aurora.setTier(1)
+	assert(first.TextureSpeed ~= 0 and math.abs(first.TextureSpeed) < math.abs(A.LAYERS[1].scroll), "reduced: slower")
+	aurora.destroy()
+	assert(holder:FindFirstChild("EH_Aurora") == nil, "destroy removes it")
+	holder:Destroy()
+	return string.format("%d / %d / %d / %d Beams per tier", counts[1], counts[2], counts[3], counts[4])
+end)
+check(okSky, "aurora: layers of Beams, valid textures, tier counts, follow, sway (" .. tostring(skyErr) .. ")")
 
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))
