@@ -885,7 +885,17 @@ do
 			end
 		end
 		assert(n >= 24, "placeholder parts: " .. n)
-		assert(#rig.R.parts >= 12 and #rig.L.parts > #rig.R.parts, "two hands, the watch on the left")
+		-- rigid parts + the hinged finger segments' parts (REVIEW #10)
+		local function count(hand: any): number
+			local c = #hand.parts
+			for _, f in hand.fingers or {} do
+				c += #f.parts
+			end
+			return c
+		end
+		local nR, nL = count(rig.R), count(rig.L)
+		assert(nR >= 12 and nL > nR, string.format("two hands, the watch on the left (%d, %d parts)", nR, nL))
+		assert(#rig.R.fingers == 3 and #rig.L.fingers == 3, "placeholder fingers hinge (index, the rest, thumb)")
 		assert(grey == 0, grey .. " grey part(s)")
 		assert(loud == 0, loud .. " part(s) collide, query, touch or cast shadows")
 		assert(farthest < 1.4, string.format("scaled close to the grip (%.2f studs)", farthest))
