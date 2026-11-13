@@ -3,7 +3,7 @@
 --      --place 70772627070328 --script tests/client_engine.luau   (add --version N to skip publishing)
 -- 2026-11-12, place v21: 22 checks, 0 failed. Section F (camera track) and H (presentation shell) not yet run in the engine.
 -- Section J: first person (PLAN_FIRST_PERSON FP). 2026-11-13, Saved v50 and v52: 49 checks, 0 failed (J: 3 / 3).
--- Section K: the northern lights (SKY track). 2026-11-13, Saved v57: 50 checks, 0 failed (K: 26 / 26 / 12 / 6 Beams).
+-- Section K: the northern lights (SKY track). 2026-11-13, Saved v59: 50 checks, 0 failed (K: 26 / 26 / 13 / 7 Beams).
 -- Loads every client module, builds L6 with the uploaded kit + Christmas layer and runs
 -- WorldView on it (vault door skin swing + dial, alarm beacons), the L5 till lock label,
 -- Gus on his mesh (every beat attached, head lead, Santa hat), the Line-up arrangement against the real van body, and
@@ -1274,8 +1274,9 @@ local okSky, skyErr = pcall(function(): string
 	local mid = first.Transparency.Keypoints[2].Value
 	assert(mid < 1, "revealed after the fade-in")
 	-- the layer that follows the camera fully sits over it
-	local glowHolder = holder:FindFirstChild("Aurora_Glow", true) :: BasePart
-	assert(glowHolder, "the Glow layer's holder")
+	local found = holder:FindFirstChild("Aurora_Glow", true)
+	assert(found and found:IsA("BasePart"), "the Glow layer's holder")
+	local glowHolder = found :: BasePart
 	assert(
 		math.abs(glowHolder.Position.X - cam.X) < 1e-3 and math.abs(glowHolder.Position.Z - cam.Z) < 1e-3,
 		"the Glow follows the camera horizontally"

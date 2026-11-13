@@ -286,7 +286,7 @@ Each bookmark is shot 3 times: **PC Quality 10**, **phone Automatic**, **phone q
 | Trims that continue across modules (baseboard, dado, crown lines) | Each module with its own trim heights |
 | Plum or indigo env colours with Oklch C ≤ 0.093 | A "cool" violet or cyan wall accent: it steals the clone hues |
 | Cream marble trims (`marble`) | Tan or khaki trims next to gold (`marble_lo` read as brass on the vault pilasters, so they were changed) |
-| Glow only on clones, signals and runtime-tinted parts | Generic sci-fi glow strips on walls |
+| Glow only on clones, signals and runtime-tinted parts (written exceptions: windows §14, fairy lights §13, the aurora in the sky §16) | Generic sci-fi glow strips on walls |
 | Gem facets: flat-shaded, 3 values of one hue | A smooth-shaded "blob" gem |
 | Flat contact faces on modules | Bevelled ends that leave a V-gap between tiled walls |
 | A wall-line hero piece that continues the kit lines | A hero piece that ignores the walls it sits in |
@@ -382,3 +382,18 @@ Each bookmark is shot 3 times: **PC Quality 10**, **phone Automatic**, **phone q
 | Accent lamps | `LevelDress.accents`: a warm gold flood (`LAMP.accent`, 1.5, range 20, no shadows) that ignores the location colour. Only where the location colour would make the focal room cold (L6's vault: the Bank's room lamps are green) |
 | Need-all lamp row | Lettered Neon discs (0.95) on the door frame's face toward its plates, in letter order from the viewer's left, gap doubled across the door lamp; dim Bulb Warm idle (0.55), the presser's hue when held; the "VAULT n/4" count rides over the row (Bulb Warm, Go Green at n/n). Under the wall top (12), over the door (10) |
 | Outdoors (lots) | Walls past the street front's X extent are a lot's fence: no interior floor tiles there, the snow falls there, street lamps may stand there (L6's alleys) |
+
+## 16. Northern lights: the written sky exception (SKY track, 2026-11-13)
+
+"Nothing glows except signals" (§2, §8) has three written exceptions: the warm windows (§14), the fairy lights (§13) and, from this pass, **the aurora in the sky**. It is allowed because it is never on the play floor and never shares a shape with a signal; the rules below keep it that way.
+
+| Rule | Number |
+|---|---|
+| Where | Only in the sky: every ribbon's lower edge stays ≥ `Config.Aurora.MIN_CLEARANCE` (40) studs over the anchor and ≥ `MIN_ELEVATION` (3°) over the horizon at every sway phase (unit spec `AuroraPlan`). It follows the camera horizontally, so it is never reached, never inside a room and never behind a plate, a door or loot |
+| Hues (Oklch) | Green body h 150-160 (`#36EE88`, hem core `#96FFBC`), teal h 160-185 (`#28DCA0`, `#28C4B8`: clear of Clone Cyan's reserved band 189-229), violet tips h 300-315 (`#A864E0`, h 307: between Clone Indigo's band (≤ 300) and Clone Magenta's (≥ 318)). Never Alarm Red, never Heist Gold. The tint breathing multiplies by white ↔ `(190,255,238)` only (a teal lean) |
+| Value | Additive and unlit (Beam `LightEmission 1`, `LightInfluence 0`); the violet tips carry the lowest alpha (they fade into the indigo sky); Brightness 1.4 x the layer's factor, breathing ±18-25 %. The sky between the bands stays dark: bands, not a filled sky |
+| Shape | Curtains: a bright lower hem with fine vertical rays rising from it (`tools/blender/aurora_textures.py`), on long curved bands that cross the sky at angles. Never rings, beams or zigzags (the signal shapes, §1.3) |
+| Motion | Slow: sway periods 23-37 s, shimmer scroll 0.009-0.015 tiles/s, breathing 9-17 s. Reduced motion: 0.35x, never off. No flashes, no strobing |
+| On the ground | The light on the snow is `Config.Aurora.OUTDOOR_ADD` (0, 7, 4) added to OutdoorAmbient through `LightDirector.setExteriorTint`; it only adds, so Ambient ≤ OutdoorAmbient holds, and interiors (Ambient) are untouched |
+| Composition | The Veil (the hero band) stands over the landmark with its hem above the Snow Globe (hem ≥ 19.5°, unit spec); the Crown crosses the zenith (first person, looking up); the Glow sits low enough to show as a soft glow at the top of the classic frame (hem under its +10° top edge). The diorama camera never sees the sky (its frame top is 30° below the horizon): there the aurora reads only through the snow's tint |
+| Previews | `python3 tools/blender/aurora_shots.py` → `docs/art/aurora/` (sky-only, from the same plan data). Studio screenshots decide |
