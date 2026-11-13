@@ -17,7 +17,9 @@
 --   * the Christmas light strings along the band and under the crown (the level's dressing layer).
 -- Every piece belongs to one cut-away group (the client Heist/CutAway hides groups between the camera and its subject:
 -- "ceiling", "roof", and the four faces "front" / "back" / "left" / "right" with their outward normals) and one layer
--- ("base"; "detail": hidden from Config.Big.DETAIL_OFF_TIER; "xmas": the dressing layer, also detail).
+-- ("base"; "detail": hidden from Config.Big.DETAIL_OFF_TIER, the back and side faces' trims and crowns and the
+-- curtains; "fine": hidden from FINE_OFF_TIER, the coffered ceiling tiles (a flat slab inside them takes over), the
+-- fire escapes and rooftop props; "xmas": the dressing layer's light strings, hidden like "fine").
 -- Nothing here collides or is queried; the sim never sees it. The playable footprint is never touched: everything
 -- is at or above the wall tops, or outside the outer faces above the street front's 12-stud storey.
 
@@ -246,9 +248,12 @@ function TowerPlan.plan(level: any, specs: { [string]: any }?, opts: Options?, d
 		for _, tx in KP.tiles(lx0, lx1) do
 			for _, tz in KP.tiles(lz0, lz1) do
 				local pivot, scale = KP.fit(lo, hi, box(tx[1], ceilY, tz[1], tx[2], ceilY + cfg.CEIL_DEPTH, tz[2]), 0)
-				item({ "Ceiling_8x8" }, pivot, scale, "ceiling", "base", "ceiling")
+				item({ "Ceiling_8x8" }, pivot, scale, "ceiling", "fine", "ceiling")
 			end
 		end
+		-- the low tiers' ceiling: one flat slab inside the tiles' plates (hidden by them until FINE_OFF_TIER hides the
+		-- tiles; then its underside, 0.3 over the wall tops, is the ceiling: still never the sky)
+		slab("CeilingFlat", box(lx0, ceilY + 0.3, lz0, lx1, ceilY + 0.4, lz1), cfg.TRIM, "ceiling")
 	else
 		slab("Ceiling", box(lx0, ceilY, lz0, lx1, ceilY + cfg.CEIL_DEPTH, lz1), cfg.TRIM, "ceiling")
 	end
@@ -328,7 +333,7 @@ function TowerPlan.plan(level: any, specs: { [string]: any }?, opts: Options?, d
 				end
 				local fe = fireAt[f.name]
 				if fe and has("FireEscape_8x10") and (m == (if fe < 0 then n + 1 + fe else fe)) then
-					item({ "FireEscape_8x10" }, pivot, { 1, 1, 1 }, f.name, "detail", "fireEscape")
+					item({ "FireEscape_8x10" }, pivot, { 1, 1, 1 }, f.name, "fine", "fireEscape")
 				end
 			end
 		end
@@ -340,7 +345,9 @@ function TowerPlan.plan(level: any, specs: { [string]: any }?, opts: Options?, d
 			for _, t in KP.tiles(runA, runB) do
 				local w = t[2] - t[1]
 				local pivot = modulePivot(f, t[1], w, top)
-				item({ "Cornice_8" }, pivot, { w / (hi[1] - lo[1]), 1, 1 }, f.name, "base", "cornice")
+				-- the street front keeps its crown at every tier; the other faces' crowns are detail (tier 3+ hides them)
+				local layer = if f.name == "front" then "base" else "detail"
+				item({ "Cornice_8" }, pivot, { w / (hi[1] - lo[1]), 1, 1 }, f.name, layer, "cornice")
 			end
 		else
 			slab("Cornice", faceBox(f, runA, runB, top, top + cfg.CORNICE_H, -1.4, D), cfg.TRIM, f.name)
@@ -400,7 +407,7 @@ function TowerPlan.plan(level: any, specs: { [string]: any }?, opts: Options?, d
 		if has(r.piece) then
 			local lo, hi = scene(r.piece)
 			local pivot = KP.place(lo, hi, cx + r.at[1] * hx, roofY, cz + r.at[2] * hz, r.yaw)
-			item({ r.piece }, pivot, { 1, 1, 1 }, "roof", "detail", "roofProp")
+			item({ r.piece }, pivot, { 1, 1, 1 }, "roof", "fine", "roofProp")
 		end
 	end
 	if S.soldier and has("ToySoldier") then
@@ -523,6 +530,16 @@ function TowerPlan.plan(level: any, specs: { [string]: any }?, opts: Options?, d
 	return plan
 end
 
+-- Whether a layer shows at a performance tier (client Heist/CutAway keeps to the same rule).
+function TowerPlan.layerOn(layer: string, tier: number, cfg: any): boolean
+	if layer == "detail" then
+		return tier < cfg.DETAIL_OFF_TIER
+	elseif layer == "fine" or layer == "xmas" then
+		return tier < cfg.FINE_OFF_TIER
+	end
+	return true
+end
+
 -- A group's parts and items, by group name (the builder files them under one Model each).
 function TowerPlan.groupNames(plan: Plan): { string }
 	local out = {}
@@ -553,7 +570,7 @@ function TowerPlan.budget(plan: Plan, tier: number, kitTris: { [string]: number 
 	local instances, tris = 0, 0
 	local batches: { [string]: boolean } = {}
 	local function on(layer: string): boolean
-		return layer == "base" or tier < cfg.DETAIL_OFF_TIER
+		return TowerPlan.layerOn(layer, tier, cfg)
 	end
 	for _, p in plan.parts do
 		instances += 1

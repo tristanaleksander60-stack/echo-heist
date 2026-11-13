@@ -1846,7 +1846,7 @@ Config.Backdrop = {
 	},
 	-- Performance tiers (Config.Heist.PERF_TIERS): roblox_quality §6.4. Low phones keep the snowfield, the
 	-- streets, every building and its lit windows, the near ring and the sky: the frame is never black.
-	FAR_RING_OFF_TIER = 3,
+	FAR_RING_OFF_TIER = 2, -- BIG: the taller town and its towers hide most of the far ring; phones (tier 2+) skip it
 	-- The sky: the Heist City cubemap (tools/blender/sky_city.py) has Hoardsworth's tower at this yaw (degrees,
 	-- Roblox -Z = 0, turning toward -X). The client turns Lighting.Sky so the tower stands behind the building
 	-- the spawn faces (Sky.SkyboxOrientation), so every level and the garage get it in the first view.
@@ -2767,9 +2767,12 @@ Config.Big = {
 		SUBJECT_HEIGHTS = { 0.5, 4.5 }, -- studs above the subject's floor: the occluder test casts to feet and head
 	},
 	-- Per building at tier 1 (unit spec on every level; perf_engine counts the real build). Tier >= DETAIL_OFF_TIER
-	-- hides the "detail" layer (curtains, rooftop props, fire escapes, light strings) on the client.
+	-- hides the "detail" layer (the back and side faces' trims and crowns, the curtains: a phone starts at tier 2) and
+	-- from FINE_OFF_TIER the "fine" and "xmas" layers (coffered ceiling tiles: a flat slab takes over; fire escapes,
+	-- rooftop props, light strings) on the client (Heist/CutAway).
 	BUDGET = { instances = 560, draws = 26, tris = 72000, lights = 0 },
-	DETAIL_OFF_TIER = 3,
+	DETAIL_OFF_TIER = 2,
+	FINE_OFF_TIER = 3,
 }
 
 -- The story intro (docs/PLAN_FIRST_PERSON.md §5 "INTRO", docs/art/intro/STORYBOARD.md; MASTERPLAN §4.3): a

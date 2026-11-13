@@ -295,13 +295,16 @@ local function tallyOf(root: Instance?): Tally
 	return t
 end
 
--- BIG: the triangles of a level's Overhead detail layer (curtains, fire escapes, rooftop props, light strings):
--- what the client hides from Config.Big.DETAIL_OFF_TIER.
-local function bigDetailTris(model: Instance): number
+-- BIG: the triangles of a level's Overhead layers the client hides at a tier (Heist/CutAway, Config.Big: "detail" from
+-- DETAIL_OFF_TIER, "fine" and "xmas" from FINE_OFF_TIER).
+local function bigDetailTris(model: Instance, tier: number): number
 	local over = model:FindFirstChild("Overhead")
+	local B = Config.Big
 	local n = 0
 	for _, d in (over and over:GetDescendants()) or {} do
-		if d:IsA("BasePart") and d:GetAttribute("EH_Layer") ~= nil then
+		local layer = d:GetAttribute("EH_Layer")
+		local off = if layer == "detail" then B.DETAIL_OFF_TIER elseif layer then B.FINE_OFF_TIER else nil
+		if d:IsA("BasePart") and off and tier >= off then
 			n += if d:IsA("MeshPart") then TRIS[d:GetAttribute("KitPiece") or d.Name] or 0 else 12
 		end
 	end
@@ -947,9 +950,7 @@ if cloneActor and six then
 		local glows = echo.glowCount()
 		local hl = clonesT.highlightsOn
 		-- BIG: from Config.Big.DETAIL_OFF_TIER the client (Heist/CutAway) hides the Overhead's detail layer
-		local levelTris = l6T.kitTris
-			+ l6T.primTris
-			- (if tier >= Config.Big.DETAIL_OFF_TIER then bigDetailTris(levelModel) else 0)
+		local levelTris = l6T.kitTris + l6T.primTris - bigDetailTris(levelModel, tier)
 		local avatarTris = (12 - lodFar + 4) * P.AVATAR_TRIS_EST + lodFar * P.MANNEQUIN_TRIS
 		local tris = levelTris + bdT.kitTris + bdT.primTris + avatarTris + 2 * gusTris
 		local draws = batchCount(l6T)
@@ -1244,7 +1245,7 @@ do
 		local e = instances[i]
 		local over = e.inst.built.model:FindFirstChild("Overhead")
 		local t = tallyOf(over)
-		local detail = bigDetailTris(e.inst.built.model)
+		local detail = bigDetailTris(e.inst.built.model, Config.Big.FINE_OFF_TIER)
 		local loud = 0
 		for _, d in (over and over:GetDescendants()) or {} do
 			if d:IsA("BasePart") and (d.CanCollide or d.CanQuery or d.CanTouch or d.CastShadow) then
@@ -1268,7 +1269,7 @@ do
 				BB.instances,
 				tris // 1000,
 				BB.tris // 1000,
-				Config.Big.DETAIL_OFF_TIER,
+				Config.Big.FINE_OFF_TIER,
 				(tris - detail) // 1000,
 				batchCount(t),
 				BB.draws,

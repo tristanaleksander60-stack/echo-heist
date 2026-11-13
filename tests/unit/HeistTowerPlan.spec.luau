@@ -116,7 +116,7 @@ return function(test: (string, () -> ()) -> ())
 					local covered = 0
 					local area = (bb.maxX - bb.minX - 1) * (bb.maxZ - bb.minZ - 1)
 					for _, b in boxes(plan) do
-						if b.group == "ceiling" and b.name ~= "CeilingLid" then
+						if b.group == "ceiling" and b.name ~= "CeilingLid" and b.name ~= "CeilingFlat" then
 							Assert.near(
 								b.minY,
 								level.floorY + BIG.CEIL_Y,

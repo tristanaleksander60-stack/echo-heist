@@ -838,7 +838,12 @@ do
 				local columns, bankers, solidSig = 0, 0, 0
 				for _, dsc in b6.model:GetDescendants() do
 					local piece = dsc:GetAttribute("KitPiece")
-					if dsc:IsA("BasePart") and (piece == "Column_2x12" or piece == "BankersLamp") then
+					-- (the BIG building's giant order over the street front is the Overhead's, counted in section 11)
+					if
+						dsc:IsA("BasePart")
+						and (piece == "Column_2x12" or piece == "BankersLamp")
+						and dsc:FindFirstAncestor("Overhead") == nil
+					then
 						if piece == "Column_2x12" then
 							columns += 1
 						else

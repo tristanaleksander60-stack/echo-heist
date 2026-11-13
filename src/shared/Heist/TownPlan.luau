@@ -123,6 +123,9 @@ function TownPlan.build(input: Input): Town
 	local function addKit(k: Kit)
 		table.insert(kit, k)
 	end
+	-- the far rows and the towers (BIG): seen over roofs and across the street, never up close, so no rooftop props
+	-- and no Christmas decor on them (their garlands and tanks would cost triangles nobody sees)
+	local plainNow = false
 
 	-- The street ----------------------------------------------------------------------------------------------
 	local P, R = T.PAVEMENT, T.ROAD
@@ -348,7 +351,7 @@ function TownPlan.build(input: Input): Town
 					"building",
 					"building"
 				)
-			elseif roll < RT.setback + RT.tank then
+			elseif roll < RT.setback + RT.tank and not plainNow then
 				addKit({
 					piece = "Roof_WaterTank",
 					pos = at(w * 0.22, h, -d * 0.6),
@@ -357,7 +360,7 @@ function TownPlan.build(input: Input): Town
 					src = "props",
 				})
 			end
-			if rnd() < RT.chimney then
+			if rnd() < RT.chimney and not plainNow then
 				addKit({
 					piece = "Roof_Chimney",
 					pos = at(-w * 0.3, h, -d * 0.3),
@@ -366,7 +369,7 @@ function TownPlan.build(input: Input): Town
 					src = "props",
 				})
 			end
-			if rnd() < RT.antenna then
+			if rnd() < RT.antenna and not plainNow then
 				addKit({
 					piece = "Roof_Antenna",
 					pos = at(w * 0.3, h, -d * 0.25),
@@ -433,7 +436,7 @@ function TownPlan.build(input: Input): Town
 				"building"
 			)
 			windows(fx, fz, nx, nz, w, topV, T.GROUND, nil, nil, body)
-			if input.xmas and theme.signature == "lights" then
+			if input.xmas and not plainNow and theme.signature == "lights" then
 				for k = 0, math.floor((w - 1) / 8) - 1 do
 					local mu = -w / 2 + 0.5 + k * 8 -- the module's left end seen from the street (its local X runs 0..-8)
 					addKit({
@@ -482,7 +485,7 @@ function TownPlan.build(input: Input): Town
 			local dh = if kind == "warehouse" then 7.5 else T.HOUSE.doorH
 			door(at, size, du, dw, dh, if kind == "warehouse" then C.trim else doorColour)
 			windows(fx, fz, nx, nz, w, topV, T.GROUND, du, dw, body)
-			if input.xmas and kind ~= "warehouse" then
+			if input.xmas and not plainNow and kind ~= "warehouse" then
 				-- the wreath's origin is its back centre: on the door leaf's face
 				addKit({
 					piece = "Xmas_Wreath",
@@ -495,6 +498,7 @@ function TownPlan.build(input: Input): Town
 		end
 		if
 			input.xmas
+			and not plainNow
 			and (kind == "shop" or kind == "townhouse" or kind == "civic")
 			and theme.signature ~= "lights"
 		then
@@ -592,6 +596,7 @@ function TownPlan.build(input: Input): Town
 	-- streets with depth (BIG): a second, taller row behind the back row and behind the across row, and the landmark
 	-- towers either side of Hoardsworth's (the sky's landmark stands straight ahead of the spawn view, toward -Z)
 	local DP = T.DEPTH
+	plainNow = true
 	local deepBack = backZ - DP.back
 	row(DP.kinds, deepBack, 1, lot.minX - DP.overhang, 1, lot.maxX + DP.overhang, { 14, 18 }, 23)
 	local deepAcross = acrossZ + DP.across + (if plaza then plaza.depth else 0)
@@ -599,6 +604,7 @@ function TownPlan.build(input: Input): Town
 	for _, tw in T.TOWERS do
 		building("tower", cx + tw.x, deepBack - tw.back, 0, 1, tw.w, tw.d, nil)
 	end
+	plainNow = false
 
 	-- Props --------------------------------------------------------------------------------------------------
 	local LP = T.LAMP

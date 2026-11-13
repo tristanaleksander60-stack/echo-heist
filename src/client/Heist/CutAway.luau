@@ -11,7 +11,8 @@
 -- child Model a group with EH_CutKind / EH_CutMin / EH_CutMax (+ EH_CutNormal / EH_CutPlane for faces), and the town's
 -- tall buildings (Heist/Backdrop.addOccluders: occlusion rule only). Batched: one decision pass at CUT.HZ, then each
 -- group's parts are written only while its fade moves; no per-frame allocation (the subject buffer and the decision
--- table are reused). It also hides the "detail" / "xmas" layers from Config.Big.DETAIL_OFF_TIER (Transparency 1,
+-- table are reused). It also hides the "detail" layer from Config.Big.DETAIL_OFF_TIER and the "fine" / "xmas" layers
+-- from FINE_OFF_TIER (Transparency 1,
 -- restored when the tier steps back up). Binds after the camera (RenderPriority.Camera + 10), so it sees the frame
 -- every camera writer produced this frame.
 
@@ -74,15 +75,20 @@ function CutAway.new(director: any?): any
 	local self = {}
 	local buildings: { Building } = {}
 	local stateOf: { [Instance]: GroupState } = {} -- group Model -> its state (parts added late find it)
-	local detail: { { part: BasePart, base: number } } = {}
+	local detail: { { part: BasePart, base: number, off: number } } = {} -- off: the tier the layer hides from
 	local conns: { RBXScriptConnection } = {}
 	local tier = 1
 	local subj: { number } = table.create(MAX_SUBJECTS * 3, 0)
 	local clock = 0
 	local player = Players.LocalPlayer
 
-	local function detailOn(): boolean
-		return tier < BIG.DETAIL_OFF_TIER
+	local function offTier(layer: any): number?
+		if layer == "detail" then
+			return BIG.DETAIL_OFF_TIER
+		elseif layer == "fine" or layer == "xmas" then
+			return BIG.FINE_OFF_TIER
+		end
+		return nil
 	end
 
 	local function addPart(st: GroupState, p: Instance)
@@ -91,10 +97,10 @@ function CutAway.new(director: any?): any
 			if st.written > 0 then
 				p.LocalTransparencyModifier = st.written
 			end
-			local layer = p:GetAttribute("EH_Layer")
-			if layer == "detail" or layer == "xmas" then
-				table.insert(detail, { part = p, base = p.Transparency })
-				if not detailOn() then
+			local off = offTier(p:GetAttribute("EH_Layer"))
+			if off then
+				table.insert(detail, { part = p, base = p.Transparency, off = off })
+				if tier >= off then
 					p.Transparency = 1
 				end
 			end
@@ -250,14 +256,13 @@ function CutAway.new(director: any?): any
 	end
 
 	function self.setTier(t: number)
-		local was = detailOn()
-		tier = t
-		if detailOn() == was then
+		if t == tier then
 			return
 		end
+		tier = t
 		for _, d in detail do
 			if d.part.Parent then
-				d.part.Transparency = if detailOn() then d.base else 1
+				d.part.Transparency = if tier < d.off then d.base else 1
 			end
 		end
 	end
