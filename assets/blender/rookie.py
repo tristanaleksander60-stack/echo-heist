@@ -19,6 +19,7 @@ Four groups (FBX files):
   Rookie_Faces      Smug, Shocked, Busted: swapped with Idle by state (only one face shows)
   Rookie_Outfits    the outfit slots: cap x4, scarf x4, sweater x2 (overlays), gloves x2 (cuffs), mask x1 (+ none)
   Rookie_Viewmodel  the first-person forearms + gloved hands (LeftArm, RightArm; grips GripL / GripR)
+  Rookie_Hands      the first-person gloves with fingers: palm + index / finger block / thumb, two segments each
 Outfit pieces and faces are authored on the body and seat-checked against it (A16 below), then moved apart for the
 turntable; their pivot is their attach point (manifest `attach`: body part + offset from that part's pivot, Roblox
 axes), so the game welds them by pivot, never by scene position.
@@ -252,13 +253,18 @@ def face(k, name, mood):
 
 def upper_torso(k):
     mb = k.MB("Rookie_UpperTorso")
-    body = mb.lathe(TORSO_PROF, 16, ["marble_lo", "marble_lo", "marble", "marble", "marble", "marble", "marble",
-                                     "marble_hi", "marble_hi"], (0, 0, 0), part="Sweater")
+    # REVIEW_STEAM_PLUS #14: the sweater is Warm Marble light (luma 0.89) so it sits a clear value step above the
+    # skin (0.63) under warm light too, and a dark knit collar (Ink Indigo light) cuts the head off the body at 48 px
+    body = mb.lathe(TORSO_PROF, 16, ["marble", "marble", "marble_hi", "marble_hi", "marble_hi", "marble_hi",
+                                     "marble_hi", "marble_hi", "ink_hi"], (0, 0, 0), part="Sweater")
     squash(body, TORSO_SQ)
     # ribbed hem: three shallow ribs read as knit at 64 px (the bands in the crew colour are the overlay)
     for z in (1.84, 1.92):
         ring(mb, (0, 0, 0), prof_r(TORSO_PROF, z + 0.03) - 0.03, prof_r(TORSO_PROF, z + 0.03) + 0.025, z, z + 0.05,
-             "marble_lo", sy=TORSO_SQ, part="Rib")
+             "marble", sy=TORSO_SQ, part="Rib")
+    # the collar: a raised dark rib round the neckline
+    rc = prof_r(TORSO_PROF, 2.95)
+    ring(mb, (0, 0, 0), rc - 0.05, rc + 0.04, 2.88, 3.0, "ink_hi", sy=TORSO_SQ, part="Collar")
     # the swag-bag strap: a dark leather band across the chest from the left shoulder to the right hip
     for sgn in (-1, 1):
         path = []
@@ -291,13 +297,13 @@ def arm_parts(k, side):
     s = "Right" if side < 0 else "Left"
     sh, el, wr = J[f"{s}Shoulder"], J[f"{s}Elbow"], J[f"{s}Wrist"]
     mu = k.MB(f"Rookie_{s}UpperArm")
-    mu.sphere(sh, 0.34, 10, 6, "marble", part="Shoulder")
-    limb(mu, sh, el, 0.3, 0.27, ["marble", "marble", "marble", "marble_lo", "marble_lo"], part="Upper")
+    mu.sphere(sh, 0.34, 10, 6, "marble_hi", part="Shoulder")
+    limb(mu, sh, el, 0.3, 0.27, ["marble_hi", "marble_hi", "marble_hi", "marble", "marble"], part="Upper")
     ua = k.finalize(mu, pivot=sh)
     ml = k.MB(f"Rookie_{s}LowerArm")
-    limb(ml, el, wr, 0.27, 0.25, ["marble", "marble", "marble", "marble", "marble"], part="Fore")
+    limb(ml, el, wr, 0.27, 0.25, ["marble_hi", "marble_hi", "marble_hi", "marble_hi", "marble_hi"], part="Fore")
     d = (Vector(wr) - Vector(el)).normalized()
-    ml.cylinder(tuple(Vector(wr) - d * 0.12), tuple(d), 0.28, -0.07, 0.07, 10, "marble_lo", part="Cuff")
+    ml.cylinder(tuple(Vector(wr) - d * 0.12), tuple(d), 0.28, -0.07, 0.07, 10, "marble", part="Cuff")
     la = k.finalize(ml, pivot=el)
     hd, hc = glove(k, f"Rookie_{s}Hand", side, wr, "white")
     return ua, la, hd, hc
@@ -576,9 +582,9 @@ def viewmodel_arm(k, side):
     s = "Right" if side < 0 else "Left"
     el, wr = J[f"{s}Elbow"], J[f"{s}Wrist"]
     mb = k.MB(f"Rookie_VM_{s}Arm")
-    limb(mb, el, wr, 0.27, 0.25, ["marble", "marble", "marble", "marble", "marble"], part="Fore")
+    limb(mb, el, wr, 0.27, 0.25, ["marble_hi", "marble_hi", "marble_hi", "marble_hi", "marble_hi"], part="Fore")
     d = (Vector(wr) - Vector(el)).normalized()
-    mb.cylinder(tuple(Vector(wr) - d * 0.12), tuple(d), 0.28, -0.07, 0.07, 10, "marble_lo", part="Cuff")
+    mb.cylinder(tuple(Vector(wr) - d * 0.12), tuple(d), 0.28, -0.07, 0.07, 10, "marble", part="Cuff")
     ring(mb, tuple(Vector(wr) + d * 0.02), 0.2, 0.31, -0.13, 0.04, "ink", segs=12, part="GloveCuff", axis=tuple(d))
     hc = Vector(wr) + Vector((side * 0.03, -0.04, -0.27))
     ellipsoid(mb, tuple(hc), 1.0, 0.27, 0.3, 0.32, "ink_hi", segs=10, rings=6, part="Palm")
@@ -588,6 +594,52 @@ def viewmodel_arm(k, side):
     ellipsoid(mb, (hc.x - side * 0.25, hc.y - 0.12, hc.z + 0.06), 1.0, 0.1, 0.11, 0.14, "ink_hi", segs=6, rings=4,
               part="Thumb")
     return k.finalize(mb, pivot=el), tuple(hc)
+
+
+# ---------------------------------------------------------------- first-person hands with fingers (REVIEW #10)
+
+# Segments of one gloved hand, built straight down from the body's wrist (the arm hanging, palm forward, the back of
+# the hand behind): (name, parent, hinge offset from the wrist (inner x, forward y, up z; Blender units, inner = toward
+# the body), radius, [(finger x offset from the hinge, length)]). The game turns each segment about its hinge
+# (Heist/Viewmodel, Config.FirstPerson.VIEWMODEL.HANDS): open, grip, push, point, press, hands-up.
+KNUCKLE_Z = -0.47
+HAND_SEGS = [
+    ("Index1", "Palm", (0.155, 0.0, KNUCKLE_Z), 0.07, [(0.0, 0.2)]),
+    ("Index2", "Index1", (0.155, 0.0, KNUCKLE_Z - 0.2), 0.066, [(0.0, 0.16)]),
+    ("Fingers1", "Palm", (-0.065, 0.0, KNUCKLE_Z), 0.066, [(0.11, 0.21), (0.0, 0.2), (-0.11, 0.17)]),
+    ("Fingers2", "Fingers1", (-0.065, 0.0, KNUCKLE_Z - 0.2), 0.062, [(0.11, 0.15), (0.0, 0.14), (-0.11, 0.12)]),
+    ("Thumb1", "Palm", (0.25, -0.05, -0.2), 0.078, [(0.0, 0.17)]),
+    ("Thumb2", "Thumb1", (0.25, -0.05, -0.37), 0.072, [(0.0, 0.14)]),
+]
+
+
+def hand_pieces(k, side):
+    """One first-person glove as hinged segments: the palm (pivot = the wrist) + index, the other three fingers as
+    one block, and the thumb, two segments each (pivot = their hinge). Tint White: the glove colour at runtime."""
+    s = "Right" if side < 0 else "Left"
+    inn = -side
+    wr = Vector(J[f"{s}Wrist"])
+    out = []
+    mp = k.MB(f"Rookie_Hand_{s}_Palm")
+    ellipsoid(mp, tuple(wr + Vector((0.0, 0.0, -0.25))), 1.0, 0.28, 0.17, 0.26, "white", segs=10, rings=6, part="Palm")
+    ellipsoid(mp, tuple(wr + Vector((0.0, 0.0, KNUCKLE_Z + 0.04))), 1.0, 0.28, 0.15, 0.08, "white", segs=10, rings=4,
+              part="Knuckles")
+    out.append((k.finalize(mp, pivot=tuple(wr)), "Palm", None, tuple(wr)))
+    for name, parent, (hx, hy, hz), r, fingers in HAND_SEGS:
+        hinge = wr + Vector((inn * hx, hy, hz))
+        mb = k.MB(f"Rookie_Hand_{s}_{name}")
+        if name.startswith("Thumb"):
+            d = Vector((0.0, -0.25, -1.0)).normalized()
+        else:
+            d = Vector((0.0, 0.0, -1.0))
+        for fx, length in fingers:
+            a = hinge + Vector((inn * fx, 0.0, 0.0))
+            b = a + d * length
+            limb(mb, tuple(a), tuple(b), r, r * 0.95, ["white"] * 5, segs=8, part="Seg")
+            if name.endswith("2"):
+                mb.sphere(tuple(b), r * 0.98, 8, 5, "white", part="Tip")
+        out.append((k.finalize(mb, pivot=tuple(hinge)), name, parent, tuple(hinge)))
+    return out
 
 
 # ---------------------------------------------------------------- assembly
@@ -743,4 +795,20 @@ def build(k):
                         notes=f"first-person {s.lower()} forearm + knit glove; Grip{s[0]} = palm centre"))
     viewmodel = k.Asset("Rookie_Viewmodel", vm, notes="First-person arms (FP track): LeftArm / RightArm, pivot = elbow, "
                                                       "GripL / GripR at the palms; sleeve + knit glove, one mesh each.")
-    return [rookie, faces_asset, outfits, viewmodel]
+    # ---- the first-person hands with fingers (Viewmodel.fromOutfit swaps them in for the mitts)
+    hand_objs = []
+    for side in (-1, 1):
+        s = "Right" if side < 0 else "Left"
+        built = hand_pieces(k, side)
+        by = {n: ob for ob, n, _, _ in built}
+        check_seats(lf, [(by[n], by[par]) for _, n, par, _ in built if par])
+        for ob, name, parent, hinge in built:
+            hand_objs.append(k.Obj(ob, "small", role="char", pivot="point", collision="Box", can_collide=False,
+                                   cast_shadow=False, atlas=False, tint=glove, tags=["EH_Rookie", "EH_Hand"],
+                                   extra={**attach(k, f"{s}Hand", hinge),
+                                          "finger": {"name": name, "parent": parent, "side": s}},
+                                   notes=f"first-person {s.lower()} glove: {name} (pivot = its hinge)"))
+    hands_asset = k.Asset("Rookie_Hands", hand_objs, notes="First-person gloves with fingers (REVIEW #10): palm + "
+                                                           "index, finger block and thumb in two segments each, "
+                                                           "pivots at the hinges; glove colour at runtime.")
+    return [rookie, faces_asset, outfits, viewmodel, hands_asset]

@@ -480,6 +480,7 @@ function EchoView.new(state: any): any
 			frame = CloneState.newFrame(),
 			pose = ClonePose.new(),
 			gait = CloneGait.new(),
+			airFrom = nil :: number?, -- recording time the clone left the floor (the land clip)
 			phase = 0,
 			fade = -1,
 			near = false,
@@ -548,7 +549,7 @@ function EchoView.new(state: any): any
 	local function release(entry: any)
 		local rig = entry.rig
 		hideRigs(entry)
-		Rigs.locomote(rig, "none", 0, 1, 0, false, false)
+		Rigs.locomote(rig, "none", 0, 0, 1, 0, false, false)
 		Rigs.setPose(rig, nil)
 		Rigs.lookAt(rig, nil, 0)
 		entry.pose.busy = false
@@ -911,7 +912,7 @@ function EchoView.new(state: any): any
 			-- Walk cycle locked to the recording: distance travelled, not wall time.
 			local distance = CloneGait.distanceAt(rec, entry.dist, t)
 			entry.phase = distance / C.MANNEQUIN_STRIDE * TAU
-			local walkPhase = distance / C.STRIDE * TAU
+			local walkPhase = distance / CloneGait.RUN_STRIDE * TAU
 
 			-- Custom pose (blend in, or out of the last custom state).
 			local pose = entry.pose
@@ -1121,16 +1122,30 @@ function EchoView.new(state: any): any
 				sendSpeed, sendWeights = CloneGait.step(entry.gait, f.speed, rate)
 			end
 			local g = entry.gait
+			local walkPhase0, runPhase0 = CloneGait.phase(distance)
 			Rigs.locomote(
 				rig,
 				loco,
 				math.max(g.speed, 0),
+				math.max(g.runSpeed, 0),
 				g.walkW,
 				g.runW,
 				sendSpeed,
 				sendWeights,
-				CloneGait.phase(distance)
+				walkPhase0,
+				runPhase0,
+				rate
 			)
+			-- the landing squash after a real fall (recording time in the air, so 3x lands like 1x)
+			local airborne = f.loco == "jump" or f.loco == "fall"
+			if airborne then
+				entry.airFrom = entry.airFrom or t
+			elseif entry.airFrom then
+				if loco ~= "none" and math.abs(t - entry.airFrom) >= Config.Rookie.ANIM.LAND.minFall then
+					Rigs.land(rig, f.speed)
+				end
+				entry.airFrom = nil
+			end
 
 			entry.trail.Enabled = trailsOn and entry.fade < 1 and (reelT ~= nil or f.speed > Config.Rec.WALK_SPEED + 1)
 			if entry.bubble.Enabled and now > entry.bubbleUntil then
@@ -1163,7 +1178,7 @@ function EchoView.new(state: any): any
 		local pool = poolFor(ownerId, Palette.hueFor(a.seat))
 		local entry = table.remove(pool.free) or newEntry(pool, ownerId)
 		hideRigs(old)
-		Rigs.locomote(old.rig, "none", 0, 1, 0, false, false)
+		Rigs.locomote(old.rig, "none", 0, 0, 1, 0, false, false)
 		Rigs.setPose(old.rig, nil)
 		Rigs.lookAt(old.rig, nil, 0)
 		old.pose.busy = false
@@ -1313,7 +1328,7 @@ function EchoView.new(state: any): any
 		for _, entry in order do
 			entry.fade = 1
 			hideRigs(entry)
-			Rigs.locomote(entry.rig, "none", 0, 1, 0, false, false)
+			Rigs.locomote(entry.rig, "none", 0, 0, 1, 0, false, false)
 			Rigs.setPose(entry.rig, nil)
 			Rigs.lookAt(entry.rig, nil, 0)
 			entry.pose.busy = false

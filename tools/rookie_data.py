@@ -48,6 +48,7 @@ def source():
            "-- origin). body: R15 part -> kit piece, joint (its pivot), parent, size and centre (the block fallback).",
            "-- attach: outfit pieces and faces weld to `part` with their pivot at that part's pivot + `offset`.",
            "-- tint: \"crew\" (seat hue) or \"gloves\" (Config.Rookie.GLOVES). viewmodel: first-person arms (pivot = elbow).",
+           "-- hands: first-person gloves with fingers by side, chain order; offset = the hinge from the wrist (rest pose).",
            "",
            "return {"]
     out.append("\tbody = {")
@@ -96,6 +97,21 @@ def source():
         if t:
             key = n.replace("Rookie_", "") if p.get("joint") else n
             out.append(f'\t\t{key} = "{t}",')
+    out.append("\t},")
+    # first-person gloves with fingers (Rookie_Hands): per side, the segments in chain order (parent before child)
+    segs = {}
+    for n, p in sorted(rk.items()):
+        f = p.get("finger")
+        if f:
+            segs.setdefault(f["side"], []).append((n, f, p["attach"]["offset"]))
+    order = ["Palm", "Index1", "Index2", "Fingers1", "Fingers2", "Thumb1", "Thumb2"]
+    out.append("\thands = {")
+    for side in sorted(segs):
+        out.append(f"\t\t{side} = {{")
+        for n, f, off in sorted(segs[side], key=lambda r: order.index(r[1]["name"]) if r[1]["name"] in order else 99):
+            parent = f'"{f["parent"]}"' if f.get("parent") else "nil"
+            out.append(f'\t\t\t{{ piece = "{n}", joint = "{f["name"]}", parent = {parent}, offset = {vec(off)} }},')
+        out.append("\t\t},")
     out.append("\t},")
     out.append("\tviewmodel = {")
     for n, p in sorted(rk.items()):

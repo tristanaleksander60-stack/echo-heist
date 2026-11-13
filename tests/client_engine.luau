@@ -887,7 +887,17 @@ do
 			end
 		end
 		assert(n >= 24, "placeholder parts: " .. n)
-		assert(#rig.R.parts >= 12 and #rig.L.parts > #rig.R.parts, "two hands, the watch on the left")
+		-- rigid parts + the hinged finger segments' parts (REVIEW #10)
+		local function count(hand: any): number
+			local c = #hand.parts
+			for _, f in hand.fingers or {} do
+				c += #f.parts
+			end
+			return c
+		end
+		local nR, nL = count(rig.R), count(rig.L)
+		assert(nR >= 12 and nL > nR, string.format("two hands, the watch on the left (%d, %d parts)", nR, nL))
+		assert(#rig.R.fingers == 3 and #rig.L.fingers == 3, "placeholder fingers hinge (index, the rest, thumb)")
 		assert(grey == 0, grey .. " grey part(s)")
 		assert(loud == 0, loud .. " part(s) collide, query, touch or cast shadows")
 		assert(farthest < 1.4, string.format("scaled close to the grip (%.2f studs)", farthest))
@@ -1629,7 +1639,12 @@ local okCh, chErr = pcall(function(): string
 				end
 			end
 		end
-		assert(cuffs == 2 and hands == 2, string.format("two gloves and their cuffs (%d, %d)", hands, cuffs))
+		-- the hinged gloves (Rookie_Hands: 7 pieces a hand) when the kit has them, else the two mitts
+		local wantHands = if kit.Pieces:FindFirstChild("Rookie_Hand_Right_Index1") then 14 else 2
+		assert(
+			cuffs == 2 and hands == wantHands,
+			string.format("two gloves (%d pieces, want %d) and their cuffs (%d)", hands, wantHands, cuffs)
+		)
 		assert(crew >= 2, "the sleeve's crew stripes or cuffs: " .. crew)
 		assert(loud == 0, "quiet parts")
 		assert(#rig.R.parts >= 3 and #rig.L.parts >= 3, "both hands bound to their grips")
@@ -1681,6 +1696,78 @@ local okCh, chErr = pcall(function(): string
 	return table.concat(looks, ", ")
 end)
 check(okCh, "CH polish: arms in your outfit, the scarf tail sways (" .. tostring(chErr) .. ")")
+-- M. First-person hand poses (REVIEW_STEAM_PLUS #10): the kit gloves are hinged (Rookie_Hands: six finger segments a
+-- hand, the fingers exist), the placeholder's fingers too, and every pose of Config.FirstPerson.VIEWMODEL.HANDS builds
+-- finite frames (Viewmodel.fingerFrames, what each frame of Viewmodel applies): the grip folds the finger block in,
+-- the push lays it flat, the point keeps the index out while the others fold.
+local okHands, handsErr = pcall(function(): string
+	local Viewmodel = require(clientHeist:WaitForChild("Viewmodel"))
+	local Outfit = require(shared:WaitForChild("Heist"):WaitForChild("Outfit"))
+	local Config = require(shared:WaitForChild("Config")) :: any
+	local H = Config.FirstPerson.VIEWMODEL.HANDS
+	local kit = ReplicatedStorage:WaitForChild(Config.Rookie.KIT_FOLDER, 20)
+	assert(kit and kit:FindFirstChild("Pieces"), "CharacterKit.Pieces")
+	assert(kit.Pieces:FindFirstChild("Rookie_Hand_Right_Index1"), "the Rookie_Hands pieces are in the kit")
+	local rig = Viewmodel.fromOutfit(kit, Outfit.key(Outfit.default()), Color3.fromHex("#3DE8FF"))
+	assert(rig and rig.kit, "kit arms built")
+	assert(
+		#rig.R.fingers == 6 and #rig.L.fingers == 6,
+		string.format("six finger segments a hand (%d, %d)", #rig.R.fingers, #rig.L.fingers)
+	)
+	local function segOf(hand: any, joint: string): number?
+		for i, f in hand.fingers do
+			if f.joint == joint then
+				return i
+			end
+		end
+		return nil
+	end
+	-- the far end of a segment's parts from the grip (grip space)
+	local function reach(hand: any, frames: { CFrame }, joint: string): number
+		local i = segOf(hand, joint) :: number
+		local f = hand.fingers[i]
+		local far = 0
+		for k, p in f.parts do
+			local cf = frames[i] * f.rests[k]
+			far = math.max(far, (cf * Vector3.new(0, -p.Size.Y / 2, 0)).Magnitude, cf.Position.Magnitude)
+		end
+		return far
+	end
+	-- each hinge sits at the top of its segment at the rig's scale (the hinge marks scaled with it)
+	for _, f in rig.R.fingers do
+		local d = (f.rests[1].Position).Magnitude
+		assert(d < 0.16, string.format("%s: its part sits %.3f studs from its hinge", f.joint, d))
+	end
+	local out = {}
+	local at: { [string]: { [string]: number } } = {}
+	for _, name in H.ORDER do
+		for _, hand in { rig.R, rig.L } do
+			local frames = Viewmodel.fingerFrames(hand, H.POSES[name])
+			assert(#frames == #hand.fingers, name .. ": a frame per segment")
+			for _, cf in frames do
+				local p = cf.Position
+				assert(p.X == p.X and p.Magnitude < 5, name .. ": finite frames")
+			end
+		end
+		local fr = Viewmodel.fingerFrames(rig.R, H.POSES[name])
+		at[name] = { block = reach(rig.R, fr, "Fingers2"), index = reach(rig.R, fr, "Index2") }
+		table.insert(out, string.format("%s %.2f/%.2f", name, at[name].index, at[name].block))
+	end
+	assert(at.grip.block < at.push.block * 0.85, "grip folds the finger block in")
+	assert(at.point.index > at.point.block * 1.1, "point: the index reaches past the folded fingers")
+	assert(at.handsUp.block >= at.open.block, "hands-up: splayed at least as far as open")
+	rig.model:Destroy()
+	-- the placeholder's fingers pose too
+	local ph = Viewmodel.buildPlaceholder()
+	assert(#ph.R.fingers == 3 and #ph.L.fingers == 3, "placeholder: index, finger group and thumb a hand")
+	for _, name in H.ORDER do
+		local frames = Viewmodel.fingerFrames(ph.R, H.POSES[name])
+		assert(#frames == 3, "placeholder " .. name)
+	end
+	ph.model:Destroy()
+	return table.concat(out, ", ")
+end)
+check(okHands, "hand poses: hinged kit gloves, every pose builds (" .. tostring(handsErr) .. ")")
 -- K. The northern lights (PLAN_FIRST_PERSON "SKY"): Heist/Aurora builds every layer of Config.Aurora as a chain of
 -- additive Beams (valid uploaded image ids: Image assets), unlit, never colliding or queried, high over the anchor;
 -- the tier switches change how many draw (Budget.auroraLayers: 4 / 4 / 2 / 1) and tier 4 holds still; the layers

@@ -817,9 +817,11 @@
    "uploaded": "2026-11-13T02:39:51Z"
   },
   "Rookie": {
-   "assetId": 82283617669885,
+   "assetId": 84963762775202,
    "file": "assets/fbx/Rookie.fbx",
-   "history": [],
+   "history": [
+    82283617669885
+   ],
    "moderation": "Approved",
    "pieces": [
     "Rookie_Face_Idle",
@@ -839,9 +841,9 @@
     "Rookie_RightUpperLeg",
     "Rookie_UpperTorso"
    ],
-   "revisionId": "2",
-   "sha256": "36e356e58d414e158d6afa88263adf25ce2e92342d67fe8690e015fabccaa4f4",
-   "uploaded": "2026-11-13T02:57:45Z"
+   "revisionId": "1",
+   "sha256": "f689e04f5cde74fe53f0cd3394d4b174b5f691ba265c2158fccd8506d5ab916b",
+   "uploaded": "2026-11-13T09:36:35Z"
   },
   "Rookie_Faces": {
    "assetId": 115892166045394,
@@ -856,6 +858,31 @@
    "revisionId": "2",
    "sha256": "3d6553b9b914ff21c2d3ea55f21dde37f0342796beab0c7972b607cd049b9da0",
    "uploaded": "2026-11-13T02:57:55Z"
+  },
+  "Rookie_Hands": {
+   "assetId": 132448374836667,
+   "file": "assets/fbx/Rookie_Hands.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Rookie_Hand_Left_Fingers1",
+    "Rookie_Hand_Left_Fingers2",
+    "Rookie_Hand_Left_Index1",
+    "Rookie_Hand_Left_Index2",
+    "Rookie_Hand_Left_Palm",
+    "Rookie_Hand_Left_Thumb1",
+    "Rookie_Hand_Left_Thumb2",
+    "Rookie_Hand_Right_Fingers1",
+    "Rookie_Hand_Right_Fingers2",
+    "Rookie_Hand_Right_Index1",
+    "Rookie_Hand_Right_Index2",
+    "Rookie_Hand_Right_Palm",
+    "Rookie_Hand_Right_Thumb1",
+    "Rookie_Hand_Right_Thumb2"
+   ],
+   "revisionId": "1",
+   "sha256": "b0f664e0f741c83b444650b27882bf55bc60391baf9c00700c7ffc0a07ec3058",
+   "uploaded": "2026-11-13T09:36:52Z"
   },
   "Rookie_Outfits": {
    "assetId": 88500778373104,
@@ -890,17 +917,19 @@
    "uploaded": "2026-11-13T02:58:14Z"
   },
   "Rookie_Viewmodel": {
-   "assetId": 122428778963718,
+   "assetId": 74916290022054,
    "file": "assets/fbx/Rookie_Viewmodel.fbx",
-   "history": [],
+   "history": [
+    122428778963718
+   ],
    "moderation": "Approved",
    "pieces": [
     "Rookie_VM_LeftArm",
     "Rookie_VM_RightArm"
    ],
    "revisionId": "1",
-   "sha256": "bc6ae35101e5005f9a65b1b91eecf317fd5c49e27dbed5d9b974f31dba22544a",
-   "uploaded": "2026-11-13T00:21:04Z"
+   "sha256": "44de8f4b19bc89508310fa5d8f1ff68753c1a66a686b69a0e0c6545b1464e4ad",
+   "uploaded": "2026-11-13T09:36:59Z"
   },
   "Rug_8x6": {
    "assetId": 125310774976762,

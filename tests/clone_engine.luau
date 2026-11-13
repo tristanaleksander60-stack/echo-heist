@@ -909,6 +909,285 @@ do
 	end
 end
 
+---------------------------------------------------------------------------
+-- 8. The Rookie's own locomotion (REVIEW_STEAM_PLUS #6): the uploaded RookieClips load on the Rookie and move the
+-- joints the data says, the engine's pose matches Shared/Heist/RookieMoves (the baked numbers), and a replaying
+-- clone's planted boots slide under 0.3 studs a stride at 1x and 3x (EchoView + CloneGait + the clips).
+---------------------------------------------------------------------------
+do
+	local RookieClips = require(shared:WaitForChild("Heist"):WaitForChild("RookieClips")) :: any
+	local RookieMoves = require(shared:WaitForChild("Heist"):WaitForChild("RookieMoves")) :: any
+	local okRig, made = pcall(Rookie.build, Outfit.default(), nil, "constraint")
+	check(okRig and made ~= nil, "rookie clips: a Rookie (AnimationConstraint joints, as a clone) builds")
+	if okRig and made then
+		local rig = made :: Model
+		local root = rig:WaitForChild("HumanoidRootPart") :: BasePart
+		root.Anchored = true
+		rig:PivotTo(CFrame.new(origin + Vector3.new(30, 40, 0)))
+		rig.Parent = workspace
+		local hum = rig:WaitForChild("Humanoid") :: Humanoid
+		local animator = hum:WaitForChild("Animator") :: Animator
+		local function att(part: string, name: string): Attachment?
+			local p = rig:FindFirstChild(part)
+			local a = p and p:FindFirstChild(name)
+			return if a and a:IsA("Attachment") then a else nil
+		end
+		local ankle = att("RightFoot", "RightAnkleRigAttachment")
+		local function rootSpace(p: Vector3): Vector3
+			return root.CFrame:PointToObjectSpace(p)
+		end
+		local function partAt(name: string): Vector3
+			local p = rig:WaitForChild(name) :: BasePart
+			return rootSpace(p.Position)
+		end
+		local loaded = 0
+		for _, clip in RookieMoves.ORDER do
+			local id = RookieClips[clip]
+			local anim = Instance.new("Animation")
+			anim.AnimationId = id or ""
+			local okLoad, track = pcall(function(): AnimationTrack
+				return animator:LoadAnimation(anim)
+			end)
+			if not (id and okLoad and track) then
+				check(false, "rookie clips: " .. clip .. " loads (" .. tostring(id) .. ")")
+				continue
+			end
+			for _ = 1, 100 do
+				if track.Length > 0 then
+					break
+				end
+				task.wait(0.05)
+			end
+			loaded += 1
+			local spec = RookieMoves.CLIPS[clip]
+			track:Play(0, 1, 1)
+			-- sweep the clip and measure what moves (part positions in the root's frame)
+			local rest: { [string]: Vector3 } = {}
+			for _, n in { "RightFoot", "LeftFoot", "RightHand", "Head", "LowerTorso" } do
+				rest[n] = partAt(n)
+			end
+			local footZ0, footZ1, handYMax, torsoYMin, headYaw = math.huge, -math.huge, -math.huge, math.huge, 0
+			local handOverHead = -math.huge
+			local n = 24
+			for i = 0, n do
+				track.TimePosition = spec.length * i / n * 0.999
+				animator:StepAnimations(0)
+				local f = partAt("RightFoot")
+				footZ0, footZ1 = math.min(footZ0, f.Z), math.max(footZ1, f.Z)
+				handYMax = math.max(handYMax, partAt("RightHand").Y)
+				handOverHead = math.max(handOverHead, partAt("RightHand").Y - partAt("Head").Y)
+				torsoYMin = math.min(torsoYMin, partAt("LowerTorso").Y)
+				local head = rig:WaitForChild("Head") :: BasePart
+				local look = root.CFrame:VectorToObjectSpace(head.CFrame.LookVector)
+				headYaw = math.max(headYaw, math.deg(math.abs(math.atan2(-look.X, -look.Z))))
+			end
+			local ok: boolean, what: string
+			if clip == "walk" or clip == "run" then
+				ok, what =
+					footZ1 - footZ0 > 0.9, string.format("the right boot swings %.2f studs fore-aft", footZ1 - footZ0)
+			elseif clip == "jump" or clip == "fall" then
+				ok, what =
+					handOverHead > -0.25,
+					string.format("the hands go up by the head (hand %.2f studs from the head's centre)", handOverHead)
+			elseif clip == "land" then
+				ok, what =
+					rest.LowerTorso.Y - torsoYMin > 0.2,
+					string.format("the hips squash %.2f studs", rest.LowerTorso.Y - torsoYMin)
+			elseif clip == "look" then
+				ok, what = headYaw > 30, string.format("the head turns %.0f degrees", headYaw)
+			else
+				ok, what =
+					footZ1 - footZ0 < 0.05 and torsoYMin < rest.LowerTorso.Y + 0.05,
+					string.format("stands planted (boot moves %.3f) and breathes", footZ1 - footZ0)
+			end
+			check(ok, string.format("rookie clips: %s (%s, %.2f s): %s", clip, id, track.Length, what))
+			track:Stop(0)
+			animator:StepAnimations(0)
+		end
+		check(loaded == #RookieMoves.ORDER, "rookie clips: all " .. #RookieMoves.ORDER .. " load (" .. loaded .. ")")
+
+		-- The engine plays the data: the right ankle at 8 phases of the walk and the run vs RookieMoves' kinematics.
+		if ankle then
+			for _, clip in { "walk", "run" } do
+				local anim = Instance.new("Animation")
+				anim.AnimationId = RookieClips[clip]
+				local okLoad, track = pcall(function(): AnimationTrack
+					return animator:LoadAnimation(anim)
+				end)
+				if okLoad and track then
+					track:Play(0, 1, 0)
+					local worst = 0
+					for i = 0, 7 do
+						local t = RookieMoves.CLIPS[clip].length * i / 8
+						track.TimePosition = t
+						animator:StepAnimations(0)
+						local fk = RookieMoves.fk(RookieMoves.sample(clip, t))
+						local want = RookieMoves.point(fk.RightFoot, RookieMoves.PIVOT.RightFoot)
+						local got = rootSpace(ankle.WorldPosition)
+						-- RookieMoves' model space has the floor at 0; the root's centre is 3 studs up
+						local d = (got - Vector3.new(want[1], want[2] - 3, want[3])).Magnitude
+						worst = math.max(worst, d)
+					end
+					check(
+						worst < 0.08,
+						string.format("rookie clips: %s ankle matches the baked data (%.3f studs)", clip, worst)
+					)
+					track:Stop(0)
+					animator:StepAnimations(0)
+				end
+			end
+		end
+		rig:Destroy()
+	end
+
+	-- Your character: the Rookie clips go into the engine's Animate script (its sets of Animations, as the R15 Animate
+	-- holds them), the idle set gets the look-around as its rare variant, and a second pass changes nothing.
+	do
+		local RookieAnimate = require(shared:WaitForChild("Heist"):WaitForChild("RookieAnimate")) :: any
+		local animate = Instance.new("Folder")
+		animate.Name = "Animate"
+		local function set(name: string, anims: { string })
+			local sv = Instance.new("StringValue")
+			sv.Name = name
+			for _, an in anims do
+				local a = Instance.new("Animation")
+				a.Name = an
+				a.AnimationId = "rbxassetid://507766666"
+				local w = Instance.new("NumberValue")
+				w.Name = "Weight"
+				w.Value = 5
+				w.Parent = a
+				a.Parent = sv
+			end
+			sv.Parent = animate
+		end
+		set("idle", { "Animation1", "Animation2" })
+		set("walk", { "WalkAnim" })
+		set("run", { "RunAnim" })
+		set("jump", { "JumpAnim" })
+		set("fall", { "FallAnim" })
+		set("climb", { "ClimbAnim" })
+		local changed = RookieAnimate.apply(animate)
+		local idle1 = animate.idle.Animation1 :: Animation
+		local idle2 = animate.idle.Animation2 :: Animation
+		local W = Config.Rookie.ANIM.IDLE_WEIGHTS
+		check(
+			changed == 6
+				and (animate.walk.WalkAnim :: Animation).AnimationId == RookieClips.walk
+				and (animate.run.RunAnim :: Animation).AnimationId == RookieClips.run
+				and (animate.jump.JumpAnim :: Animation).AnimationId == RookieClips.jump
+				and (animate.fall.FallAnim :: Animation).AnimationId == RookieClips.fall
+				and idle1.AnimationId == RookieClips.idle
+				and idle2.AnimationId == RookieClips.look
+				and (idle1.Weight :: NumberValue).Value == W.idle
+				and (idle2.Weight :: NumberValue).Value == W.look
+				and (animate.climb.ClimbAnim :: Animation).AnimationId == "rbxassetid://507766666"
+				and RookieAnimate.apply(animate) == 0,
+			"your Animate: walk, run, jump, fall, idle + the rare look set to the Rookie clips, climb kept, idempotent ("
+				.. tostring(changed)
+				.. " changed)"
+		)
+		animate:Destroy()
+	end
+
+	-- A replaying clone's boots: each heel / toe that touches the floor stays put until it lifts (1x and 3x).
+	local c1 = cases[1]
+	local cloneRig = c1 and c1.rig
+	if cloneRig and cloneRig:FindFirstChild("RightFoot") then
+		-- Per heel / toe: from touching the floor to lifting, its largest horizontal drift. A stride counts while the
+		-- recording moves the whole time (speed > 2); the idle <-> run cross-fades are reported, not judged.
+		local function slideAt(viewRate: number): (number, number, number, string)
+			local dt = 1 / 240
+			local tView = VIEW_START
+			local worst, contacts, steps, fades = 0, 0, 0, 0
+			local worstAt = ""
+			local track: { [string]: any } = {}
+			local dur = Sampler.duration(rec)
+			local function close(id: string)
+				local tr = track[id]
+				if tr and tr.n >= 3 then
+					if tr.moving then
+						contacts += 1
+						if tr.max > worst then
+							worst = tr.max
+							worstAt = string.format("%s at t %.2f, %d steps", id, tr.t, tr.n)
+						end
+					else
+						fades = math.max(fades, tr.max)
+					end
+				end
+				track[id] = nil
+			end
+			while tView < dur - 0.2 do
+				tView += dt * viewRate
+				pcall(echo.update, tView, os.clock(), dt, nil)
+				if not SIMULATED then
+					local a = animatorOf(rigOf(c1))
+					if a then
+						a:StepAnimations(dt) -- wall time: the clips' own speed already carries the view rate
+					end
+				end
+				steps += 1
+				local rigNow = rigOf(c1)
+				local rootP = rigNow and rigNow:FindFirstChild("HumanoidRootPart")
+				if not (rigNow and rootP and rootP:IsA("BasePart")) then
+					break
+				end
+				local vx, _, vz = Sampler.velocity(rec, tView)
+				local moving = math.sqrt(vx * vx + vz * vz) > 2
+				local floorY = rootP.Position.Y - Config.Rookie.HIP_HEIGHT - Config.Rookie.ROOT_SIZE[2] / 2
+				for _, side in { "Right", "Left" } do
+					local foot = rigNow:FindFirstChild(side .. "Foot")
+					local a = foot and foot:FindFirstChild(side .. "AnkleRigAttachment")
+					if a and a:IsA("Attachment") then
+						for key, off in { heel = Vector3.new(0, -0.5, 0.4), toe = Vector3.new(0, -0.5, -0.9) } do
+							local p = a.WorldCFrame:PointToWorldSpace(off)
+							local id = side .. key
+							if p.Y - floorY < 0.06 then
+								local tr = track[id]
+								if not tr then
+									track[id] = { at = p, n = 1, max = 0, moving = moving, t = tView }
+								else
+									tr.n += 1
+									tr.moving = tr.moving and moving
+									tr.max = math.max(tr.max, Vector3.new(p.X - tr.at.X, 0, p.Z - tr.at.Z).Magnitude)
+								end
+							else
+								close(id)
+							end
+						end
+					end
+				end
+			end
+			note(
+				string.format(
+					"clone boots at %gx: start/stop cross-fades drift up to %.2f studs (not judged)",
+					viewRate,
+					fades
+				)
+			)
+			return worst, contacts, steps, worstAt
+		end
+		for _, r in { 1, 3 } do
+			local worst, contacts, steps, worstAt = slideAt(r)
+			check(
+				contacts >= 4 and worst < 0.3,
+				string.format(
+					"clone boots at %dx: %d planted contacts in stride over %d steps, worst slide %.3f studs (limit 0.3; %s)",
+					r,
+					contacts,
+					steps,
+					worst,
+					worstAt
+				)
+			)
+		end
+		pcall(echo.update, VIEW_START + SECONDS, os.clock(), 1 / 60, nil)
+	else
+		check(false, "clone boots: the first clone has a Rookie rig")
+	end
+end
+
 -- Your own clones are never invisible by design: a fill, kept on at every performance tier.
 local own = cases[1]
 local ownGroup = own and own.rig and own.rig.Parent
