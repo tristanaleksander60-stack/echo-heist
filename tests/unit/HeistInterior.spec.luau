@@ -380,7 +380,7 @@ return function(test)
 		end
 	end)
 
-	test("props never use loot, signal or clone cells; tiers: decor hides, the hero and the frieze stay", function()
+	test("props never use loot, signal or clone cells; tiers: props and the frieze hide, the hero stays", function()
 		for _, level in levels() do
 			local plan = decorOf(level, true)
 			for _, it in plan.items do
@@ -393,7 +393,7 @@ return function(test)
 						what .. ": role " .. tostring(m.role)
 					)
 				end
-				if it.role == "decor" or it.role == "brass" then
+				if it.role == "decor" or it.role == "brass" or it.role == "frieze" then
 					Assert.eq(it.tier, "decor", what .. ": hidden from DECOR_OFF_TIER")
 				else
 					Assert.eq(it.tier, nil, what .. ": stays at every tier")

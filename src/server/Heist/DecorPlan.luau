@@ -769,6 +769,7 @@ function DecorPlan.plan(level: any, specs: { [string]: any }, opts: Options?, de
 						pivot = pivot,
 						scale = { len / (hi[1] - lo[1]), 1, 1 },
 						layer = "base",
+						tier = "decor", -- the low tiers keep the level's colour in its ceiling and light
 						color = theme.frieze,
 						room = if bandOf(cz) then plan.rooms[bandOf(cz) :: number].kind else nil,
 					})

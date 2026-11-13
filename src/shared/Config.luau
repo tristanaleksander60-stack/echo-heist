@@ -2828,8 +2828,8 @@ Config.Big = {
 -- sightlines from the crew seats (tests/unit/HeistInterior.spec.luau, incl. a walk-grid route check).
 Config.Interior = {
 	ENABLED = true,
-	-- Client (Heist/LightDirector): parts with EH_Layer "decor" hide from this tier (the hero display, the frieze and
-	-- the ceiling stay at every tier).
+	-- Client (Heist/LightDirector): parts with EH_Layer "decor" (the props, the teller brass and the frieze) hide from
+	-- this tier; the hero display, the ceiling colour, the room light and the fascia stay at every tier.
 	DECOR_OFF_TIER = 3,
 	-- First-person pools (client LightDirector): a pool's strength x a share from `min` (the camera looks across it at
 	-- an elevation of `from` degrees or less over its centre, e.g. a pool 10+ studs ahead of the 3.8-stud eye) to `max`
