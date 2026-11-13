@@ -1044,7 +1044,7 @@ def garage(g, W, Hh, samples, out_dir=None):
     cd.clip_end = 5000
     s.render.resolution_x, s.render.resolution_y = W, Hh
     s.render.resolution_percentage = 100
-    G3 = g["camera"]["GOLDEN"]["G3"]
+    G3 = {"YAW": 35, "PITCH": 30, "DISTANCE": 22, "FOV": 45}   # the pre-first-person 3/4 bay view (legacy frame)
     v = g["bays"][0]["collider"]
     focus = ((v[0] + v[3]) / 2, (v[1] + v[4]) / 2, (v[2] + v[5]) / 2)
     yw, p = math.radians(G3["YAW"]), math.radians(G3["PITCH"])
@@ -1574,6 +1574,329 @@ def big_garage(g, samples, out_dir):
     _w2_shoot(s, cam, "GA_fp_yard", pos, tgt, FP_FOV, pos, cfg, out_dir)
 
 
+# ------------------------------------------------------------------ GOLDEN FRAMES in first person (REVIEW_STEAM_PLUS #4)
+GOLDEN_FP = os.path.join(REPO, "docs", "audit", "levels", "golden_fp")
+GFP_SIZE = (1280, 720)     # 16:9, the Studio / phone-landscape capture the owner signs off beside these
+GFP_T = 3.0                # G2: the staging tapes sampled 3 s into the run (seven distinct spots, facing the camera)
+GLOVE_KNIT = "#2A2D52"     # Config.Rookie.GLOVES.Gloves_Knit (the default outfit)
+
+
+def golden_plan(t=GFP_T):
+    out = subprocess.run(["lune", "run", "tools/blender/golden_plan.luau", str(t)], cwd=REPO, capture_output=True,
+                         text=True, check=True).stdout
+    return json.loads(out)
+
+
+def fp_hands(cam, rest, crew=CYAN):
+    """Both first-person hands as Heist/Viewmodel.fromOutfit draws them in the default outfit (the kit forearm,
+    the knit glove and its cuff, two crew stripes down the sleeve), the wrists at Config.FirstPerson.VIEWMODEL.REST
+    (camera space, full size: the game draws them at 0.4 scale that much closer, which looks the same), each
+    forearm running back and out from the wrist; parented to the camera. Approximate: the rest pose's grip rotation
+    is not reproduced exactly and the fingers are the kit mitt."""
+    import bmesh
+    import rookie_sheet as RS
+    out = []
+    for side, sx, key in (("Right", 1, "R"), ("Left", -1, "L")):
+        elbow = RS.blender_body("Rookie_" + side + "LowerArm")
+        wrist = RS.blender_body("Rookie_" + side + "Hand")
+        objs = RS.put("Rookie", "Rookie_" + side + "LowerArm", elbow)
+        objs += RS.put("Rookie", "Rookie_" + side + "Hand", wrist, GLOVE_KNIT)
+        cuff = f"Rookie_Gloves_Knit_{side}"
+        objs += RS.put("Rookie_Outfits", cuff, RS.blender_point(cuff), GLOVE_KNIT)
+        for tt, r in zip(RS.STRIPES, RS.STRIPE_R):
+            c = elbow.lerp(wrist, tt)
+            bm = bmesh.new()
+            bmesh.ops.create_cone(bm, cap_ends=True, segments=20, radius1=r, radius2=r, depth=RS.STRIPE_W)
+            me = bpy.data.meshes.new("Stripe")
+            bm.to_mesh(me)
+            bm.free()
+            o = bpy.data.objects.new("Stripe", me)
+            d = (wrist - elbow).normalized()
+            o.matrix_world = Matrix.Translation(c) @ d.to_track_quat("Z", "Y").to_matrix().to_4x4()
+            o.data.materials.append(K._mat("EH_Stripe_" + crew, K._lin(crew)))
+            bpy.context.scene.collection.objects.link(o)
+            objs.append(o)
+        # camera space (x right, y up, -z forward): REST is the grip (the palm), the wrist a hand's length behind
+        # it, the forearm rising from the bottom corner; the hand bent down at the wrist so the knuckles lead
+        px, py, pz = rest[key][0], rest[key][1], rest[key][2]
+        fwd = Vector((-sx * 0.3, 0.45, -0.84)).normalized()         # elbow -> wrist
+        target = Vector((px, py, pz)) - fwd * 0.25
+        down = (wrist - elbow).normalized()                          # elbow -> wrist on the rest body
+        q = down.rotation_difference(fwd)
+        roll = Matrix.Rotation(math.radians(sx * -75), 4, fwd)      # the back of the glove up and out
+        m = Matrix.Translation(target) @ roll @ q.to_matrix().to_4x4() @ Matrix.Translation(-wrist)
+        side_axis = fwd.cross(Vector((0, 1, 0))).normalized()
+        bend = Matrix.Translation(target) @ Matrix.Rotation(math.radians(-35), 4, side_axis) @ \
+            Matrix.Translation(-target)
+        hand_names = ("Rookie_" + side + "Hand",)
+        for o in objs:
+            o.matrix_world = m @ o.matrix_world
+            if o.name.split(".")[0] in hand_names:
+                o.matrix_world = bend @ o.matrix_world
+            o.parent = cam
+            o.matrix_parent_inverse = Matrix.Identity(4)
+            o.visible_shadow = False
+            o.name = "hand_" + o.name
+        out += objs
+    return out
+
+
+def reticle(path):
+    """The first-person reticle (Hud: a white dot in an ink ring at the screen centre) drawn on a finished frame."""
+    from PIL import Image, ImageDraw
+    im = Image.open(path).convert("RGB")
+    W, Hh = im.size
+    d = ImageDraw.Draw(im)
+    r = max(3, int(Hh * 0.006))
+    cx, cy = W / 2, Hh / 2
+    d.ellipse([cx - r - 2, cy - r - 2, cx + r + 2, cy + r + 2], fill=(28, 31, 59))
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(244, 247, 255))
+    im.save(path, optimize=True)
+
+
+def seen_from(s, eye, p, skip=("Glass", "Snowfall", "pool", "WindowSpill", "TownPool", "Beam")):
+    """True when the first opaque thing on the ray from eye to p (Roblox points) is within 1 stud of p (glass, snow
+    and the unlit pools let the ray through, as they let the eye through)."""
+    dg = bpy.context.evaluated_depsgraph_get()
+    a, b = rb(*eye), rb(*p)
+    d = (b - a)
+    far = d.length
+    d.normalize()
+    o = a
+    for _ in range(12):
+        hit, loc, _n, _i, obj, _m = s.ray_cast(dg, o, d, distance=far - (o - a).length)
+        if not hit:
+            return True
+        if (loc - b).length < 1.0:
+            return True
+        if any(k in obj.name for k in skip) or obj.name.startswith("hand_"):
+            o = loc + d * 0.02
+            continue
+        return False
+    return False
+
+
+def glint_at(path, s, cam, p, size=0.035):
+    """The loot glint (WorldView's star every GLINT_PERIOD s) drawn at a world point on a finished frame."""
+    from PIL import Image, ImageDraw, ImageFilter
+    bpy.context.view_layer.update()
+    v = world_to_camera_view(s, cam, rb(*p))
+    if v.z <= 0 or not (0 <= v.x <= 1 and 0 <= v.y <= 1):
+        return False
+    im = Image.open(path).convert("RGBA")
+    W, Hh = im.size
+    x, y = v.x * W, (1 - v.y) * Hh
+    layer = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    dl = ImageDraw.Draw(layer)
+    for rr, a in ((Hh * size * 1.6, 90), (Hh * size, 200), (Hh * size * 0.45, 255)):
+        w = rr * 0.14
+        dl.polygon([(x, y - rr), (x + w, y - w), (x + rr, y), (x + w, y + w), (x, y + rr), (x - w, y + w),
+                    (x - rr, y), (x - w, y - w)], fill=(255, 246, 214, a))
+    im = Image.alpha_composite(im, layer.filter(ImageFilter.GaussianBlur(1.0)))
+    im.convert("RGB").save(path, optimize=True)
+    return True
+
+
+def _gfp_finish(s, cam, name, gdir, pos, tgt, fov, snow_at, cfg, level=None, fp=True, glint=None):
+    from PIL import Image
+    _w2_shoot(s, cam, name, pos, tgt, fov, snow_at, cfg, gdir, level=level)
+    out = os.path.join(gdir, f"{name}.png")
+    if glint is not None and os.path.isfile(out):
+        seen = seen_from(s, pos, glint)
+        print("glint", name, "seen" if seen else "hidden", glint)
+        if seen:
+            glint_at(out, s, cam, glint)
+    if fp and os.path.isfile(out):
+        reticle(out)
+    if os.path.isfile(out):
+        Image.open(out).convert("RGB").resize((160, 90), Image.LANCZOS).save(os.path.join(gdir, f"{name}_160x90.png"))
+
+
+def golden_fp_g1(level, gp, samples, gdir):
+    """G1: L1 in first person from the street spawn: the eye at 3.8, your Rookie hands, the staged look (toward the
+    cash glinting through the shop window, tilted up for the tenement and the aurora: GOLDEN.G1), snow, the game's
+    northern lights (AuroraPlan ribbons), the first-person pool fade; graded like WORLD 2.0 + the surface mask."""
+    global POOL_FADE, POOL_FADE_CFG
+    import aurora_shots as AS
+    import backdrop_shots as BS
+    W, Hh = GFP_SIZE
+    POOL_FADE, POOL_FADE_CFG = [], level["interior"]["POOL_FADE"]
+    s = MR.reset(samples)
+    s.view_settings.exposure = 0.3
+    lib = Lib(level["location"])
+    _held, doors, _lasers = build(level, False, lib)
+    gus_and_cone(level, doors, level["location"], level["dressing"])
+    groups = tower(level["tower"], lib)
+    BS.backdrop(level, lib, put, soft_pool_mat)
+    lighting(s)
+    BS.world_sky(s, TMP)
+    cam = _w2_camera(s, W, Hh)
+    s.render.resolution_x, s.render.resolution_y = W, Hh
+    J = player(level)
+    G = gp["G1"]
+    ex, ey, ez = G["eye"]
+    move(J, level, ex, ez + 40.0, 0.0)           # first person hides your body
+    pos, tgt = _fp(ex, ez, level["floorY"], math.radians(G["yaw"]), -G["pitch"])
+    pos = (ex, ey, ez)
+    cut(level["tower"], groups, pos, [])
+    _apply_fade(pos)
+    AS.ribbons(s, AS.load_plan(0.0), pos, AS.TIER_LAYERS[1])
+    fp_hands(cam, gp["hands"])
+    cx, cy, cz = G["cash"]
+    _gfp_finish(s, cam, "G1_fp_spawn", gdir, pos, tgt, G["fov"], pos, level["backdropConfig"], level=level,
+                glint=(cx, cy + 2.4, cz))
+
+
+def golden_fp_g2(level, gp, samples, gdir):
+    """G2: Clone Party at "8 OF ME", the moment's pull-back (pitch 45, FOV 45, yaw 0, the distance fitted so all 8
+    sit inside the central 32 % of the width and 80 % of the half height): you and the seven staging-tape clones
+    where the tapes put them GFP_T s into the run, all **Rookies** (the kit body in the default outfit), the clones
+    drawn as EchoView draws your solo runs (crew pieces in the seat hue drifting violet and dimmer per older run,
+    the Highlight's fill and outline, a floor glow, a numbered pill), the world dimmed 15 %, the stamp above them."""
+    import backdrop_shots as BS
+    import colorsys
+    import intro_shots as IS
+    from PIL import Image, ImageDraw
+    W, Hh = GFP_SIZE
+    s = MR.reset(samples)
+    s.view_settings.exposure = 0.3
+    loc, dressing = level["location"], level["dressing"]
+    lib = Lib(loc)
+    _held, doors, _lasers = build(level, False, lib)
+    gl = gus_and_cone(level, doors, loc, dressing)
+    groups = tower(level["tower"], lib)
+    BS.backdrop(level, lib, put, soft_pool_mat)
+    lighting(s)
+    BS.world_sky(s, TMP)
+    cam = _w2_camera(s, W, Hh)
+    s.render.resolution_x, s.render.resolution_y = W, Hh
+    G = gp["G2"]
+    fy = level["floorY"]
+    seat = CYAN
+    r0, g0, b0 = (int(seat[i:i + 2], 16) / 255 for i in (1, 3, 5))
+    h0, s0, v0 = colorsys.rgb_to_hsv(r0, g0, b0)
+    figs = []
+    for k, c in enumerate(G["clones"]):
+        rr, gg, bb = colorsys.hsv_to_rgb((h0 + c["hueShift"]) % 1, s0, v0 * c["dim"])
+        hue = "#%02X%02X%02X" % (round(rr * 255), round(gg * 255), round(bb * 255))
+        objs = IS.rookie((c["x"], fy, c["z"]), math.degrees(c["yaw"]), {}, face="smug", crew=hue)
+        IS.clone_look(objs, hue, G["fill"])
+        IS.clone_fx((c["x"], fy, c["z"]), hue, None, {"clone": {"bandAlpha": G["bandAlpha"]}})
+        for o in objs:
+            o.name = "clone%d_%s" % (k + 1, o.name)
+        figs.append(((c["x"], fy, c["z"]), k + 1, hue))
+    yx, _yy, yz = G["you"]
+    you = IS.rookie((yx, fy, yz), 0.0, {}, face="smug", crew=seat)
+    for o in you:
+        o.name = "you_" + o.name
+    pts = [(p[0], p[1] + dy, p[2]) for p, _k, _h in figs for dy in (0.2, 4.8)] + [(yx, fy + 0.2, yz), (yx, fy + 4.8, yz)]
+    focus = tuple(sum(p[i] for p in pts) / len(pts) for i in range(3))
+    yaw, pitch, fov = math.radians(G["yaw"]), math.radians(G["pitch"]), math.radians(G["fov"])
+    look = Vector((-math.sin(yaw) * math.cos(pitch), -math.sin(pitch), -math.cos(yaw) * math.cos(pitch)))
+    right = look.cross(Vector((0, 1, 0))).normalized()
+    up = right.cross(look).normalized()
+    th, aspect = math.tan(fov / 2), W / Hh
+    dist = 90.0
+    for d in [x * 0.5 for x in range(24, 181)]:
+        eye = Vector(focus) - look * d
+        ok = True
+        for p in pts:
+            v = Vector(p) - eye
+            z = v.dot(look)
+            if z <= 0.5 or abs(v.dot(right) / z) > th * aspect * G["centralShare"] or abs(v.dot(up) / z) > th * 0.8:
+                ok = False
+                break
+        if ok:
+            dist = d
+            break
+    eye = Vector(focus) - look * dist
+    pos, tgt = tuple(eye), focus
+    print("G2 pull-back distance", dist)
+    subjects = [p for p in pts]
+    print("cut G2", sorted(cut(level["tower"], groups, pos, subjects)))
+    name = "G2_eight_of_me"
+    _w2_shoot(s, cam, name, pos, tgt, G["fov"], None, level["backdropConfig"], gdir, level=level, gl=gl)
+    out = os.path.join(gdir, f"{name}.png")
+    # the moment's 2D layer: the world dimmed 15 % outside the clones (the clone source mask), the numbered pills,
+    # and the 8 OF ME stamp above the crew
+    img = Image.open(out).convert("RGBA")
+    srcp = os.path.join(TMP, f"w2_{name}_src.png")
+    if os.path.isfile(srcp):
+        import numpy as np
+        sm = np.asarray(Image.open(srcp).convert("RGBA").resize(img.size, Image.NEAREST)).astype(int)
+        mask = np.all(np.abs(sm[..., :3] - np.array((0, 255, 255))) < 40, axis=-1) & (sm[..., 3] >= 128)
+        a = np.asarray(img).astype(float)
+        a[..., :3][~mask] *= 0.85
+        img = Image.fromarray(a.clip(0, 255).astype(np.uint8))
+    bpy.context.view_layer.update()
+    d = ImageDraw.Draw(img)
+    f, _ = MR._font(int(Hh * 0.03))
+    heads = []
+    for p, k, hue in figs + [((yx, fy, yz), 8, seat)]:
+        v = world_to_camera_view(s, cam, rb(p[0], p[1] + 5.4, p[2]))
+        x, y = v.x * W, (1 - v.y) * Hh
+        heads.append(y)
+        rw, rh = Hh * 0.026, Hh * 0.02
+        d.rounded_rectangle([x - rw, y - rh, x + rw, y + rh], radius=rh, fill=(28, 31, 59, 230),
+                            outline=tuple(int(hue[i:i + 2], 16) for i in (1, 3, 5)) + (255,), width=2)
+        d.text((x, y), str(k), font=f, fill=(244, 247, 255, 255), anchor="mm")
+    f2, _ = MR._font(int(Hh * 0.1))
+    sy = min(heads) - Hh * 0.04
+    d.text((W / 2, sy), "8 OF ME", font=f2, fill=(255, 230, 156, 255), anchor="mb",
+           stroke_width=max(3, int(Hh * 0.008)), stroke_fill=(28, 31, 59, 255))
+    img.convert("RGB").save(out, optimize=True)
+    Image.open(out).convert("RGB").resize((160, 90), Image.LANCZOS).save(os.path.join(gdir, f"{name}_160x90.png"))
+    import frame_grade as FG
+    g = FG.grade(out, os.path.join(TMP, f"w2_{name}_ids.png"), srcp)
+    record_grade(gdir, g)
+
+
+def golden_fp_g3(g, gp, samples, gdir):
+    """G3: the warehouse hideout in first person, at the vans with the job board: the eye at GOLDEN.G3.STAND, the
+    staged look between the board's NEXT card and your van (bay 1), your Rookie hands; the warehouse as server
+    Heist/Lobby builds it (garage_scene)."""
+    import backdrop_shots as BS
+    W, Hh = GFP_SIZE
+    s = MR.reset(samples)
+    s.view_settings.exposure = 0.3
+    lib = Lib(g["location"])
+    groups = garage_scene(g, lib)
+    BS.backdrop({"backdrop": g["backdrop"], "backdropConfig": g["backdropConfig"], "kit": [], "location": g["location"],
+                 "lighting": g["lighting"]}, lib, put, soft_pool_mat)
+    lighting(s)
+    BS.world_sky(s, TMP)
+    cam = _w2_camera(s, W, Hh)
+    s.render.resolution_x, s.render.resolution_y = W, Hh
+    G = gp["G3"]
+    ex, ey, ez = G["eye"]
+    pos, tgt = _fp(ex, ez, 0.0, math.radians(G["yaw"]), -G["pitch"])
+    pos = (ex, ey, ez)
+    cut(g["tower"], groups, pos, [])
+    fp_hands(cam, gp["hands"])
+    _gfp_finish(s, cam, "G3_fp_hideout", gdir, pos, tgt, G["fov"], None, g["backdropConfig"])
+
+
+def golden_fp_sheet(gdir):
+    from PIL import Image, ImageDraw
+    names = [("G1_fp_spawn", "G1  L1 first person: the spawn, the cash through the window"),
+             ("G2_eight_of_me", "G2  Clone Party: 8 OF ME (eight Rookies)"),
+             ("G3_fp_hideout", "G3  the hideout in first person: the vans and the job board")]
+    tw, th = 640, 360
+    sheet = Image.new("RGB", (tw * 3 + 40, th + 72), (20, 21, 34))
+    d = ImageDraw.Draw(sheet)
+    f, _ = MR._font(15)
+    for i, (n, label) in enumerate(names):
+        p = os.path.join(gdir, n + ".png")
+        if not os.path.isfile(p):
+            continue
+        x = 10 + i * (tw + 10)
+        sheet.paste(Image.open(p).convert("RGB").resize((tw, th), Image.LANCZOS), (x, 40))
+        d.text((x, 14), label, font=f, fill=(230, 232, 245))
+    d.text((10, th + 44), "Blender approximations (not captures): the owner signs off these beside Studio captures.",
+           font=f, fill=(169, 178, 204))
+    sheet.save(os.path.join(gdir, "contact_sheet.png"), optimize=True)
+
+
 # ------------------------------------------------------------------ INTERIORS (docs/audit/LEVELS.md 13)
 INT_SITES = ("L1", "L2", "L3", "L4", "L5", "L6", "DV01")
 INT = os.path.join(OUT, "interiors")
@@ -2066,11 +2389,40 @@ def main(argv):
                          "diorama and classic; graded with the surface mask into --out (default docs/audit/levels/interiors)")
     ap.add_argument("--before", action="store_true", help="--interiors: the levels without the INTERIORS track")
     ap.add_argument("--interiors-sheet", action="store_true", help="the INTERIORS contact sheet from --out")
+    ap.add_argument("--golden-fp", action="store_true",
+                    help="GOLDEN_FRAMES G1 / G2 / G3 for the first-person game and the Rookie (REVIEW_STEAM_PLUS #4) into "
+                         "docs/audit/levels/golden_fp/ (one process per frame; --only G1, G2 or G3), graded")
+    ap.add_argument("--golden-fp-sheet", action="store_true", help="the golden_fp contact sheet")
     ap.add_argument("--big", action="store_true",
                     help="BIG buildings (LEVELS.md 11): BIG_SITES (or --only one) from the first-person eye and the "
                          "diorama / classic cameras with the cut-away, graded into --out (default docs/audit/levels/big)")
     a = ap.parse_args(argv)
     global OUT, STEPPED
+    if a.golden_fp_sheet:
+        golden_fp_sheet(os.path.abspath(a.out) if a.out else GOLDEN_FP)
+        return
+    if a.golden_fp:
+        gdir = os.path.abspath(a.out) if a.out else GOLDEN_FP
+        os.makedirs(gdir, exist_ok=True)
+        os.makedirs(TMP, exist_ok=True)
+        if not a.only:
+            for tag in ("G1", "G2", "G3"):   # one Blender process per frame
+                subprocess.run([sys.executable, os.path.abspath(__file__), "--golden-fp", "--only", tag, "--samples",
+                                str(a.samples), "--out", gdir], check=True)
+            golden_fp_sheet(gdir)
+            return
+        gp = golden_plan()
+        tag = a.only.upper()
+        if tag == "G3":
+            plan = load_plan(not a.plain, False)
+            plan["garage"]["firstJob"] = plan["levels"][0]["name"].upper()   # Heist/JobCard.first(Catalog)
+            golden_fp_g3(plan["garage"], gp, a.samples, gdir)
+            return
+        plan = load_plan(not a.plain, False)
+        lid = "cs1_back_room" if tag == "G1" else gp["G2"]["level"]
+        lv = next(lv for lv in plan["levels"] if lv["id"] == lid)
+        (golden_fp_g1 if tag == "G1" else golden_fp_g2)(lv, gp, a.samples, gdir)
+        return
     if a.interiors_sheet:
         interiors_sheet(os.path.abspath(a.out) if a.out else INT)
         return

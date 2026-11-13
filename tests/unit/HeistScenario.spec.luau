@@ -6,6 +6,12 @@
 local fs = require("@lune/fs")
 
 local Scenario = require("../../src/shared/Heist/Scenario")
+local Config = require("../../src/shared/Config")
+local KitData = require("../../src/server/Kit/KitData")
+local KitPlan = require("../../src/server/Heist/KitPlan")
+local LobbyPlan = require("../../src/server/Heist/LobbyPlan")
+local LevelSpec = require("../../src/shared/Sim/LevelSpec")
+local L1 = require("../../src/shared/Levels/L1_BackRoom")
 local Assert = require("./Assert")
 
 local function luauFiles(dir: string, out: { string })
@@ -89,5 +95,97 @@ return function(test)
 		local _, assigns = string.gsub(service, "staging = ", "")
 		Assert.eq(assigns, 1, "HeistService assigns `staging` once")
 		Assert.truthy(string.find(service, "staging = Staging.active()", 1, true) ~= nil, "... from Staging.active()")
+	end)
+
+	-- The first-person golden frames (REVIEW_STEAM_PLUS #4): G1 / G3 stage your look in your own eyes.
+	local G = Config.Heist.CAMERA.GOLDEN
+	local function within(
+		eye: { number },
+		yaw: number,
+		pitch: number,
+		p: { number },
+		vfov: number,
+		aspect: number
+	): boolean
+		-- the point in the camera's frame (CameraDirector.lookFrame: yaw about Y, then pitch down)
+		local dx, dy, dz = p[1] - eye[1], p[2] - eye[2], p[3] - eye[3]
+		local cy, sy = math.cos(math.rad(yaw)), math.sin(math.rad(yaw))
+		local x = dx * cy - dz * sy
+		local z = dx * sy + dz * cy
+		local cp, sp = math.cos(math.rad(-pitch)), math.sin(math.rad(-pitch))
+		local y2 = dy * cp - z * sp
+		local z2 = dy * sp + z * cp
+		if z2 >= -0.1 then
+			return false
+		end
+		local th = math.tan(math.rad(vfov / 2))
+		return math.abs(y2 / -z2) <= th and math.abs(x / -z2) <= th * aspect
+	end
+
+	test("lookAt: the camera director's yaw / pitch-down conventions", function()
+		local yaw, pitch = Scenario.lookAt({ 0, 0, 0 }, { 0, 0, -10 })
+		Assert.near(yaw, 0, 1e-9, "-Z is yaw 0")
+		Assert.near(pitch, 0, 1e-9, "level")
+		yaw = Scenario.lookAt({ 0, 0, 0 }, { -10, 0, 0 })
+		Assert.near(yaw, 90, 1e-9, "-X is +90 (CFrame.Angles about Y)")
+		local _, down = Scenario.lookAt({ 0, 5, 0 }, { 0, 0, -5 })
+		Assert.near(down, 45, 1e-9, "a target below is a positive (down) pitch")
+	end)
+
+	test("G1: L1 in first person from the street spawn, the cash through the window, tilted up", function()
+		Assert.truthy(Scenario.spec("G1").fp and Scenario.spec("TYPE").fp, "G1 / TYPE are first person")
+		Assert.falsy(Scenario.spec("G2").fp, "G2 is the moment's pull-back")
+		local level = LevelSpec.compile(L1)
+		local sp = level.spawns[1]
+		local st = G.G1.STAND
+		Assert.truthy(st ~= nil, "G1 stands back on the street")
+		local eye = { st[1], (level.floorY or 0) + 3.8, st[2] }
+		-- on the street in front of the shop, behind the van, a few steps from spawn 1
+		Assert.truthy(st[2] > level.van.maxZ, "behind the van, on the street")
+		Assert.truthy(math.abs(st[2] - sp.z) < 25 and math.abs(st[1] - sp.x) < 15, "a few steps from spawn 1")
+		local cash
+		for _, item in level.loot do
+			if item.id == G.G1.LOOT then
+				cash = { item.x, item.y, item.z }
+			end
+		end
+		Assert.truthy(cash ~= nil, "L1 has the golden frame's loot")
+		local yaw, pitch = Scenario.fpLook(G.G1, eye, cash)
+		Assert.eq(pitch, G.G1.PITCH, "the staged pitch")
+		Assert.truthy(pitch < 0, "tilted up: the tenement and the aurora over the shop front")
+		Assert.truthy(within(eye, yaw, pitch, cash, G.G1.FOV, 16 / 9), "the cash stays in a 16:9 frame")
+		Assert.truthy(within(eye, yaw, pitch, cash, G.G1.FOV, 4 / 3), "and in a 4:3 one")
+		-- the top of the frame reaches well over the shop's 12-stud storey
+		local topDeg = -pitch + G.G1.FOV / 2
+		Assert.truthy(topDeg > 45, string.format("the frame's top looks %.0f deg up", topDeg))
+	end)
+
+	test("G3: the hideout in first person, at the vans with the job board", function()
+		local plan = LobbyPlan.plan(Config.Lobby, Config.Lighting, (KitData :: any).parts, KitPlan)
+		local s = G.G3.STAND
+		local eye = { s[1], 3.8, s[2] }
+		local L = Config.Lobby
+		Assert.truthy(math.abs(s[1]) < L.HALF_X - 2 and math.abs(s[2]) < L.HALF_Z - 2, "you stand inside the warehouse")
+		for _, b in plan.bays do
+			local c = b.collider
+			Assert.falsy(
+				s[1] > c.minX - 1 and s[1] < c.maxX + 1 and s[2] > c.minZ - 1 and s[2] < c.maxZ + 1,
+				"not inside a van"
+			)
+		end
+		local yaw, pitch = Scenario.fpLook(G.G3, eye, nil)
+		Assert.eq(pitch, G.G3.PITCH, "the staged pitch")
+		Assert.truthy(within(eye, yaw, pitch, plan.card.centre, G.G3.FOV, 16 / 9), "the job board's NEXT card in frame")
+		local bay1
+		for _, b in plan.bays do
+			if b.index == 1 then
+				bay1 = b
+			end
+		end
+		local c1 = bay1.collider
+		local van = { (c1.minX + c1.maxX) / 2, 3.5, (c1.minZ + c1.maxZ) / 2 }
+		Assert.truthy(within(eye, yaw, pitch, van, G.G3.FOV, 16 / 9), "your van (bay 1) in frame")
+		local d = math.sqrt((plan.card.centre[1] - eye[1]) ^ 2 + (plan.card.centre[3] - eye[3]) ^ 2)
+		Assert.truthy(d < 26, string.format("the board is near enough to read (%.1f studs)", d))
 	end)
 end

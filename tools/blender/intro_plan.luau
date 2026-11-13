@@ -12,8 +12,9 @@ local IntroRig = require("../../src/shared/Heist/IntroRig")
 local Strings = require("../../src/shared/Heist/Strings")
 
 -- The key frame of each shot (s into it): the moment the storyboard draws.
--- (shot 6: clone 4 mid-print, the scan band on it; the others printed)
-local KEY = { eve = 4.6, hoard = 2.0, every = 2.2, gone = 2.6, one = 6.6, more = 2.15, title = 0.9 }
+-- (laugh: the face and the ringed hand on the knob together, between the glint and the yank; more: clone 4
+-- mid-print, the scan band on it; the others printed)
+local KEY = { eve = 3.9, hoard = 3.2, laugh = 1.6, every = 1.9, gone = 2.2, one = 5.85, more = 2.05, title = 0.9 }
 
 local function poseTable(track: string, t: number): { [string]: { number } }
 	local a, b, w = IntroPlan.pose(track, t)
@@ -83,7 +84,9 @@ for i, shot in IntroPlan.SHOTS do
 		fx = fx,
 		hoardsworth = poseTable("hoardsworth", t),
 		rookie = poseTable("rookie", t),
-		lever = select(2, IntroPlan.pose("hoardsworth", t)),
+		lever = IntroPlan.leverAngle(t),
+		rookieFace = IntroPlan.rookieFace(t),
+		laughing = IntroPlan.laughing(t),
 		presents = presents,
 		letter = { pos = lp, tilt = tilt, visible = lv },
 		globeFill = IntroPlan.globeFill(t),
@@ -106,6 +109,11 @@ print(serde.encode("json", {
 	letterScale = IntroPlan.LETTER_SCALE,
 	vortex = Config.Intro.VORTEX,
 	signColour = Config.Intro.SIGN_COLOUR,
+	garageLight = Config.Intro.GARAGE,
+	ring = Config.Intro.RING,
+	mouth = Config.Intro.LAUGH_MOUTH,
+	villainLights = Config.Intro.VILLAIN_LIGHTS,
+	titleVeil = Config.Intro.TITLE_VEIL,
 	clone = {
 		fill = Config.Heist.CLONE_FILL_TRANSPARENCY,
 		ageDim = Config.Heist.CLONE_AGE_DIM,

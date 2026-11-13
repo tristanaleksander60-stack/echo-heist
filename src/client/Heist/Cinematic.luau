@@ -195,8 +195,11 @@ local function poseRig(rig: Rig, feet: CFrame, a: string, b: string, w: number, 
 	end
 end
 
--- Hoardsworth: the kit's 17 meshes, or boxes sized from the manifest bounds (IntroRig).
-local function buildHoardsworth(parent: Instance): (Rig, BasePart)
+-- Hoardsworth: the kit's 17 meshes, or boxes sized from the manifest bounds (IntroRig), plus the gold ring on his
+-- right glove (Config.Intro.RING: a thin Neon-gold disc that rides the hand as a rig decoration) and his open
+-- laughing mouth (Config.Intro.LAUGH_MOUTH, hidden until IntroPlan.laughing). Returns the rig, the monocle (its
+-- glint), the ring (its flash on the lever) and the mouth parts.
+local function buildHoardsworth(parent: Instance): (Rig, BasePart, BasePart, { BasePart })
 	local kit = kitModel("Hoardsworth")
 	local map = if kit then partsByName(kit) else nil
 	if map then
@@ -240,8 +243,61 @@ local function buildHoardsworth(parent: Instance): (Rig, BasePart)
 	if kit then
 		kit:Destroy()
 	end
+	local R = I.RING
+	local ring = Instance.new("Part")
+	ring.Name = "Hoardsworth_Ring"
+	ring.Shape = Enum.PartType.Cylinder
+	ring.Size = Vector3.new(R.SIZE[1], R.SIZE[2], R.SIZE[3])
+	ring.Color = Color3.fromHex(R.COLOUR)
+	ring.Material = Enum.Material.Neon
+	quiet(ring, false)
+	ring.Parent = model
+	local function onJoint(partName: string, spec: any, name: string, shape: Enum.PartType): BasePart?
+		local ix = index[partName]
+		if not ix then
+			return nil
+		end
+		local p = Instance.new("Part")
+		p.Name = name
+		p.Shape = shape
+		p.Size = Vector3.new(spec.SIZE[1], spec.SIZE[2], spec.SIZE[3])
+		p.Color = Color3.fromHex(spec.COLOUR)
+		p.Material = Enum.Material.SmoothPlastic
+		p.Transparency = 1
+		quiet(p, false)
+		p.Parent = model
+		table.insert(rig.deco, {
+			part = p,
+			joint = ix,
+			offset = CFrame.new(spec.OFFSET[1], spec.OFFSET[2], spec.OFFSET[3]),
+		})
+		return p
+	end
+	local mouth: { BasePart } = {}
+	for _, key in { "MOUTH", "TEETH" } do
+		local p = onJoint("Hoardsworth_Head", I.LAUGH_MOUTH[key], "Hoardsworth_Laugh" .. key, Enum.PartType.Block)
+		if p then
+			table.insert(mouth, p)
+		end
+	end
+	local hand = index["Hoardsworth_RightHand"]
+	if hand then
+		local spec = IntroRig.PARTS[hand]
+		local centre = Vector3.new(
+			(spec.min[1] + spec.max[1]) / 2,
+			(spec.min[2] + spec.max[2]) / 2,
+			(spec.min[3] + spec.max[3]) / 2
+		)
+		table.insert(rig.deco, {
+			part = ring,
+			joint = hand,
+			-- the cylinder's axis (X) turned onto the hand's Z: the signet faces up off the knuckles
+			offset = CFrame.new(centre + Vector3.new(R.OFFSET[1], R.OFFSET[2], R.OFFSET[3]))
+				* CFrame.Angles(0, math.pi / 2, 0),
+		})
+	end
 	model.Parent = parent
-	return rig, rig.parts[index[IntroRig.MONOCLE]]
+	return rig, rig.parts[index[IntroRig.MONOCLE]], ring, mouth
 end
 
 -- The Rookie stand-in (only when CharacterKit's Rookie never arrived): an R15-proportioned figure with a flat
@@ -812,6 +868,33 @@ function Cinematic.new(opts: any?): any
 	---------------------------------------------------------------- props: Hoardsworth, presents, letter
 	local hoard: Rig? = nil
 	local monocle: BasePart? = nil
+	local ringPart: BasePart? = nil
+	local mouthParts: { BasePart } = {}
+	local laughShown = false
+	local villainLights: Folder? = nil
+
+	-- His light on the terrace (STAGE.villainLights, Config.Intro.VILLAIN_LIGHTS): built with him, gone with him.
+	local function buildVillainLights()
+		local f = Instance.new("Folder")
+		f.Name = "VillainLights"
+		for _, l in ST.villainLights do
+			local spec = I.VILLAIN_LIGHTS[l.kind]
+			local host =
+				part(f, "VillainLight", Vector3.new(0.3, 0.3, 0.3), stageCF * CFrame.lookAt(v3(l.from), v3(l.to)), OFF)
+			host.Transparency = 1
+			host.CastShadow = false
+			local sp = Instance.new("SpotLight")
+			sp.Face = Enum.NormalId.Front
+			sp.Brightness = spec.BRIGHTNESS
+			sp.Range = spec.RANGE
+			sp.Angle = spec.ANGLE
+			sp.Color = Color3.fromHex(spec.COLOUR)
+			sp.Shadows = false
+			sp.Parent = host
+		end
+		f.Parent = stage
+		villainLights = f
+	end
 	local presents: { BasePart } = {}
 	local letter: BasePart? = nil
 	local nPresents = I.PRESENTS[tier] or 6
@@ -1008,18 +1091,177 @@ function Cinematic.new(opts: any?): any
 		end
 		local anchor = part(f, "LightAnchor", Vector3.new(1, 1, 1), stageCF, OFF)
 		anchor.Transparency = 1
-		-- the work lamp over the Rookie: it comes on with the headlights (the face key of the reveal)
-		local lamp =
-			part(f, "WorkLamp", Vector3.new(0.6, 0.6, 0.6), at({ c[1], 6.5, c[3] + 11.5 }), OFF, Enum.Material.Neon)
-		local lampLight = Instance.new("PointLight")
-		lampLight.Color = Color3.fromHex("#FFC890")
-		lampLight.Range = 16
-		lampLight.Brightness = 1.6
-		lampLight.Shadows = true
-		lampLight.Enabled = false
-		lampLight.Parent = lamp
-		table.insert(headlightLights, lampLight)
-		table.insert(headlightParts, lamp)
+		-- The motivated light (REVIEW_STEAM_PLUS #7; IntroPlan.STAGE + Config.Intro.GARAGE): warm practicals inside,
+		-- the aurora's cool light from outside. The aurora and the string lights are on from the first frame (the
+		-- garage is never black); the headlights, the work lamp and the cage lamp snap on with IntroHeadlights.
+		local GL = I.GARAGE
+		local shadows = tier <= GL.SHADOWS_TIER
+		local function beam(
+			name: string,
+			p0: { number },
+			p1: { number },
+			w0: number,
+			w1: number,
+			alpha: number,
+			colour: string
+		): Beam
+			local a0 = Instance.new("Attachment")
+			a0.Name = name .. "0"
+			a0.WorldPosition = (stageCF * CFrame.new(p0[1], p0[2], p0[3])).Position
+			a0.Parent = anchor
+			local a1 = Instance.new("Attachment")
+			a1.Name = name .. "1"
+			a1.WorldPosition = (stageCF * CFrame.new(p1[1], p1[2], p1[3])).Position
+			a1.Parent = anchor
+			local b = Instance.new("Beam")
+			b.Name = name
+			b.Attachment0 = a0
+			b.Attachment1 = a1
+			b.FaceCamera = true
+			b.Width0 = w0
+			b.Width1 = w1
+			b.Segments = 1
+			b.LightEmission = 1
+			b.LightInfluence = 0
+			b.Color = ColorSequence.new(Color3.fromHex(colour))
+			b.Transparency = NumberSequence.new(alpha, 1)
+			b.Parent = anchor
+			return b
+		end
+		local function light(className: string, host: BasePart, spec: any, face: Enum.NormalId?, on: boolean): Light
+			local l = Instance.new(className) :: any
+			l.Brightness = spec.BRIGHTNESS
+			l.Range = spec.RANGE
+			l.Color = Color3.fromHex(spec.COLOUR)
+			if spec.ANGLE and className ~= "PointLight" then
+				l.Angle = spec.ANGLE
+			end
+			if face then
+				l.Face = face
+			end
+			l.Shadows = false
+			l.Enabled = on
+			l.Parent = host
+			return l
+		end
+		-- the aurora through the open roll-up door: a SurfaceLight on an invisible panel, facing in (-Z)
+		local dg = ST.doorGlow
+		local glowPanel = part(f, "DoorGlow", Vector3.new(dg.size[1], dg.size[2], 0.2), at(dg.centre), OFF)
+		glowPanel.Transparency = 1
+		light("SurfaceLight", glowPanel, GL.DOOR_GLOW, Enum.NormalId.Front, true)
+		-- three high windows in the back wall, glowing with the aurora (green below, violet above), their shafts
+		-- falling over the van; the first one also throws the cool rim at the Rookie's cap and shoulder
+		local ww, wh = ST.windowSize[1], ST.windowSize[2]
+		for k, wp in ST.windows do
+			local low = part(
+				f,
+				"WindowPane",
+				Vector3.new(ww, wh / 2, 0.12),
+				at({ wp[1], wp[2] - wh / 4, wp[3] }),
+				Color3.fromHex(GL.WINDOW_COLOURS[1]),
+				Enum.Material.Neon
+			)
+			low.Transparency = 0.15
+			local high = part(
+				f,
+				"WindowPane",
+				Vector3.new(ww, wh / 2, 0.12),
+				at({ wp[1], wp[2] + wh / 4, wp[3] }),
+				Color3.fromHex(GL.WINDOW_COLOURS[2]),
+				Enum.Material.Neon
+			)
+			high.Transparency = 0.15
+			part(f, "WindowBar", Vector3.new(0.3, wh + 0.4, 0.3), at({ wp[1], wp[2], wp[3] + 0.1 }), Palette.inkHi)
+			if tier <= GL.SHAFT.TIERS then
+				local S = GL.SHAFT
+				local d = S.LENGTH / math.sqrt(2)
+				beam(
+					"Shaft" .. k,
+					{ wp[1], wp[2], wp[3] + 0.3 },
+					{ wp[1], wp[2] - d, wp[3] + d },
+					S.WIDTH[1],
+					S.WIDTH[2],
+					S.TRANSPARENCY,
+					GL.WINDOW_COLOURS[1]
+				)
+			end
+		end
+		local rimHost = part(
+			f,
+			"RimLight",
+			Vector3.new(0.4, 0.4, 0.4),
+			stageCF * CFrame.lookAt(v3(ST.rim.from), v3(ST.rim.to)),
+			OFF
+		)
+		rimHost.Transparency = 1
+		light("SpotLight", rimHost, GL.RIM, Enum.NormalId.Front, true)
+		-- warm string lights along both side walls (tiers 1-3), sagging between the hooks
+		if tier <= GL.STRING.TIERS then
+			local SL = GL.STRING
+			for run = 1, #ST.strings, 2 do
+				local p0, p1 = ST.strings[run], ST.strings[run + 1]
+				local len = math.abs(p1[3] - p0[3])
+				local n = math.max(2, math.floor(len / SL.SPACING) + 1)
+				for k = 0, n - 1 do
+					local u = k / (n - 1)
+					local sag = SL.SAG * 4 * u * (1 - u)
+					local bulb = part(
+						f,
+						"StringBulb",
+						Vector3.new(0.3, 0.3, 0.3),
+						at({ p0[1], p0[2] - sag, p0[3] + (p1[3] - p0[3]) * u }),
+						Color3.fromHex(SL.COLOUR),
+						Enum.Material.Neon
+					)
+					bulb.Shape = Enum.PartType.Ball
+				end
+			end
+		end
+		-- the work lamp over the van's roof: a shade, the bulb, a SpotLight down and its faint light cone
+		local wl = ST.workLamp
+		part(f, "LampCord", Vector3.new(0.08, 14 - wl[2], 0.08), at({ wl[1], (14 + wl[2]) / 2, wl[3] }), Palette.inkHi)
+		local shade =
+			part(f, "LampShade", Vector3.new(0.5, 2.2, 2.2), at(wl) * CFrame.Angles(0, 0, math.pi / 2), Palette.steel)
+		shade.Shape = Enum.PartType.Cylinder
+		local bulb =
+			part(f, "WorkLamp", Vector3.new(0.6, 0.6, 0.6), at({ wl[1], wl[2] - 0.35, wl[3] }), OFF, Enum.Material.Neon)
+		bulb.Shape = Enum.PartType.Ball
+		local workLight = light("SpotLight", bulb, GL.WORK_LAMP, Enum.NormalId.Bottom, false)
+		workLight.Shadows = shadows
+		table.insert(headlightLights, workLight)
+		table.insert(headlightParts, bulb)
+		if tier <= GL.BEAM.TIERS then
+			local cone = beam(
+				"LampCone",
+				{ wl[1], wl[2] - 0.5, wl[3] },
+				{ wl[1], 7.8, wl[3] },
+				1.6,
+				7,
+				GL.WORK_LAMP.CONE_TRANSPARENCY,
+				GL.WORK_LAMP.COLOUR
+			)
+			cone.Enabled = false
+			table.insert(headBeams, cone)
+		end
+		-- a warm lamp over the workbench (always on: the crew's practical)
+		local bench = part(
+			f,
+			"BenchLamp",
+			Vector3.new(0.4, 0.4, 0.4),
+			at(ST.benchLamp),
+			Color3.fromHex(GL.BENCH_LAMP.COLOUR),
+			Enum.Material.Neon
+		)
+		bench.Shape = Enum.PartType.Ball
+		light("PointLight", bench, GL.BENCH_LAMP, nil, true)
+		-- the cage lamp under the door header: tops the Rookie (comes on with the headlights)
+		local dl = ST.doorLamp
+		local cage = part(f, "DoorLamp", Vector3.new(0.5, 0.5, 0.5), at(dl), OFF, Enum.Material.Neon)
+		cage.Shape = Enum.PartType.Ball
+		table.insert(headlightParts, cage)
+		table.insert(headlightLights, light("SpotLight", cage, GL.DOOR_LAMP, Enum.NormalId.Bottom, false))
+		-- the headlights: lenses, SpotLights out of the door, and their layered beams dropping to the floor
+		local HL, BM = GL.HEADLIGHT, GL.BEAM
 		for _, hp in ST.headlights do
 			local lens = part(
 				f,
@@ -1031,35 +1273,25 @@ function Cinematic.new(opts: any?): any
 			)
 			lens.Shape = Enum.PartType.Cylinder
 			table.insert(headlightParts, lens)
-			local sp = Instance.new("SpotLight")
-			sp.Face = Enum.NormalId.Left -- the cylinder's axis is X; turned 90 deg: -X faces +Z (out of the garage)
-			sp.Angle = 50
-			sp.Range = 40
-			sp.Brightness = 6
-			sp.Color = Color3.fromHex("#FFF1D8")
-			sp.Shadows = true
-			sp.Enabled = false
-			sp.Parent = lens
+			-- the cylinder's axis is X; turned 90 deg: -X faces +Z (out of the garage)
+			local sp = light("SpotLight", lens, HL, Enum.NormalId.Left, false)
+			sp.Shadows = shadows
 			table.insert(headlightLights, sp)
-			local a0 = Instance.new("Attachment")
-			a0.WorldPosition = (stageCF * CFrame.new(hp[1], hp[2], hp[3] + 0.3)).Position
-			a0.Parent = anchor
-			local a1 = Instance.new("Attachment")
-			a1.WorldPosition = (stageCF * CFrame.new(hp[1], 0.6, hp[3] + 12)).Position
-			a1.Parent = anchor
-			local b = Instance.new("Beam")
-			b.Attachment0 = a0
-			b.Attachment1 = a1
-			b.FaceCamera = true
-			b.Width0 = 1.2
-			b.Width1 = 8
-			b.LightEmission = 1
-			b.LightInfluence = 0
-			b.Color = ColorSequence.new(Color3.fromHex("#FFF1D8"))
-			b.Transparency = NumberSequence.new(0.86, 1)
-			b.Enabled = false
-			b.Parent = anchor
-			table.insert(headBeams, b)
+			if tier <= BM.TIERS then
+				for k, layer in BM.LAYERS do
+					local b = beam(
+						"HeadBeam" .. k,
+						{ hp[1], hp[2], hp[3] + 0.3 },
+						{ hp[1], hp[2] - BM.DROP, hp[3] + BM.LENGTH },
+						layer[1],
+						layer[2],
+						layer[3],
+						HL.COLOUR
+					)
+					b.Enabled = false
+					table.insert(headBeams, b)
+				end
+			end
 		end
 		-- the Rookie: the CHARACTER track's template (ReplicatedStorage.CharacterKit.Rookie, R15, posed through its
 		-- Motor6Ds); the Part stand-in only if the kit never arrived
@@ -1224,7 +1456,7 @@ function Cinematic.new(opts: any?): any
 		wordmark = Wordmark.build(holder, { size = 110, width = 900, copies = 3, strap = true })
 		local veil = frame("TitleVeil", Palette.ink, 3)
 		veil.Size = UDim2.fromScale(1, 1)
-		veil.BackgroundTransparency = 0.25
+		veil.BackgroundTransparency = I.TITLE_VEIL
 	end
 
 	---------------------------------------------------------------- events
@@ -1265,8 +1497,27 @@ function Cinematic.new(opts: any?): any
 			l.Enabled = on
 		end
 		for _, b in headBeams do
-			b.Enabled = on and tier < 4
+			b.Enabled = on
 		end
+	end
+
+	-- A star glint on a part (the monocle, the ring): a burst through Heist/Particles (its budget may grant fewer).
+	local function glint(p: BasePart, size: number, n: number)
+		pcall(function()
+			local em = Instance.new("ParticleEmitter")
+			em.Texture = Config.WorldFx.COIN_TEXTURE
+			em.Lifetime = NumberRange.new(0.4)
+			em.Size = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0),
+				NumberSequenceKeypoint.new(0.3, size),
+				NumberSequenceKeypoint.new(1, 0),
+			})
+			em.Speed = NumberRange.new(0)
+			em.LightEmission = 1
+			em.Rate = 0
+			em.Parent = p
+			Particles.emit(em, n)
+		end)
 	end
 
 	local function apply(e: any)
@@ -1276,8 +1527,10 @@ function Cinematic.new(opts: any?): any
 			applyMood(shot.mood)
 		elseif kind == "spawn" then
 			if e.id == "hoardsworth" and not hoard then
-				local r, mono = buildHoardsworth(stage)
-				hoard, monocle = r, mono
+				local r, mono, ring, mouth = buildHoardsworth(stage)
+				hoard, monocle, ringPart, mouthParts = r, mono, ring, mouth
+				laughShown = false
+				buildVillainLights()
 			elseif e.id == "presents" then
 				for k = 1, nPresents do
 					local p = presentPart(k)
@@ -1304,6 +1557,11 @@ function Cinematic.new(opts: any?): any
 			if e.id == "hoardsworth" and hoard then
 				hoard.model:Destroy()
 				hoard = nil
+				mouthParts = {}
+				if villainLights then
+					villainLights:Destroy()
+					villainLights = nil
+				end
 			elseif e.id == "presents" then
 				for _, p in presents do
 					p:Destroy()
@@ -1350,24 +1608,9 @@ function Cinematic.new(opts: any?): any
 					showWordmark()
 				end
 			elseif e.id == "glint" and monocle then
-				local ok = pcall(function()
-					local em = Instance.new("ParticleEmitter")
-					em.Texture = Config.WorldFx.COIN_TEXTURE
-					em.Lifetime = NumberRange.new(0.4)
-					em.Size = NumberSequence.new({
-						NumberSequenceKeypoint.new(0, 0),
-						NumberSequenceKeypoint.new(0.3, 1.6),
-						NumberSequenceKeypoint.new(1, 0),
-					})
-					em.Speed = NumberRange.new(0)
-					em.LightEmission = 1
-					em.Rate = 0
-					em.Parent = monocle
-					Particles.emit(em, 2)
-				end)
-				if not ok then
-					return
-				end
+				glint(monocle, I.MONOCLE_GLINT.SIZE, I.MONOCLE_GLINT.COUNT)
+			elseif e.id == "ring" and ringPart then
+				glint(ringPart, I.RING.GLINT.SIZE, I.RING.GLINT.COUNT)
 			end
 		elseif kind == "cue" then
 			if e.stop then
@@ -1461,13 +1704,15 @@ function Cinematic.new(opts: any?): any
 		if hoard then
 			local a, b, w = IntroPlan.pose("hoardsworth", t)
 			poseRig(hoard, at(ST.hoardsworth.at, ST.hoardsworth.yaw), a, b, w, partsBuf, cfBuf)
-			if leverHandle then
-				local ang = 0
-				if b == "pull" then
-					ang = -70 * w
-				elseif a == "pull" or a == "point" then
-					ang = -70
+			local laughing = IntroPlan.laughing(t)
+			if laughing ~= laughShown then
+				laughShown = laughing
+				for _, p in mouthParts do
+					p.Transparency = if laughing then 0 else 1
 				end
+			end
+			if leverHandle then
+				local ang = IntroPlan.leverAngle(t)
 				table.insert(partsBuf, leverHandle)
 				table.insert(cfBuf, leverRest * CFrame.Angles(rad(ang), 0, 0) * leverHandle.PivotOffset:Inverse())
 			end
@@ -1478,7 +1723,7 @@ function Cinematic.new(opts: any?): any
 		elseif rookieModel then
 			local a, b, w = IntroPlan.pose("rookie", t)
 			poseMotors(rookieMotors, a, b, w)
-			local mood = if (b == "grin" and w > 0.5) or a == "grin" then "smug" else "idle"
+			local mood = IntroPlan.rookieFace(t)
 			if mood ~= rookieFace then
 				rookieFace = mood
 				setRookieFace(rookieModel, mood)
@@ -1486,7 +1731,7 @@ function Cinematic.new(opts: any?): any
 		end
 		local anyPrinted = false
 		local ra, rb, rw = IntroPlan.pose("rookie", t)
-		local face = if (rb == "grin" and rw > 0.5) or ra == "grin" then "smug" else "idle"
+		local face = IntroPlan.rookieFace(t)
 		for k, c in clones do
 			local pr = IntroPlan.clonePrint(k, t)
 			if c.rig then

@@ -499,10 +499,17 @@ Config.Heist.CAMERA = {
 		MAX_PITCH = 42, -- degrees down at most (a crane over the van stands back rather than looking straight down)
 		FIGURE_HALF_WIDTH = 1.25,
 	},
-	-- Golden-frame staging (Studio only, workspace attribute EH_Scenario; docs/GOLDEN_FRAMES.md "Capture").
+	-- Golden-frame staging (Studio only, workspace attribute EH_Scenario; docs/GOLDEN_FRAMES.md "Capture";
+	-- re-specced for first person and the Rookie, REVIEW_STEAM_PLUS #4). G1 / G3 are first person: Heist/GoldenShots
+	-- turns your look (yaw toward the target, PITCH degrees down: negative looks up) once the camera is in your eyes.
 	GOLDEN = {
+		-- L1 from the street: spawn 1 stands 3.5 studs from the shop's door (the doorway fills the eyes), so the
+		-- staging walks you back past the van onto the street (STAND x, z, level space), turns you toward the cash
+		-- glinting through the shop's windows and tilts you up for the tall tenement and a strip of aurora
+		G1 = { STAND = { -10, 28 }, LOOT = "Cash", PITCH = -18, YAW_OFFSET = 0, FOV = 70 },
 		G2 = { PITCH = 45, FOV = 45, YAW = 0, MAX_DISTANCE = 70 },
-		G3 = { PITCH = 30, DISTANCE = 22, FOV = 45, YAW = 35 },
+		-- the hideout: you stand in the aisle at the vans (STAND x, z) and look between the job board and your van
+		G3 = { STAND = { 22, -10 }, LOOK_AT = { 19, 4.2, -21 }, PITCH = -4, FOV = 70 },
 	},
 }
 
@@ -3347,7 +3354,7 @@ Config.Intro = {
 	-- while preparing) or this long (a client that never answers never traps anyone).
 	SERVER_HOLD_SECONDS = 48,
 	-- Studio without data (offline) plays it only when staged (EH_Scenario = "INTRO"): every Play would
-	-- otherwise open on 36 s of cinematic.
+	-- otherwise open on 34 s of cinematic.
 	STUDIO_AUTOPLAY = false,
 	-- Caption cards (big, short, sound-off readable: the MASTERPLAN §9.2 clip rules).
 	CAPTION = {
@@ -3397,6 +3404,50 @@ Config.Intro = {
 		COLOURS = { "#FFF1D8", "#C9C2FF" }, -- warm white into a pale violet
 		SPIN = 2.6, -- rad/s (x Config.Aurora.REDUCED_MOTION under reduced motion)
 	},
+	-- The villain close-up's gold ring on Hoardsworth's right glove: a signet on top of the knuckles (a Neon-gold
+	-- Cylinder, its axis along the hand's Z, its top as he grips the knob; built by Heist/Cinematic as a rig
+	-- decoration), flashing when he grips the lever (the "ring" event). SIZE studs (thickness, diameter, diameter);
+	-- OFFSET from the hand's centre in the hand's own space.
+	RING = {
+		SIZE = { 0.06, 0.22, 0.22 },
+		OFFSET = { 0, -0.12, -0.24 },
+		COLOUR = "#FFC24A",
+		GLINT = { SIZE = 0.8, COUNT = 2 },
+	},
+	MONOCLE_GLINT = { SIZE = 0.9, COUNT = 2 }, -- studs: the close-up frames his face about 5 studs away
+	-- His open laughing mouth over the kit face's closed one (rig decorations on the head, shown while
+	-- IntroPlan.laughing): a dark mouth and a teeth strip; SIZE studs, OFFSET from the head's joint in its own space.
+	LAUGH_MOUTH = {
+		MOUTH = { SIZE = { 0.42, 0.2, 0.08 }, OFFSET = { 0.02, 0.33, -0.39 }, COLOUR = "#3A1020" },
+		TEETH = { SIZE = { 0.34, 0.06, 0.04 }, OFFSET = { 0.02, 0.39, -0.42 }, COLOUR = "#FFF4E0" },
+	},
+	-- His light on the terrace (IntroPlan.STAGE.villainLights; SpotLights, no shadows, while he is on stage).
+	VILLAIN_LIGHTS = {
+		under = { BRIGHTNESS = 2.4, RANGE = 20, ANGLE = 40, COLOUR = "#FF9C6A" },
+		key = { BRIGHTNESS = 1.6, RANGE = 20, ANGLE = 30, COLOUR = "#FFE2C0" },
+		rim = { BRIGHTNESS = 3, RANGE = 26, ANGLE = 30, COLOUR = "#9C8CFF" },
+		hand = { BRIGHTNESS = 1.8, RANGE = 8, ANGLE = 30, COLOUR = "#FFC24A" },
+	},
+	-- The garage's motivated light (IntroPlan.STAGE: workLamp, doorLamp, doorGlow, windows, rim, strings). Warm
+	-- practicals inside, the aurora's cool light from outside (REVIEW_STEAM_PLUS #7: shots 6-8 were near-black).
+	-- Brightness / range / angle as the Light instances take them; colours hex.
+	GARAGE = {
+		HEADLIGHT = { BRIGHTNESS = 7, RANGE = 44, ANGLE = 52, COLOUR = "#FFF1D8" },
+		-- the headlight beams (additive Beams from each lens out of the door, dropping to the floor): per layer
+		-- { width at the lens, width at the end, transparency at the lens }, fading to clear at the end
+		BEAM = { LENGTH = 24, DROP = 2.0, LAYERS = { { 0.8, 4.5, 0.62 }, { 2.0, 11, 0.86 } }, TIERS = 3 },
+		WORK_LAMP = { BRIGHTNESS = 3.2, RANGE = 22, ANGLE = 80, COLOUR = "#FFC890", CONE_TRANSPARENCY = 0.88 },
+		DOOR_LAMP = { BRIGHTNESS = 2.6, RANGE = 14, ANGLE = 70, COLOUR = "#FFD2A0" },
+		BENCH_LAMP = { BRIGHTNESS = 1.6, RANGE = 12, COLOUR = "#FFB870" }, -- a PointLight over the workbench
+		-- the aurora through the open door (a SurfaceLight facing in) and the high windows (Neon panes, shafts)
+		DOOR_GLOW = { BRIGHTNESS = 1.6, RANGE = 30, ANGLE = 85, COLOUR = "#9CBCFF" },
+		WINDOW_COLOURS = { "#5BE0C2", "#8A7BFF" }, -- the pane's bottom, top (the aurora's green into violet)
+		SHAFT = { LENGTH = 22, WIDTH = { 5, 9 }, TRANSPARENCY = 0.9, TIERS = 2 },
+		RIM = { BRIGHTNESS = 3.0, RANGE = 30, ANGLE = 26, COLOUR = "#9DB4FF" },
+		STRING = { SPACING = 2.2, SAG = 0.5, COLOUR = "#FFC680", TIERS = 3 }, -- bulbs along both side walls
+		SHADOWS_TIER = 2, -- shadows from the headlights and the work lamp up to this tier
+	},
+	TITLE_VEIL = 0.45, -- the ink veil under the wordmark (transparency): the lit garage and the crew show through
 	SNOW_RATE = 60, -- flakes/s in the stage snow (x0.5 under reduced motion)
 	SNOW_MAX = 240, -- alive at most (rate x lifetime is reported to Heist/Particles as steady)
 	HANDOFF_SECONDS = 0.35, -- the wordmark rests this long before the title card takes over

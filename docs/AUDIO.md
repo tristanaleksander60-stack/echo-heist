@@ -224,23 +224,25 @@ call plays one `CloneChime` per copy and lands on `ChoirHit`; heist complete add
 | Heartbeat | Warnings | 9043367376 "PERCUSSIVE NOISE 05-Kick 02" (APM, 0.44 s) | 9043367283 "PERCUSSIVE NOISE 04-Kick 01" (APM, 0.44 s); 9119882039 "Synth Whomps 38" (PSE, 0.94 s) | 0.6 | 1 | APM Music (APMOfficial) + Pro Sound Effects (ProSoundEffects) | a dry kick drum from APM's Horror Tools: one low thump per call |
 
 **Intro** (Heist/Cinematic at the times in `Shared/Heist/IntroPlan`; SKIP stops the two loops). Library stand-ins
-until the D10 music commission (one 36.5 s score with these hit points); every caption card reads without sound.
+until the D10 music commission (one 33.7 s score with these hit points; retimed 2026-11-13 for the villain close-up,
+REVIEW_STEAM_PLUS #7); every caption card reads without sound. A laugh voice for the close-up (9.0-11.7 s) has no cue
+yet: the caption MINE. ALL MINE. carries it.
 
 | Cue | Bus | When (s from the first frame) | What |
 |---|---|---|---|
-| IntroMusic | Music, loop | 0.0 (stopped at 36.5 or on SKIP) | the score: music-box town (0-6), villain brass (6-12), suction build (12-22), a hush (22-26), caper bass (26-34), the title hit at 34.0 |
+| IntroMusic | Music, loop | 0.0 (stopped at 33.7 or on SKIP) | the score: music-box town (0-4.8), villain brass (4.8-12.4, the close-up from 9.0), suction build (12.4-19), a hush (19-24.5), caper bass (24.5-31.2), the title hit at 31.2 |
 | IntroBells | Ambience | 0.2 | a soft music-box twinkle under CHRISTMAS EVE. |
-| IntroHoardSting | Music | 6.0 | Hoardsworth's low brass "dun-dun" (funny-sinister, not scary) |
-| IntroMonocle | SFX | 7.3 | the monocle glint: one bright "ting" |
-| IntroLever | SFX | 9.2 | a big brass lever yanked down |
-| IntroWhoosh | SFX | 12.0 | the whip-pan to the vacuum |
-| IntroVacuumOn | SFX (ducks music) | 12.35 | the giant vacuum switching on: clunk, rising whine, roar |
-| IntroSuction | SFX, loop | 12.7 (stopped at 20.0) | the suction roar under the swirl |
-| IntroGlobeThunk | SFX | 20.0 | the last present thunks into the Snow Globe, then silence for ...GONE. |
-| IntroLetter | SFX | 22.6 | the kid's letter fluttering down |
-| IntroHeadlights | SFX | 26.4 | two heavy clunks as the van's headlights flick on |
-| IntroTapePrint | Clone | 30.5 | a VHS glitch-print under the clones' entrance |
-| IntroTitleSmash | Music | 34.0 | the HEIST YOURSELF title hit |
+| IntroHoardSting | Music | 4.8 | Hoardsworth's low brass "dun-dun" (funny-sinister, not scary) |
+| IntroMonocle | SFX | 9.45 (the close-up) | the monocle glint: one bright "ting" |
+| IntroLever | SFX | 11.75 | a big brass lever yanked down |
+| IntroWhoosh | SFX | 12.4 | the whip-pan to the vacuum |
+| IntroVacuumOn | SFX (ducks music) | 12.75 | the giant vacuum switching on: clunk, rising whine, roar |
+| IntroSuction | SFX, loop | 13.0 (stopped at 19.0) | the suction roar under the swirl |
+| IntroGlobeThunk | SFX | 19.0 | the last present thunks into the Snow Globe, then silence for ...GONE. |
+| IntroLetter | SFX | 21.3 | the kid's letter fluttering down |
+| IntroHeadlights | SFX | 24.5 | two heavy clunks as the van's headlights flick on |
+| IntroTapePrint | Clone | 28.1 | a VHS glitch-print under the clones' entrance |
+| IntroTitleSmash | Music | 31.2 | the HEIST YOURSELF title hit |
 
 | Cue | Bus | Takes (id "title" (source, engine s)) | Alternates | Vol | Pitch | Source / licence | What it is |
 |---|---|---|---|---|---|---|---|
@@ -547,9 +549,9 @@ Bold items need a decision, not just a listen.
 | 14 | VaultSlam | heist complete | heavy enough; distinct from DoorClose's alt (Steel Door 3) |
 | 15 | SnareRoll | every Line-up | **align**: the hit must land on the pose; measure where the hit is and set Config.Moments.LINEUP.SNARE_SECONDS (0.6 now) |
 | 16 | ChoirHit | 8 OF ME roll calls | in key with the C ladder? the 10 s ring-out is long: try alt 1843054115 (C) |
-| 17 | IntroMusic | once per new player (the intro) | fits the 36.5 s shot list? sweet throughout: the stings carry the villain beats |
-| 18 | IntroTitleSmash | intro, 34.0 s | a title 'smash'? it is the theme's button; alt Tag3 or the 'Hustle and Heist' piano sting |
-| 19 | IntroHoardSting | intro, 6.0 s | funny-sinister brass, not scary |
-| 20 | IntroVacuumOn + IntroSuction | intro, 12.35-20 s | a giant vacuum, not a spaceship |
+| 17 | IntroMusic | once per new player (the intro) | fits the 33.7 s shot list? sweet throughout: the stings carry the villain beats |
+| 18 | IntroTitleSmash | intro, 31.2 s | a title 'smash'? it is the theme's button; alt Tag3 or the 'Hustle and Heist' piano sting |
+| 19 | IntroHoardSting | intro, 4.8 s | funny-sinister brass, not scary |
+| 20 | IntroVacuumOn + IntroSuction | intro, 12.75-19 s | a giant vacuum, not a spaceship |
 | 21 | IntroBells, IntroMonocle, IntroLever, IntroWhoosh, IntroGlobeThunk, IntroLetter, IntroHeadlights, IntroTapePrint | intro | each one beat; skip with SKIP to check the loops stop |
 

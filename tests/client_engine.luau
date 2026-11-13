@@ -26,6 +26,38 @@ local function check(cond: any, msg: string)
 	end
 end
 
+-- Golden-frame staging helpers (docs/GOLDEN_FRAMES.md, REVIEW_STEAM_PLUS #4): is a world point inside a first-person
+-- frame (CameraDirector.lookFrame at yaw / pitch down, vertical FOV, 16:9), and the first opaque thing on a ray from
+-- the eye toward it (glass and see-through parts let the eye through).
+local function inFrame(cf: CFrame, p: Vector3, vfov: number): boolean
+	local lp = cf:PointToObjectSpace(p)
+	local depth = -lp.Z
+	local tv = math.tan(math.rad(vfov / 2))
+	return depth > 0.5 and math.abs(lp.Y / depth) <= tv and math.abs(lp.X / depth) <= tv * 16 / 9
+end
+local function sightTo(eye: Vector3, p: Vector3, target: Instance?): boolean
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	local skip: { Instance } = {}
+	for _ = 1, 24 do
+		params.FilterDescendantsInstances = skip
+		local hit = workspace:Raycast(eye, p - eye, params)
+		if not hit then
+			return true
+		end
+		local inst = hit.Instance
+		if (target and inst:IsDescendantOf(target)) or inst == target or (hit.Position - p).Magnitude < 0.6 then
+			return true
+		end
+		if inst.Transparency > 0.2 or inst.Material == Enum.Material.Glass or not inst.CanCollide then
+			table.insert(skip, inst)
+		else
+			return false
+		end
+	end
+	return false
+end
+
 local shared = ReplicatedStorage:WaitForChild("Shared")
 local server = ServerScriptService:WaitForChild("Server")
 local heistServer = server:WaitForChild("Heist")
@@ -1039,11 +1071,39 @@ do
 			local farRoot = to + Vector3.new(0, -1, Cfg.Sim.INTERACT_RANGE + 0.5)
 			local _, c3 = pickFrom(farRoot + Vector3.new(0, 1.65, 0), farRoot, 50)
 			assert(c3[1].ok == false, "beyond the sim's range")
-			return string.format("cash at %.1f studs from the front eye", (to - frontEye).Magnitude)
+			-- GOLDEN_FRAMES G1 in first person: from the staged stand on the street (GOLDEN.G1.STAND, the eye at 3.8)
+			-- the staged look keeps the cash in a 16:9 frame, the frame's top runs well up the tenement, and the
+			-- stand is clear of the van and the kerb props
+			local Scenario = require(shared:WaitForChild("Heist"):WaitForChild("Scenario"))
+			local CameraDirector = require(clientHeist:WaitForChild("CameraDirector")) :: any
+			local G1 = Cfg.Heist.CAMERA.GOLDEN.G1
+			local standEye = origin1 + Vector3.new(G1.STAND[1], (l1.floorY or 0) + 3.8, G1.STAND[2])
+			local yawG, pitchG = Scenario.fpLook(G1, { standEye.X, standEye.Y, standEye.Z }, { to.X, to.Y, to.Z })
+			local camG = CameraDirector.lookFrame(standEye, yawG, pitchG)
+			assert(inFrame(camG, to, G1.FOV), "G1: the cash is in the frame")
+			assert(-pitchG + G1.FOV / 2 > 45, "G1: the frame looks up the tenement")
+			local free = workspace:GetPartBoundsInRadius(standEye - Vector3.new(0, 1.5, 0), 1.2)
+			local blocking = 0
+			for _, bp in free do
+				if bp.CanCollide and bp:IsDescendantOf(b1.model) then
+					blocking += 1
+				end
+			end
+			assert(blocking == 0, "G1: the stand is clear (" .. blocking .. " solid parts)")
+			local top = to + Vector3.new(0, cashPart.Size.Y / 2, 0)
+			local seen = sightTo(standEye, top, cashPart)
+			return string.format(
+				"cash at %.1f studs from the front eye; G1 stand %.0f studs away, cash top %s",
+				(to - frontEye).Magnitude,
+				(to - standEye).Magnitude,
+				if seen then "in sight" else "behind the sill"
+			)
 		end)
 		check(
 			okPick,
-			"first person: kit L1 cash picked from in front, not through the back wall (" .. tostring(pickErr) .. ")"
+			"first person: kit L1 cash picked from in front, not through the back wall; G1 staged look ("
+				.. tostring(pickErr)
+				.. ")"
 		)
 	else
 		check(false, "first person: L1 builds for the look-to-interact checks")
@@ -1051,8 +1111,9 @@ do
 end
 
 -- H. Signature moments (PLAN_STEAM_PLUS §4.4 F2, §5 "8 OF ME"): the G2 staging's seven Clone Party
--- tapes (src/server/Heist/StagingTapes.luau) drawn by EchoView + you (a mannequin stand-in on the
--- spawn) = 8 rigs. MomentDirector's 8 OF ME moment runs on hand-stepped frames (Luau Execution
+-- tapes (src/server/Heist/StagingTapes.luau) drawn by EchoView + you (a copy of your template on the
+-- spawn) = 8 rigs, all Rookies (docs/GOLDEN_FRAMES.md G2, REVIEW_STEAM_PLUS #4: your clone template is the Rookie
+-- in your outfit, server Heist/Avatars.buildRookie, so every copy is a Rookie with its crew pieces in your hue). MomentDirector's 8 OF ME moment runs on hand-stepped frames (Luau Execution
 -- servers do not simulate or render): the roll call hops each clone 60 ms apart in record order and
 -- lights 8 numbered pills, the world dims 15 %, and the camera shot it hands to CameraDirector keeps
 -- every one of the 8 rigs (their real parts) inside the central 32 % of a 16:9 frame. Then the
@@ -1094,11 +1155,16 @@ local okMoment, momentInfo = pcall(function()
 		reduced = false,
 		particleScale = 1,
 	}
+	local Avatars = require(heistServer:WaitForChild("Avatars"))
+	local Outfit = require(shared:WaitForChild("Heist"):WaitForChild("Outfit"))
+	local Palette = require(shared:WaitForChild("Heist"):WaitForChild("Palette"))
+	local template = Avatars.buildRookie(OWNER, Outfit.default(), nil)
+	assert(template and template:GetAttribute("EH_Rookie") == true, "your clone template is the Rookie")
 	local echo = EchoView.new(vstate)
 	echo.setRun(msg, recs, os.clock() - 5)
-	-- you: a mannequin on the spawn with a HumanoidRootPart, the 8th rig
+	-- you: a copy of your Rookie template on the spawn with a HumanoidRootPart, the 8th rig
 	local spawn = party.spawns[1]
-	local youRig = Rigs.buildMannequin()
+	local youRig = Rigs.buildAvatar(template :: Model) or Rigs.buildMannequin()
 	youRig.model.Parent = scratch
 	local youModel = Instance.new("Model")
 	youModel.Name = "You"
@@ -1212,11 +1278,35 @@ local okMoment, momentInfo = pcall(function()
 			worst = math.max(worst, math.abs(lp.X) / (depth * tv * 16 / 9))
 		end
 	end
+	local seatHue = Palette.hueFor(1)
 	for i = 1, 7 do
 		local rig = echo.rigOf(i)
 		assert(rig, "clone " .. i .. " has a rig")
+		assert(rig.model:GetAttribute("EH_Rookie") == true, "clone " .. i .. " is a Rookie (not a mannequin)")
+		-- only the crew pieces take the clone's hue (one colour: your seat hue, aged), the outfit keeps its own
+		local crewPieces, colours, newest = 0, {}, i == 7
+		for _, d in rig.model:GetDescendants() do
+			if d:IsA("BasePart") and d:GetAttribute("EH_Tint") == "crew" then
+				crewPieces += 1
+				colours[d.Color:ToHex()] = true
+				if newest then
+					local h = d.Color:ToHSV()
+					local sh = seatHue:ToHSV()
+					assert(math.min(math.abs(h - sh), 1 - math.abs(h - sh)) < 0.05, "the newest clone in your hue")
+				end
+			end
+		end
+		local nColours = 0
+		for _ in colours do
+			nColours += 1
+		end
+		assert(
+			crewPieces >= 1 and nColours == 1,
+			"clone " .. i .. ": crew pieces tinted (" .. crewPieces .. " pieces, " .. nColours .. " colours)"
+		)
 		check8(rig.model)
 	end
+	assert(youRig.model:GetAttribute("EH_Rookie") == true, "you are a Rookie too")
 	check8(youRig.model)
 	assert(worst <= SHARE + 0.02, string.format("all 8 inside the central 32 %% (widest %.3f)", worst))
 	-- BIG: the tall Toy Shop over the swarm: the pull-back sees all 8 through the cut-away
@@ -1275,8 +1365,10 @@ local okMoment, momentInfo = pcall(function()
 	assert(vstate.replayT == nil and vstate.actorFx ~= nil, "view time and fx restored")
 	moments.stop()
 	echo.clear()
+	youRig.model:Destroy()
+	template:Destroy()
 	return string.format(
-		"hops %.3f s apart, widest %.3f of the width, tint %.2f",
+		"8 Rookies; hops %.3f s apart, widest %.3f of the width, tint %.2f",
 		(hopAt[7] - hopAt[1]) / 6,
 		worst,
 		minTint
@@ -1400,9 +1492,11 @@ check(okShell, "presentation shell: loading card, title card, reel, hint, van do
 
 -- J. The story intro (docs/art/intro/STORYBOARD.md, PLAN_FIRST_PERSON §5): Heist/IntroKit publishes the intro
 -- meshes from the real kit, Heist/Cinematic builds the client stage from them and is stepped by hand through
--- every shot (Hoardsworth on his mesh rig and posed, the presents in the air, the globe filling, the garage with
--- the Rookie and the clones' tape print, the wordmark), then a SKIP lands in the same end state, and the camera,
--- Lighting and Sky are restored both times.
+-- every shot (Hoardsworth on his mesh rig and posed, the villain close-up with the gold ring on his glove at the
+-- lever's knob and the lever yanked, the presents in the air, the globe filling, the lit garage (aurora door glow,
+-- high windows, string lights, then the headlights, their beams and the work lamp) with the Rookie and the clones'
+-- tape print, the wordmark), then a SKIP lands in the same end state, and the camera, Lighting and Sky are
+-- restored both times. Times come from IntroPlan.at (shot id, seconds into it), so a retimed plan keeps the beats.
 local okIntro, introErr = pcall(function()
 	local IntroKit = require(heistServer:WaitForChild("IntroKit"))
 	local Cinematic = require(clientHeist:WaitForChild("Cinematic"))
@@ -1482,7 +1576,10 @@ local okIntro, introErr = pcall(function()
 			cine.step(dt)
 		end
 	end
-	stepTo(8.0) -- shot 2: Hoardsworth, low angle
+	local function into(id: string, s: number): number
+		return IntroPlan.at(id, s)
+	end
+	stepTo(into("hoard", 2.0)) -- shot 2: Hoardsworth, low angle
 	assert(cine.hoardKind() == "mesh", "Hoardsworth on his mesh rig (" .. cine.hoardKind() .. ")")
 	assert(cam.CameraType == Enum.CameraType.Scriptable, "the intro owns the camera")
 	local hw = world(ST.hoardsworth.at)
@@ -1491,7 +1588,29 @@ local okIntro, introErr = pcall(function()
 	local headInst = if hoard then hoard:FindFirstChild("Hoardsworth_Head") else nil
 	local head = if headInst and headInst:IsA("BasePart") then headInst else nil
 	assert(head and math.abs(head.Position.Y - (hw.Y + 6.6)) < 1.5, "his head is at head height (posed rig)")
-	stepTo(15.6) -- shot 3: the vacuum and the swirl
+	local ringInst = hoard and hoard:FindFirstChild("Hoardsworth_Ring")
+	assert(ringInst and ringInst:IsA("BasePart"), "the gold ring on his glove")
+	stepTo(into("laugh", 1.6)) -- shot 3: the villain close-up, his hand on the lever's knob
+	local monoInst = hoard and hoard:FindFirstChild("Hoardsworth_Monocle")
+	assert(monoInst and (cam.CFrame.Position - (monoInst :: BasePart).Position).Magnitude < 8, "a close-up on his face")
+	assert(cam.FieldOfView <= 40, "a tight lens (" .. cam.FieldOfView .. ")")
+	local knob = world(ST.knob)
+	local handInst = hoard and hoard:FindFirstChild("Hoardsworth_RightHand")
+	assert(
+		handInst and ((handInst :: BasePart):GetPivot().Position - knob).Magnitude < 1.2,
+		"the glove grips the lever's knob"
+	)
+	assert(((ringInst :: BasePart).Position - knob).Magnitude < 1.2, "the ring rides the glove")
+	local inView = cam.CFrame:PointToObjectSpace((ringInst :: BasePart).Position)
+	assert(inView.Z < 0, "the ring is in front of the camera")
+	local handle = stage:FindFirstChild("Intro_Lever_Handle", true)
+	local handleUp = if handle and handle:IsA("BasePart") then handle.CFrame else nil
+	stepTo(into("laugh", 3.2)) -- the yank
+	if handle and handle:IsA("BasePart") and handleUp then
+		local turned = math.deg(math.acos(math.clamp(handle.CFrame.UpVector:Dot(handleUp.UpVector), -1, 1)))
+		assert(turned > 45, string.format("the lever is yanked down (%.0f deg)", turned))
+	end
+	stepTo(into("every", 3.6)) -- shot 4: the vacuum and the swirl
 	assert(cine.counts().presents == Config.Intro.PRESENTS[1], "presents spawned")
 	local inAir = 0
 	for _, d in stage:GetChildren() do
@@ -1502,7 +1621,33 @@ local okIntro, introErr = pcall(function()
 	assert(inAir > 0, "presents in the air")
 	local vortexBeam = if vortexPart then vortexPart:FindFirstChildOfClass("Beam") else nil
 	assert(vortexBeam and vortexBeam.Enabled, "the vortex runs with the vacuum")
-	stepTo(28.6) -- shot 5: the garage, headlights on, the Rookie
+	stepTo(into("one", 1.0)) -- shot 6 before the headlights: the garage is lit by the aurora and the string lights
+	local garageEarly = stage:FindFirstChild("Garage")
+	local doorGlow = garageEarly and garageEarly:FindFirstChild("DoorGlow")
+	local doorLight = doorGlow and doorGlow:FindFirstChildOfClass("SurfaceLight")
+	assert(doorLight and doorLight.Enabled, "the aurora pours in at the door from the first frame")
+	local panes, bulbs, shafts, headBeamsN = 0, 0, 0, 0
+	for _, d in (garageEarly :: Instance):GetDescendants() do
+		if d.Name == "WindowPane" then
+			panes += 1
+		elseif d.Name == "StringBulb" then
+			bulbs += 1
+		elseif d:IsA("Beam") and string.sub(d.Name, 1, 5) == "Shaft" then
+			shafts += 1
+		elseif d:IsA("Beam") and string.sub(d.Name, 1, 8) == "HeadBeam" then
+			headBeamsN += 1
+			assert(not d.Enabled, "the headlight beams wait for the headlights")
+		end
+	end
+	local GL = Config.Intro.GARAGE
+	assert(panes == 2 * #ST.windows, "the high windows glow: " .. panes)
+	assert(bulbs >= 20, "the string lights: " .. bulbs)
+	assert(shafts == #ST.windows, "window shafts at tier 1: " .. shafts)
+	assert(headBeamsN == #ST.headlights * #GL.BEAM.LAYERS, "layered headlight beams: " .. headBeamsN)
+	local workLamp = garageEarly and garageEarly:FindFirstChild("WorkLamp")
+	local workLight = workLamp and workLamp:FindFirstChildOfClass("SpotLight")
+	assert(workLight and not workLight.Enabled, "the work lamp waits for the headlights")
+	stepTo(into("one", 5.6)) -- shot 6: the garage, headlights on, the Rookie
 	assert(cine.counts().presents == 0, "presents swallowed")
 	local rookieKind = cine.rookieKind()
 	local characterKit = ReplicatedStorage:FindFirstChild(Config.Intro.CHARACTER_KIT)
@@ -1521,7 +1666,18 @@ local okIntro, introErr = pcall(function()
 	end
 	assert(cine.counts().clones == #ST.clones, "clones built")
 	assert((cam.CFrame.Position - world(ST.rookie.at)).Magnitude < 20, "the camera is on the Rookie")
-	stepTo(31.45) -- shot 6: clone 4 mid tape-print
+	assert(
+		(workLight :: SpotLight).Enabled and math.abs(workLight.Brightness - GL.WORK_LAMP.BRIGHTNESS) < 1e-3,
+		"the work lamp is on"
+	)
+	local litBeams = 0
+	for _, d in (garageEarly :: Instance):GetDescendants() do
+		if d:IsA("Beam") and string.sub(d.Name, 1, 8) == "HeadBeam" and d.Enabled then
+			litBeams += 1
+		end
+	end
+	assert(litBeams == headBeamsN, "the headlight beams are on: " .. litBeams)
+	stepTo(into("more", 1.8 + 0.2)) -- shot 7: clone 4 mid tape-print
 	local garage = stage:FindFirstChild("Garage")
 	local crew = garage and garage:FindFirstChild("Crew")
 	assert(crew, "the crew group")
@@ -1542,7 +1698,7 @@ local okIntro, introErr = pcall(function()
 		end
 		assert(shownLow and hiddenHigh, "clone 4 prints from the feet up (feet in, head not yet)")
 	end
-	stepTo(33.0) -- shot 6: the clones printed in
+	stepTo(into("more", 3.6)) -- shot 7: the clones printed in
 	local clone1 = crew:FindFirstChild("Clone1")
 	if hasRookie then
 		local crewHue, kept, printed = 0, 0, true
@@ -1559,8 +1715,13 @@ local okIntro, introErr = pcall(function()
 		assert(printed, "clone 1 printed in")
 		assert(crewHue >= 3 and kept == 1, "a Rookie copy: crew pieces tinted, the outfit kept")
 	end
-	stepTo(35.0) -- the title smash
+	stepTo(into("title", 1.0)) -- the title smash
 	assert(cine.gui():FindFirstChild("Title"), "the wordmark is up")
+	local veil = cine.gui():FindFirstChild("TitleVeil")
+	assert(
+		veil and math.abs((veil :: Frame).BackgroundTransparency - Config.Intro.TITLE_VEIL) < 1e-6,
+		"the lit crew shows through the veil"
+	)
 	stepTo(IntroPlan.total() + 1)
 	assert(cine.isDone() and ended == "finished", "watched to the end (" .. tostring(ended) .. ")")
 	local want = cine.state()
@@ -1940,6 +2101,38 @@ local okHide, hideErr = pcall(function(): string
 		end
 	end
 	assert(vansOk == HD.BAYS, "van side doors in sight: " .. vansOk)
+	-- GOLDEN_FRAMES G3 in first person: from the staged stand in the aisle (GOLDEN.G3.STAND, the eye at 3.8) the
+	-- staged look holds the job board's NEXT card and your van (bay 1) in a 16:9 frame and in sight, and the stand
+	-- is clear of every solid
+	do
+		local Scenario = require(shared:WaitForChild("Heist"):WaitForChild("Scenario"))
+		local CameraDirector = require(clientHeist:WaitForChild("CameraDirector")) :: any
+		local G3 = Cfg.Heist.CAMERA.GOLDEN.G3
+		local o = Vector3.new(table.unpack(Cfg.Heist.LOBBY_ORIGIN))
+		local eye3 = o + Vector3.new(G3.STAND[1], 3.8, G3.STAND[2])
+		local la = o + Vector3.new(G3.LOOK_AT[1], G3.LOOK_AT[2], G3.LOOK_AT[3])
+		local yaw3, pitch3 = Scenario.fpLook(G3, { eye3.X, eye3.Y, eye3.Z }, { la.X, la.Y, la.Z })
+		local cam3 = CameraDirector.lookFrame(eye3, yaw3, pitch3)
+		local card = garage:FindFirstChild("JobCard", true)
+		assert(card and card:IsA("BasePart"), "the job board's NEXT card")
+		assert(inFrame(cam3, card.Position, G3.FOV), "G3: the NEXT card in frame")
+		assert(sightTo(eye3, card.Position, card), "G3: the NEXT card in sight")
+		local van1: BasePart? = nil
+		for _, d in garage:GetChildren() do
+			if d:IsA("BasePart") and d:GetAttribute("EH_Kind") == "garageVan" and d:GetAttribute("EH_Bay") == 1 then
+				van1 = d
+			end
+		end
+		assert(van1, "bay 1's van")
+		assert(inFrame(cam3, (van1 :: BasePart).Position, G3.FOV), "G3: your van in frame")
+		local clear = 0
+		for _, bp in workspace:GetPartBoundsInRadius(eye3 - Vector3.new(0, 1.5, 0), 1.2) do
+			if bp.CanCollide and bp:IsDescendantOf(garage) then
+				clear += 1
+			end
+		end
+		assert(clear == 0, "G3: the stand is clear (" .. clear .. " solid parts)")
+	end
 	-- the drive's stage
 	local st = Drive.build(2)
 	local loud, stageParts = 0, 0

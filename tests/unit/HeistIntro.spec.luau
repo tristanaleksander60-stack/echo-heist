@@ -36,7 +36,7 @@ local function play(skipAt: number?, dt: number): (any, { any })
 end
 
 return function(test)
-	test("shot timings sum to 30-40 s, about six shots plus the title", function()
+	test("shot timings sum to 30-40 s (tightened to <= 34 s, still dramatic), seven shots plus the title", function()
 		local total = 0
 		for _, shot in IntroPlan.SHOTS do
 			Assert.truthy(shot.seconds > 0, shot.id .. " has a length")
@@ -44,7 +44,12 @@ return function(test)
 		end
 		Assert.near(IntroPlan.total(), total, 1e-9, "total")
 		Assert.truthy(total >= 30 and total <= 40, "30-40 s, got " .. total)
+		Assert.truthy(total <= 34, "tightened (REVIEW_STEAM_PLUS #7): <= 34 s, got " .. total)
 		Assert.truthy(#IntroPlan.SHOTS >= 6 and #IntroPlan.SHOTS <= 8, "about 6 shots")
+		Assert.truthy(I.SERVER_HOLD_SECONDS > total + 8, "the server hold outlasts the intro and the title card")
+		for i, shot in IntroPlan.SHOTS do
+			Assert.near(IntroPlan.at(shot.id, 0), IntroPlan.startOf(i), 1e-9, "at(" .. shot.id .. ", 0) is its start")
+		end
 	end)
 
 	test("every shot has a caption of at most six words, ASCII, in Strings", function()
@@ -68,14 +73,14 @@ return function(test)
 		for _, shot in IntroPlan.SHOTS do
 			table.insert(ids, shot.id)
 		end
-		Assert.eq(table.concat(ids, ","), "eve,hoard,every,gone,one,more,title", "shot order")
+		Assert.eq(table.concat(ids, ","), "eve,hoard,laugh,every,gone,one,more,title", "shot order")
 		Assert.truthy(IntroPlan.SHOTS[#IntroPlan.SHOTS].wordmark, "ends on the wordmark smash")
 		local moves = {}
 		for _, shot in IntroPlan.SHOTS do
 			moves[shot.move] = true
 			Assert.truthy(IntroPlan.MOODS[shot.mood] ~= nil, shot.id .. ": a lighting mood")
 		end
-		for _, m in { "crane", "low", "whip", "push" } do
+		for _, m in { "crane", "low", "close", "whip", "push" } do
 			Assert.truthy(moves[m], "a " .. m .. " move")
 		end
 	end)
@@ -184,8 +189,17 @@ return function(test)
 				Assert.truthy(w >= 0 and w <= 1, "weight")
 			end
 		end
-		local x = IntroPlan.joint("rest", "lever", 1, "RightShoulder")
-		Assert.eq(x, IntroPlan.POSES.lever.RightShoulder[1], "full weight = the target pose")
+		local x = IntroPlan.joint("rest", "laugh", 1, "RightShoulder")
+		Assert.eq(x, IntroPlan.POSES.laugh.RightShoulder[1], "full weight = the target pose")
+		Assert.eq(IntroPlan.rookieFace(0), "idle", "the Rookie starts idle")
+		Assert.eq(IntroPlan.rookieFace(IntroPlan.total()), "smug", "and ends on the smug grin")
+		Assert.eq(IntroPlan.leverAngle(IntroPlan.LEVER.at - 0.01), 0, "the lever is up until the yank")
+		Assert.near(
+			IntroPlan.leverAngle(IntroPlan.LEVER.at + IntroPlan.LEVER.swing),
+			IntroPlan.LEVER.degrees,
+			1e-9,
+			"then down"
+		)
 	end)
 
 	test("every cue the plan plays exists in the audio cue table", function()
@@ -321,4 +335,193 @@ return function(test)
 		Assert.truthy(math.sqrt(o[1] ^ 2 + o[3] ^ 2) > 1500, "far from the lobby")
 		Assert.truthy(math.abs(o[1]) + math.abs(o[3]) < 20000, "float precision stays fine")
 	end)
+
+	-- Forward kinematics of Hoardsworth's rig (IntroRig: world = parent * C0 * R(pose), C0 = origin - parent origin),
+	-- as Heist/Cinematic and the key frames pose it: a point given in a part's space -> stage studs.
+	local function rot(rx: number, ry: number, rz: number): { { number } }
+		local cx, sx = math.cos(math.rad(rx)), math.sin(math.rad(rx))
+		local cy, sy = math.cos(math.rad(ry)), math.sin(math.rad(ry))
+		local cz, sz = math.cos(math.rad(rz)), math.sin(math.rad(rz))
+		local X = { { 1, 0, 0 }, { 0, cx, -sx }, { 0, sx, cx } }
+		local Y = { { cy, 0, sy }, { 0, 1, 0 }, { -sy, 0, cy } }
+		local Z = { { cz, -sz, 0 }, { sz, cz, 0 }, { 0, 0, 1 } }
+		local function mul(a: { { number } }, b: { { number } }): { { number } }
+			local o = {}
+			for r = 1, 3 do
+				o[r] = {}
+				for c = 1, 3 do
+					o[r][c] = a[r][1] * b[1][c] + a[r][2] * b[2][c] + a[r][3] * b[3][c]
+				end
+			end
+			return o
+		end
+		return mul(mul(Y, X), Z)
+	end
+	local function partPoint(pose: string, name: string, localP: { number }): { number }
+		local frames: { [string]: { r: { { number } }, p: { number } } } = {}
+		local byName = {}
+		for _, p in IntroRig.PARTS do
+			byName[p.name] = p
+		end
+		local function frame(n: string): { r: { { number } }, p: { number } }
+			if frames[n] then
+				return frames[n]
+			end
+			local spec = byName[n]
+			local e = IntroPlan.POSES[pose][spec.joint] or { 0, 0, 0 }
+			local R = rot(e[1], e[2], e[3])
+			local out
+			if spec.parent then
+				local pf = frame(spec.parent)
+				local po = byName[spec.parent].origin
+				local d = { spec.origin[1] - po[1], spec.origin[2] - po[2], spec.origin[3] - po[3] }
+				local pr = pf.r
+				local p = {}
+				local r = {}
+				for i = 1, 3 do
+					p[i] = pf.p[i] + pr[i][1] * d[1] + pr[i][2] * d[2] + pr[i][3] * d[3]
+					r[i] = {}
+					for c = 1, 3 do
+						r[i][c] = pr[i][1] * R[1][c] + pr[i][2] * R[2][c] + pr[i][3] * R[3][c]
+					end
+				end
+				out = { r = r, p = p }
+			else
+				out = { r = R, p = { spec.origin[1], spec.origin[2], spec.origin[3] } }
+			end
+			frames[n] = out
+			return out
+		end
+		local f = frame(name)
+		local m = {}
+		for i = 1, 3 do
+			m[i] = f.p[i] + f.r[i][1] * localP[1] + f.r[i][2] * localP[2] + f.r[i][3] * localP[3]
+		end
+		-- model -> stage: his feet at STAGE.hoardsworth.at, turned by its yaw about Y
+		local H = IntroPlan.STAGE.hoardsworth
+		local c, s = math.cos(math.rad(H.yaw)), math.sin(math.rad(H.yaw))
+		return { H.at[1] + m[1] * c + m[3] * s, H.at[2] + m[2], H.at[3] - m[1] * s + m[3] * c }
+	end
+	local function partCentre(pose: string, name: string): { number }
+		for _, p in IntroRig.PARTS do
+			if p.name == name then
+				return partPoint(pose, name, {
+					(p.min[1] + p.max[1]) / 2,
+					(p.min[2] + p.max[2]) / 2,
+					(p.min[3] + p.max[3]) / 2,
+				})
+			end
+		end
+		error("no part " .. name)
+	end
+	local function angleTo(from: { number }, look: { number }, p: { number }): number
+		local a = { look[1] - from[1], look[2] - from[2], look[3] - from[3] }
+		local b = { p[1] - from[1], p[2] - from[2], p[3] - from[3] }
+		local la, lb = dist(look, from), dist(p, from)
+		return math.deg(math.acos(math.clamp((a[1] * b[1] + a[2] * b[2] + a[3] * b[3]) / (la * lb), -1, 1)))
+	end
+
+	test("the villain close-up: his laughing face, the monocle glint, the gold-ringed hand on the lever", function()
+		local ST = IntroPlan.STAGE
+		local i = 0
+		for k, sh in IntroPlan.SHOTS do
+			if sh.id == "laugh" then
+				i = k
+			end
+		end
+		Assert.truthy(i == 3, "the close-up follows his introduction")
+		local shot = IntroPlan.SHOTS[i]
+		Assert.truthy(shot.seconds >= 3 and shot.seconds <= 4.5, "a beat, not a scene")
+		-- the hand: in the laugh poses the right glove grips the knob
+		for _, pose in { "laugh", "laughB" } do
+			local hand = partCentre(pose, "Hoardsworth_RightHand")
+			Assert.truthy(
+				dist(hand, ST.knob) < 0.35,
+				string.format("%s: the glove on the knob (%.2f studs)", pose, dist(hand, ST.knob))
+			)
+		end
+		-- the knob is the lever's handle top (the kit's Intro_Lever: hinge 2.85 up, the handle 2.43 above it, leaning
+		-- toward his front)
+		Assert.truthy(math.abs(ST.knob[2] - (ST.lever.at[2] + 2.85 + 2.2)) < 0.3, "the knob is the handle's top")
+		Assert.truthy(math.abs(ST.knob[1] - ST.lever.at[1]) < 0.2, "over the lever")
+		-- the camera: opens close on his face (the monocle in the middle), ends on the knob, and stays close
+		local face = partCentre("laugh", IntroRig.MONOCLE)
+		local k0, kn = shot.keys[1], shot.keys[#shot.keys]
+		Assert.truthy(dist(k0.pos, face) < 6.5 and k0.fov <= 40, "a medium close-up on his face")
+		Assert.truthy(angleTo(k0.pos, k0.look, face) < 4, "the monocle near the frame centre")
+		Assert.truthy(angleTo(kn.pos, kn.look, ST.knob) < 4, "it ends on the gold-ringed hand on the lever")
+		for _, k in shot.keys do
+			Assert.truthy(dist(k.pos, ST.hoardsworth.at) < 12, "the camera stays in on him")
+		end
+		-- the beats inside the shot: monocle glint, ring flash, then the yank
+		local seen = {}
+		for _, e in shot.events do
+			seen[(e.id or e.cue) :: string] = e.at
+		end
+		Assert.truthy(seen.glint and seen.glint < 1, "the monocle glints early")
+		Assert.truthy(seen.ring and seen.ring > seen.glint, "then the ring flashes on the knob")
+		Assert.truthy(seen.IntroLever and seen.IntroLever > seen.ring, "then he yanks it")
+		Assert.near(IntroPlan.LEVER.at, IntroPlan.startOf(i) + seen.IntroLever, 1e-9, "the handle swings on the cue")
+		for s = 0, 2.6, 0.1 do
+			Assert.truthy(IntroPlan.laughing(IntroPlan.startOf(i) + s), string.format("laughing at %.1f s", s))
+		end
+		Assert.falsy(IntroPlan.laughing(IntroPlan.startOf(i) - 1), "not before the close-up")
+		Assert.falsy(IntroPlan.laughing(IntroPlan.LEVER.at + 0.4), "the yank is effort, not a laugh")
+		local kinds = {}
+		for _, l in ST.villainLights do
+			kinds[l.kind] = true
+			Assert.truthy(I.VILLAIN_LIGHTS[l.kind] ~= nil, "Config.Intro.VILLAIN_LIGHTS." .. l.kind)
+			Assert.truthy(dist(l.from, l.to) < 25, l.kind .. ": in range of him")
+		end
+		Assert.truthy(kinds.under and kinds.key and kinds.rim and kinds.hand, "under, key, rim and the hand kicker")
+		Assert.truthy(I.RING and #I.RING.SIZE == 3, "the ring's numbers in Config.Intro")
+	end)
+
+	test(
+		"the garage is lit: practicals inside, the aurora's light from outside, nothing near-black by design",
+		function()
+			local ST = IntroPlan.STAGE
+			local g = ST.garage
+			local x0, x1 = g.centre[1] - g.size[1] / 2, g.centre[1] + g.size[1] / 2
+			local z0, z1 = g.centre[3] - g.size[3] / 2, g.centre[3] + g.size[3] / 2
+			local function inside(p: { number }, pad: number): boolean
+				return p[1] > x0 - pad and p[1] < x1 + pad and p[3] > z0 - pad and p[3] < z1 + pad and p[2] < g.size[2]
+			end
+			Assert.truthy(inside(ST.workLamp, 0) and ST.workLamp[2] > 7.8, "the work lamp hangs over the van's roof")
+			Assert.truthy(
+				math.abs(ST.workLamp[1] - ST.van.at[1]) < 1 and math.abs(ST.workLamp[3] - ST.van.at[3]) < 3,
+				"right over the van"
+			)
+			Assert.truthy(inside(ST.doorLamp, 0) and ST.doorLamp[3] > ST.rookie.at[3], "the cage lamp tops the Rookie")
+			Assert.truthy(math.abs(ST.doorGlow.centre[3] - z1) < 1, "the aurora pours in at the open door")
+			for _, w in ST.windows do
+				Assert.truthy(
+					math.abs(w[3] - z0) < 0.2 and w[2] - ST.windowSize[2] / 2 > 7.8,
+					"a high back window over the van"
+				)
+			end
+			-- the rim: from behind the Rookie, aimed at his head and cap
+			local head = { ST.rookie.at[1], 4.4, ST.rookie.at[3] }
+			Assert.truthy(dist(ST.rim.to, head) < 0.5, "the cool rim aims at his head")
+			Assert.truthy(ST.rim.from[3] < ST.rookie.at[3] - 10, "from behind him")
+			-- the moods: the garage is not the old near-dark (ambient sum >= 150 of 765)
+			local m = IntroPlan.MOODS.garage
+			Assert.truthy(m.ambient[1] + m.ambient[2] + m.ambient[3] >= 150, "a cool fill, never black")
+			Assert.truthy(m.ambient[3] > m.ambient[1], "the fill is cool (the warm practicals are the contrast)")
+			local G = I.GARAGE
+			for _, key in { "HEADLIGHT", "WORK_LAMP", "DOOR_LAMP", "DOOR_GLOW", "RIM", "STRING", "BEAM", "SHAFT" } do
+				Assert.truthy(G[key] ~= nil, "Config.Intro.GARAGE." .. key)
+			end
+			-- the reveal's last frame sits right of his axis, so the beams fan out past him rather than into the lens
+			local one
+			for _, sh in IntroPlan.SHOTS do
+				if sh.id == "one" then
+					one = sh
+				end
+			end
+			local k = one.keys[#one.keys]
+			Assert.truthy(k.pos[1] - ST.rookie.at[1] > 1.5, "a three-quarter push-in")
+			Assert.truthy(I.TITLE_VEIL >= 0.4, "the title's veil lets the lit crew through")
+		end
+	)
 end

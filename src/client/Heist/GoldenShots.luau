@@ -1,15 +1,19 @@
 --!strict
 -- Heist/GoldenShots: the client side of golden-frame staging (docs/GOLDEN_FRAMES.md
--- "Capture", Shared/Heist/Scenario). Studio only: nothing happens unless
--- RunService:IsStudio() and the Workspace attribute EH_Scenario names a scenario (the server's
--- Heist/Staging starts the level). It puts the camera at the frame's framing through
--- Heist/CameraDirector.setShot, and draws the type specimen for TYPE. The Studio debug chip
--- hides itself while a scenario is set (Heist/DebugChip).
---   G1 / TYPE  the gameplay camera in the mode in use (MENU flips DIORAMA / CLASSIC for the
---              (a) / (b) pair)
+-- "Capture", Shared/Heist/Scenario; re-specced for first person and the Rookie, REVIEW_STEAM_PLUS #4). Studio
+-- only: nothing happens unless RunService:IsStudio() and the Workspace attribute EH_Scenario names a scenario
+-- (the server's Heist/Staging starts the level). The Studio debug chip hides itself while a scenario is set
+-- (Heist/DebugChip).
+--   G1 / TYPE  first person in L1: the camera stays in your eyes (your Rookie hands, the reticle, the HUD); once
+--              per run, after the run-start beat, you are moved back onto the street (GOLDEN.G1.STAND: from the
+--              spawn itself the doorway fills the frame) and turned toward the cash glinting through the shop's
+--              windows, tilted up for the tall tenement and the aurora (Config.Heist.CAMERA.GOLDEN.G1)
 --   G2 / CLONE_AB  the "8 OF ME" pull-back: pitch 45, FOV 45, distance fitted so you and every
---              clone of yours sit inside the central 32 % of the width (9:16-safe)
---   G3         a 3/4 shot of the first garage van bay: pitch 30, 22 studs, FOV 45
+--              clone of yours (eight Rookies in your crew colours) sit inside the central 32 % of the width
+--   G3         first person in the hideout: you are moved once to GOLDEN.G3.STAND in the aisle at the vans and
+--              look between the job board and your van
+-- The look goes through CameraDirector.frameRunStart (its yaw; the pitch is the run-start pitch, swapped for the
+-- golden one for that one call), so the camera director's own first-person code draws the frame.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -36,6 +40,72 @@ function GoldenShots.active(): string?
 	return Scenario.resolve(RunService:IsStudio(), workspace:GetAttribute(Scenario.ATTRIBUTE))
 end
 
+-- The level-space position of a level's loot by id, or nil.
+local function lootAt(level: any, id: string): { number }?
+	for _, item in (if level then level.loot else nil) or {} do
+		if item.id == id then
+			return { item.x, item.y, item.z }
+		end
+	end
+	return nil
+end
+
+-- Turns the first-person look to (yaw, pitch down) through the camera director's run-start framing.
+local function look(camera: any, yaw: number, pitch: number)
+	local FP = Config.Heist.CAMERA.FP
+	local keep = FP.START_PITCH
+	FP.START_PITCH = pitch
+	camera.frameRunStart(nil, 0, math.rad(yaw))
+	FP.START_PITCH = keep
+end
+
+-- First-person staging for G1 / G3: once per run (G1) or once in the hideout (G3), when the camera is in your
+-- eyes and no beat or moment holds it.
+local function stageFp(camera: any, state: any, shot: string)
+	local G = Config.Heist.CAMERA.GOLDEN
+	local player = Players.LocalPlayer
+	local done: string? = nil
+	camera.setMode("fp", false)
+	RunService.Heartbeat:Connect(function()
+		local char = player.Character
+		local root = char and char:FindFirstChild("HumanoidRootPart")
+		if not root or not root:IsA("BasePart") or camera.presenting() then
+			return
+		end
+		if shot == "G1" then
+			local run = state.run
+			if state.where ~= "heist" or state.phase ~= "Run" or not run then
+				return
+			end
+			local key = "run" .. tostring(run.run)
+			if done == key or not camera.inEyes() then
+				return
+			end
+			done = key
+			local origin: Vector3 = state.origin or Vector3.zero
+			local cash = lootAt(state.level, G.G1.LOOT)
+			if cash then
+				local s = G.G1.STAND
+				local at = if s then origin + Vector3.new(s[1], root.Position.Y - origin.Y, s[2]) else root.Position
+				local yaw, pitch = Scenario.fpLook(G.G1, t3(at), t3(origin + v3(cash)))
+				char:PivotTo(CFrame.new(at) * CFrame.Angles(0, math.rad(yaw), 0))
+				look(camera, yaw, pitch)
+			end
+		elseif shot == "G3" then
+			if state.where ~= "garage" or done == "garage" then
+				return
+			end
+			done = "garage"
+			local o = v3(Config.Heist.LOBBY_ORIGIN)
+			local s = G.G3.STAND
+			local at = o + Vector3.new(s[1], root.Position.Y - o.Y, s[2])
+			local yaw, pitch = Scenario.fpLook(G.G3, t3(at), t3(o + v3(G.G3.LOOK_AT)))
+			char:PivotTo(CFrame.new(at) * CFrame.Angles(0, math.rad(yaw), 0))
+			look(camera, yaw, pitch)
+		end
+	end)
+end
+
 -- TYPE: the specimen itself is drawn by Heist/TypeSpecimen (UI kit), which watches the same
 -- scenario through Scenario.resolve; this module only places the camera.
 
@@ -48,7 +118,9 @@ function GoldenShots.start(camera: any, state: any, echo: any)
 	local G = Config.Heist.CAMERA.GOLDEN
 	local player = Players.LocalPlayer
 
-	if spec.shot == "G2" then
+	if spec.fp then
+		stageFp(camera, state, spec.shot)
+	elseif spec.shot == "G2" then
 		local focus: Vector3? = nil
 		local dist = G.G2.MAX_DISTANCE
 		camera.setShot(function(): (CFrame?, number?)
@@ -103,16 +175,6 @@ function GoldenShots.start(camera: any, state: any, echo: any)
 			dist += (fit - dist) * 0.08
 			local pos, lookAt = CameraMath.orbit(t3(focus :: Vector3), G.G2.YAW, G.G2.PITCH, dist)
 			return CFrame.lookAt(v3(pos), v3(lookAt)), G.G2.FOV
-		end)
-	elseif spec.shot == "G3" then
-		camera.setShot(function(): (CFrame?, number?)
-			local garage = workspace:FindFirstChild("Garage")
-			local van = garage and garage:FindFirstChild("Van")
-			if state.where ~= "garage" or not van or not van:IsA("BasePart") then
-				return nil, nil
-			end
-			local pos, lookAt = CameraMath.orbit(t3(van.Position), G.G3.YAW, G.G3.PITCH, G.G3.DISTANCE)
-			return CFrame.lookAt(v3(pos), v3(lookAt)), G.G3.FOV
 		end)
 	end
 	-- TYPE (spec.specimen): Heist/TypeSpecimen draws the specimen.
