@@ -8,8 +8,11 @@
 --     at your Rookie and opens the outfit picker (Hud/Wardrobe, Data.Equip); the TV plays the story intro again
 --     (Heist/Cinematic); the "LOOKING FOR CREW" sign opens the Quick Crew sheet (LOOK FOR A CREW / STOP, OPEN MY
 --     VAN / CLOSE, INVITE FRIENDS: SocialService). BACK, E, B or Backspace, or walking away closes a station.
---   * the vans (Garage/Vans, server Heist/Vans; their state is attributes): PICK, PAINT, STYLE, SOLO, CREW, SIT,
---     READY, GO. Each is a Heist.Ready lobby action table (Shared/Heist/VanRules.validAction): the server decides.
+--   * the vans (Garage/Vans, server Heist/Vans; their state is attributes): PICK, SIT, READY. The leader's own van
+--     offers YOUR VAN at every point: E opens the PARTY sheet (Hud/Party: SOLO / crew size / who can join / the ready
+--     check with KICK / INVITE / PAINT / STYLE / GO; E, B, Backspace, Esc or walking away close it, ENTER / Y is
+--     GO). Looking at anyone else's claimed van shows its read-only card (owner, mode, seats, who can join, SIT).
+--     Each op is a Heist.Ready lobby action table (Shared/Heist/VanRules.validAction): the server decides.
 --   * Quick Crew (Config.Hideout.QUICK): while you look for a crew the lobby shows a chip with STOP; once the server
 --     holds a seat for you (player attributes QuickCrew = "matched", QuickBay) a floor arrow leads you to that van's
 --     side door and a billboard marks it; SIT there joins the crew.
@@ -156,7 +159,27 @@ function Hideout.new(state: any, deps: any): any
 			leaderId = tonumber(m:GetAttribute("LeaderId")) or 0,
 			waiting = tonumber(m:GetAttribute("Waiting")) or 0,
 			size = #seats,
+			cap = tonumber(m:GetAttribute("Size")),
+			privacy = m:GetAttribute("Privacy") :: string?,
+			held = tonumber(m:GetAttribute("Held")) or 0,
 		}
+	end
+
+	-- Friends of yours in this server, as far as this client knows (the van card's SIT; the server checks again).
+	local friendCache: { [number]: boolean } = {}
+	local function isFriend(userId: number): boolean
+		local known = friendCache[userId]
+		if known ~= nil then
+			return known
+		end
+		friendCache[userId] = false
+		task.spawn(function()
+			local ok, res = pcall(function()
+				return localPlayer:IsFriendsWithAsync(userId)
+			end)
+			friendCache[userId] = ok and res == true
+		end)
+		return false
 	end
 
 	-- You, as the van rules see you: your crew from the garage sync, your seat from the vans' attributes.
@@ -283,6 +306,7 @@ function Hideout.new(state: any, deps: any): any
 		state.lobbyRoam = on
 		if not on then
 			hud.lobby.set(false, nil, nil)
+			hud.party.setCard(nil, nil)
 			deps.look.updateLobby({})
 		end
 	end
@@ -296,7 +320,21 @@ function Hideout.new(state: any, deps: any): any
 		camera.setShot(nil)
 		hud.closeStation()
 		hud.wardrobe.close()
+		hud.party.close()
 		Common.blockTouch("hideoutStation", false)
+	end
+
+	-- YOUR VAN: the PARTY sheet for your van (no camera move: you stand at your van; the sheet frees the cursor).
+	local function openParty(bay: number)
+		local r = root()
+		if not r then
+			return
+		end
+		local f = { verb = "party", bay = bay, startPos = r.Position, opened = true, t0 = os.clock() }
+		focus = f
+		setRoam(false)
+		hud.party.open(bay, closeStation)
+		Sound.play("UIToggle")
 	end
 
 	local function invite()
@@ -434,6 +472,10 @@ function Hideout.new(state: any, deps: any): any
 		end
 		if it and it.kind == "station" then
 			openStation(it)
+			return
+		end
+		if p.verb == "party" and it then
+			openParty(it.bay)
 			return
 		end
 		local bay = if it then it.bay else 0
@@ -685,11 +727,22 @@ function Hideout.new(state: any, deps: any): any
 		hideHint()
 		hideQuickGuide()
 		hud.lobby.hide()
+		hud.party.setCard(nil, nil)
 	end
 
 	-- A garage sync while you are in the garage (your crew, your van, the job changed).
 	function h.refresh()
 		local f = focus
+		if f and f.verb == "party" then
+			local g = state.garage
+			if not (g and g.leader == localPlayer.UserId and (tonumber(g.van) or 0) == f.bay) then
+				closeStation() -- no longer the leader of that van (it moved, the crew changed)
+				setRoam(true)
+			else
+				hud.party.refresh()
+			end
+			return
+		end
 		if f and (f.verb == "jobs" or f.verb == "laptop") and jobKey() ~= f.job then
 			-- a job was picked on the board (or the laptop's daily vault): back to the hideout, go to the van
 			closeStation()
@@ -745,6 +798,30 @@ function Hideout.new(state: any, deps: any): any
 		lastItem = it
 		lastPrompt = if verb then promptFor(verb, it) else nil
 		hud.lobby.set(true, lastPrompt, use)
+		-- the read-only card of someone else's van (or your crew's, if you do not lead it)
+		local card = nil
+		if
+			it
+			and it.kind == "van"
+			and it.view
+			and it.view.mode ~= "free"
+			and not (who.leader and it.view.crewId == who.crewId)
+		then
+			card = LobbyLook.vanCard(it.view, who, {
+				friend = isFriend(it.view.leaderId),
+				quick = (tonumber(localPlayer:GetAttribute("QuickBay")) or 0) == it.bay,
+			})
+		end
+		local cardBay = if it then it.bay else 0
+		hud.party.setCard(
+			card,
+			if card and card.sit
+				then function()
+					deps.send({ op = "sit", bay = cardBay })
+					Sound.play("UIConfirm")
+				end
+				else nil
+		)
 	end
 
 	---------------------------------------------------------------- input
@@ -777,8 +854,20 @@ function Hideout.new(state: any, deps: any): any
 		end
 		return Enum.ContextActionResult.Pass
 	end, false, Enum.KeyCode.Backspace, Enum.KeyCode.ButtonB)
+	ContextActionService:BindAction("HideoutPartyGo", function(_, inputState: Enum.UserInputState)
+		if inputState == Enum.UserInputState.Begin and h.isActive() and hud.party.isOpen() then
+			hud.party.go()
+			return Enum.ContextActionResult.Sink
+		end
+		return Enum.ContextActionResult.Pass
+	end, false, Enum.KeyCode.Return, Enum.KeyCode.KeypadEnter, Enum.KeyCode.ButtonY)
 	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
 		if not h.isActive() then
+			return
+		end
+		-- Esc closes a station or the PARTY sheet (Roblox may also open its menu: harmless)
+		if input.KeyCode == Enum.KeyCode.Escape and focus then
+			backPressed()
 			return
 		end
 		if drive and not processed then

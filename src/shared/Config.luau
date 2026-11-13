@@ -1713,6 +1713,20 @@ Config.Hideout = {
 		ARROW = { ahead = 4, up = 0.25, size = { 2.2, 0.15, 3.2 }, bob = 0.15, hideWithin = 7 },
 		BILLBOARD = { up = 9.5, size = { 230, 60 } },
 	},
+	-- The PARTY sheet (PARTY track): the van's leader uses their van (E) and gets one menu: SOLO or a crew of
+	-- MIN_SIZE..MAX_CREW, who can join (PRIVACY: never reorder, the wire sends the index), the seat list with READY
+	-- marks and KICK, INVITE FRIENDS, PAINT, STYLE, GO. The server checks every op (Shared/Heist/VanRules: size,
+	-- privacy, kick). Others walking up to a van see a read-only card (HudLayout.PARTY_CARD).
+	PARTY = {
+		MIN_SIZE = 2, -- the smallest crew size (SOLO is the parked van)
+		DEFAULT_PRIVACY = 1, -- a claimed van starts FRIENDS ONLY (the old rule: friends of the leader may sit)
+		-- friends: friends of the leader may SIT; open: friends + Quick Crew strangers (held seats); invite: only
+		-- friends who came in on the leader's invite or followed them (Roblox join data / follow / party)
+		PRIVACY = { "friends", "open", "invite" },
+		COOLDOWN = 0.3, -- seconds between one leader's size / privacy / kick ops (the remote's Net limit is first)
+		KICK_BLOCK_SECONDS = 60, -- a kicked player cannot sit in (or be Quick-matched into) that van for this long
+		CARD_REACH = 12, -- studs from your eye: another crew's van shows its read-only card while you look at it
+	},
 	-- the drive's SKIP and the touch USE button reuse HudLayout boxes (LOBBY_SKIP, LOBBY_USE)
 }
 

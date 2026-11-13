@@ -8,8 +8,8 @@
 -- "LOOKING FOR CREW" sign) and four points on each van's door side (Config.Hideout.VAN.POINTS: cab, door, paint,
 -- style). Van verbs:
 --   free van      the leader of a crew: "pick" (anywhere on it); a member: "leaderPicks" (locked)
---   your van      leader: cab "solo" (parked) / "go" or "wait" (crew: every seated member READY?); door "crew"
---                 (parked) / "park" (crew, nobody else in it); paint "paint"; style (the rear wheel) "style"
+--   your van      leader: "party" at every point (PARTY track: one sheet for SOLO / crew size / who can join / the
+--                 ready check / KICK / INVITE / PAINT / STYLE / GO, Hud/Party)
 --                 member: door "sit" (not seated); seated members get "ready" / "unready" wherever they look
 --   another's van door "sit" while its side door is open (crew mode), else "taken" (locked)
 -- A van away on a heist or leaving is "busy" (locked).
@@ -27,6 +27,9 @@ export type VanView = {
 	leaderId: number,
 	waiting: number, -- seated members not READY yet (VanRules.waiting)
 	size: number, -- seats in use
+	cap: number?, -- PARTY: how many may come along (the van's Size attribute; nil = every seat)
+	privacy: string?, -- PARTY: who can join (Config.Hideout.PARTY.PRIVACY; nil = friends)
+	held: number?, -- seats held for matched Quick Crew players
 }
 export type Me = {
 	userId: number,
@@ -49,25 +52,12 @@ function LobbyLook.vanVerb(v: VanView?, point: string, me: Me): string?
 		return "busy"
 	end
 	if point == "style" then
-		-- only your own van's leader restyles it; the wheel offers nothing to anyone else
-		return if v.crewId == me.crewId and me.leader then "style" else nil
+		-- only your own van's leader uses the wheel (its PARTY sheet); it offers nothing to anyone else
+		return if v.crewId == me.crewId and me.leader then "party" else nil
 	end
 	if v.crewId == me.crewId then
 		if me.leader then
-			if point == "cab" then
-				if v.mode == "parked" then
-					return "solo"
-				end
-				return if v.waiting > 0 then "wait" else "go"
-			elseif point == "door" then
-				if v.mode == "parked" then
-					return "crew"
-				end
-				return if me.crewSize <= 1 then "park" else nil
-			elseif point == "paint" then
-				return "paint"
-			end
-			return nil
+			return "party" -- one menu for the whole van (Hud/Party)
 		end
 		if me.seatedBay == v.bay then
 			return if me.ready then "unready" else "ready"
@@ -118,7 +108,167 @@ function LobbyLook.action(verb: string, bay: number, paintNext: number?): { [str
 	elseif verb == "unready" then
 		return { op = "unready" }
 	end
+	return nil -- "party" opens the sheet on the client (no server op)
+end
+
+---------------------------------------------------------------------------
+-- The PARTY sheet (PARTY track, Config.Hideout.PARTY; Hud/Party draws it, the server decides every op)
+---------------------------------------------------------------------------
+
+export type PartySeat = {
+	seat: number,
+	userId: number, -- 0 = nobody
+	state: string, -- "driver" | "ready" | "seated" | "out" | "held" | "free" | "closed" (beyond the crew size)
+	kick: boolean, -- the leader may kick this seat's member
+}
+export type PartySheet = {
+	bay: number,
+	solo: boolean, -- the van is parked (SOLO)
+	canSolo: boolean, -- SOLO is possible (nobody else in the crew)
+	cap: number, -- the crew size (MIN_SIZE..), the driver included
+	taken: number, -- seats in use + held: the smallest size you can pick
+	sizes: { { n: number, on: boolean, enabled: boolean } },
+	privacy: number, -- a PARTY.PRIVACY index
+	seats: { PartySeat },
+	waiting: number,
+	go: string, -- "solo" (SOLO · GO) | "go" (everyone READY) | "wait"
+}
+
+local function capNow(v: VanView): number
+	local all = math.min(Config.Sim.MAX_CREW, #HD.VAN.SEATS)
+	local n = tonumber(v.cap) or all
+	return math.clamp(math.floor(n), 1, all)
+end
+
+-- What the leader's PARTY sheet shows for their van. seats: VanRules.decodeSeats of the van's Seats attribute.
+function LobbyLook.partySheet(v: VanView, seats: { any }): PartySheet
+	local all = math.min(Config.Sim.MAX_CREW, #HD.VAN.SEATS)
+	local held = math.max(0, math.floor(tonumber(v.held) or 0))
+	local solo = v.mode == "parked"
+	local cap = capNow(v)
+	local taken = #seats + held
+	local sizes = {}
+	for n = HD.PARTY.MIN_SIZE, all do
+		table.insert(sizes, { n = n, on = not solo and n == cap, enabled = n >= taken })
+	end
+	local bySeat: { [number]: any } = {}
+	for _, s in seats do
+		bySeat[s.seat] = s
+	end
+	local out: { PartySeat } = {}
+	local heldLeft = held
+	for k = 1, all do
+		local s = bySeat[k]
+		local state
+		if s then
+			state = if k == 1 or s.userId == v.leaderId
+				then "driver"
+				elseif s.ready then "ready"
+				elseif s.seated then "seated"
+				else "out"
+		elseif solo or k > cap then
+			state = "closed"
+		elseif heldLeft > 0 then
+			heldLeft -= 1
+			state = "held"
+		else
+			state = "free"
+		end
+		table.insert(out, {
+			seat = k,
+			userId = if s then s.userId else 0,
+			state = state,
+			kick = s ~= nil and k > 1 and s.userId ~= v.leaderId,
+		})
+	end
+	local go = if solo then (if #seats <= 1 then "solo" else "wait") elseif v.waiting > 0 then "wait" else "go"
+	return {
+		bay = v.bay,
+		solo = solo,
+		canSolo = #seats <= 1,
+		cap = cap,
+		taken = taken,
+		sizes = sizes,
+		privacy = table.find(HD.PARTY.PRIVACY, v.privacy or "") or HD.PARTY.DEFAULT_PRIVACY,
+		seats = out,
+		waiting = v.waiting,
+		go = go,
+	}
+end
+
+-- The Heist.Ready action a PARTY sheet button sends (nil: "invite" is the Roblox prompt, "back" closes the sheet).
+-- kind: "solo" (park the van) | "size" (n) | "privacy" (n) | "kick" (n = seat) | "go" (n = 1: SOLO · GO from a
+-- parked van) | "paint" (n = the next paint) | "style" (n = the next style).
+function LobbyLook.partyAction(kind: string, bay: number, n: number?): { [string]: any }?
+	if kind == "solo" then
+		return { op = "park", bay = bay }
+	elseif kind == "size" or kind == "privacy" or kind == "kick" or kind == "paint" or kind == "style" then
+		return if n then { op = kind, bay = bay, n = n } else nil
+	elseif kind == "go" then
+		return { op = if n == 1 then "solo" else "go", bay = bay }
+	end
 	return nil
+end
+
+export type VanCard = {
+	bay: number,
+	leaderId: number,
+	mode: string, -- "solo" (parked) | "crew"
+	seated: number, -- seats in use
+	cap: number,
+	privacy: string,
+	sit: boolean, -- show SIT (the server checks everything again: the invite, the hold, the size)
+	why: string?, -- else why not: "Closed" | "Full" | "NotFriend" | "NotMatched" | "Seated" | "Busy"
+}
+
+-- The read-only card someone who is not the leader sees while looking at a claimed van. facts = { friend (you are
+-- friends with its leader, as far as this client knows), quick (your Quick Crew seat is held in this van) }.
+-- INVITE ONLY shows SIT to friends: whether you came in on the leader's invite is the server's to check.
+function LobbyLook.vanCard(v: VanView, me: Me, facts: { friend: boolean?, quick: boolean? }): VanCard
+	local cap = capNow(v)
+	local privacy = v.privacy or HD.PARTY.PRIVACY[HD.PARTY.DEFAULT_PRIVACY]
+	local card: VanCard = {
+		bay = v.bay,
+		leaderId = v.leaderId,
+		mode = if v.mode == "parked" then "solo" else "crew",
+		seated = v.size,
+		cap = if v.mode == "parked" then 1 else cap,
+		privacy = privacy,
+		sit = false,
+		why = nil,
+	}
+	local function no(why: string): VanCard
+		card.why = why
+		return card
+	end
+	if v.mode == "departing" or v.mode == "away" then
+		return no("Busy")
+	end
+	if v.mode ~= "crew" then
+		return no("Closed")
+	end
+	if v.crewId == me.crewId then
+		if me.seatedBay == v.bay or me.leader then
+			return no("Seated")
+		end
+		card.sit = true -- your own crew's van takes you back
+		return card
+	end
+	local held = math.max(0, math.floor(tonumber(v.held) or 0))
+	local quick = facts.quick == true and privacy == "open"
+	-- your own held seat is one of the held ones
+	if v.size + held - (if quick then 1 else 0) >= cap then
+		return no("Full")
+	end
+	if privacy == "invite" then
+		if facts.friend ~= true then
+			return no("NotFriend")
+		end
+	elseif facts.friend ~= true and not quick then
+		return no(if privacy == "open" then "NotMatched" else "NotFriend")
+	end
+	card.sit = true
+	return card
 end
 
 -- The station definition for an anchor name (Config.Hideout.STATIONS), or nil.

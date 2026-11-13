@@ -3,7 +3,8 @@
 -- for each bay (Garage/Anchors/VanBay<i>: the van's spot, its LookVector the side door's facing):
 --   * attributes the clients read (server-written only): Bay, Mode (Shared/Heist/VanRules.MODE), CrewId, LeaderId,
 --     Paint, Seats (VanRules.encodeSeats), Waiting (seated members not READY), Style (Config.Hideout.VAN.STYLES
---     index), Open (open to Quick Crew), Held (seats held for matched Quick Crew players);
+--     index), Open (open to Quick Crew), Held (seats held for matched Quick Crew players), Size (PARTY: how many
+--     may come along) and Privacy (PARTY: "friends" | "open" | "invite", Config.Hideout.PARTY.PRIVACY);
 --   * the look points (invisible, non-colliding, never queried): Cab, Door, Paint, Style (EH_Kind "vanPoint");
 --   * the crew's name plate over the side door (the leader's crew colour and name, a pip per seat), a lit name card
 --     over each cargo seat (the member's crew colour and name; dim when free), the sliding side door leaf (shut
@@ -166,6 +167,8 @@ function Vans.build(onStoodUp: ((number, number) -> ())?): Folder?
 			m:SetAttribute("Style", 1)
 			m:SetAttribute("Open", false)
 			m:SetAttribute("Held", 0)
+			m:SetAttribute("Size", VanRules.cap())
+			m:SetAttribute("Privacy", HD.PARTY.PRIVACY[HD.PARTY.DEFAULT_PRIVACY])
 			for name, p in V.POINTS do
 				local pt = visual(
 					m,
@@ -392,6 +395,9 @@ function Vans.render(bay: number, van: VanRules.Van?, names: { [number]: string 
 	m:SetAttribute("Style", style)
 	m:SetAttribute("Open", van ~= nil and van.open == true)
 	m:SetAttribute("Held", if van then held or 0 else 0)
+	local cap = if van then VanRules.capOf(van) else VanRules.cap()
+	m:SetAttribute("Size", cap)
+	m:SetAttribute("Privacy", if van then van.privacy else HD.PARTY.PRIVACY[HD.PARTY.DEFAULT_PRIVACY])
 	Vans.style(bay, style)
 	Vans.paint(bay, if van then van.paint else 0)
 	-- the plate: the leader's crew colour (seat 1) and name
@@ -417,7 +423,8 @@ function Vans.render(bay: number, van: VanRules.Van?, names: { [number]: string 
 	for k, pip in rig.pips do
 		local s = bySeat[k]
 		pip.BackgroundColor3 = if s then Palette.hueFor(k) else Palette.steelLo
-		pip.BackgroundTransparency = if s and (s.seated or k == 1) then 0 else 0.5
+		-- seats past the crew size (PARTY) fade right out
+		pip.BackgroundTransparency = if s and (s.seated or k == 1) then 0 elseif k > cap then 0.9 else 0.5
 	end
 	for k, card in rig.cards do
 		local s = bySeat[k]
@@ -429,7 +436,7 @@ function Vans.render(bay: number, van: VanRules.Van?, names: { [number]: string 
 		else
 			card.part.Color = Palette.inkHi
 			card.part.Transparency = V.FREE_LIGHT
-			card.name.Text = if mode == VanRules.MODE.Crew then Strings.SEAT_FREE else ""
+			card.name.Text = if mode == VanRules.MODE.Crew and k <= cap then Strings.SEAT_FREE else ""
 			card.state.Text = ""
 		end
 	end

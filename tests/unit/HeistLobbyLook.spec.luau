@@ -39,18 +39,17 @@ return function(test: (string, () -> ()) -> ())
 			Assert.eq(LobbyLook.vanVerb(nil, point, soloLeader), "pick", "free " .. point)
 			Assert.eq(LobbyLook.vanVerb(nil, point, me(1, false, 2)), "leaderPicks", "free, member")
 		end
-		-- your parked van (alone)
+		-- your parked van (alone): every point opens the PARTY sheet (SOLO / CREW / PAINT / STYLE / GO are in it)
 		local parked = van("parked", 1, 101)
-		Assert.eq(LobbyLook.vanVerb(parked, "cab", soloLeader), "solo", "SOLO at the cab")
-		Assert.eq(LobbyLook.vanVerb(parked, "door", soloLeader), "crew", "CREW at the side door")
-		Assert.eq(LobbyLook.vanVerb(parked, "paint", soloLeader), "paint", "PAINT at the rear")
+		for _, point in { "cab", "door", "paint", "style" } do
+			Assert.eq(LobbyLook.vanVerb(parked, point, soloLeader), "party", "YOUR VAN at the " .. point)
+		end
 		-- your van with its side door open
 		local open = van("crew", 1, 101, 1)
 		local leaderOfTwo = me(1, true, 2)
-		Assert.eq(LobbyLook.vanVerb(open, "cab", leaderOfTwo), "wait", "GO waits")
-		Assert.eq(LobbyLook.vanVerb(van("crew", 1, 101, 0), "cab", leaderOfTwo), "go", "GO")
-		Assert.eq(LobbyLook.vanVerb(open, "door", leaderOfTwo), nil, "nothing at the door with a crew")
-		Assert.eq(LobbyLook.vanVerb(open, "door", soloLeader), "park", "close it again alone")
+		Assert.eq(LobbyLook.vanVerb(open, "cab", leaderOfTwo), "party", "the leader's GO is in the sheet")
+		Assert.eq(LobbyLook.vanVerb(open, "door", leaderOfTwo), "party", "the sheet at the door too")
+		Assert.eq(LobbyLook.action("party", 2), nil, "YOUR VAN sends nothing: it opens the sheet")
 		-- a member of that crew
 		local member = { userId = 202, crewId = 1, leader = false, crewSize = 2, seatedBay = nil, ready = false }
 		Assert.eq(LobbyLook.vanVerb(open, "door", member), "sit", "a member walks in")

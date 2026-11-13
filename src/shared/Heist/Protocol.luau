@@ -13,7 +13,9 @@
 --   Heist.Ready(arg?)                  "▶ RUN n" between runs (arg = reduced motion, a boolean), or in the
 --                                      hideout a lobby action table { op, bay?, n? } (Shared/Heist/VanRules:
 --                                      claim, paint, crew, park, solo, go, sit, ready, unready, stand, and (LOBBY 2)
---                                      style (bay, n), quick, unquick, open (bay), shut (bay); the
+--                                      style (bay, n), quick, unquick, open (bay), shut (bay), and (PARTY)
+--                                      size (bay, n = 2..4), privacy (bay, n = Config.Hideout.PARTY.PRIVACY),
+--                                      kick (bay, n = seat 2..); the
 --                                      validator is VanRules.validReadyArg, the server re-checks every rule)
 --   Heist.FastForward(on)              hold-to-skip pill
 --   Heist.SelectLevel(index, relaxed?) crew leader picks a tape (garage or results card);
