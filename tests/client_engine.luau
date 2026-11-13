@@ -3117,5 +3117,107 @@ local okCoach, coachErr = pcall(function()
 end)
 check(okCoach, "run coach: card, clone path, camera focus, world arrow (" .. tostring(coachErr) .. ")")
 
+-- Q. Leaving a heist (garage-exit-fix; the owner's v125 report: "Gus caught you." and "RUN 3/8" stayed up in the
+-- hideout). The real heist HUD (Hud.new, built into a holder: no PlayerGui on a server) is put in the owner's state
+-- (run 3, caught: the reason line, the RUN button, MENU and its sheet open, a cut switching the HUD off), then the
+-- lobby state's HUD step (HeistClient's teardown "hud": Hud.hideAll + hidePreparing, then showGarage) is applied:
+-- no heist HUD element (Heist/LeavePlan.HEIST_UI, Hud.heistVisible) is visible, the run bar's "RUN 3" stamps and
+-- markers are gone, and applying it again is harmless. LeavePlan's decision for that stale state is a full teardown.
+local okLeave, leaveErr = pcall(function()
+	local Hud = require(clientHeist:WaitForChild("Hud"))
+	local LeavePlan = require(clientHeist:WaitForChild("LeavePlan"))
+	local holder = Instance.new("Folder")
+	holder.Name = "LeaveHudTest"
+	holder.Parent = scratch
+	local noop = function() end
+	local state: any = {
+		where = "heist",
+		phase = "Run",
+		run = nil,
+		clock = { length = 60, rate = 1 },
+		deck = nil,
+		over = nil,
+		mySeat = 1,
+		crew = {},
+		recs = {},
+		actorFx = {},
+		runEndedAtByRun = {},
+		levelIndex = 2,
+		liveCount = 1,
+		reduced = true,
+	}
+	local actions: any = {
+		endRun = noop,
+		interact = noop,
+		deck = noop,
+		ready = noop,
+		fastForward = noop,
+		selectLevel = noop,
+		selectDaily = noop,
+		joinFriend = noop,
+		lobbyAction = noop,
+		leave = noop,
+		hint = noop,
+		cameraMode = function(): string
+			return "firstPerson"
+		end,
+	}
+	local hud = Hud.new(state, actions, holder)
+	-- run 3, caught by Gus (the reason line), between runs (the RUN button), MENU open
+	local runMsg = { run = 3, actors = {}, kind = "Standard", transition = 0, keys = {} }
+	state.run = runMsg
+	hud.onRun(runMsg)
+	hud.setReason("Gus caught you.")
+	state.phase = "Between"
+	hud.onRunEnd({ run = 3 })
+	hud.showBetween()
+	hud.openMenu()
+	local before = hud.heistVisible()
+	local function has(list: { string }, name: string): boolean
+		return table.find(list, name) ~= nil
+	end
+	-- the stale state the owner saw: the client believes it is home, the HUD says otherwise
+	state.where = "garage"
+	check(
+		has(before, "run") and has(before, "reason") and has(before, "menuSheet"),
+		"leave HUD: the owner's state is up before (" .. table.concat(before, ", ") .. ")"
+	)
+	check(LeavePlan.lobbyAction(state.where, #before > 0) == "enter", "leave HUD: a stale heist HUD -> full teardown")
+	hud.setCutscene(true) -- a Line-up cut switched the HUD off
+	-- the lobby state's HUD step (HeistClient teardown.hud), then the garage
+	LeavePlan.reset(state, { where = "garage", lobby = true, members = {}, levels = {}, leader = 0 })
+	hud.hideAll()
+	hud.hidePreparing()
+	hud.showGarage()
+	local after = hud.heistVisible()
+	check(
+		#after == 0,
+		"leave HUD: no heist HUD element visible after the lobby state (" .. table.concat(after, ", ") .. ")"
+	)
+	local runHud = holder:FindFirstChild("HeistHUD", true)
+	local runFrame = runHud and runHud:FindFirstChild("Run", true)
+	check(
+		runFrame ~= nil and runFrame:IsA("GuiObject") and runFrame.Visible == false,
+		"leave HUD: the run frame is hidden"
+	)
+	local spectate = runHud and runHud:FindFirstChild("Spectate", true)
+	check(
+		spectate ~= nil and spectate:IsA("TextLabel") and (spectate.Visible == false or spectate.Text == ""),
+		"leave HUD: the reason line is cleared"
+	)
+	check(
+		runHud ~= nil and runHud:IsA("ScreenGui") and runHud.Enabled == true,
+		"leave HUD: the HUD is back on after a cut"
+	)
+	check(LeavePlan.isClean(state, after), "leave HUD: LeavePlan.isClean")
+	local okAgain = pcall(function()
+		hud.hideAll()
+		hud.hideHeist()
+	end)
+	check(okAgain and #hud.heistVisible() == 0, "leave HUD: applying it again is harmless")
+	holder:Destroy()
+end)
+check(okLeave, "leave HUD section ran" .. (if okLeave then "" else ": " .. tostring(leaveErr)))
+
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))

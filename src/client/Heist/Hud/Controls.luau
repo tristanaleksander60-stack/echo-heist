@@ -31,6 +31,15 @@ local U = Config.Ui
 
 local Controls = {}
 
+-- Key binds only on a client: a server builds the HUD for the engine check (tests/client_engine.luau) and binds nothing.
+local CAS: any = if game:GetService("RunService"):IsClient()
+	then ContextActionService
+	else {
+		BindAction = function() end,
+		UnbindAction = function() end,
+		BindActionAtPriority = function() end,
+	}
+
 -- The Enum.KeyCodes bound to a KeyHints action, as arguments.
 local function codes(action: string): ...Enum.KeyCode
 	return table.unpack(Common.keyCodes(action))
@@ -124,7 +133,32 @@ function Controls.bind(ctx: any)
 	local gui = ctx.gui
 	local runHud = ctx.runHud
 	local endBtn = ctx.controls.endBtn
-	ContextActionService:BindAction("HeistEndRun", function(_, inputState)
+	-- The run's own keys (REWIND / next run, USE, CREW, DECK, FAST) are bound only while a heist is on
+	-- (controls.setRunBinds: HeistClient turns them on with a heist's Sync, Hud.hideHeist turns them off). MENU and
+	-- BACK stay bound everywhere (the garage's sheets use them).
+	local runBinds: { { any } } = {}
+	local runBound = false
+	local function bindRun(name: string, fn: any, touch: boolean, ...: Enum.KeyCode)
+		table.insert(runBinds, { name, fn, touch, table.pack(...) })
+	end
+	function ctx.controls.setRunBinds(on: boolean)
+		if on == runBound then
+			return
+		end
+		runBound = on
+		for _, b in runBinds do
+			if on then
+				local keys = b[4]
+				CAS:BindAction(b[1], b[2], b[3], table.unpack(keys, 1, keys.n))
+			else
+				CAS:UnbindAction(b[1])
+			end
+		end
+	end
+	function ctx.controls.runBindsOn(): boolean
+		return runBound
+	end
+	bindRun("HeistEndRun", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin and gui.Enabled then
 			if state.phase == "Between" then
 				Sound.play("UIConfirm")
@@ -136,7 +170,7 @@ function Controls.bind(ctx: any)
 		end
 		return Enum.ContextActionResult.Pass
 	end, false, codes("rewind"))
-	ContextActionService:BindAction("HeistInteract", function(_, inputState)
+	bindRun("HeistInteract", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin and gui.Enabled and runHud.Visible then
 			hud.interact()
 		end
@@ -157,7 +191,7 @@ function Controls.bind(ctx: any)
 	end)
 	-- M: the MENU sheet (in first person the cursor is locked during play; a sheet frees it, and so does
 	-- holding Left Alt).
-	ContextActionService:BindAction("HeistMenu", function(_, inputState)
+	CAS:BindAction("HeistMenu", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin and gui.Enabled and ctx.msg and ctx.msg.menuSheet then
 			local sheet = ctx.msg.menuSheet
 			if Ui.isShown(sheet) then
@@ -169,7 +203,7 @@ function Controls.bind(ctx: any)
 		return Enum.ContextActionResult.Pass
 	end, false, codes("menu"))
 	-- Crew View: held in a first-person run (CameraDirector ignores it anywhere else; between runs Q is the deck's).
-	ContextActionService:BindAction("HeistCrewView", function(_, inputState, input)
+	bindRun("HeistCrewView", function(_, inputState, input)
 		if actions.crewHold then
 			local who = if input.UserInputType == Enum.UserInputType.Keyboard then "key" else "pad"
 			if inputState == Enum.UserInputState.Begin then
@@ -180,13 +214,13 @@ function Controls.bind(ctx: any)
 		end
 		return Enum.ContextActionResult.Pass
 	end, false, codes("crew"))
-	ContextActionService:BindAction("HeistDeck", function(_, inputState)
+	bindRun("HeistDeck", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin then
 			hud.toggleDeck()
 		end
 		return Enum.ContextActionResult.Pass
 	end, false, codes("deck"))
-	ContextActionService:BindAction("HeistFastForward", function(_, inputState)
+	bindRun("HeistFastForward", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin then
 			ctx.ffHeld = true
 			actions.fastForward(true)
@@ -197,7 +231,7 @@ function Controls.bind(ctx: any)
 		return Enum.ContextActionResult.Pass
 	end, false, codes("fast"))
 	-- BACK closes the top sheet: the settings, else the MENU sheet (bound above the slide, which also uses B).
-	ContextActionService:BindActionAtPriority("HeistBack", function(_, inputState)
+	CAS:BindActionAtPriority("HeistBack", function(_, inputState)
 		if inputState ~= Enum.UserInputState.Begin or not gui.Enabled then
 			return Enum.ContextActionResult.Pass
 		end

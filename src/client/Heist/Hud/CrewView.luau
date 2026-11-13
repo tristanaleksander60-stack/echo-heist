@@ -218,7 +218,9 @@ function CrewView.build(ctx: any): any
 		end
 		btn.BackgroundColor3 = if active then Palette.gold else Palette.steelHi
 	end
-	RunService.RenderStepped:Connect(update)
+	if RunService:IsClient() then -- a server builds the HUD only for an engine check (tests/client_engine.luau)
+		RunService.RenderStepped:Connect(update)
+	end
 
 	return crew
 end

@@ -240,6 +240,15 @@ Config.Heist = {
 	INSTANCE_SLOTS = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 } },
 	INSTANCE_COOLDOWN_SECONDS = 5, -- one new heist per player pick in this long (SelectLevel / Leave churn)
 	LOBBY_ORIGIN = { 0, 0, 0 },
+	-- Leaving a heist (BACK TO GARAGE, the results timeout; Heist/LeavePlan): the server always answers a Leave with
+	-- an explicit lobby state; the client's watchdog never lets the heist view stay up in the hideout.
+	LEAVE = {
+		HIDEOUT_RADIUS = 1000, -- studs (XZ) round LOBBY_ORIGIN: the hideout zone (instances sit INSTANCE_SPACING out)
+		WATCHDOG_SECONDS = 1.5, -- in the hideout with no instance (PLAYER_ATTR "") this long: the heist view comes down
+		WATCHDOG_STEP = 0.25, -- seconds between the client's checks
+		RETRY_SECONDS = 3, -- after BACK TO GARAGE: no lobby state by then -> the client asks Heist.Sync
+		SERVER_CHECK_SECONDS = 2, -- server: a player whose instance attribute names no live instance is reset
+	},
 
 	-- Run flow (§3.1, §7.1): { standard, quick, reduced motion } seconds; the server waits
 	-- the chosen length before the run clock starts (control returns at its end).

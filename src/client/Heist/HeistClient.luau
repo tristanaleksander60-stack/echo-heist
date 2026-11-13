@@ -77,6 +77,7 @@ local Loading = require(Heist:WaitForChild("Loading"))
 local Transition = require(Heist:WaitForChild("Transition"))
 local LevelIntro = require(Heist:WaitForChild("LevelIntro"))
 local Viewmodel = require(Heist:WaitForChild("Viewmodel"))
+local LeavePlan = require(Heist:WaitForChild("LeavePlan"))
 local Slide = require(Heist:WaitForChild("Slide"))
 local Sprint = require(Heist:WaitForChild("Sprint"))
 local RookieAnim = require(Heist:WaitForChild("RookieAnim"))
@@ -90,6 +91,7 @@ local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 local EV = EventLog.EV
 local R = Protocol.REMOTE
 local H = Config.Heist
+local LV = Config.Heist.LEAVE
 local localPlayer = Players.LocalPlayer
 
 -- Music set per level id (the heist state's default is the Caper set; Big Scores swing).
@@ -237,6 +239,7 @@ function HeistClient.start()
 		end,
 	})
 	local ffOn = false
+	local leftAt: number? = nil -- os.clock() of BACK TO GARAGE until a lobby state comes (LeavePlan.retryDue)
 	local doors: any = nil -- Heist/Transition, once the HUD's fx layer exists
 	-- A level pick: the doors start closing at once and hold while the server builds the heist
 	-- (they open again by themselves, or on the refusal toast, if no heist comes).
@@ -266,6 +269,9 @@ function HeistClient.start()
 		end,
 		-- force: send even when unchanged (the pill held while you moved: the server refused it, now you stand)
 		fastForward = function(on: boolean, force: boolean?)
+			if on and state.where ~= "heist" then
+				return -- the hideout has nothing to skip
+			end
 			if on ~= ffOn or (force == true and on) then
 				ffOn = on
 				Net.Send(R.FastForward, on)
@@ -292,6 +298,7 @@ function HeistClient.start()
 			Net.Send(R.Ready, action)
 		end,
 		leave = function()
+			leftAt = os.clock()
 			Net.Send(R.Leave)
 		end,
 		hint = function(name: string)
@@ -775,44 +782,96 @@ function HeistClient.start()
 		return true
 	end
 
-	local function toGarage(p: any)
-		moments.stop()
-		lineup.stop()
-		state.where = "garage"
-		state.garage = p
-		state.folder = nil
-		state.run = nil
-		state.clock = nil
-		state.phase = ""
-		state.deck = nil
-		state.over = nil
-		state.lastRunT = 0
-		table.clear(state.runEndedAtByRun)
-		table.clear(state.recs)
-		world.quiet()
-		camera.clearFades()
-		look.clear()
-		gusWarn.hide()
-		echo.clear()
-		gus.clear()
-		world.clear()
-		lights.clear()
-		cutaway.bind(workspace:FindFirstChild("Garage"))
-		backdrop.showGarage()
-		cutaway.addOccluders(backdrop.occluders())
-		local lobby = Config.Heist.LOBBY_ORIGIN
-		aurora.setAnchor(Vector3.new(lobby[1], lobby[2], lobby[3]))
-		director.stop()
-		hud.hideAll()
-		hud.hidePreparing()
+	-- Back to the hideout (garage-exit-fix, Heist/LeavePlan): the server's lobby state is authoritative, whatever the
+	-- heist was doing (a run, caught, a rewind, the Line-up, the results card). LeavePlan.STEPS in order, each in its
+	-- own pcall: the heist HUD goes first, and no failing step can skip the ones after it. Safe to run again.
+	local teardown: { [string]: () -> () } = {
+		hud = function()
+			hud.hideAll()
+			hud.hidePreparing()
+		end,
+		binds = function()
+			hud.setRunBinds(false)
+		end,
+		moments = function()
+			moments.stop()
+		end,
+		lineup = function()
+			lineup.stop()
+		end,
+		intro = function()
+			intro.stop()
+		end,
+		rewind = function()
+			director.stop()
+		end,
+		camera = function()
+			camera.setMomentShot(nil)
+			for _, who in { "key", "pad", "touch" } do
+				camera.setCrewHeld(who, false)
+			end
+			camera.cancelCrew()
+			camera.setFovKick(0)
+			camera.setSlide(0, 0)
+			camera.clearFades()
+			ffOn = false
+		end,
+		hands = function()
+			hands.onRun() -- no held pose (hands up after a catch), not hiding
+			look.clear()
+			gusWarn.hide()
+		end,
+		echoes = function()
+			echo.clear()
+		end,
+		gus = function()
+			gus.clear()
+		end,
+		world = function()
+			world.quiet()
+			world.clear()
+		end,
+		lights = function()
+			lights.clear()
+		end,
+		scene = function()
+			cutaway.bind(workspace:FindFirstChild("Garage"))
+			backdrop.showGarage()
+			cutaway.addOccluders(backdrop.occluders())
+			local lobby = Config.Heist.LOBBY_ORIGIN
+			aurora.setAnchor(Vector3.new(lobby[1], lobby[2], lobby[3]))
+			pcall(JobBoard.show, state.garage) -- your next job on the 3D job board (visual only)
+		end,
+		hideout = function()
+			hideout.enter()
+		end,
+		sound = function()
+			Sound.stopCue("AlarmBell")
+			Sound.stopCue("LaserHum")
+			Sound.setChristmas(nil)
+			Sound.music("Garage")
+			setAmbience("garage")
+		end,
+	}
+	local function enterLobby(p: any)
+		LeavePlan.reset(state, p) -- first: every view reads where / phase / run
+		leftAt = nil
+		for _, name in LeavePlan.STEPS do
+			local fn = teardown[name]
+			if fn then
+				local ok, err = pcall(fn)
+				if not ok then
+					warn("[HeistClient] lobby " .. name .. ": " .. tostring(err))
+				end
+			end
+		end
+		LeavePlan.reset(state, p) -- again: a step (the blooper's restore) may have put heist state back
 		hud.showGarage()
-		pcall(JobBoard.show, p) -- your next job on the 3D job board (visual only)
-		hideout.enter()
-		Sound.stopCue("AlarmBell")
-		Sound.stopCue("LaserHum")
-		Sound.setChristmas(nil)
-		Sound.music("Garage")
-		setAmbience("garage")
+	end
+
+	-- Is any heist view up? (the lobby state's decision and the watchdog)
+	local function heistUp(): boolean
+		return state.where == "heist" or #hud.heistVisible() > 0
 	end
 
 	local syncSeen = false
@@ -821,48 +880,57 @@ function HeistClient.start()
 		if type(p) ~= "table" then
 			return
 		end
-		if kind == "Sync" then
+		-- The lobby state (garage-exit-fix): "Lobby" (the server's answer to a Leave, the results timeout) or any
+		-- garage Sync. Authoritative and idempotent: from any heist state it tears the heist down; already clean in the
+		-- hideout it only refreshes. Handled whatever state.where says.
+		if kind == "Lobby" or (kind == "Sync" and p.where == "garage") then
 			syncSeen = true
-			if p.where == "garage" then
-				intro.stop()
-				if state.where == "garage" and not boot.active() then
-					-- already in the hideout: your crew, its van or the job changed (no wipe, nothing rebuilt)
+			leftAt = nil
+			pcall(intro.stop)
+			if LeavePlan.lobbyAction(state.where, heistUp()) == "refresh" and not boot.active() then
+				-- already in the hideout: your crew, its van or the job changed (no wipe, nothing rebuilt)
+				state.garage = p
+				hud.showGarage()
+				pcall(JobBoard.show, p)
+				hideout.refresh()
+				return
+			end
+			if boot.active() then
+				if state.where == "garage" and boot.awaiting() then
+					-- a refresh while a new account's L1 is on its way (the card / intro / title still up)
 					state.garage = p
 					hud.showGarage()
 					pcall(JobBoard.show, p)
 					hideout.refresh()
+					if p.ftue ~= true then
+						reveal(nil) -- the server dropped the start (a friend joined, a van picked): the hideout
+					end
 					return
 				end
-				if boot.active() then
-					if state.where == "garage" and boot.awaiting() then
-						-- a refresh while a new account's L1 is on its way (the card / intro / title still up)
-						state.garage = p
-						hud.showGarage()
-						pcall(JobBoard.show, p)
-						hideout.refresh()
-						if p.ftue ~= true then
-							reveal(nil) -- the server dropped the start (a friend joined, a van picked): the hideout
-						end
-						return
-					end
-					boot.arrive(if p.ftue == true then "garageFtue" else "garage")
-					toGarage(p) -- the hideout is built behind the card (or the intro) either way
-					if p.ftue == true then
-						-- a new account: the intro / title plays, its Ready starts L1 (the doors open onto it); the
-						-- hideout shows only if L1 never comes (Config.Intro.FTUE_START_WAIT_SECONDS)
-						boot.awaitFtue(function()
-							reveal(nil)
-						end)
-					else
-						reveal(nil) -- the card fades on the garage's first built frame
-					end
+				boot.arrive(if p.ftue == true then "garageFtue" else "garage")
+				enterLobby(p) -- the hideout is built behind the card (or the intro) either way
+				if p.ftue == true then
+					-- a new account: the intro / title plays, its Ready starts L1 (the doors open onto it); the
+					-- hideout shows only if L1 never comes (Config.Intro.FTUE_START_WAIT_SECONDS)
+					boot.awaitFtue(function()
+						reveal(nil)
+					end)
 				else
-					doors.close() -- results / heist -> garage behind the van doors (C4)
-					toGarage(p)
-					doors.open()
+					reveal(nil) -- the card fades on the garage's first built frame
 				end
-				return
+			else
+				hud.hideHeist() -- at once: nothing below (the doors' wait included) can leave it up
+				local okClose, closeErr = pcall(doors.close) -- results / heist -> garage behind the van doors (C4)
+				if not okClose then
+					warn("[HeistClient] doors: " .. tostring(closeErr))
+				end
+				enterLobby(p)
+				pcall(doors.open)
 			end
+			return
+		end
+		if kind == "Sync" then
+			syncSeen = true
 			if p.where == "preparing" then
 				-- A new account while the server starts the first heist: the loading card's reel
 				-- or the title beat, never the garage (no tapes, no daily vault) and never a silent
@@ -900,6 +968,7 @@ function HeistClient.start()
 				return
 			end
 			state.where = "heist"
+			hud.setRunBinds(true) -- REWIND, USE, CREW, DECK, FAST: a heist's keys only
 			for _, r in p.recs or {} do
 				if type(r) == "table" then
 					addRec(r.key, r.buf)
@@ -1064,6 +1133,46 @@ function HeistClient.start()
 		end
 	end)
 
+	-- Ask the server where this client is (Heist.Sync), one request at a time: the Leave retry and the watchdog.
+	local syncing = false
+	local function requestSync()
+		if syncing then
+			return
+		end
+		syncing = true
+		task.spawn(function()
+			local res = Net.Request(R.Sync)
+			syncing = false
+			if res.ok then
+				enqueue("Sync", res.data)
+			end
+		end)
+	end
+
+	-- The watchdog (garage-exit-fix, LeavePlan.watch): in the hideout zone with no heist instance on the server (the
+	-- server-written PLAYER_ATTR is "") for WATCHDOG_SECONDS, the heist view comes down here and now (outside the
+	-- message queue, so even a stuck message cannot hold it up) and the server's state is asked for again. And after
+	-- BACK TO GARAGE, no lobby state within RETRY_SECONDS asks for it too.
+	local watch = LeavePlan.newWatch()
+	local nextWatch = 0
+	local function watchdog(now: number)
+		local root = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+		local inside = root ~= nil
+			and root:IsA("BasePart")
+			and LeavePlan.inHideout(root.Position.X, root.Position.Z, H.LOBBY_ORIGIN, LV.HIDEOUT_RADIUS)
+		local attr = localPlayer:GetAttribute(Protocol.PLAYER_ATTR)
+		if LeavePlan.watch(watch, now, attr, inside, heistUp(), LV.WATCHDOG_SECONDS) then
+			watch.since = nil
+			warn("[HeistClient] watchdog: a heist view in the hideout with no instance: back to the lobby")
+			hud.hideHeist()
+			enterLobby(state.garage)
+			requestSync()
+		elseif LeavePlan.retryDue(leftAt, now, state.where, LV.RETRY_SECONDS) then
+			leftAt = nil
+			requestSync()
+		end
+	end
+
 	-- The garage's "Join friend" list follows who is in the server.
 	local function refreshGarage()
 		if state.where == "garage" then
@@ -1076,6 +1185,14 @@ function HeistClient.start()
 	end)
 
 	RunService.RenderStepped:Connect(function(dt: number)
+		local clockNow = os.clock()
+		if clockNow >= nextWatch then
+			nextWatch = clockNow + LV.WATCHDOG_STEP
+			local ok, err = pcall(watchdog, clockNow)
+			if not ok then
+				warn("[HeistClient] watchdog: " .. tostring(err))
+			end
+		end
 		if state.where ~= "heist" then
 			if state.where == "garage" then
 				debug.profilebegin("EH.Hideout")

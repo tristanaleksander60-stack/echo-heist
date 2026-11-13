@@ -67,6 +67,11 @@
 --            DataService result ({ ok, code, data = AwardSummary | DailySummary }); next =
 --            this player's { unlocked, starsNeeded, needsClear } for nextIndex (after the award)
 --   Garage   { crew }                  lobby state (crew, leader, pending)
+--   Lobby    = the garage Sync payload  you are back in the hideout (garage-exit-fix): the server's answer to EVERY
+--            Heist.Leave, and the results timeout / the leader's leave from the results card. Authoritative and
+--            idempotent on the client (Heist/LeavePlan): whatever heist state it showed (a run, caught, a rewind,
+--            the results card), every heist view comes down; already clean in the hideout it only refreshes.
+--            Any garage Sync is treated the same way. PLAYER_ATTR is "" before it is sent.
 --   Depart   { bay, seconds, paint }   the hideout: your crew's van left (GO); the client plays the drive and
 --            the heist's Sync follows `seconds` later. Garage sync adds lobby (vans on), van (your crew's bay,
 --            0 = none), job / jobDay (the pinned job; 0 + a day = the daily vault)

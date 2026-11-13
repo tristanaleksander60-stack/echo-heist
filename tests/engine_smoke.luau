@@ -2516,7 +2516,9 @@ do
 			local dsKey = GameConfig.Data.TEST_PREFIX .. "outfit_" .. HttpService:GenerateGUID(false)
 			assert(Keys.isWritable(dsKey, true), "refusing a non-test key")
 			local store = DataStoreService:GetDataStore(GameConfig.Data.STORE_NAME)
-			store:SetAsync(dsKey, { Schema = Schema.VERSION, Data = prof.Data })
+			store:UpdateAsync(dsKey, function()
+				return { Schema = Schema.VERSION, Data = prof.Data } -- a fresh _TEST_ key: nothing to merge
+			end)
 			local options = Instance.new("DataStoreGetOptions")
 			options.UseCache = false
 			local back = store:GetAsync(dsKey, options)
@@ -2924,7 +2926,9 @@ do
 			local dsKey = GameConfig.Data.TEST_PREFIX .. "badges_" .. HttpService:GenerateGUID(false)
 			assert(Keys.isWritable(dsKey, true), "refusing a non-test key")
 			local store = DataStoreService:GetDataStore(GameConfig.Data.STORE_NAME)
-			store:SetAsync(dsKey, { Schema = Schema.VERSION, Data = prof.Data })
+			store:UpdateAsync(dsKey, function()
+				return { Schema = Schema.VERSION, Data = prof.Data } -- a fresh _TEST_ key: nothing to merge
+			end)
 			local options = Instance.new("DataStoreGetOptions")
 			options.UseCache = false
 			local back = store:GetAsync(dsKey, options)
@@ -3082,6 +3086,218 @@ do
 		table.insert(results, "      " .. table.concat(lines, "; "))
 	end)
 	check(okT, "boot timing section ran" .. (if okT then "" else ": " .. tostring(tErr)))
+end
+
+-- 18. Leaving a heist (garage-exit-fix; the owner's v125 report: BACK TO GARAGE mid-heist left "Gus caught you." and
+-- "RUN 3/8" on screen in the hideout). The real HeistService.leave (the Heist.Leave handler's body) with fake players
+-- (Luau Execution has none): a solo crew on Night Clerk (Gus) is caught in run 3, then leaves. The instance is
+-- destroyed at once, the old crew is gone, the leaver has a crew of their own with no instance, PLAYER_ATTR is "", and
+-- the explicit "Lobby" state (where = garage) is the last thing pushed to them; a second Leave answers Lobby again. A
+-- crew heist: one leaves, the other plays on (instance alive, no Lobby for them). The race: Gus catches you and you
+-- leave in the same tick: nothing of the heist reaches you after the Lobby. The leader on the results card takes the
+-- crew home with Lobby. The server's watchdog (checkLobby) puts back a player whose instance attribute is stale.
+do
+	local okLv, lvErr = pcall(function()
+		local heistDir = server:WaitForChild("Heist")
+		local HeistService = require(heistDir:WaitForChild("HeistService"))
+		local HeistInstance = require(heistDir:WaitForChild("HeistInstance"))
+		local HeistSim = require(sharedFolder:WaitForChild("Sim"):WaitForChild("HeistSim"))
+		local EventLog = require(sharedFolder:WaitForChild("Sim"):WaitForChild("EventLog"))
+		local Protocol = require(sharedFolder:WaitForChild("Heist"):WaitForChild("Protocol"))
+		local Config = require(sharedFolder:WaitForChild("Config")) :: any
+		pcall(HeistService.start, { lobby = false, players = false })
+		local ATTR = Protocol.PLAYER_ATTR
+		local function fakePlayer(uid: number, name: string): any
+			local attrs: { [string]: any } = {}
+			return {
+				UserId = uid,
+				DisplayName = name,
+				Name = name,
+				Character = nil,
+				Parent = nil,
+				PartyId = "",
+				SetAttribute = function(_self: any, k: string, v: any)
+					attrs[k] = v
+				end,
+				GetAttribute = function(_self: any, k: string): any
+					return attrs[k]
+				end,
+			}
+		end
+		local pushes: { { p: any, kind: string, payload: any } } = {}
+		HeistService.onPush(function(p: any, kind: string, payload: any)
+			table.insert(pushes, { p = p, kind = kind, payload = payload })
+		end)
+		local function pushesTo(p: any, from: number): { string }
+			local out = {}
+			for i = from, #pushes do
+				if pushes[i].p == p then
+					table.insert(out, pushes[i].kind)
+				end
+			end
+			return out
+		end
+		local function lastTo(p: any): any
+			for i = #pushes, 1, -1 do
+				if pushes[i].p == p then
+					return pushes[i]
+				end
+			end
+			return nil
+		end
+		local l4 = HeistService.indexOf("cs4_night_clerk") :: number
+		local simNow = 70000
+		local function newHeist(players: { any }): any
+			local members = {}
+			for _, p in players do
+				table.insert(members, { userId = p.UserId, player = p, name = p.DisplayName, fake = {} })
+			end
+			local inst = HeistService.createInstance(l4, members, players[1].UserId, false)
+			assert(inst, "an L4 instance")
+			for i, p in players do
+				local sp = inst.level.spawns[(i - 1) % #inst.level.spawns + 1]
+				local f = inst.byId[p.UserId].fake
+				f.x, f.y, f.z, f.yaw = sp.x, sp.y, sp.z, sp.yaw or 0
+			end
+			HeistService.bindCrew(players, inst)
+			return inst
+		end
+		local function step(inst: any, seconds: number)
+			for _ = 1, math.ceil(seconds / 0.05) do
+				simNow += 0.05
+				HeistInstance.update(inst, simNow)
+			end
+		end
+		-- into run n: end each run with END RUN (after its lock), ready, next
+		local function toRun(inst: any, players: { any }, n: number)
+			step(inst, 0.05)
+			while inst.sim.runIndex < n do
+				step(inst, Config.Heist.REWIND_TRANSITION[1] + Config.Rec.END_RUN_LOCK_SECONDS + 0.3)
+				for _, p in players do
+					HeistInstance.endRun(inst, p.UserId)
+				end
+				step(inst, 0.2)
+				for _, p in players do
+					HeistInstance.ready(inst, p.UserId, false)
+				end
+				step(inst, 0.1)
+			end
+			step(inst, Config.Heist.REWIND_TRANSITION[1] + 0.5)
+		end
+		local function catch(inst: any, p: any)
+			local a = HeistSim.liveActor(inst.sim, p.UserId)
+			HeistSim._catch(inst.sim, inst.sim.guards[1], a)
+		end
+		local function caughtIn(inst: any, p: any): boolean
+			local a = HeistSim.liveActor(inst.sim, p.UserId)
+			return EventLog.count(inst.sim.log, EventLog.EV.Caught) > 0 and (a == nil or a.state == "Caught")
+		end
+
+		---------------------------------------------------------------- solo, caught in run 3, leave
+		local solo = fakePlayer(-1801, "Solo")
+		local inst = newHeist({ solo })
+		local slot = inst.slot
+		local oldCrew = HeistService.crewOf(solo)
+		toRun(inst, { solo }, 3)
+		check(
+			inst.sim.runIndex == 3 and inst.sim.phase == "Run",
+			"leave: solo heist in run 3 (" .. inst.sim.phase .. ")"
+		)
+		catch(inst, solo)
+		step(inst, 0.2)
+		check(
+			inst.sim.phase == "Between" and caughtIn(inst, solo),
+			"leave: Gus caught you in run 3, between runs (" .. inst.sim.phase .. ")"
+		)
+		check(solo:GetAttribute(ATTR) == inst.name, "leave: PLAYER_ATTR names the instance before")
+		local mark = #pushes + 1
+		HeistService.leave(solo)
+		check(HeistService.instances()[slot] == nil, "leave: the instance is out of its slot at once")
+		check(inst.dead == true and inst.folder.Parent == nil, "leave: the instance is destroyed (folder gone)")
+		check(not HeistService.hasCrew(oldCrew), "leave: the heist's crew is cleaned up")
+		local newC = HeistService.crewOf(solo)
+		check(
+			newC ~= nil and newC ~= oldCrew and newC.instance == nil and #newC.members == 1 and newC.leader == solo,
+			"leave: a crew of your own, no instance"
+		)
+		check(solo:GetAttribute(ATTR) == "", "leave: PLAYER_ATTR cleared")
+		local last = lastTo(solo)
+		check(
+			last ~= nil and last.kind == "Lobby" and last.payload.where == "garage" and last.payload.inHeist == false,
+			"leave: the explicit Lobby state is the last push (" .. table.concat(pushesTo(solo, mark), ",") .. ")"
+		)
+		step(inst, 1.0) -- a dead instance never ticks again
+		check(lastTo(solo).kind == "Lobby", "leave: nothing of the heist after the Lobby")
+		local mark2 = #pushes + 1
+		HeistService.leave(solo)
+		local again = pushesTo(solo, mark2)
+		check(#again == 1 and again[1] == "Lobby", "leave: a second Leave answers Lobby again (idempotent)")
+		check(HeistService.crewOf(solo) == newC, "leave: and keeps your crew")
+
+		---------------------------------------------------------------- crew: one leaves, the other plays on
+		local a, b = fakePlayer(-1811, "A"), fakePlayer(-1812, "B")
+		local co = newHeist({ a, b })
+		local coCrew = HeistService.crewOf(a)
+		toRun(co, { a, b }, 2)
+		local markA = #pushes + 1
+		HeistService.leave(b)
+		check(co.dead ~= true and HeistService.instances()[co.slot] == co, "crew leave: the heist goes on")
+		check(co.byId[b.UserId].left == true and co.byId[a.UserId].left ~= true, "crew leave: only the leaver left")
+		check(
+			HeistService.crewOf(a) == coCrew and coCrew.instance == co and #coCrew.members == 1,
+			"crew leave: the others keep their crew and heist"
+		)
+		check(HeistService.crewOf(b) ~= coCrew and b:GetAttribute(ATTR) == "", "crew leave: the leaver is out")
+		check(lastTo(b) and lastTo(b).kind == "Lobby", "crew leave: Lobby to the leaver")
+		check(table.find(pushesTo(a, markA), "Lobby") == nil, "crew leave: no Lobby to the one still playing")
+		step(co, 0.5)
+		check(lastTo(b).kind == "Lobby", "crew leave: nothing of the heist to the leaver afterwards")
+		HeistService.leave(a)
+		check(co.dead == true and not HeistService.hasCrew(coCrew), "crew leave: the last one out ends it")
+
+		---------------------------------------------------------------- the race: caught and leave in one tick
+		local r = fakePlayer(-1821, "Race")
+		local ri = newHeist({ r })
+		toRun(ri, { r }, 1)
+		catch(ri, r) -- the sim catches (this tick's events not flushed yet) ...
+		local markR = #pushes + 1
+		HeistService.leave(r) -- ... and the Leave lands before the next update
+		step(ri, 0.5)
+		local after = pushesTo(r, markR)
+		check(
+			ri.dead == true and #after >= 1 and after[#after] == "Lobby",
+			"race: caught + leave in one tick: destroyed, Lobby last (" .. table.concat(after, ",") .. ")"
+		)
+
+		---------------------------------------------------------------- the results card: the leader takes the crew home
+		local l = fakePlayer(-1831, "Leader")
+		local li = newHeist({ l })
+		local lCrew = HeistService.crewOf(l)
+		toRun(li, { l }, 1)
+		li.overAt = simNow -- the results card is up
+		HeistService.leave(l)
+		check(li.dead == true and lCrew.instance == nil, "results leave: the heist is gone")
+		check(
+			lastTo(l) and lastTo(l).kind == "Lobby" and l:GetAttribute(ATTR) == "",
+			"results leave: Lobby, attr cleared"
+		)
+
+		---------------------------------------------------------------- the server watchdog: a stale instance attribute
+		local w = fakePlayer(-1841, "Stale")
+		HeistService.bindCrew({ w }, nil)
+		w:SetAttribute(ATTR, "Heist_999")
+		local markW = #pushes + 1
+		local fixed = HeistService.checkLobby()
+		check(
+			fixed >= 1 and w:GetAttribute(ATTR) == "" and table.find(pushesTo(w, markW), "Lobby") ~= nil,
+			"watchdog: a stale instance attribute is reset with a Lobby state"
+		)
+		HeistService.onPush(nil)
+		for _, p in { solo, a, b, r, l, w } do
+			HeistService.leave(p) -- tidy: crews of one, no instances
+		end
+	end)
+	check(okLv, "leave section ran" .. (if okLv then "" else ": " .. tostring(lvErr)))
 end
 
 table.insert(results, string.format("%d failure(s)", failures))

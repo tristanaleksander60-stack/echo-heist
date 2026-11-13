@@ -81,9 +81,10 @@ export type Actions = {
 	hands: ((action: string) -> ())?,
 }
 
-function Hud.new(state: any, actions: Actions): any
+-- parent: where the HUD's two ScreenGuis go (default your PlayerGui; tests/client_engine.luau builds it on a server).
+function Hud.new(state: any, actions: Actions, parent: Instance?): any
 	local hud = {}
-	local playerGui = localPlayer:WaitForChild("PlayerGui")
+	local playerGui = parent or localPlayer:WaitForChild("PlayerGui")
 
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "HeistHUD"
@@ -92,7 +93,9 @@ function Hud.new(state: any, actions: Actions): any
 	gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	gui.Parent = playerGui
-	TypeSpecimen.watch(playerGui) -- Studio only: EH_Scenario = "TYPE" (D8)
+	if parent == nil then
+		TypeSpecimen.watch(playerGui) -- Studio only: EH_Scenario = "TYPE" (D8)
+	end
 
 	-- Edge-to-edge layer (rewind overlay, vignette, Line-up caption): no insets, nothing interactive.
 	local fxGui = Instance.new("ScreenGui")
@@ -220,26 +223,115 @@ function Hud.new(state: any, actions: Actions): any
 	-- Is a sheet up (results, MENU, settings)? First person frees the cursor then (Heist/CameraDirector).
 	hud.sheetOpen = Common.sheetUp
 
+	-- Every heist HUD element off and reset (garage-exit-fix, Heist/LeavePlan "hud"): the run HUD ("RUN 3/8", the
+	-- timer, the run bar's markers), the reason line ("Gus caught you."), the deck, the RUN button, the results card,
+	-- MENU and its sheet, the HIDDEN dim, the hints, a cut's hidden HUD, and the run's key binds. Each part in its own
+	-- pcall: one failing part never leaves the others on screen. Safe to call any number of times, from any state.
+	local function each(parts: { () -> () })
+		for _, fn in parts do
+			local ok, err = pcall(fn)
+			if not ok then
+				warn("[Hud] hideHeist: " .. tostring(err))
+			end
+		end
+	end
+	-- At once, and marked closed for Ui.isShown (an exit tween still running never brings it back).
+	local function off(obj: GuiObject)
+		obj:SetAttribute("UiShown", false)
+		obj.Visible = false
+	end
+	function hud.hideHeist()
+		each({
+			function()
+				runHud.Visible = false
+			end,
+			function()
+				ctx.msg.setSpectate("")
+			end,
+			function()
+				ctx.msg.setHidden(false)
+			end,
+			function()
+				off(ctx.deck.panel)
+				off(ctx.deck.readyWait)
+			end,
+			function()
+				off(ctx.results.card)
+			end,
+			function()
+				off(ctx.top.alarmPill)
+				off(ctx.controls.ffPill)
+			end,
+			function()
+				off(ctx.msg.pauseChip)
+				off(ctx.msg.menuSheet)
+				off(ctx.settings.panel)
+			end,
+			function()
+				ctx.top.clearMarkers()
+				ctx.top.resetCount()
+			end,
+			function()
+				ctx.hints.clear()
+				ctx.hints.hideHelp()
+			end,
+			function()
+				ctx.waiting = false
+				gui.Enabled = true -- a cut (the Line-up) may have switched the HUD off
+				ctx.setInHeist(false)
+			end,
+			function()
+				ctx.controls.setRunBinds(false)
+			end,
+		})
+	end
+
+	-- Why your run ended, on the rail ("Gus caught you."; Hud/Messages.setReason).
+	function hud.setReason(text: string, covers: string?)
+		ctx.msg.setReason(text, covers)
+	end
+
+	-- The run's key binds on (a heist's Sync; Hud/Controls.setRunBinds).
+	function hud.setRunBinds(on: boolean)
+		ctx.controls.setRunBinds(on)
+	end
+
+	-- The heist HUD elements on screen now, by Heist/LeavePlan.HEIST_UI name (the watchdog, the engine check).
+	function hud.heistVisible(): { string }
+		local out = {}
+		local function add(name: string, on: boolean)
+			if on then
+				table.insert(out, name)
+			end
+		end
+		add("run", runHud.Visible)
+		add("deck", ctx.deck.panel.Visible)
+		add("readyWait", ctx.deck.readyWait.Visible)
+		add("results", ctx.results.card.Visible)
+		add("menu", ctx.msg.pauseChip.Visible)
+		add("menuSheet", ctx.msg.menuSheet.Visible)
+		add("reason", ctx.msg.spectate.Visible and ctx.msg.spectate.Text ~= "")
+		add("hidden", ctx.msg.hiddenEdge.Visible)
+		add("cutscene", not gui.Enabled)
+		return out
+	end
+
+	-- Leaving for the hideout or the preparing card: the heist HUD (above) and the hideout's own sheets.
 	function hud.hideAll()
-		ctx.reticle.set(false, nil)
-		ctx.lobby.hide()
-		ctx.wardrobe.close()
-		ctx.party.close()
-		ctx.party.setCard(nil, nil)
-		runHud.Visible = false
-		ctx.deck.panel.Visible = false
-		ctx.results.card.Visible = false
-		ctx.deck.readyWait.Visible = false
-		ctx.top.alarmPill.Visible = false
-		ctx.msg.pauseChip.Visible = false
-		ctx.msg.menuSheet.Visible = false
-		ctx.settings.panel.Visible = false
-		ctx.msg.setHidden(false)
-		ctx.msg.setSpectate("")
-		ctx.hints.clear()
-		ctx.hints.hideHelp()
-		ctx.top.resetCount()
-		ctx.setInHeist(false)
+		hud.hideHeist()
+		each({
+			function()
+				ctx.reticle.set(false, nil)
+				ctx.lobby.hide()
+			end,
+			function()
+				ctx.wardrobe.close()
+			end,
+			function()
+				ctx.party.close()
+				ctx.party.setCard(nil, nil)
+			end,
+		})
 	end
 
 	-- The end-of-heist cut hides the whole HUD (HUD, chat and nameplates hidden, §6.6).

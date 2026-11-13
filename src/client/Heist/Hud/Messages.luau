@@ -108,6 +108,7 @@ function Messages.build(ctx: any): any
 		ZIndex = 20,
 	})
 	Ui.fit(spectate, 20, H.UI_TEXT_MIN)
+	msg.spectate = spectate -- the reason / spectate line (Hud.heistVisible: never up in the hideout)
 	local function setRailText(label: TextLabel, text: string)
 		label.Text = text
 		label.Visible = text ~= ""
@@ -306,6 +307,7 @@ function Messages.build(ctx: any): any
 		g.Transparency = NumberSequence.new(0.45, 1)
 		g.Parent = edgeBar
 	end
+	msg.hiddenEdge = hiddenEdge
 	function msg.setHidden(on: boolean)
 		Ui.setShown(hiddenPill, on)
 		hiddenEdge.Visible = on

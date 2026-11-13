@@ -111,6 +111,7 @@ local instances: { [number]: any } = {} -- slot -> instance
 local crewOfInstance: { [any]: Crew } = {}
 local nextInstanceId = 0
 local lastError = -math.huge
+local lastLobbyCheck = -math.huge -- os.clock() of the last HeistService.checkLobby (Config.Heist.LEAVE)
 local inHeist: { [Player]: boolean } = {}
 -- Players whose first Sync is still being decided (data, kit, FTUE autostart): their
 -- client shows a "preparing" card, never the garage, until the server decides.
@@ -378,7 +379,14 @@ end
 -- Sending
 ---------------------------------------------------------------------------
 
+-- Tests only (HeistService.onPush): sees every push, real or fake player.
+local pushListener: ((player: any, kind: string, payload: any) -> ())? = nil
+
 local function push(player: Player, kind: string, payload: any)
+	local listener = pushListener
+	if listener then
+		pcall(listener, player, kind, payload)
+	end
 	if msgPush then
 		msgPush:Fire(player, kind, payload)
 	end
@@ -602,7 +610,9 @@ local function syncPayload(player: Player): any
 	return garageState(player)
 end
 
-local function pushGarage(crew: Crew)
+-- kind: "Sync" (a garage refresh) or "Lobby" (the crew just came back from a heist: the client tears the heist down
+-- whatever state it was in; garage-exit-fix).
+local function pushGarage(crew: Crew, kind: string?)
 	-- the crew seat is the Rookie's crew colour (scarf, stripes): members by index, then the ones waiting
 	for seat, p in crew.members do
 		Characters.setSeat(p, seat)
@@ -612,7 +622,7 @@ local function pushGarage(crew: Crew)
 	end
 	for _, p in crew.members do
 		if not (crew.instance and crew.instance.byId[p.UserId]) and not preparing[p] then
-			push(p, "Sync", garageState(p))
+			push(p, kind or "Sync", garageState(p))
 		end
 	end
 	for _, p in crew.pending do
@@ -900,17 +910,24 @@ function HeistService.destroyInstance(inst: any)
 end
 
 -- bay: the crew's van (Config.Hideout): the crew comes back beside it, else round the garage spawn.
+-- The instance attribute is cleared first (the client's watchdog reads it); the rest is guarded, so a van or
+-- character problem never stops the caller from sending the lobby state (garage-exit-fix).
 local function toGarage(player: Player, i: number, bay: number?)
 	player:SetAttribute(Protocol.PLAYER_ATTR, "")
-	blockPrompts(player, false)
-	Vans.unseat(player, false)
-	local char = player.Character
-	local root = char and char:FindFirstChild("HumanoidRootPart")
-	if root and root:IsA("BasePart") then
-		root.Anchored = false
-		root.AssemblyLinearVelocity = Vector3.zero
-		local at = if bay then Vans.besideVan(bay, i) else nil
-		root:PivotTo(at or Lobby.spawnFor(i))
+	local ok, err = pcall(function()
+		blockPrompts(player, false)
+		Vans.unseat(player, false)
+		local char = player.Character
+		local root = char and char:FindFirstChild("HumanoidRootPart")
+		if root and root:IsA("BasePart") then
+			root.Anchored = false
+			root.AssemblyLinearVelocity = Vector3.zero
+			local at = if bay then Vans.besideVan(bay, i) else nil
+			root:PivotTo(at or Lobby.spawnFor(i))
+		end
+	end)
+	if not ok then
+		warn("[HeistService] toGarage: " .. tostring(err))
 	end
 end
 
@@ -932,7 +949,7 @@ local function returnToGarage(crew: Crew)
 	for i, p in crew.members do
 		toGarage(p, i, bay)
 	end
-	pushGarage(crew)
+	pushGarage(crew, "Lobby")
 end
 
 local function startHeist(crew: Crew, levelIndex: number, daily: HeistInstance.Daily?, relaxed: boolean?): boolean
@@ -1059,6 +1076,104 @@ local function instanceOf(player: Player): any
 		end
 	end
 	return nil
+end
+
+-- The explicit lobby state (Heist.Msg "Lobby" = the garage state): the client treats it as authoritative and
+-- idempotent, whatever heist state it was showing (Heist/LeavePlan).
+local function sendLobby(player: Player)
+	if preparing[player] then
+		return -- the preparing card stays until the server decides (its own Sync follows)
+	end
+	push(player, "Lobby", garageState(player))
+end
+
+local function guarded(what: string, fn: (...any) -> ...any, ...: any)
+	local ok, err = pcall(fn, ...)
+	if not ok then
+		warn("[HeistService] leave " .. what .. ": " .. tostring(err))
+	end
+end
+
+-- BACK TO GARAGE (Heist.Leave; garage-exit-fix). Whatever the heist was doing (a run, caught, between runs, a rewind,
+-- the results card) and whoever else is in it, the leaver ends in the hideout: out of the instance, in a crew of
+-- their own (or out of their garage crew), PLAYER_ATTR "", and an explicit "Lobby" state on their client, always (a
+-- client that is somehow still showing a heist is put right by pressing it again). Each step is guarded, so one
+-- failing step never skips the teleport or the lobby state. A heist nobody is left in is destroyed at once, not on
+-- the next tick, so no later tick (Gus) can act on the leaver. The others in a crew heist play on.
+function HeistService.leave(player: Player)
+	local crew = crewOf[player]
+	local inst = instanceOf(player)
+	if not crew and not inst then
+		return
+	end
+	if inst and crew and inst.overAt ~= nil and crew.leader == player then
+		guarded("returnToGarage", returnToGarage, crew) -- the leader on the results card takes the crew home
+		if crewOf[player] == crew and player:GetAttribute(Protocol.PLAYER_ATTR) ~= "" then
+			guarded("toGarage", toGarage, player, 1)
+			sendLobby(player)
+		end
+		return
+	end
+	local wasIn = inst ~= nil or (player:GetAttribute(Protocol.PLAYER_ATTR) or "") ~= ""
+	if inst then
+		guarded("removeMember", HeistInstance.removeMember, inst, player.UserId)
+		guarded("leaveCrew", leaveCrew, player)
+		if inst.dead then
+			guarded("destroyInstance", HeistService.destroyInstance, inst)
+		end
+	elseif crew and (#crew.members > 1 or #crew.pending > 0) then
+		guarded("leaveCrew", leaveCrew, player)
+	end
+	if crewOf[player] == nil then
+		guarded("newCrew", newCrew, player)
+	end
+	if wasIn then
+		guarded("toGarage", toGarage, player, 1)
+	end
+	sendLobby(player)
+end
+
+-- The server's half of the watchdog (Config.Heist.LEAVE.SERVER_CHECK_SECONDS): a player whose instance attribute
+-- names an instance they are no longer in (it ended, they were removed) is put back in the hideout with the lobby
+-- state. Returns how many it reset.
+function HeistService.checkLobby(): number
+	local n = 0
+	for player in crewOf do
+		local attr = player:GetAttribute(Protocol.PLAYER_ATTR)
+		if type(attr) == "string" and attr ~= "" and not preparing[player] and instanceOf(player) == nil then
+			n += 1
+			guarded("toGarage", toGarage, player, 1)
+			sendLobby(player)
+		end
+	end
+	return n
+end
+
+-- Tests (tests/engine_smoke.luau, no real players there): a crew of (fake) players bound to an instance as
+-- startHeist binds it, the crew a player is in, and every push the server makes (a listener; nil = off).
+function HeistService.bindCrew(players: { any }, inst: any?): any
+	local crew = newCrew(players[1])
+	for i = 2, #players do
+		crewOf[players[i]] = crew
+		table.insert(crew.members, players[i])
+	end
+	if inst then
+		crew.instance = inst
+		crewOfInstance[inst] = crew
+		for _, p in players do
+			p:SetAttribute(Protocol.PLAYER_ATTR, inst.name)
+		end
+	end
+	return crew
+end
+function HeistService.crewOf(player: any): any
+	return crewOf[player]
+end
+function HeistService.hasCrew(crew: any): boolean
+	return table.find(crews, crew) ~= nil
+end
+function HeistService.onPush(fn: ((player: any, kind: string, payload: any) -> ())?)
+	pushListener = fn
 end
 
 -- Heist.Interact(kind, arg): the queued intents, and Slide (arg 0; Sim/Interact.slide records it at once and
@@ -1973,28 +2088,7 @@ local function declareRemotes()
 		rate = RATE.Leave,
 		args = {},
 		handler = function(player: Player)
-			local crew = crewOf[player]
-			if not crew then
-				return
-			end
-			local inst = instanceOf(player)
-			if inst then
-				if inst.overAt ~= nil and crew.leader == player then
-					returnToGarage(crew)
-					return
-				end
-				HeistInstance.removeMember(inst, player.UserId)
-				leaveCrew(player)
-				newCrew(player)
-				toGarage(player, 1)
-				push(player, "Sync", garageState(player))
-				return
-			end
-			if #crew.members > 1 or #crew.pending > 0 then
-				leaveCrew(player)
-				newCrew(player)
-				push(player, "Sync", garageState(player))
-			end
+			HeistService.leave(player)
 		end,
 	})
 	Net.Handle(R.Sync, {
@@ -2195,6 +2289,13 @@ end
 
 local function step()
 	local now = workspace:GetServerTimeNow()
+	if os.clock() - lastLobbyCheck >= H.LEAVE.SERVER_CHECK_SECONDS then
+		lastLobbyCheck = os.clock()
+		local ok, err = pcall(HeistService.checkLobby)
+		if not ok then
+			warn("[HeistService] checkLobby: " .. tostring(err))
+		end
+	end
 	for _, inst in instances do
 		debug.profilebegin("EH.Instance")
 		local ok, err = pcall(HeistInstance.update, inst, now)

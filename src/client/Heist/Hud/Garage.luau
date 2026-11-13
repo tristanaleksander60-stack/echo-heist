@@ -917,9 +917,11 @@ function Garage.build(ctx: any): any
 			hud.showGarage()
 		end
 	end
-	localPlayer:GetAttributeChangedSignal("QuickCrew"):Connect(function()
-		redrawIf("crew")
-	end)
+	if localPlayer then -- none when the HUD is built for an engine check on a server (tests/client_engine.luau)
+		localPlayer:GetAttributeChangedSignal("QuickCrew"):Connect(function()
+			redrawIf("crew")
+		end)
+	end
 	task.spawn(function()
 		local f = ReplicatedStorage:WaitForChild("EH_HaulBoard", 60)
 		if f then
