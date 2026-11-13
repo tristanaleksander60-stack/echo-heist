@@ -6,6 +6,10 @@
 -- Then the daily vault card with streak and modifier once the first heist is cleared, advent
 -- catch-up, the crew and JOIN for friends in the server (§3.3, §5.3, §7.4), and SETTINGS (U7).
 -- Roblox's player list comes back here (it is hidden during heists, PLAN S8).
+-- The hideout lobby (Config.Hideout, garage sync `lobby`): the sheet never opens by itself; a station opens it
+-- (Heist/Hideout: openStation) as the job board ("board": the jobs, the crew, SETTINGS) or the laptop ("laptop": the
+-- daily vault and the advent catch-up list), with a BACK button in the right column. A job pick there pins the job
+-- for the crew's van (the server's Heist.SelectLevel), it no longer starts the heist from the garage.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -140,9 +144,10 @@ function Garage.build(ctx: any): any
 		end
 	end, "UIConfirm")
 
+	local CREW_FULL = 270 - TAP - 8
 	local crewBox = Ui.frame(garage, {
 		Position = UDim2.fromOffset(486, 44 + TAP + 8),
-		Size = UDim2.fromOffset(200, 270 - TAP - 8),
+		Size = UDim2.fromOffset(200, CREW_FULL),
 		BackgroundColor3 = Palette.inkHi,
 		BackgroundTransparency = 0,
 	})
@@ -173,6 +178,23 @@ function Garage.build(ctx: any): any
 		end
 	end, "UIToggle")
 	Ui.iconWord(settingsBtn, "settings", "left", U.ICON_SMALL)
+	-- The hideout's stations: BACK (bottom of the right column; the crew list shrinks above it).
+	local station: string? = nil -- "board" | "laptop" while a station holds the sheet open
+	local onBack: (() -> ())? = nil
+	local backBtn = Ui.button(garage, {
+		Name = "StationBack",
+		Position = UDim2.fromOffset(486, 314 - TAP),
+		Size = UDim2.fromOffset(200, TAP),
+		TextSize = 20,
+		Text = Strings.LOBBY_BACK,
+		Visible = false,
+	}, function()
+		local fn = onBack
+		if fn then
+			fn()
+		end
+	end, "UIBack")
+	Ui.iconWord(backBtn, "close", "left", U.ICON_SMALL)
 
 	local friendCache: { [number]: boolean } = {}
 	local function isFriend(userId: number): boolean
@@ -476,6 +498,51 @@ function Garage.build(ctx: any): any
 		return back
 	end
 
+	-- The laptop: the advent catch-up list in the board's place (the daily card below plays today's).
+	local function renderLaptop(leader: boolean): TextButton?
+		local g = state.garage
+		local d = g and g.daily or {}
+		local catchUps = d.catchUp or {}
+		local first: TextButton? = nil
+		if #catchUps == 0 then
+			local none = Ui.label(tapes, {
+				Position = UDim2.fromOffset(12, 12),
+				Size = UDim2.new(1, -24, 0, 40),
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextWrapped = true,
+				TextSize = 18,
+				TextColor3 = Palette.ink,
+				stroke = false,
+				Text = Strings.LAPTOP_NO_CATCH_UP,
+			})
+			none.Active = false
+		end
+		setCanvas(#catchUps)
+		for i, c in catchUps do
+			local card = Ui.button(tapes, {
+				BackgroundColor3 = Palette.goldHi,
+				TextColor3 = Palette.ink,
+				TextSize = 16,
+				TextWrapped = true,
+				Text = Strings.catchUpCard(
+					if c.advent then Strings.advent(c.advent) else Common.dateText(c.day),
+					tostring(c.name)
+				),
+				LayoutOrder = i,
+			}, function()
+				if not leader then
+					hud.toast(Strings.LEADER_PICKS_HEIST)
+				else
+					actions.selectDaily(c.day)
+				end
+			end, "UIConfirm")
+			pinAt(card, i)
+			pin(i)
+			first = first or card
+		end
+		return first
+	end
+
 	local function renderDaily()
 		local g = state.garage
 		local d = g and g.daily
@@ -504,7 +571,7 @@ function Garage.build(ctx: any): any
 		end
 		dailyInfo.Text = table.concat(info, Strings.SEP)
 		local catchUps = #(d.catchUp or {})
-		catchBtn.Visible = catchUps > 0
+		catchBtn.Visible = catchUps > 0 and station ~= "laptop"
 		catchBtn.Text = if catchUpMode then Strings.BACK else Strings.catchUpCount(catchUps)
 		if d.enabled == false then
 			playDailyBtn.Text = Strings.CLOSED
@@ -577,6 +644,14 @@ function Garage.build(ctx: any): any
 		if not g then
 			return
 		end
+		if g.lobby == true and station == nil then
+			-- the hideout: the sheet opens only at a station (Heist/Hideout)
+			if garageOpen then
+				Ui.hide(garage)
+				garageOpen = false
+			end
+			return
+		end
 		local wasOpen = garageOpen
 		garageOpen = true
 		Ui.show(garage)
@@ -594,9 +669,23 @@ function Garage.build(ctx: any): any
 		if catchUpMode and catchUps == 0 then
 			catchUpMode = false
 		end
-		garageTitle.Text = if catchUpMode then Strings.ADVENT_CATCH_UP else Strings.JOB_BOARD
-		local first = if catchUpMode then renderCatchUp(leader) else renderTapes(leader)
+		local first: TextButton?
+		if station == "laptop" then
+			garageTitle.Text = Strings.LAPTOP
+			first = renderLaptop(leader)
+		else
+			if station == "board" then
+				catchUpMode = false
+			end
+			garageTitle.Text = if catchUpMode then Strings.ADVENT_CATCH_UP else Strings.JOB_BOARD
+			first = if catchUpMode then renderCatchUp(leader) else renderTapes(leader)
+		end
 		renderDaily()
+		if station == "board" then
+			daily.Visible = false -- the daily vault lives on the laptop
+		end
+		backBtn.Visible = station ~= nil
+		crewBox.Size = UDim2.fromOffset(200, if station ~= nil then CREW_FULL - TAP - 8 else CREW_FULL)
 		renderCrew(g)
 		if first then
 			Common.selectFor(first)
@@ -610,6 +699,27 @@ function Garage.build(ctx: any): any
 	function hud.hideGarage()
 		Ui.hide(garage)
 		garageOpen = false
+		station = nil
+		onBack = nil
+	end
+
+	-- The hideout: a station opens the sheet as the job board ("board") or the laptop ("laptop"); back() is BACK.
+	function garageUi.openStation(mode: string, back: () -> ())
+		station = mode
+		onBack = back
+		garageOpen = false -- a fresh open (its sleigh bells)
+		hud.showGarage()
+	end
+
+	function garageUi.closeStation()
+		station = nil
+		onBack = nil
+		Ui.hide(garage)
+		garageOpen = false
+	end
+
+	function garageUi.isOpen(): boolean
+		return garageOpen
 	end
 
 	-- A run starts: the garage closes (it opens fresh, with its sleigh bells, next time).

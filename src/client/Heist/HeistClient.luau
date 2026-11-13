@@ -27,6 +27,9 @@
 -- Signature moments (Heist/MomentDirector): every applied event and run goes to it (8 OF ME, the
 -- busted view, heist complete, the blooper log), the views draw with its filtered view time
 -- (hit-stop, the blooper replay), and at Over the blooper cut plays before the Line-up.
+-- The hideout lobby (Heist/Hideout, Config.Hideout): in the garage you walk in first person and use the stations
+-- and the vans by looking at them; its intents ride on Heist.Ready (a VanRules action table), the server's "Depart"
+-- message plays the drive before the heist's Sync.
 -- The client never decides an outcome: it only sends intents (Heist.* remotes).
 
 local GuiService = game:GetService("GuiService")
@@ -62,6 +65,7 @@ local LineupDirector = require(Heist:WaitForChild("LineupDirector"))
 local MomentDirector = require(Heist:WaitForChild("MomentDirector"))
 local LightDirector = require(Heist:WaitForChild("LightDirector"))
 local JobBoard = require(Heist:WaitForChild("JobBoard"))
+local Hideout = require(Heist:WaitForChild("Hideout"))
 local Hud = require(Heist:WaitForChild("Hud"))
 local Settings = require(Heist:WaitForChild("Settings"))
 local FirstTime = require(Heist:WaitForChild("FirstTime"))
@@ -73,6 +77,7 @@ local Loading = require(Heist:WaitForChild("Loading"))
 local Transition = require(Heist:WaitForChild("Transition"))
 local LevelIntro = require(Heist:WaitForChild("LevelIntro"))
 local Viewmodel = require(Heist:WaitForChild("Viewmodel"))
+local RookieAnim = require(Heist:WaitForChild("RookieAnim"))
 local LookTarget = require(Heist:WaitForChild("LookTarget"))
 local FpWarn = require(Heist:WaitForChild("FpWarn"))
 local HudCommon = require(Heist:WaitForChild("Hud"):WaitForChild("Common"))
@@ -175,6 +180,7 @@ function HeistClient.start()
 	local cutaway = CutAway.new(camera)
 	-- First person (PLAN_FIRST_PERSON FP): the hands, look-to-interact and Gus's edge warning.
 	local momentsRef: any = nil -- MomentDirector, made after the HUD (the hands hold during its hit-stop)
+	RookieAnim.start() -- your character in the Rookie's own walk, run, idle, jump, fall and land
 	local hands = Viewmodel.new(state, {
 		camera = camera,
 		world = world,
@@ -218,6 +224,9 @@ function HeistClient.start()
 	-- A level pick: the doors start closing at once and hold while the server builds the heist
 	-- (they open again by themselves, or on the refusal toast, if no heist comes).
 	local function pickWipe()
+		if state.where == "garage" and state.garage and state.garage.lobby == true then
+			return -- the hideout: a job pick only pins the job; the van starts the heist (its drive, then the wipe)
+		end
 		if doors then
 			doors.closeFor(Config.Presentation.DOORS.HOLD_MAX_SECONDS)
 		end
@@ -323,6 +332,22 @@ function HeistClient.start()
 	end
 	doors = Transition.new(hud.fxGui, isReduced)
 	local boot = Loading.boot(doors, isReduced, camera, Telemetry.tier) -- camera + tier: the story intro
+	-- The hideout lobby: stations, vans, the drive (Heist/Hideout).
+	local hideout = Hideout.new(state, {
+		camera = camera,
+		look = look,
+		hud = hud,
+		doors = doors,
+		send = function(action: any)
+			Net.Send(R.Ready, action)
+		end,
+		reduced = isReduced,
+		tier = Telemetry.tier,
+		hands = function(action: string)
+			hands.play(action)
+		end,
+		ui = Telemetry.ui,
+	})
 	local intro = LevelIntro.new(camera, state)
 	local revealPending = false
 	-- The doors (or, at boot, the card / the title) open onto what was just built; controlAt: when the
@@ -700,6 +725,7 @@ function HeistClient.start()
 		hud.hidePreparing()
 		hud.showGarage()
 		pcall(JobBoard.show, p) -- your next job on the 3D job board (visual only)
+		hideout.enter()
 		Sound.stopCue("AlarmBell")
 		Sound.stopCue("LaserHum")
 		Sound.setChristmas(nil)
@@ -717,6 +743,14 @@ function HeistClient.start()
 			syncSeen = true
 			if p.where == "garage" then
 				intro.stop()
+				if state.where == "garage" and not boot.active() then
+					-- already in the hideout: your crew, its van or the job changed (no wipe, nothing rebuilt)
+					state.garage = p
+					hud.showGarage()
+					pcall(JobBoard.show, p)
+					hideout.refresh()
+					return
+				end
 				if boot.active() then
 					boot.arrive("garage")
 					toGarage(p)
@@ -733,6 +767,7 @@ function HeistClient.start()
 				-- or the title beat, never the garage (no tapes, no daily vault) and never a silent
 				-- text card, until the server decides (§7.5, WALKTHROUGH §2.0).
 				state.where = "preparing"
+				hideout.leave()
 				hud.hideAll()
 				hud.hideGarage()
 				if not boot.preparing() then
@@ -752,6 +787,7 @@ function HeistClient.start()
 			else
 				doors.close() -- garage / results -> heist: the level binds behind the doors
 			end
+			hideout.leave() -- the drive, a station, the lobby HUD (behind the closed doors)
 			lineup.stop()
 			hud.hideGarage()
 			hud.hidePreparing()
@@ -794,6 +830,10 @@ function HeistClient.start()
 				end)
 			end
 		elseif state.where ~= "heist" then
+			if kind == "Depart" then
+				hideout.depart(p) -- GO: the side door shuts, the drive, then the wipe over its end
+				return
+			end
 			if kind == "Toast" then
 				hud.toast(tostring(p.text))
 				if not boot.active() and doors.isClosed() and not revealPending then
@@ -936,6 +976,11 @@ function HeistClient.start()
 
 	RunService.RenderStepped:Connect(function(dt: number)
 		if state.where ~= "heist" then
+			if state.where == "garage" then
+				debug.profilebegin("EH.Hideout")
+				hideout.update(os.clock())
+				debug.profileend()
+			end
 			return
 		end
 		local now = os.clock()

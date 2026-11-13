@@ -70,6 +70,7 @@ export type Frame = {
 	actions: { [string]: number }, -- action name -> weight 0..1 (ViewmodelMath.envelope)
 	tap: number?, -- the watch tap's current travel (studs), on the right hand
 	reduced: boolean?, -- reduced motion: no breathing, no bob, a quarter of the lag
+	point: number?, -- 0..1: the right hand points (the onboarding look cue; ViewmodelMath.fingers)
 }
 
 -- Both hands for a frame: right, left.
@@ -124,6 +125,58 @@ function ViewmodelMath.hands(cfg: any, f: Frame): (Pose, Pose)
 end
 
 ViewmodelMath.ORDER = table.freeze({ "stomp", "push", "press", "reach", "watch", "handsUp" })
+
+export type Fingers = { [string]: { number } } -- joint -> { curl, across } (degrees)
+
+local function blendFingers(a: Fingers, b: Fingers, w: number): Fingers
+	if w <= 0 then
+		return a
+	end
+	local out: Fingers = {}
+	for joint, v in a do
+		local t = b[joint] or v
+		out[joint] = { v[1] + (t[1] - v[1]) * w, v[2] + (t[2] - v[2]) * w }
+	end
+	return out
+end
+
+local function pose(hands: any, name: string): Fingers
+	local p = hands.POSES[name] or hands.POSES[hands.REST]
+	local out: Fingers = {}
+	for joint, v in p do
+		out[joint] = { v[1], v[2] }
+	end
+	return out
+end
+
+-- The finger targets of both hands (REVIEW_STEAM_PLUS #10), layered like ViewmodelMath.hands: the rest pose, the
+-- carry grip by the carry blend, each action's pose by its weight (same order), then the look-cue point (f.point,
+-- 0..1) on the right hand. cfg = Config.FirstPerson.VIEWMODEL.
+function ViewmodelMath.fingers(cfg: any, f: Frame): (Fingers, Fingers)
+	local H = cfg.HANDS
+	local R, L = pose(H, H.REST), pose(H, H.REST)
+	if f.carry > 0 then
+		R = blendFingers(R, pose(H, H.CARRY), f.carry)
+		L = blendFingers(L, pose(H, H.CARRY), f.carry)
+	end
+	for _, name in ViewmodelMath.ORDER do
+		local w = f.actions[name]
+		local a = H.ACTIONS[name]
+		if w and w > 0 and a then
+			if a.R then
+				R = blendFingers(R, pose(H, a.R), w)
+			end
+			if a.L then
+				L = blendFingers(L, pose(H, a.L), w)
+			end
+		end
+	end
+	local point = f.point or 0
+	if point > 0 then
+		R = blendFingers(R, pose(H, H.POINT), point)
+	end
+	return R, L
+end
 
 -- The look-lag target for a turn speed (degrees a second, yaw and pitch): the hands trail the turn, clamped.
 -- Turning right (yaw speed < 0) leaves the hands to the left, and rolls them a little.

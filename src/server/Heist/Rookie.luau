@@ -2,7 +2,8 @@
 -- Heist/Rookie: builds the Rookie, the player character (PLAN_FIRST_PERSON "CH"), from the art kit.
 --
 -- Publishes ReplicatedStorage/<Config.Rookie.KIT_FOLDER> ("CharacterKit") once the kit is loaded:
---   Pieces            every Rookie kit piece (body, faces, outfit pieces, viewmodel arms), as KitService prepared them
+--   Pieces            every Rookie kit piece (body, faces, outfit pieces, viewmodel arms, the first-person gloves
+--                     with fingers), as KitService prepared them
 --   Rookie            the template character: default outfit, seat-1 hue (a whole R15 character Model)
 --   Rookie_Viewmodel  the first-person arms for the FP track: LeftArm, RightArm (anchored, no collisions, no
 --                     shadows), each with its grip attachment (GripL / GripR at the palm) and an Elbow attachment
@@ -32,7 +33,7 @@ local R = Config.Rookie
 
 local Rookie = {}
 
-local GROUPS = { "Rookie", "Rookie_Faces", "Rookie_Outfits", "Rookie_Viewmodel" }
+local GROUPS = { "Rookie", "Rookie_Faces", "Rookie_Outfits", "Rookie_Viewmodel", "Rookie_Hands" }
 local MOODS = { "idle", "smug", "shocked", "busted" }
 
 local function v3(t: { number }): Vector3

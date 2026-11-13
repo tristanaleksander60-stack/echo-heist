@@ -203,11 +203,11 @@ return function(test)
 			actual += real
 			if loco == "move" then
 				CloneGait.step(g, f.speed, clipRate or rate)
-				implied += g.speed * C.GAIT_BASE * dt -- what the playing clip covers
+				implied += CloneGait.implied(g) * dt -- what the playing clips cover
 			else
 				CloneGait.reset(g)
 			end
-			if actual >= C.STRIDE then
+			if actual >= CloneGait.RUN_STRIDE then
 				worst = math.max(worst, math.abs(implied - actual))
 				strides += 1
 				implied, actual = 0, 0
@@ -228,22 +228,32 @@ return function(test)
 		Assert.truthy(unlocked > 0.3, string.format("unlocked clip at 3x slides (%.2f studs)", unlocked))
 	end)
 
-	test("gait: walk alone, blend, run alone by recorded speed (not the clock rate)", function()
-		local _, w, r = CloneGait.target(3, 1)
+	test("gait: the R15 Animate's blend: walk alone, both at rate 1, run alone (by recorded speed)", function()
+		local wr, rr, w, r = CloneGait.target(3, 1)
 		Assert.eq(w, 1, "walk")
-		Assert.eq(r, 0, "no run")
-		local _, w2, r2 = CloneGait.target(16, 1)
-		Assert.eq(r2, 1, "run")
-		Assert.eq(w2, 0, "no walk")
-		local s3, w3 = CloneGait.target(3, 3)
-		Assert.eq(w3, 1, "a fast-forwarded walk is still a walk")
-		Assert.near(s3, 9 / C.GAIT_BASE, 1e-9, "... played 3x faster")
+		Assert.truthy(r < 1e-3, "run faded out (small, not zero)")
+		Assert.near(wr, 3 / CloneGait.WALK_BASE, 1e-9, "walk rate = speed / 6.4")
+		Assert.near(rr, 3 / CloneGait.RUN_BASE, 1e-9, "run rate = speed / 12.8")
+		local wr2, rr2, w2, r2 = CloneGait.target(9.6, 1)
+		Assert.near(w2, 0.5, 1e-9, "half way: walk 0.5")
+		Assert.near(r2, 0.5, 1e-9, "run 0.5")
+		Assert.eq(wr2, 1, "both at rate 1 in the blend")
+		Assert.eq(rr2, 1, "both at rate 1 in the blend")
+		local _, rr3, w3, r3 = CloneGait.target(16, 1)
+		Assert.eq(r3, 1, "run")
+		Assert.truthy(w3 < 1e-3, "no walk")
+		Assert.near(rr3, 1.25, 1e-9, "the run at 1.25x at WalkSpeed 16, as your character")
+		local s4, _, w4 = CloneGait.target(3, 3)
+		Assert.eq(w4, 1, "a fast-forwarded walk is still a walk")
+		Assert.near(s4, 9 / CloneGait.WALK_BASE, 1e-9, "... played 3x faster")
 		local g = CloneGait.new()
 		local a, b = CloneGait.step(g, 10, 1)
 		Assert.truthy(a and b, "first step sends both")
 		local c, d = CloneGait.step(g, 10.01, 1)
 		Assert.falsy(c, "a tiny change sends no AdjustSpeed")
 		Assert.falsy(d, "same weights")
+		Assert.near(CloneGait.landWeight(0), 1, 1e-9, "land on the spot: full squash")
+		Assert.truthy(CloneGait.landWeight(16) < 0.5, "land over a run: light")
 	end)
 
 	test("gait: path length and phase lock", function()
@@ -252,6 +262,8 @@ return function(test)
 		Assert.near(CloneGait.distanceAt(rec, dist, 0), 0, 1e-9, "start")
 		Assert.near(CloneGait.distanceAt(rec, dist, 0.5), 5, 1e-6, "half way")
 		Assert.near(CloneGait.distanceAt(rec, dist, 5), 10, 1e-6, "holds at the end")
-		Assert.near(CloneGait.phase(C.STRIDE * 2.25), 0.25, 1e-9, "phase from distance")
+		local wp, rp = CloneGait.phase(CloneGait.RUN_STRIDE * 2.25)
+		Assert.near(rp, 0.25, 1e-9, "run phase from distance")
+		Assert.near(wp, 0.5, 1e-9, "walk phase (half the stride)")
 	end)
 end

@@ -566,6 +566,87 @@ Config.FirstPerson = {
 		PUSH_CONE = 50, -- degrees off the look
 		PUSH_COOLDOWN = 1.5,
 		REACH_DEDUPE = 0.4, -- s: your Grab event does not replay the reach the GRAB press just played
+		-- Finger poses (REVIEW_STEAM_PLUS #10): the kit gloves (Rookie_Hands: palm + index, finger block and thumb in
+		-- two hinged segments each) or the placeholder's fingers turn about their hinges. Per joint { curl, across }
+		-- in degrees: curl folds toward the palm (- bends back), across swings the thumb over the palm. The hands
+		-- blend like the arms (rest, carry, then each action by its envelope, then the look-cue point) and every
+		-- joint follows its target through a spring (ViewmodelMath.fingers, Heist/Viewmodel).
+		HANDS = {
+			FREQ = 9, -- spring Hz
+			DAMPING = 0.8,
+			POSES = {
+				open = { -- relaxed: a soft curl, the thumb loose
+					Index1 = { 14, 0 },
+					Index2 = { 12, 0 },
+					Fingers1 = { 22, 0 },
+					Fingers2 = { 18, 0 },
+					Thumb1 = { 8, 12 },
+					Thumb2 = { 8, 0 },
+				},
+				reach = { -- spread wide as the hand goes for the loot
+					Index1 = { -6, 0 },
+					Index2 = { 2, 0 },
+					Fingers1 = { -4, 0 },
+					Fingers2 = { 4, 0 },
+					Thumb1 = { -10, -20 },
+					Thumb2 = { 0, 0 },
+				},
+				grip = { -- holding the loot: wrapped round it
+					Index1 = { 74, 0 },
+					Index2 = { 66, 0 },
+					Fingers1 = { 80, 0 },
+					Fingers2 = { 72, 0 },
+					Thumb1 = { 30, 40 },
+					Thumb2 = { 30, 0 },
+				},
+				push = { -- a flat palm on the door, fingers a touch bent back
+					Index1 = { -8, 0 },
+					Index2 = { -4, 0 },
+					Fingers1 = { -8, 0 },
+					Fingers2 = { -4, 0 },
+					Thumb1 = { 0, -8 },
+					Thumb2 = { 0, 0 },
+				},
+				point = { -- the index straight out, the rest folded, the thumb over them
+					Index1 = { -4, 0 },
+					Index2 = { 0, 0 },
+					Fingers1 = { 86, 0 },
+					Fingers2 = { 82, 0 },
+					Thumb1 = { 32, 44 },
+					Thumb2 = { 30, 0 },
+				},
+				press = { -- the index presses (the REWIND watch tap, a switch): its tip bent onto the button
+					Index1 = { 16, 0 },
+					Index2 = { 24, 0 },
+					Fingers1 = { 86, 0 },
+					Fingers2 = { 82, 0 },
+					Thumb1 = { 32, 44 },
+					Thumb2 = { 30, 0 },
+				},
+				handsUp = { -- caught: fingers splayed
+					Index1 = { -10, 0 },
+					Index2 = { -4, 0 },
+					Fingers1 = { -10, 0 },
+					Fingers2 = { -6, 0 },
+					Thumb1 = { -14, -26 },
+					Thumb2 = { -4, 0 },
+				},
+			},
+			ORDER = { "open", "reach", "grip", "push", "point", "press", "handsUp" }, -- renders and tests
+			REST = "open",
+			CARRY = "grip",
+			-- What each arm action does with the fingers, per hand (R / L).
+			ACTIONS = {
+				reach = { R = "reach" },
+				push = { R = "push" },
+				press = { R = "press" },
+				stomp = { R = "open", L = "open" },
+				watch = { R = "press", L = "push" }, -- the left wrist flat to show the watch, the right index taps
+				handsUp = { R = "handsUp", L = "handsUp" },
+			},
+			POINT = "point", -- while the onboarding look cue shows (state.fpPointing), the right hand points
+			POINT_BLEND = 0.25, -- s
+		},
 	},
 	LOOK = {
 		-- A ray from the camera centre picks what you look at (FpMath.pick). REACH: studs from the eye to the
@@ -1467,6 +1548,106 @@ Config.Lobby = {
 	},
 }
 
+-- The hideout lobby (PLAN_FIRST_PERSON "LB", the LOBBY track; MASTERPLAN §3.3): first person in the warehouse garage,
+-- look-to-interact stations on the BIG track's anchors (Garage/Anchors) and the vans: PICK a free van (your crew's,
+-- claimed by the leader), its paint, then SOLO (climb in, GO) or CREW (the side door opens, friends walk in and SIT,
+-- the leader presses GO when every seated member is READY). Pure rules: Shared/Heist/VanRules (server state machine
+-- and the Heist.Ready action validator) and Shared/Heist/LobbyLook (what each target offers you, the station camera).
+-- Server: Heist/Vans (the van rigs in Garage/Vans) and HeistService; client: Heist/Hideout, Hud/Lobby, Hud/Wardrobe.
+Config.Hideout = {
+	ENABLED = true, -- false: the old flow (the HUD job board opens in the garage, a pick starts the heist at once)
+	BAYS = 8, -- van bays (Config.Lobby.BAYS)
+	-- Look-to-interact (client): reach from the eye, and the server's own check from your root (a little longer, so
+	-- a prompt shown is an action the server takes).
+	REACH = 10,
+	SERVER_REACH = 13,
+	-- Stations: an anchor of Garage/Anchors, the verb it offers, the look target (local offset from the anchor in
+	-- studs: right, up, toward the facing; radius) and the station camera (where the eye eases to: `back` studs out
+	-- along the anchor's facing, `up` above the target, FOV). The HUD panel opens once the ease is done.
+	STATIONS = {
+		{
+			anchor = "JobBoardSpot",
+			verb = "jobs",
+			target = { 0, 4.5, 0, 2.2 },
+			cam = { back = 5.5, up = 0.2, fov = 52 },
+		},
+		{
+			anchor = "LaptopSpot",
+			verb = "laptop",
+			target = { 0, 0.7, 0, 1.4 },
+			cam = { back = 3.2, up = 0.4, fov = 50 },
+		},
+		{
+			anchor = "WardrobeSpot",
+			verb = "wardrobe",
+			target = { 0, 4.5, 0, 2.6 },
+			cam = { back = 7, up = 0, fov = 50 },
+		},
+		{ anchor = "TVSpot", verb = "tv", target = { 0, 0, 0, 3.2 }, cam = { back = 9, up = 0, fov = 50 } },
+		{ anchor = "CrewSign", verb = "invite", target = { 0, 0, 0, 2.8 }, cam = { back = 6, up = 0, fov = 50 } },
+	},
+	FOCUS_SECONDS = 0.45, -- the eye's ease into a station view (reduced motion: a cut)
+	FOCUS_LEAVE_STUDS = 4, -- a station closes when you walk this far from where you opened it
+	-- The wardrobe's view of yourself: a third-person orbit round your Rookie (the mirror is dressing).
+	-- spin: deg/s; shift: studs the look point slides left, so you stand right of the sheet (HudLayout.WARDROBE)
+	WARDROBE_ORBIT = { distance = 7.5, height = 1.2, yaw = 25, fov = 48, look = 0.4, spin = 18, shift = 1.8 },
+	-- Vans. Geometry in van space: `along` toward the cab, `up` from the floor, `out` toward the open side door. The
+	-- kit van (assets/blender/van.py) puts the cab at its local -X and the side door at its local -Z (engine-checked:
+	-- tests/engine_smoke.luau section 12), so a bay anchor's LookVector (yaw = the bay's) is the door's facing.
+	VAN = {
+		CAB_X = -1, -- sign of the van's local X toward the cab
+		DOOR_Z = -1, -- sign of the van's local Z toward the side door
+		-- paints you pick from at your van (mid values, never Getaway White: GOLDEN G1); a claimed van starts in its
+		-- bay's own paint (Config.Lobby.BAY_PAINTS) until the leader picks one. No van styles in the kit: paints only.
+		PAINTS = {
+			{ name = "TEAL", rgb = { 62, 138, 150 } },
+			{ name = "BERRY", rgb = { 168, 84, 140 } },
+			{ name = "INDIGO", rgb = { 100, 92, 176 } },
+			{ name = "CARAMEL", rgb = { 140, 100, 72 } },
+			{ name = "PINE", rgb = { 70, 120, 84 } },
+			{ name = "BRICK", rgb = { 160, 74, 62 } },
+		},
+		-- look targets on the door side (along, up, out, radius): the cab door (SOLO / GO), the side door (CREW / SIT /
+		-- READY), the rear panel (PAINT)
+		POINTS = {
+			cab = { 4.6, 4.4, 3.4, 1.7 },
+			door = { 0.1, 4.2, 3.4, 2.4 },
+			paint = { -5, 4.2, 3.4, 1.8 },
+		},
+		EXIT = { 0.1, 0, 6.5 }, -- where you step out (floor level, outside the side door)
+		-- seats (along, up, out, yaw toward: "cab" | "door"); seat 1 is the driver (the leader), 2.. the cargo bench
+		-- (crew seat order, Config.Sim.MAX_CREW in all)
+		SEATS = {
+			{ 4.3, 2.3, -1.2, "cab" },
+			{ -5.4, 2.4, -2.1, "door" },
+			{ -3.4, 2.4, -2.1, "door" },
+			{ -1.4, 2.4, -2.1, "door" },
+		},
+		SEAT_LIGHT = { up = 6.1, out = -2.86, size = { 1.6, 0.9 } }, -- the lit name card over each cargo seat
+		PLATE = { along = 0.1, up = 8.0, out = 3.05, size = { 6.4, 1.1 } }, -- the crew name plate over the side door
+		DOOR_LEAF = { along = 0.1, up = 4.25, out = 3.3, size = { 5, 4.9, 0.2 }, openAlong = -4.7, openOut = 3.72 },
+		DOOR_SECONDS = 0.45, -- the side door slides
+		FREE_LIGHT = 0.55, -- seat card transparency while empty
+	},
+	-- GO -> the doors shut -> a short drive (the van in your paint down a snowy street, the town passing; skippable)
+	-- -> the van-door wipe -> the heist. The server starts the heist SERVER_SECONDS after GO.
+	DRIVE = {
+		SERVER_SECONDS = 2.4,
+		SECONDS = 2.6, -- the client's shot (the wipe closes over its end; reduced motion: the wipe at once)
+		STAGE_ORIGIN = { 0, 600, -3600 }, -- client-only stage, far from the garage and every instance slot
+		SPEED = 46, -- studs/s the street scrolls past
+		BLOCK = { length = 18, gap = 6, depth = 12, minH = 16, maxH = 34 }, -- the passing town
+		STREET_W = 26,
+		LAMP_EVERY = 24,
+		CAM = { along = 9, up = 3.2, out = 13, lookAlong = -1, lookUp = 3, fov = 55 }, -- a tracking 3/4 of the van
+		SHAKE = 0.05, -- studs of engine rumble (off with shake / reduced motion)
+		CUE = "VanDrive", -- engine rumble (Audio cue; an empty id until the owner's lands)
+	},
+	-- the first hideout visit: a world hint over the nearest free van ("PICK A VAN") until you have one
+	HINT = { up = 10.5, size = { 220, 64 }, bob = 0.4 },
+	-- the drive's SKIP and the touch USE button reuse HudLayout boxes (LOBBY_SKIP, LOBBY_USE)
+}
+
 -- Art kit (spike S2, automated path: docs/art/KIT_IMPORT.md "Automated path"). The asset ids and the
 -- manifest live in the generated src/server/Kit/KitData.luau (python3 tools/kit_upload.py); these are
 -- the boot knobs of src/server/Kit/KitService.luau.
@@ -2160,9 +2341,10 @@ Config.Clone = {
 	STOP_SPEED = 0.5, -- ... and it stands again under this (hysteresis)
 	AIR_RISE = 2.5, -- |vertical speed| above this without the GROUNDED flag = jumping / falling
 
-	-- Catalog animations (A3 default path): the owner's Animate pack (template attributes EH_Anim_<slot>,
-	-- read by Avatars.strip) or these default R15 ids. Slots: idle, walk, run, jump, fall.
-	ANIM_SLOTS = { "idle", "walk", "run", "jump", "fall" },
+	-- Locomotion clips: the Rookie's own (Shared/Heist/RookieClips, Config.Rookie.ANIM), the same your character
+	-- plays; a template attribute EH_Anim_<slot> overrides a slot, and these default R15 ids are the last fallback.
+	-- Slots: idle, walk, run, jump, fall, land (land: Rigs.land, as a clone touches down).
+	ANIM_SLOTS = { "idle", "walk", "run", "jump", "fall", "land" },
 	ANIM = {
 		idle = "rbxassetid://507766666",
 		walk = "rbxassetid://507777826",
@@ -2170,15 +2352,10 @@ Config.Clone = {
 		jump = "rbxassetid://507765000",
 		fall = "rbxassetid://507767968",
 	},
-	-- Gait (CloneGait, as the R15 Animate script): both clips play at speed 1 at GAIT_BASE studs/s of
-	-- ground speed (16 / 1.25); walk alone under WALK_ONLY, run alone over RUN_ONLY, blended between.
-	-- Ground speed = recorded speed x the view's clock rate (1x, 3x fast-forward): no foot sliding.
-	GAIT_BASE = 12.8,
-	WALK_ONLY = 4.2,
-	RUN_ONLY = 8.4,
+	-- Gait (CloneGait): the R15 Animate's walk / run blend and rates (numbers in Config.Rookie.ANIM), ground
+	-- speed = recorded speed x the view's clock rate (1x, 3x fast-forward): no foot sliding.
 	GAIT_SPEED_EPS = 0.01, -- relative clip-speed change before AdjustSpeed is called again
 	GAIT_WEIGHT_STEP = 0.1, -- walk/run weights are sent in steps of this
-	STRIDE = 12.8, -- studs per clip cycle at speed 1 (GAIT_BASE x 1 s): the foot-slide unit (premium C7)
 	MAX_VIEW_RATE = 4, -- clamp of the view's measured clock rate (a seek is not a rate)
 	ANIM_FADE = 0.2, -- cross-fade between locomotion clips
 	ANIM_DISTANCE = 90, -- beyond this many studs from the camera, clips stop (the root still moves)
@@ -2725,6 +2902,77 @@ Config.Rookie = {
 		END_STIFFNESS = 1.6, -- the end segment is lighter: stiffer, quicker
 		MAX_DT = 0.1, -- s of motion integrated a frame at most (a hitch never flings it)
 		SUBSTEP = 1 / 60,
+	},
+	-- The Rookie's own locomotion (REVIEW_STEAM_PLUS #6): clips authored for his proportions by the pure
+	-- Shared/Heist/RookieMoves (legs by 2-bone IK on planted feet), baked by tools/rookie_clips.luau and uploaded
+	-- as Animation assets (python3 tools/anim_upload.py --rookie build/rookie_clips; ids in Shared/Heist/RookieClips).
+	-- The player's Animate plays them (server Heist/Characters + client Heist/RookieAnim) and the clones play the
+	-- same clips (Heist/Rigs, CloneGait mirrors the Animate's speed blend), so a clone walks exactly like you.
+	-- Re-bake and re-upload (new ids) after changing a number here.
+	ANIM = {
+		-- The R15 Animate's speed maths (vault "The Default Animate Script"): runSpeed = speed / SCALE x ROOT_MOTION;
+		-- walk alone at runSpeed <= 0.5 (walk rate = runSpeed / 0.5), blend to run alone at 1 (run rate = runSpeed).
+		-- So the walk clip covers WALK_BASE = 6.4 studs/s at rate 1 and the run RUN_BASE = 12.8: the strides below.
+		SCALE = 16,
+		ROOT_MOTION = 1.25,
+		WALK_NORM = 0.5,
+		RUN_NORM = 1,
+		SMALL = 1e-4, -- the Animate's "small but not zero" weight
+		CYCLE = 0.4, -- s per walk and per run cycle at rate 1 (equal, so the Animate's blend stays in step)
+		KEYS_PER_SECOND = 60, -- bake density (linear keys)
+		KEYS_PER_SECOND_SLOW = 20, -- idle and look (slow motion)
+		MAX_REACH = 0.965, -- studs hip to ankle (thigh 0.5 + shin 0.48): a planted leg never straightens past this
+		FOOT_TOE = { 0, -0.5, -0.9 }, -- the boot's toe tip from the ankle (rest, Roblox axes)
+		FOOT_HEEL = { 0, -0.5, 0.4 }, -- the heel
+		WALK = {
+			duty = 0.56, -- share of the cycle a foot is on the floor (> 0.5: both feet down at the switch)
+			front = 0.42, -- studs ahead of the hip where the boot lands (flat)
+			peelAt = 0.24, -- share of the cycle the boot rolls onto its toe
+			peel = 0.75, -- rad of toe roll at lift-off
+			lift = 0.3, -- studs the ankle rises in the swing (a bouncy step)
+			swingToe = 0.35, -- rad toes up mid-swing
+			drop = 0.17, -- studs of crouch (sneaky)
+			bob = 0.07, -- bounce: lowest as a foot lands
+			sway = 0.05, -- studs over the planted foot
+			roll = 0.06,
+			yaw = 0.16, -- pelvis turn with the legs; the chest turns back (cocky swagger)
+			chestYaw = -0.26,
+			lean = 0.16,
+			armSwing = 0.62, -- rad fore-aft
+			armOut = 0.46, -- arms wide
+			elbow = 0.45,
+			elbowSwing = 0.3,
+			headUp = 0.1, -- chin up (smug)
+			headTilt = 0.07,
+		},
+		RUN = {
+			duty = 0.27,
+			front = 0.34,
+			peelAt = 0.1,
+			peel = 1.1,
+			lift = 0.78, -- high knees and a heel kick: the funny sprint
+			kick = 0.42, -- studs the foot flicks back early in the swing
+			swingToe = 0.2,
+			drop = 0.16,
+			bob = 0.1,
+			yaw = 0.18,
+			chestYaw = -0.3,
+			lean = 0.44, -- root + waist share it
+			armSwing = 1.35, -- big pumps
+			armOut = 0.2,
+			elbow = 1.45,
+			elbowSwing = 0.35,
+			headUp = 0.14, -- world chin-up: the head keeps the eyes forward over the lean
+		},
+		IDLE = { length = 3.2, breath = 0.03, sway = 0.06, roll = 0.04, headTilt = 0.09, headUp = 0.06 },
+		LOOK = { length = 4.0, yaw = 0.85, chest = 0.22 },
+		JUMP = { length = 0.36, tuck = 0.14 },
+		FALL = { length = 0.5, flail = 0.35 },
+		-- minFall: s in the air before a land plays; at fullSpeed studs/s and over, its weight drops by runShare
+		LAND = { length = 0.42, squash = 0.3, minFall = 0.32, fade = 0.05, fullSpeed = 12.8, runShare = 0.7 },
+		FADE = 0.15, -- cross-fade into a clone's land / idle variant
+		IDLE_WEIGHTS = { idle = 9, look = 1 }, -- the Animate's idle set: the look-around about one loop in ten
+		ANIMATE_WAIT = 5, -- s to wait for a spawned character's Animate script
 	},
 	PORTRAIT = { -- crew cards: a ViewportFrame of your clone template's head (Hud/Deck)
 		FOV = 30,

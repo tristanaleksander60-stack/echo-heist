@@ -1,0 +1,1054 @@
+{
+ "asset": "Rookie_Hands",
+ "objects": [
+  {
+   "name": "Rookie_Hand_Right_Palm",
+   "class": "small",
+   "tris": 160,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.56,
+    0.323,
+    0.52
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.28,
+     -0.1617,
+     -0.51
+    ],
+    "local_max": [
+     0.28,
+     0.1617,
+     0.01
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -1.18,
+    0.0,
+    1.6
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 18,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Hand"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person right glove: Palm (pivot = its hinge)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Hand_Right_Index1",
+   "class": "small",
+   "tris": 64,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.14,
+    0.14,
+    0.34
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.07,
+     -0.07,
+     -0.26
+    ],
+    "local_max": [
+     0.07,
+     0.07,
+     0.08
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -1.025,
+    0.0,
+    1.13
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Hand"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person right glove: Index1 (pivot = its hinge)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Hand_Right_Index2",
+   "class": "small",
+   "tris": 128,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.132,
+    0.132,
+    0.305
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.066,
+     -0.066,
+     -0.2247
+    ],
+    "local_max": [
+     0.066,
+     0.066,
+     0.08
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -1.025,
+    0.0,
+    0.93
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 38,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Hand"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person right glove: Index2 (pivot = its hinge)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Hand_Right_Fingers1",
+   "class": "small",
+   "tris": 192,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.352,
+    0.132,
+    0.35
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.176,
+     -0.066,
+     -0.27
+    ],
+    "local_max": [
+     0.176,
+     0.066,
+     0.08
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -1.245,
+    0.0,
+    1.13
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 16,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Hand"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person right glove: Fingers1 (pivot = its hinge)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Hand_Right_Fingers2",
+   "class": "small",
+   "tris": 384,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.344,
+    0.124,
+    0.291
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.172,
+     -0.062,
+     -0.2108
+    ],
+    "local_max": [
+     0.172,
+     0.062,
+     0.08
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -1.245,
+    0.0,
+    0.93
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 141,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Hand"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person right glove: Fingers2 (pivot = its hinge)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Hand_Right_Thumb1",
+   "class": "small",
+   "tris": 64,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.156,
+    0.186,
+    0.328
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.078,
+     -0.1097,
+     -0.2366
+    ],
+    "local_max": [
+     0.078,
+     0.0762,
+     0.0918
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -0.93,
+    -0.05,
+    1.4
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Hand"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person right glove: Thumb1 (pivot = its hinge)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Hand_Right_Thumb2",
+   "class": "small",
+   "tris": 128,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.144,
+    0.173,
+    0.297
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.072,
+     -0.1011,
+     -0.2065
+    ],
+    "local_max": [
+     0.072,
+     0.0718,
+     0.0907
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -0.93,
+    -0.05,
+    1.23
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 49,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Hand"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person right glove: Thumb2 (pivot = its hinge)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Hand_Left_Palm",
+   "class": "small",
+   "tris": 160,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.56,
+    0.323,
+    0.52
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.28,
+     -0.1617,
+     -0.51
+    ],
+    "local_max": [
+     0.28,
+     0.1617,
+     0.01
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    1.18,
+    0.0,
+    1.6
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 18,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Hand"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person left glove: Palm (pivot = its hinge)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Hand_Left_Index1",
+   "class": "small",
+   "tris": 64,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.14,
+    0.14,
+    0.34
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.07,
+     -0.07,
+     -0.26
+    ],
+    "local_max": [
+     0.07,
+     0.07,
+     0.08
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    1.025,
+    0.0,
+    1.13
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Hand"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person left glove: Index1 (pivot = its hinge)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Hand_Left_Index2",
+   "class": "small",
+   "tris": 128,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.132,
+    0.132,
+    0.305
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.066,
+     -0.066,
+     -0.2247
+    ],
+    "local_max": [
+     0.066,
+     0.066,
+     0.08
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    1.025,
+    0.0,
+    0.93
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 38,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Hand"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person left glove: Index2 (pivot = its hinge)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Hand_Left_Fingers1",
+   "class": "small",
+   "tris": 192,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.352,
+    0.132,
+    0.35
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.176,
+     -0.066,
+     -0.27
+    ],
+    "local_max": [
+     0.176,
+     0.066,
+     0.08
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    1.245,
+    0.0,
+    1.13
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 16,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Hand"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person left glove: Fingers1 (pivot = its hinge)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Hand_Left_Fingers2",
+   "class": "small",
+   "tris": 384,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.344,
+    0.124,
+    0.291
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.172,
+     -0.062,
+     -0.2108
+    ],
+    "local_max": [
+     0.172,
+     0.062,
+     0.08
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    1.245,
+    0.0,
+    0.93
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 141,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Hand"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person left glove: Fingers2 (pivot = its hinge)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Hand_Left_Thumb1",
+   "class": "small",
+   "tris": 64,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.156,
+    0.186,
+    0.328
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.078,
+     -0.1097,
+     -0.2366
+    ],
+    "local_max": [
+     0.078,
+     0.0762,
+     0.0918
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.93,
+    -0.05,
+    1.4
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Hand"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person left glove: Thumb1 (pivot = its hinge)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Hand_Left_Thumb2",
+   "class": "small",
+   "tris": 128,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.144,
+    0.173,
+    0.297
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.072,
+     -0.1011,
+     -0.2065
+    ],
+    "local_max": [
+     0.072,
+     0.0718,
+     0.0907
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.93,
+    -0.05,
+    1.23
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 49,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Hand"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person left glove: Thumb2 (pivot = its hinge)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 2240,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "28d8bc15c2903202a36a",
+ "fbx": {
+  "path": "assets/fbx/Rookie_Hands.fbx",
+  "bytes": 95356,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Rookie_Hand_Left_Fingers1",
+   "Rookie_Hand_Left_Fingers2",
+   "Rookie_Hand_Left_Index1",
+   "Rookie_Hand_Left_Index2",
+   "Rookie_Hand_Left_Palm",
+   "Rookie_Hand_Left_Thumb1",
+   "Rookie_Hand_Left_Thumb2",
+   "Rookie_Hand_Right_Fingers1",
+   "Rookie_Hand_Right_Fingers2",
+   "Rookie_Hand_Right_Index1",
+   "Rookie_Hand_Right_Index2",
+   "Rookie_Hand_Right_Palm",
+   "Rookie_Hand_Right_Thumb1",
+   "Rookie_Hand_Right_Thumb2"
+  ],
+  "geometry_extents": [
+   [
+    0.124,
+    0.291,
+    0.344
+   ],
+   [
+    0.124,
+    0.291,
+    0.344
+   ],
+   [
+    0.132,
+    0.132,
+    0.305
+   ],
+   [
+    0.132,
+    0.132,
+    0.305
+   ],
+   [
+    0.132,
+    0.35,
+    0.352
+   ],
+   [
+    0.132,
+    0.35,
+    0.352
+   ],
+   [
+    0.14,
+    0.14,
+    0.34
+   ],
+   [
+    0.14,
+    0.14,
+    0.34
+   ],
+   [
+    0.144,
+    0.173,
+    0.297
+   ],
+   [
+    0.144,
+    0.173,
+    0.297
+   ],
+   [
+    0.156,
+    0.186,
+    0.328
+   ],
+   [
+    0.156,
+    0.186,
+    0.328
+   ],
+   [
+    0.323,
+    0.52,
+    0.56
+   ],
+   [
+    0.323,
+    0.52,
+    0.56
+   ]
+  ]
+ },
+ "spec": "assets/blender/rookie.py",
+ "notes": "First-person gloves with fingers (REVIEW #10): palm + index, finger block and thumb in two segments each, pivots at the hinges; glove colour at runtime.",
+ "turntable": "docs/art/turntables/Rookie_Hands.png",
+ "seconds": 25.8
+}

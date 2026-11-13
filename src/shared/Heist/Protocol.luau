@@ -10,7 +10,10 @@
 --                                      FAIL.Locked (10) for the Clone Party till before 0:20
 --   Heist.Deck(op, n?)                 Clone Deck card, between runs, own clones only (refused on
 --                                      L1 and party levels: every party clone stays for "8 OF ME")
---   Heist.Ready(reduced?)              "▶ RUN n" between runs (reduced = reduced motion)
+--   Heist.Ready(arg?)                  "▶ RUN n" between runs (arg = reduced motion, a boolean), or in the
+--                                      hideout a lobby action table { op, bay?, n? } (Shared/Heist/VanRules:
+--                                      claim, paint, crew, park, solo, go, sit, ready, unready, stand; the
+--                                      validator is VanRules.validReadyArg, the server re-checks every rule)
 --   Heist.FastForward(on)              hold-to-skip pill
 --   Heist.SelectLevel(index, relaxed?) crew leader picks a tape (garage or results card);
 --                                      index = Levels/Catalog index (PLAY order, not design n).
@@ -22,7 +25,8 @@
 --                                      advent day to catch up (UTC day number from the garage);
 --                                      refused until Night Clerk is cleared (PLAN D4,
 --                                      Config.Onboarding.DAILY_UNLOCK_LEVEL)
---   (SelectLevel / SelectDaily: one new heist per player pick per INSTANCE_COOLDOWN_SECONDS)
+--   (SelectLevel / SelectDaily: one new heist per player pick per INSTANCE_COOLDOWN_SECONDS; in the hideout
+--    (Config.Hideout) a garage pick pins the crew's job instead, and the van's SOLO / GO starts it)
 --   Heist.JoinFriend(userId)           join a friend's crew in this server
 --   Heist.Leave()                      back to the garage (or out of a crew); mid-heist from the
 --                                      HUD's ❚❚ menu: solo ends the heist, co-op leaves it
@@ -57,6 +61,9 @@
 --            DataService result ({ ok, code, data = AwardSummary | DailySummary }); next =
 --            this player's { unlocked, starsNeeded, needsClear } for nextIndex (after the award)
 --   Garage   { crew }                  lobby state (crew, leader, pending)
+--   Depart   { bay, seconds, paint }   the hideout: your crew's van left (GO); the client plays the drive and
+--            the heist's Sync follows `seconds` later. Garage sync adds lobby (vans on), van (your crew's bay,
+--            0 = none), job / jobDay (the pinned job; 0 + a day = the daily vault)
 --   Leader   { leader }                the crew leader changed while the results card is up
 --   Toast    { text }                  short message
 -- State (attributes on workspace.Heists.<name>, written only when they change):
