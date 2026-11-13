@@ -1,0 +1,341 @@
+{
+ "asset": "Decor_Office",
+ "objects": [
+  {
+   "name": "Decor_Desk_6",
+   "class": "module",
+   "tris": 488,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    6.0,
+    3.0,
+    4.95
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.0,
+     -1.5,
+     0.0
+    ],
+    "local_max": [
+     3.0,
+     1.5,
+     4.95
+    ]
+   },
+   "swatches": [
+    "leaf",
+    "leaf_hi",
+    "marble_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi",
+    "snow",
+    "wood",
+    "wood_hi",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 151,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "office desk 6 x 3 with a desk lamp (unlit mesh), papers, ledger, mug",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_CoatHooks_4",
+   "class": "small",
+   "tris": 288,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    4.0,
+    0.75,
+    3.4
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -2.0,
+     -0.75,
+     2.6
+    ],
+    "local_max": [
+     2.0,
+     0.0,
+     6.0
+    ]
+   },
+   "swatches": [
+    "holly",
+    "marble_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi",
+    "steel",
+    "steel_lo",
+    "wood",
+    "wood_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 85,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "coat hooks 4 long with two coats and a scarf, hung at 6 on a wall face",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_Boxes",
+   "class": "small",
+   "tris": 340,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    3.6,
+    2.45,
+    4.42
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.8,
+     -1.23,
+     0.0
+    ],
+    "local_max": [
+     1.8,
+     1.22,
+     4.42
+    ]
+   },
+   "swatches": [
+    "holly_lo",
+    "marble",
+    "marble_lo",
+    "ribbon",
+    "steel_lo",
+    "wood_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 222,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "stacked cardboard stock boxes 3.6 x 2.4 x 4.4",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_Corkboard_4",
+   "class": "small",
+   "tris": 272,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    4.0,
+    0.24,
+    3.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -2.0,
+     -0.24,
+     0.0
+    ],
+    "local_max": [
+     2.0,
+     0.0,
+     3.0
+    ]
+   },
+   "swatches": [
+    "holly",
+    "ink_hi",
+    "marble_hi",
+    "ribbon",
+    "ribbon_hi",
+    "snow",
+    "wood",
+    "wood_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 127,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "corkboard 4 x 3: notes and Gus's donut list, on a wall face",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 1388,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "dd7b839153bdb487b45c",
+ "fbx": {
+  "path": "assets/fbx/Decor_Office.fbx",
+  "bytes": 48476,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Decor_Boxes",
+   "Decor_CoatHooks_4",
+   "Decor_Corkboard_4",
+   "Decor_Desk_6"
+  ],
+  "geometry_extents": [
+   [
+    0.24,
+    3.0,
+    4.0
+   ],
+   [
+    0.75,
+    3.4,
+    4.0
+   ],
+   [
+    2.45,
+    3.6,
+    4.42
+   ],
+   [
+    3.0,
+    4.95,
+    6.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/interior.py",
+ "notes": "Back-room and office props: desk with a lamp, coat hooks, stock boxes, a corkboard.",
+ "turntable": "docs/art/turntables/Decor_Office.png",
+ "seconds": 62.8
+}

@@ -1,0 +1,402 @@
+{
+ "asset": "Decor_Bank",
+ "objects": [
+  {
+   "name": "Decor_BrassRail_8",
+   "class": "small",
+   "tris": 768,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    7.96,
+    0.965,
+    3.03
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.98,
+     -0.7853,
+     -0.03
+    ],
+    "local_max": [
+     3.98,
+     0.18,
+     3.0
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 338,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "teller brass 8 long: rail, posts, bell and a plaque (stands on a counter top)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_QueueRope_8",
+   "class": "small",
+   "tris": 600,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.1,
+    0.9,
+    3.22
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -4.05,
+     -0.45,
+     0.0
+    ],
+    "local_max": [
+     4.05,
+     0.45,
+     3.22
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "ribbon"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 159,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "queue rope 8 long: brass posts and a burgundy velvet rope",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_Bench_6",
+   "class": "small",
+   "tris": 160,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    6.0,
+    1.8,
+    2.05
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.0,
+     -0.9,
+     0.0
+    ],
+    "local_max": [
+     3.0,
+     0.9,
+     2.05
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 24,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "marble bench 6 x 1.8 with a velvet cushion",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_Palm",
+   "class": "small",
+   "tris": 504,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    5.19,
+    5.19,
+    6.131
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -2.5952,
+     -2.5952,
+     0.0
+    ],
+    "local_max": [
+     2.5952,
+     2.5952,
+     6.1308
+    ]
+   },
+   "swatches": [
+    "leaf",
+    "leaf_hi",
+    "leaf_lo",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 454,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "potted palm 7.5 tall, brass-rimmed pot",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Decor_DepositWall_8",
+   "class": "module",
+   "tris": 1220,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    8.2,
+    0.55,
+    7.0
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -4.1,
+     -0.55,
+     0.0
+    ],
+    "local_max": [
+     4.1,
+     0.0,
+     7.0
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "marble_lo",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 401,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "safe-deposit box wall 8 x 7, 0.55 proud of the wall face",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 3252,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "07ffa827e9b9fe805944",
+ "fbx": {
+  "path": "assets/fbx/Decor_Bank.fbx",
+  "bytes": 80956,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Decor_Bench_6",
+   "Decor_BrassRail_8",
+   "Decor_DepositWall_8",
+   "Decor_Palm",
+   "Decor_QueueRope_8"
+  ],
+  "geometry_extents": [
+   [
+    0.55,
+    7.0,
+    8.2
+   ],
+   [
+    0.9,
+    3.22,
+    8.1
+   ],
+   [
+    0.965,
+    3.03,
+    7.96
+   ],
+   [
+    1.8,
+    2.05,
+    6.0
+   ],
+   [
+    5.19,
+    5.19,
+    6.131
+   ]
+  ]
+ },
+ "spec": "assets/blender/interior.py",
+ "notes": "Bank eye-level props: teller brass, queue rope, marble bench, potted palm, deposit boxes.",
+ "turntable": "docs/art/turntables/Decor_Bank.png",
+ "seconds": 48.8
+}

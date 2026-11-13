@@ -128,6 +128,8 @@ NEON = {
     "Intro_Vacuum_Lights":   ("#4E5675", "Bulb Warm #F6C0A2 while the vacuum runs", (WARM_BULB,)),
     "Intro_Tower_Windows":   (WARM_BULB, "fixed; Vault Steel shade #4E5675 once the presents are gone", ("#4E5675",)),
     "Intro_Tower_Sign":      ("#FFB85C", "fixed: Hoardsworth's giant H stays lit all night", ()),
+    # the interiors' drinks fridge (assets/blender/interior.py): a small warm strip under its header
+    "Decor_Fridge_4_Light":  (WARM_BULB, "fixed (the fridge's lit shelves; no Light object)", ()),
 }
 GLASS_TINT = "#A9B2CC"
 
