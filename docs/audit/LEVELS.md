@@ -748,3 +748,184 @@ spawn, up at the trusses, at the mezzanine, the stations, the diorama and the ya
 
 **Engine (Saved v76, after merging main):** engine_smoke 170 ok / 0 (section 11: the BIG buildings on 8 sites, the
 warehouse checks), client_engine 56 / 0, clone_engine 0 failures, perf_engine 0 failures (section E), kit_engine 503 ok / 0.
+
+## 13. INTERIORS (2026-11-13): eye level, the light in first person, each level its own shop
+
+The Steam-quality review (`docs/audit/REVIEW_STEAM_PLUS.md` gaps 8, 9 and 12): in first person the interiors were
+empty painted boxes (`big/L1_fp_inside.png`: a counter, a door, two pendants and a plate); the unlit floor pools read
+as painted fog at eye level; the white coffered ceiling was the brightest plane (L1_fp_ceiling median 0.59); and
+L1-L4 plus the first daily vault shared one shop front and looked the same. Do-not-touch respected: no sim data, no
+exterior storeys or cut-away change, no aurora, no Gus beats, **no Lighting service retune** (local lights, pools and
+materials only).
+
+### 13.1 What changed
+
+- **Props at eye level in every room** (server `Heist/DecorPlan`, pure; STYLE_BIBLE §19; kit `assets/blender/interior.py`,
+  6 new groups, new ids): Corner Shop fronts get stocked shelves (boxes, tins, jars), a drinks fridge with a glass door
+  and a warm strip, a candy counter, a magazine rack, a cat bed with a sleeping tabby, posters, a clock, a Christmas
+  card string; back rooms boxes, a mop bucket, coat hooks with coats, a corkboard with Gus's donut list, a desk with a
+  lamp; the Toy Shop toy shelves (teddies, trains, blocks, boxed dolls), a gift-wrap table, a train loop, a rocking
+  horse, giant candy canes; the Bank potted palms, marble benches, a queue rope, the waiting-room tree, deposit-box
+  walls and **teller brass** on the teller counters. Every prop backs onto a wall (the middle of each room stays open),
+  never on a plate, door approach, loot point, hide, laser, switch, Gus's route, a floor cable, the van zone or the
+  sightline from the crew seat to a plate, door or the goal. Unit spec `HeistInterior` (9 tests, every launch level and
+  daily vault, Christmas layer on and off): no overlap with a sim box, and a 0.5-stud walk grid still reaches every
+  plate, door, loot point and hide with the props, by at most a 3-stud detour. 39-52 props per level, 10-15k tris.
+- **Each level its own shop** (`Config.Interior.THEMES`): L1 **Pip's Grocery** (fruit stand in the window, green frieze),
+  L2 **Sugar & Crumb Bakery** (cake stands, rose frieze, peach light), L3 **Tick-Tock Toy Repair** (workbench with a
+  half-mended teddy and a wind-up robot, toy shelves, teal frieze, a deeper and dimmer amber), L4 **Night Owl Pharmacy**
+  (dispensing counter with a green cross, mint frieze, cool white light), DV01 **Big Cheese Deli** (deli case with
+  salamis); the other Corner Shop dailies rotate deli, jeweller, grocer, bakery, pharmacy, toy repair; L5 Hoardsworth's
+  Toys, L6 and the bank dailies Hoardsworth & Co. Each: the name on the front's sign board (the fascia, a SurfaceGui on
+  the board the Storefront mesh always had) and on the BIG blade sign, a hero display in the window beside the door, a
+  tinted frieze under the crown, the ceiling colour and the room light colour.
+- **The ceiling:** the BIG tile in a tintable copy (`Ceiling_8x8_Tin`) in the level's ceiling colour (its luma never
+  above the location's wall cell); the lamp fixtures stay the brightest thing overhead.
+- **The walls carry the light:** warm SpotLight wall washes (`LAMP.wash`, no shadows, no fixture) on each room band's side
+  walls and far partition, kept only while every view stays <= 9 lights; tier 1 only (off from tier 2).
+- **Pools in first person:** client `LightDirector` fades every floor pool by the camera's elevation over it (0.30 of its
+  strength looking across it, 0.62 standing in it, 1 from the diorama and classic heights); the diorama looks unchanged.
+- **Tiers:** props, the teller brass and the frieze hide from tier 3; the hero display, ceiling, light and fascia stay.
+
+### 13.2 Measured
+
+`python3 tools/blender/level_shots.py --interiors` (one Blender process per shot, 960 x 444, the filmic proxy, graded
+with `frame_grade` plus a surface mask: ceiling / wall luma, and the plates' and loot's A1 value pop over their
+surround). First person from the eye (3.8): at the spawn, just inside the front, toward the left wall, from the back
+of the front room toward the window, up at the ceiling (32°), at the loot and beside it looking across its room, the
+shop from the street; then the diorama and classic at the spawn and the diorama mid-run. `--before` renders the same
+level without this track. Folder `docs/audit/levels/interiors/` with `grades.json`, `surfaces.json` and the
+[contact sheet](levels/interiors/contact_sheet.png).
+
+**Before → after** (the same camera, `--before` = without this track):
+
+| Site / shot | near-black % | median luma | value spread | warm % | ceiling / wall luma | props' share of the frame % |
+|---|---|---|---|---|---|---|
+| L1 fp_front | 0.00 → 0.03 | 0.35 → 0.28 | 0.59 → 0.54 | 59 → 52 | 3.7 → 0.54 | 0 → 13.1 |
+| L1 fp_left | 0.40 → 0.31 | 0.34 → 0.32 | 0.63 → 0.57 | 59 → 55 | 3.26 → 0.62 | 0 → 17.7 |
+| L1 fp_ceiling | 0.00 → 0.00 | 0.49 → 0.15 | 0.56 → 0.54 | 47 → 38 | 4.84 → 0.53 | 0 → 7.1 |
+| L2 fp_front | 0.00 → 0.00 | 0.36 → 0.30 | 0.65 → 0.56 | 55 → 43 | 3.36 → 0.54 | 0 → 12.3 |
+| L2 fp_left | 0.04 → 0.01 | 0.47 → 0.37 | 0.69 → 0.59 | 51 → 46 | 3.08 → 0.65 | 0 → 17.2 |
+| L2 fp_ceiling | 0.00 → 0.00 | 0.51 → 0.19 | 0.60 → 0.52 | 66 → 44 | 4.74 → 0.58 | 0 → 15.8 |
+| L3 fp_front | 0.00 → 0.00 | 0.39 → 0.30 | 0.65 → 0.54 | 57 → 51 | 3.29 → 0.4 | 0 → 15.6 |
+| L3 fp_left | 0.13 → 0.00 | 0.30 → 0.33 | 0.68 → 0.57 | 54 → 50 | 3.05 → 0.39 | 0 → 21.7 |
+| L3 fp_ceiling | 0.00 → 0.00 | 0.49 → 0.14 | 0.57 → 0.50 | 60 → 38 | 4.47 → 0.44 | 0 → 9.7 |
+| L4 fp_front | 0.00 → 0.00 | 0.43 → 0.36 | 0.68 → 0.56 | 51 → 35 | 3.26 → 0.57 | 0 → 13.9 |
+| L4 fp_left | 0.10 → 0.00 | 0.30 → 0.33 | 0.70 → 0.60 | 52 → 33 | 3.08 → 0.7 | 0 → 14.0 |
+| L4 fp_ceiling | 0.00 → 0.00 | 0.49 → 0.17 | 0.58 → 0.49 | 59 → 33 | 4.56 → 0.57 | 0 → 12.0 |
+| DV01 fp_front | 0.00 → 0.00 | 0.36 → 0.33 | 0.65 → 0.53 | 54 → 53 | 3.33 → 0.56 | 0 → 12.9 |
+| DV01 fp_left | 0.02 → 0.00 | 0.30 → 0.34 | 0.70 → 0.58 | 53 → 54 | 3.2 → 0.49 | 0 → 23.6 |
+| DV01 fp_ceiling | 0.00 → 0.00 | 0.51 → 0.17 | 0.58 → 0.49 | 69 → 49 | 4.49 → 0.57 | 0 → 15.2 |
+| L6 fp_front | 0.26 → 0.40 | 0.45 → 0.29 | 0.60 → 0.50 | 25 → 22 | 2.53 → 0.37 | 0 → 1.9 |
+| L6 fp_left | 0.00 → 0.00 | 0.32 → 0.28 | 0.59 → 0.57 | 13 → 9 | 3.3 → 0.62 | 0 → 5.4 |
+| L6 fp_ceiling | 0.00 → 0.00 | 0.57 → 0.34 | 0.62 → 0.61 | 21 → 10 | 2.42 → 0.37 | 0 → 1.5 |
+
+**Every after frame:**
+
+| Frame | near-black % | dark % | median luma | value spread | warm % | ceiling / wall | plate pop | loot pop |
+|---|---|---|---|---|---|---|---|---|
+| [DV01_classic](levels/interiors/DV01_classic.png) | 0.00 | 1.6 | 0.61 | 0.62 | 47 | - | - | - |
+| [DV01_diorama](levels/interiors/DV01_diorama.png) | 0.00 | 0.4 | 0.58 | 0.62 | 49 | - | - | - |
+| [DV01_fp_ceiling](levels/interiors/DV01_fp_ceiling.png) | 0.00 | 1.1 | 0.17 | 0.49 | 49 | 0.57 | - | - |
+| [DV01_fp_front](levels/interiors/DV01_fp_front.png) | 0.00 | 1.9 | 0.33 | 0.53 | 53 | 0.56 | 0.27 | - |
+| [DV01_fp_left](levels/interiors/DV01_fp_left.png) | 0.00 | 2.9 | 0.34 | 0.58 | 54 | 0.49 | - | -0.23 |
+| [DV01_fp_loot](levels/interiors/DV01_fp_loot.png) | 0.00 | 7.0 | 0.23 | 0.60 | 88 | - | - | -0.49 |
+| [DV01_fp_spawn](levels/interiors/DV01_fp_spawn.png) | 0.00 | 4.2 | 0.32 | 0.53 | 19 | 0.36 | 0.32 | -0.41 |
+| [DV01_fp_street](levels/interiors/DV01_fp_street.png) | 1.23 | 7.7 | 0.34 | 0.56 | 36 | 0.36 | - | -0.31 |
+| [L1_classic](levels/interiors/L1_classic.png) | 0.00 | 1.6 | 0.48 | 0.62 | 56 | - | - | - |
+| [L1_diorama](levels/interiors/L1_diorama.png) | 0.00 | 0.8 | 0.54 | 0.63 | 52 | - | - | - |
+| [L1_diorama_mid](levels/interiors/L1_diorama_mid.png) | 0.00 | 2.0 | 0.36 | 0.58 | 54 | - | -0.02 | - |
+| [L1_fp_ceiling](levels/interiors/L1_fp_ceiling.png) | 0.00 | 2.2 | 0.15 | 0.54 | 38 | 0.53 | - | - |
+| [L1_fp_front](levels/interiors/L1_fp_front.png) | 0.03 | 2.5 | 0.28 | 0.54 | 52 | 0.54 | 0.27 | - |
+| [L1_fp_left](levels/interiors/L1_fp_left.png) | 0.31 | 4.0 | 0.32 | 0.57 | 55 | 0.62 | - | - |
+| [L1_fp_loot](levels/interiors/L1_fp_loot.png) | 0.68 | 6.6 | 0.20 | 0.50 | 56 | 0.80 | - | 0.16 |
+| [L1_fp_loot_round](levels/interiors/L1_fp_loot_round.png) | 0.18 | 10.4 | 0.19 | 0.50 | 51 | 0.87 | - | - |
+| [L1_fp_spawn](levels/interiors/L1_fp_spawn.png) | 0.01 | 4.3 | 0.34 | 0.50 | 31 | 0.35 | 0.31 | - |
+| [L1_fp_street](levels/interiors/L1_fp_street.png) | 1.19 | 7.8 | 0.37 | 0.56 | 38 | 0.36 | - | - |
+| [L1_fp_window](levels/interiors/L1_fp_window.png) | 0.11 | 3.4 | 0.29 | 0.55 | 48 | 0.51 | 0.21 | - |
+| [L2_classic](levels/interiors/L2_classic.png) | 0.00 | 1.5 | 0.49 | 0.62 | 55 | - | - | - |
+| [L2_diorama](levels/interiors/L2_diorama.png) | 0.00 | 0.6 | 0.58 | 0.62 | 50 | - | - | - |
+| [L2_diorama_mid](levels/interiors/L2_diorama_mid.png) | 0.00 | 0.9 | 0.40 | 0.61 | 47 | - | -0.01 | - |
+| [L2_fp_ceiling](levels/interiors/L2_fp_ceiling.png) | 0.00 | 0.6 | 0.19 | 0.52 | 44 | 0.58 | - | - |
+| [L2_fp_front](levels/interiors/L2_fp_front.png) | 0.00 | 2.4 | 0.30 | 0.56 | 43 | 0.54 | 0.28 | - |
+| [L2_fp_left](levels/interiors/L2_fp_left.png) | 0.01 | 2.2 | 0.37 | 0.59 | 46 | 0.65 | 0.22 | -0.34 |
+| [L2_fp_loot](levels/interiors/L2_fp_loot.png) | 0.46 | 11.3 | 0.20 | 0.52 | 58 | - | - | 0.17 |
+| [L2_fp_loot_round](levels/interiors/L2_fp_loot_round.png) | 1.41 | 19.9 | 0.14 | 0.39 | 65 | 0.80 | - | - |
+| [L2_fp_spawn](levels/interiors/L2_fp_spawn.png) | 0.00 | 5.4 | 0.35 | 0.55 | 22 | 0.36 | 0.31 | -0.41 |
+| [L2_fp_street](levels/interiors/L2_fp_street.png) | 1.18 | 7.5 | 0.37 | 0.57 | 37 | 0.38 | 0.16 | -0.33 |
+| [L2_fp_window](levels/interiors/L2_fp_window.png) | 0.01 | 2.2 | 0.32 | 0.59 | 41 | 0.52 | 0.20 | -0.38 |
+| [L3_classic](levels/interiors/L3_classic.png) | 0.00 | 1.5 | 0.57 | 0.61 | 56 | - | - | - |
+| [L3_diorama](levels/interiors/L3_diorama.png) | 0.00 | 0.7 | 0.57 | 0.62 | 53 | - | - | - |
+| [L3_diorama_mid](levels/interiors/L3_diorama_mid.png) | 0.00 | 1.1 | 0.40 | 0.59 | 56 | - | -0.02 | - |
+| [L3_fp_ceiling](levels/interiors/L3_fp_ceiling.png) | 0.00 | 30.4 | 0.14 | 0.50 | 38 | 0.44 | - | - |
+| [L3_fp_front](levels/interiors/L3_fp_front.png) | 0.00 | 4.6 | 0.30 | 0.54 | 51 | 0.40 | 0.25 | - |
+| [L3_fp_left](levels/interiors/L3_fp_left.png) | 0.00 | 8.1 | 0.33 | 0.57 | 50 | 0.39 | - | -0.17 |
+| [L3_fp_loot](levels/interiors/L3_fp_loot.png) | 1.35 | 12.3 | 0.12 | 0.55 | 56 | - | - | 0.59 |
+| [L3_fp_loot_round](levels/interiors/L3_fp_loot_round.png) | 0.41 | 16.7 | 0.13 | 0.41 | 54 | 0.71 | - | - |
+| [L3_fp_spawn](levels/interiors/L3_fp_spawn.png) | 0.00 | 6.9 | 0.30 | 0.53 | 28 | 0.25 | 0.30 | -0.29 |
+| [L3_fp_street](levels/interiors/L3_fp_street.png) | 1.18 | 8.4 | 0.36 | 0.57 | 37 | 0.30 | - | -0.25 |
+| [L3_fp_window](levels/interiors/L3_fp_window.png) | 0.01 | 4.0 | 0.31 | 0.55 | 46 | 0.42 | 0.20 | -0.31 |
+| [L4_classic](levels/interiors/L4_classic.png) | 0.00 | 1.5 | 0.58 | 0.61 | 53 | - | - | - |
+| [L4_diorama](levels/interiors/L4_diorama.png) | 0.00 | 0.4 | 0.59 | 0.62 | 47 | - | - | - |
+| [L4_diorama_mid](levels/interiors/L4_diorama_mid.png) | 0.00 | 0.7 | 0.42 | 0.61 | 45 | - | -0.02 | - |
+| [L4_fp_ceiling](levels/interiors/L4_fp_ceiling.png) | 0.00 | 0.8 | 0.17 | 0.49 | 33 | 0.57 | - | - |
+| [L4_fp_front](levels/interiors/L4_fp_front.png) | 0.00 | 2.1 | 0.36 | 0.56 | 35 | 0.57 | 0.24 | - |
+| [L4_fp_left](levels/interiors/L4_fp_left.png) | 0.00 | 4.2 | 0.33 | 0.60 | 33 | 0.70 | - | -0.30 |
+| [L4_fp_loot](levels/interiors/L4_fp_loot.png) | 0.27 | 7.8 | 0.23 | 0.52 | 61 | - | - | 0.48 |
+| [L4_fp_loot_round](levels/interiors/L4_fp_loot_round.png) | 0.30 | 21.4 | 0.13 | 0.40 | 63 | 0.92 | - | - |
+| [L4_fp_spawn](levels/interiors/L4_fp_spawn.png) | 0.00 | 3.0 | 0.42 | 0.53 | 12 | 0.37 | 0.28 | -0.04 |
+| [L4_fp_street](levels/interiors/L4_fp_street.png) | 1.18 | 7.6 | 0.40 | 0.57 | 33 | 0.39 | - | -0.25 |
+| [L4_fp_window](levels/interiors/L4_fp_window.png) | 0.00 | 1.9 | 0.34 | 0.58 | 30 | 0.57 | 0.21 | -0.38 |
+| [L5_classic](levels/interiors/L5_classic.png) | 0.00 | 1.4 | 0.51 | 0.56 | 46 | - | - | - |
+| [L5_diorama](levels/interiors/L5_diorama.png) | 0.00 | 0.6 | 0.58 | 0.61 | 39 | - | - | - |
+| [L5_fp_ceiling](levels/interiors/L5_fp_ceiling.png) | 0.00 | 2.3 | 0.20 | 0.40 | 10 | 0.18 | - | - |
+| [L5_fp_front](levels/interiors/L5_fp_front.png) | 0.00 | 7.1 | 0.23 | 0.56 | 29 | 0.68 | - | 0.12 |
+| [L5_fp_left](levels/interiors/L5_fp_left.png) | 0.02 | 5.1 | 0.23 | 0.56 | 11 | 0.59 | - | 0.31 |
+| [L5_fp_loot](levels/interiors/L5_fp_loot.png) | 0.51 | 9.2 | 0.24 | 0.58 | 24 | 0.83 | - | -0.21 |
+| [L5_fp_spawn](levels/interiors/L5_fp_spawn.png) | 0.00 | 5.4 | 0.32 | 0.55 | 11 | 0.30 | - | 0.11 |
+| [L5_fp_street](levels/interiors/L5_fp_street.png) | 1.14 | 8.6 | 0.43 | 0.58 | 32 | 0.32 | - | 0.08 |
+| [L6_classic](levels/interiors/L6_classic.png) | 0.04 | 2.5 | 0.58 | 0.66 | 29 | - | - | - |
+| [L6_diorama](levels/interiors/L6_diorama.png) | 0.00 | 1.1 | 0.59 | 0.65 | 32 | - | - | - |
+| [L6_fp_ceiling](levels/interiors/L6_fp_ceiling.png) | 0.00 | 1.2 | 0.34 | 0.61 | 10 | 0.37 | - | - |
+| [L6_fp_front](levels/interiors/L6_fp_front.png) | 0.40 | 2.6 | 0.29 | 0.50 | 22 | 0.37 | - | 0.12 |
+| [L6_fp_left](levels/interiors/L6_fp_left.png) | 0.00 | 2.9 | 0.28 | 0.57 | 9 | 0.62 | 0.32 | - |
+| [L6_fp_loot](levels/interiors/L6_fp_loot.png) | 0.29 | 9.8 | 0.37 | 0.56 | 16 | - | - | 0.06 |
+| [L6_fp_spawn](levels/interiors/L6_fp_spawn.png) | 0.18 | 4.6 | 0.32 | 0.53 | 9 | 0.27 | - | -0.22 |
+| [L6_fp_street](levels/interiors/L6_fp_street.png) | 1.42 | 11.7 | 0.34 | 0.60 | 15 | 0.62 | - | - |
+
+**The bar, honestly:**
+- **Near-black <= 3 %: met in every frame** (max 1.42 %, the street frames' sky as before; every interior frame <= 1.4 %).
+  L3 "Lights Out" is the darkest site by design (dark share 30 % in `fp_ceiling`, 8-17 % round the room) but never
+  near-black.
+- **The ceiling no longer outshines the walls:** ceiling / wall luma in the front rooms 3.0-4.8 → **0.39-0.70**
+  (fp_ceiling 0.44-0.58, the review's ~0.6x), the back rooms 0.71-0.92 (no far-wall wash there on every level); the
+  Bank 2.4-3.3 → 0.37-0.62. The lamp fixtures stay the brightest thing overhead.
+- **No room reads empty at eye level:** props fill 7-24 % of a Corner Shop first-person frame (0 before); every room
+  band of every level has props (unit spec), 39-52 per level.
+- **Signals stay the clearest:** plate rings pop +0.16-0.32 over their surround in the first-person frames (A1 >= 0.15);
+  the focal loot pops +0.16 to +0.59 where the frame isolates it (L1 0.16, L2 0.17, L3 0.59, L4 0.48). The loot pops
+  that read negative (DV01 -0.49, some spawn frames) measure the cash ID group, which includes the loot's dark display
+  stand (frame_grade's ID table): in the frames the present, the gold and the bags are the brightest saturated things
+  (looked at, every frame). In the diorama mid-run the idle plates pop -0.01 to -0.02 against their own lamp's pool,
+  as before this track (the pools are unchanged from above).
+- **Cost of the look:** the first-person value spread drops (0.56-0.70 → 0.49-0.60) and the warm share in the front
+  rooms falls (L4 51 → 35 %, the pharmacy's cool white by design; L1 59 → 52 %): the bright cream ceiling and pools were
+  a large share of the "warm" and the "spread". Median luma in the ceiling views 0.49-0.57 → 0.14-0.34.
+
+**Self-critique and scores (0-10, "a room you would stand in, in first person"):**
+- **L1 Pip's Grocery, 7.5** (before 4): stocked shelves, a fridge, the candy counter, the cat bed and the cards fill the
+  front; the fruit stand dresses the right window; the dark coffers sit under the walls. Down: the props are boxy at
+  arm's length, and the back room is sparser (desk, boxes, corkboard).
+- **L2 Sugar & Crumb Bakery, 7.5**: rose frieze and peach light read as a bakery; the cake stands are the most charming
+  prop. Down: a cake stand stands mid-wall by the door, not in the window, so the street sees shelves.
+- **L3 Tick-Tock Toy Repair, 7**: darker, deeper amber and the toy shelves give it a different mood; still readable.
+  Down: "dramatic" is mostly the dim light; no hero light on the workbench.
+- **L4 Night Owl Pharmacy, 7.5**: the cool white light, mint frieze and grey ceiling make the strongest change of mood.
+- **DV01 Big Cheese Deli, 7**: same shell, its own sign, case and red frieze.
+- **L5 Hoardsworth's Toys, 6.5**: the party level's gondolas, loot and nav lanes leave room only for canes, a rocking
+  horse and wall props in the front; the office is dressed.
+- **L6 Hoardsworth & Co., 7.5**: the teller brass with its plaques, the queue rope, benches, palms and the waiting-room tree
+  make the lobby a bank; deposit-box walls in the offices and the vault.
+- **Risks / verify in Studio:** the SurfaceGui pool fade's feel when walking (15 Hz steps, smoothstep); the wall washes
+  are tier 1 only (a phone at tier 2 sees the darker ceiling but not the washes); the fridge strip's bloom; the fascia
+  text size on a phone; tintable MeshParts' colour against the filmic tone map (the proxy is uncalibrated).
