@@ -274,7 +274,9 @@ local function poseFrame(cam: CFrame, pose: { number }, fit: number): CFrame
 end
 
 -- A local copy of a loot part to hold in view: visuals only, scaled to CARRY.LOOT_SIZE at the rig's scale.
-function Viewmodel.heldCopy(part: BasePart): BasePart
+-- `size`: the part's own size (WorldView squashes it for a moment on a grab), default its current size.
+function Viewmodel.heldCopy(part: BasePart, size: Vector3?): BasePart
+	local base = size or part.Size
 	local copy = part:Clone()
 	for _, d in copy:GetDescendants() do
 		local keep = d:IsA("DataModelMesh")
@@ -289,9 +291,9 @@ function Viewmodel.heldCopy(part: BasePart): BasePart
 	for name in copy:GetAttributes() do
 		copy:SetAttribute(name, nil)
 	end
-	local longest = math.max(part.Size.X, part.Size.Y, part.Size.Z)
+	local longest = math.max(base.X, base.Y, base.Z)
 	local k = ViewmodelMath.lootScale(longest, VM.CARRY.LOOT_SIZE, VM.SCALE)
-	copy.Size = part.Size * k
+	copy.Size = base * k
 	for _, d in copy:GetDescendants() do
 		if d:IsA("SpecialMesh") then
 			d.Scale *= k
@@ -462,7 +464,10 @@ function Viewmodel.new(state: any, deps: any): any
 	-- The held loot: a scaled local copy of your first carried item (WorldView.heldPart).
 	local function updateHeld(): BasePart?
 		local w = deps.world
-		local src: BasePart? = if w and w.heldPart then w.heldPart() else nil
+		local src: BasePart?, size: Vector3? = nil, nil
+		if w and w.heldPart then
+			src, size = w.heldPart()
+		end
 		if src ~= heldSource then
 			if heldCopy then
 				heldCopy:Destroy()
@@ -470,7 +475,7 @@ function Viewmodel.new(state: any, deps: any): any
 			end
 			heldSource = src
 			if src then
-				local made = Viewmodel.heldCopy(src)
+				local made = Viewmodel.heldCopy(src, size)
 				made.Parent = rig.model
 				heldCopy = made
 			end

@@ -195,6 +195,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 	local carryChar: Model? = nil
 	local liveCarry = false
 	local heldPart: BasePart? = nil -- your first carried item (first person draws it in your hands)
+	local heldSize: Vector3? = nil -- its size before any grab squash
 
 	local function stopHums()
 		for _, l in lasers do
@@ -225,6 +226,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 		stopCarryClip()
 		liveCarry = false
 		heldPart = nil
+		heldSize = nil
 		table.clear(hideOutlines)
 		table.clear(vaultLamps)
 		table.clear(vaultCounts)
@@ -1087,6 +1089,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 		local carryingMine = false
 		local carryCount = 0
 		local heldNow: BasePart? = nil
+		local heldNowSize: Vector3? = nil
 		local root = localRoot()
 		for _, k in loot do
 			local st = folder:GetAttribute(k.kState) or "Home"
@@ -1122,6 +1125,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 					carryCount += 1
 					if not heldNow then
 						heldNow = k.part
+						heldNowSize = k.baseSize
 					end
 				end
 			elseif st == "Dropped" then
@@ -1196,7 +1200,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 		end
 		state.carrying = carryingMine
 		state.carryCount = carryCount
-		heldPart = heldNow
+		heldPart, heldSize = heldNow, heldNowSize
 		if carryingMine ~= liveCarry then
 			liveCarry = carryingMine
 			setLiveCarry(carryingMine)
@@ -1365,9 +1369,10 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 		return best, value, opensAt
 	end
 
-	-- First person (Heist/Viewmodel): the loot part you carry first, or nil.
-	function view.heldPart(): BasePart?
-		return heldPart
+	-- First person (Heist/Viewmodel): the loot part you carry first (or nil), and its size before the grab's
+	-- squash.
+	function view.heldPart(): (BasePart?, Vector3?)
+		return heldPart, heldSize
 	end
 
 	-- First person (Heist/LookTarget): what you could look at and use, written into `out` (cleared first):
