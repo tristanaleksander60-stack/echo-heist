@@ -15,7 +15,11 @@
 --   * the animated finger pointer on REWIND and on GRAB the first time each is the right move;
 --   * every failure says why and what to try: one counterplay line per cause (Help.advice),
 --     within ADVICE_DELAY s of the event (≤ 1 s);
---   * the bigger first-time beats (Heist/FirstTime): first plate press, rewind, clone, bank.
+--   * the bigger first-time beats (Heist/FirstTime): first plate press, rewind, clone, bank;
+--   * first person (the default camera, PLAN_FIRST_PERSON wave C): lines that name a button name this
+--     device's (Strings.forDevice: "Look at the cash. Press E." / X / "Tap GRAB."); the look cue (Hud/LookCue)
+--     points at your L1 clone walking out of your own body, and at the chalk ghost, while out of view; the
+--     ghost starts from the first point of its walk in front of your eyes, never inside the camera.
 -- The chip and the card share HudLayout.HELP_CHIP (top right; checked by tests/hud_layout.luau).
 
 local Players = game:GetService("Players")
@@ -37,6 +41,7 @@ local FirstTime = require(script.Parent.Parent:WaitForChild("FirstTime"))
 local Rigs = require(script.Parent.Parent:WaitForChild("Rigs"))
 local Ui = require(script.Parent.Parent:WaitForChild("Ui"))
 local Common = require(script.Parent:WaitForChild("Common"))
+local LookCue = require(script.Parent:WaitForChild("LookCue"))
 
 local O = Config.Onboarding
 local EV = EventLog.EV
@@ -59,6 +64,7 @@ function Hints.build(ctx: any): any
 	local runDeckHeld: Help.Held = {} -- plates the clones in this run end on (all owners)
 	local runStart = 0 -- os.clock() when the run's control starts
 	local firstCloneUntil = 0
+	local cloneCueUntil = 0 -- L1, first person: the look cue follows your clone until then
 	local gusIntroUntil = 0
 	local relaxedSent = false
 	local rewindRight = false
@@ -120,6 +126,11 @@ function Hints.build(ctx: any): any
 
 	local ghost: any = nil -- the chalk ghost while it plays (below)
 
+	-- A line that names a button, for this device in first person (Strings.forDevice); the plain line otherwise.
+	local function say(key: string): string
+		return Strings.forDevice(key, Common.device(), state.fpView == true)
+	end
+
 	-- L1 FTUE lines, the help lines and the generic objective. Returns the line, whether REWIND
 	-- should pulse (L1 rule), and whether the line stays up (else it shows for OBJECTIVE_SECONDS
 	-- after it changes, §7.4).
@@ -139,7 +150,7 @@ function Hints.build(ctx: any): any
 			if hints.autoEndArmed() then
 				local on = pos ~= nil and onPlate(pos, 1)
 				if on then
-					return Strings.OBJ_STAY_ON_PLATE, true, true
+					return say("OBJ_STAY_ON_PLATE"), true, true
 				end
 				return Strings.OBJ_STEP_ON_PLATE, false, true
 			end
@@ -154,7 +165,7 @@ function Hints.build(ctx: any): any
 			if not plateHeld and not carrying then
 				return Strings.OBJ_WAIT_FOR_CLONE, false, true
 			end
-			return if carrying then Strings.OBJ_BANK_IT else Strings.OBJ_GRAB_CASH, false, true
+			return if carrying then Strings.OBJ_BANK_IT else say("OBJ_GRAB_CASH"), false, true
 		end
 		if now < firstCloneUntil then
 			return Strings.FIRST_CLONE, false, true
@@ -174,8 +185,8 @@ function Hints.build(ctx: any): any
 				{ onPlate = plateUnder(pos), carrying = carrying, deckHeld = runDeckHeld }
 			)
 			rewindRight = right
-			local text = key and (Strings :: any)[key]
-			if type(text) == "string" then
+			local text = if key then say(key) else nil
+			if text and text ~= "" then
 				return text, false, true
 			end
 		end
@@ -185,7 +196,7 @@ function Hints.build(ctx: any): any
 		if line and runIndex == 1 then
 			return line, false, false
 		end
-		return Strings.OBJ_GRAB_LOOT, false, false
+		return say("OBJ_GRAB_LOOT"), false, false
 	end
 
 	---------------------------------------------------------------------------
@@ -198,6 +209,8 @@ function Hints.build(ctx: any): any
 	local mentorParts: { BasePart } = {}
 	local mentorCfs: { CFrame } = {}
 	local mentorT0 = 0
+	local mentorFrom: Vector3? = nil -- where this cycle of the walk starts
+	local mentorCycle = -1
 
 	local function hintFolderOf(): Folder
 		local f = hintFolder
@@ -230,6 +243,8 @@ function Hints.build(ctx: any): any
 		if mentor then
 			mentor.model:Destroy()
 			mentor = nil
+			mentorFrom = nil
+			mentorCycle = -1
 		end
 	end
 
@@ -289,7 +304,8 @@ function Hints.build(ctx: any): any
 				hintBeam = beam
 			end
 		end
-		-- 3: the Mentor ghost walks from your spawn to the plate and stands on it
+		-- 3: the Mentor ghost walks from your spawn to the plate and stands on it. First person: each walk
+		-- starts GHOST_FP_AHEAD studs from you toward the plate, so it never starts inside your camera.
 		if hintStage >= 3 and state.level then
 			if not mentor then
 				local rig = Rigs.buildMannequin()
@@ -302,8 +318,23 @@ function Hints.build(ctx: any): any
 			local spawns = state.level.spawns
 			local sp = spawns[((state.mySeat or 1) - 1) % #spawns + 1]
 			local origin: Vector3 = state.origin
-			local from = origin + Vector3.new(sp.x, state.level.floorY, sp.z)
-			local to = Vector3.new(plate.Position.X, from.Y, plate.Position.Z)
+			local spawnAt = origin + Vector3.new(sp.x, state.level.floorY, sp.z)
+			local to = Vector3.new(plate.Position.X, spawnAt.Y, plate.Position.Z)
+			local index = math.floor((now - mentorT0) / 5)
+			if index ~= mentorCycle or not mentorFrom then
+				mentorCycle = index
+				mentorFrom = spawnAt
+				local char = localPlayer.Character
+				local r = char and char:FindFirstChild("HumanoidRootPart")
+				if state.fpView == true and r and r:IsA("BasePart") then
+					local me = Vector3.new(r.Position.X, spawnAt.Y, r.Position.Z)
+					local way = to - me
+					if way.Magnitude > O.GHOST_FP_AHEAD + 1 then
+						mentorFrom = me + way.Unit * O.GHOST_FP_AHEAD
+					end
+				end
+			end
+			local from = mentorFrom :: Vector3
 			local cycle = (now - mentorT0) % 5
 			local u = math.clamp(cycle / 2.5, 0, 1)
 			local dir = to - from
@@ -395,10 +426,28 @@ function Hints.build(ctx: any): any
 		elseif step.full then
 			line = Strings.DECK_FULL_HELP
 		end
+		-- First person: never start inside your camera (the walk starts where you stand after a rewind); begin
+		-- from its first point GHOST_FP_AHEAD studs in front of your eyes, within the first GHOST_FP_SKIP_MAX s.
+		local skip = 0
+		local cam = workspace.CurrentCamera
+		if state.fpView == true and cam then
+			local origin: Vector3 = state.origin or Vector3.zero
+			local eye, look = cam.CFrame.Position, cam.CFrame.LookVector
+			local length = Sampler.duration(rec)
+			local t = 0
+			while t <= math.min(O.GHOST_FP_SKIP_MAX, length) do
+				local x, y, z = Sampler.at(rec, t)
+				if x and (origin + Vector3.new(x, y, z) - eye):Dot(look) >= O.GHOST_FP_AHEAD then
+					skip = t
+					break
+				end
+				t += 0.05
+			end
+		end
 		ghost = {
 			rig = rig,
 			rec = rec,
-			t0 = os.clock(),
+			t0 = os.clock() - skip,
 			length = Sampler.duration(rec),
 			phase = 0,
 			lastDash = nil :: Vector3?,
@@ -603,6 +652,9 @@ function Hints.build(ctx: any): any
 		if mine and FirstTime.firstTime("clone") then
 			firstCloneUntil = runStart + O.FIRST_CLONE_LINE_SECONDS
 		end
+		-- L1: your clone walks out of your own body ("YOU, 10 SEC AGO"); in first person the look cue points
+		-- at it whenever it is out of view, until it has had time to reach the plate.
+		cloneCueUntil = if mine and Common.isTutorial(state) then runStart + O.LOOK_CUE_SECONDS else 0
 		if Common.isParty(state) and n <= 1 and level and #level.guards > 0 and FirstTime.firstTime("gusDoze") then
 			gusIntroUntil = runStart + O.GUS_INTRO_SECONDS
 		end
@@ -618,6 +670,9 @@ function Hints.build(ctx: any): any
 	function hints.fail(cause: string)
 		local level = state.level
 		local line = Help.advice(cause, level and level.id)
+		if line == Strings.FAIL_ADVICE.Timeout and state.fpView == true then
+			line = Strings.FAIL_TIMEOUT_BY[Common.device()] or line -- REWIND is a key in first person
+		end
 		if line then
 			task.delay(O.ADVICE_DELAY, function()
 				hud.toast(line :: string)
@@ -672,9 +727,33 @@ function Hints.build(ctx: any): any
 		end
 	end
 
+	-- The look cue (first person): the chalk ghost while it plays, else your L1 clone in its window.
+	local lookCue = LookCue.build(ctx)
+	local function updateLookCue(now: number)
+		if state.fpView ~= true or state.phase ~= "Run" then
+			lookCue.hide()
+			return
+		end
+		if ghost then
+			lookCue.set(Rigs.anchorPart(ghost.rig).Position, Strings.LOOK_CUE.ghost, now)
+			return
+		end
+		if mentor then -- the L1 stuck hint's walk to the plate
+			lookCue.set(Rigs.anchorPart(mentor).Position, Strings.LOOK_CUE.ghost, now)
+			return
+		end
+		local own = ctx.actions.ownClone
+		if now < cloneCueUntil and own then
+			lookCue.set(own(), Strings.LOOK_CUE.clone, now)
+			return
+		end
+		lookCue.hide()
+	end
+
 	-- Per frame (Hud/Run.update, after the objective line).
 	function hints.update(now: number, dt: number)
 		updateGhost(now, dt)
+		updateLookCue(now)
 		updateChip()
 		if ctx.rewindRightMoveFromHelp ~= rewindRight then
 			ctx.rewindRightMoveFromHelp = rewindRight
@@ -697,6 +776,7 @@ function Hints.build(ctx: any): any
 	-- Off the run HUD (garage, cut-scenes): drop the chip, the finger and the ghost.
 	function hints.hideHelp()
 		stopGhost()
+		lookCue.hide()
 		chipMode = ""
 		chip.Visible = false
 		finger.Visible = false

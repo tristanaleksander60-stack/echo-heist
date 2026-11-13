@@ -270,4 +270,37 @@ function FpMath.approach(current: number, target: number, dt: number, inS: numbe
 	return math.max(target, current - dt / math.max(outS, 1e-6))
 end
 
+-- The look cue (Hud/Hints, wave C): where a finger at the screen edge points at a target out of view (your
+-- L1 clone walking out of your own body, the chalk ghost). `rel` = the target in camera space (x right, y up,
+-- z backward: CFrame:PointToObjectSpace), `tanV` = tan(vertical FOV / 2), `aspect` = width / height, `inset`
+-- = share of the half-screen the finger keeps from the edges, `margin` = a target this close inside the
+-- frame's edge still counts as out of view. Nil while the target is in view; else (u, v) on the screen (0..1,
+-- v down) and the finger's angle in degrees (0 points right, clockwise on screen). Behind you the finger sits
+-- on the bottom edge, leaning to the side the target is on: a look back.
+function FpMath.edgeCue(
+	rel: V3,
+	tanV: number,
+	aspect: number,
+	inset: number,
+	margin: number
+): (number?, number?, number?)
+	local x, y, z = rel[1], rel[2], rel[3]
+	local dx, dy
+	if z < -1e-3 then
+		local px = x / (-z * tanV * aspect)
+		local py = y / (-z * tanV)
+		if math.abs(px) <= 1 - margin and math.abs(py) <= 1 - margin then
+			return nil, nil, nil
+		end
+		dx, dy = px, -py
+	else
+		local side = math.abs(x) / math.max(math.abs(x) + z, 1e-6) -- 0 straight behind, 1 beside you
+		dx, dy = (if x < 0 then -1 else 1) * side, 1
+	end
+	local e = 1 - inset
+	local t = math.min(e / math.max(math.abs(dx), 1e-6), e / math.max(math.abs(dy), 1e-6))
+	local u, v = 0.5 + dx * t / 2, 0.5 + dy * t / 2
+	return u, v, deg(math.atan2(dy, dx * aspect))
+end
+
 return table.freeze(FpMath)

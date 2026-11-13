@@ -365,12 +365,15 @@ do
 				.. ")"
 		)
 		check(okView and doorCollides == false, "sim: WorldView opens the door locally (no collision)")
+		-- the cash sits behind the right partition window (10, -26): through the door, then right
 		walkTo(0, -16)
-		walkTo(0, -26)
+		walkTo(0, -23)
+		walkTo(7, -25)
 		HeistInstance.interact(inst, FAKE, Codec.EVENT.Grab, 1)
 		step(0.05)
 		step(0.05)
 		check(inst.folder:GetAttribute("K1State") == "Carried", "sim: cash grabbed through Interact (attribute)")
+		walkTo(0, -23)
 		walkTo(0, -16)
 		walkTo(0, 4)
 		walkTo(0, 19)

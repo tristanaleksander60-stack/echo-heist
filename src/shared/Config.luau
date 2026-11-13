@@ -584,6 +584,7 @@ Config.FirstPerson = {
 		RETICLE_RING = 26, -- px: the ring round it while a target is under it
 		RETICLE_ALPHA = 0.25,
 		LOOT_PEEK_SECONDS = 4, -- the loot meter shows this long after it changes (and while you carry)
+		KEY_CAP_WIDE = 44, -- px: the prompt chip's key cap for a word ("TAP" on touch); a letter's is square
 	},
 	-- Gus in first person: a screen-edge tint while his cone is on you ("?", stage 1) or he is sure ("!",
 	-- stage 2), strongest on the side he is on. A steady tint, not a flash: only its "!" pulse asks the flash
@@ -2263,6 +2264,18 @@ Config.Onboarding = {
 	POINTER_PERIOD = 0.9, -- s per tap
 	POINTER_TRAVEL = 14, -- px it moves in toward the button on each tap
 	ADVICE_DELAY = 0.15, -- s after the failure event before its counterplay line (<= 1 s, G4)
+	-- First person (PLAN_FIRST_PERSON wave C). The look cue: while your L1 clone ("YOU, 10 SEC AGO") or the chalk
+	-- ghost is out of view, a finger at the screen edge points the way (behind you: at the bottom, on its side).
+	LOOK_CUE_INSET = 0.12, -- share of the half-screen kept clear at the edges (the finger stays inside it)
+	LOOK_CUE_MARGIN = 0.06, -- a target this far inside the frame's edge (share of the half-screen) still cues
+	LOOK_CUE_SECONDS = 6, -- the L1 clone cue's longest stretch after control returns (it also ends on the plate)
+	-- The chalk ghost never starts inside your camera: in first person it starts from the first point of its
+	-- walk at least this far in front of your eyes (studs, along your look), within the first GHOST_FP_SKIP_MAX s.
+	GHOST_FP_AHEAD = 3,
+	GHOST_FP_SKIP_MAX = 2.5,
+	-- The L1 clone's "YOU, 10 SEC AGO" label in first person: studs over its head anchor (3.6 in the other
+	-- cameras), so it is in frame from a few studs behind the clone as it walks out of you.
+	YOU_LABEL_FP_LIFT = 1.5,
 }
 
 -- Performance track (PLAN_STEAM_PLUS §4.7, MASTERPLAN §6.8 / §8.6, roblox_quality §1.4 / §6.4; docs/PERF.md).

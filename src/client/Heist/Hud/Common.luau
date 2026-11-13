@@ -41,6 +41,16 @@ function Common.selectFor(obj: GuiObject?)
 	end
 end
 
+-- The device the onboarding lines name buttons for (Strings.forDevice): "touch", "pad" or "key".
+function Common.device(): string
+	if Common.usingTouch() then
+		return "touch"
+	elseif Common.usingGamepad() then
+		return "pad"
+	end
+	return "key"
+end
+
 -- Places a frame from a HudLayout box (anchor, position, offset size).
 function Common.place(obj: GuiObject, box: HudLayout.Box)
 	obj.AnchorPoint = Vector2.new(box.ax, box.ay)
