@@ -2344,8 +2344,14 @@ local okLook, lookErr = pcall(function(): string
 		root.Anchored = true
 		local rig = LookTilt.bind(m)
 		assert(rig, joints .. ": Neck and Waist found")
+		local hum = m:FindFirstChildOfClass("Humanoid")
+		local animator = hum and hum:FindFirstChildOfClass("Animator")
 		local function settle()
-			task.wait() -- let the joints place the parts (kinematic constraints solve on the step)
+			-- no physics runs in Luau Execution: the Animator's step places the parts on a constraint rig, as a
+			-- running client's frame would (clone_engine does the same)
+			if animator then
+				animator:StepAnimations(0)
+			end
 			task.wait()
 		end
 		settle()
