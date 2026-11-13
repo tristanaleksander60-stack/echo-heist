@@ -2407,6 +2407,112 @@
    }
   }
  },
+ "L6_before_fp_ceiling": {
+  "ceiling_wall": 2.42,
+  "loot_pop": null,
+  "plate_pop": null,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.662,
+    "median_value": 0.714,
+    "share": 31.1
+   },
+   "lamp": {
+    "median_luma": 0.898,
+    "median_value": 0.996,
+    "share": 5.0
+   },
+   "other": {
+    "median_luma": 0.431,
+    "median_value": 0.718,
+    "share": 27.9
+   },
+   "signal": {
+    "median_luma": 0.333,
+    "median_value": 0.451,
+    "share": 7.8
+   },
+   "wall": {
+    "median_luma": 0.273,
+    "median_value": 0.498,
+    "share": 28.2
+   }
+  }
+ },
+ "L6_before_fp_front": {
+  "ceiling_wall": 2.53,
+  "loot_pop": 0.094,
+  "plate_pop": null,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.657,
+    "median_value": 0.71,
+    "share": 21.0
+   },
+   "floor": {
+    "median_luma": 0.663,
+    "median_value": 0.686,
+    "share": 23.7
+   },
+   "lamp": {
+    "median_luma": 0.871,
+    "median_value": 0.957,
+    "share": 0.9
+   },
+   "other": {
+    "median_luma": 0.37,
+    "median_value": 0.576,
+    "share": 37.2
+   },
+   "signal": {
+    "median_luma": 0.336,
+    "median_value": 0.451,
+    "share": 3.3
+   },
+   "wall": {
+    "median_luma": 0.26,
+    "median_value": 0.569,
+    "share": 13.9
+   }
+  }
+ },
+ "L6_before_fp_left": {
+  "ceiling_wall": 3.3,
+  "loot_pop": null,
+  "plate_pop": 0.333,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.657,
+    "median_value": 0.725,
+    "share": 13.3
+   },
+   "floor": {
+    "median_luma": 0.274,
+    "median_value": 0.561,
+    "share": 18.2
+   },
+   "lamp": {
+    "median_luma": 0.876,
+    "median_value": 0.98,
+    "share": 0.2
+   },
+   "other": {
+    "median_luma": 0.354,
+    "median_value": 0.498,
+    "share": 18.6
+   },
+   "signal": {
+    "median_luma": 0.595,
+    "median_value": 0.808,
+    "share": 0.0
+   },
+   "wall": {
+    "median_luma": 0.199,
+    "median_value": 0.569,
+    "share": 49.6
+   }
+  }
+ },
  "L6_fp_ceiling": {
   "ceiling_wall": 0.37,
   "loot_pop": null,
