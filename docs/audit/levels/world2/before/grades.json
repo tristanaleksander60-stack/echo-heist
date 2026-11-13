@@ -796,6 +796,83 @@
   },
   "warm_share": 39.3
  },
+ "L1_diorama_crew": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "lamp": 4.5,
+   "other": 95.5,
+   "plate": 0.0,
+   "rug": 0.0
+  },
+  "brightest_group": "lamp",
+  "clone_pop": 0.325,
+  "dark_share": 20.0,
+  "frame": "L1_diorama_crew.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.396,
+    "share": 0.08,
+    "warm": 0.8
+   },
+   "lamp": {
+    "p95_luma": 0.832,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.783,
+    "share": 0.36,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.706,
+    "share": 2.5,
+    "warm": 60.0
+   }
+  },
+  "median_luma": 0.234,
+  "near_black": 8.61,
+  "plate_pop": 0.008,
+  "signal_pop": 0.212,
+  "sources": {
+   "clone": {
+    "dark": 0.0,
+    "median_luma": 0.737,
+    "near_black": 0.0,
+    "p95_luma": 0.789,
+    "share": 0.5
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.279,
+    "near_black": 0.0,
+    "p95_luma": 0.334,
+    "share": 11.0
+   },
+   "level": {
+    "dark": 20.0,
+    "median_luma": 0.231,
+    "near_black": 8.61,
+    "p95_luma": 0.73,
+    "share": 88.4
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.773,
+    "near_black": 0.0,
+    "p95_luma": 0.79,
+    "share": 0.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 9.3,
+   "median_luma": 0.233,
+   "near_black": 0.0,
+   "warm_share": 28.4
+  },
+  "warm_share": 30.4
+ },
  "L1_diorama_mid": {
   "brightest_1pct_owner": {
    "cash": 7.3,
@@ -1263,6 +1340,83 @@
    }
   },
   "warm_share": 40.4
+ },
+ "L3_diorama_crew": {
+  "brightest_1pct_owner": {
+   "cash": 0.8,
+   "lamp": 4.5,
+   "other": 94.7,
+   "plate": 0.0,
+   "rug": 0.0
+  },
+  "brightest_group": "lamp",
+  "clone_pop": 0.333,
+  "dark_share": 20.5,
+  "frame": "L3_diorama_crew.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.807,
+    "share": 0.12,
+    "warm": 78.2
+   },
+   "lamp": {
+    "p95_luma": 0.832,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.783,
+    "share": 0.36,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.752,
+    "share": 2.06,
+    "warm": 47.0
+   }
+  },
+  "median_luma": 0.242,
+  "near_black": 7.67,
+  "plate_pop": 0.008,
+  "signal_pop": 0.208,
+  "sources": {
+   "clone": {
+    "dark": 0.0,
+    "median_luma": 0.617,
+    "near_black": 0.0,
+    "p95_luma": 0.769,
+    "share": 0.5
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.279,
+    "near_black": 0.0,
+    "p95_luma": 0.334,
+    "share": 11.0
+   },
+   "level": {
+    "dark": 20.5,
+    "median_luma": 0.235,
+    "near_black": 7.67,
+    "p95_luma": 0.748,
+    "share": 88.4
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.773,
+    "near_black": 0.0,
+    "p95_luma": 0.789,
+    "share": 0.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 8.6,
+   "median_luma": 0.244,
+   "near_black": 0.0,
+   "warm_share": 29.5
+  },
+  "warm_share": 30.3
  },
  "L3_diorama_mid": {
   "brightest_1pct_owner": {
@@ -1737,6 +1891,68 @@
   },
   "warm_share": 30.4
  },
+ "L5_diorama_crew": {
+  "brightest_1pct_owner": {
+   "cash": 6.9,
+   "lamp": 4.5,
+   "other": 83.9,
+   "rug": 4.7
+  },
+  "brightest_group": "lamp",
+  "clone_pop": 0.443,
+  "dark_share": 21.3,
+  "frame": "L5_diorama_crew.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.679,
+    "share": 3.12,
+    "warm": 6.9
+   },
+   "lamp": {
+    "p95_luma": 0.832,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.791,
+    "share": 3.26,
+    "warm": 24.3
+   }
+  },
+  "median_luma": 0.263,
+  "near_black": 8.98,
+  "sources": {
+   "clone": {
+    "dark": 0.0,
+    "median_luma": 0.597,
+    "near_black": 0.0,
+    "p95_luma": 0.75,
+    "share": 1.3
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.279,
+    "near_black": 0.0,
+    "p95_luma": 0.334,
+    "share": 11.0
+   },
+   "level": {
+    "dark": 21.3,
+    "median_luma": 0.252,
+    "near_black": 8.98,
+    "p95_luma": 0.731,
+    "share": 87.7
+   }
+  },
+  "standard_view": {
+   "dark_share": 9.4,
+   "median_luma": 0.255,
+   "near_black": 0.07,
+   "warm_share": 12.7
+  },
+  "warm_share": 12.6
+ },
  "L5_diorama_mid": {
   "brightest_1pct_owner": {
    "cash": 0.0,
@@ -1950,6 +2166,61 @@
    }
   },
   "warm_share": 31.3
+ },
+ "L6_diorama_crew": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "lamp": 7.8,
+   "other": 83.5,
+   "rug": 8.7
+  },
+  "brightest_group": "lamp",
+  "clone_pop": 0.576,
+  "dark_share": 35.9,
+  "frame": "L6_diorama_crew.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.523,
+    "share": 0.05,
+    "warm": 56.9
+   },
+   "lamp": {
+    "p95_luma": 0.808,
+    "share": 0.08,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.796,
+    "share": 1.61,
+    "warm": 19.1
+   }
+  },
+  "median_luma": 0.166,
+  "near_black": 17.05,
+  "sources": {
+   "clone": {
+    "dark": 0.0,
+    "median_luma": 0.579,
+    "near_black": 0.0,
+    "p95_luma": 0.702,
+    "share": 0.0
+   },
+   "level": {
+    "dark": 35.9,
+    "median_luma": 0.166,
+    "near_black": 17.05,
+    "p95_luma": 0.753,
+    "share": 100.0
+   }
+  },
+  "standard_view": {
+   "dark_share": 20.4,
+   "median_luma": 0.187,
+   "near_black": 0.11,
+   "warm_share": 8.3
+  },
+  "warm_share": 8.4
  },
  "L6_diorama_mid": {
   "brightest_1pct_owner": {

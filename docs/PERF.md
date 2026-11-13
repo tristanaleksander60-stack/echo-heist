@@ -124,12 +124,12 @@ The PerfSample governor then steps down when p95 > 36 ms for 20 s (then a 30 s c
 
 **Breakdown:**
 
-- **The triangles** are L6 at ~84k (the whole level counted, not the view), the backdrop (WORLD 2.0 town, Saved v49) at ~63k at tier 1 and ~10k from tier 3 (props, pools and the far ring hidden), 16 avatar bodies at ~112k (estimate: 12 clones + 4 players at 7k) and 2 Gus at ~7k.
+- **The triangles** are L6 at ~84k (the whole level counted, not the view), the backdrop (WORLD 2.0 town, Saved v55) at ~63k at tier 1 and ~10k from tier 3 (props, pools and the far ring hidden), 16 avatar bodies at ~112k (estimate: 12 clones + 4 players at 7k) and 2 Gus at ~7k.
 - **12 clones + your halo:** 1,891 instances. EchoView builds 24 BillboardGuis (pill + bubble; the 12 bubbles stay off until used) and 13 SurfaceGuis (12 glows + the ring), plus 4 owner Highlights + your rim, 24 burst emitters (no steady rate) and 12 trails. Memory is **+21 MB** with the 4 avatar templates, against MASTERPLAN §6.8's ≤ 40 MB for the clone system.
 - **The rest of the view:**
   - Line-up (16 figures): 2,051 instances, 1 billboard, 4 Highlights.
   - Gus × 2: 87 instances, 2 billboards on, about 4k tris of kit mesh.
-  - Backdrop (WORLD 2.0 town, perf_engine section D on v49): 287 (garage) to 553 (L6) instances, 0 lights, all 17 kit pieces placed, 1 snow emitter; ~5 batches + one SurfaceGui per lamp pool (11-15, hidden from tier 3). Budget `Config.Backdrop.TOWN.BUDGET`: 650 instances, 45 draws, 70k tris, 0 lights.
+  - Backdrop (WORLD 2.0 town, perf_engine section D on v55): 287 (garage) to 553 (L6) instances, 0 lights, all 17 kit pieces placed, 1 snow emitter; ~5 batches + one SurfaceGui per lamp pool (11-15, hidden from tier 3). Budget `Config.Backdrop.TOWN.BUDGET`: 650 instances, 45 draws, 70k tris, 0 lights.
   - WorldView adds 24 instances to the level on the client.
 
 **Over budget, by estimate only (before the LOD):** at tiers 3-4, triangles and draw calls exceeded budget, and the avatar bodies are most of the cost. **The clone LOD is built** (roblox_quality §6.4): from tier 3 each pooled avatar entry also holds a crew-hue mannequin (built once, when the tier first asks), and a clone beyond `CLONE_LOD.FAR` (18 studs) from the camera draws as it, back to the textured avatar inside `NEAR` (15; `Budget.cloneFar` hysteresis, no per-frame allocation). The hidden avatar's root still carries the pill, bubble and emitters, and its clips stop. With all 12 clones light the estimate is ~129k triangles / ~210 draws at tier 3 (budget 150k / 250) and ~128k / ~206 at tier 4 (120k / 200: still a little over, ±50%). Line-up figures past the front row and beyond FAR from the shot's camera are built light (never you or your newest clone). `perf_engine` measures the light count per tier and folds it into the estimate; `clone_engine` asserts the swap, the L1 tutorial exemption and the way back.
