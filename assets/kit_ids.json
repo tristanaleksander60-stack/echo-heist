@@ -111,6 +111,19 @@
    "sha256": "8afcd973124c39dc70ac91844f9448eefdf7063c6db87af7570f23aa5da75f19",
    "uploaded": "2026-11-12T11:21:15Z"
   },
+  "Car_Parked": {
+   "assetId": 76821634204314,
+   "file": "assets/fbx/Car_Parked.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Car_Parked",
+    "Car_Parked_Paint"
+   ],
+   "revisionId": "1",
+   "sha256": "a1c4271eadea8f58e89fffb64993b9201e66bb123a88d74fd78a92544c44be1c",
+   "uploaded": "2026-11-12T23:13:45Z"
+  },
   "CashBag": {
    "assetId": 120803856698199,
    "file": "assets/fbx/CashBag.fbx",
@@ -499,89 +512,17 @@
    "sha256": "8544f1dba37274d5c2ffe6315db9362b78cd41bfc5043d01e1ff02e512767069",
    "uploaded": "2026-11-12T11:26:49Z"
   },
-  "Rookie": {
-   "assetId": 82283617669885,
-   "file": "assets/fbx/Rookie.fbx",
+  "Roof_Gable": {
+   "assetId": 120853282152490,
+   "file": "assets/fbx/Roof_Gable.fbx",
    "history": [],
    "moderation": "Approved",
    "pieces": [
-    "Rookie_Face_Idle",
-    "Rookie_Head",
-    "Rookie_LeftFoot",
-    "Rookie_LeftHand",
-    "Rookie_LeftLowerArm",
-    "Rookie_LeftLowerLeg",
-    "Rookie_LeftUpperArm",
-    "Rookie_LeftUpperLeg",
-    "Rookie_LowerTorso",
-    "Rookie_RightFoot",
-    "Rookie_RightHand",
-    "Rookie_RightLowerArm",
-    "Rookie_RightLowerLeg",
-    "Rookie_RightUpperArm",
-    "Rookie_RightUpperLeg",
-    "Rookie_UpperTorso"
+    "Roof_Gable"
    ],
    "revisionId": "1",
-   "sha256": "1852ca2723ef5f5112e53697b71f4b30ddc4532104aa1c07c8a06af38c4db1d3",
-   "uploaded": "2026-11-13T00:21:20Z"
-  },
-  "Rookie_Faces": {
-   "assetId": 115892166045394,
-   "file": "assets/fbx/Rookie_Faces.fbx",
-   "history": [],
-   "moderation": "Approved",
-   "pieces": [
-    "Rookie_Face_Busted",
-    "Rookie_Face_Shocked",
-    "Rookie_Face_Smug"
-   ],
-   "revisionId": "1",
-   "sha256": "e71ed6f6eaada69276f0d0e4f59292a42f6e1caa17c1c9cb625c4d0c52bbf535",
-   "uploaded": "2026-11-13T00:19:44Z"
-  },
-  "Rookie_Outfits": {
-   "assetId": 88500778373104,
-   "file": "assets/fbx/Rookie_Outfits.fbx",
-   "history": [],
-   "moderation": "Approved",
-   "pieces": [
-    "Rookie_Block_LeftCuff",
-    "Rookie_Block_RightCuff",
-    "Rookie_Block_Torso",
-    "Rookie_Cap_Beanie",
-    "Rookie_Cap_Bobble",
-    "Rookie_Cap_Flat",
-    "Rookie_Cap_Trapper",
-    "Rookie_Gloves_Knit_Left",
-    "Rookie_Gloves_Knit_Right",
-    "Rookie_Gloves_Leather_Left",
-    "Rookie_Gloves_Leather_Right",
-    "Rookie_Mask_Eye",
-    "Rookie_Scarf_Bandana",
-    "Rookie_Scarf_Chunky",
-    "Rookie_Scarf_Knot",
-    "Rookie_Scarf_Long",
-    "Rookie_Stripes_LeftArm",
-    "Rookie_Stripes_RightArm",
-    "Rookie_Stripes_Torso"
-   ],
-   "revisionId": "1",
-   "sha256": "aa6d247cdc470d44a9a6a011ee7ea40b886c0c8ca485e7d4be226d433ee326d8",
-   "uploaded": "2026-11-13T00:21:45Z"
-  },
-  "Rookie_Viewmodel": {
-   "assetId": 122428778963718,
-   "file": "assets/fbx/Rookie_Viewmodel.fbx",
-   "history": [],
-   "moderation": "Approved",
-   "pieces": [
-    "Rookie_VM_LeftArm",
-    "Rookie_VM_RightArm"
-   ],
-   "revisionId": "1",
-   "sha256": "bc6ae35101e5005f9a65b1b91eecf317fd5c49e27dbed5d9b974f31dba22544a",
-   "uploaded": "2026-11-13T00:21:04Z"
+   "sha256": "7cbd99f8889a98d927bcbae175b829fdec7828bb9e64038bd648e541f30a9f40",
+   "uploaded": "2026-11-12T23:14:02Z"
   },
   "Rug_8x6": {
    "assetId": 125310774976762,
@@ -669,6 +610,18 @@
    "revisionId": "1",
    "sha256": "e5573a0c22c1d637665250e9259bba8061461e8ac39434fa479ed59653ecab9e",
    "uploaded": "2026-11-12T17:19:14Z"
+  },
+  "Snowman": {
+   "assetId": 133411357677588,
+   "file": "assets/fbx/Snowman.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Snowman"
+   ],
+   "revisionId": "1",
+   "sha256": "204beda0bcc691562739af8ed4d279bd19a03e70375026c65e9a1a5becf5cbbb",
+   "uploaded": "2026-11-12T23:14:26Z"
   },
   "Storefront_24x12": {
    "assetId": 94915564343762,
@@ -912,6 +865,90 @@
    "revisionId": "1",
    "sha256": "0c3e2e15c0091891ebbc6afd047c4ee3b1bc1cafd71f652ecd9fe26846e8939b",
    "uploaded": "2026-11-12T11:31:55Z"
+  },
+  "Rookie": {
+   "assetId": 82283617669885,
+   "file": "assets/fbx/Rookie.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Rookie_Face_Idle",
+    "Rookie_Head",
+    "Rookie_LeftFoot",
+    "Rookie_LeftHand",
+    "Rookie_LeftLowerArm",
+    "Rookie_LeftLowerLeg",
+    "Rookie_LeftUpperArm",
+    "Rookie_LeftUpperLeg",
+    "Rookie_LowerTorso",
+    "Rookie_RightFoot",
+    "Rookie_RightHand",
+    "Rookie_RightLowerArm",
+    "Rookie_RightLowerLeg",
+    "Rookie_RightUpperArm",
+    "Rookie_RightUpperLeg",
+    "Rookie_UpperTorso"
+   ],
+   "revisionId": "1",
+   "sha256": "1852ca2723ef5f5112e53697b71f4b30ddc4532104aa1c07c8a06af38c4db1d3",
+   "uploaded": "2026-11-13T00:21:20Z"
+  },
+  "Rookie_Faces": {
+   "assetId": 115892166045394,
+   "file": "assets/fbx/Rookie_Faces.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Rookie_Face_Busted",
+    "Rookie_Face_Shocked",
+    "Rookie_Face_Smug"
+   ],
+   "revisionId": "1",
+   "sha256": "e71ed6f6eaada69276f0d0e4f59292a42f6e1caa17c1c9cb625c4d0c52bbf535",
+   "uploaded": "2026-11-13T00:19:44Z"
+  },
+  "Rookie_Outfits": {
+   "assetId": 88500778373104,
+   "file": "assets/fbx/Rookie_Outfits.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Rookie_Block_LeftCuff",
+    "Rookie_Block_RightCuff",
+    "Rookie_Block_Torso",
+    "Rookie_Cap_Beanie",
+    "Rookie_Cap_Bobble",
+    "Rookie_Cap_Flat",
+    "Rookie_Cap_Trapper",
+    "Rookie_Gloves_Knit_Left",
+    "Rookie_Gloves_Knit_Right",
+    "Rookie_Gloves_Leather_Left",
+    "Rookie_Gloves_Leather_Right",
+    "Rookie_Mask_Eye",
+    "Rookie_Scarf_Bandana",
+    "Rookie_Scarf_Chunky",
+    "Rookie_Scarf_Knot",
+    "Rookie_Scarf_Long",
+    "Rookie_Stripes_LeftArm",
+    "Rookie_Stripes_RightArm",
+    "Rookie_Stripes_Torso"
+   ],
+   "revisionId": "1",
+   "sha256": "aa6d247cdc470d44a9a6a011ee7ea40b886c0c8ca485e7d4be226d433ee326d8",
+   "uploaded": "2026-11-13T00:21:45Z"
+  },
+  "Rookie_Viewmodel": {
+   "assetId": 122428778963718,
+   "file": "assets/fbx/Rookie_Viewmodel.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Rookie_VM_LeftArm",
+    "Rookie_VM_RightArm"
+   ],
+   "revisionId": "1",
+   "sha256": "bc6ae35101e5005f9a65b1b91eecf317fd5c49e27dbed5d9b974f31dba22544a",
+   "uploaded": "2026-11-13T00:21:04Z"
   }
  },
  "note": "Generated by tools/kit_upload.py: one Open Cloud Model asset per kit model group (assets/fbx/<model>.fbx). Read by src/server/Kit/KitService.luau. Do not edit by hand.",

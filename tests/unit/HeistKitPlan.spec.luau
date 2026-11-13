@@ -608,7 +608,8 @@ return function(test)
 			local dress = LevelDress[level.id]
 			local plan = KitPlan.plan(level, specs, { dress = dress, lighting = LIGHT, dressing = true })
 			local lamps = KitPlan.lamps(level, dress, LIGHT)
-			local wantStreet = if dress and dress.street then #dress.street else 0
+			-- a level without hand dressing (the daily vaults) gets its front's pair (KitPlan.defaultStreet, WORLD 2.0)
+			local wantStreet = if dress and dress.street then #dress.street else #KitPlan.defaultStreet(level, dress)
 			local n = 0
 			for k, l in lamps do
 				if l.kind == "street" then
@@ -617,7 +618,7 @@ return function(test)
 					Assert.eq(fp.color, LIGHT.LAMP.street.color, level.id .. ": street lamps keep their warm colour")
 				end
 			end
-			Assert.eq(n, wantStreet, level.id .. ": one street lamp per LevelDress entry")
+			Assert.eq(n, wantStreet, level.id .. ": one street lamp per LevelDress entry (or the default pair)")
 			streets += n
 			local footprint = nil
 			for _, s in level.spec.solids or {} do
@@ -686,7 +687,11 @@ return function(test)
 				end
 			end
 		end
-		Assert.eq(streets, 16, "street lamps: two on L1-L5 each, six on L6 (front, service alley, side alleys)")
+		Assert.eq(
+			streets,
+			16 + 2 * 12,
+			"street lamps: two on L1-L5 each, six on L6 (front, service alley, side alleys), two on every daily vault"
+		)
 		Assert.truthy(rugCount >= 20, "rugs on L1-L6 (" .. rugCount .. ")")
 	end)
 

@@ -881,9 +881,9 @@ do
 					end
 				end
 				check(
-					okPub and published == 2 * #Config.Backdrop.RINGS and quietParts == published,
+					okPub and published == #BackdropKit.pieces() and quietParts == published,
 					string.format(
-						"world: BackdropKit published %s ring pieces (%d visual only)",
+						"world: BackdropKit published %s ring and town pieces (%d visual only)",
 						tostring(published),
 						quietParts
 					)
@@ -893,16 +893,18 @@ do
 			end
 			local BackdropPlan = require(sharedFolder:WaitForChild("Heist"):WaitForChild("BackdropPlan"))
 			local l1 = HeistInstance.levelData(HeistService.indexOf("cs1_back_room") :: number)
-			local bplan = BackdropPlan.plan(BackdropPlan.levelSite(l1))
-			local draws, tris, nparts = BackdropPlan.budget(bplan, 1, {
-				Skyline_Near = 292,
-				Skyline_Near_Windows = 996,
-				Skyline_Far = 352,
-				Skyline_Far_Windows = 1236,
-			})
+			local bplan = BackdropPlan.plan(BackdropPlan.levelSite(l1), true)
+			-- WORLD 2.0: the town's draws and instances (triangles: the unit spec, from the manifest)
+			local draws, _tris, nparts = BackdropPlan.budget(bplan, 1, {})
+			local TB = Config.Backdrop.TOWN.BUDGET
 			check(
-				draws <= 30 and tris <= 25000,
-				string.format("world: L1 backdrop %d draw calls, %d tris, %d instances", draws, tris, nparts)
+				draws <= TB.draws and nparts <= TB.instances and bplan.facades >= 14,
+				string.format(
+					"world: L1 backdrop %d draw calls, %d instances, %d buildings",
+					draws,
+					nparts,
+					bplan.facades
+				)
 			)
 			local sky = game:GetService("Lighting"):FindFirstChildOfClass("Sky")
 			local retired = { "90458356352519", "108707070296486", "103394177161659" }

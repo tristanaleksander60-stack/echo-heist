@@ -1102,6 +1102,109 @@ if cloneActor and six then
 	lineup:Destroy()
 end
 
+-- D. WORLD 2.0 (docs/audit/LEVELS.md §10): the snowy neighbourhood the client builds round every level instance and
+-- the garage, counted against Config.Backdrop.TOWN.BUDGET: instances, no Light at all, the kit pieces really placed
+-- (BackdropKit published them), every building there, the lot fence colliding, nothing else colliding.
+do
+	local TB = Config.Backdrop.TOWN.BUDGET
+	local BackdropKitD = require(heistServer:WaitForChild("BackdropKit"))
+	local okPub, published = pcall(BackdropKitD.publish, KitService)
+	check(
+		okPub and published == #BackdropKitD.pieces(),
+		string.format(
+			"world 2.0: BackdropKit published %s of %d kit pieces",
+			tostring(published),
+			#BackdropKitD.pieces()
+		)
+	)
+	local BackdropPlanD = require(shared:WaitForChild("Heist"):WaitForChild("BackdropPlan"))
+	local town = Backdrop.new()
+	local sitesD = {}
+	for i = 1, math.min(6, #instances) do
+		local e = instances[i]
+		table.insert(sitesD, {
+			name = string.format("instance %d %s", i, e.id),
+			show = function()
+				return town.showHeist(e.inst.built.model, e.inst.level, e.inst.origin, true)
+			end,
+			plan = function()
+				local loc = e.inst.built.model:GetAttribute("Location")
+				return BackdropPlanD.plan(BackdropPlanD.levelSite(e.inst.level, loc), true)
+			end,
+		})
+	end
+	table.insert(sitesD, {
+		name = "garage",
+		show = town.showGarage,
+		plan = function()
+			return BackdropPlanD.plan(BackdropPlanD.garageSite(), nil)
+		end,
+	})
+	for _, sd in sitesD do
+		local okShow, showErr = pcall(sd.show)
+		local f = workspace:FindFirstChild("EH_Backdrop")
+		local plan = sd.plan()
+		local n, lightsN, kitN, fallbacks, bodies, fenceOk, colliders = 0, 0, 0, 0, 0, 0, 0
+		for _, d in (f and f:GetDescendants()) or {} do
+			n += 1
+			if d:IsA("Light") then
+				lightsN += 1
+			elseif d:IsA("MeshPart") then
+				kitN += 1
+			elseif d:IsA("BasePart") then
+				if d.Name == "Body" then
+					bodies += 1
+				elseif d.Name == "LotFence" then
+					fenceOk += if d.CanCollide and not d.CanQuery and d.Transparency >= 1 then 1 else 0
+				elseif d.Name == "LampPost" or d.Name == "RoofFallback" then
+					fallbacks += 1
+				end
+				if d.CanCollide and d.Name ~= "LotFence" then
+					colliders += 1
+				end
+			end
+		end
+		n += 1 -- the folder
+		check(
+			okShow and f ~= nil and n <= TB.instances and lightsN == 0,
+			string.format(
+				"world 2.0: %s surroundings built: %d instances (budget %d), %d lights%s",
+				sd.name,
+				n,
+				TB.instances,
+				lightsN,
+				if okShow then "" else " (" .. tostring(showErr) .. ")"
+			)
+		)
+		local ringPieces = 0
+		for _, r in plan.rings do
+			ringPieces += 2 * #r.yaws
+		end
+		check(
+			kitN >= #plan.kit + ringPieces and fallbacks == 0,
+			string.format(
+				"world 2.0: %s kit pieces placed %d / %d (+ %d ring), %d box fallbacks left",
+				sd.name,
+				kitN,
+				#plan.kit,
+				ringPieces,
+				fallbacks
+			)
+		)
+		check(
+			bodies == plan.facades and bodies >= 14 and fenceOk == 4 and colliders == 0,
+			string.format(
+				"world 2.0: %s %d buildings, lot fence %d / 4, %d other colliders",
+				sd.name,
+				bodies,
+				fenceOk,
+				colliders
+			)
+		)
+		town.clear()
+	end
+end
+
 for _, e in instances do
 	pcall(HeistService.destroyInstance, e.inst)
 end

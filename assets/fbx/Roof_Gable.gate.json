@@ -1,0 +1,107 @@
+{
+ "asset": "Roof_Gable",
+ "objects": [
+  {
+   "name": "Roof_Gable",
+   "class": "small",
+   "tris": 32,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    10.4,
+    8.6,
+    3.62
+   ],
+   "pivot": {
+    "rule": "bottom",
+    "local_min": [
+     -5.2,
+     -4.3,
+     0.0
+    ],
+    "local_max": [
+     5.2,
+     4.3,
+     3.62
+    ]
+   },
+   "swatches": [
+    "ink",
+    "marble_lo",
+    "snow",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 6,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "xmas",
+   "notes": "town backdrop roof, scaled per house by MeshPart.Size (10 x 8 authored); visual only",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 32,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "30f4d333f261d700237c",
+ "fbx": {
+  "path": "assets/fbx/Roof_Gable.fbx",
+  "bytes": 19980,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Roof_Gable"
+  ],
+  "geometry_extents": [
+   [
+    3.62,
+    8.6,
+    10.4
+   ]
+  ]
+ },
+ "spec": "assets/blender/town.py",
+ "notes": "Gable roof 10.4 x 8.6 x 3.6 under a snow blanket (WORLD 2.0 town, client backdrop only).",
+ "turntable": "docs/art/turntables/Roof_Gable.png",
+ "seconds": 8.5
+}

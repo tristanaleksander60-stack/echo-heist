@@ -82,14 +82,14 @@ expectProps(lighting, "Lighting", {
 	GlobalShadows = true,
 	ClockTime = 15,
 	GeographicLatitude = 20,
-	Brightness = 1.4,
+	Brightness = 1.5,
 	ColorShift_Top = { 150, 175, 255 },
 	ColorShift_Bottom = { 40, 30, 70 },
-	Ambient = { 95, 90, 140 },
-	OutdoorAmbient = { 115, 110, 165 },
-	EnvironmentDiffuseScale = 0.3,
+	Ambient = { 136, 124, 150 },
+	OutdoorAmbient = { 174, 160, 186 },
+	EnvironmentDiffuseScale = 0.36,
 	EnvironmentSpecularScale = 0.4,
-	ExposureCompensation = 0.3,
+	ExposureCompensation = 0.4,
 	ShadowSoftness = 0.3,
 })
 -- Lighting.Technology must agree with the LightingStyle + PrioritizeLightingQuality pair. Rojo writes only the
@@ -99,7 +99,7 @@ expectProps(lighting, "Lighting", {
 -- from a file that says Realistic (PERF.md §4). A Studio-saved place always carries Technology; ours must too.
 -- REQUIRE_TECHNOLOGY: true once default.project.json's Lighting lists "Technology" (World 2.0 / integrator);
 -- until then a place without it gets a WARN line, and a place that lists a disagreeing one always fails.
-local REQUIRE_TECHNOLOGY = false
+local REQUIRE_TECHNOLOGY = true
 do
 	local function pairOf(tech: string): (string?, boolean?)
 		if tech == "Future" then
@@ -157,12 +157,12 @@ local LIGHTING_CHILDREN: { [string]: { class: string, props: { [string]: any } }
 	Atmosphere = {
 		class = "Atmosphere",
 		props = {
-			Density = 0.28,
+			Density = 0.24,
 			Offset = 0.12,
-			Color = { 90, 80, 150 },
-			Decay = { 55, 45, 105 },
+			Color = { 158, 158, 214 }, -- WORLD 2.0: a light snowy haze, never darkness
+			Decay = { 124, 120, 184 },
 			Glare = 0,
-			Haze = 1.3,
+			Haze = 1.6,
 		},
 	},
 	Bloom = { class = "BloomEffect", props = { Intensity = 0.6, Size = 24, Threshold = 1.15 } },

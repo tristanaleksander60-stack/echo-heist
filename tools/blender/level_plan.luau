@@ -230,7 +230,7 @@ local function dump(spec: any): any
 		guards = guards,
 		cables = cables(level),
 		lamps = lamps(level, location),
-		backdrop = BackdropPlan.plan(BackdropPlan.levelSite(level)), -- W4: what the client Backdrop builds
+		backdrop = BackdropPlan.plan(BackdropPlan.levelSite(level, location), dressing), -- what the client Backdrop builds
 		backdropConfig = Config.Backdrop,
 		lighting = Config.Lighting,
 		worldFx = Config.WorldFx, -- the laser's ink sleeve

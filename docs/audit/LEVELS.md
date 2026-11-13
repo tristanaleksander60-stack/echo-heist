@@ -435,3 +435,151 @@ Rendered with `python3 tools/blender/level_shots.py --golden --samples 32` (G1a,
 - **Teller counters** are squashed to the sim's 2-deep counter box (the kit piece is 4 deep); the glass screen reads as a rail from above. A 4-deep sim counter would look better but is sim data.
 - **Not verified in the engine** (written, not run: engine smoke section 9): the soft pool canvas orientation (the pool part's Front face turned up: canvas right = +X, up = -Z), HapticEffect on a phone, the live carry clip on your own arms, the van bounce on the kit van, the dust and coin textures (built-in Roblox particles until art exists).
 - **Sound**: PlateHum, LaserWhine, LootTinkle and VanToot are empty cues (docs/AUDIO.md "Missing (world feedback)").
+
+## 10. WORLD 2.0: "black in the background" (owner feedback, Nov 2026)
+
+The owner played the build in Studio: *"All maps must look better and must NOT be black in the background."* This section is the diagnosis, what changed and the before / after numbers for every level, two daily vaults (DV01 Corner Shop, DV10 Bank) and the garage, in both cameras.
+
+**How it is measured.** `python3 tools/blender/level_shots.py --world2` (R2, Blender, not Studio) renders each site at a phone's full frame (19.5:9, 1280 x 592; Roblox's FOV is vertical, so a wide frame sees the most of the surroundings) in four shots: **diorama** (the game's camera at the spawn: pitch 52, distance 30, FOV 45), **classic** (follow cam behind you at the spawn, 16 studs, pitch 25, FOV 70: it sees the horizon and the sky), **diorama_mid** (you inside the building mid-run, the solution's clones on their plates) and **classic_rev** (turned round in the street: the far side and the sky). The after set adds **diorama_crew** (the diorama on the crew and its held plates) for the signal check. `tools/blender/frame_grade.py` grades each frame: **near-black** = luma < 5 %, **dark** = luma < 10 %, the median luma, the warm share (R - B >= 8), and, with a source mask, which layer each dark pixel belongs to (the level, the town / facade cards, the ground plane, the rings, the sky). Files: `docs/audit/levels/world2/before/`, `after/`, each with `grades.json`; the contact sheet [`world2/contact_sheet.png`](levels/world2/contact_sheet.png) shows every frame as a before | after pair with its near-black share and median luma.
+
+**The tone-map proxy (new, and why the earlier renders said "fine").** Rendered with Blender's Standard view, the before frames had almost no near-black pixels (L1 diorama 0.0 %, diorama_mid 0.2 %), which contradicts what the owner saw. Standard has no toe; the engine's Default tone mapper is a filmic curve that crushes low values (assumption: modelled as the ACES fit, `backdrop_shots.tonemap`, applied to every WORLD 2.0 frame before haze and grading). A dark albedo lit only by the night ambient (linear ~0.005-0.02) lands in that toe and comes out black. With the proxy the before frames show 7-50 % near-black, which matches the owner's report; the earlier golden-frame numbers (§7-§9) were measured without it and are optimistic. The after frames are graded with the same proxy (and the Standard-view numbers are kept in `grades.json` under `standard_view`). It is a proxy, not a calibration: Studio shots in the Shots inbox (issue #1) would calibrate it.
+
+### 10.1 Diagnosis: why it was black
+
+In order of weight:
+
+1. **The engine loaded recipe A as Voxel lighting** (found by the TECH POLISH track, confirmed here). Rojo writes only listed properties and `default.project.json` never listed `Lighting.Technology`, so every place loaded the class default (Voxel), which the engine maps to `LightingStyle` Soft + `PrioritizeLightingQuality` off. The live game never ran the Realistic look the renders assumed: no per-pixel local lights or shadows, flatter and darker interiors. Fixed: `"Technology": "Future"` in the project file; place_check now requires it (`REQUIRE_TECHNOLOGY = true`); perf_engine asserts Realistic + Prioritize at boot (ok on v55).
+2. **Dark albedos under a weak night ambient, crushed by the tone mapper's toe.** The level interiors (brick `plum`, `plum_deep`, the `floor_a / floor_b` checker at V 15-30 %) are lit by the moon on one side and by OutdoorAmbient (115,110,165) elsewhere; in the moon's wall shadows only the ambient remains and those surfaces go black: the **level layer is the largest near-black source in every frame** (L1 diorama_mid: 36.6 % of the whole frame is near-black level pixels). The old backdrop made it worse round the edges: the facade cards were Ink-family bodies (V 23-29 %, median luma 0.03-0.09 in frame: 7.6 % near-black of the L1 classic frame) and the ground plane (74,72,112) sat at median luma 0.07-0.29.
+3. **Gaps: nothing around most of the lot.** The facade ring was 16 cards, 10 studs deep, on the street line and across the street; the sides of the lot behind the street front and the area behind the lot were bare dark ground (the diorama's top edge and sides when you are inside the building), and the lot's own outdoor floor was the dark `floor` swatch.
+4. **The Atmosphere and the sky pulled the distance toward darkness.** Atmosphere Color (90,80,150) / Decay (55,45,105) at Density 0.28: geometry faded toward a dark indigo, and the haze takes the sky's colour in some directions (roblox_quality §1.2), whose horizon was (90,80,150) and whose lower half was (30,27,52). Sky medians in frame 0.27-0.30; the zenith (22,21,50) read as black on a phone. Rings in the atlas's Ink faces: median 0.13-0.17.
+5. **The far edge of the 2048-stud ground** and **the sky faces** are small contributors in the classic camera (the sky is 2-4 % of those frames, no near-black pixels in it); at low quality levels a "black fog" is reported for the Atmosphere (roblox_quality §1.1, [UNVERIFIED]), which recipe C now thins.
+6. **Interiors behind the camera:** the levels are roofless, so the classic camera never looks into a closed room; with Poppercam off the backdrop (CanQuery off) a classic camera can sit inside a backdrop box, which is invisible from inside (no black).
+
+**Client code paths checked** (`Heist/Backdrop`, `Heist/BackdropKit`, HeistClient, LightDirector):
+- BackdropKit not replicated yet: the client built everything but the rings at once and waited 60 s for the kit; fine. The reconnect left one stray connection on ReplicatedStorage (harmless); rewritten (one wait, one Ready listener, box fallbacks until the kit lands).
+- A tier dropping it: no tier dropped the backdrop (the far ring at 3, windows at 4); now nothing that fills the frame drops at any tier.
+- Streaming: client-made parts never stream; the level is PersistentPerPlayer; no issue.
+- Build order / garage teleport: `showHeist` after the level binds, `showGarage` on every garage sync; no issue. `showHeist` with no compiled level (a relaxed daily the client cannot compile) clears the backdrop entirely: unchanged, logged here as an edge.
+- **Real bug fixed:** HeistClient's particle budget finds the snow by `FindFirstChild("Snow", true)`, but the old backdrop had dozens of Parts named "Snow" (the cornice snow) built before the emitter, so the lookup found a Part and counted the snow as 0 particles. The emitter is now built first and nothing else is named "Snow".
+- **Real bug fixed:** nothing stopped a player walking off the lot's edge into the (non-colliding) backdrop and falling; a town at street level would invite it. The lot now has a client-only invisible fence (CanCollide on, CanQuery / CanTouch off: cameras, raycasts, Gus and the sim never see it).
+
+### 10.2 What changed
+
+- **A snowy neighbourhood round every lot and the garage** (`Shared/Heist/TownPlan`, client `Heist/Backdrop`, STYLE_BIBLE §16): the street at the lot's own height (warm sandstone pavements, kerbs, a road of packed snow with slushy tyre tracks), warm cobbles over the lot's outdoor floor, a snowfield (V 84 %) under everything; neighbours along the street on both sides (the first one long, its side lit toward the lot), a row behind the lot facing it and a row across the street: brick, terracotta, mustard and cream bodies, lit Bulb Warm windows, thick snow on every flat roof and cornice, `Roof_Gable` snow roofs on the houses, shop fronts with awnings (snow on top) and coloured doors, garlands under the cornices, wreaths on the doors; kit street lamps with unlit warm pools on the snow (no Light objects); parked cars with snow on the roof, bonnet and boot; decorated trees; snowmen; snow piles. The rings draw flat in a light haze colour instead of the atlas's Ink faces. The client-only lot fence keeps you on the lot.
+- **Each map its own street** (PLAN §3.1): Corner Shop street (terraces, corner shops, gabled houses, a tree on the far pavement); Toy Shop high street (L5: candy bodies on rose paving, fairy-light strings on every front, two trees); Bank plaza (L6 and the Bank dailies: stone fronts, a paved plaza across the street with a 26-stud tree, four lamps and civic porticoes behind); the garage yard (workshops and houses round the yard, cars, a snowman). L1-L4 and the dailies share the Corner Shop street but each level has its own arrangement (seeded: building order, colours, cars, the tree and snowman spots); the unit spec checks that no two launch levels' streets are the same.
+- **Atmosphere and sky:** Atmosphere Density 0.24, Color (158,158,214), Decay (124,120,184), Haze 1.6: the distance fades into a light snowy blue-violet haze. The Heist City cubemap re-rendered and re-uploaded: a deep but clearly blue zenith (34,48,116), a light haze horizon with a warm rose glow, the lower half the haze colour (never dark), Hoardsworth's tower and the Snow Globe unchanged.
+- **Recipe A retuned within its intent** (night by hue, not darkness; all four project files and place_check): Technology Future; Brightness 1.5; Ambient (136,124,150) / OutdoorAmbient (174,160,186) (was (95,90,140) / (115,110,165): enough fill that a dark albedo in shadow stays out of the toe, and less blue, so the warm pools still win the spawn views); EnvironmentDiffuseScale 0.36; ExposureCompensation 0.4 (0.5 brightened the floor round the plates until the held rings lost their value contrast). Recipe C follows (Brightness 1.7, (146,134,160) / (184,170,196), exposure 0.35) and thins the Atmosphere on low phones (0.2 / Haze 1.4).
+- **Daily vaults get street lamps** (`KitPlan.defaultStreet`): a level without hand dressing gets a lamp either side of its front, like L1-L4 / L6; the daily spawn views had no warm pool at all (DV10 diorama warm share 0.6 % before).
+- **New kit** (gates pass, uploaded): `Roof_Gable` (32 tris), `Car_Parked` (476) + `Car_Parked_Paint` (88, runtime colour), `Snowman` (724).
+
+### 10.3 Before / after (filmic proxy, 19.5:9, R2 Blender)
+
+| Site | Camera | Before: near-black % / dark % / median luma / warm % | After | Median up |
+|---|---|---|---|---|
+| L1 | diorama | 8.3 / 16.2 / 0.31 / 39 | 0.0 / 0.5 / 0.61 / 52 | +95 % |
+| L1 | classic | 12.0 / 22.2 / 0.30 / 35 | 0.0 / 1.0 / 0.53 / 53 | +74 % |
+| L1 | diorama_mid | 50.1 / 66.7 / 0.05 / 2 | 0.0 / 3.3 / 0.22 / 68 | +355 % |
+| L1 | classic_rev | 10.0 / 32.8 / 0.12 / 6 | 0.0 / 1.1 / 0.65 / 23 | +442 % |
+| L2 | diorama | 7.3 / 15.8 / 0.32 / 39 | 0.0 / 0.5 / 0.62 / 51 | +93 % |
+| L2 | classic | 11.3 / 21.9 / 0.31 / 35 | 0.0 / 1.0 / 0.52 / 54 | +70 % |
+| L2 | diorama_mid | 30.2 / 58.2 / 0.08 / 14 | 0.0 / 2.0 / 0.21 / 73 | +176 % |
+| L2 | classic_rev | 10.0 / 32.8 / 0.12 / 6 | 0.0 / 1.1 / 0.64 / 32 | +432 % |
+| L3 | diorama | 7.4 / 16.4 / 0.32 / 40 | 0.0 / 0.5 / 0.62 / 52 | +95 % |
+| L3 | classic | 11.4 / 21.8 / 0.30 / 35 | 0.0 / 1.0 / 0.59 / 50 | +93 % |
+| L3 | diorama_mid | 22.9 / 47.9 / 0.11 / 20 | 0.0 / 1.4 / 0.26 / 65 | +135 % |
+| L3 | classic_rev | 10.0 / 32.8 / 0.12 / 6 | 0.0 / 1.0 / 0.64 / 23 | +435 % |
+| L4 | diorama | 7.5 / 16.3 / 0.32 / 40 | 0.0 / 0.5 / 0.63 / 50 | +97 % |
+| L4 | classic | 11.4 / 21.9 / 0.30 / 35 | 0.0 / 1.0 / 0.60 / 50 | +95 % |
+| L4 | diorama_mid | 18.2 / 41.2 / 0.15 / 31 | 0.0 / 1.2 / 0.35 / 75 | +129 % |
+| L4 | classic_rev | 10.0 / 32.8 / 0.12 / 6 | 0.0 / 1.1 / 0.65 / 20 | +443 % |
+| L5 | diorama | 7.8 / 16.5 / 0.31 / 30 | 0.0 / 0.3 / 0.62 / 34 | +99 % |
+| L5 | classic | 11.5 / 22.0 / 0.31 / 30 | 0.0 / 0.9 / 0.56 / 41 | +82 % |
+| L5 | diorama_mid | 21.7 / 51.8 / 0.09 / 3 | 0.0 / 2.2 / 0.26 / 18 | +177 % |
+| L5 | classic_rev | 10.0 / 32.8 / 0.12 / 6 | 0.0 / 1.1 / 0.67 / 24 | +455 % |
+| L6 | diorama | 11.3 / 25.7 / 0.30 / 31 | 0.0 / 0.6 / 0.57 / 37 | +87 % |
+| L6 | classic | 13.2 / 22.2 / 0.29 / 31 | 0.0 / 2.3 / 0.55 / 41 | +87 % |
+| L6 | diorama_mid | 22.2 / 36.3 / 0.17 / 16 | 0.0 / 2.1 / 0.29 / 21 | +68 % |
+| L6 | classic_rev | 8.4 / 30.7 / 0.12 / 6 | 0.0 / 1.0 / 0.65 / 17 | +430 % |
+| DV01 | diorama | 21.6 / 32.2 / 0.18 / 9 | 0.0 / 0.4 / 0.64 / 47 | +244 % |
+| DV01 | classic | 23.0 / 37.1 / 0.15 / 3 | 0.0 / 1.2 / 0.65 / 43 | +325 % |
+| DV01 | diorama_mid | 20.6 / 50.7 / 0.10 / 36 | 0.0 / 0.8 / 0.33 / 76 | +236 % |
+| DV01 | classic_rev | 10.1 / 32.9 / 0.12 / 6 | 0.0 / 1.1 / 0.51 / 39 | +328 % |
+| DV10 | diorama | 30.5 / 42.1 / 0.14 / 1 | 0.0 / 0.6 / 0.60 / 33 | +338 % |
+| DV10 | classic | 29.3 / 41.9 / 0.13 / 1 | 0.0 / 2.5 / 0.62 / 31 | +388 % |
+| DV10 | diorama_mid | 8.2 / 33.1 / 0.29 / 17 | 0.0 / 0.5 / 0.49 / 22 | +65 % |
+| DV10 | classic_rev | 8.4 / 30.8 / 0.12 / 6 | 0.0 / 1.0 / 0.65 / 13 | +439 % |
+| GA | diorama | 3.0 / 12.1 / 0.19 / 30 | 0.0 / 0.4 / 0.29 / 35 | +51 % |
+| GA | classic | 9.4 / 21.1 / 0.21 / 12 | 0.0 / 0.5 / 0.34 / 27 | +62 % |
+| GA | diorama_mid | 20.9 / 34.0 / 0.17 / 18 | 0.0 / 2.6 / 0.41 / 35 | +138 % |
+| GA | classic_rev | 0.0 / 91.9 / 0.07 / 0 | 0.0 / 0.1 / 0.59 / 33 | +744 % |
+
+Where the before frames' near-black pixels are (share of the whole frame that is near-black AND that layer; the layer's median luma in brackets):
+
+| Frame | Level (lot, shop, van) | Town / facade cards | Ground plane | Rings | Sky |
+|---|---|---|---|---|---|
+| L1_diorama | 7.6 (0.39) | 0.8 (0.06) | 0.0 (0.28) | - | - |
+| L1_classic | 4.4 (0.45) | 7.6 (0.04) | 0.0 (0.29) | 0.0 (0.13) | 0.0 (0.30) |
+| L1_diorama_mid | 36.6 (0.06) | 13.5 (0.03) | 0.0 (0.07) | - | - |
+| L1_classic_rev | 8.6 (0.12) | 1.4 (0.09) | 0.0 (0.21) | 0.0 (0.17) | 0.0 (0.27) |
+| L2_diorama | 6.6 (0.40) | 0.8 (0.06) | 0.0 (0.28) | - | - |
+| L2_classic | 4.2 (0.45) | 7.1 (0.04) | 0.0 (0.29) | 0.0 (0.14) | 0.0 (0.30) |
+| L2_diorama_mid | 27.2 (0.07) | 3.0 (0.04) | 0.0 (0.08) | - | - |
+| L2_classic_rev | 8.6 (0.12) | 1.4 (0.09) | 0.0 (0.21) | 0.0 (0.17) | 0.0 (0.27) |
+| L3_diorama | 6.6 (0.39) | 0.8 (0.06) | 0.0 (0.28) | - | - |
+| L3_classic | 4.4 (0.45) | 7.0 (0.04) | 0.0 (0.29) | 0.0 (0.14) | 0.0 (0.30) |
+| L3_diorama_mid | 20.9 (0.12) | 2.0 (0.04) | 0.0 (0.09) | - | - |
+| L3_classic_rev | 8.7 (0.12) | 1.4 (0.09) | 0.0 (0.21) | 0.0 (0.17) | 0.0 (0.27) |
+| L4_diorama | 6.7 (0.39) | 0.8 (0.06) | 0.0 (0.28) | - | - |
+| L4_classic | 4.4 (0.45) | 7.0 (0.04) | 0.0 (0.29) | 0.0 (0.14) | 0.0 (0.30) |
+| L4_diorama_mid | 16.2 (0.17) | 2.0 (0.04) | 0.0 (0.09) | - | - |
+| L4_classic_rev | 8.7 (0.12) | 1.4 (0.09) | 0.0 (0.21) | 0.0 (0.17) | 0.0 (0.27) |
+| L5_diorama | 7.1 (0.35) | 0.8 (0.06) | 0.0 (0.28) | - | - |
+| L5_classic | 4.2 (0.45) | 7.3 (0.04) | 0.0 (0.29) | 0.0 (0.14) | 0.0 (0.30) |
+| L5_diorama_mid | 17.1 (0.10) | 4.6 (0.04) | 0.0 (0.08) | - | - |
+| L5_classic_rev | 8.6 (0.12) | 1.4 (0.09) | 0.0 (0.21) | 0.0 (0.17) | 0.0 (0.27) |
+| L6_diorama | 11.3 (0.30) | - | - | - | - |
+| L6_classic | 12.8 (0.31) | 0.3 (0.05) | 0.0 (0.12) | 0.0 (0.14) | 0.0 (0.30) |
+| L6_diorama_mid | 22.2 (0.17) | - | - | - | - |
+| L6_classic_rev | 7.1 (0.12) | 1.4 (0.09) | 0.0 (0.21) | 0.0 (0.17) | 0.0 (0.27) |
+| DV01_diorama | 20.9 (0.16) | 0.8 (0.06) | 0.0 (0.28) | - | - |
+| DV01_classic | 15.4 (0.19) | 7.6 (0.04) | 0.0 (0.29) | 0.0 (0.13) | 0.0 (0.30) |
+| DV01_diorama_mid | 7.1 (0.13) | 13.5 (0.03) | 0.0 (0.07) | - | - |
+| DV01_classic_rev | 8.7 (0.12) | 1.4 (0.09) | 0.0 (0.21) | 0.0 (0.17) | 0.0 (0.27) |
+| DV10_diorama | 30.5 (0.13) | - | 0.0 (0.29) | - | - |
+| DV10_classic | 25.5 (0.12) | 3.8 (0.04) | 0.0 (0.28) | 0.0 (0.13) | 0.0 (0.30) |
+| DV10_diorama_mid | 7.6 (0.31) | 0.7 (0.03) | 0.0 (0.08) | - | - |
+| DV10_classic_rev | 7.0 (0.12) | 1.4 (0.09) | 0.0 (0.21) | 0.0 (0.17) | 0.0 (0.27) |
+| GA_diorama | 3.0 (0.19) | - | - | - | - |
+| GA_classic | 7.0 (0.22) | 2.5 (0.06) | 0.0 (0.33) | 0.0 (0.14) | 0.0 (0.30) |
+| GA_diorama_mid | 16.5 (0.18) | 4.4 (0.03) | 0.0 (0.31) | - | - |
+| GA_classic_rev | - | 0.0 (0.07) | - | - | - |
+
+Measured bar (after): warm share in the diorama, the focal element against the brightest town surface (p95 luma), and signal pop on the crew frame (median value contrast against the surround):
+
+| Site | Diorama warm % | Focal p95 (cash / plate) | Town p95 (ground / buildings / lot / props) | Signal pop (rings, lasers) | Clone pop |
+|---|---|---|---|---|---|
+| L1 | 51.8 | 0.86 | 0.75/0.80/0.85/- | 0.153 | 0.259 |
+| L2 | 51.4 | 0.86 | 0.75/0.81/0.85/- | 0.094 | 0.243 |
+| L3 | 51.7 | 0.86 | 0.75/0.80/0.85/- | 0.153 | 0.263 |
+| L4 | 50.3 | 0.86 | 0.75/0.80/0.85/- | 0.153 | 0.263 |
+| L5 | 33.8 | 0.77 | 0.75/0.80/0.85/- | - | 0.384 |
+| L6 | 37.0 | 0.69 | -/-/0.83/- | - | 0.529 |
+| DV01 | 47.3 | 0.86 | 0.75/0.80/0.85/- | - | - |
+| DV10 | 33.0 | 0.85 | 0.73/0.78/0.83/- | - | - |
+| GA | 34.7 | 0.00 | -/-/0.25/- | - | - |
+
+**The bar, honestly:**
+- **Near-black ≤ 3 %: met in every frame** (0.0 % in all 36 after frames; before 3-50 %). Dark (< 10 %) ≤ 3.3 % everywhere after.
+- **Median luma up by a clear margin: met** (+51 % garage diorama to +7x the turned-round classic frames; the diorama spawn views about double).
+- **Warm share ≥ 30 % in the diorama: met for every site** (L1-L4 50-52 %, L5 34 %, L6 37 %, DV01 47 %, DV10 33 %, garage 35 %). The turned-round classic frames (across the street, the sky) stay cooler (13-39 %): by design, cool outside and in shadow.
+- **The focal prop the brightest non-signal element: partly.** In the Corner Shop levels and the dailies the plate / cash (p95 0.85-0.86) outshines the town (snow 0.75, roofs and walls 0.80 where the windows are; the lot's p95 0.85 is the level's own street-lamp pools). **L5 (cash 0.77) and L6 (gold 0.69, small in the vault far behind the lobby)** stay under the street-lamp pools and the warm windows in the spawn view, as they did before (L5's rug outshone the cash then, L6's gold was 0.48); a darker paving did not change it (the pools are unlit and set the p95). The town itself never becomes the brightest thing.
+- **Signals pop (premium A1, ≥ 0.15 value contrast against the world round them): clones met everywhere** (0.24-0.53 after; 0.29-0.58 before: the brighter world costs some contrast but they stay well clear); **held plate rings just met on L1, L3, L4 (0.153), missed on L2 (0.094)** (before 0.21 on L1 / L3). A fully saturated Neon ring cannot get brighter, so its value contrast falls as the floor round it brightens; the ring's read is mostly hue (clone cyan on warm cream). L2's crew stands where its two plates' pools overlap. Owner call if it matters at 48 px: a darker plate surround (the plate mesh's rim) or a smaller plate pool.
+
+**Self-critique and scores (0-10, "a lit Christmas snow-globe diorama, never black"):**
+- **L1-L4 / DV01, 8 (before 4):** the spawn view is a warm shop front between snowy neighbours, the street and the lit far row in the classic camera, no black anywhere; mid-run the walls and floors read as brick and checker, not voids. Down: from the spawn every Corner Shop level is still the same storefront (P1-1, sim data); the neighbours are box houses (a cornice and a roof, no window frames or chimneys); the Neon windows render near-white in the proxy (Bulb Warm in Studio: check).
+- **L5, 7.5 (before 4):** the candy high street with its light strings reads as its own place in the classic camera; the navy Toy Shop front stays the coolest big shape in the spawn view (an owner palette call, §8) and the cash is not the brightest thing.
+- **L6 / DV10, 7.5 (before 3.5):** the Bank plaza and its big tree are the best new silhouette from the street; in the diorama the plaza is behind the camera, so the spawn view is the bank front and the lit side streets. The gold is far and small.
+- **Garage, 7 (before 4):** the yard, cars and snowman out of the door, warm workshops round it, no void past the walls; the interior floor checker stays dark (atlas, not this track).
+- **Risks:** the filmic proxy is uncalibrated (it explains the owner's black, it is not a measurement of Studio); the lot fence is new physics on your own character (walk the street edge and L6's alleys in Studio); recipe A is brighter overall, so check the night still reads as night on a phone; at quality 1-3 (voxel lighting) the town's look and the thinner recipe C haze are untested.
+
+**Engine (Saved v55, after merging main with first person and the Rookie):** engine_smoke 133 ok / 0, client_engine 49 / 0, clone_engine 109 ok / 0, kit_engine 378 ok / 0, perf_engine 93 ok / 0. perf_engine section D builds the town round every heist instance and the garage: 287 (garage) to 553 (L6) instances against the 650 budget, **0 lights**, all kit pieces placed (17 published), every building there, the lot fence 4 / 4, no other collider; the Lighting loads Realistic + Prioritize. The busiest view: ~266k tris / ~293 draws at tier 1 (backdrop ~63k), ~132k / ~211 at tier 3 (backdrop ~10k) against 450k / 450 and 150k / 250.

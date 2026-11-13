@@ -1,0 +1,3338 @@
+{
+ "DV01_classic": {
+  "brightest_1pct_owner": {
+   "lamp": 8.0,
+   "other": 92.0,
+   "plate": 0.0,
+   "van": 0.0,
+   "zone": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.2,
+  "frame": "DV01_classic.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.875,
+    "share": 0.08,
+    "warm": 0.2
+   },
+   "plate": {
+    "p95_luma": 0.716,
+    "share": 0.0,
+    "warm": 0.0
+   },
+   "van": {
+    "p95_luma": 0.535,
+    "share": 7.95,
+    "warm": 5.0
+   },
+   "zone": {
+    "p95_luma": 0.749,
+    "share": 4.42,
+    "warm": 8.0
+   }
+  },
+  "median_luma": 0.646,
+  "near_black": 0.0,
+  "plate_pop": null,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.658,
+    "near_black": 0.0,
+    "p95_luma": 0.841,
+    "share": 20.9
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.742,
+    "near_black": 0.0,
+    "p95_luma": 0.811,
+    "share": 1.3
+   },
+   "level": {
+    "dark": 1.2,
+    "median_luma": 0.434,
+    "near_black": 0.0,
+    "p95_luma": 0.8,
+    "share": 41.3
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.788,
+    "near_black": 0.0,
+    "p95_luma": 0.858,
+    "share": 31.0
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.509,
+    "near_black": 0.0,
+    "p95_luma": 0.65,
+    "share": 1.7
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.327,
+    "near_black": 0.0,
+    "p95_luma": 0.423,
+    "share": 3.8
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.553,
+   "near_black": 0.0,
+   "warm_share": 46.6
+  },
+  "warm_share": 42.8
+ },
+ "DV01_classic_rev": {
+  "brightest_1pct_owner": {
+   "lamp": 0.0,
+   "other": 100.0,
+   "van": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.1,
+  "frame": "DV01_classic_rev.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.873,
+    "share": 0.05,
+    "warm": 0.5
+   },
+   "van": {
+    "p95_luma": 0.551,
+    "share": 19.98,
+    "warm": 35.1
+   }
+  },
+  "median_luma": 0.513,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.496,
+    "near_black": 0.0,
+    "p95_luma": 0.871,
+    "share": 42.2
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.781,
+    "near_black": 0.0,
+    "p95_luma": 0.874,
+    "share": 8.7
+   },
+   "level": {
+    "dark": 1.0,
+    "median_luma": 0.386,
+    "near_black": 0.0,
+    "p95_luma": 0.557,
+    "share": 21.1
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.667,
+    "near_black": 0.0,
+    "p95_luma": 0.847,
+    "share": 22.8
+   },
+   "props": {
+    "dark": 0.0,
+    "median_luma": 0.413,
+    "near_black": 0.0,
+    "p95_luma": 0.795,
+    "share": 3.5
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.511,
+    "near_black": 0.0,
+    "p95_luma": 0.588,
+    "share": 0.5
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.297,
+    "near_black": 0.0,
+    "p95_luma": 0.388,
+    "share": 1.2
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.448,
+   "near_black": 0.0,
+   "warm_share": 38.6
+  },
+  "warm_share": 39.1
+ },
+ "DV01_diorama": {
+  "brightest_1pct_owner": {
+   "lamp": 3.9,
+   "other": 93.4,
+   "plate": 2.4,
+   "zone": 0.3
+  },
+  "brightest_group": "lamp",
+  "dark_share": 0.4,
+  "frame": "DV01_diorama.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.876,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.859,
+    "share": 0.36,
+    "warm": 0.7
+   },
+   "zone": {
+    "p95_luma": 0.726,
+    "share": 3.2,
+    "warm": 6.2
+   }
+  },
+  "median_luma": 0.637,
+  "near_black": 0.0,
+  "plate_pop": 0.027,
+  "signal_pop": 0.122,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.653,
+    "near_black": 0.0,
+    "p95_luma": 0.8,
+    "share": 6.8
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.639,
+    "near_black": 0.0,
+    "p95_luma": 0.753,
+    "share": 4.1
+   },
+   "level": {
+    "dark": 0.4,
+    "median_luma": 0.428,
+    "near_black": 0.0,
+    "p95_luma": 0.824,
+    "share": 49.6
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.74,
+    "near_black": 0.0,
+    "p95_luma": 0.847,
+    "share": 39.3
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.848,
+    "near_black": 0.0,
+    "p95_luma": 0.861,
+    "share": 0.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.546,
+   "near_black": 0.0,
+   "warm_share": 50.2
+  },
+  "warm_share": 47.3
+ },
+ "DV01_diorama_mid": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "other": 100.0
+  },
+  "brightest_group": "cash",
+  "dark_share": 0.8,
+  "frame": "DV01_diorama_mid.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.458,
+    "share": 0.15,
+    "warm": 7.0
+   }
+  },
+  "median_luma": 0.326,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.358,
+    "near_black": 0.0,
+    "p95_luma": 0.819,
+    "share": 14.9
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.571,
+    "near_black": 0.0,
+    "p95_luma": 0.744,
+    "share": 3.8
+   },
+   "level": {
+    "dark": 0.8,
+    "median_luma": 0.236,
+    "near_black": 0.0,
+    "p95_luma": 0.779,
+    "share": 79.6
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.439,
+    "near_black": 0.0,
+    "p95_luma": 0.602,
+    "share": 1.7
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.3,
+   "near_black": 0.0,
+   "warm_share": 77.0
+  },
+  "warm_share": 75.5
+ },
+ "DV10_classic": {
+  "brightest_1pct_owner": {
+   "lamp": 8.2,
+   "other": 91.8,
+   "van": 0.0,
+   "zone": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 2.5,
+  "frame": "DV10_classic.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.863,
+    "share": 0.09,
+    "warm": 0.0
+   },
+   "van": {
+    "p95_luma": 0.512,
+    "share": 7.95,
+    "warm": 4.9
+   },
+   "zone": {
+    "p95_luma": 0.72,
+    "share": 4.42,
+    "warm": 0.0
+   }
+  },
+  "median_luma": 0.624,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.641,
+    "near_black": 0.0,
+    "p95_luma": 0.703,
+    "share": 16.7
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.636,
+    "near_black": 0.0,
+    "p95_luma": 0.756,
+    "share": 0.8
+   },
+   "level": {
+    "dark": 2.5,
+    "median_luma": 0.404,
+    "near_black": 0.0,
+    "p95_luma": 0.752,
+    "share": 49.6
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.759,
+    "near_black": 0.0,
+    "p95_luma": 0.836,
+    "share": 30.5
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.517,
+    "near_black": 0.0,
+    "p95_luma": 0.547,
+    "share": 0.2
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.322,
+    "near_black": 0.0,
+    "p95_luma": 0.444,
+    "share": 2.3
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.531,
+   "near_black": 0.0,
+   "warm_share": 38.4
+  },
+  "warm_share": 30.6
+ },
+ "DV10_classic_rev": {
+  "brightest_1pct_owner": {
+   "lamp": 0.9,
+   "other": 98.5,
+   "van": 0.6
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.0,
+  "frame": "DV10_classic_rev.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.869,
+    "share": 0.06,
+    "warm": 0.7
+   },
+   "van": {
+    "p95_luma": 0.546,
+    "share": 19.98,
+    "warm": 35.1
+   }
+  },
+  "median_luma": 0.647,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.664,
+    "near_black": 0.0,
+    "p95_luma": 0.808,
+    "share": 27.0
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.732,
+    "near_black": 0.0,
+    "p95_luma": 0.868,
+    "share": 15.7
+   },
+   "level": {
+    "dark": 1.0,
+    "median_luma": 0.385,
+    "near_black": 0.0,
+    "p95_luma": 0.552,
+    "share": 21.1
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.663,
+    "near_black": 0.0,
+    "p95_luma": 0.793,
+    "share": 24.5
+   },
+   "props": {
+    "dark": 0.0,
+    "median_luma": 0.468,
+    "near_black": 0.0,
+    "p95_luma": 0.784,
+    "share": 6.9
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.52,
+    "near_black": 0.0,
+    "p95_luma": 0.743,
+    "share": 3.4
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.29,
+    "near_black": 0.0,
+    "p95_luma": 0.351,
+    "share": 1.5
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.551,
+   "near_black": 0.0,
+   "warm_share": 19.1
+  },
+  "warm_share": 12.6
+ },
+ "DV10_diorama": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "lamp": 4.6,
+   "other": 95.0,
+   "plate": 0.1,
+   "zone": 0.3
+  },
+  "brightest_group": "lamp",
+  "dark_share": 0.6,
+  "frame": "DV10_diorama.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.406,
+    "share": 0.18,
+    "warm": 1.7
+   },
+   "lamp": {
+    "p95_luma": 0.868,
+    "share": 0.05,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.847,
+    "share": 0.34,
+    "warm": 0.0
+   },
+   "zone": {
+    "p95_luma": 0.654,
+    "share": 3.2,
+    "warm": 0.0
+   }
+  },
+  "median_luma": 0.604,
+  "near_black": 0.0,
+  "plate_pop": -0.039,
+  "signal_pop": 0.118,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.641,
+    "near_black": 0.0,
+    "p95_luma": 0.776,
+    "share": 3.2
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.61,
+    "near_black": 0.0,
+    "p95_luma": 0.733,
+    "share": 1.2
+   },
+   "level": {
+    "dark": 0.6,
+    "median_luma": 0.342,
+    "near_black": 0.0,
+    "p95_luma": 0.809,
+    "share": 60.6
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.741,
+    "near_black": 0.0,
+    "p95_luma": 0.827,
+    "share": 35.0
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.843,
+    "near_black": 0.0,
+    "p95_luma": 0.85,
+    "share": 0.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.516,
+   "near_black": 0.0,
+   "warm_share": 38.0
+  },
+  "warm_share": 33.0
+ },
+ "DV10_diorama_mid": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "other": 100.0,
+   "plate": 0.0
+  },
+  "brightest_group": "plate",
+  "dark_share": 0.5,
+  "frame": "DV10_diorama_mid.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.415,
+    "share": 0.07,
+    "warm": 5.8
+   },
+   "plate": {
+    "p95_luma": 0.822,
+    "share": 0.42,
+    "warm": 0.6
+   }
+  },
+  "median_luma": 0.486,
+  "near_black": 0.0,
+  "plate_pop": 0.122,
+  "signal_pop": 0.298,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.595,
+    "near_black": 0.0,
+    "p95_luma": 0.764,
+    "share": 3.2
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.556,
+    "near_black": 0.0,
+    "p95_luma": 0.724,
+    "share": 1.1
+   },
+   "level": {
+    "dark": 0.5,
+    "median_luma": 0.39,
+    "near_black": 0.0,
+    "p95_luma": 0.876,
+    "share": 88.4
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.528,
+    "near_black": 0.0,
+    "p95_luma": 0.787,
+    "share": 7.4
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.426,
+   "near_black": 0.0,
+   "warm_share": 29.1
+  },
+  "warm_share": 21.6
+ },
+ "GA_classic": {
+  "brightest_1pct_owner": {
+   "board": 0.1,
+   "other": 99.9,
+   "rug": 0.0,
+   "van": 0.0
+  },
+  "brightest_group": "rug",
+  "dark_share": 0.5,
+  "frame": "GA_classic.png",
+  "glow_share": 0.0,
+  "groups": {
+   "board": {
+    "p95_luma": 0.702,
+    "share": 0.1,
+    "warm": 77.4
+   },
+   "rug": {
+    "p95_luma": 0.784,
+    "share": 2.54,
+    "warm": 66.7
+   },
+   "van": {
+    "p95_luma": 0.454,
+    "share": 26.32,
+    "warm": 1.5
+   }
+  },
+  "median_luma": 0.344,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.546,
+    "near_black": 0.0,
+    "p95_luma": 0.728,
+    "share": 6.4
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.692,
+    "near_black": 0.0,
+    "p95_luma": 0.704,
+    "share": 0.1
+   },
+   "level": {
+    "dark": 0.5,
+    "median_luma": 0.328,
+    "near_black": 0.0,
+    "p95_luma": 0.795,
+    "share": 84.1
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.781,
+    "near_black": 0.0,
+    "p95_luma": 0.843,
+    "share": 0.4
+   },
+   "props": {
+    "dark": 0.0,
+    "median_luma": 0.805,
+    "near_black": 0.0,
+    "p95_luma": 0.81,
+    "share": 0.0
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.446,
+    "near_black": 0.0,
+    "p95_luma": 0.664,
+    "share": 4.4
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.322,
+    "near_black": 0.0,
+    "p95_luma": 0.403,
+    "share": 4.6
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.305,
+   "near_black": 0.0,
+   "warm_share": 25.7
+  },
+  "warm_share": 27.0
+ },
+ "GA_classic_rev": {
+  "brightest_1pct_owner": {
+   "lamp": 3.0,
+   "other": 97.0,
+   "van": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 0.1,
+  "frame": "GA_classic_rev.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.88,
+    "share": 0.03,
+    "warm": 0.0
+   },
+   "van": {
+    "p95_luma": 0.767,
+    "share": 0.04,
+    "warm": 0.0
+   }
+  },
+  "median_luma": 0.591,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.355,
+    "near_black": 0.0,
+    "p95_luma": 0.779,
+    "share": 8.6
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.577,
+    "near_black": 0.0,
+    "p95_luma": 0.585,
+    "share": 0.2
+   },
+   "level": {
+    "dark": 0.1,
+    "median_luma": 0.223,
+    "near_black": 0.0,
+    "p95_luma": 0.783,
+    "share": 31.4
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.611,
+    "near_black": 0.0,
+    "p95_luma": 0.86,
+    "share": 52.0
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.531,
+    "near_black": 0.0,
+    "p95_luma": 0.669,
+    "share": 3.4
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.291,
+    "near_black": 0.0,
+    "p95_luma": 0.341,
+    "share": 4.4
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.495,
+   "near_black": 0.0,
+   "warm_share": 39.1
+  },
+  "warm_share": 33.1
+ },
+ "GA_diorama": {
+  "brightest_1pct_owner": {
+   "board": 0.0,
+   "other": 100.0,
+   "rug": 0.0,
+   "van": 0.0
+  },
+  "brightest_group": "rug",
+  "dark_share": 0.4,
+  "frame": "GA_diorama.png",
+  "glow_share": 0.0,
+  "groups": {
+   "board": {
+    "p95_luma": 0.56,
+    "share": 0.1,
+    "warm": 74.0
+   },
+   "rug": {
+    "p95_luma": 0.781,
+    "share": 5.7,
+    "warm": 60.2
+   },
+   "van": {
+    "p95_luma": 0.568,
+    "share": 3.06,
+    "warm": 0.2
+   }
+  },
+  "median_luma": 0.29,
+  "near_black": 0.0,
+  "sources": {
+   "level": {
+    "dark": 0.4,
+    "median_luma": 0.29,
+    "near_black": 0.0,
+    "p95_luma": 0.834,
+    "share": 100.0
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.229,
+    "near_black": 0.0,
+    "p95_luma": 0.251,
+    "share": 0.0
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.27,
+   "near_black": 0.0,
+   "warm_share": 33.6
+  },
+  "warm_share": 34.7
+ },
+ "GA_diorama_mid": {
+  "brightest_1pct_owner": {
+   "board": 0.0,
+   "lamp": 2.8,
+   "other": 97.2,
+   "van": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 2.6,
+  "frame": "GA_diorama_mid.png",
+  "glow_share": 0.0,
+  "groups": {
+   "board": {
+    "p95_luma": 0.742,
+    "share": 1.09,
+    "warm": 97.3
+   },
+   "lamp": {
+    "p95_luma": 0.873,
+    "share": 0.03,
+    "warm": 0.0
+   },
+   "van": {
+    "p95_luma": 0.474,
+    "share": 16.91,
+    "warm": 0.4
+   }
+  },
+  "median_luma": 0.409,
+  "near_black": 0.0,
+  "sources": {
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.66,
+    "near_black": 0.0,
+    "p95_luma": 0.689,
+    "share": 6.8
+   },
+   "level": {
+    "dark": 2.6,
+    "median_luma": 0.265,
+    "near_black": 0.0,
+    "p95_luma": 0.668,
+    "share": 70.4
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.63,
+    "near_black": 0.0,
+    "p95_luma": 0.841,
+    "share": 22.9
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.352,
+   "near_black": 0.0,
+   "warm_share": 36.6
+  },
+  "warm_share": 35.4
+ },
+ "L1_classic": {
+  "brightest_1pct_owner": {
+   "lamp": 7.8,
+   "other": 92.2,
+   "plate": 0.0,
+   "rug": 0.0,
+   "van": 0.0,
+   "zone": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.0,
+  "frame": "L1_classic.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.876,
+    "share": 0.08,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.716,
+    "share": 0.0,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.782,
+    "share": 0.44,
+    "warm": 56.0
+   },
+   "van": {
+    "p95_luma": 0.54,
+    "share": 7.95,
+    "warm": 5.0
+   },
+   "zone": {
+    "p95_luma": 0.758,
+    "share": 4.42,
+    "warm": 14.4
+   }
+  },
+  "median_luma": 0.526,
+  "near_black": 0.0,
+  "plate_pop": null,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.41,
+    "near_black": 0.0,
+    "p95_luma": 0.839,
+    "share": 21.4
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.742,
+    "near_black": 0.0,
+    "p95_luma": 0.811,
+    "share": 1.3
+   },
+   "level": {
+    "dark": 1.0,
+    "median_luma": 0.437,
+    "near_black": 0.0,
+    "p95_luma": 0.799,
+    "share": 41.3
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.789,
+    "near_black": 0.0,
+    "p95_luma": 0.858,
+    "share": 31.0
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.513,
+    "near_black": 0.0,
+    "p95_luma": 0.62,
+    "share": 1.4
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.327,
+    "near_black": 0.0,
+    "p95_luma": 0.439,
+    "share": 3.5
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.462,
+   "near_black": 0.0,
+   "warm_share": 56.8
+  },
+  "warm_share": 53.0
+ },
+ "L1_classic_rev": {
+  "brightest_1pct_owner": {
+   "lamp": 0.0,
+   "other": 100.0,
+   "van": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.1,
+  "frame": "L1_classic_rev.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.872,
+    "share": 0.05,
+    "warm": 0.5
+   },
+   "van": {
+    "p95_luma": 0.552,
+    "share": 19.98,
+    "warm": 35.1
+   }
+  },
+  "median_luma": 0.65,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.72,
+    "near_black": 0.0,
+    "p95_luma": 0.875,
+    "share": 39.6
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.788,
+    "near_black": 0.0,
+    "p95_luma": 0.874,
+    "share": 8.4
+   },
+   "level": {
+    "dark": 1.0,
+    "median_luma": 0.386,
+    "near_black": 0.0,
+    "p95_luma": 0.558,
+    "share": 21.1
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.667,
+    "near_black": 0.0,
+    "p95_luma": 0.847,
+    "share": 22.8
+   },
+   "props": {
+    "dark": 0.0,
+    "median_luma": 0.431,
+    "near_black": 0.0,
+    "p95_luma": 0.798,
+    "share": 3.6
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.521,
+    "near_black": 0.0,
+    "p95_luma": 0.686,
+    "share": 2.2
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.291,
+    "near_black": 0.0,
+    "p95_luma": 0.352,
+    "share": 2.3
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.563,
+   "near_black": 0.0,
+   "warm_share": 23.8
+  },
+  "warm_share": 22.8
+ },
+ "L1_diorama": {
+  "brightest_1pct_owner": {
+   "lamp": 3.7,
+   "other": 93.8,
+   "plate": 2.3,
+   "rug": 0.0,
+   "zone": 0.2
+  },
+  "brightest_group": "lamp",
+  "dark_share": 0.5,
+  "frame": "L1_diorama.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.876,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.859,
+    "share": 0.36,
+    "warm": 0.7
+   },
+   "rug": {
+    "p95_luma": 0.782,
+    "share": 2.17,
+    "warm": 60.2
+   },
+   "zone": {
+    "p95_luma": 0.737,
+    "share": 3.2,
+    "warm": 12.4
+   }
+  },
+  "median_luma": 0.612,
+  "near_black": 0.0,
+  "plate_pop": 0.024,
+  "signal_pop": 0.122,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.409,
+    "near_black": 0.0,
+    "p95_luma": 0.8,
+    "share": 6.8
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.626,
+    "near_black": 0.0,
+    "p95_luma": 0.753,
+    "share": 4.1
+   },
+   "level": {
+    "dark": 0.5,
+    "median_luma": 0.43,
+    "near_black": 0.0,
+    "p95_luma": 0.802,
+    "share": 49.7
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.741,
+    "near_black": 0.0,
+    "p95_luma": 0.848,
+    "share": 39.2
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.848,
+    "near_black": 0.0,
+    "p95_luma": 0.861,
+    "share": 0.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.522,
+   "near_black": 0.0,
+   "warm_share": 53.1
+  },
+  "warm_share": 51.8
+ },
+ "L1_diorama_crew": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "lamp": 1.6,
+   "other": 98.4,
+   "plate": 0.0,
+   "rug": 0.0
+  },
+  "brightest_group": "lamp",
+  "clone_pop": 0.259,
+  "dark_share": 0.5,
+  "frame": "L1_diorama_crew.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.532,
+    "share": 0.08,
+    "warm": 6.5
+   },
+   "lamp": {
+    "p95_luma": 0.844,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.821,
+    "share": 0.36,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.786,
+    "share": 2.5,
+    "warm": 69.5
+   }
+  },
+  "median_luma": 0.416,
+  "near_black": 0.0,
+  "plate_pop": 0.02,
+  "signal_pop": 0.153,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.412,
+    "near_black": 0.0,
+    "p95_luma": 0.8,
+    "share": 6.8
+   },
+   "clone": {
+    "dark": 0.0,
+    "median_luma": 0.788,
+    "near_black": 0.0,
+    "p95_luma": 0.829,
+    "share": 0.5
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.578,
+    "near_black": 0.0,
+    "p95_luma": 0.752,
+    "share": 4.1
+   },
+   "level": {
+    "dark": 0.5,
+    "median_luma": 0.34,
+    "near_black": 0.0,
+    "p95_luma": 0.809,
+    "share": 77.7
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.604,
+    "near_black": 0.0,
+    "p95_luma": 0.797,
+    "share": 10.7
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.812,
+    "near_black": 0.0,
+    "p95_luma": 0.827,
+    "share": 0.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.37,
+   "near_black": 0.0,
+   "warm_share": 55.3
+  },
+  "warm_share": 55.1
+ },
+ "L1_diorama_mid": {
+  "brightest_1pct_owner": {
+   "cash": 4.3,
+   "other": 81.5,
+   "rug": 14.2
+  },
+  "brightest_group": "cash",
+  "dark_share": 3.3,
+  "frame": "L1_diorama_mid.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.86,
+    "share": 0.29,
+    "warm": 71.2
+   },
+   "rug": {
+    "p95_luma": 0.824,
+    "share": 0.89,
+    "warm": 77.7
+   }
+  },
+  "median_luma": 0.223,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.352,
+    "near_black": 0.0,
+    "p95_luma": 0.819,
+    "share": 15.0
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.572,
+    "near_black": 0.0,
+    "p95_luma": 0.752,
+    "share": 3.6
+   },
+   "level": {
+    "dark": 3.3,
+    "median_luma": 0.174,
+    "near_black": 0.0,
+    "p95_luma": 0.706,
+    "share": 79.6
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.44,
+    "near_black": 0.0,
+    "p95_luma": 0.612,
+    "share": 1.7
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.227,
+   "near_black": 0.0,
+   "warm_share": 64.1
+  },
+  "warm_share": 67.7
+ },
+ "L2_classic": {
+  "brightest_1pct_owner": {
+   "lamp": 7.5,
+   "other": 92.5,
+   "plate": 0.0,
+   "rug": 0.0,
+   "van": 0.0,
+   "zone": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.0,
+  "frame": "L2_classic.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.876,
+    "share": 0.08,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.764,
+    "share": 0.0,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.822,
+    "share": 0.45,
+    "warm": 58.9
+   },
+   "van": {
+    "p95_luma": 0.54,
+    "share": 7.95,
+    "warm": 5.0
+   },
+   "zone": {
+    "p95_luma": 0.759,
+    "share": 4.42,
+    "warm": 14.8
+   }
+  },
+  "median_luma": 0.523,
+  "near_black": 0.0,
+  "plate_pop": null,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.401,
+    "near_black": 0.0,
+    "p95_luma": 0.837,
+    "share": 21.5
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.742,
+    "near_black": 0.0,
+    "p95_luma": 0.811,
+    "share": 1.3
+   },
+   "level": {
+    "dark": 1.0,
+    "median_luma": 0.436,
+    "near_black": 0.0,
+    "p95_luma": 0.805,
+    "share": 41.3
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.79,
+    "near_black": 0.0,
+    "p95_luma": 0.858,
+    "share": 31.0
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.506,
+    "near_black": 0.0,
+    "p95_luma": 0.616,
+    "share": 1.3
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.328,
+    "near_black": 0.0,
+    "p95_luma": 0.422,
+    "share": 3.5
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.459,
+   "near_black": 0.0,
+   "warm_share": 57.9
+  },
+  "warm_share": 54.1
+ },
+ "L2_classic_rev": {
+  "brightest_1pct_owner": {
+   "lamp": 0.0,
+   "other": 100.0,
+   "van": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.1,
+  "frame": "L2_classic_rev.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.873,
+    "share": 0.05,
+    "warm": 0.5
+   },
+   "van": {
+    "p95_luma": 0.546,
+    "share": 19.98,
+    "warm": 35.1
+   }
+  },
+  "median_luma": 0.638,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.642,
+    "near_black": 0.0,
+    "p95_luma": 0.876,
+    "share": 40.3
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.797,
+    "near_black": 0.0,
+    "p95_luma": 0.874,
+    "share": 8.5
+   },
+   "level": {
+    "dark": 1.0,
+    "median_luma": 0.385,
+    "near_black": 0.0,
+    "p95_luma": 0.553,
+    "share": 21.1
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.667,
+    "near_black": 0.0,
+    "p95_luma": 0.847,
+    "share": 22.8
+   },
+   "props": {
+    "dark": 0.0,
+    "median_luma": 0.371,
+    "near_black": 0.0,
+    "p95_luma": 0.806,
+    "share": 3.8
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.489,
+    "near_black": 0.0,
+    "p95_luma": 0.658,
+    "share": 2.2
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.294,
+    "near_black": 0.0,
+    "p95_luma": 0.354,
+    "share": 1.3
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.551,
+   "near_black": 0.0,
+   "warm_share": 31.9
+  },
+  "warm_share": 31.6
+ },
+ "L2_diorama": {
+  "brightest_1pct_owner": {
+   "lamp": 3.7,
+   "other": 90.7,
+   "plate": 5.4,
+   "rug": 0.0,
+   "zone": 0.2
+  },
+  "brightest_group": "lamp",
+  "dark_share": 0.5,
+  "frame": "L2_diorama.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.876,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.86,
+    "share": 0.72,
+    "warm": 0.3
+   },
+   "rug": {
+    "p95_luma": 0.81,
+    "share": 2.11,
+    "warm": 59.8
+   },
+   "zone": {
+    "p95_luma": 0.738,
+    "share": 3.2,
+    "warm": 12.6
+   }
+  },
+  "median_luma": 0.616,
+  "near_black": 0.0,
+  "plate_pop": 0.055,
+  "signal_pop": 0.114,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.403,
+    "near_black": 0.0,
+    "p95_luma": 0.805,
+    "share": 6.8
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.626,
+    "near_black": 0.0,
+    "p95_luma": 0.753,
+    "share": 4.1
+   },
+   "level": {
+    "dark": 0.5,
+    "median_luma": 0.446,
+    "near_black": 0.0,
+    "p95_luma": 0.814,
+    "share": 49.6
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.74,
+    "near_black": 0.0,
+    "p95_luma": 0.849,
+    "share": 39.2
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.853,
+    "near_black": 0.0,
+    "p95_luma": 0.861,
+    "share": 0.2
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.529,
+   "near_black": 0.0,
+   "warm_share": 54.3
+  },
+  "warm_share": 51.4
+ },
+ "L2_diorama_crew": {
+  "brightest_1pct_owner": {
+   "cash": 4.1,
+   "lamp": 0.0,
+   "other": 95.7,
+   "plate": 0.1,
+   "rug": 0.1
+  },
+  "brightest_group": "cash",
+  "clone_pop": 0.243,
+  "dark_share": 0.4,
+  "frame": "L2_diorama_crew.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.875,
+    "share": 0.12,
+    "warm": 66.7
+   },
+   "lamp": {
+    "p95_luma": 0.844,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.823,
+    "share": 0.71,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.819,
+    "share": 2.32,
+    "warm": 66.2
+   }
+  },
+  "median_luma": 0.421,
+  "near_black": 0.0,
+  "plate_pop": 0.016,
+  "signal_pop": 0.094,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.409,
+    "near_black": 0.0,
+    "p95_luma": 0.799,
+    "share": 6.8
+   },
+   "clone": {
+    "dark": 0.0,
+    "median_luma": 0.778,
+    "near_black": 0.0,
+    "p95_luma": 0.824,
+    "share": 1.1
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.578,
+    "near_black": 0.0,
+    "p95_luma": 0.752,
+    "share": 4.1
+   },
+   "level": {
+    "dark": 0.4,
+    "median_luma": 0.356,
+    "near_black": 0.0,
+    "p95_luma": 0.827,
+    "share": 77.0
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.602,
+    "near_black": 0.0,
+    "p95_luma": 0.798,
+    "share": 10.7
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.818,
+    "near_black": 0.0,
+    "p95_luma": 0.827,
+    "share": 0.2
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.378,
+   "near_black": 0.0,
+   "warm_share": 54.0
+  },
+  "warm_share": 52.7
+ },
+ "L2_diorama_mid": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "other": 62.9,
+   "rug": 37.1
+  },
+  "brightest_group": "rug",
+  "dark_share": 2.0,
+  "frame": "L2_diorama_mid.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.76,
+    "share": 0.37,
+    "warm": 0.4
+   },
+   "rug": {
+    "p95_luma": 0.855,
+    "share": 2.1,
+    "warm": 79.9
+   }
+  },
+  "median_luma": 0.21,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.393,
+    "near_black": 0.0,
+    "p95_luma": 0.796,
+    "share": 7.0
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.572,
+    "near_black": 0.0,
+    "p95_luma": 0.752,
+    "share": 4.2
+   },
+   "level": {
+    "dark": 2.0,
+    "median_luma": 0.186,
+    "near_black": 0.0,
+    "p95_luma": 0.762,
+    "share": 86.5
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.451,
+    "near_black": 0.0,
+    "p95_luma": 0.616,
+    "share": 2.3
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.219,
+   "near_black": 0.0,
+   "warm_share": 72.4
+  },
+  "warm_share": 72.9
+ },
+ "L3_classic": {
+  "brightest_1pct_owner": {
+   "lamp": 7.7,
+   "other": 92.3,
+   "plate": 0.0,
+   "rug": 0.0,
+   "van": 0.0,
+   "zone": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.0,
+  "frame": "L3_classic.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.876,
+    "share": 0.08,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.72,
+    "share": 0.0,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.807,
+    "share": 0.45,
+    "warm": 57.8
+   },
+   "van": {
+    "p95_luma": 0.54,
+    "share": 7.95,
+    "warm": 5.0
+   },
+   "zone": {
+    "p95_luma": 0.758,
+    "share": 4.42,
+    "warm": 14.5
+   }
+  },
+  "median_luma": 0.588,
+  "near_black": 0.0,
+  "plate_pop": null,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.274,
+    "near_black": 0.0,
+    "p95_luma": 0.679,
+    "share": 17.7
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.742,
+    "near_black": 0.0,
+    "p95_luma": 0.811,
+    "share": 1.3
+   },
+   "level": {
+    "dark": 1.0,
+    "median_luma": 0.436,
+    "near_black": 0.0,
+    "p95_luma": 0.806,
+    "share": 41.3
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.789,
+    "near_black": 0.0,
+    "p95_luma": 0.858,
+    "share": 31.0
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.441,
+    "near_black": 0.0,
+    "p95_luma": 0.661,
+    "share": 4.1
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.326,
+    "near_black": 0.0,
+    "p95_luma": 0.411,
+    "share": 4.5
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.5,
+   "near_black": 0.0,
+   "warm_share": 54.2
+  },
+  "warm_share": 50.1
+ },
+ "L3_classic_rev": {
+  "brightest_1pct_owner": {
+   "lamp": 0.0,
+   "other": 100.0,
+   "van": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.0,
+  "frame": "L3_classic_rev.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.872,
+    "share": 0.05,
+    "warm": 0.8
+   },
+   "van": {
+    "p95_luma": 0.546,
+    "share": 19.98,
+    "warm": 35.1
+   }
+  },
+  "median_luma": 0.642,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.72,
+    "near_black": 0.0,
+    "p95_luma": 0.872,
+    "share": 40.1
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.763,
+    "near_black": 0.0,
+    "p95_luma": 0.874,
+    "share": 8.5
+   },
+   "level": {
+    "dark": 1.0,
+    "median_luma": 0.385,
+    "near_black": 0.0,
+    "p95_luma": 0.554,
+    "share": 21.1
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.667,
+    "near_black": 0.0,
+    "p95_luma": 0.847,
+    "share": 22.8
+   },
+   "props": {
+    "dark": 0.0,
+    "median_luma": 0.372,
+    "near_black": 0.0,
+    "p95_luma": 0.802,
+    "share": 3.7
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.486,
+    "near_black": 0.0,
+    "p95_luma": 0.681,
+    "share": 1.5
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.292,
+    "near_black": 0.0,
+    "p95_luma": 0.356,
+    "share": 2.3
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.55,
+   "near_black": 0.0,
+   "warm_share": 22.5
+  },
+  "warm_share": 23.3
+ },
+ "L3_diorama": {
+  "brightest_1pct_owner": {
+   "lamp": 3.7,
+   "other": 93.6,
+   "plate": 2.4,
+   "rug": 0.0,
+   "zone": 0.3
+  },
+  "brightest_group": "lamp",
+  "dark_share": 0.5,
+  "frame": "L3_diorama.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.876,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.859,
+    "share": 0.36,
+    "warm": 0.7
+   },
+   "rug": {
+    "p95_luma": 0.797,
+    "share": 2.11,
+    "warm": 59.7
+   },
+   "zone": {
+    "p95_luma": 0.738,
+    "share": 3.2,
+    "warm": 12.3
+   }
+  },
+  "median_luma": 0.617,
+  "near_black": 0.0,
+  "plate_pop": 0.02,
+  "signal_pop": 0.122,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.551,
+    "near_black": 0.0,
+    "p95_luma": 0.8,
+    "share": 6.8
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.634,
+    "near_black": 0.0,
+    "p95_luma": 0.753,
+    "share": 4.1
+   },
+   "level": {
+    "dark": 0.5,
+    "median_luma": 0.442,
+    "near_black": 0.0,
+    "p95_luma": 0.814,
+    "share": 49.7
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.741,
+    "near_black": 0.0,
+    "p95_luma": 0.848,
+    "share": 39.2
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.848,
+    "near_black": 0.0,
+    "p95_luma": 0.861,
+    "share": 0.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.531,
+   "near_black": 0.0,
+   "warm_share": 54.5
+  },
+  "warm_share": 51.7
+ },
+ "L3_diorama_crew": {
+  "brightest_1pct_owner": {
+   "cash": 2.4,
+   "lamp": 0.0,
+   "other": 97.6,
+   "plate": 0.0,
+   "rug": 0.0
+  },
+  "brightest_group": "cash",
+  "clone_pop": 0.263,
+  "dark_share": 0.5,
+  "frame": "L3_diorama_crew.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.872,
+    "share": 0.12,
+    "warm": 71.1
+   },
+   "lamp": {
+    "p95_luma": 0.844,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.821,
+    "share": 0.36,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.824,
+    "share": 2.06,
+    "warm": 59.2
+   }
+  },
+  "median_luma": 0.436,
+  "near_black": 0.0,
+  "plate_pop": 0.02,
+  "signal_pop": 0.153,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.552,
+    "near_black": 0.0,
+    "p95_luma": 0.799,
+    "share": 6.8
+   },
+   "clone": {
+    "dark": 0.0,
+    "median_luma": 0.699,
+    "near_black": 0.0,
+    "p95_luma": 0.818,
+    "share": 0.5
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.588,
+    "near_black": 0.0,
+    "p95_luma": 0.752,
+    "share": 4.1
+   },
+   "level": {
+    "dark": 0.5,
+    "median_luma": 0.354,
+    "near_black": 0.0,
+    "p95_luma": 0.828,
+    "share": 77.7
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.604,
+    "near_black": 0.0,
+    "p95_luma": 0.797,
+    "share": 10.8
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.812,
+    "near_black": 0.0,
+    "p95_luma": 0.827,
+    "share": 0.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.383,
+   "near_black": 0.0,
+   "warm_share": 56.1
+  },
+  "warm_share": 54.9
+ },
+ "L3_diorama_mid": {
+  "brightest_1pct_owner": {
+   "cash": 2.9,
+   "other": 10.9,
+   "plate": 0.0,
+   "rug": 86.2
+  },
+  "brightest_group": "rug",
+  "clone_pop": 0.329,
+  "dark_share": 1.4,
+  "frame": "L3_diorama_mid.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.843,
+    "share": 0.73,
+    "warm": 23.1
+   },
+   "plate": {
+    "p95_luma": 0.801,
+    "share": 0.05,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.866,
+    "share": 1.85,
+    "warm": 40.9
+   }
+  },
+  "median_luma": 0.261,
+  "near_black": 0.0,
+  "plate_pop": -0.039,
+  "signal_pop": 0.106,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.475,
+    "near_black": 0.0,
+    "p95_luma": 0.801,
+    "share": 6.8
+   },
+   "clone": {
+    "dark": 0.0,
+    "median_luma": 0.822,
+    "near_black": 0.0,
+    "p95_luma": 0.854,
+    "share": 0.3
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.57,
+    "near_black": 0.0,
+    "p95_luma": 0.752,
+    "share": 4.3
+   },
+   "level": {
+    "dark": 1.4,
+    "median_luma": 0.216,
+    "near_black": 0.0,
+    "p95_luma": 0.771,
+    "share": 86.2
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.438,
+    "near_black": 0.0,
+    "p95_luma": 0.612,
+    "share": 2.4
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.284,
+    "near_black": 0.0,
+    "p95_luma": 0.801,
+    "share": 0.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.257,
+   "near_black": 0.0,
+   "warm_share": 64.0
+  },
+  "warm_share": 65.1
+ },
+ "L4_classic": {
+  "brightest_1pct_owner": {
+   "lamp": 7.9,
+   "other": 92.1,
+   "plate": 0.0,
+   "rug": 0.0,
+   "van": 0.0,
+   "zone": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.0,
+  "frame": "L4_classic.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.876,
+    "share": 0.08,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.719,
+    "share": 0.0,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.807,
+    "share": 0.45,
+    "warm": 57.8
+   },
+   "van": {
+    "p95_luma": 0.54,
+    "share": 7.95,
+    "warm": 5.0
+   },
+   "zone": {
+    "p95_luma": 0.757,
+    "share": 4.42,
+    "warm": 14.5
+   }
+  },
+  "median_luma": 0.596,
+  "near_black": 0.0,
+  "plate_pop": null,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.573,
+    "near_black": 0.0,
+    "p95_luma": 0.847,
+    "share": 18.6
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.742,
+    "near_black": 0.0,
+    "p95_luma": 0.811,
+    "share": 1.3
+   },
+   "level": {
+    "dark": 1.0,
+    "median_luma": 0.437,
+    "near_black": 0.0,
+    "p95_luma": 0.806,
+    "share": 41.3
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.789,
+    "near_black": 0.0,
+    "p95_luma": 0.858,
+    "share": 31.0
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.441,
+    "near_black": 0.0,
+    "p95_luma": 0.635,
+    "share": 3.7
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.325,
+    "near_black": 0.0,
+    "p95_luma": 0.422,
+    "share": 4.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.512,
+   "near_black": 0.0,
+   "warm_share": 54.0
+  },
+  "warm_share": 49.7
+ },
+ "L4_classic_rev": {
+  "brightest_1pct_owner": {
+   "lamp": 0.0,
+   "other": 100.0,
+   "van": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.1,
+  "frame": "L4_classic_rev.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.872,
+    "share": 0.05,
+    "warm": 0.3
+   },
+   "van": {
+    "p95_luma": 0.546,
+    "share": 19.98,
+    "warm": 35.1
+   }
+  },
+  "median_luma": 0.651,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.739,
+    "near_black": 0.0,
+    "p95_luma": 0.877,
+    "share": 37.5
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.743,
+    "near_black": 0.0,
+    "p95_luma": 0.872,
+    "share": 8.4
+   },
+   "level": {
+    "dark": 1.0,
+    "median_luma": 0.385,
+    "near_black": 0.0,
+    "p95_luma": 0.554,
+    "share": 21.1
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.667,
+    "near_black": 0.0,
+    "p95_luma": 0.847,
+    "share": 22.8
+   },
+   "props": {
+    "dark": 0.0,
+    "median_luma": 0.684,
+    "near_black": 0.0,
+    "p95_luma": 0.806,
+    "share": 3.6
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.521,
+    "near_black": 0.0,
+    "p95_luma": 0.693,
+    "share": 3.6
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.293,
+    "near_black": 0.0,
+    "p95_luma": 0.364,
+    "share": 3.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.56,
+   "near_black": 0.0,
+   "warm_share": 19.6
+  },
+  "warm_share": 19.8
+ },
+ "L4_diorama": {
+  "brightest_1pct_owner": {
+   "lamp": 3.6,
+   "other": 93.8,
+   "plate": 2.4,
+   "rug": 0.0,
+   "zone": 0.2
+  },
+  "brightest_group": "lamp",
+  "dark_share": 0.5,
+  "frame": "L4_diorama.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.876,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.859,
+    "share": 0.36,
+    "warm": 0.7
+   },
+   "rug": {
+    "p95_luma": 0.797,
+    "share": 2.11,
+    "warm": 59.7
+   },
+   "zone": {
+    "p95_luma": 0.737,
+    "share": 3.2,
+    "warm": 12.4
+   }
+  },
+  "median_luma": 0.626,
+  "near_black": 0.0,
+  "plate_pop": 0.024,
+  "signal_pop": 0.118,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.556,
+    "near_black": 0.0,
+    "p95_luma": 0.8,
+    "share": 6.8
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.633,
+    "near_black": 0.0,
+    "p95_luma": 0.753,
+    "share": 4.1
+   },
+   "level": {
+    "dark": 0.5,
+    "median_luma": 0.442,
+    "near_black": 0.0,
+    "p95_luma": 0.814,
+    "share": 49.7
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.741,
+    "near_black": 0.0,
+    "p95_luma": 0.848,
+    "share": 39.2
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.848,
+    "near_black": 0.0,
+    "p95_luma": 0.861,
+    "share": 0.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.537,
+   "near_black": 0.0,
+   "warm_share": 53.6
+  },
+  "warm_share": 50.3
+ },
+ "L4_diorama_crew": {
+  "brightest_1pct_owner": {
+   "cash": 2.4,
+   "lamp": 0.0,
+   "other": 97.6,
+   "plate": 0.0,
+   "rug": 0.0
+  },
+  "brightest_group": "cash",
+  "clone_pop": 0.263,
+  "dark_share": 0.5,
+  "frame": "L4_diorama_crew.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.872,
+    "share": 0.12,
+    "warm": 71.1
+   },
+   "lamp": {
+    "p95_luma": 0.844,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.821,
+    "share": 0.36,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.766,
+    "share": 1.75,
+    "warm": 69.7
+   }
+  },
+  "median_luma": 0.453,
+  "near_black": 0.0,
+  "plate_pop": 0.02,
+  "signal_pop": 0.153,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.556,
+    "near_black": 0.0,
+    "p95_luma": 0.8,
+    "share": 6.8
+   },
+   "clone": {
+    "dark": 0.0,
+    "median_luma": 0.699,
+    "near_black": 0.0,
+    "p95_luma": 0.818,
+    "share": 0.5
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.587,
+    "near_black": 0.0,
+    "p95_luma": 0.752,
+    "share": 4.1
+   },
+   "level": {
+    "dark": 0.5,
+    "median_luma": 0.359,
+    "near_black": 0.0,
+    "p95_luma": 0.828,
+    "share": 77.7
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.605,
+    "near_black": 0.0,
+    "p95_luma": 0.797,
+    "share": 10.8
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.812,
+    "near_black": 0.0,
+    "p95_luma": 0.827,
+    "share": 0.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.406,
+   "near_black": 0.0,
+   "warm_share": 56.8
+  },
+  "warm_share": 55.4
+ },
+ "L4_diorama_mid": {
+  "brightest_1pct_owner": {
+   "cash": 1.1,
+   "other": 53.0,
+   "rug": 45.9
+  },
+  "brightest_group": "rug",
+  "dark_share": 1.2,
+  "frame": "L4_diorama_mid.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.798,
+    "share": 0.66,
+    "warm": 19.2
+   },
+   "rug": {
+    "p95_luma": 0.842,
+    "share": 2.1,
+    "warm": 86.9
+   }
+  },
+  "median_luma": 0.353,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.548,
+    "near_black": 0.0,
+    "p95_luma": 0.796,
+    "share": 6.8
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.572,
+    "near_black": 0.0,
+    "p95_luma": 0.752,
+    "share": 4.3
+   },
+   "level": {
+    "dark": 1.2,
+    "median_luma": 0.3,
+    "near_black": 0.0,
+    "p95_luma": 0.752,
+    "share": 86.5
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.443,
+    "near_black": 0.0,
+    "p95_luma": 0.616,
+    "share": 2.4
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.316,
+   "near_black": 0.0,
+   "warm_share": 74.9
+  },
+  "warm_share": 75.1
+ },
+ "L5_classic": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "lamp": 7.8,
+   "other": 92.2,
+   "rug": 0.0,
+   "van": 0.0,
+   "zone": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 0.9,
+  "frame": "L5_classic.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.49,
+    "share": 0.44,
+    "warm": 4.7
+   },
+   "lamp": {
+    "p95_luma": 0.876,
+    "share": 0.08,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.832,
+    "share": 0.64,
+    "warm": 45.9
+   },
+   "van": {
+    "p95_luma": 0.54,
+    "share": 7.95,
+    "warm": 5.0
+   },
+   "zone": {
+    "p95_luma": 0.753,
+    "share": 4.42,
+    "warm": 15.4
+   }
+  },
+  "median_luma": 0.56,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.437,
+    "near_black": 0.0,
+    "p95_luma": 0.841,
+    "share": 19.7
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.742,
+    "near_black": 0.0,
+    "p95_luma": 0.812,
+    "share": 1.3
+   },
+   "level": {
+    "dark": 0.9,
+    "median_luma": 0.443,
+    "near_black": 0.0,
+    "p95_luma": 0.799,
+    "share": 41.3
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.79,
+    "near_black": 0.0,
+    "p95_luma": 0.858,
+    "share": 31.0
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.446,
+    "near_black": 0.0,
+    "p95_luma": 0.593,
+    "share": 2.6
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.322,
+    "near_black": 0.0,
+    "p95_luma": 0.418,
+    "share": 4.0
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.485,
+   "near_black": 0.0,
+   "warm_share": 46.9
+  },
+  "warm_share": 41.2
+ },
+ "L5_classic_rev": {
+  "brightest_1pct_owner": {
+   "lamp": 0.0,
+   "other": 100.0,
+   "van": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.1,
+  "frame": "L5_classic_rev.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.873,
+    "share": 0.05,
+    "warm": 0.5
+   },
+   "van": {
+    "p95_luma": 0.552,
+    "share": 19.98,
+    "warm": 35.1
+   }
+  },
+  "median_luma": 0.666,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.727,
+    "near_black": 0.0,
+    "p95_luma": 0.88,
+    "share": 39.5
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.803,
+    "near_black": 0.0,
+    "p95_luma": 0.874,
+    "share": 9.0
+   },
+   "level": {
+    "dark": 1.0,
+    "median_luma": 0.387,
+    "near_black": 0.0,
+    "p95_luma": 0.559,
+    "share": 21.1
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.667,
+    "near_black": 0.0,
+    "p95_luma": 0.847,
+    "share": 22.8
+   },
+   "props": {
+    "dark": 0.0,
+    "median_luma": 0.407,
+    "near_black": 0.0,
+    "p95_luma": 0.793,
+    "share": 4.5
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.507,
+    "near_black": 0.0,
+    "p95_luma": 0.685,
+    "share": 1.2
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.287,
+    "near_black": 0.0,
+    "p95_luma": 0.336,
+    "share": 1.9
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.572,
+   "near_black": 0.0,
+   "warm_share": 34.9
+  },
+  "warm_share": 24.0
+ },
+ "L5_diorama": {
+  "brightest_1pct_owner": {
+   "cash": 2.3,
+   "lamp": 3.7,
+   "other": 93.6,
+   "rug": 0.2,
+   "zone": 0.2
+  },
+  "brightest_group": "lamp",
+  "dark_share": 0.3,
+  "frame": "L5_diorama.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.765,
+    "share": 2.0,
+    "warm": 8.4
+   },
+   "lamp": {
+    "p95_luma": 0.876,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.838,
+    "share": 2.2,
+    "warm": 31.4
+   },
+   "zone": {
+    "p95_luma": 0.732,
+    "share": 3.2,
+    "warm": 13.6
+   }
+  },
+  "median_luma": 0.619,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.428,
+    "near_black": 0.0,
+    "p95_luma": 0.799,
+    "share": 6.8
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.626,
+    "near_black": 0.0,
+    "p95_luma": 0.753,
+    "share": 4.1
+   },
+   "level": {
+    "dark": 0.3,
+    "median_luma": 0.433,
+    "near_black": 0.0,
+    "p95_luma": 0.813,
+    "share": 49.8
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.742,
+    "near_black": 0.0,
+    "p95_luma": 0.848,
+    "share": 39.2
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.533,
+   "near_black": 0.0,
+   "warm_share": 39.7
+  },
+  "warm_share": 33.8
+ },
+ "L5_diorama_crew": {
+  "brightest_1pct_owner": {
+   "cash": 6.5,
+   "lamp": 0.0,
+   "other": 58.1,
+   "rug": 35.4
+  },
+  "brightest_group": "rug",
+  "clone_pop": 0.384,
+  "dark_share": 0.9,
+  "frame": "L5_diorama_crew.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.77,
+    "share": 3.12,
+    "warm": 7.8
+   },
+   "lamp": {
+    "p95_luma": 0.844,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.854,
+    "share": 3.26,
+    "warm": 34.0
+   }
+  },
+  "median_luma": 0.433,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.427,
+    "near_black": 0.0,
+    "p95_luma": 0.797,
+    "share": 6.8
+   },
+   "clone": {
+    "dark": 0.0,
+    "median_luma": 0.674,
+    "near_black": 0.0,
+    "p95_luma": 0.798,
+    "share": 1.3
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.578,
+    "near_black": 0.0,
+    "p95_luma": 0.752,
+    "share": 4.1
+   },
+   "level": {
+    "dark": 0.9,
+    "median_luma": 0.374,
+    "near_black": 0.0,
+    "p95_luma": 0.809,
+    "share": 77.1
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.613,
+    "near_black": 0.0,
+    "p95_luma": 0.797,
+    "share": 10.7
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.384,
+   "near_black": 0.0,
+   "warm_share": 28.0
+  },
+  "warm_share": 24.9
+ },
+ "L5_diorama_mid": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "other": 53.3,
+   "rug": 46.7
+  },
+  "brightest_group": "rug",
+  "clone_pop": 0.376,
+  "dark_share": 2.2,
+  "frame": "L5_diorama_mid.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.557,
+    "share": 0.81,
+    "warm": 3.8
+   },
+   "rug": {
+    "p95_luma": 0.85,
+    "share": 2.5,
+    "warm": 0.0
+   }
+  },
+  "median_luma": 0.258,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.429,
+    "near_black": 0.0,
+    "p95_luma": 0.795,
+    "share": 7.5
+   },
+   "clone": {
+    "dark": 0.0,
+    "median_luma": 0.451,
+    "near_black": 0.0,
+    "p95_luma": 0.803,
+    "share": 3.6
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.57,
+    "near_black": 0.0,
+    "p95_luma": 0.749,
+    "share": 3.9
+   },
+   "level": {
+    "dark": 2.2,
+    "median_luma": 0.196,
+    "near_black": 0.0,
+    "p95_luma": 0.773,
+    "share": 82.8
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.448,
+    "near_black": 0.0,
+    "p95_luma": 0.616,
+    "share": 2.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.265,
+   "near_black": 0.0,
+   "warm_share": 20.0
+  },
+  "warm_share": 18.4
+ },
+ "L6_classic": {
+  "brightest_1pct_owner": {
+   "lamp": 8.1,
+   "other": 90.8,
+   "rug": 1.1,
+   "van": 0.0,
+   "zone": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 2.3,
+  "frame": "L6_classic.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.868,
+    "share": 0.08,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.836,
+    "share": 0.48,
+    "warm": 22.0
+   },
+   "van": {
+    "p95_luma": 0.52,
+    "share": 7.95,
+    "warm": 5.0
+   },
+   "zone": {
+    "p95_luma": 0.723,
+    "share": 4.42,
+    "warm": 0.0
+   }
+  },
+  "median_luma": 0.551,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.553,
+    "near_black": 0.0,
+    "p95_luma": 0.629,
+    "share": 8.4
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.662,
+    "near_black": 0.0,
+    "p95_luma": 0.713,
+    "share": 0.1
+   },
+   "level": {
+    "dark": 2.3,
+    "median_luma": 0.383,
+    "near_black": 0.0,
+    "p95_luma": 0.758,
+    "share": 59.4
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.78,
+    "near_black": 0.0,
+    "p95_luma": 0.839,
+    "share": 29.1
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.518,
+    "near_black": 0.0,
+    "p95_luma": 0.54,
+    "share": 0.2
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.324,
+    "near_black": 0.0,
+    "p95_luma": 0.42,
+    "share": 2.8
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.454,
+   "near_black": 0.0,
+   "warm_share": 42.8
+  },
+  "warm_share": 40.6
+ },
+ "L6_classic_rev": {
+  "brightest_1pct_owner": {
+   "lamp": 0.9,
+   "other": 98.5,
+   "van": 0.6
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.0,
+  "frame": "L6_classic_rev.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.869,
+    "share": 0.06,
+    "warm": 0.7
+   },
+   "van": {
+    "p95_luma": 0.546,
+    "share": 19.98,
+    "warm": 35.1
+   }
+  },
+  "median_luma": 0.646,
+  "near_black": 0.0,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.669,
+    "near_black": 0.0,
+    "p95_luma": 0.808,
+    "share": 26.9
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.718,
+    "near_black": 0.0,
+    "p95_luma": 0.864,
+    "share": 14.9
+   },
+   "level": {
+    "dark": 1.0,
+    "median_luma": 0.385,
+    "near_black": 0.0,
+    "p95_luma": 0.553,
+    "share": 21.1
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.667,
+    "near_black": 0.0,
+    "p95_luma": 0.793,
+    "share": 24.5
+   },
+   "props": {
+    "dark": 0.0,
+    "median_luma": 0.471,
+    "near_black": 0.0,
+    "p95_luma": 0.802,
+    "share": 7.4
+   },
+   "ring": {
+    "dark": 0.0,
+    "median_luma": 0.521,
+    "near_black": 0.0,
+    "p95_luma": 0.747,
+    "share": 3.5
+   },
+   "sky": {
+    "dark": 0.0,
+    "median_luma": 0.29,
+    "near_black": 0.0,
+    "p95_luma": 0.345,
+    "share": 1.6
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.555,
+   "near_black": 0.0,
+   "warm_share": 17.3
+  },
+  "warm_share": 16.7
+ },
+ "L6_diorama": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "lamp": 4.3,
+   "other": 95.3,
+   "rug": 0.1,
+   "zone": 0.3
+  },
+  "brightest_group": "lamp",
+  "dark_share": 0.6,
+  "frame": "L6_diorama.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.693,
+    "share": 0.03,
+    "warm": 93.5
+   },
+   "lamp": {
+    "p95_luma": 0.873,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.821,
+    "share": 1.15,
+    "warm": 38.9
+   },
+   "zone": {
+    "p95_luma": 0.661,
+    "share": 3.2,
+    "warm": 0.0
+   }
+  },
+  "median_luma": 0.57,
+  "near_black": 0.0,
+  "sources": {
+   "level": {
+    "dark": 0.6,
+    "median_luma": 0.334,
+    "near_black": 0.0,
+    "p95_luma": 0.797,
+    "share": 66.9
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.759,
+    "near_black": 0.0,
+    "p95_luma": 0.829,
+    "share": 33.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.481,
+   "near_black": 0.0,
+   "warm_share": 40.2
+  },
+  "warm_share": 37.0
+ },
+ "L6_diorama_crew": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "lamp": 0.0,
+   "other": 95.9,
+   "rug": 4.1
+  },
+  "brightest_group": "rug",
+  "clone_pop": 0.529,
+  "dark_share": 1.0,
+  "frame": "L6_diorama_crew.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.707,
+    "share": 0.05,
+    "warm": 65.5
+   },
+   "lamp": {
+    "p95_luma": 0.828,
+    "share": 0.08,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.851,
+    "share": 1.61,
+    "warm": 20.4
+   }
+  },
+  "median_luma": 0.281,
+  "near_black": 0.0,
+  "sources": {
+   "clone": {
+    "dark": 0.0,
+    "median_luma": 0.65,
+    "near_black": 0.0,
+    "p95_luma": 0.758,
+    "share": 0.0
+   },
+   "level": {
+    "dark": 1.0,
+    "median_luma": 0.261,
+    "near_black": 0.0,
+    "p95_luma": 0.82,
+    "share": 95.1
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.737,
+    "near_black": 0.0,
+    "p95_luma": 0.792,
+    "share": 4.9
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.281,
+   "near_black": 0.0,
+   "warm_share": 21.2
+  },
+  "warm_share": 17.8
+ },
+ "L6_diorama_mid": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "lamp": 0.0,
+   "other": 63.8,
+   "plate": 0.0,
+   "rug": 36.2
+  },
+  "brightest_group": "rug",
+  "clone_pop": 0.435,
+  "dark_share": 2.1,
+  "frame": "L6_diorama_mid.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.81,
+    "share": 0.13,
+    "warm": 79.5
+   },
+   "lamp": {
+    "p95_luma": 0.802,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.781,
+    "share": 0.3,
+    "warm": 0.3
+   },
+   "rug": {
+    "p95_luma": 0.88,
+    "share": 2.16,
+    "warm": 8.7
+   }
+  },
+  "median_luma": 0.29,
+  "near_black": 0.0,
+  "plate_pop": 0.09,
+  "signal_pop": 0.439,
+  "sources": {
+   "clone": {
+    "dark": 0.0,
+    "median_luma": 0.708,
+    "near_black": 0.0,
+    "p95_luma": 0.774,
+    "share": 0.6
+   },
+   "level": {
+    "dark": 2.1,
+    "median_luma": 0.287,
+    "near_black": 0.0,
+    "p95_luma": 0.854,
+    "share": 99.3
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.765,
+    "near_black": 0.0,
+    "p95_luma": 0.784,
+    "share": 0.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.28,
+   "near_black": 0.0,
+   "warm_share": 26.9
+  },
+  "warm_share": 21.3
+ }
+}

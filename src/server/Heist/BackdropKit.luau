@@ -28,27 +28,39 @@ local function folder(): Folder
 	return f
 end
 
--- Copies the ring templates (pure side effects on ReplicatedStorage). Returns how many pieces were published.
+-- Every piece the client backdrop clones: the rings (body + windows) and the town's kit (Config.Backdrop.KIT_PIECES).
+function BackdropKit.pieces(): { string }
+	local out = {}
+	for _, ring in B.RINGS do
+		table.insert(out, ring.piece)
+		table.insert(out, ring.windows)
+	end
+	for _, name in B.KIT_PIECES do
+		table.insert(out, name)
+	end
+	return out
+end
+
+-- Copies the templates (pure side effects on ReplicatedStorage). Returns how many pieces were published; a piece
+-- the kit does not have (not uploaded yet) is skipped, and the client keeps that piece's box fallback.
 function BackdropKit.publish(kit: any): number
 	local f = folder()
 	local n = 0
-	for _, ring in B.RINGS do
-		for _, name in { ring.piece, ring.windows } do
-			if f:FindFirstChild(name) then
-				n += 1
-				continue
-			end
-			local part = kit.clone(name)
-			if part then
-				part.Anchored = true
-				part.CanCollide = false
-				part.CanQuery = false
-				part.CanTouch = false
-				part.CastShadow = false
-				part.Name = name
-				part.Parent = f
-				n += 1
-			end
+	for _, name in BackdropKit.pieces() do
+		if f:FindFirstChild(name) then
+			n += 1
+			continue
+		end
+		local part = kit.clone(name)
+		if part then
+			part.Anchored = true
+			part.CanCollide = false
+			part.CanQuery = false
+			part.CanTouch = false
+			part.CastShadow = false
+			part.Name = name
+			part.Parent = f
+			n += 1
 		end
 	end
 	f:SetAttribute("Ready", true)

@@ -1,18 +1,24 @@
 --!strict
 -- Heist/Backdrop: the world around the active heist instance or the garage (PLAN_STEAM_PLUS §4.1 W4,
--- roblox_quality §2). Built on the client from the pure Shared/Heist/BackdropPlan, so it costs the server
--- nothing and never replicates:
---   L0 a ground plane under the lot, dropped below the floor, that the Atmosphere fades into haze, and a kerb;
---   L1 a near ring of facade cards (body, marble cornice, snow on it, warm lit windows);
---   L2 / L3 the skyline rings (kit meshes from ReplicatedStorage/BackdropKit, four quarter copies each);
+-- roblox_quality §2; WORLD 2.0, docs/audit/LEVELS.md §10). Built on the client from the pure
+-- Shared/Heist/BackdropPlan (+ TownPlan), so it costs the server nothing and never replicates:
+--   L0 the snowfield under everything;
+--   L1 the town: the street (pavements, kerbs, a snowy road with tyre tracks), snow over the lot's outdoor floor,
+--      the neighbours (lit windows, snowy roofs, shop fronts, garlands and wreaths), street lamps with unlit warm
+--      pools (no Light objects), parked cars, decorated trees, snowmen, and the lot fence (invisible colliders);
+--   L2 / L3 the skyline rings, drawn flat in a light haze colour;
 --   the sky: Lighting.Sky turned so Hoardsworth's tower and the Snow Globe stand in the first view;
 --   falling snow in a volume that follows the camera (exterior views only), and snow caps plus a warm window
 --   spill on the street side of the kit fronts.
--- Static decoration: every part is Anchored with CanCollide / CanQuery / CanTouch / CastShadow off, so the sim,
--- Poppercam and Gus's fan never see it. No searchlights. Tier-aware like Heist/LightDirector (Telemetry.onTier):
--- the far ring goes from Config.Backdrop.FAR_RING_OFF_TIER, facade windows from FACADE_WINDOWS_OFF_TIER, the snow
--- halves from SNOW.LOW_TIER and stays under the tier's snowAlive (Shared/Heist/Budget). Reduced motion: the snow falls
--- slower and sparser, never off.
+-- The kit pieces (lamps, roofs, cars, trees, snowmen, the Christmas pieces, the rings) are templates server
+-- Heist/BackdropKit publishes to ReplicatedStorage/BackdropKit; a piece that has not arrived yet draws its box
+-- fallback (if it has one) and is swapped in when the kit is Ready.
+-- Static decoration: every part is Anchored with CanCollide / CanQuery / CanTouch / CastShadow off (the lot fence
+-- alone collides, for your own character), so the sim, Poppercam and Gus's fan never see it. Tier-aware like
+-- Heist/LightDirector (Telemetry.onTier): the far ring goes from Config.Backdrop.FAR_RING_OFF_TIER, props and the
+-- Christmas pieces from TOWN.PROPS_OFF_TIER, the pools from TOWN.POOLS_OFF_TIER, the snow halves from SNOW.LOW_TIER
+-- and stays under the tier's snowAlive (Shared/Heist/Budget). The snowfield, the streets, every building and its
+-- windows stay at every tier: the frame is never black. Reduced motion: the snow falls slower and sparser.
 
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -23,9 +29,12 @@ local Config = require(Shared:WaitForChild("Config")) :: any
 local BackdropPlan = require(Shared:WaitForChild("Heist"):WaitForChild("BackdropPlan"))
 local Budget = require(Shared:WaitForChild("Heist"):WaitForChild("Budget"))
 
+local Theme = require(script.Parent:WaitForChild("Theme"))
+
 local B = Config.Backdrop
 local S = B.SNOW
 local LOC = Config.Lighting.LOCATION
+local POOL_IMAGE = Config.Lighting.POOL_SOFT.image
 
 -- Kit fronts (STYLE_BIBLE §5.1 local frame: X [-24, 0] along the front, Y up, -Z the street): the awning slopes
 -- and window sills of assets/blender/storefront.py, in Roblox axes. Awning: from the wall (z 0, y 9.75) down to
@@ -68,6 +77,13 @@ local function seq(a: number, b: number): NumberRange
 	return NumberRange.new(a, b)
 end
 
+local function v3(t: { number }): Vector3
+	return Vector3.new(t[1], t[2], t[3])
+end
+
+-- A layer piece the tier can hide: parts by Transparency (their own base value kept), pool guis by Enabled.
+type Shown = { part: BasePart?, gui: SurfaceGui?, layer: string, base: number }
+
 local Backdrop = {}
 
 function Backdrop.new(): any
@@ -76,7 +92,8 @@ function Backdrop.new(): any
 	local reduced = false
 	local folder: Folder? = nil
 	local farParts: { BasePart } = {}
-	local windowParts: { BasePart } = {}
+	local shown: { Shown } = {}
+	local pools: { SurfaceGui } = {}
 	local footprint: BackdropPlan.Rect? = nil -- world space
 	local siteNow: BackdropPlan.Site? = nil
 	local originNow = Vector3.zero
@@ -88,15 +105,25 @@ function Backdrop.new(): any
 	local interior = false
 	local lastInteriorCheck = 0
 	local buildToken = 0
+	local poolUri: string? = nil
+
+	local function track(p: BasePart?, gui: SurfaceGui?, layer: string)
+		table.insert(shown, { part = p, gui = gui, layer = layer, base = if p then p.Transparency else 0 })
+	end
 
 	local function applyTier()
 		local farOn = tierNow < B.FAR_RING_OFF_TIER
 		for _, p in farParts do
 			p.Transparency = if farOn then 0 else 1
 		end
-		local winOn = tierNow < B.FACADE_WINDOWS_OFF_TIER
-		for _, p in windowParts do
-			p.Transparency = if winOn then 0 else 1
+		for _, s in shown do
+			local on = BackdropPlan.layerOn(s.layer, tierNow)
+			if s.part then
+				(s.part :: BasePart).Transparency = if on then s.base else 1
+			end
+			if s.gui then
+				(s.gui :: SurfaceGui).Enabled = on
+			end
 		end
 		if emitter then
 			local e = emitter :: ParticleEmitter
@@ -120,7 +147,7 @@ function Backdrop.new(): any
 		p.Transparency = 1
 		quiet(p)
 		local e = Instance.new("ParticleEmitter")
-		e.Name = "Snow"
+		e.Name = "Snow" -- Heist/Particles counts it by this name (HeistClient)
 		e.Shape = Enum.ParticleEmitterShape.Box
 		e.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
 		e.EmissionDirection = Enum.NormalId.Bottom
@@ -233,6 +260,105 @@ function Backdrop.new(): any
 		end
 	end
 
+	-- One town part from the plan (site space -> world).
+	local function townPart(parent: Instance, ps: any): Part
+		local p = box(parent, ps.name, v3(ps.size), CFrame.new(originNow + v3(ps.pos)), rgb(ps.color), ps.neon)
+		if ps.collide then
+			-- the lot fence: your own character stops at the lot's edge; cameras and raycasts pass through
+			p.Transparency = 1
+			p.CanCollide = true
+		end
+		return p
+	end
+
+	-- An unlit warm pool on the snow (roblox_quality §1.2 trick 2): the soft radial gradient once its image has
+	-- resolved (UiImages), two soft discs until then.
+	local function soften(gui: SurfaceGui)
+		local img = gui:FindFirstChild("Soft")
+		if not poolUri or not img or not img:IsA("ImageLabel") then
+			return
+		end
+		img.Image = poolUri :: string
+		img.Visible = true
+		for _, c in gui:GetChildren() do
+			if c:IsA("Frame") then
+				c:Destroy()
+			end
+		end
+	end
+
+	local function pool(parent: Instance, pl: any)
+		local p = box(
+			parent,
+			"TownPool",
+			Vector3.new(pl.size, 0.05, pl.size),
+			CFrame.new(originNow + v3(pl.pos)),
+			rgb(pl.color)
+		)
+		p.Transparency = 1
+		local gui = Instance.new("SurfaceGui")
+		gui.Face = Enum.NormalId.Top
+		gui.LightInfluence = 0
+		gui.Brightness = 1
+		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		gui.PixelsPerStud = 6
+		gui.MaxDistance = 400
+		local img = Instance.new("ImageLabel")
+		img.Name = "Soft"
+		img.Size = UDim2.fromScale(1, 1)
+		img.BackgroundTransparency = 1
+		img.ImageColor3 = rgb(pl.color)
+		img.ImageTransparency = 1 - pl.alpha
+		img.Visible = false
+		img.Parent = gui
+		for k, share in { 1, 0.55 } do
+			local d = Instance.new("Frame")
+			d.Name = "Disc" .. k
+			d.AnchorPoint = Vector2.new(0.5, 0.5)
+			d.Position = UDim2.fromScale(0.5, 0.5)
+			d.Size = UDim2.fromScale(share, share)
+			d.BackgroundColor3 = rgb(pl.color)
+			d.BackgroundTransparency = 1 - pl.alpha * (if k == 1 then 0.3 else 0.45)
+			d.BorderSizePixel = 0
+			local c = Instance.new("UICorner")
+			c.CornerRadius = UDim.new(0.5, 0)
+			c.Parent = d
+			d.Parent = gui
+		end
+		gui.Parent = p
+		table.insert(pools, gui)
+		track(nil, gui, "pools")
+		soften(gui)
+	end
+
+	-- A kit piece from the BackdropKit folder at its pivot (uniform scale or a target size), or nil.
+	local function kitPiece(kit: Instance, parent: Instance, k: any): BasePart?
+		local template = kit:FindFirstChild(k.piece)
+		if not (template and template:IsA("BasePart")) then
+			return nil
+		end
+		local p = (template :: BasePart):Clone()
+		quiet(p)
+		local base = p.Size
+		local scale = Vector3.one
+		if k.size then
+			scale = v3(k.size) / base
+		elseif k.scale then
+			scale = Vector3.one * k.scale
+		end
+		if scale ~= Vector3.one then
+			local off = p.PivotOffset
+			p.Size = base * scale
+			p.PivotOffset = CFrame.new(off.Position * scale) * off.Rotation
+		end
+		if k.color then
+			p.Color = rgb(k.color)
+		end
+		p:PivotTo(CFrame.new(originNow + v3(k.pos)) * CFrame.Angles(0, math.rad(k.yaw), 0))
+		p.Parent = parent
+		return p
+	end
+
 	local function addRing(ring: any, kit: Instance, parent: Instance)
 		for _, name in { ring.piece, ring.windows } do
 			local template = kit:FindFirstChild(name)
@@ -242,6 +368,11 @@ function Backdrop.new(): any
 			for _, yaw in ring.yaws do
 				local p = (template :: BasePart):Clone()
 				quiet(p)
+				if name == ring.piece and ring.color and p:IsA("MeshPart") then
+					-- a flat haze silhouette (the atlas's Ink faces read black, LEVELS.md §10)
+					p.TextureID = ""
+					p.Color = rgb(ring.color)
+				end
 				p:PivotTo(
 					CFrame.new(originNow + Vector3.new(ring.centre[1], ring.centre[2], ring.centre[3]))
 						* CFrame.Angles(0, math.rad(yaw), 0)
@@ -273,13 +404,14 @@ function Backdrop.new(): any
 			folder = nil
 		end
 		table.clear(farParts)
-		table.clear(windowParts)
+		table.clear(shown)
+		table.clear(pools)
 		snowPart, emitter = nil, nil
 		footprint, siteNow = nil, nil
 		interior = false
 	end
 
-	local function build(site: BackdropPlan.Site, origin: Vector3, levelModel: Instance?)
+	local function build(site: BackdropPlan.Site, origin: Vector3, levelModel: Instance?, dressing: boolean?)
 		director.clear()
 		if not B.ENABLED then
 			return
@@ -299,53 +431,70 @@ function Backdrop.new(): any
 		local f = Instance.new("Folder")
 		f.Name = "EH_Backdrop"
 		folder = f
-		local plan = BackdropPlan.plan(site)
+		makeSnow(f) -- first: Heist/Particles finds the "Snow" emitter by name
+		local plan = BackdropPlan.plan(site, dressing)
 		for _, ps in plan.parts do
-			local p = box(
-				f,
-				ps.name,
-				Vector3.new(ps.size[1], ps.size[2], ps.size[3]),
-				CFrame.new(origin + Vector3.new(ps.pos[1], ps.pos[2], ps.pos[3])),
-				rgb(ps.color),
-				ps.neon
-			)
-			if ps.layer == "windows" then
-				table.insert(windowParts, p)
+			local p = townPart(f, ps)
+			if ps.layer ~= "fence" then
+				track(p, nil, ps.layer)
 			end
 		end
-		-- the skyline rings: now if the kit is published, else when it arrives
-		local kit = ReplicatedStorage:FindFirstChild(B.KIT_FOLDER)
-		local function rings()
-			local k = ReplicatedStorage:FindFirstChild(B.KIT_FOLDER)
-			if token ~= buildToken or not k or k:GetAttribute("Ready") ~= true then
+		for _, pl in plan.pools do
+			pool(f, pl)
+		end
+		-- the kit pieces and the rings: now if the kit is published, else their fallbacks until it arrives
+		local fallbacks: { [number]: BasePart } = {}
+		local placed: { [number]: boolean } = {}
+		for i, k in plan.kit do
+			if k.fallback then
+				local p = townPart(f, k.fallback)
+				fallbacks[i] = p
+				track(p, nil, k.layer)
+			end
+		end
+		local ringsDone = false
+		local function addKit(): boolean
+			local kit = ReplicatedStorage:FindFirstChild(B.KIT_FOLDER)
+			if token ~= buildToken or not kit or kit:GetAttribute("Ready") ~= true then
 				return false
 			end
-			for _, ring in plan.rings do
-				addRing(ring, k, f)
+			for i, k in plan.kit do
+				if placed[i] then
+					continue
+				end
+				local p = kitPiece(kit, f, k)
+				if p then
+					placed[i] = true
+					track(p, nil, k.layer)
+					local fb = fallbacks[i]
+					if fb then
+						fb:Destroy()
+						fallbacks[i] = nil
+					end
+				end
+			end
+			if not ringsDone then
+				ringsDone = true
+				for _, ring in plan.rings do
+					addRing(ring, kit, f)
+				end
 			end
 			applyTier()
 			return true
 		end
-		if not rings() then
-			local target: Instance = kit or ReplicatedStorage
-			kitConn = target:GetAttributeChangedSignal("Ready"):Connect(function()
-				if rings() and kitConn then
-					kitConn:Disconnect()
-					kitConn = nil
+		if not addKit() then
+			task.spawn(function()
+				local kit = ReplicatedStorage:WaitForChild(B.KIT_FOLDER, B.KIT_WAIT_SECONDS)
+				if not kit or token ~= buildToken or addKit() then
+					return
 				end
-			end)
-			if kit == nil then
-				-- the folder itself has not replicated yet: try again once it does
-				task.spawn(function()
-					local k = ReplicatedStorage:WaitForChild(B.KIT_FOLDER, B.KIT_WAIT_SECONDS)
-					if k and token == buildToken and not rings() and kitConn then
+				kitConn = kit:GetAttributeChangedSignal("Ready"):Connect(function()
+					if addKit() and kitConn then
 						kitConn:Disconnect()
-						kitConn = k:GetAttributeChangedSignal("Ready"):Connect(function()
-							rings()
-						end)
+						kitConn = nil
 					end
 				end)
-			end
+			end)
 		end
 		-- the kit fronts: snow caps and window spill (the kit may dress the level a moment later)
 		if levelModel then
@@ -368,23 +517,32 @@ function Backdrop.new(): any
 				sky.SkyboxOrientation = Vector3.new(0, BackdropPlan.skyYaw(site), 0)
 			end)
 		end
-		makeSnow(f)
 		f.Parent = workspace
-		stepConn = RunService.RenderStepped:Connect(follow)
+		-- (perf_engine builds this on a server, where RenderStepped does not exist: the snow just stays put there)
+		stepConn = if RunService:IsClient() then RunService.RenderStepped:Connect(follow) else nil
 		applyTier()
 	end
 
-	-- The heist instance's level (compiled LevelSpec) at its origin; levelModel = the instance's Level model.
-	function director.showHeist(levelModel: Instance?, level: any, origin: Vector3)
+	Theme.onImage(POOL_IMAGE, function(uri: string)
+		poolUri = uri
+		for _, gui in pools do
+			soften(gui)
+		end
+	end)
+
+	-- The heist instance's level (compiled LevelSpec) at its origin; levelModel = the instance's Level model;
+	-- dressing = the instance's Christmas layer.
+	function director.showHeist(levelModel: Instance?, level: any, origin: Vector3, dressing: boolean?)
 		if level == nil then
 			director.clear()
 			return
 		end
-		build(BackdropPlan.levelSite(level), origin, levelModel)
+		local loc = levelModel and levelModel:GetAttribute("Location")
+		build(BackdropPlan.levelSite(level, if type(loc) == "string" then loc else nil), origin, levelModel, dressing)
 	end
 
 	function director.showGarage()
-		build(BackdropPlan.garageSite(), Vector3.zero, nil)
+		build(BackdropPlan.garageSite(), Vector3.zero, nil, nil)
 	end
 
 	-- Hooked to Telemetry.onTier by the caller (1 = quality ... 4 = minimum).

@@ -152,9 +152,9 @@ Replaced "Heist Night" v1 on 2026-11-12 (PLAN_STEAM_PLUS §4.1 W1, `docs/researc
 
 | Node | Values |
 |---|---|
-| Lighting | LightingStyle Realistic, PrioritizeLightingQuality on, GlobalShadows on, **ClockTime 15, GeographicLatitude 20**, Brightness 1.4, ColorShift_Top (150,175,255), ColorShift_Bottom (40,30,70), Ambient (95,90,140), OutdoorAmbient (115,110,165) (Ambient ≤ OutdoorAmbient in every channel), EnvironmentDiffuseScale 0.30, EnvironmentSpecularScale 0.40, ExposureCompensation 0.30, ShadowSoftness 0.3 |
-| Sky | CelestialBodiesShown, SunTextureId `rbxasset://sky/moon.jpg` (the key light drawn as a moon), SunAngularSize 9, MoonAngularSize 0, StarCount 0. **Faces: Roblox's default (a day sky) until the plain night faces (`assets/sky/`, `tools/blender/sky_faces.py`) are uploaded and pasted in**; the Heist City cubemap is phase 2 (W4) |
-| Atmosphere | Density 0.28, Offset 0.12, Color (90,80,150), Decay (55,45,105), Glare 0, Haze 1.3 |
+| Lighting | **Technology Future** (listed in the file, or the place loads as Voxel = Soft + off), LightingStyle Realistic, PrioritizeLightingQuality on, GlobalShadows on, **ClockTime 15, GeographicLatitude 20**, Brightness 1.5, ColorShift_Top (150,175,255), ColorShift_Bottom (40,30,70), Ambient (136,124,150), OutdoorAmbient (174,160,186) (Ambient ≤ OutdoorAmbient in every channel), EnvironmentDiffuseScale 0.36, EnvironmentSpecularScale 0.40, ExposureCompensation 0.40, ShadowSoftness 0.3 (WORLD 2.0, §16: was 1.4 / (95,90,140) / (115,110,165) / 0.30 / 0.30, which put every ambient-lit dark albedo in the tone mapper's toe) |
+| Sky | CelestialBodiesShown, SunTextureId `rbxasset://sky/moon.jpg` (the key light drawn as a moon), SunAngularSize 9, MoonAngularSize 0, StarCount 0. Faces: the Heist City cubemap (`tools/blender/sky_city.py`, ids in `assets/sky/sky_ids.json`): a deep but clearly blue zenith (34,48,116), a light haze horizon (158,158,214) with a warm rose glow, the lower half the haze colour (never dark), Hoardsworth's tower and the Snow Globe toward -Z |
+| Atmosphere | Density 0.24, Offset 0.12, Color (158,158,214), Decay (124,120,184), Glare 0, Haze 1.6: a light snowy blue-violet haze; the distance fades lighter, never to darkness (WORLD 2.0, §16) |
 | Bloom | Intensity 0.6, Size 24, **Threshold 1.15**: lit marble stays below it; Neon and over-bright effects glow |
 | ColorCorrection | Brightness 0, Contrast 0.12, Saturation 0.08, Tint (240,240,255) (mild: the night lives in the Lighting values) |
 | Never | SunRays; DepthOfField or Blur in play (menus, planning camera and reel only) |
@@ -396,3 +396,20 @@ Each bookmark is shot 3 times: **PC Quality 10**, **phone Automatic**, **phone q
 | Accent lamps | `LevelDress.accents`: a warm gold flood (`LAMP.accent`, 1.5, range 20, no shadows) that ignores the location colour. Only where the location colour would make the focal room cold (L6's vault: the Bank's room lamps are green) |
 | Need-all lamp row | Lettered Neon discs (0.95) on the door frame's face toward its plates, in letter order from the viewer's left, gap doubled across the door lamp; dim Bulb Warm idle (0.55), the presser's hue when held; the "VAULT n/4" count rides over the row (Bulb Warm, Go Green at n/n). Under the wall top (12), over the door (10) |
 | Outdoors (lots) | Walls past the street front's X extent are a lot's fence: no interior floor tiles there, the snow falls there, street lamps may stand there (L6's alleys) |
+
+## 16. WORLD 2.0: the snowy neighbourhood (owner, Nov 2026: "must NOT be black in the background")
+
+Every lot and the garage stand in a bright snowy town that fills both cameras to the frame edges, like a lit
+Christmas snow globe. Diagnosis and numbers: `docs/audit/LEVELS.md` §10. Code: `Shared/Heist/TownPlan` (pure plan),
+`Heist/Backdrop` (client build), `Heist/BackdropKit` (server: the kit templates), `Config.Backdrop.TOWN`.
+
+| Rule | Number |
+|---|---|
+| Value | Snow is a **high-value surface**: hue says night, never darkness. Snowfield (176,182,214) V 84 %, roof snow (196,200,226), the road's packed snow (152,154,190), the lot's yards (140,142,180), warm stone pavements (158,140,138), slush tracks (104,94,110) V 43 %. No big town surface below V 40 %; the darkest is a door. (§2's "ground 23-31 %" is now the playable floors only) |
+| Warm | House bodies warm (brick, terracotta, mustard, cream; candy colours on the Toy Shop street; sandstone at the Bank), Bulb Warm windows (the PLAN §3.1 exception: away from the play floor), unlit lamp pools (255,196,140) at 0.6 on the snow. Cool only in shadow and in the sky |
+| Layers | Snowfield (one 2048 Part, top 0.3 under the floor); the street at the lot's own height (+0.015: under the kit tiles, cables and pools); snow over the lot's outdoor floor (client, layer "lot"); a row of neighbours either side (the first one long, lit toward the lot), a row behind facing the lot, a row across the street; the rings drawn flat in (112,114,166) / (134,136,186); the sky |
+| Each map | Corner Shop street (terraces, corner shops, gabled houses, a tree on the far pavement); Toy Shop high street (candy fronts under fairy-light strings, two trees; L5 always); Bank plaza (stone fronts, civic porticoes, a paved plaza with a 26-stud tree and four lamps); garage yard (workshops, houses, cars round the yard). Each level its own arrangement (seeded by its number) |
+| Kit | `Roof_Gable` (scaled per house), `Car_Parked` + `Car_Parked_Paint` (runtime colour), `Snowman`, plus StreetLamp, Xmas_Tree (+ lights), Xmas_Garland_8, Xmas_Wreath, Xmas_Lights_8 (+ bulbs), Xmas_SnowPile. Christmas pieces follow `TOWN.XMAS_DECOR` ("always": the town is on Christmas Eve) |
+| Never | A Light object in the town (pools are unlit SurfaceGuis), a collider (except the invisible client-only lot fence, CanQuery off), anything inside the lot except its snow, a building within 18 studs of a spawn |
+| Budget | Whole backdrop at tier 1 ≤ 650 instances, ≤ 45 draws, ≤ 70k tris (unit spec on every site; perf_engine counts the real build round every instance and the garage). Tier 3+: props, Christmas pieces and pools hidden, the far ring off; the snowfield, streets, buildings and windows stay at every tier |
+| Tone map | The Blender previews add a filmic (ACES fit) tone map before grading (`backdrop_shots.tonemap`): Standard has no toe and hid how black dark albedos go in the engine |

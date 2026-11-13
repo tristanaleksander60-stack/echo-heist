@@ -617,7 +617,7 @@ function HeistClient.start()
 			world.bind(levelModel)
 			lights.bind(levelModel)
 		end
-		backdrop.showHeist(levelModel, state.level, state.origin)
+		backdrop.showHeist(levelModel, state.level, state.origin, state.dressing)
 		if state.level then
 			gus.setLevel(state.level)
 		end

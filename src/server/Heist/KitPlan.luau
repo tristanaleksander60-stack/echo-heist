@@ -539,6 +539,23 @@ end
 -- Every lamp of a level: one over each plate, the hero over the goal (the only shadowed light), then the
 -- room centres (LevelDress `rooms`, else automatic), skipping any within cfg.MIN_LAMP_GAP of a lamp, then the
 -- warm accents (LevelDress `accents`: the Bank vault's gold light), then the street lamps on the pavement (LevelDress `street`: warm pools outside, PLAN_STEAM_PLUS §3.1, GOLDEN G1).
+-- A level without hand dressing (the daily vaults) still gets the street lamps of its location's front (WORLD 2.0,
+-- docs/audit/LEVELS.md §10: without them the daily spawn view had no warm pool at all): one either side of the
+-- building's street front, 2.5 studs out on the pavement, 3.5 studs in from its ends (L1-L4's SHOP_STREET).
+function KitPlan.defaultStreet(level: any, dress: any?): { { number } }
+	if dress ~= nil then
+		return {}
+	end
+	local b = KitPlan.buildingBox(level)
+	if b == nil then
+		return {}
+	end
+	local box = b :: Box
+	local z = box.maxZ - 0.5 + 2.5
+	local inset = 3.5
+	return { { box.minX + inset, z }, { box.maxX - inset, z } }
+end
+
 function KitPlan.lamps(level: any, dress: any?, cfg: any): { Lamp }
 	local out: { Lamp } = {}
 	for i, p in level.plates do
@@ -575,7 +592,7 @@ function KitPlan.lamps(level: any, dress: any?, cfg: any): { Lamp }
 		end
 	end
 	if cfg.LAMP.street then
-		for _, st in (dress and dress.street) or {} do
+		for _, st in (dress and dress.street) or KitPlan.defaultStreet(level, dress) do
 			table.insert(out, { x = st[1], z = st[2], kind = "street" })
 		end
 	end
