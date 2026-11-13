@@ -515,7 +515,8 @@ def lamp_light(level, lp):
             bsdf = next(n for n in m2.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
             node = bsdf.inputs["Alpha"].links[0].from_node
             rc = lp.get("rect") or [lp["x"] - r, lp["x"] + r, lp["z"] - r, lp["z"] + r]
-            POOL_FADE.append({"node": node, "peak": node.inputs[1].default_value, "rect": rc, "y": fy + P["lift"]})
+            POOL_FADE.append({"node": node, "peak": node.inputs[1].default_value, "rect": rc, "y": fy + P["lift"],
+                              "x": lp["x"], "z": lp["z"]})
         return
     for k, rg in enumerate(lp.get("rings") or P["rings"]):
         r = lp["pool"] * rg["size"] / 2
@@ -1576,6 +1577,7 @@ def big_garage(g, samples, out_dir):
 # ------------------------------------------------------------------ INTERIORS (docs/audit/LEVELS.md 13)
 INT_SITES = ("L1", "L2", "L3", "L4", "L5", "L6", "DV01")
 INT = os.path.join(OUT, "interiors")
+INT_SIZE = (960, 444)   # 19.5:9 like W2_SIZE at 3/4 size (the grades are shares, not pixel counts)
 # The surface mask (one flat colour per surface class, 0/255 channels, the sky transparent): what the interior grade
 # compares: the ceiling against the walls (gap 9: ~0.6x in first person) and the signals against the props (A1).
 SURF_COLOURS = {"ceiling": (255, 0, 0), "wall": (0, 255, 0), "decor": (0, 0, 255), "floor": (255, 255, 0),
@@ -1675,13 +1677,15 @@ def _apply_fade(pos):
         return
     F = POOL_FADE_CFG
     for p in POOL_FADE:
-        x0, x1, z0, z1 = p["rect"]
-        dx = max(x0 - pos[0], 0, pos[0] - x1)
-        dz = max(z0 - pos[2], 0, pos[2] - z1)
-        elev = math.degrees(math.atan2(pos[1] - p["y"], math.hypot(dx, dz)))
-        t = min(1.0, max(0.0, (elev - F["from"]) / (F["to"] - F["from"])))
-        t = t * t * (3 - 2 * t)
-        p["node"].inputs[1].default_value = p["peak"] * (F["min"] + (1 - F["min"]) * t)
+        h = pos[1] - p["y"]
+        if h >= F["high"]:
+            k = 1.0
+        else:
+            elev = math.degrees(math.atan2(h, math.hypot(pos[0] - p["x"], pos[2] - p["z"])))
+            t = min(1.0, max(0.0, (elev - F["from"]) / (F["to"] - F["from"])))
+            t = t * t * (3 - 2 * t)
+            k = F["min"] + (F["max"] - F["min"]) * t
+        p["node"].inputs[1].default_value = p["peak"] * k
 
 
 POOL_FADE_CFG = None
@@ -1694,7 +1698,7 @@ def interiors_level(level, samples, out_dir, before=False):
     signals over the props)."""
     global POOL_FADE, POOL_FADE_CFG
     import backdrop_shots as BS
-    W, Hh = W2_SIZE
+    W, Hh = INT_SIZE
     os.makedirs(out_dir, exist_ok=True)
     os.makedirs(TMP, exist_ok=True)
     tag = short(level) + ("_before" if before else "")
@@ -1729,7 +1733,6 @@ def interiors_level(level, samples, out_dir, before=False):
         ("fp_spawn", _fp(sp["x"], sp["z"], fy, 0.0, -2.0), (sp["x"], sp["z"]), True),
         ("fp_front", _fp(0.0, fz1 - 3.0, fy, 0.0, 3.0), (0.0, fz1 - 3.0), False),
         ("fp_left", _fp(2.0, fm, fy, math.pi / 2, 4.0), (2.0, fm), False),
-        ("fp_right", _fp(-2.0, fm, fy, -math.pi / 2, 4.0), (-2.0, fm), False),
         ("fp_window", _fp(0.0, fz0 + 3.0, fy, math.pi, 3.0), (0.0, fz0 + 3.0), False),
         ("fp_ceiling", _fp(0.0, fm, fy, 0.0, 32.0), (0.0, fm), False),
         ("fp_loot", _fp(cx, cz, fy, math.atan2(-(gx - cx), -(gz - cz)), -6.0), (cx, cz), False),
@@ -1772,7 +1775,7 @@ def interiors_level(level, samples, out_dir, before=False):
     json.dump(allg, open(path, "w"), indent=1, sort_keys=True)
 
 
-INT_COLS = ("fp_spawn", "fp_front", "fp_left", "fp_right", "fp_window", "fp_ceiling", "fp_loot", "fp_loot_round",
+INT_COLS = ("fp_spawn", "fp_front", "fp_left", "fp_window", "fp_ceiling", "fp_loot", "fp_loot_round",
             "fp_street", "diorama", "classic", "diorama_mid")
 
 
@@ -2021,10 +2024,16 @@ def main(argv):
         out = os.path.abspath(a.out) if a.out else INT
         if a.before:
             os.environ["EH_NODECOR"] = "1"
-        if not a.only:
-            for tag in INT_SITES:   # one Blender process per site
-                subprocess.run([sys.executable, os.path.abspath(__file__), "--interiors", "--only", tag, "--samples",
-                                str(a.samples), "--out", out] + (["--before"] if a.before else []), check=True)
+        if not a.only or not a.shots or "," in a.shots:
+            # one Blender process per shot: Eevee dies after a few Workbench mask passes in one process (BIG)
+            sites = [a.only] if a.only else INT_SITES
+            shots = a.shots.split(",") if a.shots else list(INT_COLS)
+            for tag in sites:
+                for shot in shots:
+                    env = dict(os.environ, EH_W2_SHOTS=shot)
+                    subprocess.run([sys.executable, os.path.abspath(__file__), "--interiors", "--only", tag,
+                                    "--shots", shot, "--samples", str(a.samples), "--out", out] +
+                                   (["--before"] if a.before else []), check=False, env=env)
             interiors_sheet(out)
             return
         plan = load_plan(not a.plain, a.only.upper().startswith("DV"))

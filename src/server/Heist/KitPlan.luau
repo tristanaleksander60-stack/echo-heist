@@ -661,6 +661,20 @@ function KitPlan.lamps(level: any, dress: any?, cfg: any): { Lamp }
 					table.insert(out, cand)
 				end
 			end
+			-- the band's far wall (the partition you walk toward, its door and windows), off the door's axis
+			local farZ = lines[k + 1] + 0.5
+			for _, side in { -1, 1 } do
+				local cand: Lamp = {
+					x = (b.minX + b.maxX) / 2 + side * (b.maxX - b.minX) / 4,
+					z = farZ + 1 + wash.off,
+					kind = "wash",
+					dx = 0,
+					dz = -1,
+				}
+				if not insideTall(level, cand.x, cand.z) and fits(cand) then
+					table.insert(out, cand)
+				end
+			end
 		end
 	end
 	return out

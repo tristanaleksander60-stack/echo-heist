@@ -169,18 +169,20 @@ end
 type LevelLight = { light: Light, kind: string?, range: number }
 type PoolFade = { gui: SurfaceGui, host: BasePart, alpha: number, base: { [GuiObject]: number } }
 
--- The share of a pool's strength at a view: 1 when the camera is high over it or inside it, down to FADE.min when the
--- camera looks across it at a grazing angle (elevation of the camera over the pool's nearest point, in degrees).
+-- The share of a pool's strength at a view (Config.Interior.POOL_FADE): with the camera high over the floor (diorama,
+-- classic) always 1; at eye height from FADE.min (looking across the pool at a grazing angle: the camera's elevation
+-- over the pool's centre) up to FADE.max (standing in it), smoothstep between.
 local function fadeAt(cam: Vector3, host: BasePart): number
 	local c = host.Position
-	local hx, hz = host.Size.X / 2, host.Size.Y / 2 -- the pool part lies flat: its Y runs along world Z
-	local dx = math.max(math.abs(cam.X - c.X) - hx, 0)
-	local dz = math.max(math.abs(cam.Z - c.Z) - hz, 0)
 	local h = cam.Y - c.Y
+	if h >= FADE.high then
+		return 1
+	end
+	local dx, dz = cam.X - c.X, cam.Z - c.Z
 	local elev = math.deg(math.atan2(h, math.sqrt(dx * dx + dz * dz)))
 	local t = math.clamp((elev - FADE.from) / (FADE.to - FADE.from), 0, 1)
 	t = t * t * (3 - 2 * t)
-	return FADE.min + (1 - FADE.min) * t
+	return FADE.min + (FADE.max - FADE.min) * t
 end
 
 local LightDirector = {}

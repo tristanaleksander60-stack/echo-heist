@@ -1136,9 +1136,9 @@ Config.Lighting = {
 		-- wash (INTERIORS, KitPlan.lamps): a warm SpotLight near the ceiling aimed down a wall, so the walls carry
 		-- the room's light in first person instead of the ceiling (no shadows, no pool, no fixture; tier 1 only)
 		wash = {
-			range = 18,
-			brightness = 1.1,
-			angle = 95,
+			range = 20,
+			brightness = 1.8,
+			angle = 100,
 			color = { 255, 200, 150 },
 			shadows = false,
 			pool = 0,
@@ -2832,9 +2832,10 @@ Config.Interior = {
 	-- the ceiling stay at every tier).
 	DECOR_OFF_TIER = 3,
 	-- First-person pools (client LightDirector): a pool's strength x a share from `min` (the camera looks across it at
-	-- an elevation of `from` degrees or less, e.g. a pool 10+ studs ahead of the 3.8-stud eye) to 1 (`to` degrees or
-	-- more: looking down into it, or any diorama / classic view), smoothstep between; `hz` updates a second.
-	POOL_FADE = { from = 14, to = 38, min = 0.35, hz = 15 },
+	-- an elevation of `from` degrees or less over its centre, e.g. a pool 10+ studs ahead of the 3.8-stud eye) to `max`
+	-- (`to` degrees or more: standing in it), smoothstep between. `max` is 1 once the camera is `high` studs or more
+	-- over the floor (diorama, classic, presentation shots keep the pools as they were); `hz` updates a second.
+	POOL_FADE = { from = 12, to = 40, min = 0.3, max = 0.62, high = 7, hz = 15 },
 	-- Per level at tier 1 (unit spec; perf_engine counts the real build): props, hero, frieze and brass together.
 	BUDGET = { tris = 22000, instances = 90 },
 	-- Placement (studs). WALL_GAP: a prop's back to the kit wall face (the kit wall is 2 thick, centred on the sim
