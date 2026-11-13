@@ -510,9 +510,15 @@ function Viewmodel.fromOutfit(folder: Instance, outfitKey: string?, hue: Color3)
 			end
 		end
 		if hand then
+			-- The grip frame follows the viewmodel convention (the placeholder's): fingers along -Z, the back of
+			-- the hand +Y. The body's rest pose has the forearm hanging (elbow -> wrist is -Y) with the palm
+			-- forward, so the grip looks down the forearm with the back of the hand (+Z body) as up. Without
+			-- this the sleeve stood upright in front of the eye and hid the hands (owner's Studio capture).
+			local gripPos = (elbow * CFrame.new(v3(d.gripOffset))).Position
+			local axis = (wristAt - elbowAt).Unit
 			local grip = Instance.new("Attachment")
 			grip.Name = d.grip
-			grip.CFrame = hand.CFrame:ToObjectSpace(elbow * CFrame.new(v3(d.gripOffset)))
+			grip.CFrame = hand.CFrame:ToObjectSpace(CFrame.lookAt(gripPos, gripPos + axis, Vector3.zAxis))
 			grip.Parent = hand
 		end
 	end

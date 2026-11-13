@@ -1809,6 +1809,18 @@ local okCh, chErr = pcall(function(): string
 		assert(crew >= 2, "the sleeve's crew stripes or cuffs: " .. crew)
 		assert(loud == 0, "quiet parts")
 		assert(#rig.R.parts >= 3 and #rig.L.parts >= 3, "both hands bound to their grips")
+		-- the sleeve lies along the grip's +Z (behind the hand, toward the eye), never upright in front of it
+		for _, side in { rig.R, rig.L } do
+			for i, part in side.parts do
+				if string.find(part.Name, "LowerArm", 1, true) then
+					local off = side.offsets[i].Position
+					assert(
+						off.Z > 0 and off.Z > math.abs(off.Y),
+						string.format("%s runs back toward the eye (grip-space %s)", part.Name, tostring(off))
+					)
+				end
+			end
+		end
 		table.insert(looks, string.format("%s %d parts", o.gloves, #rig.R.parts + #rig.L.parts))
 		rig.model:Destroy()
 	end
