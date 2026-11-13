@@ -313,10 +313,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "36c06480af0bf1086cac",
+ "contentHash": "6d0b6b43709dc40ed8f5",
  "fbx": {
   "path": "assets/fbx/Intro_SnowGlobe.fbx",
-  "bytes": 179084,
+  "bytes": 165804,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -351,6 +351,6 @@
  },
  "spec": "assets/blender/intro.py",
  "notes": "Hero Snow Globe Vault: burgundy and gold plinth, glass dome (r 16), inlet cap, a heap of stolen presents.",
- "turntable": "docs/art/turntables/Intro_SnowGlobe.png",
- "seconds": 52.0
+ "seconds": 2.1,
+ "turntable": "docs/art/turntables/Intro_SnowGlobe.png"
 }

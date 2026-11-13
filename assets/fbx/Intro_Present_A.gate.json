@@ -80,10 +80,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "3f94c8421b39fc9627af",
+ "contentHash": "a391497adcf9d86007ff",
  "fbx": {
   "path": "assets/fbx/Intro_Present_A.fbx",
-  "bytes": 23468,
+  "bytes": 23036,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -100,6 +100,6 @@
  },
  "spec": "assets/blender/intro.py",
  "notes": "flying present A: tall, burgundy paper, snow ribbon",
- "turntable": "docs/art/turntables/Intro_Present_A.png",
- "seconds": 64.4
+ "seconds": 0.2,
+ "turntable": "docs/art/turntables/Intro_Present_A.png"
 }

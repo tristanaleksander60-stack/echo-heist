@@ -174,7 +174,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "e913af772a2fba411014",
+ "contentHash": "f0da0bf6008d900aef46",
  "fbx": {
   "path": "assets/fbx/Wall_Door_8x12.fbx",
   "bytes": 40732,
@@ -200,6 +200,6 @@
  },
  "spec": "assets/blender/wall.py",
  "notes": "Door wall 8x12: 6x10 opening (LevelSpec door box), marble casing, plinth blocks on the baseboard line, pocket leaf.",
- "turntable": "docs/art/turntables/Wall_Door_8x12.png",
- "seconds": 34.6
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Wall_Door_8x12.png"
 }

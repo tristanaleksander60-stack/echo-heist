@@ -86,10 +86,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "bff8fa1953c510b81ca2",
+ "contentHash": "c003098cb4996bcaf6b9",
  "fbx": {
   "path": "assets/fbx/Counter_4x4.fbx",
-  "bytes": 23148,
+  "bytes": 23276,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -106,6 +106,6 @@
  },
  "spec": "assets/blender/furniture.py",
  "notes": "Counter 4x4x3.5: raised panels, dark display top, clerk-side recess and pulls.",
- "turntable": "docs/art/turntables/Counter_4x4.png",
- "seconds": 13.1
+ "seconds": 0.2,
+ "turntable": "docs/art/turntables/Counter_4x4.png"
 }

@@ -379,13 +379,15 @@ local function loadAppearances()
 	loaded:Destroy()
 end
 
-local function rebuild(mesh: MeshPart, spec: Spec): MeshPart?
+local function rebuild(mesh: MeshPart, spec: Spec, render: string): MeshPart?
 	local fidelity = (Enum.CollisionFidelity :: any)[spec.collision]
+	-- CreateMeshPartAsync keeps the mesh's split normals, UVs and triangle count exactly (measured with
+	-- EditableMesh, docs/audit/STUDIO_FIDELITY.md); RenderFidelity can only be chosen here (not scriptable later).
 	for attempt = 1, cfg.REBUILD_ATTEMPTS do
 		local ok, made = pcall(function()
 			return AssetService:CreateMeshPartAsync(mesh.MeshContent, {
 				CollisionFidelity = fidelity,
-				RenderFidelity = mesh.RenderFidelity,
+				RenderFidelity = (Enum.RenderFidelity :: any)[render],
 			})
 		end)
 		if ok and typeof(made) == "Instance" and made:IsA("MeshPart") then
@@ -420,8 +422,12 @@ local function prepare(name: string, kit: Folder)
 	local part = found[name]
 	local fid = part.CollisionFidelity.Name
 	report.importedFidelity[fid] = (report.importedFidelity[fid] or 0) + 1
-	if KitLib.needsRebuild(fid, spec, cfg.REBUILD_FIDELITY) then
-		local made = rebuild(part, spec)
+	local render = KitLib.renderFidelity(name, cfg.PRECISE_PREFIXES)
+	if
+		KitLib.needsRebuild(fid, spec, cfg.REBUILD_FIDELITY)
+		or (cfg.REBUILD_FIDELITY ~= "none" and part.RenderFidelity.Name ~= render)
+	then
+		local made = rebuild(part, spec, render)
 		if made then
 			part:Destroy()
 			part = made

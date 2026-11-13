@@ -6,6 +6,8 @@ _Last updated: 2026-11-13 (GARAGE EXIT FIX track: BACK TO GARAGE always lands in
 
 _Last updated: 2026-11-13 (INTRO LOAD FIX track: no server hold, the intro never freezes; branch intro-load-fix)_
 
+_Last updated: 2026-11-13 (STUDIO FIDELITY track: why the kit looked worse in the engine than in Blender; branch studio-fidelity)_
+
 # PROJECT_STATE
 
 _Last updated: 2026-11-13 (BADGES track: 8 Roblox badges, server awarding, boss detection, icons)_
@@ -599,3 +601,29 @@ _Last updated: 2026-11-13 (SKY track: northern lights)_
 - **Owner check (Studio, 2 clients + solo):** mid-run, while caught (Night Clerk), during the rewind, on the results card: MENU > BACK TO GARAGE. Expect: the hideout, no run bar / reason / RUN button / deck, first person roam, R / Q / F do nothing, garage music. Crew: one leaves, the other keeps playing. Output: any `[HeistClient] lobby <step>: ...` or `watchdog` warning names the live failing step.
 
 - **v143 Published (2026-11-13):** garage-exit-fix merged (Leave always ends in a clean hideout: explicit Lobby state, guarded teardown, client + server watchdogs). engine_smoke 0, client_engine 74/0 on Saved v143, clone_engine 0 on v142. Running: FP hands v2, store video.
+
+## 2026-11-13: STUDIO FIDELITY track (owner: "everything looks 100x worse in Studio than in Blender"; branch `studio-fidelity`, not merged)
+- **Write-up:** `docs/audit/STUDIO_FIDELITY.md`, with the before/after sheet `docs/audit/studio_fidelity/before_after.png`.
+- **Measured.** The engine renders the FBX exactly: corner normals (EditableMesh readout in a real server), triangle counts, sizes, the atlas (256 px) and materials. The `CreateMeshPartAsync` rebuild keeps normals.
+- **Root causes, ranked:**
+  1. The authoring rule (sharp edges above 30 degrees) made every 6-12 sided limb, finger, knob and post flat-faceted: 105 of 252 curved meshes were at least 50% flat.
+  2. The Blender previews lied: Workbench cavity + outline, and per-shot lights, AO and bloom.
+  3. Atlas UVs (8 px around the cell centre) bled into neighbour cells from mip 3: far parts and low texture quality.
+  4. The cool / violet Lighting cast (not changed; for the lighting owner).
+  5. RenderFidelity was Automatic everywhere: only matters beyond 250 studs.
+- **Fixes:**
+  - `eh_kit`: revolved primitives and `_kitlib.tube` mark soft edges, smooth up to 75 degrees.
+  - `eh_palette.UV_HALF_PX = 1`.
+  - The build hashes corner normals (`fbx-2`).
+  - `KitLib.renderFidelity` + `Config.Kit.PRECISE_PREFIXES`, chosen at the rebuild.
+  - `roblox_look.py`: a Roblox-faithful preview read from `default.project.json`. It is now the turntables' bottom-right tile.
+  - `fidelity_audit.py` (FBX normals audit) and `fidelity_sheet.py`.
+- **Kit:** rebuilt (ALL GATES PASS, 130,418 tris, unchanged). 97 groups re-uploaded under **new** ids. KitData, the kit docs and the kit_engine table regenerated.
+  - Rookie_FPArms, Rookie_Viewmodel and Rookie_Hands were left for fp-hands-v2, with the pipeline notes in the doc ("For the FP hands").
+- **Checks:**
+  - Local: unit 683, sim 240, compile 250, StyLua, Selene, pure 42, wait 704, LihFolk 369 files 0, 4 places + place_check 0, hud_layout 5,634/0.
+  - Engine on Saved **v148**: engine_smoke 0 failures; kit_engine 0 failed, including new B2 (298/298 material + atlas + RenderFidelity, 154 Precise; 8 curved samples render smooth normals, e.g. Rookie_LeftLowerArm 0.33 flat, was 0.67); client_engine 74/0; clone_engine 0; perf_engine 0.
+- **Owner check (v148):**
+  - Rookie / Gus arms and hands, the vault dial, lamps and the tree shade round in first person.
+  - No colour fringes on far parts at graphics quality 1-3.
+  - The blue-violet cast in shadow remains: it is a Lighting call.

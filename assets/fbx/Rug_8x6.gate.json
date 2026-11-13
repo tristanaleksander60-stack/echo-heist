@@ -83,10 +83,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "c45d1fb77c0a146611c2",
+ "contentHash": "e769784a9a5f92b73bd5",
  "fbx": {
   "path": "assets/fbx/Rug_8x6.fbx",
-  "bytes": 22572,
+  "bytes": 22588,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -103,6 +103,6 @@
  },
  "spec": "assets/blender/street.py",
  "notes": "Burgundy rug 8.64 x 6 with a cream border, diamond and tassels.",
- "turntable": "docs/art/turntables/Rug_8x6.png",
- "seconds": 14.3
+ "seconds": 0.0,
+ "turntable": "docs/art/turntables/Rug_8x6.png"
 }

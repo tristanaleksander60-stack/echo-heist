@@ -83,10 +83,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "29290c3a915e8332af1d",
+ "contentHash": "8be23c8fe4e3b2d8f821",
  "fbx": {
   "path": "assets/fbx/Snowman.fbx",
-  "bytes": 33292,
+  "bytes": 32988,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -103,6 +103,6 @@
  },
  "spec": "assets/blender/town.py",
  "notes": "Snowman 2.7 x 2.7 x 6.2: three snowballs, top hat, burgundy scarf, stick arms (WORLD 2.0 town).",
- "turntable": "docs/art/turntables/Snowman.png",
- "seconds": 39.4
+ "seconds": 0.0,
+ "turntable": "docs/art/turntables/Snowman.png"
 }

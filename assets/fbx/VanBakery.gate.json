@@ -166,10 +166,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "1504f38b9d9ee1c002d0",
+ "contentHash": "27dc85adbe0360edf137",
  "fbx": {
   "path": "assets/fbx/VanBakery.fbx",
-  "bytes": 50716,
+  "bytes": 50828,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -192,6 +192,6 @@
  },
  "spec": "assets/blender/van_styles.py",
  "notes": "Bakery van 14x6.4x7.9: a tall box over the cab, striped awning over the open side door (-Y), a loaf on the roof, the exit band; the Van's footprint, door, cargo bay and seat anchors.",
- "turntable": "docs/art/turntables/VanBakery.png",
- "seconds": 9.3
+ "seconds": 0.3,
+ "turntable": "docs/art/turntables/VanBakery.png"
 }

@@ -1410,10 +1410,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "0e07dd74725e7ef207d2",
+ "contentHash": "d3cd23e723af0de26d88",
  "fbx": {
   "path": "assets/fbx/Gus.fbx",
-  "bytes": 130284,
+  "bytes": 129724,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -1532,6 +1532,6 @@
  },
  "spec": "assets/blender/gus.py",
  "notes": "Gus v0: rigid R15-style rig (18 parts), joint pivots for the code pose player; cap, torch, Neon lens.",
- "turntable": "docs/art/turntables/Gus.png",
- "seconds": 5.6
+ "seconds": 0.3,
+ "turntable": "docs/art/turntables/Gus.png"
 }

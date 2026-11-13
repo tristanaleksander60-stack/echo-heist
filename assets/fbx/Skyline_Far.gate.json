@@ -151,7 +151,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "cac085cd0c2f37c1545a",
+ "contentHash": "224c50dd4f0bba2f648d",
  "fbx": {
   "path": "assets/fbx/Skyline_Far.fbx",
   "bytes": 46284,
@@ -177,6 +177,6 @@
  },
  "spec": "assets/blender/backdrop.py",
  "notes": "Skyline Far: 16 buildings on a quarter arc, radius 600; windows 4.4x6.0.",
- "turntable": "docs/art/turntables/Skyline_Far.png",
- "seconds": 14.8
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Skyline_Far.png"
 }

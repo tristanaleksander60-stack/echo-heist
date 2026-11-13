@@ -101,10 +101,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "de667e9c889ae666f3ef",
+ "contentHash": "c9ad7105c631132e0805",
  "fbx": {
   "path": "assets/fbx/Shelf_Gondola_8x2.fbx",
-  "bytes": 28588,
+  "bytes": 28716,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -121,6 +121,6 @@
  },
  "spec": "assets/blender/furniture.py",
  "notes": "Aisle gondola 8 x 2 x 7.85: shelves on both faces, dark divider, fixed-seed products; tiles end to end.",
- "turntable": "docs/art/turntables/Shelf_Gondola_8x2.png",
- "seconds": 46.3
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Shelf_Gondola_8x2.png"
 }

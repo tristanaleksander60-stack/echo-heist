@@ -239,10 +239,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "f6e3b53bf228aaa07645",
+ "contentHash": "95d8822b4d097e19cd5b",
  "fbx": {
   "path": "assets/fbx/Van.fbx",
-  "bytes": 55532,
+  "bytes": 55740,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -271,6 +271,6 @@
  },
  "spec": "assets/blender/van.py",
  "notes": "Getaway step van 14x6.4x7.75: mid-value runtime paint, dark roof, hollow cargo bay, open sliding door (-Y), exit band with white chevrons, roof rack.",
- "turntable": "docs/art/turntables/Van.png",
- "seconds": 5.8
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Van.png"
 }

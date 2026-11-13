@@ -88,10 +88,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "f67142ad4ab13fbcd82d",
+ "contentHash": "492096ad26363e856c8b",
  "fbx": {
   "path": "assets/fbx/Hide_Curtain.fbx",
-  "bytes": 28444,
+  "bytes": 28748,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -108,6 +108,6 @@
  },
  "spec": "assets/blender/hides.py",
  "notes": "Hide spot: deep-pleated green velvet drape on a steel rod, cream hem, 1.9 deep off the wall.",
- "turntable": "docs/art/turntables/Hide_Curtain.png",
- "seconds": 22.8
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Hide_Curtain.png"
 }

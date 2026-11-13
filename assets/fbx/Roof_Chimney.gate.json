@@ -84,7 +84,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "1f120d09718dd5d819cb",
+ "contentHash": "0f81e80822e9c0311ace",
  "fbx": {
   "path": "assets/fbx/Roof_Chimney.fbx",
   "bytes": 22732,
@@ -104,6 +104,6 @@
  },
  "spec": "assets/blender/tower.py",
  "notes": "Chimney 2.9 x 2.9 x 6.2 (BIG buildings rooftop; brick = the location's light wall cell).",
- "turntable": "docs/art/turntables/Roof_Chimney.png",
- "seconds": 45.1
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Roof_Chimney.png"
 }

@@ -5,11 +5,12 @@
 
 Sheet layout (one PNG):
   header   name, tris per object, dimensions in studs, extra info lines (gate result from build_asset)
-  rows 1-2 turntable at 20 deg elevation, studio light + cavity + outline (8 angles; 4 angles = row 1 only)
+  rows 1-2 turntable at 20 deg elevation, studio light + cavity + outline (8 angles; 4 angles = row 1 only): a SHAPE
+           review only, it flatters (STUDIO_FIDELITY.md); judge the look on the Roblox-faithful tile
   row 3    top view | scale check beside a 5-stud R15-size mannequin (Tape Grey) | wireframe | flat albedo
            (FLAT light = the "reads with shadows off" check for phones at quality 1-3)
   footer   black silhouettes at 64 px from every angle (rubric V1), the same at 2x, and the Eevee mood tile
-           (Heist Night colours: indigo ambient, warm key, cool rim) when --mood is given
+           replaced by the Roblox-faithful tile (roblox_look.py: the game's Lighting values) when --mood is given
 
 Runs on the pip `bpy` module (Python 3.13) or inside Blender. Needs Mesa EGL on a GPU-less Linux box
 (apt-get install libegl1 libegl-mesa0 libgl1-mesa-dri). Uses Pillow for the sheet when available.
@@ -150,8 +151,41 @@ def _wire_copies(objs, rad):
     return out
 
 
+def _faithful(s, objs, lo, hi, rig, path, size):
+    """The Roblox-faithful tile (roblox_look, docs/audit/STUDIO_FIDELITY.md): the game's Lighting values, the atlas
+    with bilinear filtering x MeshPart.Color, SmoothPlastic, the FBX's own normals, no AO / outline / cavity. Runs
+    last: it replaces the objects' materials."""
+    import roblox_look as RL
+    made = RL.apply(s, objs)
+    rig.aim(lo, hi, 35, 24)
+    RL.aim_sun(made, rig.cam.location, (lo + hi) / 2)
+    ctr = (lo + hi) / 2
+    rad = max((hi - lo).length / 2, 0.5)
+    bpy.ops.mesh.primitive_plane_add(size=rad * 12, location=(ctr.x, ctr.y, lo.z - 0.002))
+    fl = bpy.context.active_object
+    fm = bpy.data.materials.new("EH_TT_Ground")
+    try:
+        fm.use_nodes = True
+    except Exception:
+        pass
+    fb = next(n for n in fm.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    fb.inputs["Base Color"].default_value = (0.03, 0.03, 0.045, 1)
+    fl.data.materials.append(fm)
+    made.append(fl)
+    try:
+        _render(s, path, size)
+        RL.grade(path)
+    finally:
+        for o in made:
+            bpy.data.objects.remove(o, do_unlink=True)
+        s.view_settings.view_transform = "Standard"
+        s.render.engine = "BLENDER_WORKBENCH"
+    return path
+
+
 def _mood(s, objs, lo, hi, rig, path, size):
-    """Eevee tile approximating the Heist Night recipe: indigo world, warm key, cool rim, dark floor."""
+    """(Old, flattering) Eevee tile approximating the Heist Night recipe: indigo world, warm key, cool rim, dark
+    floor. Not used by the sheet any more (STUDIO_FIDELITY: it lied); kept for one-off comparisons."""
     s.render.engine = "BLENDER_EEVEE"
     try:
         s.eevee.taa_render_samples = 16
@@ -256,7 +290,7 @@ def render_contact_sheet(out_path, objs=None, angles=8, size=384, title=None, in
         tiles["sil"] = sil
         if mood:
             _workbench(s, "studio")
-            tiles["mood"] = _mood(s, objs, lo, hi, rig, os.path.join(tmp, "mood.png"), size)
+            tiles["mood"] = _faithful(s, objs, lo, hi, rig, os.path.join(tmp, "mood.png"), size)
     finally:
         rig.remove()
         for o in hidden:
@@ -321,7 +355,7 @@ def _compose(out_path, tiles, angles, T, head):
         sheet.paste(im, (10 + i * 70, yf + 26))
         sheet.paste(im.resize((big, big), Image.NEAREST), (10 + i * (big + 6), yf + 26 + 70))
     if "mood" in tiles:
-        put(tiles["mood"], W - T, yf, "mood: Heist Night (Eevee)")
+        put(tiles["mood"], W - T, yf, "Roblox-faithful (the game's look)")
     os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
     # 256-colour palette keeps a sheet near 250 KB instead of ~900 KB (repo size); flat colours survive intact.
     sheet.quantize(colors=256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(out_path, optimize=True)

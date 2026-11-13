@@ -1334,10 +1334,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "ccf6477e200c846a34e7",
+ "contentHash": "de75fa431ecabef8589f",
  "fbx": {
   "path": "assets/fbx/Hoardsworth.fbx",
-  "bytes": 135772,
+  "bytes": 134220,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -1450,6 +1450,6 @@
  },
  "spec": "assets/blender/intro.py",
  "notes": "Sir Hoardsworth: rigid R15-style rig (17 parts), joint pivots for the code pose player; top hat, monocle (glint at its pivot), velvet tails.",
- "turntable": "docs/art/turntables/Hoardsworth.png",
- "seconds": 7.5
+ "seconds": 2.5,
+ "turntable": "docs/art/turntables/Hoardsworth.png"
 }

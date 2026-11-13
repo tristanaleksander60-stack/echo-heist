@@ -1939,6 +1939,10 @@ Config.Kit = {
 	-- whose manifest collision differs is rebuilt with CreateMeshPartAsync: "all" | "colliding" (CanCollide
 	-- pieces only) | "none" (keep Default everywhere).
 	REBUILD_FIDELITY = "all",
+	-- RenderFidelity "Precise" (no engine LoD at distance) for pieces whose names start with one of these; the
+	-- rest stay "Automatic", which is full detail under ~250 studs (docs/audit/STUDIO_FIDELITY.md, PERF.md: the
+	-- characters are small meshes, so this costs nothing close up). Chosen at the CreateMeshPartAsync rebuild.
+	PRECISE_PREFIXES = { "Rookie_", "Gus_", "Hoardsworth_", "VaultDoor_", "Intro_Tower", "Van" },
 	READY_TIMEOUT = 90, -- seconds KitService.ready() waits by default
 	-- Atlas image overrides per location (a number or rbxassetid://...). Empty: the uploaded Decal's image
 	-- (KitData.images), else for Bank the atlas texture the FBX import made.

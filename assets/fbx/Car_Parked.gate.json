@@ -166,7 +166,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "741bfdefd3eae0e96405",
+ "contentHash": "a9d9eb964a7c2269e40d",
  "fbx": {
   "path": "assets/fbx/Car_Parked.fbx",
   "bytes": 30332,
@@ -192,6 +192,6 @@
  },
  "spec": "assets/blender/town.py",
  "notes": "Parked hatchback 4.2 x 9 x 3.8 with snow on the roof, bonnet and boot (WORLD 2.0 town).",
- "turntable": "docs/art/turntables/Car_Parked.png",
- "seconds": 24.6
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Car_Parked.png"
 }

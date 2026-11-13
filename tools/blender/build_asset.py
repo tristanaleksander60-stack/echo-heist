@@ -40,7 +40,8 @@ def load_spec(path):
     return mod
 
 
-EXPORT_VERSION = "fbx-1"   # bump when export_fbx / verify_fbx / the turntable layout change (forces a rebuild)
+EXPORT_VERSION = "fbx-2"   # bump when export_fbx / verify_fbx / the turntable layout change (forces a rebuild)
+# fbx-2 (STUDIO_FIDELITY): soft revolved edges + 1 px atlas UVs; the corner normals are hashed from now on
 
 
 def content_hash(asset, render, mood, size):
@@ -66,6 +67,12 @@ def content_hash(asset, render, mood, size):
             faces.append((tuple(vs), at.data[p.index].value if at else 0,
                           tuple((round(uv[j].uv[0], 4), round(uv[j].uv[1], 4)) for j in ls) if uv else ()))
         h.update(str(sorted(faces)).encode())
+        # the split normals the FBX carries (the engine renders exactly these: docs/audit/STUDIO_FIDELITY.md), in
+        # the same canonical face order
+        cn = me.corner_normals
+        h.update(str(sorted((tuple(sorted(p.vertices)), tuple(sorted(tuple(round(c, 3) + 0.0 for c in cn[j].vector)
+                                                                      for j in p.loop_indices)))
+                            for p in me.polygons)).encode())
         for slot in ob.material_slots:
             if slot.material and slot.material.node_tree:
                 for n in slot.material.node_tree.nodes:

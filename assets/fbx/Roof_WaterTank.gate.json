@@ -84,7 +84,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "34c6d5074ad3c419a754",
+ "contentHash": "721f422f8bdafd5f3b5c",
  "fbx": {
   "path": "assets/fbx/Roof_WaterTank.fbx",
   "bytes": 26428,
@@ -104,6 +104,6 @@
  },
  "spec": "assets/blender/tower.py",
  "notes": "Water tank 6.4 x 6.4 x 11.8 (BIG buildings rooftop).",
- "turntable": "docs/art/turntables/Roof_WaterTank.png",
- "seconds": 35.3
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Roof_WaterTank.png"
 }

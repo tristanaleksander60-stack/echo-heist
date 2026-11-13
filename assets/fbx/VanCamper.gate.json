@@ -166,10 +166,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "3ed8131610e27ef56cbe",
+ "contentHash": "6a1f721e354ecb7275c5",
  "fbx": {
   "path": "assets/fbx/VanCamper.fbx",
-  "bytes": 60220,
+  "bytes": 60156,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -192,6 +192,6 @@
  },
  "spec": "assets/blender/van_styles.py",
  "notes": "Vintage camper 14x6.4x8.0: a rounded cream roof, a bus nose with a split windscreen and a cream V, round chrome lamps, whitewalls, portholes, a ladder and a rack; the Van's footprint, door, cargo bay and seat anchors.",
- "turntable": "docs/art/turntables/VanCamper.png",
- "seconds": 20.9
+ "seconds": 0.2,
+ "turntable": "docs/art/turntables/VanCamper.png"
 }

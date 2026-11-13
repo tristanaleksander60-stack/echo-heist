@@ -4,8 +4,11 @@ Used by asset spec scripts in assets/blender/*.py through tools/blender/build_as
 module (Blender 5.3, Python 3.13) or inside Blender. 1 Blender unit = 1 stud. Front of every asset faces -Y.
 
 Look: chamfers are real geometry (1 segment, sizes from STYLE_BIBLE), faces are smooth-shaded with sharp edges
-above 30 degrees, so the flat-faced look never depends on custom normals surviving the Roblox import. Every face
-gets a UV square inside one palette cell (eh_palette), one material per object (the shared atlas).
+above 30 degrees. Revolved surfaces (lathe, cylinder, sphere, _kitlib.tube) mark the edges around their circumference
+"soft": those stay smooth up to SOFT_MAX_DEG, so a 6-12 sided limb, finger, knob or post shades round instead of as
+flat facets (docs/audit/STUDIO_FIDELITY.md: the engine renders the FBX's split normals exactly as written, measured
+with EditableMesh). Every face gets a UV point inside one palette cell (eh_palette), one material per object (the
+shared atlas).
 """
 import bpy, bmesh, math, os, re, sys, importlib
 from mathutils import Vector, Matrix
@@ -37,6 +40,13 @@ lf = _load_lf()
 ATLAS_PATH = os.path.join(REPO, "assets", "textures", "EH_Palette_Bank.png")
 MATERIAL_NAME = "EH_KitAtlas"
 
+# Smoothing (docs/audit/STUDIO_FIDELITY.md). Hard edges above SHARP_DEG everywhere; "soft" edges (the circumference
+# of a revolved surface) stay smooth up to SOFT_MAX_DEG, which covers a 6-sided finger (60 degrees) and a squashed
+# ellipsoid but never a 90-degree box corner. Revolved primitives with fewer than SOFT_MIN_SEGS sides stay faceted.
+SHARP_DEG = 30.0
+SOFT_MAX_DEG = 75.0
+SOFT_MIN_SEGS = 6
+
 # Bevel (chamfer) sizes in studs, MASTERPLAN 6.1 (one segment only).
 BEVEL = {"small": 0.07, "medium": 0.15, "building": 0.25}
 
@@ -66,6 +76,7 @@ class MB:
         self.name = name
         self.bm = bmesh.new()
         self.col = self.bm.faces.layers.int.new("eh_col")
+        self.soft = self.bm.edges.layers.int.new("eh_soft")
         self.parts = {}
 
     # ---- low level
@@ -76,6 +87,12 @@ class MB:
         fc = self.bm.faces.new(verts)
         fc[self.col] = P.INDEX[col]
         return fc
+
+    def soften(self, a, b):
+        """Marks the edge a-b soft (smooth up to SOFT_MAX_DEG): the circumference of a revolved surface."""
+        e = self.bm.edges.get((a, b))
+        if e is not None:
+            e[self.soft] = 1
 
     def _part(self, part, verts):
         if part:
@@ -177,10 +194,14 @@ class MB:
         self._part(part, vs)
         return vs
 
-    def lathe(self, profile, segs, cols, centre, axis=(0, 0, 1), closed=False, phase=0.0, part=None):
+    def lathe(self, profile, segs, cols, centre, axis=(0, 0, 1), closed=False, phase=0.0, part=None, soft=True,
+              soft_profile=False):
         """Revolves profile [(r, h), ...] around `axis` through `centre` (h along the axis). Points with r == 0
         become single pole vertices (fan triangles, no n-gon caps). cols[i] colours the band of profile edge i.
-        closed=True joins the last point back to the first (rings, torus-like bezels)."""
+        closed=True joins the last point back to the first (rings, torus-like bezels).
+        soft (default): the edges around the circumference shade smooth (segs >= SOFT_MIN_SEGS); soft=False keeps a
+        deliberately faceted solid (a hex nut). soft_profile: the edges between profile bands too (a sphere,
+        whose profile is itself a curve)."""
         a, u, w = _basis(axis)
         c = Vector(centre)
         rings = []
@@ -204,12 +225,22 @@ class MB:
                     self.f([R0[j], R0[k], R1[0]], col)
                 else:
                     self.f([R0[j], R0[k], R1[k], R1[j]], col)
+        if soft and segs >= SOFT_MIN_SEGS:
+            for i in range(m):
+                R0, R1 = rings[i], rings[(i + 1) % len(profile)]
+                for j in range(segs):
+                    self.soften(R0[j % len(R0)], R1[j % len(R1)])     # meridian edges: around the circumference
+            if soft_profile:
+                for R in rings:
+                    if len(R) > 1:
+                        for j in range(segs):
+                            self.soften(R[j], R[(j + 1) % segs])
         vs = [v for R in rings for v in R]
         self._part(part, vs)
         return vs
 
     def cylinder(self, centre, axis, r, h0, h1, segs, col, cap_col=None, chamfer=0.0, cham_col=None, part=None,
-                 phase=0.0):
+                 phase=0.0, soft=True):
         cap_col = cap_col or col
         if chamfer > 0:
             c = min(chamfer, r * 0.45, (h1 - h0) * 0.45)
@@ -218,12 +249,12 @@ class MB:
         else:
             prof = [(0, h0), (r, h0), (r, h1), (0, h1)]
             cols = [cap_col, col, cap_col]
-        return self.lathe(prof, segs, cols, centre, axis, phase=phase, part=part)
+        return self.lathe(prof, segs, cols, centre, axis, phase=phase, part=part, soft=soft)
 
-    def sphere(self, centre, r, segs=8, rings=5, col="steel", axis=(0, 0, 1), part=None):
+    def sphere(self, centre, r, segs=8, rings=5, col="steel", axis=(0, 0, 1), part=None, soft=True):
         prof = [(r * math.sin(math.pi * i / rings), -r * math.cos(math.pi * i / rings)) for i in range(rings + 1)]
         prof[0] = (0, prof[0][1]); prof[-1] = (0, prof[-1][1])
-        return self.lathe(prof, segs, col, centre, axis, part=part)
+        return self.lathe(prof, segs, col, centre, axis, part=part, soft=soft, soft_profile=True)
 
     def clip(self, plane_co, plane_no, cap_col, part_verts=None):
         """Cuts the geometry (or only part_verts' faces) by a plane, deletes the side the normal points away
@@ -292,7 +323,7 @@ def hero_material(name, image_path):
     return m
 
 
-def finalize(mb, shading="angle", angle=30.0, pivot=(0, 0, 0), planar=None, material=None):
+def finalize(mb, shading="angle", angle=SHARP_DEG, pivot=(0, 0, 0), planar=None, material=None):
     """Triangulates n-gons, recalculates normals, sets shading, writes atlas UVs and returns the object.
     The mesh is authored in assembly coordinates; the object origin is moved to `pivot` (same coordinates),
     so the object stays where it was authored and its Roblox pivot is the pivot point.
@@ -306,8 +337,13 @@ def finalize(mb, shading="angle", angle=30.0, pivot=(0, 0, 0), planar=None, mate
     for fc in bm.faces:
         fc.smooth = shading != "flat"
     lim = math.radians(angle)
+    soft_lim = math.radians(max(angle, SOFT_MAX_DEG))
+    soft = bm.edges.layers.int.get("eh_soft")
     for e in bm.edges:
-        e.smooth = shading != "flat" and len(e.link_faces) == 2 and e.calc_face_angle(math.pi) < lim
+        a = e.calc_face_angle(math.pi) if len(e.link_faces) == 2 else math.pi
+        e.smooth = shading != "flat" and (a < lim or (soft is not None and e[soft] == 1 and a < soft_lim))
+    if soft is not None:
+        bm.edges.layers.int.remove(soft)
     uvl = bm.loops.layers.uv.new("UVMap")
     keys = [k for k, *_r in P.SWATCHES]
     if planar:

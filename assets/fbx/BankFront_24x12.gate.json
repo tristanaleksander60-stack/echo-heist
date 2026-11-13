@@ -104,10 +104,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "942b6e4ffe1676dfafde",
+ "contentHash": "c8cba7fc44c11308a1ce",
  "fbx": {
   "path": "assets/fbx/BankFront_24x12.fbx",
-  "bytes": 54604,
+  "bytes": 54668,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -124,6 +124,6 @@
  },
  "spec": "assets/blender/storefront.py",
  "notes": "Bank front 24x12: 8x10 entrance, marble pilasters, barred windows, name board and a pediment; no awnings.",
- "turntable": "docs/art/turntables/BankFront_24x12.png",
- "seconds": 15.3
+ "seconds": 0.2,
+ "turntable": "docs/art/turntables/BankFront_24x12.png"
 }

@@ -163,10 +163,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "c40109ed5512b7d92c36",
+ "contentHash": "62e239bec926af7b3682",
  "fbx": {
   "path": "assets/fbx/Intro_House_B.fbx",
-  "bytes": 37564,
+  "bytes": 37452,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -189,6 +189,6 @@
  },
  "spec": "assets/blender/intro.py",
  "notes": "Intro_House_B: a cosy toy-town house for the intro's town.",
- "turntable": "docs/art/turntables/Intro_House_B.png",
- "seconds": 107.2
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Intro_House_B.png"
 }

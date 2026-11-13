@@ -80,10 +80,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "16538f836820f4cbe26e",
+ "contentHash": "ddb6ef4d500147561691",
  "fbx": {
   "path": "assets/fbx/Intro_Present_C.fbx",
-  "bytes": 23452,
+  "bytes": 22972,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -100,6 +100,6 @@
  },
  "spec": "assets/blender/intro.py",
  "notes": "flying present C: cube, snow paper, holly ribbon",
- "turntable": "docs/art/turntables/Intro_Present_C.png",
- "seconds": 81.8
+ "seconds": 0.2,
+ "turntable": "docs/art/turntables/Intro_Present_C.png"
 }
