@@ -297,7 +297,7 @@ function Run.build(ctx: any)
 		elseif e.kind == EV.Squeeze and live then
 			hud.toast(Strings.CREW_WAITING)
 		elseif e.kind == EV.GoalMet and live then
-			hud.toast(Strings.GOAL_BANKED)
+			hud.toast(Strings.forDevice("GOAL_BANKED", Common.device(), state.fpView == true))
 		elseif e.kind == EV.Swarm and live then
 			-- "8 OF ME" (count-correct): copies of you; in co-op "16 ROBBERS" for the crew.
 			if e.a == (state.mySeat or 1) then
@@ -630,7 +630,10 @@ function Run.build(ctx: any)
 		end
 		if target then
 			lookVerb = target.verb
-			local key = if touch then nil elseif Common.usingGamepad() then Strings.KEY_PAD else Strings.KEY_E
+			local key = if touch
+				then Strings.KEY_TAP
+				elseif Common.usingGamepad() then Strings.KEY_PAD
+				else Strings.KEY_E
 			if target.kind == "loot" then
 				nearLoot, nearLock = target.index, target.opensAt
 				local word, colour, locked = lootLabel(target.value or 0, target.opensAt)

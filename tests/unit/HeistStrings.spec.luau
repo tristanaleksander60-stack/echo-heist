@@ -65,6 +65,33 @@ return function(test)
 		Assert.eq(Strings.redoAlarmHint(3), "Clone 3 sets off the alarm. Redo it?", "RedoAlarm hint")
 	end)
 
+	test("first person: lines that name a button name this device's (wave C)", function()
+		for key, by in Strings :: any do
+			if type(by) == "table" and string.sub(key, -3) == "_BY" then
+				for _, device in { "key", "pad", "touch" } do
+					Assert.truthy(type(by[device]) == "string", key .. "." .. device)
+				end
+				Assert.truthy(not string.find(by.key, "Tap", 1, true), key .. ": a keyboard does not tap")
+				Assert.truthy(not string.find(by.pad, "Tap", 1, true), key .. ": a gamepad does not tap")
+				Assert.truthy(string.find(by.touch, "Tap", 1, true) ~= nil, key .. ": touch taps")
+			end
+		end
+		Assert.eq(Strings.forDevice("OBJ_GRAB_CASH", "key", true), "Look at the cash. Press E.", "keyboard")
+		Assert.eq(Strings.forDevice("OBJ_GRAB_CASH", "pad", true), "Look at the cash. Press X.", "gamepad")
+		Assert.eq(Strings.forDevice("OBJ_GRAB_CASH", "touch", true), "Look at the cash. Tap GRAB.", "touch")
+		Assert.eq(Strings.forDevice("OBJ_GRAB_CASH", "key", false), Strings.OBJ_GRAB_CASH, "other cameras: plain")
+		Assert.eq(Strings.forDevice("OBJ_BANK_IT", "key", true), Strings.OBJ_BANK_IT, "no device line: plain")
+		for _, device in { "key", "pad", "touch" } do
+			local line = Strings.forDevice("OBJ_STAY_ON_PLATE", device, true)
+			Assert.truthy(string.find(line, "REWIND", 1, true) ~= nil, device .. ": REWIND is the verb")
+		end
+		Assert.truthy(string.find(Strings.OBJ_STAY_ON_PLATE_BY.key, "R ", 1, true) ~= nil, "REWIND is R")
+		Assert.truthy(string.find(Strings.OBJ_STAY_ON_PLATE_BY.pad, "Y ", 1, true) ~= nil, "REWIND is Y")
+		Assert.eq(Strings.KEY_E, "E", "interact key")
+		Assert.eq(Strings.KEY_PAD, "X", "interact button")
+		Assert.truthy(not string.find(string.lower(Strings.OBJ_WAIT_FOR_CLONE), "watch", 1, true), "no 'watch'")
+	end)
+
 	test("plurals", function()
 		Assert.eq(Strings.starsOpenNext(1), "1 more star opens the next heist", "one")
 		Assert.eq(Strings.starsOpenNext(2), "2 more stars open the next heist", "two")

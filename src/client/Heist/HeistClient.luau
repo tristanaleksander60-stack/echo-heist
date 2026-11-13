@@ -255,6 +255,11 @@ function HeistClient.start()
 		cursorLocked = function(): boolean
 			return camera.cursorLocked()
 		end,
+		-- Your newest clone this run, where it is drawn (world space), or nil: the L1 look cue (Hud/Hints).
+		ownClone = function(): Vector3?
+			local id = echo.newestOwn()
+			return if id ~= 0 then echo.positionOf(id) else nil
+		end,
 	}
 	FirstTime.init() -- first-time beats, seeded from the profile (Heist/FirstTime)
 	local hud = Hud.new(state, actions)

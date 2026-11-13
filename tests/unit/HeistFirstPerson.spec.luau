@@ -400,4 +400,35 @@ return function(test)
 		Assert.eq(FpMath.approach(1, 0, 0.1, 0.2, 0.4), 0.75, "eases out slower")
 		Assert.truthy(b ~= nil, "four edges")
 	end)
+
+	test("look cue (wave C): hidden in view, on the edge toward a target out of it, a look back behind you", function()
+		local O = Config.Onboarding
+		local tanV = math.tan(math.rad(FP.FOV / 2))
+		local aspect = 16 / 9
+		local function cue(x: number, y: number, z: number): (number?, number?, number?)
+			return FpMath.edgeCue({ x, y, z }, tanV, aspect, O.LOOK_CUE_INSET, O.LOOK_CUE_MARGIN)
+		end
+		Assert.eq(cue(0, 0, -10), nil, "straight ahead: no cue")
+		Assert.eq(cue(3, 1, -10), nil, "in frame: no cue")
+		local u, v, a = cue(30, 0, -10) -- far right
+		Assert.near(u :: number, 1 - O.LOOK_CUE_INSET / 2, 1e-6, "right edge")
+		Assert.near(v :: number, 0.5, 1e-6, "level")
+		Assert.near(a :: number, 0, 1e-6, "points right")
+		u, v, a = cue(-30, 0, -10)
+		Assert.near(u :: number, O.LOOK_CUE_INSET / 2, 1e-6, "left edge")
+		Assert.near(math.abs(a :: number), 180, 1e-6, "points left")
+		u, v, a = cue(0, 0, 10) -- right behind you
+		Assert.near(u :: number, 0.5, 1e-6, "behind: the bottom's middle")
+		Assert.near(v :: number, 1 - O.LOOK_CUE_INSET / 2, 1e-6, "behind: the bottom edge")
+		Assert.near(a :: number, 90, 1e-6, "points down: look back")
+		u, v = cue(-4, 0, 4) -- behind, to your left
+		Assert.truthy((u :: number) < 0.5 and (v :: number) > 0.5, "behind-left: the bottom, leaning left")
+		for _, p in { { 50, 20, -1 }, { -2, -30, -5 }, { 7, 3, 0.5 }, { 0.01, 0, 0 } } do
+			local pu, pv = cue(p[1], p[2], p[3])
+			Assert.truthy(pu and pv, "a cue")
+			local lo, hi = O.LOOK_CUE_INSET / 2 - 1e-9, 1 - O.LOOK_CUE_INSET / 2 + 1e-9
+			Assert.truthy((pu :: number) >= lo and (pu :: number) <= hi, "u inside the inset")
+			Assert.truthy((pv :: number) >= lo and (pv :: number) <= hi, "v inside the inset")
+		end
+	end)
 end

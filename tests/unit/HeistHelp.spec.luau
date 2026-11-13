@@ -230,7 +230,12 @@ return function(test)
 				"OBJ_BANK_IT",
 			}
 		do
-			l1 += words((Strings :: any)[key])
+			-- the longest wording a kid can see: the plain line or a first-person device line (Strings.forDevice)
+			local n = words((Strings :: any)[key])
+			for _, device in { "key", "pad", "touch" } do
+				n = math.max(n, words(Strings.forDevice(key, device, true)))
+			end
+			l1 += n
 		end
 		Assert.le(l1, 30, "L1 intro")
 		for _, spec in Catalog do

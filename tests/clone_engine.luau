@@ -12,6 +12,9 @@
 -- Luau Execution has no client and no camera of its own: EchoView runs on the server, the way
 -- the engine smoke test runs it, against a camera placed by hand where the default follow
 -- camera sits behind a player on the L1 spawn.
+-- Section 7 (PLAN_FIRST_PERSON wave C): first person, the default camera. From the L1 spawn at the Rookie's
+-- eyes, looking at the objective (the cash), your first clone is in frame and not hidden while it walks to the
+-- plate; and on L1 built with the kit, the cash shows through the right partition window from the same eyes.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -57,6 +60,7 @@ local CAM_ASPECT = 16 / 9
 local CAM_ZOOM = 12.5 -- the default follow camera's distance from its subject
 local CAM_PITCH = math.rad(20) -- looking down at the subject
 local MAX_LIMB_DISTANCE = 5
+local FP_EYE = 3.8 -- first person: the Rookie's eyes above the floor (Rookie FaceCenterAttachment 3.72 + EYE_UP)
 
 local okHs, hsErr = pcall(HeistService.start, { lobby = false, players = false })
 check(okHs, "HeistService starts" .. (if okHs then "" else ": " .. tostring(hsErr)))
@@ -273,6 +277,11 @@ local function followCamera(playerRoot: Vector3): CFrame
 	return CFrame.lookAt(pos, focus)
 end
 local SPAWN_CAM = followCamera(Vector3.new(0, 3, 14)) -- on the street by the van (L1 spawn)
+-- First person on the L1 spawn (spawn 1, the floor at y 0), looking at the run-start objective (CameraMath.objective:
+-- the cash).
+local l1Cash = inst.level.loot[1]
+local FP_CAM =
+	CFrame.lookAt(origin + Vector3.new(0, FP_EYE, 14), origin + Vector3.new(l1Cash.x, l1Cash.y or 3, l1Cash.z))
 local INSIDE_CAM = followCamera(Vector3.new(0, 3, 4)) -- a player who walked in through the door
 
 local camera = workspace.CurrentCamera
@@ -399,13 +408,25 @@ local conn = RunService.Heartbeat:Connect(function(dt: number)
 	frames += 1
 	local vx, _, vz = Sampler.velocity(rec, tView)
 	local moving = math.sqrt(vx * vx + vz * vz) > 2
-	for _, c in cases do
+	for i, c in cases do
 		local rig = c.rig
 		local head = rig and rig:FindFirstChild("Head")
 		if head and head:IsA("BasePart") then
 			c.allFrames += 1
 			if onScreen(SPAWN_CAM, head.Position) then
 				c.seenFrames += 1
+			end
+			-- first person: the first clone, as it walks out of your body toward the plate
+			if i == 1 then
+				local torso = rig and rig:FindFirstChild("UpperTorso")
+				local seen = onScreen(FP_CAM, head.Position)
+					or (torso ~= nil and torso:IsA("BasePart") and onScreen(FP_CAM, torso.Position))
+				c.fpFrames = (c.fpFrames or 0) + 1
+				if seen then
+					c.fpSeen = (c.fpSeen or 0) + 1
+					c.fpFirst = c.fpFirst or tView
+					c.fpLast = tView
+				end
 			end
 		end
 		if moving and frames > 5 and rig then
@@ -988,6 +1009,107 @@ if own and own.rig and echo.checkHealth then
 	)
 else
 	check(false, "CloneHealth: EchoView.checkHealth exists")
+end
+
+---------------------------------------------------------------------------
+-- 7. First person (PLAN_FIRST_PERSON wave C): the default camera at the L1 spawn's eyes.
+---------------------------------------------------------------------------
+do
+	local first = cases[1]
+	local walkEnd = Sampler.duration(rec)
+	check(
+		(first.fpSeen or 0) > 0 and (first.fpFirst or math.huge) <= walkEnd,
+		string.format(
+			"first person at the L1 spawn (eyes %.1f), looking at the cash: the first clone is in frame and not hidden "
+				.. "while it walks to the plate (%d of %d frames, from %.2f s to %.2f s; the walk ends at %.2f s)",
+			FP_EYE,
+			first.fpSeen or 0,
+			first.fpFrames or 0,
+			first.fpFirst or -1,
+			first.fpLast or -1,
+			walkEnd
+		)
+	)
+end
+
+-- The cash through the glass: L1 built with the kit (LevelDress: the partition windows, the cash on its safe),
+-- rays from the same eyes (every spawn seat) to points on the cash, through glass, never through a wall.
+do
+	local LevelBuilder = require(heistServer:WaitForChild("LevelBuilder"))
+	local scratch = Instance.new("Folder")
+	scratch.Name = "FpCashScratch"
+	scratch.Parent = workspace
+	local at = Vector3.new(-9000, 0, 600)
+	local okB, built = pcall(LevelBuilder.build, inst.level, at, scratch, { kit = KitService, dressing = true })
+	local cashParts, glass, windows = {}, {}, 0
+	if okB and built then
+		for _, d in built.model:GetDescendants() do
+			if d:IsA("BasePart") then
+				local piece = d:GetAttribute("KitPiece")
+				if piece == "Wall_Window_8x12" then
+					windows += 1
+				end
+				if
+					(type(piece) == "string" and string.sub(piece, -6) == "_Glass")
+					or d.Material == Enum.Material.Glass
+				then
+					table.insert(glass, d)
+				elseif
+					d.Transparency < 1
+					and (
+						d:GetAttribute("EH_Kind") == "loot"
+						or (d.Parent ~= nil and d.Parent:GetAttribute("EH_Kind") == "loot")
+					)
+				then
+					table.insert(cashParts, d)
+				end
+			end
+		end
+	end
+	check(
+		okB and windows >= 2 and #cashParts > 0,
+		string.format(
+			"kit-built L1: %d partition window pieces, %d cash part(s)%s",
+			windows,
+			#cashParts,
+			if okB then "" else ": " .. tostring(built)
+		)
+	)
+	local isCash: { [Instance]: boolean } = {}
+	for _, p in cashParts do
+		isCash[p] = true
+	end
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	params.FilterDescendantsInstances = glass
+	local worst = math.huge
+	for _, sp in inst.level.spawns do
+		local eye = at + Vector3.new(sp.x, FP_EYE, sp.z)
+		local seen, tried = 0, 0
+		for _, p in cashParts do
+			local cf, size = p.CFrame, p.Size
+			for ix = -1, 1 do
+				for iy = -1, 1 do
+					local target = cf:PointToWorldSpace(Vector3.new(ix * size.X * 0.35, iy * size.Y * 0.35, 0))
+					tried += 1
+					local hit = workspace:Raycast(eye, target - eye, params)
+					if hit and isCash[hit.Instance] then
+						seen += 1
+					end
+				end
+			end
+		end
+		worst = math.min(worst, if tried > 0 then seen / tried else 0)
+		note(string.format("seat (%g, %g): %d of %d rays reach the cash", sp.x, sp.z, seen, tried))
+	end
+	check(
+		worst > 0,
+		string.format(
+			"first person at every L1 spawn seat: the cash shows through the window (worst seat %.0f %% of rays)",
+			worst * 100
+		)
+	)
+	scratch:Destroy()
 end
 
 echo.clear()
