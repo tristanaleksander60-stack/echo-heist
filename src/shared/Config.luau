@@ -2672,7 +2672,7 @@ Config.Perf = {
 	-- A catalog R15 avatar with hair and 2-3 accessories (not readable from Luau): only a fallback since every player
 	-- and clone is a Rookie (3,632-tri body + an outfit, 5.3-5.8k; perf_engine counts the real rigs' kit meshes).
 	AVATAR_TRIS_EST = 7000,
-	MANNEQUIN_TRIS = 216, -- 18 box parts
+	MANNEQUIN_TRIS = 96, -- the clone LOD's light rig: 8 box parts (the full mannequin's ball head adds ~400)
 
 	-- Clone LOD (roblox_quality §6.4; Budget.cloneFar / Budget.lineupLight): from TIER, a clone drawn from an
 	-- avatar template is the textured avatar within NEAR studs of the camera and the 216-tri mannequin in its crew
@@ -2684,6 +2684,9 @@ Config.Perf = {
 		NEAR = 15,
 		FAR = 18,
 		MANNEQUIN_DRAWS = 3, -- estimate: every mannequin in view batches into a few primitive draws (perf_engine)
+		-- the light rig's head is a block, not a ball (a ball is ~400 triangles, 80 % of the rig; past 18 studs a
+		-- chunky cube head reads the same, like the Rookie's): Rigs.buildMannequin(true)
+		BLOCK_HEAD = true,
 	},
 
 	-- The start tier (Budget.startTier / Budget.probeTier, Heist/Telemetry): picked at boot from what a client
@@ -3095,8 +3098,10 @@ Config.Big = {
 	DETAIL_OFF_TIER = 2,
 	FINE_OFF_TIER = 3,
 	-- Phone frame budget (REVIEW_STEAM_PLUS gap 15): the street front's window trims (Facade_8x10, ~5k tris on the
-	-- Big Score; layer "trim") hide from this tier; the facade bodies, panes, columns and crown stay.
-	TRIM_OFF_TIER = 4,
+	-- Big Score; layer "trim") hide from TRIM_OFF_TIER (recipe C phones), the Bank's giant order of columns (~4k;
+	-- layer "order") from ORDER_OFF_TIER; the facade bodies, panes, crown, pediment and clock stay.
+	TRIM_OFF_TIER = 3,
+	ORDER_OFF_TIER = 4,
 }
 
 -- Interiors (INTERIORS track, docs/audit/REVIEW_STEAM_PLUS.md gaps 8, 9 and 12; STYLE_BIBLE §19): eye-level props in every

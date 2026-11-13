@@ -347,7 +347,7 @@ return function(test)
 	test(
 		"tier layers: each hides from one tier and stays hidden below it; the cuts land where the budget needs them",
 		function()
-			local layers = { "detail", "fine", "xmas", "trim", "decorHeavy", "decor", "festive" }
+			local layers = { "detail", "fine", "xmas", "trim", "order", "decorHeavy", "decor", "festive" }
 			for _, layer in layers do
 				local off = Budget.layerOffTier(layer)
 				Assert.truthy(type(off) == "number" and off >= 2 and off <= 4, layer .. ": hides from a phone tier")
@@ -360,14 +360,16 @@ return function(test)
 				Assert.truthy(Budget.layerOn(layer, 4), tostring(layer) .. ": shown at tier 4")
 			end
 			-- the phone frame budget (REVIEW_STEAM_PLUS gap 15): the heavy props at tier 2 (where a phone starts), the
-			-- kit's Christmas, the front's window trims and the near skyline only at tier 4
+			-- front's window trims with recipe C (tier 3), the kit's Christmas, the giant order and the near skyline only at
+			-- tier 4
 			Assert.eq(Budget.layerOffTier("decorHeavy"), 2, "heavy props from tier 2")
 			Assert.truthy(
 				(Budget.layerOffTier("decorHeavy") :: number) <= (Budget.layerOffTier("decor") :: number),
 				"heavy before the rest"
 			)
 			Assert.eq(Budget.layerOffTier("festive"), 4, "the kit's Christmas from tier 4")
-			Assert.eq(Budget.layerOffTier("trim"), 4, "the front's window trims from tier 4")
+			Assert.eq(Budget.layerOffTier("trim"), 3, "the front's window trims from tier 3")
+			Assert.eq(Budget.layerOffTier("order"), 4, "the giant order from tier 4")
 			Assert.truthy(BackdropPlan.ringOn("near", 3) and not BackdropPlan.ringOn("near", 4), "near ring to tier 3")
 			Assert.truthy(
 				BackdropPlan.ringOn("far", 1) and not BackdropPlan.ringOn("far", 2),

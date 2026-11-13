@@ -310,6 +310,8 @@ function Budget.layerOffTier(layer: any): number?
 		return Config.Big.FINE_OFF_TIER -- coffered tiles, fire escapes, rooftop props, the light strings
 	elseif layer == "trim" then
 		return Config.Big.TRIM_OFF_TIER -- the BIG street front's window trims
+	elseif layer == "order" then
+		return Config.Big.ORDER_OFF_TIER -- the Bank's giant order of columns
 	elseif layer == "decorHeavy" then
 		return Config.Interior.HEAVY_OFF_TIER -- the heaviest interior props (the Bank's deposit walls, brass, palms)
 	elseif layer == "decor" then

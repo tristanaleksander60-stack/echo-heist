@@ -14,7 +14,8 @@
 -- tall buildings (Heist/Backdrop.addOccluders: occlusion rule only). Batched: one decision pass at CUT.HZ, then each
 -- group's parts are written only while its fade moves; no per-frame allocation (the subject buffer and the decision
 -- table are reused). It also hides the "detail" layer from Config.Big.DETAIL_OFF_TIER, the "fine" / "xmas" layers
--- from FINE_OFF_TIER and the street front's "trim" from TRIM_OFF_TIER (Transparency 1,
+-- from FINE_OFF_TIER, the street front's "trim" from TRIM_OFF_TIER and the giant "order" from ORDER_OFF_TIER
+-- (Transparency 1,
 -- restored when the tier steps back up). Binds after the camera (RenderPriority.Camera + 10), so it sees the frame
 -- every camera writer produced this frame.
 
@@ -85,9 +86,9 @@ function CutAway.new(director: any?): any
 	local clock = 0
 	local player = Players.LocalPlayer
 
-	-- The Overhead's tier layers ("detail", "fine", "xmas", "trim"; Shared/Heist/Budget.layerOffTier).
+	-- The Overhead's tier layers ("detail", "fine", "xmas", "trim", "order"; Shared/Heist/Budget.layerOffTier).
 	local function offTier(layer: any): number?
-		if layer == "detail" or layer == "fine" or layer == "xmas" or layer == "trim" then
+		if layer == "detail" or layer == "fine" or layer == "xmas" or layer == "trim" or layer == "order" then
 			return Budget.layerOffTier(layer)
 		end
 		return nil

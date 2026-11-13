@@ -386,7 +386,7 @@ function EchoView.new(state: any): any
 		if entry.lodRig or entry.rig.kind ~= "avatar" then
 			return
 		end
-		local m = Rigs.buildMannequin()
+		local m = Rigs.buildMannequin(true)
 		m.model.Name = "Lod"
 		Rigs.setFade(m, 1)
 		if entry.hue then
