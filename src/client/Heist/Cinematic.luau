@@ -620,14 +620,14 @@ function Cinematic.new(opts: any?): any
 			b.Attachment0 = mouthA
 			b.Attachment1 = a1
 			b.FaceCamera = true
-			b.Width0 = 10
-			b.Width1 = 34 + 8 * k
+			b.Width0 = 6
+			b.Width1 = 14 + 4 * k
 			b.LightEmission = 1
 			b.LightInfluence = 0
 			b.Color = ColorSequence.new(WARM, Color3.fromHex("#E8ECFF"))
 			b.Transparency = NumberSequence.new({
-				NumberSequenceKeypoint.new(0, 0.55),
-				NumberSequenceKeypoint.new(0.6, 0.8),
+				NumberSequenceKeypoint.new(0, 0.7),
+				NumberSequenceKeypoint.new(0.6, 0.88),
 				NumberSequenceKeypoint.new(1, 1),
 			})
 			b.Segments = 12

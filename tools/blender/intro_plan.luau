@@ -12,7 +12,7 @@ local IntroRig = require("../../src/shared/Heist/IntroRig")
 local Strings = require("../../src/shared/Heist/Strings")
 
 -- The key frame of each shot (s into it): the moment the storyboard draws.
-local KEY = { eve = 4.6, hoard = 2.0, every = 3.6, gone = 2.6, one = 5.9, more = 3.2, title = 0.9 }
+local KEY = { eve = 4.6, hoard = 2.0, every = 2.2, gone = 2.6, one = 6.6, more = 3.2, title = 0.9 }
 
 local function poseTable(track: string, t: number): { [string]: { number } }
 	local a, b, w = IntroPlan.pose(track, t)

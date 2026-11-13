@@ -337,7 +337,7 @@ def garage(st, lights_on):
             o = MR.cyl("Pool", 3.2, 3.2, 0.02, pool, None, tuple(rb(hp[0], 0.08, hp[2] + 9)), seg=24, scale=(1, 2.2, 1))
             o.visible_shadow = False
     if lights_on:   # the work lamp over the Rookie comes on with the headlights (Heist/Cinematic)
-        MR.light("POINT", tuple(rb(cx, 9.0, cz + 10)), None, "#FFC890", 1400, size=1.2, shadow=True)
+        MR.light("POINT", tuple(rb(cx, 9.0, cz + 10)), None, "#FFC890", 2600, size=1.2, shadow=True)
 
 
 # ------------------------------------------------------------------ effects
@@ -375,8 +375,7 @@ def suction(st):
     """The vacuum's pull: pale beams from the mouth down to the town, and streaks spiralling up."""
     nz = st["nozzle"]
     m = gradient_mat("Suction", "#F6C0A2", "#E8ECFF", 0.8, 0.07, 0.0)
-    for k, tgt in enumerate(((0, 4, 0), (-40, 6, 10), (40, 6, -10))):
-        cone(f"Suck{k}", nz, tgt, 5.5, 26 + 6 * k, m, segs=28)
+    del m   # the game's suction Beams are thin camera-facing ribbons; the streaks carry the read in a still
     streak = gradient_mat("Streak", "#F6C0A2", "#FFF4E0", 2.2, 0.0, 0.45)
     rng = random.Random(9)
     for i in range(14):
@@ -422,6 +421,11 @@ def build(shot, P_):
     g = st["globe"]
     gc = g["centre"]
     globe = place("Intro_SnowGlobe", (gc[0], st["deckY"], gc[2]), 0)
+    for o in globe:   # Roblox Glass catches the sky: a brighter, less transparent glass than kit_preview's
+        if o.name.startswith("Intro_SnowGlobe_Glass"):
+            gm = MR.mat("#C9D6FF", 0.05, emit=0.25, alpha=0.32, key="globeglass")
+            o.data.materials.clear()
+            o.data.materials.append(gm)
     for o in globe:
         if o.name.startswith("Intro_SnowGlobe_Presents"):
             p = o.matrix_world.translation.copy()

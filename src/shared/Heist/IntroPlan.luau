@@ -75,7 +75,7 @@ local function houses(): { { number } }
 end
 
 IntroPlan.STAGE = table.freeze({
-	ground = { size = { 420, 1, 520 }, centre = { 0, -0.5, -40 } },
+	ground = { size = { 1600, 1, 1600 }, centre = { 0, -0.5, -40 } }, -- reaches the horizon from the tower top
 	road = { size = { 240, 0.2, 20 }, centre = { 0, 0.1, 0 } },
 	houses = houses(),
 	lamps = { { -88, 12 }, { -44, -12 }, { 0, 12 }, { 44, -12 }, { 88, 12 } },
@@ -375,13 +375,13 @@ IntroPlan.LETTER = table.freeze({
 	{ 24.2, { 117, 34, 36 } },
 	{ 25.4, { 126, 13, 55 } },
 	{ 26.4, { 130.8, 5.2, 56.5 } },
-	{ 27.1, { 131.4, 3.4, 54.4 } },
+	{ 27.1, { 132.1, 2.7, 54.3 } }, -- caught at chest height, clear of his face
 })
 IntroPlan.LETTER_FLUTTER = { amp = 2.2, hz = 0.9, tilt = 0.55 }
 
 -- Flying presents: launch window and flight (absolute seconds).
 IntroPlan.SWIRL = table.freeze({ start = 12.8, finish = 20.0, flight = 2.4, turns = 1.6, radius = 7 })
-IntroPlan.GLOBE = table.freeze({ start = 13.4, full = 20.1, min = 0.15 })
+IntroPlan.GLOBE = table.freeze({ start = 13.4, full = 20.1, min = 0.4 }) -- he has been hoarding a while
 
 ---------------------------------------------------------------------------
 -- Timing
