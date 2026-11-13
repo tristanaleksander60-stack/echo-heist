@@ -930,7 +930,13 @@ def main(argv):
     ap.add_argument("--only", type=int)
     ap.add_argument("--scale", type=float, default=2 / 3)
     ap.add_argument("--samples", type=int, default=24)
+    ap.add_argument("--sheet", action="store_true", help="only rebuild contact_sheet.png and grades.json")
     a = ap.parse_args(argv)
+    if a.sheet:
+        n = len(plan()["shots"])
+        sheet(n)
+        grades(n)
+        return
     if a.only:
         render_one(a.only, a.scale, a.samples)
         return
@@ -939,6 +945,35 @@ def main(argv):
         subprocess.run([sys.executable, os.path.abspath(__file__), "--only", str(i), "--scale", str(a.scale),
                         "--samples", str(a.samples)], check=True)
     sheet(n)
+    grades(n)
+
+
+def grades(n):
+    """frame_grade on every key frame, the whole frame and the picture between the letterbox bars (the bars are the
+    framing's true darkness; the title shot has none): near-black and dark shares, median luma, value spread, RMS
+    contrast, warm share. Writes docs/art/intro/grades.json."""
+    import frame_grade as FG
+    from PIL import Image
+    out = {}
+    tmp = os.path.join(REPO, "build", "blender")
+    os.makedirs(tmp, exist_ok=True)
+    shots = plan()["shots"]
+    for i in range(1, n + 1):
+        path = os.path.join(OUT, f"shot_{i}.png")
+        if not os.path.isfile(path):
+            continue
+        g = FG.grade(path)
+        im = Image.open(path).convert("RGB")
+        W, Hh = im.size
+        bar = 0 if shots[i - 1]["wordmark"] else int(Hh * 0.11)
+        crop = os.path.join(tmp, f"intro_pic_{i}.png")
+        im.crop((0, bar, W, Hh - bar)).save(crop)
+        pg = FG.grade(crop)
+        keep = ("near_black", "dark_share", "median_luma", "value_spread", "rms_contrast", "warm_share", "glow_share")
+        out[f"shot_{i}"] = {"id": shots[i - 1]["id"], "frame": {k: g[k] for k in keep},
+                            "picture": {k: pg[k] for k in keep}}
+    json.dump(out, open(os.path.join(OUT, "grades.json"), "w"), indent=1)
+    print(json.dumps(out, indent=1))
 
 
 if __name__ == "__main__":

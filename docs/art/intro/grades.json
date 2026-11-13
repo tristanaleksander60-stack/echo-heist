@@ -1,0 +1,170 @@
+{
+ "shot_1": {
+  "id": "eve",
+  "frame": {
+   "near_black": 0.37,
+   "dark_share": 23.3,
+   "median_luma": 0.456,
+   "value_spread": 0.696,
+   "rms_contrast": 0.261,
+   "warm_share": 0.8,
+   "glow_share": 2.4
+  },
+  "picture": {
+   "near_black": 0.48,
+   "dark_share": 2.4,
+   "median_luma": 0.508,
+   "value_spread": 0.527,
+   "rms_contrast": 0.195,
+   "warm_share": 1.1,
+   "glow_share": 2.9
+  }
+ },
+ "shot_2": {
+  "id": "hoard",
+  "frame": {
+   "near_black": 1.02,
+   "dark_share": 23.5,
+   "median_luma": 0.395,
+   "value_spread": 0.5,
+   "rms_contrast": 0.214,
+   "warm_share": 3.4,
+   "glow_share": 2.7
+  },
+  "picture": {
+   "near_black": 1.31,
+   "dark_share": 2.7,
+   "median_luma": 0.433,
+   "value_spread": 0.319,
+   "rms_contrast": 0.163,
+   "warm_share": 4.4,
+   "glow_share": 3.3
+  }
+ },
+ "shot_3": {
+  "id": "laugh",
+  "frame": {
+   "near_black": 5.68,
+   "dark_share": 33.2,
+   "median_luma": 0.283,
+   "value_spread": 0.722,
+   "rms_contrast": 0.298,
+   "warm_share": 20.0,
+   "glow_share": 2.7
+  },
+  "picture": {
+   "near_black": 7.28,
+   "dark_share": 15.1,
+   "median_luma": 0.52,
+   "value_spread": 0.709,
+   "rms_contrast": 0.281,
+   "warm_share": 25.6,
+   "glow_share": 3.3
+  }
+ },
+ "shot_4": {
+  "id": "every",
+  "frame": {
+   "near_black": 3.96,
+   "dark_share": 25.8,
+   "median_luma": 0.476,
+   "value_spread": 0.813,
+   "rms_contrast": 0.298,
+   "warm_share": 0.5,
+   "glow_share": 8.0
+  },
+  "picture": {
+   "near_black": 5.08,
+   "dark_share": 5.6,
+   "median_luma": 0.545,
+   "value_spread": 0.633,
+   "rms_contrast": 0.244,
+   "warm_share": 0.6,
+   "glow_share": 10.1
+  }
+ },
+ "shot_5": {
+  "id": "gone",
+  "frame": {
+   "near_black": 2.28,
+   "dark_share": 29.4,
+   "median_luma": 0.245,
+   "value_spread": 0.513,
+   "rms_contrast": 0.194,
+   "warm_share": 2.8,
+   "glow_share": 0.7
+  },
+  "picture": {
+   "near_black": 2.92,
+   "dark_share": 10.2,
+   "median_luma": 0.246,
+   "value_spread": 0.493,
+   "rms_contrast": 0.177,
+   "warm_share": 3.5,
+   "glow_share": 0.8
+  }
+ },
+ "shot_6": {
+  "id": "one",
+  "frame": {
+   "near_black": 0.11,
+   "dark_share": 29.4,
+   "median_luma": 0.226,
+   "value_spread": 0.803,
+   "rms_contrast": 0.284,
+   "warm_share": 19.2,
+   "glow_share": 6.2
+  },
+  "picture": {
+   "near_black": 0.13,
+   "dark_share": 10.2,
+   "median_luma": 0.333,
+   "value_spread": 0.782,
+   "rms_contrast": 0.277,
+   "warm_share": 24.6,
+   "glow_share": 7.7
+  }
+ },
+ "shot_7": {
+  "id": "more",
+  "frame": {
+   "near_black": 0.23,
+   "dark_share": 28.3,
+   "median_luma": 0.153,
+   "value_spread": 0.525,
+   "rms_contrast": 0.229,
+   "warm_share": 14.0,
+   "glow_share": 3.9
+  },
+  "picture": {
+   "near_black": 0.3,
+   "dark_share": 8.7,
+   "median_luma": 0.196,
+   "value_spread": 0.563,
+   "rms_contrast": 0.232,
+   "warm_share": 18.0,
+   "glow_share": 4.9
+  }
+ },
+ "shot_8": {
+  "id": "title",
+  "frame": {
+   "near_black": 4.28,
+   "dark_share": 25.0,
+   "median_luma": 0.141,
+   "value_spread": 0.306,
+   "rms_contrast": 0.205,
+   "warm_share": 2.4,
+   "glow_share": 5.4
+  },
+  "picture": {
+   "near_black": 4.28,
+   "dark_share": 25.0,
+   "median_luma": 0.141,
+   "value_spread": 0.306,
+   "rms_contrast": 0.205,
+   "warm_share": 2.4,
+   "glow_share": 5.4
+  }
+ }
+}
