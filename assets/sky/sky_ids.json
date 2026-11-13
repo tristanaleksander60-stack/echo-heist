@@ -1,4 +1,31 @@
 {
+ "EH_Aurora_A": {
+  "decalId": 131818979967020,
+  "file": "assets/sky/EH_Aurora_A.png",
+  "history": [],
+  "imageId": 114658167481459,
+  "moderation": "Approved",
+  "sha256": "0079580da7764611646628e2c2119ac7aba8b86f4ed99a25df310bf60ad81e78",
+  "uploaded": "2026-11-13T00:53:01Z"
+ },
+ "EH_Aurora_B": {
+  "decalId": 91780891259601,
+  "file": "assets/sky/EH_Aurora_B.png",
+  "history": [],
+  "imageId": 111319134560419,
+  "moderation": "Approved",
+  "sha256": "45cc9d1967580e93c1060e7d39b6ebe7a763b37d55c4c2fa0021bf481e1d91ba",
+  "uploaded": "2026-11-13T00:53:12Z"
+ },
+ "EH_Aurora_C": {
+  "decalId": 105186454641539,
+  "file": "assets/sky/EH_Aurora_C.png",
+  "history": [],
+  "imageId": 90786809529777,
+  "moderation": "Approved",
+  "sha256": "4a760415bf808a6fa87cf70a12906c461949f9d7b18e2119b98686a459f26903",
+  "uploaded": "2026-11-13T00:53:24Z"
+ },
  "EH_SkyCity_Bk": {
   "decalId": 80099577125952,
   "file": "assets/sky/EH_SkyCity_Bk.png",
