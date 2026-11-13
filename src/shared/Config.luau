@@ -243,7 +243,11 @@ Config.Heist = {
 		EndRun = { burst = 3, perSecond = 2 },
 		Interact = { burst = 6, perSecond = 6 },
 		Deck = { burst = 4, perSecond = 3 },
-		Ready = { burst = 3, perSecond = 2 },
+		-- Ready carries the 10 Hz look pitch ({ op = "look", n }) too, so the remote allows that; every other Ready
+		-- (RUN, the lobby ops) still passes ReadyOps, the old limit (HeistService), and look is throttled to
+		-- Config.Rookie.LOOK.MIN_INTERVAL a player (Heist/LookSync).
+		Ready = { burst = 14, perSecond = 13 },
+		ReadyOps = { burst = 3, perSecond = 2 },
 		FastForward = { burst = 6, perSecond = 4 },
 		SelectLevel = { burst = 3, perSecond = 1 },
 		JoinFriend = { burst = 2, perSecond = 0.5 },
@@ -2900,14 +2904,22 @@ Config.Rookie = {
 	FACE_SECONDS = { smug = 2.5, shocked = 1.6, busted = 3 },
 	POSE_FACE = { carry = "smug", busted = "busted", stuck = "shocked" },
 	-- Outfit slots (Data: heist.outfit slot -> id). DEFAULT is what a new profile and every repair falls back to.
-	SLOTS = { "cap", "scarf", "sweater", "gloves", "mask" },
+	-- "tone" (last, so an older 5-part outfit key still reads) is the knit colour: no kit piece, it tints the gloves
+	-- in TONED and shows as swatches on the wardrobe's GLOVES tab (TAB_SLOTS are the tabs).
+	SLOTS = { "cap", "scarf", "sweater", "gloves", "mask", "tone" },
+	TAB_SLOTS = { "cap", "scarf", "sweater", "gloves", "mask" },
 	DEFAULT_OUTFIT = {
 		cap = "Cap_Flat",
 		scarf = "Scarf_Long",
 		sweater = "Sweater_Stripes",
 		gloves = "Gloves_Knit",
 		mask = "Mask_None",
+		tone = "Tone_Indigo",
 	},
+	-- A player who never chose an outfit gets a random one at first join (each slot rolled from the ids they have
+	-- unlocked: Outfit.roll), saved with the profile flag outfitRolled so their clones keep matching them. The
+	-- wardrobe's RANDOM rolls again through Data.Equip(EQUIP_SLOT, EQUIP_ID): the server rolls, never the client.
+	RANDOM = { EQUIP_SLOT = "outfit", EQUIP_ID = "Random" },
 	-- id -> slot, variant (RookieData.outfit key; "" = nothing), name, and how it unlocks: free, or
 	-- unlock = { stars = n } (total medal + daily stars, Progress.totalStars) or { trophy = id } (Config.Data.Trophies).
 	OUTFIT = {
@@ -2940,8 +2952,16 @@ Config.Rookie = {
 		},
 		Mask_None = { slot = "mask", variant = "", name = "No Mask", free = true },
 		Mask_Eye = { slot = "mask", variant = "Eye", name = "Eye Mask", unlock = { stars = 1 } },
+		-- knit colours (slot "tone", no piece; hex = the toned gloves' colour): Palette darks, none a crew hue
+		Tone_Indigo = { slot = "tone", variant = "", name = "Indigo", free = true, hex = "#2A2D52" },
+		Tone_Burgundy = { slot = "tone", variant = "", name = "Burgundy", free = true, hex = "#8C2F4B" },
+		Tone_Mustard = { slot = "tone", variant = "", name = "Mustard", free = true, hex = "#B87A0A" },
+		Tone_Slate = { slot = "tone", variant = "", name = "Slate", free = true, hex = "#4E5675" },
+		Tone_Oat = { slot = "tone", variant = "", name = "Oat", free = true, hex = "#A8987A" },
+		Tone_Plum = { slot = "tone", variant = "", name = "Plum", free = true, hex = "#4D4778" },
 	},
 	GLOVES = { Gloves_Knit = "#2A2D52", Gloves_Leather = "#6E4B3A" }, -- glove colours (hands + cuffs)
+	TONED = { Gloves_Knit = true }, -- gloves that take the outfit's knit tone instead of their GLOVES colour
 	BLOCK_COLOURS = { -- the block Rookie (no kit): body part kind -> colour
 		Head = "#D09673",
 		UpperTorso = "#D8C8A8",
@@ -2950,6 +2970,25 @@ Config.Rookie = {
 		Hand = "#2A2D52",
 		Leg = "#4E5675",
 		Foot = "#5A493E",
+	},
+	-- Look up / down shows on other screens (Shared/Heist/LookPitch, client Heist/LookTilt, server Heist/LookSync):
+	-- in first person your client sends its camera pitch (degrees, + = up) quantised to STEP_DEG, at most SEND_HZ and
+	-- only when it changes, as Heist.Ready { op = "look", n } (n = 1..STEPS, the existing n range; no new remote).
+	-- The server keeps it in the character attribute ATTRIBUTE; every client tilts OTHER players' Neck and Waist by
+	-- it (shares of the pitch, clamped), smoothed, on top of the Rookie clips. Your own body is hidden in first person.
+	LOOK = {
+		ATTRIBUTE = "LookPitch", -- character attribute (degrees, + = up)
+		STEP_DEG = 4,
+		MAX_DEG = 80, -- |pitch| sent at most (STEPS = 2 x MAX_DEG / STEP_DEG + 1 = 41 <= 64)
+		SEND_HZ = 10,
+		MIN_INTERVAL = 0.08, -- s: the server keeps at most one look a player this often (the rest are dropped)
+		NECK_SHARE = 0.65, -- of the pitch on the Neck, clamped to NECK_MAX
+		WAIST_SHARE = 0.35, -- on the Waist, clamped to WAIST_MAX
+		NECK_MAX = 40,
+		WAIST_MAX = 20,
+		FOLLOW_RATE = 10, -- 1/s: exponential follow toward the received pitch (smooths the 10 Hz steps)
+		RANGE = 150, -- studs from the camera: characters further away hold the clip pose
+		MAX_RIGS = 12, -- characters tilted a frame at most (the nearest)
 	},
 	-- The long scarf's swaying tail (Shared/Heist/ScarfMath, client Heist/ScarfSway): a cheap Lua secondary motion
 	-- on your character and your clones' rigs (welds of Rookie_Scarf_Long_Tail1 / _Tail2), off from OFF_TIER.

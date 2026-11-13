@@ -7,6 +7,8 @@
 -- the unlock with Outfit.canWear; Heist/Characters re-dresses you live from the "Outfit" attribute). What is unlocked
 -- comes from Data.Snapshot (Shared/Heist/Outfit.isUnlocked, the server's own rule). Touch controls are off while it
 -- is up (a sheet), so the cursor is free and BACK / E / B / Esc close it.
+-- The GLOVES tab also shows the knit colours (slot "tone") as swatches; RANDOM (next to BACK) asks the server for a
+-- random outfit from your unlocks (Data.Equip(Config.Rookie.RANDOM.EQUIP_SLOT, .EQUIP_ID)).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -89,11 +91,18 @@ function Wardrobe.build(ctx: any): any
 		Text = "",
 	})
 	local onClose: (() -> ())? = nil
+	local tones = Ui.frame(sheet, {
+		Name = "Tones",
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(6, 170),
+		Size = UDim2.new(1, -12, 0, TAP),
+		Visible = false,
+	})
 	local back = Ui.button(sheet, {
 		Name = "Back",
-		AnchorPoint = Vector2.new(0.5, 1),
-		Position = UDim2.new(0.5, 0, 1, -8),
-		Size = UDim2.fromOffset(200, TAP),
+		AnchorPoint = Vector2.new(0, 1),
+		Position = UDim2.new(0, 8, 1, -8),
+		Size = UDim2.fromOffset(156, TAP),
 		TextSize = 22,
 		Text = Strings.LOBBY_BACK,
 	}, function()
@@ -104,14 +113,15 @@ function Wardrobe.build(ctx: any): any
 	end, "UIBack")
 	Ui.iconWord(back, "close", "left", U.ICON_SMALL)
 
-	local slot = R.SLOTS[1]
+	local slot = R.TAB_SLOTS[1]
 	local heist: any = nil -- the profile slice (Data.Snapshot), nil until it answers (free items only then)
 	local wearing: { [string]: string } = Outfit.fromKey(localPlayer:GetAttribute("Outfit"))
 	local selected: string? = nil
 	local busy = false
 
 	local render: () -> ()
-	local function equip(id: string)
+	-- forSlot: the slot the id is in (the tab's slot unless given: the GLOVES tab's tone swatches)
+	local function equip(id: string, forSlot: string?)
 		if busy then
 			return
 		end
@@ -123,7 +133,7 @@ function Wardrobe.build(ctx: any): any
 		end
 		busy = true
 		selected = id
-		local s = slot
+		local s = forSlot or slot
 		wearing[s] = id -- shown at once; the server's answer (and the Outfit attribute) settles it
 		render()
 		task.spawn(function()
@@ -135,6 +145,71 @@ function Wardrobe.build(ctx: any): any
 			end
 			render()
 		end)
+	end
+
+	-- RANDOM: the server rolls a whole outfit from your unlocks (and saves it).
+	local function randomise()
+		if busy then
+			return
+		end
+		busy = true
+		selected = nil
+		task.spawn(function()
+			local res = Net.Request("Data.Equip", R.RANDOM.EQUIP_SLOT, R.RANDOM.EQUIP_ID)
+			busy = false
+			if not res.ok then
+				hud.toast(Strings.WARDROBE_SAVE_FAILED)
+			end
+			wearing = Outfit.fromKey(localPlayer:GetAttribute("Outfit"))
+			if Ui.isShown(sheet) then
+				render()
+			end
+		end)
+	end
+	local random = Ui.button(sheet, {
+		Name = "Random",
+		AnchorPoint = Vector2.new(1, 1),
+		Position = UDim2.new(1, -8, 1, -8),
+		Size = UDim2.fromOffset(156, TAP),
+		TextSize = 22,
+		Text = Strings.WARDROBE_RANDOM,
+	}, randomise, "UIConfirm")
+	random.BackgroundColor3 = Palette.gold
+
+	-- The knit colours (slot "tone") as swatches under the GLOVES tab's chips.
+	local function renderTones(): string
+		for _, c in tones:GetChildren() do
+			if c:IsA("GuiObject") then
+				c:Destroy()
+			end
+		end
+		local ids = Outfit.idsFor("tone")
+		local n = math.max(#ids, 1)
+		local gap = 6
+		local cw = math.max(TAP, math.floor((324 - gap * (n - 1)) / n))
+		local text = ""
+		for k, id in ids do
+			local def = R.OUTFIT[id]
+			local worn = wearing.tone == id
+			local sw = Ui.button(tones, {
+				Name = id,
+				Position = UDim2.fromOffset((k - 1) * (cw + gap), 0),
+				Size = UDim2.fromOffset(cw, TAP),
+				BackgroundColor3 = Color3.fromHex(def.hex or "#FFFFFF"),
+				Text = "",
+			}, function()
+				equip(id, "tone")
+			end, "UIConfirm")
+			local outline = sw:FindFirstChild("Outline")
+			if worn and outline and outline:IsA("UIStroke") then
+				outline.Color = Palette.gold
+				outline.Thickness = 4
+			end
+			if id == selected then
+				text = (if worn then Strings.WEARING .. " · " else "") .. string.upper(def.name)
+			end
+		end
+		return text
 	end
 
 	render = function()
@@ -202,11 +277,20 @@ function Wardrobe.build(ctx: any): any
 					else string.upper(def.name) .. " · " .. Wardrobe.ruleText(id)
 			end
 		end
+		local onGloves = slot == "gloves"
+		tones.Visible = onGloves
+		info.Position = UDim2.fromOffset(12, if onGloves then 220 else 198)
+		if onGloves then
+			local toneInfo = renderTones()
+			if toneInfo ~= "" then
+				selInfo = toneInfo
+			end
+		end
 		info.Text = selInfo
 	end
 
 	local x = 6
-	for _, s in R.SLOTS do
+	for _, s in R.TAB_SLOTS do
 		local tab = Ui.button(sheet, {
 			Name = "Tab_" .. s,
 			Position = UDim2.fromOffset(x, 42),
@@ -235,7 +319,7 @@ function Wardrobe.build(ctx: any): any
 	-- Opens the sheet (closeFn: what BACK does: Heist/Hideout leaves the station).
 	function w.open(closeFn: () -> ())
 		onClose = closeFn
-		slot = R.SLOTS[1]
+		slot = R.TAB_SLOTS[1]
 		selected = nil
 		wearing = Outfit.fromKey(localPlayer:GetAttribute("Outfit"))
 		Ui.show(sheet)

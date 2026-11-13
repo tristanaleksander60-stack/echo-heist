@@ -3,7 +3,8 @@
 -- tests/unit/HeistOutfit.spec.luau). The profile keeps `outfit` = slot -> OUTFIT id (Config.Rookie.OUTFIT);
 -- Schema.sanitize repairs it with Outfit.repair, Data.Equip validates a change with Outfit.canWear, and the
 -- server (Heist/Rookie) turns an outfit into kit pieces with Outfit.pieces. Unlocks: free ids, or a star total
--- (medal + daily stars) or a trophy (Config.Rookie.OUTFIT[id].unlock).
+-- (medal + daily stars) or a trophy (Config.Rookie.OUTFIT[id].unlock). A new player gets a random outfit once
+-- (Outfit.rollIfNew on load, Outfit.roll: every slot from the unlocked ids); "tone" is the knit colour (no piece).
 
 local Config = require("../Config")
 local RookieData = require("./RookieData")
@@ -13,7 +14,14 @@ local R = Config.Rookie
 local Outfit = {}
 
 export type Outfit = { [string]: string } -- slot -> OUTFIT id
-export type Def = { slot: string, variant: string, name: string, free: boolean?, unlock: { [string]: any }? }
+export type Def = {
+	slot: string,
+	variant: string,
+	name: string,
+	free: boolean?,
+	unlock: { [string]: any }?,
+	hex: string?,
+}
 
 -- A NEW copy of the default outfit (every slot filled).
 function Outfit.default(): Outfit
@@ -172,10 +180,44 @@ function Outfit.pieces(outfit: Outfit): { string }
 	return out
 end
 
--- The glove colour of an outfit (hex).
+-- The glove colour of an outfit (hex): a toned glove (Config.Rookie.TONED) takes the outfit's knit tone.
 function Outfit.gloveHex(outfit: Outfit): string
 	local o = Outfit.clean(outfit)
+	local tone = R.OUTFIT[o.tone]
+	if R.TONED[o.gloves] and tone and type(tone.hex) == "string" then
+		return tone.hex
+	end
 	return R.GLOVES[o.gloves] or R.GLOVES[R.DEFAULT_OUTFIT.gloves]
+end
+
+-- A random outfit from what this profile slice has unlocked (nil heist: free ids only), every slot rolled.
+-- pick(n) returns an integer 1..n (the server passes a Random; tests a seeded one); a bad pick clamps.
+function Outfit.roll(heist: any, pick: (number) -> number): Outfit
+	local out = Outfit.default()
+	local unlocked = Outfit.unlocked(heist)
+	for _, slot in R.SLOTS do
+		local list = unlocked[slot]
+		if #list > 0 then
+			local i = pick(#list)
+			i = if type(i) == "number" and i == i then math.clamp(math.floor(i), 1, #list) else 1
+			out[slot] = list[i]
+		end
+	end
+	return out
+end
+
+-- First join: a profile that never got its random outfit (outfitRolled not true) gets one now, unless it already
+-- wears something other than the default (an older profile that chose before this existed keeps its pick). The
+-- flag is set either way, so this happens once a profile. Returns true when the slice changed.
+function Outfit.rollIfNew(heist: any, pick: (number) -> number): boolean
+	if type(heist) ~= "table" or heist.outfitRolled == true then
+		return false
+	end
+	heist.outfitRolled = true
+	if Outfit.key(heist.outfit) == Outfit.key(Outfit.default()) then
+		heist.outfit = Outfit.roll(heist, pick)
+	end
+	return true
 end
 
 -- A short, stable key of an outfit ("Cap_Flat|Scarf_Long|..."): clone templates are rebuilt when it changes.

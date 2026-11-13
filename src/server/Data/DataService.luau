@@ -78,6 +78,11 @@ local lastAward: { [Player]: { [string]: number } } = {}
 local recentHeists: { [Player]: { string } } = {}
 local pendingPush: { [Player]: boolean } = {}
 local changedPush: Net.Push? = nil
+-- Outfit rolls (first join, the wardrobe's RANDOM, offline sessions): the server's own randomness.
+local outfitRng = Random.new()
+local function outfitPick(n: number): number
+	return outfitRng:NextInteger(1, math.max(1, n))
+end
 
 ---------------------------------------------------------------------------
 -- Helpers
@@ -496,17 +501,31 @@ local function declareRemotes()
 	for id, def in Config.Rookie.OUTFIT do
 		equipItems[id] = def
 	end
+	-- The wardrobe's RANDOM: Data.Equip("outfit", "Random") (validated keys; the server rolls from the unlocks).
+	local RANDOM = Config.Rookie.RANDOM
+	equipSlots[RANDOM.EQUIP_SLOT] = RANDOM.EQUIP_ID
+	equipItems[RANDOM.EQUIP_ID] = true
 	Net.Handle("Data.Equip", {
 		rate = { burst = 6, perSecond = 2 },
 		args = { T.key(equipSlots), T.key(equipItems) },
 		handler = function(player: Player, slot: string, itemId: string): Net.Result
 			return withProfile(player, function(profile, heist)
+				if slot == RANDOM.EQUIP_SLOT or itemId == RANDOM.EQUIP_ID then
+					if slot ~= RANDOM.EQUIP_SLOT or itemId ~= RANDOM.EQUIP_ID then
+						return Net.fail("BadSlot")
+					end
+					heist.outfit = Outfit.roll(heist, outfitPick)
+					heist.outfitRolled = true
+					changed(player, profile, "outfit")
+					return Net.ok()
+				end
 				if Outfit.isSlot(slot) then
 					local okWear, wearCode = Outfit.canWear(heist, slot, itemId)
 					if not okWear then
 						return Net.fail(wearCode)
 					end
 					heist.outfit[slot] = itemId
+					heist.outfitRolled = true
 					changed(player, profile, "outfit")
 					return Net.ok()
 				end
@@ -615,14 +634,30 @@ end
 -- Start
 ---------------------------------------------------------------------------
 
+-- No data (offline Studio): a player still gets a random look for the session (free ids; nothing is saved).
+local function offlineOutfit(player: Player)
+	if status == "offline" and player:GetAttribute("Outfit") == nil then
+		player:SetAttribute("Outfit", Outfit.key(Outfit.roll(nil, outfitPick)))
+	end
+end
+
 local function goOffline(reason: string)
 	status = "offline"
 	offlineReason = reason
 	ReplicatedStorage:SetAttribute("DataOffline", true)
+	for _, player in Players:GetPlayers() do
+		offlineOutfit(player)
+	end
 	warn(
 		`[DataService] OFFLINE: progress is not saved this session ({reason}). In Studio, enable `
 			.. "Game Settings > Security > Enable Studio Access to API Services (the place must be published)."
 	)
+end
+
+-- First join: a profile slice that never got its random outfit gets one now (Outfit.rollIfNew: once a profile; a
+-- profile that already wears a pick keeps it). Exposed for the engine test. True when the slice changed.
+function DataService.firstOutfit(heist: Schema.Heist): boolean
+	return Outfit.rollIfNew(heist, outfitPick)
 end
 
 local function onLoaded(player: Player, profile: PlayerData.Profile)
@@ -631,6 +666,7 @@ local function onLoaded(player: Player, profile: PlayerData.Profile)
 	if #repairs > 0 then
 		warn(`[DataService] repaired {#repairs} field(s) for {player.UserId}: {table.concat(repairs, ", ")}`)
 	end
+	DataService.firstOutfit(heist) -- a new player's random outfit (saved with the profile, once)
 	Progress.computeUnlocks(heist, levelOrder, lookup) -- gates lowered in a later build open now
 	syncStars(player, heist)
 	changed(player, profile, "load")
@@ -693,6 +729,7 @@ function DataService.start()
 	PlayerData.RegisterSlice(Schema.SLICE, Schema.defaultHeist)
 	declareRemotes()
 	PlayerData.Loaded:Connect(onLoaded)
+	Players.PlayerAdded:Connect(offlineOutfit)
 	Players.PlayerRemoving:Connect(function(player: Player)
 		promptsBlocked[player] = nil
 		lastAward[player] = nil

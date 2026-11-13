@@ -85,6 +85,9 @@ export type Heist = {
 	},
 	-- The Rookie's outfit (additive, no migration; sanitize repairs it with Heist/Outfit): slot -> Config.Rookie.OUTFIT id.
 	outfit: { [string]: string },
+	-- The first-join random outfit was given (additive; sanitize's type check repairs it to false): DataService rolls
+	-- one with Outfit.rollIfNew on load while this is false, then sets it, so it happens once a profile.
+	outfitRolled: boolean,
 	-- The hideout van style (LOBBY 2; additive, no migration; sanitize repairs it): a Config.Hideout.VAN.STYLES id.
 	-- The crew leader's pick at their van, saved per player; the van they claim next wears it.
 	vanStyle: string,
@@ -178,6 +181,7 @@ function Schema.defaultHeist(): Heist
 		},
 		settings = Schema.defaultSettings(),
 		outfit = Outfit.default(),
+		outfitRolled = false,
 		vanStyle = Config.Hideout.VAN.STYLES[1].id,
 		ftueStep = 0,
 		firstHeistDone = false,
