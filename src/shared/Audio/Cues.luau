@@ -303,8 +303,8 @@ Cues.cues = {
 		note = "3 flickers over 0.3 s before the beams come back",
 	},
 	LaserWhine = {
-		ids = { 9125980435, 9125980784 },
-		alt = { 9125980459, 9125980113, 9125980176 },
+		ids = { 9125980435, 9125980784, 9125980459 },
+		alt = { 9125980113, 9125980176 },
 		search = "electric charge up whine short rising",
 		bus = "Warnings",
 		volume = 0.4,
@@ -453,8 +453,7 @@ Cues.cues = {
 		note = "the grab lunge when Gus catches you (with the BUSTED stamp)",
 	},
 	GusBarkWrongOne = {
-		ids = { 9114877032, 9114877145 },
-		alt = { 9114877072 },
+		ids = { 9114877032, 9114877145, 9114877072 },
 		search = "man confused huh what cartoon",
 		bus = "SFX",
 		volume = 0.7,
@@ -610,7 +609,8 @@ Cues.cues = {
 		note = "the getaway driver honks: 'VAN LEAVES' warnings",
 	},
 	VanToot = {
-		ids = { 9113438364, 9113438365 },
+		ids = { 9113438364, 9113438365, 9113438679 },
+		alt = { 9113438543, 9113439393 },
 		search = "cartoon car horn double toot happy",
 		bus = "SFX",
 		volume = 0.6,
@@ -621,8 +621,8 @@ Cues.cues = {
 		note = "a cheerful double toot when loot is banked (WorldView bank moment), not the VanHorn warning",
 	},
 	VanDoor = {
-		ids = { 9119200218, 9114153584 },
-		alt = { 9119203830 },
+		ids = { 9119200218, 9119200415, 9119200399 },
+		alt = { 9119200216, 9114153584, 9119203830 },
 		search = "van sliding door close slam",
 		bus = "UI",
 		volume = 0.5,
