@@ -235,7 +235,7 @@ yet: the caption MINE. ALL MINE. carries it.
 | IntroHoardSting | Music | 4.8 | Hoardsworth's low brass "dun-dun" (funny-sinister, not scary) |
 | IntroMonocle | SFX | 9.45 (the close-up) | the monocle glint: one bright "ting" |
 | IntroLever | SFX | 11.75 | a big brass lever yanked down |
-| IntroWhoosh | SFX | 12.4 | the whip-pan to the vacuum |
+| IntroWhoosh | SFX | 12.4 | the whip-pan to the vacuum (also the slide's whoosh: Heist/Slide, Config.Slide) |
 | IntroVacuumOn | SFX (ducks music) | 12.75 | the giant vacuum switching on: clunk, rising whine, roar |
 | IntroSuction | SFX, loop | 13.0 (stopped at 19.0) | the suction roar under the swirl |
 | IntroGlobeThunk | SFX | 19.0 | the last present thunks into the Snow Globe, then silence for ...GONE. |
@@ -476,6 +476,10 @@ Line numbers are from 2026-11-12.
 25. `Ui.button` (line 98): `b.Activated:Connect(function() AudioDirector.play("UIClick"); onActivated() end)`;
     `UIBack` for close/back buttons, `UIToggle` for toggles, `UIConfirm` on ready/equip/granted, `UIError`
     on refused, `UIHover` on `MouseEnter` (PC only).
+
+**Slide.luau** (Config.Slide)
+26. A slide starts (Ctrl / B / SLIDE): `Sound.play("IntroWhoosh")`, the intro's whoosh reused (no new cue: a fast
+    airy whip fits a slide). Your clones replay slides silently (their positions only).
 
 ## 10. Settings and data
 
