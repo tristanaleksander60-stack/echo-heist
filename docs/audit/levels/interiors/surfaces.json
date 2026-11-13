@@ -1,0 +1,368 @@
+{
+ "L1_diorama_mid": {
+  "loot_pop": null,
+  "plate_pop": -0.024,
+  "signal_over_decor": -0.114,
+  "surfaces": {
+   "decor": {
+    "median_luma": 0.45,
+    "median_value": 0.647,
+    "share": 10.8
+   },
+   "floor": {
+    "median_luma": 0.374,
+    "median_value": 0.455,
+    "share": 26.4
+   },
+   "lamp": {
+    "median_luma": 0.22,
+    "median_value": 0.525,
+    "share": 2.0
+   },
+   "other": {
+    "median_luma": 0.413,
+    "median_value": 0.561,
+    "share": 18.2
+   },
+   "signal": {
+    "median_luma": 0.401,
+    "median_value": 0.533,
+    "share": 3.4
+   },
+   "wall": {
+    "median_luma": 0.258,
+    "median_value": 0.392,
+    "share": 39.3
+   }
+  }
+ },
+ "L1_fp_ceiling": {
+  "ceiling_wall": 0.53,
+  "loot_pop": null,
+  "plate_pop": null,
+  "signal_over_decor": -0.188,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.122,
+    "median_value": 0.18,
+    "share": 47.0
+   },
+   "decor": {
+    "median_luma": 0.473,
+    "median_value": 0.706,
+    "share": 7.1
+   },
+   "lamp": {
+    "median_luma": 0.638,
+    "median_value": 0.914,
+    "share": 0.2
+   },
+   "other": {
+    "median_luma": 0.25,
+    "median_value": 0.412,
+    "share": 2.7
+   },
+   "signal": {
+    "median_luma": 0.392,
+    "median_value": 0.518,
+    "share": 5.5
+   },
+   "wall": {
+    "median_luma": 0.232,
+    "median_value": 0.353,
+    "share": 37.5
+   }
+  }
+ },
+ "L1_fp_front": {
+  "ceiling_wall": 0.54,
+  "loot_pop": null,
+  "plate_pop": 0.271,
+  "signal_over_decor": -0.055,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.155,
+    "median_value": 0.227,
+    "share": 19.4
+   },
+   "decor": {
+    "median_luma": 0.414,
+    "median_value": 0.588,
+    "share": 13.1
+   },
+   "floor": {
+    "median_luma": 0.247,
+    "median_value": 0.345,
+    "share": 25.4
+   },
+   "lamp": {
+    "median_luma": 0.843,
+    "median_value": 0.937,
+    "share": 2.1
+   },
+   "other": {
+    "median_luma": 0.351,
+    "median_value": 0.455,
+    "share": 10.8
+   },
+   "signal": {
+    "median_luma": 0.404,
+    "median_value": 0.533,
+    "share": 2.5
+   },
+   "wall": {
+    "median_luma": 0.286,
+    "median_value": 0.475,
+    "share": 26.7
+   }
+  }
+ },
+ "L1_fp_left": {
+  "ceiling_wall": 0.62,
+  "loot_pop": null,
+  "plate_pop": null,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.168,
+    "median_value": 0.239,
+    "share": 14.6
+   },
+   "decor": {
+    "median_luma": 0.442,
+    "median_value": 0.616,
+    "share": 17.7
+   },
+   "floor": {
+    "median_luma": 0.415,
+    "median_value": 0.514,
+    "share": 21.7
+   },
+   "lamp": {
+    "median_luma": 0.88,
+    "median_value": 0.984,
+    "share": 0.8
+   },
+   "other": {
+    "median_luma": 0.343,
+    "median_value": 0.435,
+    "share": 6.7
+   },
+   "wall": {
+    "median_luma": 0.27,
+    "median_value": 0.447,
+    "share": 38.5
+   }
+  }
+ },
+ "L1_fp_loot": {
+  "ceiling_wall": 0.8,
+  "loot_over_decor": -0.023,
+  "loot_pop": 0.157,
+  "plate_pop": null,
+  "signal_over_decor": 0.153,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.117,
+    "median_value": 0.188,
+    "share": 0.0
+   },
+   "decor": {
+    "median_luma": 0.341,
+    "median_value": 0.439,
+    "share": 11.4
+   },
+   "floor": {
+    "median_luma": 0.462,
+    "median_value": 0.537,
+    "share": 21.1
+   },
+   "lamp": {
+    "median_luma": 0.685,
+    "median_value": 0.788,
+    "share": 0.2
+   },
+   "other": {
+    "median_luma": 0.277,
+    "median_value": 0.361,
+    "share": 0.8
+   },
+   "signal": {
+    "median_luma": 0.316,
+    "median_value": 0.592,
+    "share": 7.6
+   },
+   "wall": {
+    "median_luma": 0.146,
+    "median_value": 0.227,
+    "share": 58.8
+   }
+  }
+ },
+ "L1_fp_loot_round": {
+  "ceiling_wall": 0.87,
+  "loot_pop": null,
+  "plate_pop": null,
+  "signal_over_decor": 0.0,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.122,
+    "median_value": 0.184,
+    "share": 7.4
+   },
+   "decor": {
+    "median_luma": 0.338,
+    "median_value": 0.435,
+    "share": 14.4
+   },
+   "floor": {
+    "median_luma": 0.14,
+    "median_value": 0.247,
+    "share": 14.5
+   },
+   "other": {
+    "median_luma": 0.267,
+    "median_value": 0.373,
+    "share": 1.7
+   },
+   "signal": {
+    "median_luma": 0.349,
+    "median_value": 0.435,
+    "share": 16.8
+   },
+   "wall": {
+    "median_luma": 0.14,
+    "median_value": 0.235,
+    "share": 45.2
+   }
+  }
+ },
+ "L1_fp_spawn": {
+  "ceiling_wall": 0.35,
+  "loot_pop": null,
+  "plate_pop": 0.314,
+  "signal_over_decor": 0.062,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.165,
+    "median_value": 0.235,
+    "share": 14.9
+   },
+   "decor": {
+    "median_luma": 0.364,
+    "median_value": 0.467,
+    "share": 7.5
+   },
+   "floor": {
+    "median_luma": 0.205,
+    "median_value": 0.463,
+    "share": 20.4
+   },
+   "lamp": {
+    "median_luma": 0.648,
+    "median_value": 0.875,
+    "share": 0.7
+   },
+   "other": {
+    "median_luma": 0.371,
+    "median_value": 0.486,
+    "share": 4.7
+   },
+   "signal": {
+    "median_luma": 0.401,
+    "median_value": 0.529,
+    "share": 1.4
+   },
+   "wall": {
+    "median_luma": 0.475,
+    "median_value": 0.655,
+    "share": 50.5
+   }
+  }
+ },
+ "L1_fp_street": {
+  "ceiling_wall": 0.36,
+  "loot_pop": null,
+  "plate_pop": null,
+  "signal_over_decor": -0.102,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.168,
+    "median_value": 0.239,
+    "share": 6.6
+   },
+   "decor": {
+    "median_luma": 0.434,
+    "median_value": 0.616,
+    "share": 1.6
+   },
+   "floor": {
+    "median_luma": 0.303,
+    "median_value": 0.494,
+    "share": 9.5
+   },
+   "lamp": {
+    "median_luma": 0.224,
+    "median_value": 0.518,
+    "share": 2.3
+   },
+   "other": {
+    "median_luma": 0.361,
+    "median_value": 0.49,
+    "share": 29.0
+   },
+   "signal": {
+    "median_luma": 0.399,
+    "median_value": 0.514,
+    "share": 1.0
+   },
+   "wall": {
+    "median_luma": 0.468,
+    "median_value": 0.651,
+    "share": 50.0
+   }
+  }
+ },
+ "L1_fp_window": {
+  "ceiling_wall": 0.51,
+  "loot_pop": null,
+  "plate_pop": 0.208,
+  "signal_over_decor": 0.231,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.163,
+    "median_value": 0.227,
+    "share": 19.1
+   },
+   "decor": {
+    "median_luma": 0.4,
+    "median_value": 0.549,
+    "share": 16.9
+   },
+   "floor": {
+    "median_luma": 0.322,
+    "median_value": 0.412,
+    "share": 26.3
+   },
+   "lamp": {
+    "median_luma": 0.843,
+    "median_value": 0.937,
+    "share": 2.1
+   },
+   "other": {
+    "median_luma": 0.319,
+    "median_value": 0.439,
+    "share": 7.2
+   },
+   "signal": {
+    "median_luma": 0.559,
+    "median_value": 0.78,
+    "share": 2.3
+   },
+   "wall": {
+    "median_luma": 0.32,
+    "median_value": 0.522,
+    "share": 26.0
+   }
+  }
+ }
+}
