@@ -6,7 +6,7 @@ _Game director's final plan, 2026-11-12. It merges the six research reports in `
 
 ## Executive summary (one page)
 
-**What it is.** A Roblox heist game where your crew is you. Each heist is played in short **runs** (30-45 s). Every run is recorded, and on the next run your past selves replay it as glowing clones of your own avatar. Plates, doors, lasers and Gus the night guard react to clones exactly as to players. Solo is complete; 2-4 friends make it a 16-robber party.
+**What it is.** A Roblox heist game where your crew is you. Each heist is played in short **runs** (30-45 s). Every run is recorded, and on the next run your past selves replay it as glowing clones of your own Rookie (your outfit and crew colour; you play first person, docs/PLAN_FIRST_PERSON.md). Plates, doors, lasers and Gus the night guard react to clones exactly as to players. Solo is complete; 2-4 friends make it a 16-robber party.
 
 **Decisions taken in this plan**
 - **Prove the fun before rebuilding.** Hard fun gate on the v0.1 prototype by **Mon Nov 16** (owner + 2-3 people, 30 min). Only the pure recording codec may start before it. Six tech spikes (phone clone bench, mesh pipeline, video capture, audio stems, Open Cloud smoke, lighting-in-project-file) decide architecture by **Wed Nov 18**.
@@ -19,7 +19,7 @@ _Game director's final plan, 2026-11-12. It merges the six research reports in `
 - **The under-16 gate.** Primary path is Roblox's **expedited Kids & Select review** (refundable 50,000-100,000 R$ deposit, about 48 h), submitted the day we go public. Engagement ads are the backup. Creator embargo and every "join now" call to action wait for the Audience Reach dashboard to show all ages. Kid playtests run **before** launch through **early-tester invites** on a private test place.
 - **Tech.** Server-side 20 Hz sim with clones as data; clients draw clone rigs. Levels are data built from a Studio-imported kit file; the live place is only ever `rojo build` output, Lighting included. Lag-fairness rules and latency injection in headless tests. Lighting style is chosen once (it cannot be switched by script).
 - **Look.** "Neon-Noir Diorama": chunky model-kit sets at night, warm pools of light, clones as the only glowing colour family. Launch kit cut to ~12 modules + 3 hero props; $300-600 freelance artist for the 5 golden reference assets.
-- **Marketing.** Lead with what competitors can't do: **your own avatar** as the clone, **16 robbers with friends**, Gus as a character. Drop the claim that the tape motif is original (Rewind Robbers uses it). 1-2 clips a day from Nov 19 with a part-time editor.
+- **Marketing.** Lead with what competitors can't do: **your own Rookie** (your outfit, your colour) as the clone, **16 robbers with friends**, Gus as a character. Drop the claim that the tape motif is original (Rewind Robbers uses it). 1-2 clips a day from Nov 19 with a part-time editor.
 - **Calendar.** Dec 3 launch → Fri Dec 11 drop 1 (Wrapping Room) → **Fri Dec 18 finale** (Snow Globe Vault, school break starts) → Dec 24-27 freeze with a Dec 25-26 gift beat → Jan 8 New Year patch → **Jan 22 Museum** → **Feb 12 co-op update** (Hub, crew servers, Season 1).
 
 **Owner decisions needed** (full list with defaults in §11.2): name; fund expedited review; launch scope and date; weekly time commitment; extra scopes on the Open Cloud test key (Nov 13); ad budget; freelance artist; clip editor; kid playtest recruitment; music.
@@ -59,7 +59,7 @@ Store description, line one: *"Your past self is your crew. Rob it solo with 8 o
 
 ### 1.2 Pillars (every feature must serve at least one)
 
-1. **Your crew is you.** The clone is your own avatar, readable in under half a second at 64 px with the sound off; nothing else glows in clone colours.
+1. **Your crew is you.** The clone is your own Rookie (outfit + crew colour + name pill), readable in under half a second at 64 px with the sound off; nothing else glows in clone colours.
 2. **Mistakes are content.** Clones repeat your errors exactly and fail out loud, comically. A failure is a clip and a clue, never a punishment.
 3. **Heist, not puzzle.** A visible threat, chase music when it goes loud, loot from run 1, a soft deadline. Planning is optional; escaping is fun.
 4. **Fast runs, no redo-everything.** 30-45 s runs; redo one clone (or "from #N") without replaying the chain; a heist takes minutes.
@@ -91,7 +91,7 @@ Store description, line one: *"Your past self is your crew. Rob it solo with 8 o
 
 Rejected: **Echo Heist** (two itch.io games, one with the same concept: [nitrous-studio](https://nitrous-studio.itch.io/echo-heist), [Geronimokuwait](https://geronimokuwait.itch.io/echo-heist); Roblox "ECHOES" titles; Ultra Ultra's ECHO). **Rewind Robbers** (Playgama, same concept). **Loop Heist** ([COGconnected](https://cogconnected.com/2026/10/loop-heist-browser-demo-turns-your-recorded-moves-into-a-heist-partner/)). **Rob It Again** (confusable with ROB IT). **Crew of Me** (unsearchable).
 
-**Decision:** launch as **"Heist Yourself: Rob With Your Clones"**, confirmed by the owner by **Mon Nov 16**, before any icon, thumbnail or devlog shows a name; handles (@heistyourself on TikTok, YouTube, Instagram) reserved the same day; trademark knock-out search the same week (not legal advice). `docs/IDEA_ECHO_HEIST.md`'s line "no game uses recordings of your past runs" is false and gets corrected in W1: the mechanic exists (Rewind Robbers, ECHOES, Loop Heist, jams). What is ours is **your own Roblox avatar as the clone, 16 robbers live with friends, Gus, and a daily shared vault**.
+**Decision:** launch as **"Heist Yourself: Rob With Your Clones"**, confirmed by the owner by **Mon Nov 16**, before any icon, thumbnail or devlog shows a name; handles (@heistyourself on TikTok, YouTube, Instagram) reserved the same day; trademark knock-out search the same week (not legal advice). `docs/IDEA_ECHO_HEIST.md`'s line "no game uses recordings of your past runs" is false and gets corrected in W1: the mechanic exists (Rewind Robbers, ECHOES, Loop Heist, jams). What is ours is **your own Rookie as the clone (originally your Roblox avatar; changed by the owner 2026-11-13), 16 robbers live with friends, Gus, and a daily shared vault**.
 
 ### 2.2 Brand system
 
@@ -354,7 +354,7 @@ Goal: "that's me, but a ghost from 20 seconds ago", readable at 64 px, **recogni
 
 - **Rewind:** §7.1.
 - **End-of-heist cut (12-15 s; the built Line-up is ~6.8 s: a SKIP ▶▶ chip from 1 s, a tap anywhere only after the pose on a session's first cut, so a kid still mashing GRAB keeps the payoff):** a 6 s **blooper + win** combo by default: the funniest auto-tagged failure from the blooper log (Bonk/Zap/Busted, weighted by "repeat at the same spot"), then the **Crew Line-up** (§3.2 #8) at the van; then the final run's 3 auto-picked shots (wide diorama, tracking the loot carrier, a hero moment at 0.35x). Burned-in caption ("RUN 6 · 8 OF ME · $1,000"), the "◀ ME, 20 SEC AGO" label, subject inside the central 32% of frame width (9:16-safe), HUD, chat and nameplates hidden. **[Resolved 2026-11-12, camera track, PLAN_STEAM_PLUS C5]** the 32% rule: every figure stays inside the central 32% of the width (`Config.Heist.CAMERA.LINEUP`); a row whose spots sit inside the van body (every level's default row and the L5/L6 `lineup.z = 28`) keeps its facing and slides onto the pavement in front of the lit shop front, and the shot searches low-then-high for a clear lane over the van (client-side only, no level data moved; `tests/unit/HeistLineup.spec.luau` on every level and daily vault).
-- **Garage lobby:** your van shows your trophy shelf and, on first join, a looping Crew Line-up of 8 copies of **your own avatar** (from Mentor-tape paths) as the promise of what's coming.
+- **Garage lobby:** your van shows your trophy shelf and, on first join, a looping Crew Line-up of 8 copies of **your own Rookie** (from Mentor-tape paths) as the promise of what's coming.
 - **Live slow-mo (cosmetic):** last loot banked with < 3 s left slows local animations to 0.5x for 0.6 s.
 
 ### 6.7 Asset and animation pipeline
