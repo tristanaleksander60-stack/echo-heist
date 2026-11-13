@@ -1203,7 +1203,12 @@ def world2_level(level, samples, out_dir):
     cfg = level["backdropConfig"]
     CC = level["camera"]["CLASSIC"]
     DF = level["camera"]["DIORAMA"]["FOV"]
+    only = os.environ.get("EH_W2_SHOTS")
     for solved in (False, True):
+        if only:   # build only the scene the requested shots need (a second factory reset can crash Eevee)
+            mine = ("diorama_mid", "diorama_crew") if solved else ("diorama", "classic", "classic_rev")
+            if not any(k in mine for k in only.split(",")):
+                continue
         s = MR.reset(samples)
         s.view_settings.exposure = 0.3
         lib = Lib(level["location"])
