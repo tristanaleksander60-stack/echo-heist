@@ -54,7 +54,7 @@ The body arm is built to read at 48 px from 30 studs away (chunky, a fat mitt). 
 **Rules (detail):**
 9. Per hand: a palm with thickness and a knuckle ridge, **4 fingers × 3 segments** each with a knuckle bulge, **a 3-segment thumb**, rounded tips, smooth-shaded (auto-smooth 50°). Separate pieces per segment so the code curls them.
 10. The sleeve is the Rookie's cream knit with a ribbed cuff; the crew colour is the sleeve stripe (Breton) or the colour-block cuff (outfit); the glove variant's cuff (knit roll or leather gauntlet) in the glove colour; the gold REWIND watch on the left wrist.
-11. Budget: **≤ 2,400 triangles per hand set** (one hand + its sleeve, cuff and stripes; Config `ARMS.TRI_BUDGET`).
+11. Budget: **≤ 2,700 triangles per hand set** (raised from a first guess of 2,400, see §8) (one hand + its sleeve, cuff and stripes; Config `ARMS.TRI_BUDGET`).
 12. Lighting: one client-only fill (PointLight at the eye, Range ≈ 2.5 world studs at 0.4 scale ≈ the hands only, Brightness 0.5-0.8, no shadows); the first-person glove colour lifted toward a mid value so the knit indigo never drops under luma 0.12 in the dimmest room; the sleeve a step darker than the body's (no blow-out under lamps).
 
 ## 4. When the hands are visible
@@ -106,7 +106,7 @@ The body arm is built to read at 48 px from 30 studs away (chunky, a fat mitt). 
 | 1-4 | Dedicated FP kit `Rookie_FPArms`; sleeve r ≤ 0.6 × palm half-width; hand ≈ 1.9 × palm width; a hand spans 14-18 % of the screen height | palm 0.44 wide, sleeve r 0.13 → 0.16 |
 | 5 | Viewmodel FOV (vertical) | `VIEW_FOV = 50` (k 1.5 at FOV 70) |
 | 6-8 | Rest framing, cant, roll, safe rect | R hand x 0.48-0.58, y −0.55..−0.65; cant 15-20°, roll 20-28°; \|x\| ≤ 0.97, −1.10 ≤ y ≤ 0.85 |
-| 9-11 | 4 × 3 fingers + 3-segment thumb, smooth, cuff, stripe, watch | ≤ 2,400 tris per hand set |
+| 9-11 | 4 × 3 fingers + 3-segment thumb, smooth, cuff, stripe, watch | ≤ 2,700 tris per hand set (`ARMS.TRI_BUDGET`) |
 | 12 | Fill light + glove lift | 1 PointLight, no shadows |
 | 13 | Visibility | `VISIBILITY.MODE = "lowered"` (raise 0.16 s, lower 0.45 s after 0.6 s) |
 | 14-17 | Springs and timings | lag 5 Hz ζ 0.6; bob lag 40°; reach 0.07 / 0.12 / 0.08 / 0.26 s, 8 % overshoot; fingers 9 Hz ζ 0.75 |
@@ -115,4 +115,16 @@ The numbers were checked in the Blender preview (`tools/blender/fp_hands_preview
 
 ## 8. What the renders changed
 
-_(Filled in after the preview iterations; see the end of this file.)_
+The preview (`tools/blender/fp_hands_preview.py`, the game's own ViewmodelMath + FpRig through Lune, over the real L1
+interior) changed these first guesses:
+
+| First guess | What the render showed | Now |
+|---|---|---|
+| Fingers r 0.045-0.053, middle 0.38 long | spidery, "claw" fingers | r 0.052-0.060, lengths -15 % (chunky-cute), palm 0.444 wide |
+| Rest pitch 14, roll 24 (thumb side up) | the hand seen edge-on, fingers pointing flat at the centre | pitch 34, roll 12: the back of the glove faces the eye |
+| A fixed elbow | the reach became a long pole of sleeve across the screen | `ELBOW_FOLLOW` 0.85: the elbow travels with the hand |
+| Sleeve 0.136 -> 0.176 | a stick in the reach and hands-up | 0.138 at the cuff -> 0.21 at the screen edge (a knit sleeve is loose) |
+| Lowered idle -0.5 | only dark fingertip blobs at the bottom edge | -0.26: the backs of the gloves and the relaxed curl peek in |
+| REWIND: both hands crossing | two dark hands overlapping, the watch lost | the left forearm across with the watch face to the eye, the right index taps from below |
+| Point: index along the view | foreshortened, unreadable | the hand turned in 33 and rolled: the index reads in profile |
+| Budget 2,400 tris a hand set | the 4 x 3 + 3 segments (96 tris each) need more | **2,700** (left set with the watch: 2,688) |

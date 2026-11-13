@@ -35,7 +35,12 @@ FOV = 70.0                      # Config.Heist.CAMERA.FP.FOV
 CREW = "#3DE8FF"                # Palette.CLONE_HUES[1] (seat 1)
 MARBLE = "#D8C8A8"              # Palette.marble (the glove lift target)
 BEFORE_REV = "af24400"          # v101 (the owner's last capture)
-SAFE = (0.97, 0.85, -1.1)       # Config VIEWMODEL.SAFE: |x| <= X, y <= Y_TOP, y >= Y_BOTTOM (drawn on --guides)
+SAFE = (0.97, 0.85, -1.1)       # Config VIEWMODEL.SAFE: |x| <= X, y <= Y_TOP (drawn on --guides)
+# the contact sheet's extra row (rendered with --spot / --outfit): the light check and the other outfit
+EXTRAS = [("after_ready_16x9_back.png", "dim back room (ready)"), ("after_ready_16x9_lamp.png", "under a lamp (ready)"),
+          ("after_carry_16x9_lamp.png", "under a lamp (carry)"),
+          ("after_ready_16x9_gloves-Gloves_Leather_sweater-Sweater_Block.png", "leather gloves, block sweater"),
+          ("after_watch_16x9_gloves-Gloves_Leather_sweater-Sweater_Block.png", "leather: REWIND watch")]
 
 
 def lune_plan(mode, fov=FOV, outfit=None):
@@ -311,7 +316,9 @@ def sheet(out_path, aspect_rows=("16x9", "19.5x9")):
             rows.append((asp, mode))
     th = {a: int(round(tw / ASPECTS[a])) for a in aspect_rows}
     pad, head, lab = 6, 46, 18
-    H = head + sum(th[a] + lab + pad for a, _m in rows) + pad
+    # an extra row: the light check (a dim back-room spot, right under a lamp) and the other outfit
+    extras = [(f, t) for f, t in EXTRAS if os.path.isfile(os.path.join(OUT, f))]
+    H = head + sum(th[a] + lab + pad for a, _m in rows) + pad + ((th["16x9"] + lab + pad) if extras else 0)
     Wd = pad + 90 + len(cols) * (tw + pad)
     sheet_im = Image.new("RGB", (Wd, H), (24, 26, 46))
     d = ImageDraw.Draw(sheet_im)
@@ -336,6 +343,13 @@ def sheet(out_path, aspect_rows=("16x9", "19.5x9")):
                 d.rectangle([x, y + lab, x + tw, y + lab + th[asp]], outline=(80, 80, 110))
             d.text((x + 2, y + 1), pose, fill=(220, 224, 240), font=f)
         y += th[asp] + lab + pad
+    if extras:
+        d.text((pad, y + th["16x9"] // 2), "AFTER\nlight +\noutfit", fill=(255, 210, 122), font=f)
+        for i, (fname, title) in enumerate(extras):
+            x = pad + 90 + i * (tw + pad)
+            im = Image.open(os.path.join(OUT, fname)).convert("RGB").resize((tw, th["16x9"]), Image.LANCZOS)
+            sheet_im.paste(im, (x, y + lab))
+            d.text((x + 2, y + 1), title, fill=(220, 224, 240), font=f)
     sheet_im.save(out_path, optimize=True)
     print("wrote", os.path.relpath(out_path, REPO))
 
