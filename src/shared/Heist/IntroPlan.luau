@@ -288,8 +288,8 @@ IntroPlan.SHOTS = table.freeze({
 		keys = {
 			{ t = 0, pos = { 112, 72, 46 }, look = { 101, 63, 9 }, fov = 50 },
 			{ t = 0.42, pos = { 128, 26, 80 }, look = { 124, 22, 46 }, fov = 46 },
-			{ t = 0.62, pos = { 130, 2.4, 75 }, look = { 130, 5, 50 }, fov = 42 },
-			{ t = 1, pos = { 130, 2.8, 66 }, look = { 130, 4.9, 53.5 }, fov = 36 },
+			{ t = 0.62, pos = { 130, 2.2, 75 }, look = { 130, 4.2, 50 }, fov = 42 },
+			{ t = 1, pos = { 130, 2.4, 65 }, look = { 130, 3.3, 53.5 }, fov = 38 },
 		},
 		events = {
 			{ at = 0, kind = "despawn", id = "hoardsworth" },
@@ -310,8 +310,8 @@ IntroPlan.SHOTS = table.freeze({
 		caption = "MORE",
 		captionAt = 0.2,
 		keys = {
-			{ t = 0, pos = { 130, 3, 64 }, look = { 130, 4.6, 50 }, fov = 40 },
-			{ t = 1, pos = { 130, 6.5, 83 }, look = { 130, 4.2, 47 }, fov = 52 },
+			{ t = 0, pos = { 130, 2.6, 62 }, look = { 130, 3.6, 50 }, fov = 40 },
+			{ t = 1, pos = { 130, 5.6, 80 }, look = { 130, 3.4, 47 }, fov = 50 },
 		},
 		events = {
 			{ at = 0, kind = "despawn", id = "letter" },
@@ -337,8 +337,8 @@ IntroPlan.SHOTS = table.freeze({
 		captionAt = 0,
 		wordmark = true,
 		keys = {
-			{ t = 0, pos = { 130, 6.5, 83 }, look = { 130, 4.2, 47 }, fov = 52 },
-			{ t = 1, pos = { 130, 6.6, 84 }, look = { 130, 4.2, 47 }, fov = 53 },
+			{ t = 0, pos = { 130, 5.6, 80 }, look = { 130, 3.4, 47 }, fov = 50 },
+			{ t = 1, pos = { 130, 5.7, 81 }, look = { 130, 3.4, 47 }, fov = 51 },
 		},
 		events = {
 			{ at = 0, kind = "fx", id = "flash" },
@@ -375,9 +375,10 @@ IntroPlan.LETTER = table.freeze({
 	{ 24.2, { 117, 34, 36 } },
 	{ 25.4, { 126, 13, 55 } },
 	{ 26.4, { 130.8, 5.2, 56.5 } },
-	{ 27.1, { 132.1, 2.7, 54.3 } }, -- caught at chest height, clear of his face
+	{ 27.1, { 131.6, 2.2, 54.2 } }, -- caught at chest height (the Rookie is 4.6 tall), clear of his face
 })
 IntroPlan.LETTER_FLUTTER = { amp = 2.2, hz = 0.9, tilt = 0.55 }
+IntroPlan.LETTER_SCALE = 0.6 -- of the kit envelope (2.4 x 1.6): a kid's letter in a 4.6-stud Rookie's hand
 
 -- Flying presents: launch window and flight (absolute seconds).
 IntroPlan.SWIRL = table.freeze({ start = 12.8, finish = 20.0, flight = 2.4, turns = 1.6, radius = 7 })

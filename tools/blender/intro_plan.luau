@@ -102,4 +102,5 @@ print(serde.encode("json", {
 	rig = rig,
 	shots = shots,
 	total = IntroPlan.total(),
+	letterScale = IntroPlan.LETTER_SCALE,
 }, false))

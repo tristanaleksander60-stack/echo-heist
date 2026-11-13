@@ -913,7 +913,7 @@ function Cinematic.new(opts: any?): any
 		anchor.Transparency = 1
 		-- the work lamp over the Rookie: it comes on with the headlights (the face key of the reveal)
 		local lamp =
-			part(f, "WorkLamp", Vector3.new(0.6, 0.6, 0.6), at({ c[1], 9, c[3] + 10 }), OFF, Enum.Material.Neon)
+			part(f, "WorkLamp", Vector3.new(0.6, 0.6, 0.6), at({ c[1], 6.5, c[3] + 11.5 }), OFF, Enum.Material.Neon)
 		local lampLight = Instance.new("PointLight")
 		lampLight.Color = Color3.fromHex("#FFC890")
 		lampLight.Range = 16
@@ -1153,6 +1153,7 @@ function Cinematic.new(opts: any?): any
 				if m and lp then
 					p = lp
 					p.Parent = stage
+					p.Size *= IntroPlan.LETTER_SCALE
 					m:Destroy()
 				else
 					p = part(stage, "Letter", Vector3.new(2.4, 1.6, 0.1), stageCF, Palette.marbleHi)

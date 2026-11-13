@@ -7,7 +7,7 @@ StreetLamp, Xmas_Tree), lit with the shot's mood in Eevee.
 
 Writes docs/art/intro/shot_N.png (1920 x 1080 x scale; 256 colours + dither, like the marketing concepts) and
 docs/art/intro/contact_sheet.png. Each shot renders in its own Blender process. What is a stand-in here: the
-Rookie (MR.figure: flat cap, long scarf, smug side-eye) until the CHARACTER track's Rookie lands; the aurora
+Rookie is the CHARACTER track's (assets/fbx/Rookie*.fbx, posed by the plan's joint angles, default outfit); the aurora
 curtains, suction beams, headlight beams and snow are code effects in the game (Heist/Cinematic) drawn here as
 emissive meshes; the caption card, the letterbox and the title wordmark are 2D, as in the game.
 """
@@ -290,6 +290,77 @@ def hoardsworth(at, yaw, pose, rig):
         (place_m @ (C4 @ Matrix.Translation(mono))).translation
 
 
+
+ROOKIE_OUTFIT = ("Rookie_Cap_Flat", "Rookie_Scarf_Long", "Rookie_Stripes_Torso", "Rookie_Stripes_LeftArm",
+                 "Rookie_Stripes_RightArm", "Rookie_Gloves_Knit_Left", "Rookie_Gloves_Knit_Right")
+CREW_HUE = "#3DE8FF"     # the template's seat-1 hue (server Heist/Rookie)
+GLOVES = "#2A2D52"       # Config.Rookie.GLOVES.Gloves_Knit
+
+
+def rookie(at, yaw, pose, face="idle", clone=None, dim=0.0):
+    """The CHARACTER track's Rookie (assets/fbx/Rookie*.fbx, the kit manifest's joints and attach points) posed like
+    Heist/Cinematic poses the CharacterKit template: Motor6D.Transform = the IntroPlan joint angles; default outfit
+    (flat cap, long scarf, stripes, knit gloves) in the seat hue; `clone` = a clone's hue (emissive copy)."""
+    man = K.MANIFEST
+
+    def load(fbx, keep):
+        before = set(bpy.data.objects)
+        bpy.ops.import_scene.fbx(filepath=os.path.join(K.FBX, fbx + ".fbx"))
+        out = {}
+        for o in set(bpy.data.objects) - before:
+            base = o.name.split(".")[0]
+            if o.type == "MESH" and keep(base):
+                out[base] = o
+            else:
+                bpy.data.objects.remove(o, do_unlink=True)
+        return out
+
+    body = load("Rookie", lambda n: n != "Rookie_Face_Idle" or face == "idle")
+    extra = load("Rookie_Outfits", lambda n: n in ROOKIE_OUTFIT)
+    if face != "idle" and not clone:
+        extra.update(load("Rookie_Faces", lambda n: n == "Rookie_Face_" + face.capitalize()))
+    place_m = Matrix.Translation(rbv(at)) @ Matrix.Rotation(math.radians(yaw), 4, "Z")
+    joints = {n: v for n, v in man.items() if v.get("model") == "Rookie" and v.get("joint")}
+    world = {}
+
+    def solve(name):
+        if name in world:
+            return world[name]
+        v = joints[name]
+        par = v["joint"].get("parent")
+        o = v["origin"]
+        po = joints[par]["origin"] if par else (0, 0, 0)
+        e = pose.get(v["joint"]["name"], (0, 0, 0))
+        w = (solve(par) if par else Matrix.Identity(4)) @ Matrix.Translation(
+            (o[0] - po[0], o[1] - po[1], o[2] - po[2])) @ r_euler_yxz(*e)
+        world[name] = w
+        return w
+
+    def put(o, W, origin, tint=None):
+        delta = W @ Matrix.Translation(origin).inverted()
+        o.matrix_world = place_m @ (C4 @ delta @ C4I) @ o.matrix_world
+        if clone:
+            m = MR.mat(clone, 0.45, emit=1.1, key=("rkclone", clone, dim))
+            m.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = MR.lin(clone, 0.4 * (1 - dim))
+            o.data.materials.clear()
+            o.data.materials.append(m)
+            o.visible_shadow = False
+        else:
+            K.style(o, LOC, tint)
+
+    for name, o in body.items():
+        if name in joints:
+            put(o, solve(name), joints[name]["origin"])
+        else:   # the idle face: rigid with the head
+            put(o, solve("Rookie_Head"), man[name]["origin"])
+    for name, o in extra.items():
+        v = man[name]
+        a = v.get("attach") or {"part": "Head", "offset": [0, 0, 0]}
+        W = solve("Rookie_" + a["part"]) @ Matrix.Translation(tuple(a["offset"]))
+        tint = GLOVES if "Gloves" in name else (CREW_HUE if v.get("tint") else None)
+        put(o, W, v["origin"], tint)
+
+
 FIG_JOINT = {"RightShoulder": "shR", "RightElbow": "elR", "LeftShoulder": "shL", "LeftElbow": "elL", "Neck": "neck",
              "Waist": "waist", "RightHip": "hipR", "RightKnee": "knR", "LeftHip": "hipL", "LeftKnee": "knL"}
 
@@ -337,7 +408,7 @@ def garage(st, lights_on):
             o = MR.cyl("Pool", 3.2, 3.2, 0.02, pool, None, tuple(rb(hp[0], 0.08, hp[2] + 9)), seg=24, scale=(1, 2.2, 1))
             o.visible_shadow = False
     if lights_on:   # the work lamp over the Rookie comes on with the headlights (Heist/Cinematic)
-        MR.light("POINT", tuple(rb(cx, 9.0, cz + 10)), None, "#FFC890", 2600, size=1.2, shadow=True)
+        MR.light("POINT", tuple(rb(cx, 6.5, cz + 11.5)), None, "#FFC890", 2200, size=1.2, shadow=True)
 
 
 # ------------------------------------------------------------------ effects
@@ -462,18 +533,21 @@ def build(shot, P_):
     if shot["letter"]["visible"] and "letter" in live:
         lo = place("Intro_Letter", tuple(shot["letter"]["pos"]), 200)
         for x in lo:
+            p = x.matrix_world.translation.copy()
+            x.matrix_world = Matrix.Translation(p) @ Matrix.Scale(P_["letterScale"], 4) @ Matrix.Translation(-p) @ \
+                x.matrix_world
+        for x in lo:
             x.matrix_world = Matrix.Translation(x.matrix_world.translation) @ \
                 Matrix.Rotation(shot["letter"]["tilt"] + 0.5, 4, "Y") @ Matrix.Translation(-x.matrix_world.translation) \
                 @ x.matrix_world
     if shot["id"] in ("one", "more", "title"):
         rk = st["rookie"]["at"]
-        pose = MR.POSES["stand"].copy()
-        pose.update(fig_pose(shot["rookie"]))
-        MR.figure("rookie", tuple(rb(rk[0], 0, rk[2])), st["rookie"]["yaw"], pose=pose, expr="smug", look=-1)
+        grin = shot["t"] >= 29.0
+        rookie(rk, st["rookie"]["yaw"], shot["rookie"], face="smug" if grin else "idle")
         for k, c in enumerate(st["clones"]):
             if shot["clones"][k] > 0.5:
-                MR.figure(f"clone{k}", tuple(rb(c[0], 0, c[2])), st["rookie"]["yaw"] + (8 if c[0] < 130 else -8),
-                          clone=MR.CLONE["P1"], dim=0.12 * k, hue=6 * k, pose="stand")
+                rookie(c, st["rookie"]["yaw"] + (8 if c[0] < 130 else -8), shot["rookie"],
+                       clone=MR.hsv_shift(MR.CLONE["P1"], 0.12 * k, 6 * k), dim=0.12 * k)
     if "aurora" in fx:
         aurora(3)
     if "snow" in fx:

@@ -1212,6 +1212,14 @@ local okIntro, introErr = pcall(function()
 	local Config = require(shared:WaitForChild("Config")) :: any
 	local Lighting = game:GetService("Lighting")
 	local groups = IntroKit.publishNow(KitService)
+	-- the CHARACTER track's CharacterKit (server Heist/Rookie publishes it about 3 s after the kit loads)
+	if ReplicatedStorage:FindFirstChild(Config.Intro.CHARACTER_KIT) == nil then
+		pcall(function()
+			require(heistServer:WaitForChild("Rookie")).publishNow(KitService)
+		end)
+	end
+	local kitFolder = ReplicatedStorage:WaitForChild(Config.Intro.CHARACTER_KIT, 20)
+	assert(kitFolder and kitFolder:WaitForChild(Config.Intro.ROOKIE_TEMPLATE, 10), "CharacterKit.Rookie published")
 	assert(groups >= #IntroKit.MODELS - 1, "intro kit groups published: " .. groups .. "/" .. #IntroKit.MODELS)
 	local origin = Vector3.new(table.unpack(Config.Intro.STAGE_ORIGIN))
 	local ST = IntroPlan.STAGE
