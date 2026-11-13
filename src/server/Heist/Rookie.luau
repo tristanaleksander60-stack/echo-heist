@@ -3,7 +3,8 @@
 --
 -- Publishes ReplicatedStorage/<Config.Rookie.KIT_FOLDER> ("CharacterKit") once the kit is loaded:
 --   Pieces            every Rookie kit piece (body, faces, outfit pieces, viewmodel arms, the first-person gloves
---                     with fingers, the dedicated first-person arms Rookie_FPArms), as KitService prepared them
+--                     with fingers, the dedicated first-person arms Rookie_FPArms, the skinned FP HANDS v2 gloves
+--                     Rookie_FPHands with their Bones), as KitService prepared them
 --   Rookie            the template character: default outfit, seat-1 hue (a whole R15 character Model)
 --   Rookie_Viewmodel  the first-person arms for the FP track: LeftArm, RightArm (anchored, no collisions, no
 --                     shadows), each with its grip attachment (GripL / GripR at the palm) and an Elbow attachment
@@ -33,7 +34,17 @@ local R = Config.Rookie
 
 local Rookie = {}
 
-local GROUPS = { "Rookie", "Rookie_Faces", "Rookie_Outfits", "Rookie_Viewmodel", "Rookie_Hands", "Rookie_FPArms" }
+local GROUPS = {
+	"Rookie",
+	"Rookie_Faces",
+	"Rookie_Outfits",
+	"Rookie_Viewmodel",
+	"Rookie_Hands",
+	"Rookie_FPArms",
+	"Rookie_FPHands",
+	"Rookie_FPHands_R",
+	"Rookie_FPHands_L",
+}
 local MOODS = { "idle", "smug", "shocked", "busted" }
 
 local function v3(t: { number }): Vector3

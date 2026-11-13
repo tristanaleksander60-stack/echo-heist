@@ -1,0 +1,132 @@
+{
+ "asset": "Rookie_FPHands_R",
+ "objects": [
+  {
+   "name": "Rookie_FPH_Right_Glove",
+   "class": "medium",
+   "tris": 2600,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    0.101,
+    0.239,
+    0.053
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.042,
+     -0.1487,
+     -0.0289
+    ],
+    "local_max": [
+     0.0588,
+     0.09,
+     0.0243
+    ]
+   },
+   "swatches": [],
+   "location": [
+    -0.18,
+    0.04,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVES / the knit tone), lifted for first person",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "skinned first-person right glove (one shell, 23 bones)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 2600,
+ "asset_budget": {
+  "class": "medium",
+  "target": 2000,
+  "ceiling": 4000
+ },
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "3382ff1248a274aa9dbf",
+ "fbx": {
+  "path": "assets/fbx/Rookie_FPHands_R.fbx",
+  "bytes": 176748,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Rookie_FPH_Right_Glove",
+   "Rookie_FPH_Right_Rig",
+   "R_Root",
+   "R_Forearm",
+   "R_Hand",
+   "R_Index1",
+   "R_Index2",
+   "R_Index3",
+   "R_IndexTip",
+   "R_Middle1",
+   "R_Middle2",
+   "R_Middle3",
+   "R_MiddleTip",
+   "R_Ring1",
+   "R_Ring2",
+   "R_Ring3",
+   "R_RingTip",
+   "R_Pinky1",
+   "R_Pinky2",
+   "R_Pinky3",
+   "R_PinkyTip",
+   "R_Thumb1",
+   "R_Thumb2",
+   "R_Thumb3",
+   "R_ThumbTip"
+  ],
+  "geometry_extents": [
+   [
+    0.053,
+    0.101,
+    0.239
+   ]
+  ]
+ },
+ "spec": "assets/blender/fp_hands.py",
+ "notes": "FP HANDS v2: one continuous skinned glove (23 bones, smooth, vertex-shaded), exported at 0.2 (the in-game size).",
+ "turntable": "docs/art/turntables/Rookie_FPHands_R.png",
+ "seconds": 19.7
+}

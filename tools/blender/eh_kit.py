@@ -566,14 +566,18 @@ def export_fbx(objs, path):
     if bpy.context.object and bpy.context.object.mode != "OBJECT":
         bpy.ops.object.mode_set(mode="OBJECT")
     bpy.ops.object.select_all(action="DESELECT")
-    for ob in objs:
+    # skinned pieces (FP HANDS v2): their armatures go too (one MeshPart with its Bones in Roblox, measured); the
+    # Armature modifier must not be applied, and the meshes carry no other modifier
+    rigs = [ob.parent for ob in objs if ob.parent is not None and ob.parent.type == "ARMATURE"]
+    for ob in list(objs) + rigs:
         ob.select_set(True)
     bpy.context.view_layer.objects.active = objs[0]
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    bpy.ops.export_scene.fbx(filepath=path, use_selection=True, object_types={"MESH"},
+    bpy.ops.export_scene.fbx(filepath=path, use_selection=True, object_types={"MESH", "ARMATURE"} if rigs else {"MESH"},
                              apply_scale_options="FBX_SCALE_UNITS", axis_forward="Z", axis_up="Y",
                              add_leaf_bones=False, bake_anim=False, path_mode="COPY", embed_textures=True,
-                             use_mesh_modifiers=True, mesh_smooth_type="OFF", use_custom_props=False)
+                             use_mesh_modifiers=not rigs, mesh_smooth_type="OFF", use_custom_props=False,
+                             use_armature_deform_only=False)
     return path
 
 

@@ -1772,16 +1772,18 @@ local okIntro, introErr = pcall(function()
 	return string.format("stage built in %.0f ms, %d kit groups, rookie %s", buildMs, groups, rookieKind)
 end)
 check(okIntro, "story intro: kit, stage, every shot stepped, SKIP end state, restore (" .. tostring(introErr) .. ")")
--- L. CH polish + the FP hands pass: on the real CharacterKit, the first-person arms are built in your outfit
--- (Viewmodel.fromOutfit -> the dedicated Rookie_FPArms: the glove variant's cuff, the lifted glove colour on the palm and
--- every finger segment, the crew stripes or the colour-block cuff on the sleeve, quiet parts), the sleeve runs back
--- toward the eye; a kit without the FP pieces still builds the old body-piece arms (the fallback, same checks as
--- before); and the long scarf's two tail pieces sway (ScarfSway.bind finds the welds, a pose bends them, the budget
--- picks the nearest, a low tier puts the modelled pose back).
+-- L. CH polish + FP HANDS v2: on the real CharacterKit, the first-person arms are built in your outfit
+-- (Viewmodel.fromOutfit -> the skinned Rookie_FPHands: one glove MeshPart a hand, skinned, with all its Bones, in the
+-- lifted glove colour; the glove variant's cuff only; the crew stripes or the colour-block cuff; the cream sleeve; the
+-- watch; quiet parts), the sleeve runs back toward the eye. Without Rookie_FPHands the v125 rigid arms (Rookie_FPArms)
+-- still build with their old checks; without either, the old body-piece arms. And the long scarf's two tail pieces
+-- sway (ScarfSway.bind finds the welds, a pose bends them, the budget picks the nearest, a low tier puts the modelled
+-- pose back).
 local okCh, chErr = pcall(function(): string
 	local Viewmodel = require(clientHeist:WaitForChild("Viewmodel"))
 	local ScarfSway = require(clientHeist:WaitForChild("ScarfSway"))
 	local Outfit = require(shared:WaitForChild("Heist"):WaitForChild("Outfit"))
+	local Palette = require(shared:WaitForChild("Heist"):WaitForChild("Palette"))
 	local Config = require(shared:WaitForChild("Config")) :: any
 	local kit = ReplicatedStorage:WaitForChild(Config.Rookie.KIT_FOLDER, 20)
 	assert(kit and kit:FindFirstChild("Pieces"), "CharacterKit.Pieces")
@@ -1806,9 +1808,73 @@ local okCh, chErr = pcall(function(): string
 		end
 		assert(found == 2, name .. " on both arms (" .. found .. ")")
 	end
+	local function without(prefixes: { string }): Instance
+		local copy = kit:Clone()
+		for _, p in copy.Pieces:GetChildren() do
+			for _, pre in prefixes do
+				if string.sub(p.Name, 1, #pre) == pre then
+					p:Destroy()
+					break
+				end
+			end
+		end
+		return copy
+	end
+	-- v2: the skinned gloves
+	local sleeveColour = (Palette :: any)[Config.FirstPerson.VIEWMODEL.ARMS.SLEEVE_COLOUR]
 	for _, o in { Outfit.default(), leather } do
 		local rig = Viewmodel.fromOutfit(kit, Outfit.key(o), hue)
-		assert(rig and rig.kit and rig.fp, "the dedicated first-person arms for " .. Outfit.key(o))
+		assert(rig and rig.kit and rig.fp2, "the skinned FP HANDS v2 arms for " .. Outfit.key(o))
+		local glove = Viewmodel.gloveColour(o)
+		local variant = string.sub(o.gloves, 8)
+		local sweater = string.sub(o.sweater, 9)
+		local skinned, cuffs, otherCuffs, crew, sleeves, loud, bones = 0, 0, 0, 0, 0, 0, 0
+		for _, d in rig.model:GetDescendants() do
+			if d:IsA("Bone") then
+				bones += 1
+			elseif d:IsA("BasePart") and d.Name ~= "EH_ViewmodelFill" then
+				if string.find(d.Name, "_Glove", 1, true) then
+					assert(d:IsA("MeshPart") and (d :: any).HasSkinnedMesh, d.Name .. " is a skinned mesh")
+					assert(d.Color == glove, d.Name .. " in the glove colour")
+					skinned += 1
+				elseif string.find(d.Name, "_Cuff" .. variant, 1, true) then
+					cuffs += 1
+					assert(d.Color == glove, d.Name .. " in the glove colour")
+				elseif string.find(d.Name, "_Cuff", 1, true) then
+					otherCuffs += 1
+				elseif string.find(d.Name, "_" .. sweater, 1, true) then
+					crew += 1
+					assert(d.Color == hue, d.Name .. " in the crew colour")
+				elseif string.find(d.Name, "_Sleeve", 1, true) then
+					sleeves += 1
+					assert(d.Color == sleeveColour, d.Name .. " in the sweater colour")
+				end
+				if d.CanCollide or d.CanQuery or d.CastShadow or not d.Anchored then
+					loud += 1
+				end
+			end
+		end
+		assert(skinned == 2, "one skinned glove a hand: " .. skinned)
+		assert(bones == 2 * 23, "every Bone kept on the clones: " .. bones)
+		assert(cuffs == 2 and otherCuffs == 0, string.format("the %s cuffs only (%d, %d)", variant, cuffs, otherCuffs))
+		assert(
+			crew == 2 and sleeves == 2,
+			string.format("the sleeves (%d) and their crew %s (%d)", sleeves, sweater, crew)
+		)
+		assert(loud == 0, "quiet parts")
+		assert(#rig.R.parts == 4 and #rig.L.parts == 5, "4 pieces a hand (+ the watch on the left)")
+		runsBack(rig, "_Sleeve")
+		table.insert(looks, string.format("v2 %s %d parts", o.gloves, #rig.R.parts + #rig.L.parts))
+		rig.model:Destroy()
+	end
+	-- the v125 rigid arms when the kit has no Rookie_FPHands (the fallback; its old checks)
+	local v125 = without({ "Rookie_FPH_" })
+	for _, o in { Outfit.default(), leather } do
+		local rig = Viewmodel.fromOutfit(v125, Outfit.key(o), hue)
+		assert(
+			rig and rig.kit and rig.fp and rig.fp2 == nil,
+			"the v125 dedicated first-person arms for " .. Outfit.key(o)
+		)
 		local glove = Viewmodel.gloveColour(o)
 		local variant = string.sub(o.gloves, 8)
 		local sweater = string.sub(o.sweater, 9)
@@ -1837,18 +1903,14 @@ local okCh, chErr = pcall(function(): string
 		assert(loud == 0, "quiet parts")
 		assert(#rig.R.parts >= 19 and #rig.L.parts >= 20, "both hands bound (the watch on the left)")
 		runsBack(rig, "_Sleeve")
-		table.insert(looks, string.format("%s %d parts", o.gloves, #rig.R.parts + #rig.L.parts))
+		table.insert(looks, string.format("v125 %s %d parts", o.gloves, #rig.R.parts + #rig.L.parts))
 		rig.model:Destroy()
 	end
-	-- the fallback: a kit without the dedicated pieces builds the old body-piece arms (v101's checks)
-	local old = kit:Clone()
-	for _, p in old.Pieces:GetChildren() do
-		if string.sub(p.Name, 1, 10) == "Rookie_FP_" then
-			p:Destroy()
-		end
-	end
+	v125:Destroy()
+	-- the fallback: a kit without either set of dedicated pieces builds the old body-piece arms (v101's checks)
+	local old = without({ "Rookie_FP_", "Rookie_FPH_" })
 	local legacy = Viewmodel.fromOutfit(old, Outfit.key(Outfit.default()), hue)
-	assert(legacy and legacy.kit and legacy.fp == nil, "the old body-piece arms without Rookie_FPArms")
+	assert(legacy and legacy.kit and legacy.fp == nil and legacy.fp2 == nil, "the old body-piece arms without them")
 	runsBack(legacy, "LowerArm")
 	legacy.model:Destroy()
 	old:Destroy()
@@ -1898,39 +1960,211 @@ local okCh, chErr = pcall(function(): string
 	return table.concat(looks, ", ")
 end)
 check(okCh, "CH polish: arms in your outfit, the scarf tail sways (" .. tostring(chErr) .. ")")
--- M. First-person hands (fp_hands.md; REVIEW_STEAM_PLUS #10): the dedicated arms on the real CharacterKit have >= 3
--- segments on every finger and 3 on the thumb, every finger pose of Config.FirstPerson.VIEWMODEL.HANDS builds finite
--- frames (Heist/FpRig.place, what each frame of Viewmodel applies): the grip folds the fingers in, the point keeps the
--- index out; and every showcase pose (ViewmodelMath.showcase), assembled and projected as Viewmodel's frame does and
--- written to the real MeshParts (per-axis sizes included), keeps every part's box inside the screen-safe rect at 16:9
--- and 19.5:9 through the fp camera maths, nothing nearer the eye than NEAR. The old Rookie_Hands gloves still hinge.
+-- M. First-person hands, FP HANDS v2 (docs/art/fp_hands_v2): the real Rookie_FPHands gloves are skinned meshes
+-- (EditableMesh of the loaded mesh: 2,000-4,000 triangles, every vertex smooth (one normal per vertex, no flat facets),
+-- vertex shading present, <= 4 bone weights a vertex summing to 1), their Bones bend the fingers (the grip moves every
+-- fingertip Bone's TransformedWorldCFrame toward the palm; the point keeps the index out), and every showcase pose
+-- placed exactly as Viewmodel's frame does (Viewmodel.placeArm: the arm slid along the view axis, the Bones written)
+-- keeps every piece and every finger inside the screen-safe rect at 16:9 and 19.5:9 through the fp camera maths,
+-- nothing nearer than NEAR, and the glove never parts from its cuff or sleeve (both ride the same forearm frame: the
+-- Forearm Bone's offset from the cuff is the same in every pose). The v125 rigid arms (>= 3 segments a finger,
+-- every finger pose finite) and the older fallbacks (Rookie_Hands, the placeholder) still pose.
 local okHands, handsErr = pcall(function(): string
 	local Viewmodel = require(clientHeist:WaitForChild("Viewmodel"))
 	local ViewmodelMath = require(clientHeist:WaitForChild("ViewmodelMath"))
 	local FpRig = require(clientHeist:WaitForChild("FpRig"))
 	local Outfit = require(shared:WaitForChild("Heist"):WaitForChild("Outfit"))
 	local Config = require(shared:WaitForChild("Config")) :: any
+	local AssetService = game:GetService("AssetService")
 	local VM = Config.FirstPerson.VIEWMODEL
 	local H = VM.HANDS
 	local kit = ReplicatedStorage:WaitForChild(Config.Rookie.KIT_FOLDER, 20)
 	assert(kit and kit:FindFirstChild("Pieces"), "CharacterKit.Pieces")
-	assert(kit.Pieces:FindFirstChild("Rookie_FP_Right_Index3"), "the Rookie_FPArms pieces are in the kit")
+	local out = {}
+	-- the mesh itself, as the engine loaded it
+	local found = kit.Pieces:FindFirstChild("Rookie_FPH_Right_Glove")
+	assert(found and found:IsA("MeshPart"), "the Rookie_FPHands pieces are in the kit")
+	local gloveSrc = found :: MeshPart
+	assert((gloveSrc :: any).HasSkinnedMesh, "the glove is a skinned mesh")
+	local okEm, em = pcall(function()
+		return AssetService:CreateEditableMeshAsync(gloveSrc.MeshContent)
+	end)
+	if okEm and em then
+		local e = em :: any
+		local faces = e:GetFaces()
+		assert(#faces >= 2000 and #faces <= 4000, "rounded fingers need 2,000-4,000 triangles: " .. #faces)
+		local normalsAt: { [number]: Vector3 } = {}
+		local split, shades = 0, { math.huge, -math.huge }
+		for _, f in faces do
+			local vs = e:GetFaceVertices(f)
+			local ns = e:GetFaceNormals(f)
+			local cs = e:GetFaceColors(f)
+			for i, v in vs do
+				local n = e:GetNormal(ns[i])
+				local seen = normalsAt[v]
+				if seen == nil then
+					normalsAt[v] = n
+				elseif seen:Dot(n) < math.cos(math.rad(5)) then
+					split += 1
+				end
+				local c = e:GetColor(cs[i])
+				shades[1] = math.min(shades[1], c.R)
+				shades[2] = math.max(shades[2], c.R)
+			end
+		end
+		assert(split == 0, "smooth: one normal a vertex (" .. split .. " split corners)")
+		assert(shades[2] > 0.9 and shades[1] < 0.8, string.format("vertex shading %.2f-%.2f", shades[1], shades[2]))
+		local bad = 0
+		for _, v in e:GetVertices() do
+			local w = e:GetVertexBoneWeights(v)
+			local sum = 0
+			for _, x in w do
+				sum += x
+			end
+			if #w > 4 or math.abs(sum - 1) > 0.02 then
+				bad += 1
+			end
+		end
+		assert(bad == 0, "<= 4 weights a vertex summing to 1 (" .. bad .. " bad)")
+		table.insert(out, string.format("glove %d tris, smooth, shade %.2f-%.2f", #faces, shades[1], shades[2]))
+		e:Destroy()
+	else
+		table.insert(out, "EditableMesh unavailable here (" .. tostring(em) .. ")")
+	end
+	-- the rig in the default outfit, its Bones bent by the finger poses
 	local rig = Viewmodel.fromOutfit(kit, Outfit.key(Outfit.default()), Color3.fromHex("#3DE8FF"))
-	assert(rig and rig.fp, "the dedicated arms built")
-	local fp = rig.fp :: any
+	assert(rig and rig.fp2, "the skinned arms built")
+	local fp2 = rig.fp2 :: any
+	rig.model.Parent = scratch
+	local cam = CFrame.new(0, 80, 0)
+	local fov = Config.Heist.CAMERA.FP.FOV
+	local k = ViewmodelMath.viewK(fov, VM.VIEW_FOV)
+	local s2 = fp2.scale
+	local function pose(f: any, fR: any?, fL: any?)
+		local R, L = ViewmodelMath.hands(VM, f)
+		local aR, aL = ViewmodelMath.fingers(VM, f)
+		local armParts, armCfs = {}, {}
+		for _, side in { { "R", R, fR or aR }, { "L", L, fL or aL } } do
+			local el = ViewmodelMath.elbow(VM, side[1], side[2])
+			Viewmodel.placeArm(
+				fp2,
+				side[1],
+				Viewmodel.poseFrame(side[2], s2),
+				Vector3.new(el[1], el[2], el[3]) * s2,
+				side[3],
+				k,
+				cam,
+				armParts,
+				armCfs
+			)
+		end
+		for i, p in armParts do
+			p.CFrame = armCfs[i]
+		end
+		return armParts
+	end
+	local rest = {
+		t = 0,
+		bobPhase = 0,
+		bobAmp = 0,
+		lagX = 0,
+		lagY = 0,
+		lagRoll = 0,
+		carry = 0,
+		hidden = 0,
+		wall = 0,
+		actions = {},
+		reduced = false,
+		raise = 1,
+	}
+	local function tipIn(name: string, poseName: string): number
+		local j = ViewmodelMath.joints(H, H.POSES[poseName])
+		pose(rest, j, j)
+		local hand = fp2.bones.R_Hand :: Bone
+		local tip = fp2.bones["R_" .. name] :: Bone
+		return (tip.TransformedWorldCFrame.Position - hand.TransformedWorldCFrame.Position).Magnitude / s2
+	end
+	local openM, gripM = tipIn("MiddleTip", "open"), tipIn("MiddleTip", "grip")
+	assert(gripM < openM * 0.9, string.format("the grip curls the middle finger in (%.3f -> %.3f)", openM, gripM))
+	assert(tipIn("IndexTip", "point") > tipIn("MiddleTip", "point") * 1.1, "point: the index past the folded fingers")
+	table.insert(out, string.format("bones bend: middle tip %.2f open, %.2f grip", openM, gripM))
+	-- every showcase pose through the fp camera; the cuff never parts from the Forearm Bone
+	local S = VM.SAFE
+	local tanV = math.tan(math.rad(fov) / 2)
+	local worstX, worstTop, nearest = 0, -math.huge, math.huge
+	local cuffGap: { [string]: number } = {}
+	for _, entry in ViewmodelMath.showcase(VM) do
+		local posed = pose(entry[2])
+		local pts: { { any } } = {}
+		for _, p in posed do
+			if not string.find(p.Name, "_Glove", 1, true) then
+				local h = p.Size / 2
+				for _, z in { -h.Z, h.Z } do
+					for i = 0, 11 do
+						local t = i * math.pi / 6
+						table.insert(pts, { p.Name, p.CFrame * Vector3.new(h.X * math.cos(t), h.Y * math.sin(t), z) })
+					end
+				end
+			end
+		end
+		for name, b in fp2.bones do
+			if not (string.find(name, "Root", 1, true) or string.find(name, "Forearm", 1, true)) then
+				table.insert(pts, { name, (b :: Bone).TransformedWorldCFrame.Position })
+			end
+		end
+		for _, side in { "Right", "Left" } do
+			local cuff = fp2.parts["Rookie_FPH_" .. side .. "_CuffKnit"] :: BasePart
+			local fa = fp2.bones[(if side == "Right" then "R_" else "L_") .. "Forearm"] :: Bone
+			local d = (cuff.CFrame:PointToObjectSpace(fa.TransformedWorldCFrame.Position)).Magnitude
+			if cuffGap[side] then
+				assert(math.abs(cuffGap[side] - d) < 1e-3, entry[1] .. ": the " .. side .. " glove stays in its cuff")
+			end
+			cuffGap[side] = d
+		end
+		for _, pt in pts do
+			local q = cam:PointToObjectSpace(pt[2])
+			local sleeve = string.find(pt[1], "Sleeve", 1, true) or string.find(pt[1], "Stripes", 1, true)
+			if q.Z < -1e-3 then
+				local y = q.Y / (-q.Z * tanV)
+				if y > -1 then
+					nearest = math.min(nearest, q.Magnitude)
+					assert(q.Magnitude >= VM.NEAR, entry[1] .. " " .. pt[1] .. " nearer than NEAR")
+					for _, aspect in { 16 / 9, 19.5 / 9 } do
+						local x = q.X / (-q.Z * tanV * aspect)
+						if not (sleeve and y < -0.3) then
+							assert(math.abs(x) <= S.X, string.format("%s %s |x| %.3f", entry[1], pt[1], x))
+							worstX = math.max(worstX, math.abs(x))
+						end
+						assert(y <= S.Y_TOP, string.format("%s %s top %.3f", entry[1], pt[1], y))
+						worstTop = math.max(worstTop, y)
+					end
+				end
+			end
+		end
+	end
+	rig.model:Destroy()
+	table.insert(out, string.format("safe: |x| %.2f, top %.2f, nearest %.3f", worstX, worstTop, nearest))
+	-- the v125 rigid arms (the fallback without Rookie_FPHands): >= 3 segments a finger, every finger pose finite
+	local v125 = kit:Clone()
+	for _, p in v125.Pieces:GetChildren() do
+		if string.sub(p.Name, 1, 11) == "Rookie_FPH_" then
+			p:Destroy()
+		end
+	end
+	local rr = Viewmodel.fromOutfit(v125, Outfit.key(Outfit.default()), Color3.fromHex("#3DE8FF"))
+	assert(rr and rr.fp, "the v125 arms built")
+	local fp = rr.fp :: any
 	for _, hand in { fp.R, fp.L } do
 		local per: { [string]: number } = {}
 		for _, sg in hand.segs do
 			local f = string.match(sg.joint, "^(%a+)%d$") :: string
 			per[f] = (per[f] or 0) + 1
 		end
-		for _, f in { "Index", "Middle", "Ring", "Pinky" } do
-			assert((per[f] or 0) >= 3, string.format("%s %s: %d segments", hand.side, f, per[f] or 0))
+		for _, f in { "Index", "Middle", "Ring", "Pinky", "Thumb" } do
+			assert((per[f] or 0) >= 3, string.format("v125 %s %s: %d segments", hand.side, f, per[f] or 0))
 		end
-		assert((per.Thumb or 0) >= 3, hand.side .. " thumb: " .. tostring(per.Thumb) .. " segments")
 	end
-	-- finger poses (grip space, the hand at the origin)
-	local function at(name: string, joint: string): number
+	for _, name in H.ORDER do
 		local placed = FpRig.place(
 			CFrame,
 			Vector3,
@@ -1940,81 +2174,17 @@ local okHands, handsErr = pcall(function(): string
 			ViewmodelMath.joints(H, H.POSES[name]),
 			0.6
 		)
-		local d = -1
 		for _, pc in placed do
 			local p = (pc[2] :: CFrame).Position
-			assert(p.X == p.X and p.Magnitude < 2, name .. ": finite frames")
-			if pc[1] == "Rookie_FP_Right_" .. joint then
-				d = p.Magnitude
-			end
-		end
-		return d
-	end
-	local out = {}
-	for _, name in H.ORDER do
-		table.insert(out, string.format("%s %.3f/%.3f", name, at(name, "Index3"), at(name, "Middle3")))
-	end
-	assert(at("grip", "Middle3") < at("push", "Middle3") * 0.85, "grip folds the fingers in")
-	assert(at("point", "Index3") > at("point", "Middle3") * 1.1, "point: the index reaches past the folded fingers")
-	assert(at("handsUp", "Middle3") >= at("open", "Middle3") * 0.98, "hands-up: open at least as far as relaxed")
-	-- the showcase poses on the real parts through the fp camera
-	local cam = CFrame.new(0, 80, 0)
-	local fov = Config.Heist.CAMERA.FP.FOV
-	local k = ViewmodelMath.viewK(fov, VM.VIEW_FOV)
-	local s = VM.SCALE
-	local S = VM.SAFE
-	rig.model.Parent = scratch
-	local tanV = math.tan(math.rad(fov) / 2)
-	local worstX, worstTop, nearest = 0, -math.huge, math.huge
-	for _, entry in ViewmodelMath.showcase(VM) do
-		local f = entry[2]
-		local R, L = ViewmodelMath.hands(VM, f)
-		local fR, fL = ViewmodelMath.fingers(VM, f)
-		local posed: { BasePart } = {}
-		for _, side in { { fp.R, R, fR, "R" }, { fp.L, L, fL, "L" } } do
-			local el = ViewmodelMath.elbow(VM, side[4], side[2])
-			local elbow = Vector3.new(el[1], el[2], el[3]) * s
-			for _, pc in FpRig.place(CFrame, Vector3, side[1], Viewmodel.poseFrame(side[2]), elbow, side[3], 0.6) do
-				local p = fp.parts[pc[1]]
-				local b = (rig.base :: any)[p] :: Vector3
-				local c, fac = ViewmodelMath.project({ (pc[2] :: CFrame):GetComponents() }, { b.X, b.Y, b.Z }, k)
-				p.Size = Vector3.new(b.X * fac[1], b.Y * fac[2], b.Z * fac[3])
-				p.CFrame = cam * CFrame.new(table.unpack(c))
-				assert((p.Size - Vector3.new(b.X * fac[1], b.Y * fac[2], b.Z * fac[3])).Magnitude < 1e-3, "size kept")
-				table.insert(posed, p)
-			end
-		end
-		for _, p in posed do
-			local h = p.Size / 2
-			for _, sx in { -1, 1 } do
-				for _, sy in { -1, 1 } do
-					for _, sz in { -1, 1 } do
-						local q = cam:PointToObjectSpace(p.CFrame * Vector3.new(h.X * sx, h.Y * sy, h.Z * sz))
-						nearest = math.min(nearest, q.Magnitude)
-						assert(q.Magnitude >= VM.NEAR, entry[1] .. " " .. p.Name .. " nearer than NEAR")
-						if q.Z < -1e-3 then
-							local y = q.Y / (-q.Z * tanV)
-							for _, aspect in { 16 / 9, 19.5 / 9 } do
-								local x = q.X / (-q.Z * tanV * aspect)
-								if y > -1 then
-									assert(math.abs(x) <= S.X, string.format("%s %s |x| %.3f", entry[1], p.Name, x))
-									assert(y <= S.Y_TOP, string.format("%s %s top %.3f", entry[1], p.Name, y))
-									worstX = math.max(worstX, math.abs(x))
-									worstTop = math.max(worstTop, y)
-								end
-							end
-						end
-					end
-				end
-			end
+			assert(p.X == p.X and p.Magnitude < 2, "v125 " .. name .. ": finite frames")
 		end
 	end
-	rig.model:Destroy()
-	table.insert(out, string.format("safe: |x| %.2f, top %.2f, nearest %.3f", worstX, worstTop, nearest))
+	rr.model:Destroy()
+	v125:Destroy()
 	-- the fallback gloves (Rookie_Hands) still hinge on a kit without the dedicated pieces
 	local old = kit:Clone()
 	for _, p in old.Pieces:GetChildren() do
-		if string.sub(p.Name, 1, 10) == "Rookie_FP_" then
+		if string.sub(p.Name, 1, 10) == "Rookie_FP_" or string.sub(p.Name, 1, 11) == "Rookie_FPH_" then
 			p:Destroy()
 		end
 	end
@@ -2038,7 +2208,9 @@ local okHands, handsErr = pcall(function(): string
 end)
 check(
 	okHands,
-	"first-person hands: 3-segment fingers, every pose builds and stays on screen (" .. tostring(handsErr) .. ")"
+	"first-person hands v2: skinned, smooth, Bones bend, every pose on screen, fallbacks pose ("
+		.. tostring(handsErr)
+		.. ")"
 )
 -- K. The northern lights (PLAN_FIRST_PERSON "SKY"): Heist/Aurora builds every layer of Config.Aurora as a chain of
 -- additive Beams (valid uploaded image ids: Image assets), unlit, never colliding or queried, high over the anchor;

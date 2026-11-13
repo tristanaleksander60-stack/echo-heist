@@ -1,0 +1,818 @@
+{
+ "asset": "Rookie_FPHands",
+ "objects": [
+  {
+   "name": "Rookie_FPH_Right_CuffKnit",
+   "class": "small",
+   "tris": 784,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    0.073,
+    0.036,
+    0.064
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.0365,
+     -0.0096,
+     -0.0321
+    ],
+    "local_max": [
+     0.0365,
+     0.0266,
+     0.0321
+    ]
+   },
+   "swatches": [],
+   "location": [
+    -0.18,
+    0.04,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVES / the knit tone), lifted for first person",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person right forearm: CuffKnit",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_FPH_Right_CuffLeather",
+   "class": "small",
+   "tris": 816,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    0.081,
+    0.042,
+    0.073
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.0404,
+     -0.0106,
+     -0.0364
+    ],
+    "local_max": [
+     0.0404,
+     0.0316,
+     0.0364
+    ]
+   },
+   "swatches": [],
+   "location": [
+    -0.18,
+    0.04,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVES / the knit tone), lifted for first person",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person right forearm: CuffLeather",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_FPH_Right_Sleeve",
+   "class": "small",
+   "tris": 840,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    0.084,
+    0.519,
+    0.076
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.042,
+     0.0204,
+     -0.0378
+    ],
+    "local_max": [
+     0.042,
+     0.5396,
+     0.0378
+    ]
+   },
+   "swatches": [],
+   "location": [
+    -0.18,
+    0.04,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person right forearm: Sleeve",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_FPH_Right_Stripes",
+   "class": "small",
+   "tris": 640,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    0.071,
+    0.06,
+    0.064
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.0355,
+     0.0922,
+     -0.0319
+    ],
+    "local_max": [
+     0.0355,
+     0.1518,
+     0.0319
+    ]
+   },
+   "swatches": [],
+   "location": [
+    -0.18,
+    0.04,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person right forearm: Stripes",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_FPH_Right_Block",
+   "class": "small",
+   "tris": 360,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.066,
+    0.035,
+    0.058
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.0332,
+     0.0214,
+     -0.029
+    ],
+    "local_max": [
+     0.0332,
+     0.0562,
+     0.029
+    ]
+   },
+   "swatches": [],
+   "location": [
+    -0.18,
+    0.04,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person right forearm: Block",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_FPH_Left_CuffKnit",
+   "class": "small",
+   "tris": 784,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    0.073,
+    0.036,
+    0.064
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.0365,
+     -0.0096,
+     -0.0321
+    ],
+    "local_max": [
+     0.0365,
+     0.0266,
+     0.0321
+    ]
+   },
+   "swatches": [],
+   "location": [
+    0.18,
+    0.04,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVES / the knit tone), lifted for first person",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person left forearm: CuffKnit",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_FPH_Left_CuffLeather",
+   "class": "small",
+   "tris": 816,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    0.081,
+    0.042,
+    0.073
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.0404,
+     -0.0106,
+     -0.0364
+    ],
+    "local_max": [
+     0.0404,
+     0.0316,
+     0.0364
+    ]
+   },
+   "swatches": [],
+   "location": [
+    0.18,
+    0.04,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVES / the knit tone), lifted for first person",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person left forearm: CuffLeather",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_FPH_Left_Sleeve",
+   "class": "small",
+   "tris": 840,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    0.084,
+    0.519,
+    0.076
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.042,
+     0.0204,
+     -0.0378
+    ],
+    "local_max": [
+     0.042,
+     0.5396,
+     0.0378
+    ]
+   },
+   "swatches": [],
+   "location": [
+    0.18,
+    0.04,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person left forearm: Sleeve",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_FPH_Left_Stripes",
+   "class": "small",
+   "tris": 640,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    0.071,
+    0.06,
+    0.064
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.0355,
+     0.0922,
+     -0.0319
+    ],
+    "local_max": [
+     0.0355,
+     0.1518,
+     0.0319
+    ]
+   },
+   "swatches": [],
+   "location": [
+    0.18,
+    0.04,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person left forearm: Stripes",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_FPH_Left_Block",
+   "class": "small",
+   "tris": 360,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.066,
+    0.035,
+    0.058
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.0332,
+     0.0214,
+     -0.029
+    ],
+    "local_max": [
+     0.0332,
+     0.0562,
+     0.029
+    ]
+   },
+   "swatches": [],
+   "location": [
+    0.18,
+    0.04,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person left forearm: Block",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_FPH_Left_Watch",
+   "class": "small",
+   "tris": 648,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    0.07,
+    0.028,
+    0.07
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.0351,
+     0.0658,
+     -0.0316
+    ],
+    "local_max": [
+     0.0351,
+     0.0942,
+     0.0386
+    ]
+   },
+   "swatches": [],
+   "location": [
+    0.18,
+    0.04,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 114,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "first-person left forearm: Watch",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 7528,
+ "asset_budget": {
+  "class": "hero",
+  "target": 10000,
+  "ceiling": 20000
+ },
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "3ca58415812ca5ee58d6",
+ "fbx": {
+  "path": "assets/fbx/Rookie_FPHands.fbx",
+  "bytes": 191548,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Rookie_FPH_Left_Block",
+   "Rookie_FPH_Left_CuffKnit",
+   "Rookie_FPH_Left_CuffLeather",
+   "Rookie_FPH_Left_Sleeve",
+   "Rookie_FPH_Left_Stripes",
+   "Rookie_FPH_Left_Watch",
+   "Rookie_FPH_Right_Block",
+   "Rookie_FPH_Right_CuffKnit",
+   "Rookie_FPH_Right_CuffLeather",
+   "Rookie_FPH_Right_Sleeve",
+   "Rookie_FPH_Right_Stripes"
+  ],
+  "geometry_extents": [
+   [
+    0.028,
+    0.07,
+    0.07
+   ],
+   [
+    0.035,
+    0.058,
+    0.066
+   ],
+   [
+    0.035,
+    0.058,
+    0.066
+   ],
+   [
+    0.036,
+    0.064,
+    0.073
+   ],
+   [
+    0.036,
+    0.064,
+    0.073
+   ],
+   [
+    0.042,
+    0.073,
+    0.081
+   ],
+   [
+    0.042,
+    0.073,
+    0.081
+   ],
+   [
+    0.06,
+    0.064,
+    0.071
+   ],
+   [
+    0.06,
+    0.064,
+    0.071
+   ],
+   [
+    0.076,
+    0.084,
+    0.519
+   ],
+   [
+    0.076,
+    0.084,
+    0.519
+   ]
+  ]
+ },
+ "spec": "assets/blender/fp_hands.py",
+ "notes": "FP HANDS v2 forearm pieces: knit / leather cuffs, a ribbed cream sleeve, crew stripes or block, the REWIND watch (vertex-shaded). Grip space, exported at 0.2 (the in-game size).",
+ "turntable": "docs/art/turntables/Rookie_FPHands.png",
+ "seconds": 8.4
+}

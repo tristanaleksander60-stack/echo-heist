@@ -567,8 +567,21 @@ Config.FirstPerson = {
 		-- TRI_BUDGET triangles (the art gate counts them; the unit spec checks RookieData).
 		ARMS = {
 			TRI_BUDGET = 2700,
+			-- FP HANDS v2 (Rookie_FPHands, docs/art/fp_hands_v2): one continuous skinned glove a hand, its Bones bent
+			-- by Bone.Transform (Viewmodel.fromFpHands). false = the v125 rigid arms (Rookie_FPArms) again. The art
+			-- gate and the unit spec hold one worn arm (glove + its cuff + sleeve + stripes or block, + the watch on
+			-- the left) under TRI_BUDGET_V2 triangles.
+			SKINNED = true,
+			TRI_BUDGET_V2 = 5600,
+			SLEEVE_COLOUR = "marble", -- Palette key: the cream sweater (its vertex shading darkens the rib)
 			-- materials (Enum.Material names): matte knit, a soft leather sheen, a matte sweater
-			MATERIALS = { Gloves_Knit = "Fabric", Gloves_Leather = "Leather", sleeve = "Fabric", crew = "Fabric" },
+			MATERIALS = {
+				Gloves_Knit = "Fabric",
+				Gloves_Leather = "Leather",
+				sleeve = "Fabric",
+				crew = "Fabric",
+				watch = "SmoothPlastic",
+			},
 			-- the glove colour in first person: Config.Rookie.GLOVES lifted this share toward GLOVE_LIFT_TO (a
 			-- Palette key), so the indigo knit never sinks to black in a dim room (rule 12); the body keeps the plain
 			-- colour
@@ -714,11 +727,12 @@ Config.FirstPerson = {
 			THUMB_CHAIN = { 0.5, 1, 0.9 },
 			FINGERS = { "index", "middle", "ring", "pinky", "thumb" },
 			POSES = {
-				open = { -- relaxed: a soft cascading curl, more on the pinky side, the thumb resting by the index
-					index = { 14, 3, 0 },
-					middle = { 18, 1, 0 },
-					ring = { 22, -1, 0 },
-					pinky = { 27, -4, 0 },
+				open = { -- relaxed: a soft cascading curl, more on the pinky side, the fingers together (the spread
+					-- closes the gloves' slightly fanned bind pose), the thumb resting by the index
+					index = { 14, -3, 0 },
+					middle = { 18, -1, 0 },
+					ring = { 22, 2.5, 0 },
+					pinky = { 27, 5, 0 },
 					thumb = { 12, 6 },
 				},
 				ready = { -- looking at something you can use: the hand opens a little, ready to take it

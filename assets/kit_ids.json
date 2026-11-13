@@ -999,6 +999,54 @@
    "sha256": "17fc22c443776d8c2ca86f44e032ad1e0132a4d9c8e61f1ef01e0f527469209a",
    "uploaded": "2026-11-13T16:58:36Z"
   },
+  "Rookie_FPHands": {
+   "assetId": 116881809026939,
+   "file": "assets/fbx/Rookie_FPHands.fbx",
+   "history": [
+    91903059283033
+   ],
+   "moderation": "Approved",
+   "pieces": [
+    "Rookie_FPH_Left_Block",
+    "Rookie_FPH_Left_CuffKnit",
+    "Rookie_FPH_Left_CuffLeather",
+    "Rookie_FPH_Left_Sleeve",
+    "Rookie_FPH_Left_Stripes",
+    "Rookie_FPH_Left_Watch",
+    "Rookie_FPH_Right_Block",
+    "Rookie_FPH_Right_CuffKnit",
+    "Rookie_FPH_Right_CuffLeather",
+    "Rookie_FPH_Right_Sleeve",
+    "Rookie_FPH_Right_Stripes"
+   ],
+   "revisionId": "1",
+   "sha256": "bb20f556e474e3c1cc9f26595f21b3be4d7c8441cc68ec3e98e10983662a3d53",
+   "uploaded": "2026-11-13T20:09:24Z"
+  },
+  "Rookie_FPHands_L": {
+   "assetId": 88214945057670,
+   "file": "assets/fbx/Rookie_FPHands_L.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Rookie_FPH_Left_Glove"
+   ],
+   "revisionId": "1",
+   "sha256": "8a1aa810ed0c9285d0b6f4983e96e7d01649a25a7a3c375902bbd9daa2103bb0",
+   "uploaded": "2026-11-13T20:09:32Z"
+  },
+  "Rookie_FPHands_R": {
+   "assetId": 133672464815512,
+   "file": "assets/fbx/Rookie_FPHands_R.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Rookie_FPH_Right_Glove"
+   ],
+   "revisionId": "1",
+   "sha256": "914fef27692481d77db23ed2291d8e2ad963d555cc7eebe6c82eefdfd8956741",
+   "uploaded": "2026-11-13T20:09:48Z"
+  },
   "Rookie_Faces": {
    "assetId": 115892166045394,
    "file": "assets/fbx/Rookie_Faces.fbx",

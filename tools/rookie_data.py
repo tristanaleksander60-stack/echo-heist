@@ -50,6 +50,7 @@ def source():
            "-- tint: \"crew\" (seat hue) or \"gloves\" (Config.Rookie.GLOVES). viewmodel: first-person arms (pivot = elbow).",
            "-- hands: first-person gloves with fingers by side, chain order; offset = the hinge from the wrist (rest pose).",
            "-- fpArms: the dedicated first-person arms by side (grip space: fingers -Z, the back of the hand +Y, full size).",
+           "-- fpHands: FP HANDS v2, the skinned gloves and their forearm pieces (grip space, authored size; meshes at scale).",
            "",
            "return {"]
     out.append("\tbody = {")
@@ -144,6 +145,55 @@ def source():
             out.append("\t\t\t{ " + ", ".join(fields) + " },")
         out.append("\t\t},")
     out.append("\t},")
+    # FP HANDS v2 (Rookie_FPHands): per side the forearm-frame pieces (the skinned glove first), then `bones`: the
+    # glove's Bones in chain order as FpRig entries (Root / Forearm ride the forearm frame, Hand the hand frame, the
+    # finger and thumb bones are hinged segments: hinge / look / up in grip space, authored size). The meshes are
+    # exported at `scale` (the size the game draws them; it never resizes a skinned mesh).
+    v2 = {}
+    for n, p in rk.items():
+        f = p.get("fp2")
+        if f:
+            v2.setdefault(f["side"], []).append((n, f, p))
+    if v2:
+        order2 = ["Glove", "CuffKnit", "CuffLeather", "Sleeve", "Stripes", "Block", "Watch"]
+        scale = next(f["scale"] for side in v2 for _n, f, _p in v2[side] if f.get("scale"))
+        out.append("\tfpHands = {")
+        out.append(f"\t\tscale = {num(scale)},")
+        bones = {}
+        for side in sorted(v2):
+            out.append(f"\t\t{side} = {{")
+            for n, f, p in sorted(v2[side], key=lambda r: order2.index(r[1]["joint"])):
+                fields = [f'piece = "{n}"', f'joint = "{f["joint"]}"', f'frame = "{f["frame"]}"',
+                          f"hinge = {vec(f['hinge'])}", f"centre = {vec(f['centre'])}", f"size = {vec(p['size'])}"]
+                if f.get("slot"):
+                    fields += [f'slot = "{f["slot"]}"', f'variant = "{f["variant"]}"']
+                t = tint_of(p)
+                fields.append("tint = " + (f'"{t}"' if t else "nil"))
+                if f.get("skinned"):
+                    fields.append("skinned = true")
+                    bones[side] = f["bones"]
+                fields.append(f"tris = {p['tris']}")
+                out.append("\t\t\t{ " + ", ".join(fields) + " },")
+            out.append("\t\t},")
+        out.append("\t\tbones = {")
+        for side in sorted(bones):
+            out.append(f"\t\t\t{side} = {{")
+            for b in bones[side]:
+                fields = [f'piece = "{b["bone"]}"', f'joint = "{b["name"]}"']
+                if b["name"] in ("Root", "Forearm"):
+                    fields += ['frame = "arm"', "parent = nil"]
+                elif b["name"] == "Hand":
+                    fields += ['frame = "hand"', "parent = nil"]
+                else:
+                    parent = "Palm" if b["parent"] == "Hand" else b["parent"]
+                    fields += ['frame = "hand"', f'parent = "{parent}"', f"look = {vec(b['look'])}",
+                               f"up = {vec(b['up'])}"]
+                fields += [f"hinge = {vec(b['hinge'])}", "centre = { 0, 0, 0 }", f'boneParent = ' +
+                           (f'"{b["parent"]}"' if b["parent"] else "nil")]
+                out.append("\t\t\t\t{ " + ", ".join(fields) + " },")
+            out.append("\t\t\t},")
+        out.append("\t\t},")
+        out.append("\t},")
     out.append("\tviewmodel = {")
     for n, p in sorted(rk.items()):
         g = p.get("grip")

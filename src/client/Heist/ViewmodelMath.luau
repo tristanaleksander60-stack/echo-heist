@@ -98,6 +98,18 @@ function ViewmodelMath.viewK(fovDeg: number, viewFovDeg: number): number
 	return math.tan(math.rad(fovDeg) / 2) / math.tan(math.rad(viewFovDeg) / 2)
 end
 
+-- The viewmodel FOV for a rigid arm (FP HANDS v2: a skinned glove's Bones do not follow MeshPart.Size, measured, so
+-- that rig is never resized). Drawing an arm k times larger at (k x, k y, z) is the same picture as drawing it at its
+-- own size at (x, y, z / k): similar triangles through the eye. So each arm slides along the view axis until its
+-- pivot (the hand) sits at depth z / k; every piece of the arm moves by the same amount, so nothing ever parts.
+-- Returns that shift along camera Z (z is the pivot's camera-space Z, negative in front of the eye).
+function ViewmodelMath.armShift(z: number, k: number): number
+	if k <= 0 then
+		return 0
+	end
+	return z / k - z
+end
+
 local function unit(x: number, y: number, z: number): (number, number, number)
 	local m = math.sqrt(x * x + y * y + z * z)
 	if m < 1e-12 then

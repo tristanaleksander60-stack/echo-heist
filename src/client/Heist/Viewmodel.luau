@@ -79,7 +79,24 @@ export type Hand = { parts: { BasePart }, offsets: { CFrame }, fingers: { Finger
 export type FpArms = { R: FpRig.Hand, L: FpRig.Hand, parts: { [string]: BasePart } }
 -- fp: the dedicated arms (then R / L list every part of a side with its rest-pose offset from the grip, no
 -- fingers); base: every part's scaled size (the viewmodel projection scales it per axis each frame).
-export type Rig = { model: Model, R: Hand, L: Hand, kit: boolean, fp: FpArms?, base: { [BasePart]: Vector3 }? }
+-- fp2: FP HANDS v2, the skinned gloves (Viewmodel.fromFpHands): the hands, their pieces and Bones, each glove's skin.
+export type Fp2 = {
+	R: FpRig.Hand,
+	L: FpRig.Hand,
+	parts: { [string]: BasePart },
+	bones: { [string]: Bone },
+	skins: { R: FpRig.Skin, L: FpRig.Skin },
+	scale: number,
+}
+export type Rig = {
+	model: Model,
+	R: Hand,
+	L: Hand,
+	kit: boolean,
+	fp: FpArms?,
+	fp2: Fp2?,
+	base: { [BasePart]: Vector3 }?,
+}
 
 local function colour(key: string): Color3
 	return (Palette :: any)[key] or Palette.plumHi
@@ -514,6 +531,184 @@ function Viewmodel.fromFpArms(folder: Instance, outfitKey: string?, hue: Color3)
 	}
 end
 
+-- FP HANDS v2 (Rookie_FPHands, RookieData.fpHands; docs/art/fp_hands_v2): ONE skinned glove MeshPart a hand (palm,
+-- fingers and thumb in one smooth shell, its Bones bent by Bone.Transform) plus the rigid forearm pieces (the cuff of
+-- your gloves, the sleeve, your crew stripes or block, the watch). Exported at RookieData.fpHands.scale, the size the
+-- game draws them: never resized (a skinned mesh's Bones do not follow MeshPart.Size, measured), so the viewmodel FOV
+-- slides each whole arm along the view axis instead (ViewmodelMath.armShift). nil when a piece or a Bone is missing.
+local function bonesOf(part: Instance): ({ string }, { [string]: string? }, { [string]: CFrame }, { [string]: Bone })
+	local order: { string } = {}
+	local parent: { [string]: string? } = {}
+	local rest: { [string]: CFrame } = {}
+	local map: { [string]: Bone } = {}
+	local function walk(node: Instance, from: string?)
+		for _, c in node:GetChildren() do
+			if c:IsA("Bone") then
+				table.insert(order, c.Name)
+				parent[c.Name] = from
+				rest[c.Name] = c.CFrame
+				map[c.Name] = c
+				walk(c, c.Name)
+			end
+		end
+	end
+	walk(part, nil)
+	return order, parent, rest, map
+end
+
+function Viewmodel.fromFpHands(folder: Instance, outfitKey: string?, hue: Color3): Rig?
+	local pieces = folder:FindFirstChild("Pieces")
+	local data = RookieData.fpHands
+	local A = VM.ARMS
+	if not A.SKINNED or not pieces or not data or not data.Right or not data.Left or not data.bones then
+		return nil
+	end
+	local outfit = Outfit.fromKey(outfitKey)
+	local glove = Viewmodel.gloveColour(outfit)
+	local M = A.MATERIALS
+	local gloveMat = material(M[outfit.gloves])
+	local keep = FpRig.wears(outfit)
+	local s = data.scale
+	local model = Instance.new("Model")
+	model.Name = Viewmodel.MODEL_NAME
+	local parts: { [string]: BasePart } = {}
+	local allBones: { [string]: Bone } = {}
+	local hands: { [string]: FpRig.Hand } = {}
+	local skins: { [string]: FpRig.Skin } = {}
+	local sideParts: { [string]: { BasePart } } = { Right = {}, Left = {} }
+	for _, side in { "Right", "Left" } do
+		local list = table.clone(data[side])
+		for _, b in data.bones[side] do
+			table.insert(list, b)
+		end
+		local hand = FpRig.build(CFrame, Vector3, side, list, s, keep)
+		local gloveName: string? = nil
+		local gloveBones: { [string]: Bone }? = nil
+		local order, parent, rest = {}, {}, {}
+		for _, e in hand.entries do
+			if e.size == nil then
+				continue -- a Bone (checked against the glove below)
+			end
+			local src = pieces:FindFirstChild(e.piece)
+			if not src or not src:IsA("BasePart") then
+				model:Destroy()
+				return nil
+			end
+			local p = src:Clone()
+			for _, c in p:GetChildren() do
+				if not (c:IsA("DataModelMesh") or c:IsA("SurfaceAppearance") or c:IsA("Bone")) then
+					c:Destroy()
+				end
+			end
+			if p:IsA("MeshPart") then
+				p.TextureID = "" -- the shading is vertex colour times Color
+			end
+			if e.tint == "gloves" then
+				p.Color = glove
+				p.Material = gloveMat or Enum.Material.Fabric
+			elseif e.tint == "crew" then
+				p.Color = hue
+				p.Material = material(M.crew) or Enum.Material.Fabric
+			elseif e.joint == "Sleeve" then
+				p.Color = colour(A.SLEEVE_COLOUR)
+				p.Material = material(M.sleeve) or Enum.Material.Fabric
+			else -- the watch: its colours are its own
+				p.Color = Color3.new(1, 1, 1)
+				p.Material = material(M.watch) or Enum.Material.SmoothPlastic
+			end
+			quiet(p)
+			p.Parent = model
+			parts[e.piece] = p
+			table.insert(sideParts[side], p)
+			if e.skinned then
+				gloveName = e.piece
+				local m
+				order, parent, rest, m = bonesOf(p)
+				gloveBones = m
+			end
+		end
+		-- every Bone the data names must be in the glove (an older or broken upload: fall back)
+		if not gloveName or not gloveBones then
+			model:Destroy()
+			return nil
+		end
+		for _, b in data.bones[side] do
+			local bone = gloveBones[b.piece]
+			if not bone then
+				model:Destroy()
+				return nil
+			end
+			allBones[b.piece] = bone
+		end
+		hands[side] = hand
+		skins[side] = FpRig.skin(CFrame, Vector3, hand, gloveName, order, parent, rest)
+	end
+	-- R / L: each side's parts and their rest-pose offsets from the grip (tests, debug)
+	local function restHand(side: string, key: string): Hand
+		local handCf = CFrame.new(v3(VM.REST[key]) * s)
+			* CFrame.Angles(math.rad(VM.REST[key][4]), math.rad(VM.REST[key][5]), math.rad(VM.REST[key][6]))
+		local placed = FpRig.place(CFrame, Vector3, hands[side], handCf, v3(A.ELBOW[key]) * s, {}, A.WRIST_ROLL)
+		local out: Hand = { parts = {}, offsets = {}, fingers = {} }
+		for _, pc in placed do
+			local p = parts[pc[1]]
+			if p then
+				table.insert(out.parts, p)
+				table.insert(out.offsets, handCf:ToObjectSpace(pc[2]))
+			end
+		end
+		return out
+	end
+	return {
+		model = model,
+		R = restHand("Right", "R"),
+		L = restHand("Left", "L"),
+		kit = true,
+		fp2 = {
+			R = hands.Right,
+			L = hands.Left,
+			parts = parts,
+			bones = allBones,
+			skins = { R = skins.Right, L = skins.Left },
+			scale = s,
+		},
+	}
+end
+
+-- One arm of the v2 rig for this frame: every part's final camera-space CFrame (the arm slid along the view axis for
+-- the viewmodel FOV) into parts / cfs, and every Bone's Transform written. Returns the arm's shift (tests).
+function Viewmodel.placeArm(
+	fp2: Fp2,
+	key: string,
+	handCf: CFrame,
+	elbow: Vector3,
+	angles: { [string]: { number } },
+	k: number,
+	camCf: CFrame,
+	parts: { BasePart },
+	cfs: { CFrame }
+): number
+	local hand = if key == "R" then fp2.R else fp2.L
+	local placed = FpRig.place(CFrame, Vector3, hand, handCf, elbow, angles, VM.ARMS.WRIST_ROLL)
+	-- the pivot: the wrist, where the glove meets the sleeve (the shift is exact there, and the hand and the
+	-- forearm on either side of it stay close to the VIEW_FOV picture)
+	local shift = CFrame.new(0, 0, ViewmodelMath.armShift((handCf * hand.wrist).Position.Z, k))
+	for _, pc in placed do
+		local p = fp2.parts[pc[1]]
+		if p then
+			table.insert(parts, p)
+			table.insert(cfs, camCf * shift * (pc[2] :: CFrame))
+		end
+	end
+	local skin = if key == "R" then fp2.skins.R else fp2.skins.L
+	for name, t in FpRig.boneTransforms(CFrame, skin, placed) do
+		local b = fp2.bones[name]
+		if b then
+			b.Transform = t
+		end
+	end
+	return shift.Position.Z
+end
+
 local function bodyOrigin(part: string): Vector3?
 	for _, b in RookieData.body do
 		if b.part == part then
@@ -530,7 +725,7 @@ end
 -- like any kit viewmodel (Viewmodel.fromKit). nil when a piece is missing (the plain Rookie_Viewmodel then).
 -- outfitKey: the player attribute "Outfit" (Outfit.key); nil = the default outfit.
 function Viewmodel.fromOutfit(folder: Instance, outfitKey: string?, hue: Color3): Rig?
-	local fp = Viewmodel.fromFpArms(folder, outfitKey, hue)
+	local fp = Viewmodel.fromFpHands(folder, outfitKey, hue) or Viewmodel.fromFpArms(folder, outfitKey, hue)
 	if fp then
 		return fp
 	end
@@ -652,8 +847,8 @@ end
 
 -- A hand pose { x, y, z, rx, ry, rz } (viewmodel camera space, full size) as the grip's camera-space CFrame at the
 -- rig's scale (before the viewmodel projection, ViewmodelMath.project).
-function Viewmodel.poseFrame(pose: { number }): CFrame
-	local s = VM.SCALE
+function Viewmodel.poseFrame(pose: { number }, scale: number?): CFrame
+	local s = scale or VM.SCALE
 	return CFrame.new(pose[1] * s, pose[2] * s, pose[3] * s)
 		* CFrame.Angles(math.rad(pose[4]), math.rad(pose[5]), math.rad(pose[6]))
 end
@@ -1050,10 +1245,39 @@ function Viewmodel.new(state: any, deps: any): any
 			return angles
 		end
 		local aR, aL = springAngles("R", fR), springAngles("L", fL)
-		-- Every part's camera-space frame (before the viewmodel projection).
+		-- Every part's camera-space frame (before the viewmodel projection). The v2 skinned arms are placed here
+		-- directly (each arm slid along the view axis, its Bones bent); the rest go through the per-part projection.
 		local local_: { { any } } = {}
+		local kv = ViewmodelMath.viewK(cam.FieldOfView, VM.VIEW_FOV)
+		local parts: { BasePart } = table.create(#rig.R.parts + #rig.L.parts + 2)
+		local cfs: { CFrame } = table.create(#rig.R.parts + #rig.L.parts + 2)
 		local fp = rig.fp
-		if fp then
+		local fp2 = rig.fp2
+		if fp2 then
+			local s2 = fp2.scale
+			Viewmodel.placeArm(
+				fp2,
+				"R",
+				Viewmodel.poseFrame(R, s2),
+				v3(ViewmodelMath.elbow(VM, "R", R)) * s2,
+				aR,
+				kv,
+				camCf,
+				parts,
+				cfs
+			)
+			Viewmodel.placeArm(
+				fp2,
+				"L",
+				Viewmodel.poseFrame(Lh, s2),
+				v3(ViewmodelMath.elbow(VM, "L", Lh)) * s2,
+				aL,
+				kv,
+				camCf,
+				parts,
+				cfs
+			)
+		elseif fp then
 			local s = VM.SCALE
 			for _, pc in
 				FpRig.place(CFrame, Vector3, fp.R, rCf, v3(ViewmodelMath.elbow(VM, "R", R)) * s, aR, VM.ARMS.WRIST_ROLL)
@@ -1104,10 +1328,7 @@ function Viewmodel.new(state: any, deps: any): any
 			table.insert(local_, { loot, CFrame.new(at) * CFrame.Angles(0, 0, math.rad(lagR)) })
 		end
 		-- The viewmodel projection (rule 5): each part as a VIEW_FOV camera would draw it.
-		local kv = ViewmodelMath.viewK(cam.FieldOfView, VM.VIEW_FOV)
 		local base = rig.base or {}
-		local parts: { BasePart } = table.create(#local_ + 1)
-		local cfs: { CFrame } = table.create(#local_ + 1)
 		for _, pc in local_ do
 			local p: BasePart = pc[1]
 			if p then
@@ -1158,12 +1379,24 @@ function Viewmodel.new(state: any, deps: any): any
 			n += 1
 		end
 		local fp = rig.fp
-		local fingers = if fp then #fp.R.segs + #fp.L.segs else #rig.R.fingers + #rig.L.fingers
+		local fp2 = rig.fp2
+		local bones = 0
+		if fp2 then
+			for _ in fp2.bones do
+				bones += 1
+			end
+		end
+		local fingers = if fp2
+			then #fp2.R.segs + #fp2.L.segs
+			elseif fp then #fp.R.segs + #fp.L.segs
+			else #rig.R.fingers + #rig.L.fingers
 		local curl = springs.R.Middle1 or springs.R.Fingers1
 		return {
 			shown = shown,
 			kit = rig.kit,
-			fp = fp ~= nil,
+			fp = fp ~= nil or fp2 ~= nil,
+			skinned = fp2 ~= nil, -- FP HANDS v2: the skinned gloves
+			bones = bones,
 			carry = carry,
 			raise = raise,
 			actions = n,

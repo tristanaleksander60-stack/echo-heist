@@ -34,6 +34,7 @@ ASPECTS = {"16x9": 16 / 9, "19.5x9": 19.5 / 9}
 FOV = 70.0                      # Config.Heist.CAMERA.FP.FOV
 CREW = "#3DE8FF"                # Palette.CLONE_HUES[1] (seat 1)
 MARBLE = "#D8C8A8"              # Palette.marble (the glove lift target)
+PALETTE = {"marble": MARBLE, "marbleLo": "#A8987A", "marbleHi": "#EDE2C8"}
 BEFORE_REV = "af24400"          # v101 (the owner's last capture)
 SAFE = (0.97, 0.85, -1.1)       # Config VIEWMODEL.SAFE: |x| <= X, y <= Y_TOP (drawn on --guides)
 # the contact sheet's extra row (rendered with --spot / --outfit): the light check and the other outfit
@@ -53,7 +54,8 @@ def lune_plan(mode, fov=FOV, outfit=None):
             txt = subprocess.run(["git", "show", f"{BEFORE_REV}:{src}"], cwd=REPO, capture_output=True, text=True,
                                  check=True).stdout
             open(path, "w").write(txt)
-    args = ["lune", "run", "tools/fp_hands_plan.luau", mode, str(fov)] + ([outfit] if outfit else [])
+    plan_mode = "after" if mode == "v125" else mode
+    args = ["lune", "run", "tools/fp_hands_plan.luau", plan_mode, str(fov)] + ([outfit] if outfit else [])
     out = subprocess.run(args, cwd=REPO, capture_output=True, text=True, check=True).stdout
     return json.loads(out)
 
@@ -72,7 +74,8 @@ _LIB = {}
 
 
 def library(model):
-    """Imports one kit FBX once; returns {piece name: object} (left where it was authored, hidden until placed)."""
+    """Imports one kit FBX once; returns {piece name: object} (left where it was authored, hidden until placed).
+    Armatures (the v2 skinned gloves) stay, under their own name."""
     if model not in _LIB:
         before = set(bpy.data.objects)
         bpy.ops.import_scene.fbx(filepath=os.path.join(FBX, model + ".fbx"))
@@ -81,6 +84,8 @@ def library(model):
             if o.type == "MESH":
                 got[o.name.split(".")[0]] = o
                 o.hide_render = True
+            elif o.type == "ARMATURE":
+                got[o.name.split(".")[0]] = o
             else:
                 bpy.data.objects.remove(o, do_unlink=True)
         _LIB[model] = got
@@ -121,6 +126,66 @@ def place_piece(cam, piece, cf, scale, tint=None, rough=None):
     return o
 
 
+def v2_material(o, hexc, rough):
+    """FP HANDS v2 pieces: MeshPart.Color (hexc) times the mesh's vertex shading, matte (Fabric) or a soft sheen."""
+    m = bpy.data.materials.new("EH_V2_" + o.name)
+    m.use_nodes = True
+    nt = m.node_tree
+    b = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+    vc = nt.nodes.new("ShaderNodeVertexColor")
+    vc.layer_name = "Col"
+    mix = nt.nodes.new("ShaderNodeMix")
+    mix.data_type = "RGBA"
+    mix.blend_type = "MULTIPLY"
+    mix.inputs[0].default_value = 1.0
+    nt.links.new(vc.outputs["Color"], mix.inputs[6])
+    mix.inputs[7].default_value = K._lin(hexc)
+    nt.links.new(mix.outputs[2], b.inputs["Base Color"])
+    b.inputs["Roughness"].default_value = rough
+    if "Sheen Weight" in b.inputs and rough > 0.9:
+        b.inputs["Sheen Weight"].default_value = 0.35       # a knit's soft fuzz at grazing angles
+    o.data.materials.clear()
+    o.data.materials.append(m)
+
+
+def place_v2(cam, plan, pose, p, hexc, rough):
+    """A v2 piece at its final camera-space frame (never resized). The skinned glove: its armature placed so the mesh
+    lands where the MeshPart does, then every pose bone set from the plan's hinge frames (the game's maths)."""
+    spec = MAN[p["piece"]]
+    lib = library(spec["model"])
+    o = lib[p["piece"]]
+    lo, hi = spec["boundsMin"], spec["boundsMax"]
+    centre = Vector(((lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (lo[2] + hi[2]) / 2))
+    v2_material(o, hexc, rough)
+    o.hide_render = False
+    o.visible_shadow = False
+    if not p.get("skinned"):
+        W0 = o.matrix_world.copy()
+        o.parent = cam
+        o.matrix_parent_inverse = Matrix.Identity(4)
+        o.matrix_basis = cf_matrix(p["cf"]) @ Matrix.Translation(-centre) @ C @ Matrix.Translation(-W0.translation) @ W0
+        return o
+    arm = o.parent
+    W0 = o.matrix_world.copy()
+    A0 = arm.matrix_world.copy()
+    L = Matrix.Translation(-centre) @ C @ Matrix.Translation(-W0.translation) @ A0     # armature space -> part space
+    arm.parent = cam
+    arm.matrix_parent_inverse = Matrix.Identity(4)
+    arm.matrix_basis = cf_matrix(p["cf"]) @ L
+    side = "Left" if "_Left_" in p["piece"] else "Right"
+    rest, posed = plan["rest"][side], pose["skins"][p["piece"]]
+    Li = L.inverted()
+    bpy.context.view_layer.update()
+    for b in arm.data.bones:            # parents come first in Blender's bone list order of creation
+        if b.name not in posed:
+            continue
+        B0 = L @ b.matrix_local
+        O = cf_matrix(rest[b.name]).inverted() @ B0
+        arm.pose.bones[b.name].matrix = Li @ cf_matrix(posed[b.name]) @ O
+        bpy.context.view_layer.update()
+    return o
+
+
 def place_cylinder(cam, cf, size, hexc):
     """A code-built Cylinder Part (the old sleeve stripes): axis along its local X."""
     bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=0.5, depth=1.0)
@@ -143,8 +208,24 @@ def hands(cam, plan, pose_name):
         glove = srgb_lerp(glove, MARBLE if key == "marble" else glove, t)
     mats = plan.get("materials") or {}
     gloves_id = (plan.get("outfit") or {}).get("gloves", "Gloves_Knit")
-    rough = {"Fabric": 0.95, "Leather": 0.55}
+    rough = {"Fabric": 0.95, "Leather": 0.55, "SmoothPlastic": 0.4}
     objs = []
+    if plan.get("v2"):
+        for p in pose["parts"]:
+            if p.get("tint") == "gloves":
+                hexc, r = glove, rough.get(mats.get(gloves_id), 0.9)
+            elif p.get("tint") == "crew":
+                hexc, r = CREW, rough["Fabric"]
+            elif p.get("joint") == "Sleeve":
+                hexc, r = PALETTE.get(plan.get("sleeveColour"), MARBLE), rough["Fabric"]
+            else:
+                hexc, r = "#FFFFFF", rough["SmoothPlastic"]
+            objs.append(place_v2(cam, plan, pose, p, hexc, r))
+        if pose.get("loot"):
+            spec = MAN["CashBag"]
+            k = plan["lootSize"] / max(spec["size"])
+            objs.append(place_piece(cam, "CashBag", pose["loot"]["cf"], [k * f for f in pose["loot"]["scale"]]))
+        return objs
     for p in pose["parts"]:
         tint = glove if p.get("tint") == "gloves" else CREW if p.get("tint") == "crew" else None
         r = None
@@ -234,6 +315,24 @@ def l1_scene(samples, W, Hh, spot):
     return s, cam
 
 
+def roblox_light(s, cam):
+    """The engine's read of the near hands (the owner's v125 capture): Roblox lights a part with the flat
+    Lighting.Ambient (no occlusion: Eevee's world light occludes, so it is replaced on the hands by a flat lavender
+    term) plus the local lamps and the client fill. Approximated by an extra uniform light from all around the camera
+    in the interior Ambient colour; the room itself keeps the Eevee render."""
+    import backdrop_shots as BS
+    amb = BS.LIGHTING.get("Ambient", [0.46, 0.48, 0.6])
+    hexc = "#%02X%02X%02X" % tuple(int(round(x * 255)) for x in amb)
+    for i, d in enumerate(((0, 0, 1), (0, 1, 0), (1, 0, 0), (-1, 0, 0), (0, -1, 0))):
+        ld = bpy.data.lights.new(f"amb{i}", "SUN")
+        ld.color = K._lin(hexc)[:3]
+        ld.energy = 0.55
+        ld.use_shadow = False
+        o = bpy.data.objects.new(f"amb{i}", ld)
+        s.collection.objects.link(o)
+        o.rotation_euler = Vector(d).to_track_quat("Z", "Y").to_euler()
+
+
 def plain_scene(samples, W, Hh):
     """A quick neutral stage (iteration only): a dim plum room light + a warm key, like an L1 interior."""
     import marketing_renders as MR
@@ -283,10 +382,13 @@ def render_one(a):
         s, cam = plain_scene(a.samples, W, Hh)
     plan = lune_plan(a.mode, FOV, a.outfit)
     hands(cam, plan, a.pose)
-    if a.mode == "after":
+    if a.mode in ("after", "v125", "v2"):
         fill_light(cam, plan)
+    if a.light == "roblox":
+        roblox_light(s, cam)
     os.makedirs(OUT, exist_ok=True)
     tag = f"{a.mode}_{a.pose}_{a.aspect}" + ("" if a.spot == "front" else "_" + a.spot) + \
+        ("" if a.light == "eevee" else "_" + a.light) + \
         ("" if a.bg == "l1" else "_plain") + (("_" + a.outfit.replace("=", "-").replace(",", "_")) if a.outfit else "")
     raw = os.path.join(BUILD, "fp_hands_raw", tag + ".png")
     os.makedirs(os.path.dirname(raw), exist_ok=True)
@@ -358,7 +460,9 @@ def sheet(out_path, aspect_rows=("16x9", "19.5x9")):
 def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument("--pose", default="idle", choices=POSES)
-    ap.add_argument("--mode", default="after", choices=("after", "before"))
+    ap.add_argument("--mode", default="after", choices=("after", "before", "v125", "v2"))
+    ap.add_argument("--light", default="eevee", choices=("eevee", "roblox"),
+                    help="roblox: the in-game read (flat lavender Ambient, no ambient occlusion on the hands)")
     ap.add_argument("--aspect", default="16x9", choices=tuple(ASPECTS))
     ap.add_argument("--spot", default="front", choices=("front", "back", "lamp"))
     ap.add_argument("--bg", default="l1", choices=("l1", "plain"))
@@ -377,7 +481,8 @@ def main(argv):
         for asp in ASPECTS:
             for pose in POSES:
                 cmd = [sys.executable, os.path.abspath(__file__), "--pose", pose, "--mode", a.mode, "--aspect", asp,
-                       "--spot", a.spot, "--bg", a.bg, "--samples", str(a.samples), "--height", str(a.height)]
+                       "--spot", a.spot, "--bg", a.bg, "--samples", str(a.samples), "--height", str(a.height),
+                       "--light", a.light] + (["--outfit", a.outfit] if a.outfit else [])
                 subprocess.run(cmd + (["--out", a.out] if a.out else []), check=False)
         return
     render_one(a)
