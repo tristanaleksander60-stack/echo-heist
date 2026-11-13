@@ -18,7 +18,8 @@
 --   Hints     the objective line's text, the L1 FTUE lines and the L1 stuck hints, the help
 --             after L1 (world-state lines, SHOW ME? and the chalk ghost, TRY RELAXED?), the
 --             finger pointer, failure counterplay and the first-time beats
---   Run       run state, events and the per-frame update
+--   Run       run state, events and the per-frame update (and first person's reduced layout)
+--   Reticle   first person: the centre reticle and the look-to-interact prompt chip (on the fx layer)
 --   Common    shared helpers
 -- Every player-facing string is in Shared/Heist/Strings and every run-HUD box in
 -- Shared/Heist/HudLayout (checked by tests/hud_layout.luau at 7 viewports).
@@ -42,7 +43,9 @@ local Deck = require(script:WaitForChild("Deck"))
 local Garage = require(script:WaitForChild("Garage"))
 local Hints = require(script:WaitForChild("Hints"))
 local Messages = require(script:WaitForChild("Messages"))
+local Reticle = require(script:WaitForChild("Reticle"))
 local Results = require(script:WaitForChild("Results"))
+local Common = require(script:WaitForChild("Common"))
 local Run = require(script:WaitForChild("Run"))
 local SettingsPanel = require(script:WaitForChild("SettingsPanel"))
 local TopBar = require(script:WaitForChild("TopBar"))
@@ -62,6 +65,9 @@ export type Actions = {
 	joinFriend: (userId: number) -> (),
 	leave: () -> (),
 	hint: (name: string) -> (),
+	-- First person (optional): the look-to-interact picker (Heist/LookTarget) and the hands (Heist/Viewmodel).
+	look: any?,
+	hands: ((action: string) -> ())?,
 }
 
 function Hud.new(state: any, actions: Actions): any
@@ -116,6 +122,7 @@ function Hud.new(state: any, actions: Actions): any
 		gui = gui,
 		fxGui = fxGui,
 		root = root,
+		deviceScale = deviceScale,
 		runHud = runHud,
 		waiting = false, -- RUN tapped, waiting for the crew
 		lastGrabTap = -math.huge, -- os.clock() of the last GRAB tap (END RUN guard)
@@ -137,6 +144,7 @@ function Hud.new(state: any, actions: Actions): any
 	ctx.top = TopBar.build(ctx)
 	ctx.controls = Controls.build(ctx)
 	ctx.msg = Messages.build(ctx)
+	ctx.reticle = Reticle.build(ctx)
 	ctx.deck = Deck.build(ctx)
 	ctx.results = Results.build(ctx)
 	ctx.garage = Garage.build(ctx)
@@ -167,7 +175,11 @@ function Hud.new(state: any, actions: Actions): any
 		fn()
 	end
 
+	-- Is a sheet up (results, MENU, settings)? First person frees the cursor then (Heist/CameraDirector).
+	hud.sheetOpen = Common.sheetUp
+
 	function hud.hideAll()
+		ctx.reticle.set(false, nil)
 		runHud.Visible = false
 		ctx.deck.panel.Visible = false
 		ctx.results.card.Visible = false
@@ -188,6 +200,7 @@ function Hud.new(state: any, actions: Actions): any
 	function hud.setCutscene(on: boolean)
 		gui.Enabled = not on
 		if on then
+			ctx.reticle.set(false, nil)
 			ctx.hints.clear()
 			ctx.hints.hideHelp()
 			ctx.msg.menuSheet.Visible = false

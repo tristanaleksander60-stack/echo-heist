@@ -135,8 +135,9 @@ function PlayerHalo.new(folder: Instance): any
 		params.FilterDescendantsInstances = { folder, char :: any }
 	end
 
-	-- Shows the halo on your live character (called every heist frame).
-	function halo.update()
+	-- Shows the halo on your live character (called every heist frame). inEyes: first person with the camera
+	-- at your eyes (Heist/CameraDirector): your body is hidden, so its rim is off (the ring and light stay).
+	function halo.update(inEyes: boolean?)
 		local lp = Players.LocalPlayer
 		local char = lp and lp.Character
 		if char ~= character or (char and lightAt and not lightAt:IsDescendantOf(char)) then
@@ -149,7 +150,7 @@ function PlayerHalo.new(folder: Instance): any
 			light.Enabled = false
 			return
 		end
-		rimHl.Enabled = true
+		rimHl.Enabled = inEyes ~= true
 		light.Enabled = lightOk
 		local hit = workspace:Raycast(root.Position, Vector3.new(0, -C.HALO_RAY, 0), params)
 		if hit then

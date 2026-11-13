@@ -67,7 +67,8 @@ local CLIP_OF = { carry = "carry", ["on-plate"] = "plate", stuck = "stuck", bust
 
 local EchoView = {}
 
-type Pool = { kind: string, free: { any }, group: Model, highlight: Highlight, fx: Folder }
+-- template: the owner's template the pool's rigs were built from (a new one, e.g. an outfit change, retires it)
+type Pool = { kind: string, free: { any }, group: Model, highlight: Highlight, fx: Folder, template: Model? }
 
 -- The numbered pill over a clone's head: seat icon + number on the seat colour, ink rim.
 local function pillGui(anchor: BasePart): (BillboardGui, Frame, TextLabel)
@@ -323,9 +324,10 @@ function EchoView.new(state: any): any
 	end
 
 	local function poolFor(ownerId: number, hue: Color3): Pool
-		local want = if templateOf(ownerId) and not brokenOwners[ownerId] then "avatar" else "mannequin"
+		local template = templateOf(ownerId)
+		local want = if template and not brokenOwners[ownerId] then "avatar" else "mannequin"
 		local pool = pools[ownerId]
-		if pool and pool.kind ~= want then
+		if pool and (pool.kind ~= want or (want == "avatar" and pool.template ~= template)) then
 			pool.group.Name = "Retired_" .. tostring(ownerId)
 			table.insert(retiring, pool)
 			pools[ownerId] = nil
@@ -346,7 +348,14 @@ function EchoView.new(state: any): any
 			local fx = Instance.new("Folder")
 			fx.Name = "Fx_" .. tostring(ownerId)
 			fx.Parent = folder
-			pool = { kind = want, free = {}, group = group, highlight = hl, fx = fx }
+			pool = {
+				kind = want,
+				free = {},
+				group = group,
+				highlight = hl,
+				fx = fx,
+				template = if want == "avatar" then template else nil,
+			}
 			pools[ownerId] = pool
 		end
 		local p = pool :: Pool
@@ -815,7 +824,7 @@ function EchoView.new(state: any): any
 	-- Poses every clone at view time tView (or along the reel when `reelT` is set:
 	-- the rewind plays each path backwards from the end of the last run, §7.1).
 	function view.update(tView: number, now: number, dt: number, reelT: number?)
-		halo.update()
+		halo.update(state.fpView == true) -- first person: no rim on your own (hidden) body
 		if not run then
 			return
 		end

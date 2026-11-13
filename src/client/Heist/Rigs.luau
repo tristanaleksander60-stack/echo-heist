@@ -58,6 +58,8 @@ export type Rig = {
 	lookTarget: Attachment?,
 	heights: { number }?, -- per partsOf entry: rest height of the part's bottom above the feet
 	printShown: number?, -- last print height written (setPrint)
+	faces: { BasePart }?, -- Rookie: the four face pieces (EH_Face = mood), one shown (Rigs.setFace)
+	face: string?, -- Rookie: the face shown
 }
 
 local walkAnim = Instance.new("Animation")
@@ -84,11 +86,21 @@ function Rigs.buildAvatar(template: Model): Rig?
 		model:Destroy()
 		return nil
 	end
+	-- A Rookie template (PLAN_FIRST_PERSON "CH": clones are copies of your Rookie) keeps its outfit colours: only
+	-- the crew pieces (EH_Tint "crew": scarf, stripes) take the owner hue, and the hidden faces stay hidden.
+	local rookie = model:GetAttribute("EH_Rookie") == true
 	local tinted = {}
+	local faces: { BasePart } = {}
 	for _, d in model:GetDescendants() do
 		if d:IsA("BasePart") and d ~= root then
-			d.Transparency = 0
-			table.insert(tinted, d)
+			if d:GetAttribute("EH_Face") ~= nil then
+				table.insert(faces, d)
+			elseif d:GetAttribute("EH_Hidden") ~= true then
+				d.Transparency = 0
+			end
+			if not rookie or d:GetAttribute("EH_Tint") == "crew" then
+				table.insert(tinted, d)
+			end
 		end
 	end
 	root.Anchored = true
@@ -108,6 +120,7 @@ function Rigs.buildAvatar(template: Model): Rig?
 		head = if head and head:IsA("BasePart") then head else nil,
 		joints = joints,
 		scale = math.max(1, rootHeight / 3),
+		faces = if #faces > 0 then faces else nil,
 	}
 	-- Rest heights for the tape print, measured in the template's own pose (before any move).
 	local feetY = root.Position.Y - rootHeight
@@ -592,6 +605,27 @@ function Rigs.setPose(rig: Rig, name: string?)
 		new:Play(if name == "busted" then C.BUSTED_FADE_IN else C.POSE_BLEND)
 	end
 	rig.poseName = name
+	-- the Rookie's face follows the pose: carry -> smug, busted -> busted, stuck -> shocked (Config.Rookie.POSE_FACE)
+	Rigs.setFace(rig, name and Config.Rookie.POSE_FACE[name] or "idle")
+end
+
+-- Shows one of a Rookie rig's faces (idle, smug, shocked, busted); a no-op on other rigs or when unchanged.
+function Rigs.setFace(rig: Rig, mood: string)
+	local faces = rig.faces
+	if not faces or rig.face == mood then
+		return
+	end
+	rig.face = mood
+	local shown = false
+	for _, p in faces do
+		local show = p:GetAttribute("EH_Face") == mood
+		shown = shown or show
+		p.Transparency = if show then 0 else 1
+	end
+	if not shown and mood ~= "idle" then
+		rig.face = nil
+		Rigs.setFace(rig, "idle")
+	end
 end
 
 -- Seconds into the custom pose clip playing now (0 when none): the carried loot bobs with the arms.

@@ -46,6 +46,7 @@ local Keys = require(DataShared:WaitForChild("Keys"))
 local Progress = require(DataShared:WaitForChild("Progress"))
 local Schema = require(DataShared:WaitForChild("Schema"))
 local Store = require(DataShared:WaitForChild("Store"))
+local Outfit = require(Shared:WaitForChild("Heist"):WaitForChild("Outfit"))
 
 local PlayerData = require(script.Parent.PlayerData)
 local Policy = require(script.Parent.Policy)
@@ -99,6 +100,8 @@ local function publishAttributes(player: Player, heist: Schema.Heist)
 		player:SetAttribute("Cosmetic_" .. slot, id)
 	end
 	player:SetAttribute("BagLevel", heist.bagLevel)
+	-- The Rookie's outfit (Heist/Outfit.key): Heist/Characters dresses the character from it.
+	player:SetAttribute("Outfit", Outfit.key(heist.outfit))
 end
 
 -- Stars are a mirror of the medals and daily first clears; this keeps the balance exact.
@@ -247,7 +250,13 @@ function DataService.getBagLevel(player: Player): number
 	return if profile then heistOf(profile).bagLevel else 0
 end
 
-function DataService.getSettings(player: Player): { [string]: boolean | number }
+-- The Rookie's outfit (slot -> Config.Rookie.OUTFIT id; the default while there is no profile).
+function DataService.getOutfit(player: Player): { [string]: string }
+	local profile = PlayerData.Get(player)
+	return if profile then Outfit.clean(heistOf(profile).outfit) else Outfit.default()
+end
+
+function DataService.getSettings(player: Player): { [string]: boolean | number | string }
 	local profile = PlayerData.Get(player)
 	local settings = if profile then heistOf(profile).settings else Schema.defaultHeist().settings
 	return table.clone(settings :: any)
@@ -420,8 +429,15 @@ local function declareRemotes()
 		lo, hi = math.min(lo, range[1]), math.max(hi, range[2])
 	end
 	local numberValue = T.number(lo, hi)
+	local choices: { string } = {}
+	for _, list in DATA.SETTING_CHOICES do
+		for _, c in list do
+			table.insert(choices, c)
+		end
+	end
+	local choiceValue = T.oneOf(choices :: any)
 	local function settingValue(v: any): boolean
-		return T.boolean(v) or numberValue(v)
+		return T.boolean(v) or numberValue(v) or choiceValue(v)
 	end
 	local buyable = Store.buyable()
 	changedPush = Net.Push("Data.Changed")
@@ -436,10 +452,11 @@ local function declareRemotes()
 	})
 	Net.Handle("Data.SetSetting", {
 		rate = { burst = 6, perSecond = 2 },
-		-- A known key, then a boolean or a finite number in 0..1 (the widest SETTING_NUMBERS range);
-		-- the handler checks the value against that key's own type and range (Schema.validSetting).
+		-- A known key, then a boolean, a finite number in the widest SETTING_NUMBERS range, or one of the
+		-- SETTING_CHOICES strings (cameraMode); the handler checks the value against that key's own type,
+		-- range and choices (Schema.validSetting).
 		args = { T.key(settingKeys), settingValue },
-		handler = function(player: Player, key: string, value: boolean | number): Net.Result
+		handler = function(player: Player, key: string, value: boolean | number | string): Net.Result
 			if not Schema.validSetting(key, value) then
 				return Net.fail("BadValue")
 			end
@@ -451,11 +468,29 @@ local function declareRemotes()
 			end)
 		end,
 	})
+	-- Cosmetic slots (Store.canEquip) and, as the smallest extension (no new remote, CLAUDE.md), the Rookie's
+	-- outfit slots: an outfit slot + a Config.Rookie.OUTFIT id, checked by Heist/Outfit.canWear (slot, unlock).
+	local equipSlots, equipItems = table.clone(DATA.DEFAULT_EQUIPPED), table.clone(DATA.Cosmetics)
+	for slot, id in Config.Rookie.DEFAULT_OUTFIT do
+		equipSlots[slot] = id
+	end
+	for id, def in Config.Rookie.OUTFIT do
+		equipItems[id] = def
+	end
 	Net.Handle("Data.Equip", {
 		rate = { burst = 6, perSecond = 2 },
-		args = { T.key(DATA.DEFAULT_EQUIPPED), T.key(DATA.Cosmetics) },
+		args = { T.key(equipSlots), T.key(equipItems) },
 		handler = function(player: Player, slot: string, itemId: string): Net.Result
 			return withProfile(player, function(profile, heist)
+				if Outfit.isSlot(slot) then
+					local okWear, wearCode = Outfit.canWear(heist, slot, itemId)
+					if not okWear then
+						return Net.fail(wearCode)
+					end
+					heist.outfit[slot] = itemId
+					changed(player, profile, "outfit")
+					return Net.ok()
+				end
 				local ok, code = Store.canEquip(heist, slot, itemId)
 				if not ok then
 					return Net.fail(code)

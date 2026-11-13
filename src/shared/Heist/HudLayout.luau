@@ -55,6 +55,19 @@ HudLayout.RAIL_DECK = box(0.5, 1, 0.5, 0, 1, -(8 + 212 + 8), 336, 98)
 -- or the "TRY RELAXED?" card (Hud/Hints, WALKTHROUGH P0-2). Not with the locked deck (L1 and the
 -- party have no ghost and no Relaxed).
 HudLayout.HELP_CHIP = box(1, 0, 1, -8, 0, 6, 168, TAP)
+-- First person (PLAN_FIRST_PERSON FP): the reduced run HUD. The reticle sits at the centre of the WHOLE
+-- screen (where the camera ray goes), not of the safe area: SCREEN_CENTRED boxes are placed on an edge-to-
+-- edge layer and are relative to the screen's centre (HudLayout.centreShift moves them onto the HUD canvas
+-- for the overlap check). On a phone the top bar puts that centre high, level with the objective line, so
+-- in first person the objective (or the alarm counter) moves below the reticle, the prompt chip ("GRAB
+-- $100", "OPEN", "BANK") sits just right of it, and the message rail goes to the bottom, left of centre so
+-- it clears Interact (which stays the touch fallback, lower right) on the narrowest canvas.
+HudLayout.RETICLE = box(0.5, 0.5, 0.5, 0, 0.5, 0, 28, 28)
+HudLayout.PROMPT = box(0, 0.5, 0.5, 26, 0.5, 0, 196, 40)
+HudLayout.SCREEN_CENTRED = table.freeze({ RETICLE = true, PROMPT = true })
+HudLayout.RAIL_FP = box(0.5, 1, 0.5, -68, 1, -8, 336, 98)
+HudLayout.OBJECTIVE_FP = box(0.5, 1, 0.5, -68, 1, -114, 360, 28)
+HudLayout.ALARM_FP = box(0.5, 1, 0.5, -68, 1, -114, 360, 30)
 
 -- Centred sheets (they cover the run HUD, so each is a scene of its own): the job sheet (results),
 -- the garage with its job board, the MENU sheet and the settings panel (PLAN_STEAM_PLUS §4.3 U5-U7).
@@ -97,6 +110,38 @@ HudLayout.SCENES = table.freeze({
 		"RAIL",
 		"HELP_CHIP",
 	},
+	-- First person: no loot meter (it peeks in after a change; Hud/Run), the reticle and the prompt chip, the
+	-- rail at the bottom. LOOT is listed: when it peeks it must still fit.
+	fpRun = {
+		"LOOT",
+		"TOP",
+		"STRIP",
+		"MENU",
+		"FAST_FORWARD",
+		"OBJECTIVE_FP",
+		"HIDDEN",
+		"END_RUN",
+		"INTERACT",
+		"RETICLE",
+		"PROMPT",
+		"RAIL_FP",
+		"HELP_CHIP",
+	},
+	fpRunAlarm = {
+		"LOOT",
+		"TOP",
+		"STRIP",
+		"MENU",
+		"FAST_FORWARD",
+		"ALARM_FP",
+		"HIDDEN",
+		"END_RUN",
+		"INTERACT",
+		"RETICLE",
+		"PROMPT",
+		"RAIL_FP",
+		"HELP_CHIP",
+	},
 	betweenDeck = { "LOOT", "MENU", "DECK", "RAIL_DECK", "HELP_CHIP" },
 	betweenLocked = { "LOOT", "TOP", "STRIP", "MENU", "OBJECTIVE", "READY_WAIT", "RAIL" },
 	results = { "RESULTS" },
@@ -116,6 +161,20 @@ end
 function HudLayout.canvas(w: number, h: number): (number, number, number)
 	local s = HudLayout.scale(w, h)
 	return w / s, h / s, s
+end
+
+-- Where the whole screen's centre lands on the HUD canvas, as a shift from the canvas centre (design px), for a
+-- screen of w x h px with safe-area insets (left, top, right, bottom). SCREEN_CENTRED boxes move by it.
+function HudLayout.centreShift(
+	w: number,
+	h: number,
+	left: number,
+	top: number,
+	right: number,
+	bottom: number
+): (number, number)
+	local cw, ch, s = HudLayout.canvas(w - left - right, h - top - bottom)
+	return (w / 2 - left) / s - cw / 2, (h / 2 - top) / s - ch / 2
 end
 
 -- A box's edges on a W x H canvas: left, top, right, bottom.

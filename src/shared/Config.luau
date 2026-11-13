@@ -367,10 +367,55 @@ Config.Heist = {
 
 -- Camera track (PLAN_STEAM_PLUS §4.2 C0, C1, C5; docs/audit/POLISH.md §4.5; docs/GOLDEN_FRAMES.md).
 -- Client Heist/CameraDirector (engine) + Heist/CameraMath (pure, Lune-tested). Angles in degrees,
--- distances in studs, times in seconds. The player's pick persists as the boolean setting
--- `classicCamera` (Data.SetSetting; off = diorama).
+-- distances in studs, times in seconds. The player's pick persists as the choice setting `cameraMode`
+-- ("fp" | "diorama" | "classic", Data.SetSetting); an old profile's boolean `classicCamera` = true reads
+-- as "classic" (PLAN_FIRST_PERSON FP).
 Config.Heist.CAMERA = {
-	DEFAULT_MODE = "diorama", -- decision D5 A/B: "diorama" | "classic"
+	DEFAULT_MODE = "fp", -- PLAN_FIRST_PERSON: first person by default; "diorama" | "classic" stay as options
+	-- First person (PLAN_FIRST_PERSON FP; Heist/CameraDirector "fp", maths in Heist/FpMath): head-locked at the
+	-- character's eyes, never rolls. Look: mouse lock on PC during play (free in menus and panels, where a
+	-- right-drag looks), touch drag outside the thumbstick, the right stick. Bob and dip: off under reduced motion.
+	FP = {
+		FOV = 70, -- vertical degrees; the comfort slider (setting fpFov, Config.Data.SETTING_NUMBERS) wins
+		PITCH_MIN = -80, -- degrees down (negative = looking up)
+		PITCH_MAX = 80,
+		START_PITCH = 6, -- degrees down at a run start (a slight look at the floor ahead)
+		EYE_UP = 0.15, -- studs above the head's centre
+		EYE_FORWARD = 0.25, -- studs ahead of it (the face, not the middle of the skull)
+		EYE_FOLLOW_RATE = 18, -- 1/s: exponential follow of the head height (smooths the walk clip's head bob)
+		HEAD_DY_FALLBACK = 1.5, -- studs from the root to the head's centre when there is no Head
+		MOUSE_DEG_PER_PX = 0.22, -- degrees per mouse pixel at Roblox's mouse sensitivity 1
+		TOUCH_YAW_PER_SCREEN = 200, -- degrees for a drag across the whole screen width
+		TOUCH_PITCH_PER_SCREEN = 110,
+		PAD_YAW_RATE = 190, -- degrees a second at full right stick
+		PAD_PITCH_RATE = 120,
+		PAD_DEADZONE = 0.15,
+		PAD_EXPONENT = 1.6, -- stick response curve (precise near the centre, fast at the edge)
+		FACE_EPS = 0.5, -- degrees: the character turns to the look yaw when it differs by more
+		HIDE_BODY_WITHIN = 1.6, -- studs: your own body is hidden while the camera is this close to your eyes
+		HIDE_RESCAN_SECONDS = 0.5, -- the hidden body is rescanned this often (late accessories)
+		-- Head bob (one cycle = two steps) and the landing dip (FpMath.bobStep / FpMath.spring).
+		BOB = {
+			STRIDE = 2.4, -- studs per step
+			FULL_SPEED = 16, -- studs/s that count as a full walk (the default WalkSpeed)
+			Y = 0.08, -- studs up and down at full speed
+			X = 0.045, -- studs side to side (half the rate)
+			SETTLE_RATE = 8, -- 1/s: the amplitude follows the speed
+		},
+		LAND = {
+			MIN_FALL = 12, -- studs/s: a landing slower than this does not dip
+			PER_SPEED = 0.025, -- studs of dip per stud/s of fall beyond MIN_FALL (about: FpMath.landKick)
+			MAX = 0.4, -- studs: the deepest dip (about)
+			FREQ = 6, -- spring frequency (Hz)
+			DAMPING = 0.75, -- spring damping ratio (< 1: one soft overshoot)
+		},
+		-- C1 in first person: hold on the objective from above (this orbit), then ease into your eyes.
+		BEAT_PITCH = 40,
+		BEAT_DISTANCE = 22,
+		BEAT_FOV = 50,
+		GLANCE_DOWN = 9, -- degrees: the plate "stomp" glance (eases in and back; reduced motion: none)
+		GLANCE_SECONDS = 0.45,
+	},
 	-- C0 "diorama": the long lens that makes the town read as a miniature and shows your crew.
 	DIORAMA = {
 		-- Tuned inside the plan's bands on the L1 spawn (tests/unit/HeistCamera.spec.luau): at 52 / 30 / 45
@@ -432,6 +477,127 @@ Config.Heist.CAMERA = {
 	GOLDEN = {
 		G2 = { PITCH = 45, FOV = 45, YAW = 0, MAX_DISTANCE = 70 },
 		G3 = { PITCH = 30, DISTANCE = 22, FOV = 45, YAW = 35 },
+	},
+}
+
+-- First person: hands, look-to-interact, the reduced HUD and Gus's screen-edge warning (PLAN_FIRST_PERSON FP).
+-- Client only, nothing here decides gameplay (the server and the sim still do). The camera's own numbers are
+-- Config.Heist.CAMERA.FP. Hand poses are camera space at full size (x right, y up, z forward is negative),
+-- studs and degrees (rx pitch, ry yaw, rz roll), before VIEWMODEL.SCALE.
+Config.FirstPerson = {
+	VIEWMODEL = {
+		-- Drawn at this size and this much closer to the eye: it looks the same, but sticks out only this share as
+		-- far, so it stays inside the character's own collision (vault "First-Person Viewmodels" §3, rule 1).
+		SCALE = 0.4,
+		FOV_REF = 70, -- the poses are authored at this FOV; x / y follow tan(fov / 2) so hands keep their screen spot
+		KIT = "CharacterKit", -- ReplicatedStorage folder the CHARACTER track publishes
+		KIT_MODEL = "Rookie_Viewmodel", -- forearms + gloved hands with GripR / GripL attachments
+		KIT_CHECK_SECONDS = 2, -- the placeholder hands are swapped for the kit model once it arrives
+		-- The placeholder hands (until the kit model lands): Palette keys; the stripe is your crew hue.
+		COLOURS = {
+			glove = "plumHi",
+			knuckle = "steel",
+			cuff = "ink",
+			sleeve = "plum",
+			watch = "goldHi",
+			band = "goldLo",
+		},
+		REST = {
+			R = { 0.6, -0.62, -1.2, 10, -12, -8 },
+			L = { -0.6, -0.62, -1.2, 10, 12, 8 },
+		},
+		-- One pose per action; `hands` = which hands it moves. Envelope (s): rise, hold, fall (ViewmodelMath.envelope).
+		ACTIONS = {
+			reach = {
+				R = { 0.22, -0.32, -1.85, -12, -4, -18 },
+				L = { -0.62, -0.7, -1.15, 14, 12, 8 },
+				time = { 0.12, 0.1, 0.28 },
+			},
+			push = { R = { 0.32, -0.22, -1.7, -78, -6, 0 }, time = { 0.1, 0.18, 0.32 } },
+			press = { R = { 0.18, -0.24, -1.75, -24, -2, -6 }, time = { 0.1, 0.12, 0.25 } },
+			stomp = {
+				R = { 0.78, -0.74, -1.1, 4, -24, -26 },
+				L = { -0.78, -0.74, -1.1, 4, 24, 26 },
+				time = { 0.08, 0.12, 0.3 },
+			},
+			-- REWIND: the left wrist comes up into view and the right index taps the watch.
+			watch = {
+				R = { 0.08, -0.36, -1.08, 14, -34, -22 },
+				L = { -0.14, -0.44, -1.04, 42, 58, 78 },
+				time = { 0.14, 0.4, 0.3 },
+				tap = { 0.05, 6, 0.5 }, -- studs of tap travel, taps a second, share of the travel that goes down
+			},
+			handsUp = {
+				R = { 0.72, 0.22, -1.1, 78, -6, -12 },
+				L = { -0.72, 0.22, -1.1, 78, 6, 12 },
+				time = { 0.15, 1.3, 0.45 },
+			},
+		},
+		CARRY = {
+			R = { 0.4, -0.5, -1.3, 0, 22, -72 },
+			L = { -0.4, -0.5, -1.3, 0, -22, 72 },
+			LOOT = { 0, -0.36, -1.45 }, -- where the held loot sits (full size, camera space)
+			LOOT_SIZE = 0.95, -- full-size studs the held loot's longest side is scaled to
+			BLEND_SECONDS = 0.18,
+		},
+		HIDDEN = { 0, -0.2, 0.12 }, -- added to both hands while you hide (a crouch-like lower)
+		HIDDEN_SECONDS = 0.25,
+		-- Motion.
+		IDLE = { x = 0.008, y = 0.012, hzX = 0.13, hzY = 0.25 }, -- breathing sway (studs, Hz)
+		WALK = { x = 0.03, y = 0.035, rz = 2.5 }, -- walk bob at full speed (studs, degrees), synced to the head bob
+		LAG = {
+			PER_DEG_S = 0.0011, -- studs of lag per degree a second of look speed
+			ROLL_PER_DEG_S = 0.018, -- degrees of roll per degree a second
+			MAX = 0.16, -- studs
+			MAX_ROLL = 7, -- degrees
+			FREQ = 4.5, -- spring (Hz)
+			DAMPING = 0.55, -- < 1: a small overshoot when you stop turning
+		},
+		-- Wall push: a ray from the eye; a wall closer than RANGE pulls the hands back and down (studs at
+		-- world size, i.e. already scaled; PULL is full-size camera space at a wall touching the eye).
+		WALL = { RANGE = 1.4, PULL = { 0, -0.22, 0.4 }, RATE = 14 },
+		-- The push and the plate glance: a door this close in front (studs), and a cooldown (s).
+		PUSH_RANGE = 3.2,
+		PUSH_CONE = 50, -- degrees off the look
+		PUSH_COOLDOWN = 1.5,
+		REACH_DEDUPE = 0.4, -- s: your Grab event does not replay the reach the GRAB press just played
+	},
+	LOOK = {
+		-- A ray from the camera centre picks what you look at (FpMath.pick). REACH: studs from the eye to the
+		-- target; the server's own range (Config.Sim.INTERACT_RANGE from your sim position) is checked too, less
+		-- RANGE_MARGIN, so a target shown is a target the server accepts.
+		REACH = 8,
+		RANGE_MARGIN = 0.3,
+		-- Aim assist: degrees beyond the target's own size that still count (touch most, the mouse least).
+		ASSIST = { mouse = 2.5, gamepad = 6, touch = 8 },
+		STICKY = 0.35, -- score bonus that keeps the current target against a near tie (no flicker)
+		DISTANCE_WEIGHT = 0.25, -- score per REACH of distance (nearer wins a tie)
+		LOS_CANDIDATES = 3, -- line-of-sight rays a frame, for the best few only
+		RADIUS = { loot = 0.9, switch = 0.8, van = 3.5 }, -- studs; loot uses its part's size when bigger
+		LOS_SLACK = 0.6, -- studs: a hit this close to the target's surface is the target
+		BANK_REACH = 16, -- the van shows BANK (walk in) from this far while you carry
+		HIGHLIGHT = { FILL = 0.85, OUTLINE = 0, COLOUR = "gold", LOCKED = "steel" },
+		CLICK_GUARD = 0.25, -- s: a mouse click this soon after the cursor locks is not a grab
+	},
+	HUD = {
+		RETICLE = 8, -- px: the dot
+		RETICLE_RING = 26, -- px: the ring round it while a target is under it
+		RETICLE_ALPHA = 0.25,
+		LOOT_PEEK_SECONDS = 4, -- the loot meter shows this long after it changes (and while you carry)
+	},
+	-- Gus in first person: a screen-edge tint while his cone is on you ("?", stage 1) or he is sure ("!",
+	-- stage 2), strongest on the side he is on. A steady tint, not a flash: only its "!" pulse asks the flash
+	-- limiter (Heist/FlashLimit). Reduced motion: the tint without the pulse.
+	WARN = {
+		EDGE = 0.2, -- share of the screen width / height each edge gradient covers
+		SEEN = 0.55, -- edge strength 0..1 at "?"
+		SURE = 0.9, -- ... at "!"
+		SIDE_MIN = 0.35, -- the far side keeps this share (a cone on you is always felt)
+		IN_SECONDS = 0.2,
+		OUT_SECONDS = 0.45,
+		PULSE = 0.35, -- extra strength of the "!" pulse
+		PULSE_SECONDS = 0.35,
+		COLOURS = { seen = "amber", sure = "alarm" },
 	},
 }
 
@@ -660,11 +826,21 @@ Config.Data = {
 		LAST = { 2027, 1, 4 }, -- Candy Canes are earned and spent until this day; items stay owned
 	},
 
-	-- Number settings (Schema settings, Data.SetSetting): key -> { min, max }. Every other setting is a boolean.
+	-- Number settings (Schema settings, Data.SetSetting): key -> { min, max }. Every other setting is a boolean
+	-- or a choice (SETTING_CHOICES).
 	-- A stored value outside its range (or of the wrong type) is repaired to the default (Schema.sanitize).
 	SETTING_NUMBERS = {
 		musicVolume = { 0, 1 }, -- U7 settings: the Music bus slider
 		sfxVolume = { 0, 1 }, -- ... and the SFX slider (SFX, UI and Ambience buses)
+		fpFov = { 60, 90 }, -- first-person field of view, degrees (the comfort slider; default FP_FOV_DEFAULT)
+	},
+	-- Defaults of number settings that are not 1 (Schema.defaultSettings).
+	SETTING_NUMBER_DEFAULTS = { fpFov = 70 },
+	-- Choice settings: key -> the allowed strings, the first is the default. cameraMode (PLAN_FIRST_PERSON FP)
+	-- replaces the old boolean classicCamera additively: Schema.sanitize reads classicCamera = true as "classic"
+	-- when a profile has no cameraMode yet.
+	SETTING_CHOICES = {
+		cameraMode = { "fp", "diorama", "classic" },
 	},
 
 	-- Cosmetics (§5.1, §5.4). slot -> the default item every player owns.
@@ -1350,7 +1526,7 @@ Config.Ui = {
 		W = 96, -- px: a card (the paper); 4 cards fit the deck without scrolling
 		H = 88,
 		PAD = 5, -- paper border round the photo
-		PHOTO_H = 56, -- the photo (your headshot on a crew-colour backdrop)
+		PHOTO_H = 56, -- the photo (your Rookie's portrait on a crew-colour backdrop; Config.Rookie.PORTRAIT)
 		CAPTION_H = 22, -- the caption strip under it: the last action's word
 		BADGE = 22, -- the last action's icon, a round badge on the photo's corner
 		PILL = { 28, 22 }, -- the stamped number pill (wider with the seat shape: + PILL_GLYPH)
@@ -1361,7 +1537,6 @@ Config.Ui = {
 		PILL_TILT = -8, -- the stamped number
 		STAMP_TILT = -12, -- the BUSTED / REDO stamp across the photo
 		TAPE = { 26, 9, 0.35 }, -- the tape strip at the top (w, h, transparency): dressing only
-		HEADSHOT_SIZE = "Size100x100", -- Enum.ThumbnailSize name (GetUserThumbnailAsync HeadShot)
 	},
 	START_OVER_RUNS = 2, -- full deck: after this many runs with no progress, offer START OVER (P0-3)
 	DECK_FULL_TOAST_SECONDS = 3,
@@ -1404,18 +1579,21 @@ Config.Ui = {
 	},
 
 	-- U7 settings (Hud/Settings). Rows in order; `key` is the Schema settings key, `kind` "toggle" | "slider" |
-	-- "camera". Volume sliders step by SLIDER_STEP and save when released.
+	-- "camera". Sliders step by `step` (a share of the key's SETTING_NUMBERS range; default SLIDER_STEP) and save
+	-- when released; `text` "degrees" shows the value as a number (the FOV), else a percent.
 	SETTINGS_ROWS = {
 		{ key = "musicVolume", kind = "slider" },
 		{ key = "sfxVolume", kind = "slider" },
+		{ key = "cameraMode", kind = "camera" },
+		{ key = "fpFov", kind = "slider", step = 1 / 30, text = "degrees" },
 		{ key = "shake", kind = "toggle" },
 		{ key = "reducedMotion", kind = "toggle" },
 		{ key = "captions", kind = "toggle" },
 		{ key = "colourBlindGlyphs", kind = "toggle" },
-		{ key = "classicCamera", kind = "camera" },
 		{ key = "guardPath", kind = "toggle" },
 		{ key = "haptics", kind = "toggle" },
 	},
+	SETTINGS_COLUMNS = 4, -- 10 cells on a 4 x 3 grid (HudLayout.SETTINGS keeps 3 rows: it fits a phone's height)
 	SLIDER_STEP = 0.05,
 	SFX_BUSES = { "SFX", "UI", "Ambience" }, -- the SFX slider drives these AudioDirector buses (Warnings keep their floor)
 
@@ -2209,6 +2387,81 @@ Config.Moments = {
 		CAM_FOV = 45,
 		CAM_FOLLOW = 6,
 		CAPTION_SIZE = 64, -- px (the display face)
+	},
+}
+
+-- The Rookie (PLAN_FIRST_PERSON "CH"; CH track): the player character. Every player spawns as a Rookie in their
+-- crew colour and outfit (server Heist/Characters + Heist/Rookie); clones are copies of your Rookie (Heist/Avatars).
+-- Art: assets/blender/rookie.py (kit groups Rookie, Rookie_Faces, Rookie_Outfits, Rookie_Viewmodel), data in
+-- Shared/Heist/RookieData (generated). Outfit data: the profile's `outfit` (Schema), validated by Shared/Heist/Outfit
+-- and changed through the existing Data.Equip remote (an outfit slot + an OUTFIT id).
+Config.Rookie = {
+	KIT_FOLDER = "CharacterKit", -- ReplicatedStorage folder: Rookie (template), Rookie_Viewmodel, Outfits, Faces
+	HIP_HEIGHT = 2, -- Humanoid.HipHeight: the root part's centre 3 studs up (the sim's rootHeight); legs are art
+	ROOT_SIZE = { 2, 2, 1 }, -- HumanoidRootPart
+	KIT_WAIT_SECONDS = 20, -- the first spawn waits this long for the kit, then spawns a block Rookie
+	RESPAWN_SECONDS = 3, -- after a death (CharacterAutoLoads is off: the server spawns everyone)
+	SPAWN_RETRIES = 3, -- LoadCharacterAsync attempts per spawn
+	-- Faces (one shows): what a moment shows and for how long (s); clones follow their pose (POSE_FACE).
+	FACE_SECONDS = { smug = 2.5, shocked = 1.6, busted = 3 },
+	POSE_FACE = { carry = "smug", busted = "busted", stuck = "shocked" },
+	-- Outfit slots (Data: heist.outfit slot -> id). DEFAULT is what a new profile and every repair falls back to.
+	SLOTS = { "cap", "scarf", "sweater", "gloves", "mask" },
+	DEFAULT_OUTFIT = {
+		cap = "Cap_Flat",
+		scarf = "Scarf_Long",
+		sweater = "Sweater_Stripes",
+		gloves = "Gloves_Knit",
+		mask = "Mask_None",
+	},
+	-- id -> slot, variant (RookieData.outfit key; "" = nothing), name, and how it unlocks: free, or
+	-- unlock = { stars = n } (total medal + daily stars, Progress.totalStars) or { trophy = id } (Config.Data.Trophies).
+	OUTFIT = {
+		Cap_Flat = { slot = "cap", variant = "Flat", name = "Flat Cap", free = true },
+		Cap_Beanie = { slot = "cap", variant = "Beanie", name = "Beanie", free = true },
+		Cap_Bobble = { slot = "cap", variant = "Bobble", name = "Bobble Hat", unlock = { stars = 6 } },
+		Cap_Trapper = {
+			slot = "cap",
+			variant = "Trapper",
+			name = "Trapper Hat",
+			unlock = { trophy = "Trophy_NightClerk" },
+		},
+		Scarf_Long = { slot = "scarf", variant = "Long", name = "Long Scarf", free = true },
+		Scarf_Chunky = { slot = "scarf", variant = "Chunky", name = "Chunky Scarf", free = true },
+		Scarf_Bandana = { slot = "scarf", variant = "Bandana", name = "Bandana", unlock = { stars = 3 } },
+		Scarf_Knot = {
+			slot = "scarf",
+			variant = "Knot",
+			name = "Knotted Scarf",
+			unlock = { trophy = "Trophy_TwoDoors" },
+		},
+		Sweater_Stripes = { slot = "sweater", variant = "Stripes", name = "Breton Stripes", free = true },
+		Sweater_Block = { slot = "sweater", variant = "Block", name = "Colour Block", unlock = { stars = 9 } },
+		Gloves_Knit = { slot = "gloves", variant = "Knit", name = "Knit Gloves", free = true },
+		Gloves_Leather = {
+			slot = "gloves",
+			variant = "Leather",
+			name = "Leather Gloves",
+			unlock = { trophy = "Trophy_BackRoom" },
+		},
+		Mask_None = { slot = "mask", variant = "", name = "No Mask", free = true },
+		Mask_Eye = { slot = "mask", variant = "Eye", name = "Eye Mask", unlock = { stars = 1 } },
+	},
+	GLOVES = { Gloves_Knit = "#2A2D52", Gloves_Leather = "#6E4B3A" }, -- glove colours (hands + cuffs)
+	BLOCK_COLOURS = { -- the block Rookie (no kit): body part kind -> colour
+		Head = "#D09673",
+		UpperTorso = "#D8C8A8",
+		LowerTorso = "#4E5675",
+		Arm = "#D8C8A8",
+		Hand = "#2A2D52",
+		Leg = "#4E5675",
+		Foot = "#5A493E",
+	},
+	PORTRAIT = { -- crew cards: a ViewportFrame of your clone template's head (Hud/Deck)
+		FOV = 30,
+		DISTANCE = 4.6, -- studs from the head centre
+		LIFT = 0.15, -- studs: aim a little above the head centre (the cap)
+		YAW = 18, -- degrees: a 3/4 turn
 	},
 }
 
