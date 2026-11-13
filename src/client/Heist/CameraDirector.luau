@@ -293,6 +293,7 @@ function CameraDirector.new(state: any): any
 						inst:IsA("BasePart")
 						and inst:IsDescendantOf(levelRoot)
 						and inst.Transparency < F.INVISIBLE
+						and inst:FindFirstAncestor("Overhead") == nil -- the BIG storeys are Heist/CutAway's
 						and (faded[inst] ~= nil or inst.LocalTransparencyModifier < 0.99)
 					then
 						seen[inst] = true
@@ -473,6 +474,13 @@ function CameraDirector.new(state: any): any
 
 	function director.momentActive(): boolean
 		return momentFn ~= nil
+	end
+
+	-- A presentation shot holds the frame (Heist/CutAway: the shot's look ray is a subject, and first person's
+	-- "never cut" yields to it): a golden or level-intro shot, a signature moment, the run-start beat, or another
+	-- director holding the camera (the Line-up).
+	function director.presenting(): boolean
+		return shotFn ~= nil or momentFn ~= nil or beat ~= nil or suspended()
 	end
 
 	-- First person: the plate "stomp" glance (a short look down and back; reduced motion: none).

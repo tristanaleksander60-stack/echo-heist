@@ -2465,4 +2465,86 @@ Config.Rookie = {
 	},
 }
 
+-- BIG buildings (PLAN_FIRST_PERSON §5 "BIG", 2026-11-13; docs/audit/LEVELS.md §11): every heist building is a 3-5
+-- storey block over its playable ground floor, with a real ceiling over the playable rooms and a roof, and a
+-- camera-aware cut-away (client Heist/CutAway) so the diorama, classic and presentation shots still see in. The plan
+-- is the pure server Heist/TowerPlan; server Heist/Overhead builds it into the level's "Overhead" model. Visual only:
+-- CanCollide, CanTouch, CanQuery and CastShadow off (the sim, the server's collisions, the cameras' raycasts and the
+-- ground floor's light stay exactly as they were). The playable footprint, walls, doors and plates never change.
+Config.Big = {
+	ENABLED = true,
+	CEIL_Y = 12, -- studs above the floor: the ceiling plane = the kit walls' top = Lamp_Ceiling's pivot (LAMP_HANG_Y)
+	CEIL_DEPTH = 0.55, -- Ceiling_8x8's depth (its coffered underside is the ceiling plane)
+	BAND = 2, -- the band over the wall tops (12 - 14) between the shop and the flats (covers BankFront's 13.9 top)
+	STOREY = 10, -- one upper storey (Facade_8x10); storey 10-12 with a ~5-stud character (worldbuilding brief)
+	WALL_DEPTH = 1.3, -- Facade_8x10_Body: its outer face 0.3 in from the module's front plane, 1.0 thick
+	PARAPET = 1.4, -- studs of parapet over the crown cornice (the roof's snow sits behind it)
+	ROOF_LIFT = 0.9, -- the roof's snow over the top storey's line (inside the parapet)
+	CORNICE_H = 1.98, -- Cornice_8 with its snow
+	GLASS = {
+		lit = { 246, 192, 162 }, -- Bulb Warm Neon (eh_palette.NEON): a lit flat behind its curtains
+		dark = { 74, 84, 130 }, -- an unlit window: a blue-night pane (V 51 %: dark, never near-black)
+		litShare = 0.58, -- of the windows (seeded per building)
+		curtainShare = 0.55, -- of the lit windows
+		inset = 1.0, -- studs from the module's front plane to the pane (behind the mullions)
+	},
+	SNOW = { 196, 200, 226 }, -- roof snow (Config.Backdrop.TOWN.COLORS.roofSnow)
+	TRIM = { 226, 214, 190 }, -- parapet coping (Warm Marble light)
+	-- Per location (KitPlan.location: Clone Party builds as the Toy Shop in its Christmas dressing). body: the facade
+	-- slab colours (one per level, seeded), mid-to-high values: a 40-stud face must never fall into the filmic toe.
+	-- roof: rooftop pieces at fractions of the roof's half extents (x, z; +z = the street side).
+	STYLES = {
+		CornerShop = { -- a brick tenement: fire escapes, a water tank, chimneys and an antenna on the roof
+			kind = "tenement",
+			storeys = 4,
+			body = { { 150, 76, 60 }, { 164, 92, 70 }, { 140, 70, 66 } },
+			band = { 120, 62, 54 },
+			fireEscape = true,
+			roof = {
+				{ piece = "Roof_WaterTank", at = { 0.35, -0.35 }, yaw = 0 },
+				{ piece = "Roof_Chimney", at = { -0.62, -0.25 }, yaw = 0 },
+				{ piece = "Roof_Chimney", at = { 0.62, 0.45 }, yaw = 90 },
+				{ piece = "Roof_Antenna", at = { -0.3, 0.55 }, yaw = 30 },
+			},
+			sign = { kind = "blade", w = 3.2, h = 11, color = { 140, 47, 75 }, text = { 255, 226, 150 } },
+		},
+		ToyShop = { -- a grand department store: cream and raspberry, a big lit sign, the giant toy soldier on its roof
+			kind = "store",
+			storeys = 4,
+			body = { { 236, 210, 168 } },
+			band = { 200, 92, 132 },
+			soldier = { scale = 2.4, at = { 0.7, 0.75 }, yaw = 180 }, -- ToySoldier on the roof edge (street side)
+			roof = { { piece = "Roof_Chimney", at = { -0.6, -0.5 }, yaw = 0 } },
+			sign = { kind = "board", w = 30, h = 6, color = { 140, 47, 75 }, text = { 255, 226, 150 } },
+		},
+		Bank = { -- a stone neoclassical block: a giant order of columns, a pediment with a clock
+			kind = "bank",
+			storeys = 3,
+			body = { { 214, 196, 160 } },
+			band = { 186, 168, 140 },
+			columns = 6, -- Column_2x12 scaled into a giant order over the street front's centre
+			columnScale = { 1.5, 2.5, 1.5 },
+			roof = { { piece = "Roof_Chimney", at = { 0.6, -0.6 }, yaw = 0 } },
+			sign = { kind = "frieze", w = 24, h = 2.2, color = { 186, 168, 140 }, text = { 60, 50, 70 } },
+		},
+	},
+	-- Client Heist/CutAway: roofs, ceilings and upper floors between the camera and its subject hide locally
+	-- (LocalTransparencyModifier) in diorama, classic and presentation shots once the camera is above the ceiling.
+	-- First person never hides them.
+	CUT = {
+		MARGIN = 0.5, -- studs: the camera counts as above the ceiling past CEIL_Y + MARGIN
+		INSIDE_PAD = 1.5, -- studs: a subject this close outside the footprint still counts as inside
+		SECONDS = 0.18, -- fade time (in and out)
+		HZ = 30, -- decisions a second (the fades step every frame)
+		EYE_WITHIN = 1.5, -- studs: the camera this close to the first-person eye is "in your eyes" (never cut)
+		LOOK_HEIGHT = 3, -- studs above the floor: a presentation shot's subject = its look ray at this height
+		LOOK_MAX = 400, -- studs along the look ray
+		SUBJECT_HEIGHTS = { 0.5, 4.5 }, -- studs above the subject's floor: the occluder test casts to feet and head
+	},
+	-- Per building at tier 1 (unit spec on every level; perf_engine counts the real build). Tier >= DETAIL_OFF_TIER
+	-- hides the "detail" layer (curtains, rooftop props, fire escapes, light strings) on the client.
+	BUDGET = { instances = 560, draws = 26, tris = 72000, lights = 0 },
+	DETAIL_OFF_TIER = 3,
+}
+
 return Config
