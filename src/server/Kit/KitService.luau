@@ -26,6 +26,10 @@
 --   KitService.priorityReady(timeout?) / isPriorityReady()   the first phase (Config.Kit.PRIORITY_PREFIXES: the
 --                                            Rookie's groups) is loaded and prepared: players spawn without waiting
 --                                            for the rest of the kit
+--   KitService.introReady(timeout?) / isIntroReady()   the second phase (Config.Kit.INTRO_GROUPS: the story intro's
+--                                            groups) is loaded and prepared too: Heist/IntroKit publishes them then;
+--                                            cloneModel works for a group as soon as its phase is done
+--   KitService.startedAt() -> number?        os.clock() when start() first ran (the server's boot), for timings
 --   KitService.has(name) -> boolean
 --   KitService.clone(name, opts?) -> MeshPart?   one piece, at its scene position (part:PivotTo it)
 --   KitService.cloneModel(model, opts?) -> Model? a whole group, pivot = the group's scene origin
@@ -71,6 +75,7 @@ export type Report = {
 	hero: string, -- how VaultDoor_DialFace is textured
 	seconds: number,
 	prioritySeconds: number, -- the first phase (the Rookie's groups) ready, seconds from boot
+	introSeconds: number, -- the second phase (the intro's groups) ready, seconds from boot
 }
 
 type Spec = KitLib.PartSpec
@@ -86,6 +91,8 @@ local models: { [string]: Model } = {}
 local atlasUris: { [string]: string } = {}
 local warnedAtlas: { [string]: boolean } = {}
 local found: { [string]: MeshPart } = {}
+local readyModels: { [string]: boolean } = {} -- groups whose phase is done (cloneModel works for them)
+local startClock: number? = nil
 
 local function newReport(): Report
 	return {
@@ -110,6 +117,7 @@ local function newReport(): Report
 		hero = "",
 		seconds = 0,
 		prioritySeconds = 0,
+		introSeconds = 0,
 	}
 end
 
@@ -500,25 +508,50 @@ local function prepare(name: string, kit: Folder)
 	templates[name] = part
 end
 
-local priorityDone = false
-local priorityWaiters: { thread } = {}
+-- The early phases: "priority" (the Rookie) and "intro" (the story intro's groups), each with its waiters.
+local phaseDone: { [string]: boolean } = {}
+local phaseWaiters: { [string]: { thread } } = { priority = {}, intro = {} }
 
-local function finishPriority()
-	if priorityDone then
+local function finishPhase(phase: string)
+	if phaseDone[phase] then
 		return
 	end
-	priorityDone = true
-	local list = priorityWaiters
-	priorityWaiters = {}
+	phaseDone[phase] = true
+	local list = phaseWaiters[phase] or {}
+	phaseWaiters[phase] = {}
 	for _, thread in list do
 		task.spawn(thread)
 	end
 end
 
+local function isPhaseReady(phase: string): boolean
+	return phaseDone[phase] == true or state == "done"
+end
+
+local function awaitPhase(phase: string, timeout: number?): boolean
+	KitService.start()
+	if not isPhaseReady(phase) then
+		local thread = coroutine.running()
+		local list = phaseWaiters[phase]
+		table.insert(list, thread)
+		task.delay(timeout or cfg.READY_TIMEOUT, function()
+			local now = phaseWaiters[phase]
+			local i = table.find(now, thread)
+			if i then
+				table.remove(now, i)
+				task.spawn(thread)
+			end
+		end)
+		coroutine.yield()
+	end
+	return isPhaseReady(phase)
+end
+
 local function finish()
 	state = "done"
 	report.done = true
-	finishPriority()
+	finishPhase("priority")
+	finishPhase("intro")
 	local list = waiters
 	waiters = {}
 	for _, thread in list do
@@ -552,26 +585,44 @@ local function boot()
 	if not indexExisting(kit) then
 		-- Phase 1: the priority groups (the Rookie: every first spawn waits for it), loaded and prepared first,
 		-- so players spawn in seconds while the rest of the kit (levels, hideout dressing) keeps loading.
-		local first, rest = {}, {}
-		for _, model in order do
-			table.insert(if KitService.isPriorityGroup(model) then first else rest, model)
+		-- Phase 2: the story intro's groups (Heist/IntroKit publishes them at once: a new player's intro has its
+		-- meshes, never block stand-ins). Then the rest.
+		-- (the intro phase only while the intro is on: Config.Intro.ENABLED; off, its groups load with the rest)
+		local introGroups = if Config.Intro.ENABLED then cfg.INTRO_GROUPS else {}
+		local first, second, rest = KitLib.phases(order, cfg.PRIORITY_PREFIXES, introGroups)
+		local function phase(list: { string }, name: string)
+			pool(list, cfg.LOAD_CONCURRENCY, function(model: string)
+				loadGroup(model, groups[model])
+			end)
+			if not atlasesResolved then
+				resolveAtlases() -- the early pieces are atlas pieces (the shared palette atlas): resolve it now
+				atlasesResolved = true
+			end
+			local early = {}
+			for piece in found do
+				table.insert(early, piece)
+			end
+			table.sort(early)
+			pool(early, cfg.REBUILD_CONCURRENCY, function(piece: string)
+				prepare(piece, kit)
+				found[piece] = nil
+			end)
+			for _, model in list do
+				local m = models[model]
+				if m then
+					m.WorldPivot = CFrame.identity
+					readyModels[model] = true
+				end
+			end
+			if name == "priority" then
+				report.prioritySeconds = os.clock() - t0
+			else
+				report.introSeconds = os.clock() - t0
+			end
+			finishPhase(name)
 		end
-		pool(first, cfg.LOAD_CONCURRENCY, function(model: string)
-			loadGroup(model, groups[model])
-		end)
-		resolveAtlases() -- the Rookie's pieces are atlas pieces (the shared palette atlas): resolve it now
-		atlasesResolved = true
-		local early = {}
-		for name in found do
-			table.insert(early, name)
-		end
-		table.sort(early)
-		pool(early, cfg.REBUILD_CONCURRENCY, function(name: string)
-			prepare(name, kit)
-			found[name] = nil
-		end)
-		report.prioritySeconds = os.clock() - t0
-		finishPriority()
+		phase(first, "priority")
+		phase(second, "intro")
 		pool(rest, cfg.LOAD_CONCURRENCY, function(model: string)
 			loadGroup(model, groups[model])
 		end)
@@ -614,6 +665,7 @@ function KitService.start()
 		return
 	end
 	state = "loading"
+	startClock = os.clock()
 	task.spawn(function()
 		local ok, err = pcall(boot)
 		if not ok then
@@ -626,25 +678,27 @@ end
 
 -- The priority groups are loaded and prepared (or the whole kit is done / failed): their pieces clone now.
 function KitService.isPriorityReady(): boolean
-	return priorityDone or state == "done"
+	return isPhaseReady("priority")
 end
 
 -- Yields until isPriorityReady() (or the timeout); true when it is.
 function KitService.priorityReady(timeout: number?): boolean
-	KitService.start()
-	if not KitService.isPriorityReady() then
-		local thread = coroutine.running()
-		table.insert(priorityWaiters, thread)
-		task.delay(timeout or cfg.READY_TIMEOUT, function()
-			local i = table.find(priorityWaiters, thread)
-			if i then
-				table.remove(priorityWaiters, i)
-				task.spawn(thread)
-			end
-		end)
-		coroutine.yield()
-	end
-	return KitService.isPriorityReady()
+	return awaitPhase("priority", timeout)
+end
+
+-- The intro's groups (Config.Kit.INTRO_GROUPS) are loaded and prepared too (or the whole kit is done / failed).
+function KitService.isIntroReady(): boolean
+	return isPhaseReady("intro")
+end
+
+-- Yields until isIntroReady() (or the timeout); true when it is.
+function KitService.introReady(timeout: number?): boolean
+	return awaitPhase("intro", timeout)
+end
+
+-- os.clock() when start() first ran (nil before): the server's boot, for the boot timings.
+function KitService.startedAt(): number?
+	return startClock
 end
 
 function KitService.isReady(): boolean
@@ -731,7 +785,7 @@ end
 
 function KitService.cloneModel(model: string, opts: CloneOptions?): Model?
 	local template = models[model]
-	if template == nil or state ~= "done" then
+	if template == nil or not (state == "done" or readyModels[model]) then
 		return nil
 	end
 	local copy = template:Clone()

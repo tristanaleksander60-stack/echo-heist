@@ -66,7 +66,11 @@ return function(test)
 		for _, k in { "W", "A", "S", "D", "Up", "Down", "Left", "Right", "LeftShift", "E", "Thumbstick1" } do
 			Assert.falsy(keys[k], "a movement or use key never skips: " .. k)
 		end
-		Assert.truthy(I.KIT_WAIT_SECONDS <= 4, "the card waits at most 4 s for the intro meshes")
+		-- the card waits a few seconds for the real meshes (never block stand-ins; no kit: the title card instead)
+		Assert.truthy(
+			I.KIT_WAIT_SECONDS + I.KIT_PRELOAD_SECONDS <= 6,
+			"the card waits at most 6 s for the intro meshes"
+		)
 	end)
 
 	test("every shot has a caption of at most six words, ASCII, in Strings", function()

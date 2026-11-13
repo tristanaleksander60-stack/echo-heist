@@ -362,6 +362,11 @@ function Hideout.new(state: any, deps: any): any
 		if not Config.Intro.ENABLED or playingIntro or Cinematic.isPlaying() then
 			return
 		end
+		-- never the intro on block stand-ins: its meshes and the Rookie must be here (they are seconds after boot)
+		if not Cinematic.kitStatus() then
+			hud.toast(Strings.INTRO_NOT_READY)
+			return
+		end
 		local pg = localPlayer:FindFirstChildOfClass("PlayerGui")
 		playingIntro = true
 		setRoam(false)

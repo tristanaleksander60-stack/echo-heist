@@ -1851,6 +1851,26 @@ Config.Kit = {
 	-- Groups loaded and prepared first (KitService.priorityReady): the Rookie, so the first spawn never waits for
 	-- the whole kit (owner 2026-11-13: "it still takes a really long time to load in").
 	PRIORITY_PREFIXES = { "Rookie" },
+	-- The second phase (KitService.introReady), loaded and prepared right after the Rookie and before the rest: the
+	-- story intro's groups (assets/blender/intro.py + the launch pieces its stage reuses). Server Heist/IntroKit
+	-- publishes them to clients the moment they are ready, so a new player's intro never falls back to blocks
+	-- (owner on v125: "the characters look like crap, they're just blocks in the intro").
+	INTRO_GROUPS = {
+		"Hoardsworth",
+		"Intro_Lever",
+		"Intro_Vacuum",
+		"Intro_SnowGlobe",
+		"Intro_Tower",
+		"Intro_Present_A",
+		"Intro_Present_B",
+		"Intro_Present_C",
+		"Intro_Letter",
+		"Intro_House_A",
+		"Intro_House_B",
+		"Van",
+		"StreetLamp",
+		"Xmas_Tree",
+	},
 	REBUILD_CONCURRENCY = 8, -- parallel AssetService:CreateMeshPartAsync calls at boot
 	LOAD_ATTEMPTS = 4, -- per asset; backoff RETRY_BASE_SECONDS x 1, 2, 4
 	REBUILD_ATTEMPTS = 2,
@@ -3548,7 +3568,22 @@ Config.Intro = {
 	-- backdrop rings, so nothing of a level is ever in a shot. Client-made parts are never streamed.
 	STAGE_ORIGIN = { 0, 0, 7500 },
 	KIT_FOLDER = "EH_IntroKit", -- ReplicatedStorage folder the server fills (Heist/IntroKit)
-	KIT_WAIT_SECONDS = 4, -- the loading card holds this long at most for the meshes; then stand-ins
+	-- The loading card holds this long at most for the intro's meshes (EH_IntroKit) and the Rookie (CharacterKit);
+	-- the server publishes both within a few seconds of boot (Config.Boot). If they are still missing the intro is
+	-- skipped for the title card: it never plays on block stand-ins (owner on v125).
+	KIT_WAIT_SECONDS = 5, -- + KIT_PRELOAD_SECONDS after the server's answer: the intro still starts within 10 s (unit)
+	-- Then their textures and meshes are fetched (ContentProvider:PreloadAsync) for at most this long, so the first
+	-- shot never shows a grey untextured mesh.
+	KIT_PRELOAD_SECONDS = 1,
+	-- While the intro plays only its own captions, letterbox and SKIP show (owner on v125: "PICK A VAN gets in the
+	-- way"). Every other ScreenGui / BillboardGui in PlayerGui, every always-on-top BillboardGui in the world and these
+	-- Roblox CoreGui pieces are hidden, and restored as they were when it ends (Heist/HudHide, Shared/Heist/IntroHud).
+	HUD = {
+		-- PlayerGui layers that stay: the intro itself, the title card that takes over at its end, the loading card
+		KEEP = { "EH_Intro", "EH_Title", "EH_Loading" },
+		KEEP_ATTRIBUTE = "EH_OverIntro", -- or any gui with this attribute set true
+		CORE = { "PlayerList", "Chat", "Backpack", "EmotesMenu" }, -- Enum.CoreGuiType names
+	},
 	-- The CHARACTER track's folder; its "Rookie" model replaces the stand-in as soon as it exists.
 	CHARACTER_KIT = "CharacterKit",
 	ROOKIE_TEMPLATE = "Rookie",
@@ -3671,6 +3706,10 @@ Config.Boot = {
 	KIT_READY_SECONDS = 12, -- the whole art kit (LoadAsset + collision rebuilds) on a cold server (measured 4.3-4.8 s)
 	KIT_PRIORITY_SECONDS = 5, -- the Rookie's groups (KitService phase 1): the first spawn waits only for these
 	KIT_PUBLISH_SECONDS = 1, -- CharacterKit and EH_IntroKit in ReplicatedStorage after the kit is ready
+	KIT_INTRO_SECONDS = 6, -- the intro's groups (KitService phase 2, Config.Kit.INTRO_GROUPS) ready, from the kit's start
+	-- EH_IntroKit in ReplicatedStorage, from the server's start (KitService.start at boot): before the whole kit, so
+	-- a new player's intro has its meshes by the time the loading card is up (Config.Intro.KIT_WAIT_SECONDS)
+	INTRO_KIT_PUBLISHED_SECONDS = 7,
 	LOBBY_BUILD_SECONDS = 2, -- HeistService.start with the hideout (Lobby.build + Vans.build)
 	L1_BUILD_SECONDS = 2, -- the FTUE heist instance (LevelBuilder + kit dressing)
 	INTRO_BUILD_MS = 250, -- Heist/Cinematic.new (the client builds its stage)

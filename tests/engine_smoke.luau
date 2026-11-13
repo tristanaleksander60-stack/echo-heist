@@ -699,6 +699,11 @@ do
 	check(okKitReq, "kit: KitService loads" .. (if okKitReq then "" else ": " .. tostring(KitService)))
 	if okKitReq then
 		KitService.start()
+		-- as the real server boots (init.server): EH_IntroKit goes out as soon as the kit's intro phase is ready
+		-- (section 17 times it from this start)
+		pcall(function()
+			require(server:WaitForChild("Heist"):WaitForChild("IntroKit")).publish(KitService)
+		end)
 		local kitOk = KitService.ready(45)
 		local kitReady = KitService.isReady()
 		table.insert(results, "      kit " .. KitService.summary() .. (if kitOk then "" else " (report not ok)"))
@@ -2977,6 +2982,51 @@ do
 			check(
 				report.prioritySeconds > 0 and report.prioritySeconds < report.seconds,
 				"boot: the Rookie is ready before the whole kit"
+			)
+		end
+		-- EH_IntroKit as the server publishes it at boot (section 7 started the kit and IntroKit.publish): from the
+		-- kit's start (the server's boot), at the kit's intro phase (Config.Kit.INTRO_GROUPS), before the whole kit
+		local it = IntroKit.timing()
+		local introOn = Config.Intro.ENABLED == true -- off (owner, v128): no intro phase, IntroKit.publish waits
+		check(not introOn or it.published, "boot: EH_IntroKit published in the background (IntroKit.publish)")
+		if introOn then
+			within(
+				"EH_IntroKit published (from the server's start)",
+				it.sinceKitStart,
+				B.INTRO_KIT_PUBLISHED_SECONDS,
+				" s"
+			)
+		else
+			table.insert(lines, "intro OFF (Config.Intro.ENABLED): EH_IntroKit timing not measured")
+			IntroKit.publishNow(KitService) -- still publishable from the finished kit (client_engine Q builds on it)
+		end
+		local introFolder = IntroKit.folder()
+		check(
+			introFolder ~= nil and introFolder.Parent == ReplicatedStorage,
+			"boot: EH_IntroKit lives in ReplicatedStorage (never streamed)"
+		)
+		check(
+			introFolder ~= nil and introFolder:GetAttribute("Groups") == #Config.Kit.INTRO_GROUPS,
+			"boot: every intro group published ("
+				.. tostring(introFolder and introFolder:GetAttribute("Groups"))
+				.. "/"
+				.. #Config.Kit.INTRO_GROUPS
+				.. ")"
+		)
+		if report.source == "cloud" and introOn then
+			within("kit intro phase (the intro's groups)", report.introSeconds, B.KIT_INTRO_SECONDS, " s")
+			check(
+				report.introSeconds >= report.prioritySeconds and report.introSeconds < report.seconds,
+				string.format(
+					"boot: the intro's groups are ready after the Rookie and before the whole kit (%.2f / %.2f / %.2f s)",
+					report.prioritySeconds,
+					report.introSeconds,
+					report.seconds
+				)
+			)
+			check(
+				(it.sinceKitStart or math.huge) < report.seconds,
+				"boot: EH_IntroKit is published before the whole kit is ready"
 			)
 		end
 		for _, name in { Config.Intro.KIT_FOLDER, Config.Rookie.KIT_FOLDER } do

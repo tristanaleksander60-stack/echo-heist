@@ -443,6 +443,7 @@ function Strings.jobPinned(name: string): string
 	return "Job picked: " .. name .. ". Go to your van!"
 end
 Strings.INVITE_NONE = "Invites are not open here."
+Strings.INTRO_NOT_READY = "The TV is warming up. Try again soon!" -- the hideout TV before the intro's meshes arrive
 -- Quick Crew (LOBBY 2, Config.Hideout.QUICK): the crew sign's sheet, the lobby chip, the toasts. No free text.
 Strings.QUICK_CREW = "QUICK CREW"
 Strings.QUICK_LOOK = "LOOK FOR A CREW"
