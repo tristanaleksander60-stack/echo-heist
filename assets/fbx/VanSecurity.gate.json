@@ -12,19 +12,19 @@
    "budget_note": "over target - justify or simplify",
    "dims": [
     14.9,
-    7.12,
+    7.06,
     7.786
    ],
    "pivot": {
     "rule": "point",
     "local_min": [
      -7.45,
-     -3.76,
+     -3.74,
      0.0636
     ],
     "local_max": [
      7.45,
-     3.36,
+     3.32,
      7.85
     ]
    },
@@ -44,7 +44,7 @@
    ],
    "symmetry_error": null,
    "self_intersections": 0,
-   "cross_shell_overlaps": 911,
+   "cross_shell_overlaps": 910,
    "cap_overlaps": 0,
    "flipped_faces": 0,
    "boundary_edges": 0,
@@ -164,10 +164,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "ecc0c07ae531557c929e",
+ "contentHash": "5d5c539588e96346a6af",
  "fbx": {
   "path": "assets/fbx/VanSecurity.fbx",
-  "bytes": 58748,
+  "bytes": 58828,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -182,7 +182,7 @@
     14.0
    ],
    [
-    7.12,
+    7.06,
     7.786,
     14.9
    ]
@@ -191,5 +191,5 @@
  "spec": "assets/blender/van_styles.py",
  "notes": "Armoured 'security' van 14x6.4x7.5: a long low bonnet and raked screen, barred windows, a riveted armour band, a dark skirt, a bull bar, a vault-wheel on the rear doors and a roof light bar; the Van's footprint, door, cargo bay and seat anchors.",
  "turntable": "docs/art/turntables/VanSecurity.png",
- "seconds": 6.2
+ "seconds": 9.9
 }

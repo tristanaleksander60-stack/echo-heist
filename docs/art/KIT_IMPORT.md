@@ -246,11 +246,11 @@ The table below shows what Studio must show after the import (generated from `as
 | Van.fbx | Van | 14.9 x 7.689 x 7.08 | 1704 | PreciseConvexDecomposition | SmoothPlastic | on | on | base |
 | Van.fbx | Van_Paint | 14 x 5.7 x 6.8 | 164 | Box | SmoothPlastic | off | on | base |
 | Van.fbx | Van_Shelf | 6 x 4.06 x 0.98 | 124 | Box | SmoothPlastic | off | on | base |
-| VanBakery.fbx | VanBakery | 14.9 x 7.999 x 7.5 | 1652 | Box | SmoothPlastic | off | on | base |
+| VanBakery.fbx | VanBakery | 14.9 x 7.999 x 7.04 | 1652 | Box | SmoothPlastic | off | on | base |
 | VanBakery.fbx | VanBakery_Paint | 14 x 5.85 x 6.8 | 192 | Box | SmoothPlastic | off | on | base |
 | VanCamper.fbx | VanCamper | 14.9 x 7.891 x 7.08 | 2240 | Box | SmoothPlastic | off | on | base |
 | VanCamper.fbx | VanCamper_Paint | 14 x 5.15 x 6.8 | 172 | Box | SmoothPlastic | off | on | base |
-| VanSecurity.fbx | VanSecurity | 14.9 x 7.786 x 7.12 | 2204 | Box | SmoothPlastic | off | on | base |
+| VanSecurity.fbx | VanSecurity | 14.9 x 7.786 x 7.06 | 2204 | Box | SmoothPlastic | off | on | base |
 | VanSecurity.fbx | VanSecurity_Paint | 14 x 5.3 x 6.8 | 168 | Box | SmoothPlastic | off | on | base |
 | VaultDoor.fbx | VaultDoor_Dial | 4.55 x 4.55 x 0.924 | 1104 | Box | SmoothPlastic | off | on | base |
 | VaultDoor.fbx | VaultDoor_DialFace | 2.16 x 2.16 x 0.06 | 384 | Box | SmoothPlastic + SA | off | off | base |

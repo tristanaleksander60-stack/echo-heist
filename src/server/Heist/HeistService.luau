@@ -44,6 +44,7 @@ local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local Help = require(Shared:WaitForChild("Heist"):WaitForChild("Help"))
 local CrewBoard = require(Shared:WaitForChild("Heist"):WaitForChild("CrewBoard"))
 local VanRules = require(Shared:WaitForChild("Heist"):WaitForChild("VanRules"))
+local QuickCrew = require(Shared:WaitForChild("Heist"):WaitForChild("QuickCrew"))
 local Strings = require(Shared:WaitForChild("Heist"):WaitForChild("Strings"))
 local HeistSim = require(Shared:WaitForChild("Sim"):WaitForChild("HeistSim"))
 local Scenario = require(Shared:WaitForChild("Heist"):WaitForChild("Scenario"))
@@ -58,6 +59,7 @@ local Lobby = require(script.Parent:WaitForChild("Lobby"))
 local Vans = require(script.Parent:WaitForChild("Vans"))
 local Staging = require(script.Parent:WaitForChild("Staging"))
 local LiveFlags = require(script.Parent.Parent:WaitForChild("Analytics"):WaitForChild("LiveFlags"))
+local HaulBoardService = require(script.Parent.Parent:WaitForChild("Data"):WaitForChild("HaulBoardService"))
 
 local T = Net.T
 local H = Config.Heist
@@ -119,6 +121,11 @@ local tryFtueStart: (player: Player) -> boolean
 local retryFtue: (player: Player) -> ()
 -- The hideout's vans (Shared/Heist/VanRules; Heist/Vans draws them): one state for the whole server.
 local vans = VanRules.new()
+-- Quick Crew (Shared/Heist/QuickCrew; Config.Hideout.QUICK): the seekers on this server and their held seats.
+local quick = QuickCrew.new()
+-- os.clock() of a player's last quick / open / style op (Config.Hideout.QUICK.COOLDOWN).
+local lastLobbyOp: { [Player]: number } = {}
+local quickPassFn: (() -> ())? = nil
 
 ---------------------------------------------------------------------------
 -- Data, analytics and kit hooks
@@ -157,6 +164,17 @@ function HeistService.configureData(service: any)
 	DataService = service
 	if service.status() == "stopped" then
 		service.setLevelResolver(HeistService.levelRules, Config.Data.LEVEL_ORDER)
+	end
+	-- "Today's biggest haul" (Data/HaulBoardService): a joining player's saved entry for today goes on this
+	-- server's board (it was untainted and not Relaxed when it was saved: DailyVault.apply).
+	if service.Loaded and service.Loaded.Connect then
+		service.Loaded:Connect(function(player: Player)
+			pcall(function()
+				local snap = service.getSnapshot(player)
+				local daily = snap and snap.heist and snap.heist.daily
+				HaulBoardService.seed(player.UserId, player.DisplayName, daily)
+			end)
+		end)
 	end
 end
 
@@ -220,6 +238,12 @@ local function award(player: Player, dataKey: string, data: any, opts: any?): an
 end
 
 local function awardDaily(player: Player, day: number, result: any, startedDay: number?): any
+	-- the server board first (server-decided facts; untainted, non-Relaxed runs of today's vault only), and never
+	-- in the way of the award: a board error is a warning
+	local okBoard, boardErr = pcall(HaulBoardService.submit, player.UserId, player.DisplayName, day, result)
+	if not okBoard then
+		warn("[HeistService] haul board: " .. tostring(boardErr))
+	end
 	if DataService == nil then
 		return nil
 	end
@@ -483,7 +507,21 @@ local function renderVan(crew: Crew?)
 	local v = VanRules.vanOfCrew(vans, crew.id)
 	if v then
 		VanRules.syncSeats(v, crewInfo(crew))
-		Vans.render(v.bay, v, namesOf(crew))
+		Vans.render(v.bay, v, namesOf(crew), QuickCrew.heldIn(quick, v.bay))
+	end
+end
+
+-- A player's Quick Crew state for their client (server-written attributes): QuickCrew "" | "seek" | "matched",
+-- QuickBay = the van holding a seat for them (0 = none).
+local function quickAttrs(player: Player)
+	local uid = player.UserId
+	local bay = QuickCrew.holdOf(quick, uid)
+	local state = if bay then "matched" elseif QuickCrew.isSeeking(quick, uid) then "seek" else ""
+	if player:GetAttribute("QuickCrew") ~= state then
+		player:SetAttribute("QuickCrew", state)
+	end
+	if player:GetAttribute("QuickBay") ~= (bay or 0) then
+		player:SetAttribute("QuickBay", bay or 0)
 	end
 end
 
@@ -492,6 +530,12 @@ local function releaseVan(crew: Crew)
 	if v then
 		VanRules.release(vans, v.bay)
 		Vans.render(v.bay, nil, {})
+		for _, uid in QuickCrew.release(quick, v.bay) do
+			local p = Players:GetPlayerByUserId(uid)
+			if p then
+				quickAttrs(p)
+			end
+		end
 	end
 end
 
@@ -687,6 +731,12 @@ end
 
 local function crewSize(crew: Crew): number
 	return #crew.members + #crew.pending
+end
+
+-- Seats held in a crew's van for matched Quick Crew players (a friend never takes one of those).
+local function seatsHeld(crew: Crew): number
+	local v = VanRules.vanOfCrew(vans, crew.id)
+	return if v then QuickCrew.heldIn(quick, v.bay) else 0
 end
 
 ---------------------------------------------------------------------------
@@ -1168,6 +1218,226 @@ local function sitIn(player: Player, vanCrew: Crew, bay: number, joining: boolea
 	renderVan(vanCrew)
 end
 
+---------------------------------------------------------------------------
+-- Quick Crew (Config.Hideout.QUICK; Shared/Heist/QuickCrew): strangers only through this opt-in (MASTERPLAN §3.3)
+---------------------------------------------------------------------------
+
+local function quickOn(): boolean
+	return lobbyOn() and LiveFlags.isOn("quickCrew")
+end
+
+-- Studs from a player's root to the crew sign (nil = no sign or no character).
+local function signDist(player: Player): number?
+	local char = player.Character
+	local root = char and char:FindFirstChild("HumanoidRootPart")
+	local sign = Lobby.anchor("CrewSign")
+	if not (root and root:IsA("BasePart") and sign) then
+		return nil
+	end
+	return (root.Position - sign.Position).Magnitude
+end
+
+-- May this player look for a crew right now? A solo crew in the hideout: nobody else in it, not on or leaving for
+-- a heist, not sitting in a van, not hosting an open van.
+local function quickEligible(player: Player): (boolean, string)
+	local crew = crewOf[player]
+	if player.Parent ~= Players or not crew or preparing[player] then
+		return false, "Busy"
+	end
+	if crew.instance or crew.departing or instanceOf(player) ~= nil then
+		return false, "Busy"
+	end
+	if crewSize(crew) > 1 then
+		return false, "NeedSolo"
+	end
+	local v = VanRules.vanOfCrew(vans, crew.id)
+	if v and v.open then
+		return false, "Hosting"
+	end
+	if v and (v.mode == VanRules.MODE.Departing or v.mode == VanRules.MODE.Away) then
+		return false, "Busy"
+	end
+	return true, "Ok"
+end
+
+-- The vans open to Quick Crew this pass: CREW mode, open, their crew in the hideout.
+local function openVans(): { QuickCrew.OpenVan }
+	local out = {}
+	for bay, v in vans.vans do
+		if v.open and v.mode == VanRules.MODE.Crew then
+			local crew = crewById(v.crewId)
+			if crew and crew.instance == nil and crew.departing == nil and #crew.members > 0 then
+				table.insert(out, {
+					bay = bay,
+					crewSize = crewSize(crew),
+					openedAt = v.openedAt,
+					leaderId = crew.leader.UserId,
+				})
+			end
+		end
+	end
+	return out
+end
+
+local function quickToast(player: Player, key: string)
+	push(player, "Toast", { text = Strings.QUICK_TOAST[key] or key })
+end
+
+-- One matching pass (every MATCH_EVERY seconds and after each change): seekers who are no longer solo (a friend
+-- joined, they left) drop out; lapsed holds queue again; open vans with room receive the longest-waiting seekers.
+local function quickPass()
+	if not quickOn() then
+		for uid in table.clone(quick.seekers) do
+			QuickCrew.drop(quick, uid)
+			local p = Players:GetPlayerByUserId(uid)
+			if p then
+				quickAttrs(p)
+				quickToast(p, "paused")
+			end
+		end
+		return
+	end
+	for uid in table.clone(quick.seekers) do
+		local p = Players:GetPlayerByUserId(uid)
+		if not p or not quickEligible(p) then
+			QuickCrew.drop(quick, uid)
+			if p then
+				quickAttrs(p)
+			end
+		end
+	end
+	local open = openVans()
+	local res = QuickCrew.pass(quick, open, os.clock())
+	local touched: { [number]: boolean } = {}
+	for _, m in res.matched do
+		local p = Players:GetPlayerByUserId(m.userId)
+		local v = VanRules.van(vans, m.bay)
+		local crew = v and crewById(v.crewId)
+		if p then
+			quickAttrs(p)
+			quickToast(p, "matched")
+		end
+		if crew then
+			quickToast(crew.leader, "coming")
+		end
+		touched[m.bay] = true
+	end
+	for _, uid in res.requeued do
+		local p = Players:GetPlayerByUserId(uid)
+		if p then
+			quickAttrs(p)
+			quickToast(p, "lapsed")
+		end
+	end
+	for _, uid in res.dropped do
+		local p = Players:GetPlayerByUserId(uid)
+		if p then
+			quickAttrs(p)
+			quickToast(p, "away")
+		end
+	end
+	-- the vans' Held counts and the sheet's status line
+	for _, v in vans.vans do
+		local held = QuickCrew.heldIn(quick, v.bay)
+		local rig = Vans.folder() and (Vans.folder() :: Folder):FindFirstChild("Van" .. v.bay)
+		if touched[v.bay] or (rig and rig:GetAttribute("Held") ~= held) then
+			renderVan(crewById(v.crewId))
+		end
+	end
+	local folder = Vans.folder()
+	if folder then
+		local waiting, rooms = QuickCrew.counts(quick, open)
+		folder:SetAttribute("QuickWaiting", waiting)
+		folder:SetAttribute("QuickOpen", rooms)
+	end
+end
+quickPassFn = quickPass
+
+-- A quick / open / style op: one per COOLDOWN seconds per player (the remote's Net rate limit comes first).
+local function lobbyOpTooSoon(player: Player): boolean
+	local now = os.clock()
+	local last = lastLobbyOp[player]
+	if last and now - last < HD.QUICK.COOLDOWN then
+		return true
+	end
+	lastLobbyOp[player] = now
+	return false
+end
+
+-- Heist.Ready { op = "quick" | "unquick" | "open" | "shut", bay? } (validated shape). Everything checked here.
+local function quickAction(player: Player, crew: Crew, op: string, bay: number)
+	local uid = player.UserId
+	if op == "unquick" then
+		if QuickCrew.drop(quick, uid) then
+			quickAttrs(player)
+			quickToast(player, "stopped")
+			quickPass()
+		end
+		return
+	end
+	if op == "shut" then
+		local ok, code = VanRules.setOpen(vans, bay, crewInfo(crew), uid, false, os.clock(), 0)
+		if not ok then
+			refused(player, code)
+			return
+		end
+		if code == "Ok" then
+			for _, other in QuickCrew.release(quick, bay) do
+				local p = Players:GetPlayerByUserId(other)
+				if p then
+					quickAttrs(p)
+					quickToast(p, "gone")
+				end
+			end
+			quickToast(player, "shut")
+		end
+		renderVan(crew)
+		quickPass()
+		return
+	end
+	if not quickOn() then
+		quickToast(player, "paused")
+		return
+	end
+	if op == "quick" then
+		local d = signDist(player)
+		if d == nil or d > HD.QUICK.SIGN_REACH then
+			refused(player, "FarSign")
+			return
+		end
+		local ok, code = quickEligible(player)
+		if not ok then
+			refused(player, code)
+			return
+		end
+		local okIn, codeIn = QuickCrew.optIn(quick, uid, os.clock())
+		if okIn and codeIn == "Ok" then
+			quickToast(player, "looking")
+		end
+		quickAttrs(player)
+		quickPass()
+	elseif op == "open" then
+		-- from the crew sign (the Quick Crew sheet) or beside the van
+		local d = signDist(player)
+		local dv = vanDist(player, bay, "any")
+		local near = if d and d <= HD.QUICK.SIGN_REACH then 0 elseif dv then dv else nil
+		local ok, code = VanRules.setOpen(vans, bay, crewInfo(crew), uid, true, os.clock(), near)
+		if not ok then
+			refused(player, code)
+			return
+		end
+		if QuickCrew.drop(quick, uid) then
+			quickAttrs(player) -- a host does not look for another crew
+		end
+		if code == "Ok" then
+			quickToast(player, "opened")
+		end
+		renderVan(crew)
+		pushGarage(crew)
+		quickPass()
+	end
+end
+
 -- The job board in the hideout: the leader's pick (Heist.SelectLevel / SelectDaily, validated by the caller) is
 -- pinned for the crew's next departure; the van starts it. False = not the hideout (the results card's REPLAY /
 -- NEXT, the lobby off): the caller starts the heist as before.
@@ -1210,9 +1480,21 @@ local function lobbyAction(player: Player, a: { [string]: any })
 	local bay: number = a.bay or 0
 	local uid = player.UserId
 	local info = crewInfo(crew)
+	if op == "quick" or op == "unquick" or op == "open" or op == "shut" or op == "style" then
+		if op ~= "unquick" and lobbyOpTooSoon(player) then
+			refused(player, "Slow")
+			return
+		end
+	end
+	if op == "quick" or op == "unquick" or op == "open" or op == "shut" then
+		quickAction(player, crew, op, bay)
+		return
+	end
 	if op == "claim" then
 		local old = vanBayOf(crew)
-		local ok, code = VanRules.claim(vans, bay, info, uid, vanDist(player, bay, "any"))
+		-- the van wears the leader's saved style (profile vanStyle, published as the VanStyle attribute)
+		local style = VanRules.styleIndex(player:GetAttribute("VanStyle"))
+		local ok, code = VanRules.claim(vans, bay, info, uid, vanDist(player, bay, "any"), style)
 		if not ok then
 			refused(player, code)
 			return
@@ -1228,6 +1510,20 @@ local function lobbyAction(player: Player, a: { [string]: any })
 			return
 		end
 		renderVan(crew)
+	elseif op == "style" then
+		local ok, code = VanRules.setStyle(vans, bay, uid, a.n, vanDist(player, bay, "style"))
+		if not ok then
+			refused(player, code)
+			return
+		end
+		-- saved per player (an additive profile field, Schema.validVanStyle); offline data just skips the save
+		local s = HD.VAN.STYLES[a.n]
+		if s and DataService ~= nil and dataReady(player) then
+			pcall(DataService.setVanStyle, player, s.id)
+		elseif s then
+			player:SetAttribute("VanStyle", s.id)
+		end
+		renderVan(crew)
 	elseif op == "crew" or op == "park" then
 		local mode = if op == "crew" then VanRules.MODE.Crew else VanRules.MODE.Parked
 		local ok, code = VanRules.setMode(vans, bay, info, uid, mode, vanDist(player, bay, "door"))
@@ -1236,6 +1532,9 @@ local function lobbyAction(player: Player, a: { [string]: any })
 			return
 		end
 		renderVan(crew)
+		if op == "park" then
+			quickPass() -- a parked van is closed to Quick Crew: its held seats go back
+		end
 	elseif op == "solo" or op == "go" then
 		local ok, code = VanRules.canGo(vans, bay, info, uid, vanDist(player, bay, "cab"), op == "solo")
 		if not ok then
@@ -1251,7 +1550,7 @@ local function lobbyAction(player: Player, a: { [string]: any })
 			return
 		end
 		local friend = false
-		if vanCrew ~= crew then
+		if vanCrew ~= crew and QuickCrew.holdOf(quick, uid) ~= bay then
 			local leaderId = vanCrew.leader.UserId
 			local okF, isFriend = pcall(function()
 				return player:IsFriendsWithAsync(leaderId)
@@ -1271,15 +1570,33 @@ local function lobbyAction(player: Player, a: { [string]: any })
 			end
 		end
 		local mine = crewOf[player] :: Crew
+		-- a Quick Crew seat held for you in this van (only while it is open: VanRules.canSit checks that too)
+		local quickSeat = vanCrew ~= crew and QuickCrew.holdOf(quick, uid) == bay and quickOn()
+		-- seats held for OTHER matched players count as taken (a friend never takes one)
+		local held = QuickCrew.heldIn(quick, bay, uid)
 		local ok, code = VanRules.canSit(
 			vans,
 			bay,
-			{ userId = uid, crewId = mine.id, friend = friend },
-			crewSize(vanCrew),
+			{ userId = uid, crewId = mine.id, friend = friend, quick = quickSeat },
+			crewSize(vanCrew) + held,
 			vanDist(player, bay, "door")
 		)
 		if not ok then
 			refused(player, code)
+			return
+		end
+		if code == "Join" and not friend then
+			-- the Quick Crew walk-in: sitting joins the crew (the seeker is solo: quickEligible)
+			if not quickEligible(player) then
+				refused(player, "NeedSolo")
+				return
+			end
+			QuickCrew.drop(quick, uid)
+			quickAttrs(player)
+			sitIn(player, vanCrew, bay, true)
+			quickToast(player, "joined")
+			track("quickCrewJoined", player, crewSize(vanCrew))
+			quickPass()
 			return
 		end
 		if code == "Join" and not LiveFlags.isOn("joinFriend") then
@@ -1287,6 +1604,9 @@ local function lobbyAction(player: Player, a: { [string]: any })
 			return
 		end
 		sitIn(player, vanCrew, bay, code == "Join")
+		if code == "Join" and QuickCrew.drop(quick, uid) then
+			quickAttrs(player) -- sat in a friend's van: no longer looking
+		end
 	elseif op == "ready" or op == "unready" then
 		local v = VanRules.vanOfCrew(vans, crew.id)
 		if not v then
@@ -1468,11 +1788,14 @@ local function declareRemotes()
 			if crewOf[player] == crew or instanceOf(player) ~= nil then
 				return
 			end
-			if crewSize(crew) >= Config.Sim.MAX_CREW then
+			if crewSize(crew) + seatsHeld(crew) >= Config.Sim.MAX_CREW then
 				push(player, "Toast", { text = "That crew is full." })
 				return
 			end
 			joinCrew(player, crew)
+			if QuickCrew.drop(quick, player.UserId) then
+				quickAttrs(player) -- joined a friend: no longer looking
+			end
 			push(crew.leader, "Toast", { text = player.DisplayName .. " joined your crew!" })
 			if crew.instance then
 				push(player, "Toast", { text = "You join at their next heist." })
@@ -1584,7 +1907,7 @@ local function onPlayerAdded(player: Player)
 	if party ~= "" then
 		for _, other in Players:GetPlayers() do
 			local crew = other ~= player and other.PartyId == party and crewOf[other]
-			if crew and crewSize(crew) < Config.Sim.MAX_CREW then
+			if crew and crewSize(crew) + seatsHeld(crew) < Config.Sim.MAX_CREW then
 				crewOf[player] = crew
 				if crew.instance then
 					table.insert(crew.pending, player)
@@ -1687,6 +2010,8 @@ local function onPlayerRemoving(player: Player)
 	if inst then
 		HeistInstance.removeMember(inst, player.UserId)
 	end
+	QuickCrew.drop(quick, player.UserId)
+	lastLobbyOp[player] = nil
 	leaveCrew(player)
 	inHeist[player] = nil
 	preparing[player] = nil
@@ -1743,6 +2068,7 @@ function HeistService.start(opts: StartOpts?)
 		end
 	end
 	declareRemotes()
+	pcall(HaulBoardService.start) -- the laptop's board folder (empty until today's first untainted haul)
 	-- The store kill switch applies at once (prompts are re-checked on every change).
 	LiveFlags.Changed:Connect(function(name: string)
 		if name == "store" then
@@ -1765,6 +2091,26 @@ function HeistService.start(opts: StartOpts?)
 		task.spawn(onPlayerAdded, p)
 	end
 	RunService.Heartbeat:Connect(step)
+	-- Quick Crew matching: a pass every MATCH_EVERY seconds (holds lapse, vans open and fill) besides the passes
+	-- that follow each change; an error never stops the loop.
+	task.spawn(function()
+		while true do
+			task.wait(HD.QUICK.MATCH_EVERY)
+			local fn = quickPassFn
+			if fn and next(quick.seekers) ~= nil then
+				local ok, err = pcall(fn)
+				if not ok then
+					warn("[HeistService] quick crew pass: " .. tostring(err))
+				end
+			end
+		end
+	end)
+end
+
+-- Quick Crew for tests (engine_smoke: fake members; Luau Execution has no players): the server's own rules state
+-- and the pure pass over this server's vans.
+function HeistService.quickState(): any
+	return quick
 end
 
 -- The live instances (tests and debugging).

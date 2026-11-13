@@ -6,10 +6,13 @@
 --     them (Phasmophobia's computer-screen pattern), then open the HUD's garage sheet as the job board (jobs, crew,
 --     SETTINGS) or the laptop (the daily vault, the advent catch-up); the WARDROBE swings the camera round to look
 --     at your Rookie and opens the outfit picker (Hud/Wardrobe, Data.Equip); the TV plays the story intro again
---     (Heist/Cinematic); the crew sign opens the Roblox friend invite (SocialService; Quick Crew does not exist
---     yet). BACK, E, B or Backspace, or walking away closes a station.
---   * the vans (Garage/Vans, server Heist/Vans; their state is attributes): PICK, PAINT, SOLO, CREW, SIT, READY,
---     GO. Each is a Heist.Ready lobby action table (Shared/Heist/VanRules.validAction): the server decides.
+--     (Heist/Cinematic); the "LOOKING FOR CREW" sign opens the Quick Crew sheet (LOOK FOR A CREW / STOP, OPEN MY
+--     VAN / CLOSE, INVITE FRIENDS: SocialService). BACK, E, B or Backspace, or walking away closes a station.
+--   * the vans (Garage/Vans, server Heist/Vans; their state is attributes): PICK, PAINT, STYLE, SOLO, CREW, SIT,
+--     READY, GO. Each is a Heist.Ready lobby action table (Shared/Heist/VanRules.validAction): the server decides.
+--   * Quick Crew (Config.Hideout.QUICK): while you look for a crew the lobby shows a chip with STOP; once the server
+--     holds a seat for you (player attributes QuickCrew = "matched", QuickBay) a floor arrow leads you to that van's
+--     side door and a billboard marks it; SIT there joins the crew.
 --   * GO (server Msg "Depart"): the side door shuts, the drive (Heist/Drive) plays, the van-door wipe closes over
 --     its end and the heist's Sync opens onto run 1.
 --   * first visit (FirstTime "hideout"): "PICK A VAN" floats over the nearest free van until you have one.
@@ -50,8 +53,8 @@ local ADORNEE: { [string]: string } = {
 	TVSpot = "TV",
 	CrewSign = "CrewSignBoard",
 }
-local POINTS = { "cab", "door", "paint" }
-local POINT_PART: { [string]: string } = { cab = "Cab", door = "Door", paint = "Paint" }
+local POINTS = { "cab", "door", "paint", "style" }
+local POINT_PART: { [string]: string } = { cab = "Cab", door = "Door", paint = "Paint", style = "Style" }
 
 local function t3(v: Vector3): { number }
 	return { v.X, v.Y, v.Z }
@@ -74,6 +77,8 @@ function Hideout.new(state: any, deps: any): any
 	local departing = false
 	local playingIntro = false
 	local hint: BillboardGui? = nil
+	local quickArrow: BasePart? = nil -- the Quick Crew waypoint arrow (client only)
+	local quickMark: BillboardGui? = nil -- "YOUR CREW" over the matched van
 	local lastPrompt: any = nil
 	local lastItem: any = nil
 
@@ -101,12 +106,13 @@ function Hideout.new(state: any, deps: any): any
 		return p
 	end
 
-	-- The van's outline part: the kit's Van_Paint for the bay, else its greybox box (cached; the kit dresses the
-	-- garage a little after it is built, so a greybox answer is looked up again until the kit's is found).
+	-- The van's outline part: the kit's paint piece for the bay (EH_VanPaint: Van_Paint or a style's), else its
+	-- greybox box (cached; the kit dresses the garage a little after it is built, and a style swap replaces the
+	-- pieces, so anything but a live kit paint piece is looked up again).
 	local bodies: { [number]: BasePart } = {}
 	local function vanBody(bay: number): BasePart?
 		local known = bodies[bay]
-		if known and known.Parent and known.Name == "Van_Paint" then
+		if known and known.Parent and known:GetAttribute("EH_VanPaint") == true then
 			return known
 		end
 		local g = garage()
@@ -117,7 +123,7 @@ function Hideout.new(state: any, deps: any): any
 		local kit = g:FindFirstChild("Kit")
 		if kit then
 			for _, d in kit:GetChildren() do
-				if d:IsA("BasePart") and d.Name == "Van_Paint" and d:GetAttribute("EH_Bay") == bay then
+				if d:IsA("BasePart") and d:GetAttribute("EH_VanPaint") == true and d:GetAttribute("EH_Bay") == bay then
 					found = d
 					break
 				end
@@ -259,6 +265,11 @@ function Hideout.new(state: any, deps: any): any
 			local nextN = VanRules.nextPaint({ paint = tonumber(m and m:GetAttribute("Paint")) or 0 } :: any)
 			local p = HD.VAN.PAINTS[nextN]
 			text = Strings.lobbyPaint(if p then p.name else "")
+		elseif verb == "style" and it then
+			local m = vanModel(it.bay)
+			local nextN = VanRules.nextStyle({ style = tonumber(m and m:GetAttribute("Style")) or 1 })
+			local s = HD.VAN.STYLES[nextN]
+			text = Strings.lobbyStyle(if s then s.name else "")
 		end
 		local colour = if locked
 			then Palette.steel
@@ -310,6 +321,8 @@ function Hideout.new(state: any, deps: any): any
 			end)
 		end)
 	end
+
+	hud.invite = invite -- the Quick Crew sheet's INVITE FRIENDS (Hud/Garage)
 
 	local function watchIntro()
 		if playingIntro or Cinematic.isPlaying() then
@@ -394,6 +407,8 @@ function Hideout.new(state: any, deps: any): any
 					hud.openStation("board", closeStation)
 				elseif verb == "laptop" then
 					hud.openStation("laptop", closeStation)
+				elseif verb == "quickCrew" then
+					hud.openStation("crew", closeStation)
 				elseif verb == "wardrobe" then
 					hud.wardrobe.open(closeStation)
 				end
@@ -426,6 +441,9 @@ function Hideout.new(state: any, deps: any): any
 		if p.verb == "paint" and it then
 			local m = vanModel(it.bay)
 			nextPaint = VanRules.nextPaint({ paint = tonumber(m and m:GetAttribute("Paint")) or 0 } :: any)
+		elseif p.verb == "style" and it then
+			local m = vanModel(it.bay)
+			nextPaint = VanRules.nextStyle({ style = tonumber(m and m:GetAttribute("Style")) or 1 })
 		end
 		local action = LobbyLook.action(p.verb, bay, nextPaint)
 		if action then
@@ -510,6 +528,84 @@ function Hideout.new(state: any, deps: any): any
 		hb.StudsOffsetWorldSpace = Vector3.new(0, HD.HINT.up - HD.VAN.POINTS.door[2] + bob, 0)
 	end
 
+	---------------------------------------------------------------- Quick Crew: the chip, the arrow, the mark
+	local function hideQuickGuide()
+		if quickArrow then
+			quickArrow:Destroy()
+			quickArrow = nil
+		end
+		if quickMark then
+			quickMark:Destroy()
+			quickMark = nil
+		end
+	end
+
+	local function stopLooking()
+		deps.send({ op = "unquick" })
+		Sound.play("UIBack")
+	end
+
+	-- Every lobby frame: your Quick Crew state from the server's attributes (QuickCrew, QuickBay).
+	local function updateQuick(now: number)
+		local q = tostring(localPlayer:GetAttribute("QuickCrew") or "")
+		local bay = tonumber(localPlayer:GetAttribute("QuickBay")) or 0
+		hud.lobby.setQuick(q, stopLooking)
+		local m = if q == "matched" and bay > 0 then vanModel(bay) else nil
+		local door = m and m:FindFirstChild("Door")
+		local r = root()
+		if not (door and door:IsA("BasePart") and r) then
+			hideQuickGuide()
+			return
+		end
+		local A = HD.QUICK.ARROW
+		local x, z, yaw, show = LobbyLook.arrow({ r.Position.X, r.Position.Z }, { door.Position.X, door.Position.Z })
+		local arrow = quickArrow
+		if not arrow then
+			local made = Instance.new("WedgePart")
+			made.Name = "EH_QuickArrow"
+			made.Anchored = true
+			made.CanCollide = false
+			made.CanTouch = false
+			made.CanQuery = false
+			made.CastShadow = false
+			made.Material = Enum.Material.Neon
+			made.Color = Palette.gold
+			made.Size = Vector3.new(A.size[1], A.size[2], A.size[3])
+			made.Parent = workspace
+			quickArrow = made
+			arrow = made
+		end
+		local a = arrow :: BasePart
+		local bob = if Ui.reducedMotion() then 0 else math.sin(now * 3) * A.bob
+		local floorY = r.Position.Y - 3 + A.up + bob
+		-- a wedge's slope rises toward its local -Z: laid flat, its thin edge points along the look direction
+		a.CFrame = CFrame.new(x, floorY, z) * CFrame.Angles(0, math.rad(yaw), 0) * CFrame.Angles(math.rad(-90), 0, 0)
+		a.Transparency = if show then 0.15 else 1
+		local mark = quickMark
+		if not mark then
+			local made = Instance.new("BillboardGui")
+			made.Name = "EH_QuickMark"
+			made.AlwaysOnTop = true
+			made.LightInfluence = 0
+			made.Size = UDim2.fromOffset(HD.QUICK.BILLBOARD.size[1], HD.QUICK.BILLBOARD.size[2])
+			local chip = Ui.panel(made, { Size = UDim2.fromScale(1, 1) }, Palette.gold)
+			local label = Ui.label(chip, {
+				Size = UDim2.new(1, -12, 1, -8),
+				Position = UDim2.fromOffset(6, 4),
+				TextSize = 26,
+				TextColor3 = Palette.gold,
+				Text = Strings.QUICK_YOUR_VAN,
+			})
+			Ui.iconWord(label, "van", "left", 30)
+			made.Parent = localPlayer:FindFirstChildOfClass("PlayerGui")
+			quickMark = made
+			mark = made
+		end
+		local mb = mark :: BillboardGui
+		mb.Adornee = door
+		mb.StudsOffsetWorldSpace = Vector3.new(0, HD.QUICK.BILLBOARD.up - HD.VAN.POINTS.door[2] + bob, 0)
+	end
+
 	---------------------------------------------------------------- the drive
 	local function stopDrive()
 		local d = drive
@@ -587,6 +683,7 @@ function Hideout.new(state: any, deps: any): any
 		departing = false
 		setRoam(false)
 		hideHint()
+		hideQuickGuide()
 		hud.lobby.hide()
 	end
 
@@ -622,12 +719,14 @@ function Hideout.new(state: any, deps: any): any
 			end
 		end
 		if departing or playingIntro or drive then
+			hideQuickGuide()
 			return
 		end
 		if not state.lobbyRoam then
 			setRoam(true)
 		end
 		updateHint(who, now)
+		updateQuick(now)
 		collect(who)
 		-- diorama / classic: what you face from your head, not the camera's ray
 		local idx = deps.look.updateLobby(items, function(it: any): boolean

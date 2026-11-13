@@ -75,7 +75,7 @@ return function(test: (string, () -> ()) -> ())
 	end)
 
 	test("every verb's action passes the server's validator and has its words", function()
-		for _, verb in { "pick", "solo", "go", "crew", "park", "paint", "sit", "ready", "unready" } do
+		for _, verb in { "pick", "solo", "go", "crew", "park", "paint", "style", "sit", "ready", "unready" } do
 			local a = LobbyLook.action(verb, 3, 2)
 			Assert.truthy(a ~= nil, verb .. " sends an action")
 			Assert.truthy(VanRules.validAction(a), verb .. " passes VanRules.validAction")
@@ -105,7 +105,7 @@ return function(test: (string, () -> ()) -> ())
 			Assert.truthy(st.cam.back > 1 and st.cam.fov >= 40 and st.cam.fov <= 70, "a camera")
 			verbs[st.verb] = true
 		end
-		for _, v in { "jobs", "laptop", "wardrobe", "tv", "invite" } do
+		for _, v in { "jobs", "laptop", "wardrobe", "tv", "quickCrew" } do
 			Assert.truthy(verbs[v], "station " .. v)
 		end
 		Assert.eq(LobbyLook.station("Nope"), nil, "unknown anchor")

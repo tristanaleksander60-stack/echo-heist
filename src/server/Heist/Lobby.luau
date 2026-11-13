@@ -33,6 +33,12 @@ local built: Model? = nil
 local spawnCFrame = CFrame.new()
 local dressed = false
 local greyVisuals: { BasePart } = {} -- greybox parts the kit replaces (hidden once dressed; colliders keep colliding)
+-- The kit van of each bay (LOBBY 2 van styles): the item's pivot and scale, the kit and its specs, so a style swap
+-- puts another body group on the same origin (the styles share the Van's footprint, door, cab and seat anchors).
+local vanItems: { [number]: { pivot: any, scale: { number }, style: number } } = {}
+local dressKit: any = nil
+local dressSpecs: { [string]: any } = {}
+local kitContainer: Model? = nil
 
 local function rgb(c: { number }): Color3
 	return Color3.fromRGB(c[1], c[2], c[3])
@@ -434,7 +440,11 @@ function Lobby.dress(kit: any): number
 	container.Name = "Kit"
 	container:SetAttribute("EH_Kind", "kit")
 	local placed = 0
+	dressKit, dressSpecs, kitContainer = kit, specs, container
 	for _, it in plan.items do
+		if it.role == "van" and it.index then
+			vanItems[it.index] = { pivot = it.pivot, scale = it.scale, style = 1 }
+		end
 		for _, name in it.pieces do
 			local tinted = name == "Van_Paint" or name == "Facade_8x10_Body"
 			local color = if tinted and it.color then rgb(it.color) else nil
@@ -447,6 +457,10 @@ function Lobby.dress(kit: any): number
 				visualOnly(p)
 				if it.role == "van" then
 					p:SetAttribute("EH_Bay", it.index)
+					p:SetAttribute("EH_VanStyle", 1)
+					if name == "Van_Paint" then
+						p:SetAttribute("EH_VanPaint", true)
+					end
 				end
 				-- the warehouse's shell, trusses and mezzanine dressing go in their cut-away group
 				local group = it.group and groupModels[it.group]
@@ -471,6 +485,79 @@ function Lobby.dress(kit: any): number
 	dressed = true
 	model:SetAttribute("Kit", true)
 	return placed
+end
+
+-- The kit body pieces of a style (Config.Hideout.VAN.STYLES index): its group's pieces in the loaded kit, or nil
+-- when the kit has not got that group (the bay keeps the body it has).
+local function stylePieces(style: number): { string }?
+	local s = Config.Hideout.VAN.STYLES[style]
+	if not s then
+		return nil
+	end
+	local list = KitPlan.groups(dressSpecs)[s.group]
+	if not list or #list == 0 then
+		return nil
+	end
+	return list
+end
+
+-- Puts a van style's body on a bay (LOBBY 2): the bay's kit van pieces go and the style group's pieces take the same
+-- pivot (the styles share the Van's footprint, side door, cab and seat anchors: Heist/Vans' rigs never move). The
+-- style's paint piece is tagged EH_VanPaint (Heist/Vans colours it). Returns true when the bay wears the style now
+-- (false: not dressed yet, or no such group in the kit). Idempotent.
+function Lobby.setVanStyle(bay: number, style: number): boolean
+	local item = vanItems[bay]
+	local container = kitContainer
+	if not (dressed and item and container and container.Parent and dressKit) then
+		return false
+	end
+	if item.style == style then
+		return true
+	end
+	local pieces = stylePieces(style)
+	if not pieces then
+		return false
+	end
+	local s = Config.Hideout.VAN.STYLES[style]
+	local o = Config.Heist.LOBBY_ORIGIN
+	local origin = Vector3.new(o[1], o[2], o[3])
+	local made: { BasePart } = {}
+	for _, name in pieces do
+		local tint = name == s.paint
+		local p = dressKit.clone(name, { atlas = C.LOCATION, color = if tint then rgb(C.BAY_PAINTS[1]) else nil })
+		if not p then
+			for _, m in made do
+				m:Destroy()
+			end
+			return false
+		end
+		local c, size = KitPlan.partFrame(dressSpecs[name], item.pivot, item.scale)
+		p.Size = Vector3.new(size[1], size[2], size[3])
+		p.CFrame = CFrame.new(origin + Vector3.new(c[1], c[2], c[3])) * CFrame.Angles(0, math.rad(item.pivot.yaw), 0)
+		visualOnly(p)
+		p:SetAttribute("EH_Bay", bay)
+		p:SetAttribute("EH_VanStyle", style)
+		if tint then
+			p:SetAttribute("EH_VanPaint", true)
+		end
+		table.insert(made, p)
+	end
+	for _, d in container:GetChildren() do
+		if d:IsA("BasePart") and d:GetAttribute("EH_Bay") == bay then
+			d:Destroy()
+		end
+	end
+	for _, p in made do
+		p.Parent = container
+	end
+	item.style = style
+	return true
+end
+
+-- The style a bay's kit van wears now (nil before the kit dressed the garage).
+function Lobby.vanStyle(bay: number): number?
+	local item = vanItems[bay]
+	return if item and dressed then item.style else nil
 end
 
 -- Where a player is put back when they return to the garage (spread around the spawn).

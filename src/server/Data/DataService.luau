@@ -18,6 +18,7 @@
 --   DataService.grantTrophy(player, trophyId, reason)     -> Net.Result
 --   DataService.grantCosmetic(player, cosmeticId, reason) -> Net.Result (free grants only)
 --   DataService.earnCash / spendCash / earnCandyCanes(player, amount, reason) -> boolean
+--   DataService.setVanStyle(player, styleId) -> boolean   the hideout van style (LOBBY 2; Schema.validVanStyle)
 --   DataService.isLevelUnlocked, getBagLevel, getSettings, getSnapshot, setFtueStep,
 --   setPromptsBlocked (no store prompt during a heist or a bust), setLevelResolver
 -- Client remotes (Net: rate limit + per-argument validation): Data.Snapshot,
@@ -102,6 +103,8 @@ local function publishAttributes(player: Player, heist: Schema.Heist)
 	player:SetAttribute("BagLevel", heist.bagLevel)
 	-- The Rookie's outfit (Heist/Outfit.key): Heist/Characters dresses the character from it.
 	player:SetAttribute("Outfit", Outfit.key(heist.outfit))
+	-- The hideout van style (LOBBY 2): Heist/HeistService gives a van this player claims this body.
+	player:SetAttribute("VanStyle", heist.vanStyle)
 end
 
 -- Stars are a mirror of the medals and daily first clears; this keeps the balance exact.
@@ -394,6 +397,22 @@ end
 -- Candy Canes exist only while the event runs (§5.1).
 function DataService.earnCandyCanes(player: Player, amount: number, reason: string): boolean
 	return DailyVault.inEvent(today()) and wholeAmount(amount) and Currency.Add(player, "CandyCanes", amount, reason)
+end
+
+-- The hideout van style (LOBBY 2): the heist server calls this after a validated STYLE at the player's van
+-- (VanRules.setStyle). id = a Config.Hideout.VAN.STYLES id (Schema.validVanStyle). Additive field, no migration.
+function DataService.setVanStyle(player: Player, id: string): boolean
+	local profile = PlayerData.Get(player)
+	if not profile or not Schema.validVanStyle(id) then
+		return false
+	end
+	local heist = heistOf(profile)
+	if heist.vanStyle ~= id then
+		heist.vanStyle = id
+		player:SetAttribute("VanStyle", id)
+		changed(player, profile, "vanStyle")
+	end
+	return true
 end
 
 -- FTUE progress only moves forward.

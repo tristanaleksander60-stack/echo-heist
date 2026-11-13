@@ -174,9 +174,9 @@ def bakery(k):
     for i in range(n):
         xa = dx0 - 0.4 + i * w
         col = "marble_hi" if i % 2 == 0 else "marble_lo"
-        mb.prism([(Y0 + 0.02, 7.2), (Y0 + 0.02, 7.0), (Y0 - 0.95, 6.82), (Y0 - 0.95, 6.94)], "X", xa, xa + w,
+        mb.prism([(Y0 + 0.02, 7.2), (Y0 + 0.02, 7.0), (Y0 - 0.46, 6.86), (Y0 - 0.46, 6.98)], "X", xa, xa + w,
                  col, col, part="Awning")
-    mb.box((dx0 - 0.45, Y0 - 1.0, 6.74), (dx1 + 0.45, Y0 - 0.9, 6.94), "marble", part="AwningLip")
+    mb.box((dx0 - 0.45, Y0 - 0.52, 6.78), (dx1 + 0.45, Y0 - 0.44, 6.98), "marble", part="AwningLip")
     # the big loaf on the roof over the cab (a baked sign, no letters): a crust with a lighter top and score marks
     mb.box((3.55, -1.7, H), (6.0, 1.7, H + 0.5), "marble_lo", chamfer=0.22, cham_col="marble", flat=("-z",), part="Loaf")
     mb.box((3.8, -1.4, H + 0.42), (5.75, 1.4, H + 0.62), "marble", chamfer=0.12, cham_col="marble_hi", part="LoafTop")
@@ -266,14 +266,14 @@ def security(k):
     for ya, yb in ((Y0 - 0.02, Y0 + 0.09), (Y1 - 0.09, Y1 + 0.02)):
         for bx in (XC + 0.75, XC + 1.25, XC + 1.75):
             mb.box((bx - 0.05, ya, 4.95), (bx + 0.05, yb, 5.95), "steel", part="Bar")
-    for ya, yb in ((Y1 - 0.02, Y1 + 0.1),):
+    for ya, yb in ((Y1 - 0.02, Y1 + 0.07),):
         mb.box((X0 + 0.15, ya, 3.7), (XC - 0.05, yb, 4.6), "steel_lo", chamfer=0.05, cham_col="steel", part="ArmourFar")
-    mb.box((X0 + 0.45, Y0 - 0.5, 3.7), (DOOR[0] - 0.45, Y0 - 0.38, 4.6), "steel_lo", chamfer=0.05, cham_col="steel", part="ArmourDoor")
+    mb.box((X0 + 0.45, Y0 - 0.47, 3.7), (DOOR[0] - 0.45, Y0 - 0.38, 4.6), "steel_lo", chamfer=0.05, cham_col="steel", part="ArmourDoor")
     rivets_far = [(-6.4 + 0.9 * i) for i in range(10)]
     for rx in rivets_far:
-        mb.box((rx - 0.08, Y1 + 0.08, 4.07), (rx + 0.08, Y1 + 0.16, 4.23), "steel_hi", part="Rivet")
+        mb.box((rx - 0.08, Y1 + 0.06, 4.07), (rx + 0.08, Y1 + 0.12, 4.23), "steel_hi", part="Rivet")
     for rx in (-6.2, -5.4, -4.6, -3.8):
-        mb.box((rx - 0.08, Y0 - 0.56, 4.07), (rx + 0.08, Y0 - 0.48, 4.23), "steel_hi", part="Rivet")
+        mb.box((rx - 0.08, Y0 - 0.52, 4.07), (rx + 0.08, Y0 - 0.46, 4.23), "steel_hi", part="Rivet")
     mb.box((X0 + 0.05, Y1 - 0.02, Z0 + 0.05), (X1 - 0.3, Y1 + 0.12, Z0 + 0.75), "ink", chamfer=0.05, cham_col="ink_hi", part="SkirtFar")
     mb.box((DOOR[1] + 0.25, Y0 - 0.12, Z0 + 0.05), (X1 - 0.3, Y0 + 0.02, Z0 + 0.75), "ink", chamfer=0.05, cham_col="ink_hi", part="SkirtCab")
     nose(mb, lamp_z=3.05, grille=(2.3, 3.4), lamp_col="marble_hi", square=True)

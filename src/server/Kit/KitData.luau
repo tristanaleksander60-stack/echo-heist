@@ -3109,8 +3109,8 @@ return {
 		},
 		VanBakery = {
 			model = "VanBakery",
-			size = { 14.9, 7.999, 7.5 },
-			boundsMin = { -7.45, 0.061, -4.2 },
+			size = { 14.9, 7.999, 7.04 },
+			boundsMin = { -7.45, 0.061, -3.74 },
 			boundsMax = { 7.45, 8.06, 3.3 },
 			origin = { 0, 0, 0 },
 			collision = "Box",
@@ -3163,9 +3163,9 @@ return {
 		},
 		VanSecurity = {
 			model = "VanSecurity",
-			size = { 14.9, 7.786, 7.12 },
-			boundsMin = { -7.45, 0.064, -3.76 },
-			boundsMax = { 7.45, 7.85, 3.36 },
+			size = { 14.9, 7.786, 7.06 },
+			boundsMin = { -7.45, 0.064, -3.74 },
+			boundsMax = { 7.45, 7.85, 3.32 },
 			origin = { 0, 0, 0 },
 			collision = "Box",
 			material = "SmoothPlastic",

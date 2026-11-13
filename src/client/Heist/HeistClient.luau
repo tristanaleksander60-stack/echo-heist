@@ -269,6 +269,10 @@ function HeistClient.start()
 		joinFriend = function(userId: number)
 			Net.Send(R.JoinFriend, userId)
 		end,
+		-- a hideout lobby action table (Heist.Ready; Shared/Heist/VanRules.validAction): the Quick Crew sheet's ops
+		lobbyAction = function(action: any)
+			Net.Send(R.Ready, action)
+		end,
 		leave = function()
 			Net.Send(R.Leave)
 		end,
