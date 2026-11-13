@@ -95,28 +95,51 @@ function FpMath.bobOffset(phase: number, amp: number, cfg: any): (number, number
 	return x, y
 end
 
--- A damped spring toward `target` (frequency hz, damping ratio zeta), stepped in small sub-steps so a long
--- frame never explodes. Returns the new position and velocity.
+-- A damped spring toward `target` (frequency hz, damping ratio zeta). Under-damped (zeta < 1, every spring
+-- here) it is the exact solution over dt, so it is the same at any frame rate and never explodes on a long
+-- frame; otherwise small semi-implicit sub-steps. Returns the new position and velocity.
 function FpMath.spring(x: number, v: number, target: number, dt: number, hz: number, zeta: number): (number, number)
-	local w = 2 * math.pi * hz
-	local steps = math.max(1, math.ceil(math.max(dt, 0) / (1 / 120)))
-	local h = math.max(dt, 0) / steps
+	local w = 2 * math.pi * math.max(hz, 1e-6)
+	local t = math.max(dt, 0)
+	if zeta < 1 then
+		local z = math.max(zeta, 0)
+		local wd = w * math.sqrt(1 - z * z)
+		local y0 = x - target
+		local a, b = y0, (v + z * w * y0) / wd
+		local e = math.exp(-z * w * t)
+		local c, s = math.cos(wd * t), math.sin(wd * t)
+		local y = e * (a * c + b * s)
+		local vy = e * ((-z * w * a + wd * b) * c + (-z * w * b - wd * a) * s)
+		return target + y, vy
+	end
+	local steps = math.max(1, math.ceil(t / (1 / 600)))
+	local h = t / steps
 	for _ = 1, steps do
-		local a = -w * w * (x - target) - 2 * zeta * w * v
-		v += a * h
+		local acc = -w * w * (x - target) - 2 * zeta * w * v
+		v += acc * h
 		x += v * h
 	end
 	return x, v
 end
 
+-- The deepest excursion of FpMath.spring (from rest at its target) after a unit velocity kick, for a
+-- frequency (Hz) and damping ratio: the closed form of the damped oscillator's first peak.
+function FpMath.springPeak(hz: number, zeta: number): number
+	local w = 2 * math.pi * math.max(hz, 1e-6)
+	local z = math.clamp(zeta, 0, 0.999)
+	local wd = w * math.sqrt(1 - z * z)
+	local t = math.atan2(wd, z * w) / wd
+	return math.exp(-z * w * t) * math.sin(wd * t) / wd
+end
+
 -- The landing kick for a fall speed (studs/s, positive down): a downward velocity for FpMath.spring whose
--- dip peaks at about (fall - MIN_FALL) * PER_SPEED studs, capped at MAX. 0 for a soft landing.
+-- dip peaks at (fall - MIN_FALL) * PER_SPEED studs, capped at MAX. 0 for a soft landing.
 function FpMath.landKick(fall: number, cfg: any): number
 	if fall <= cfg.MIN_FALL then
 		return 0
 	end
 	local depth = math.min((fall - cfg.MIN_FALL) * cfg.PER_SPEED, cfg.MAX)
-	return -depth * 2 * math.pi * cfg.FREQ
+	return -depth / FpMath.springPeak(cfg.FREQ, cfg.DAMPING)
 end
 
 -- The eye: the root, up by the (smoothed) head height plus EYE_UP, forward by EYE_FORWARD along the yaw.
