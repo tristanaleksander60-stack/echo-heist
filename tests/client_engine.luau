@@ -1282,7 +1282,21 @@ local okIntro, introErr = pcall(function()
 	assert(inAir > 0, "presents in the air")
 	stepTo(28.6) -- shot 5: the garage, headlights on, the Rookie
 	assert(cine.counts().presents == 0, "presents swallowed")
-	assert(cine.rookieKind() ~= "none", "the Rookie is there (" .. cine.rookieKind() .. ")")
+	local rookieKind = cine.rookieKind()
+	local characterKit = ReplicatedStorage:FindFirstChild(Config.Intro.CHARACTER_KIT)
+	local hasRookie = characterKit ~= nil and characterKit:FindFirstChild(Config.Intro.ROOKIE_TEMPLATE) ~= nil
+	assert(rookieKind == (if hasRookie then "characterKit" else "standin"), "the Rookie (" .. rookieKind .. ")")
+	if hasRookie then
+		local g = stage:FindFirstChild("Garage")
+		local rk = g and g:FindFirstChild("Rookie")
+		local motors = 0
+		for _, d in (if rk then rk:GetDescendants() else {}) do
+			if d:IsA("Motor6D") then
+				motors += 1
+			end
+		end
+		assert(motors >= 10, "the kit Rookie keeps its R15 motors for posing: " .. motors)
+	end
 	assert(cine.counts().clones == #ST.clones, "clones built")
 	assert((cam.CFrame.Position - world(ST.rookie.at)).Magnitude < 20, "the camera is on the Rookie")
 	stepTo(33.0) -- shot 6: the clones printed in
@@ -1330,7 +1344,7 @@ local okIntro, introErr = pcall(function()
 		"restored after SKIP"
 	)
 	holder:Destroy()
-	return string.format("stage built in %.0f ms, %d kit groups, rookie %s", buildMs, groups, "ok")
+	return string.format("stage built in %.0f ms, %d kit groups, rookie %s", buildMs, groups, rookieKind)
 end)
 check(okIntro, "story intro: kit, stage, every shot stepped, SKIP end state, restore (" .. tostring(introErr) .. ")")
 

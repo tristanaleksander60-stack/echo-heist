@@ -5,9 +5,10 @@
 --     Vault, the crew's garage with the van. Built locally at Config.Intro.STAGE_ORIGIN (far from every heist slot)
 --     from ReplicatedStorage/<Config.Intro.KIT_FOLDER> (the server's Heist/IntroKit), with Part stand-ins for any
 --     mesh that has not arrived. Client-made parts are never streamed, never collide, are never queried.
---   * the Rookie: ReplicatedStorage/<Config.Intro.CHARACTER_KIT>/<ROOKIE_TEMPLATE> (the CHARACTER track) when it
---     exists, read when the garage is built; otherwise a Part stand-in. TODO(character): pose the CharacterKit rig
---     with the same joint names once its rig format lands (it is placed, not posed, for now).
+--   * the Rookie: ReplicatedStorage/<Config.Intro.CHARACTER_KIT>/<ROOKIE_TEMPLATE> (the CHARACTER track's R15
+--     template, read when the garage is built), posed through its Motor6D.Transform with the IntroPlan joint angles
+--     (the same R15 joint names), smug face on the grin; the clones are tinted copies of it. A Part stand-in only
+--     when the kit never arrived.
 --   * the camera: CameraDirector is suspended ("intro"); the camera is Scriptable on IntroPlan.camera (Catmull-Rom
 --     keys, eased, whip-pans as a fast yaw with a blur), restored on every exit path (end, SKIP, destroy, watchdog).
 --   * caption cards (Ui/Theme/Motion kit, Strings.INTRO), letterbox bars, a SKIP button from the first frame (any
@@ -238,7 +239,7 @@ local function buildHoardsworth(parent: Instance): (Rig, BasePart)
 	return rig, rig.parts[index[IntroRig.MONOCLE]]
 end
 
--- The Rookie stand-in (TODO(character): replaced by CharacterKit's Rookie): an R15-proportioned figure with a flat
+-- The Rookie stand-in (only when CharacterKit's Rookie never arrived): an R15-proportioned figure with a flat
 -- cap, a long scarf and a smug side-eye, in the stand-in colours of docs/marketing (no reserved clone hue).
 local ROOKIE = {
 	skin = Color3.fromHex("#D69A78"),
@@ -765,6 +766,9 @@ function Cinematic.new(opts: any?): any
 	local headBeams: { Beam } = {}
 	local rookie: Rig? = nil
 	local rookieModel: Model? = nil
+	local rookieMotors: { Motor6D } = {}
+	local cloneMotors: { { Motor6D } } = {}
+	local rookieFace = ""
 	local clones: { { rig: Rig?, model: Model, highlight: Highlight, scan: BasePart } } = {}
 	local garageFolder: Folder? = nil
 
@@ -772,6 +776,54 @@ function Cinematic.new(opts: any?): any
 		local kitFolder = ReplicatedStorage:FindFirstChild(I.CHARACTER_KIT)
 		local m = kitFolder and kitFolder:FindFirstChild(I.ROOKIE_TEMPLATE)
 		return if m and m:IsA("Model") then m else nil
+	end
+
+	-- A copy of the CharacterKit Rookie for the stage: the root anchored, the body parts held by their R15 Motor6Ds
+	-- (so Motor6D.Transform poses them with the IntroPlan joint angles), nothing collides, is queried or scripted,
+	-- no name tag. hue: a clone's tint (Clone Cyan), else the template's own look. Returns its motors.
+	local function prepRookie(m: Model, hue: Color3?): { Motor6D }
+		local motors: { Motor6D } = {}
+		for _, d in m:GetDescendants() do
+			if d:IsA("BasePart") then
+				quiet(d, hue == nil)
+				d.Anchored = d.Name == "HumanoidRootPart"
+				if hue and d.Transparency < 1 then
+					d.Color = hue
+				end
+			elseif d:IsA("Motor6D") then
+				table.insert(motors, d)
+			elseif d:IsA("Script") or d:IsA("LocalScript") or (hue and d:IsA("Decal")) then
+				d:Destroy()
+			elseif d:IsA("Humanoid") then
+				d.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+				d.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
+			end
+		end
+		return motors
+	end
+
+	-- The kit Rookie's face (the CH track's EH_Face pieces: one mood shows), as server Heist/Rookie.setFace does.
+	local function setRookieFace(m: Model, mood: string)
+		local has = false
+		for _, d in m:GetChildren() do
+			if d:IsA("BasePart") and d:GetAttribute("EH_Face") == mood then
+				has = true
+			end
+		end
+		local show = if has then mood else "idle"
+		for _, d in m:GetChildren() do
+			local fm = d:GetAttribute("EH_Face")
+			if fm ~= nil and d:IsA("BasePart") then
+				d.Transparency = if fm == show then 0 else 1
+			end
+		end
+	end
+
+	local function poseMotors(motors: { Motor6D }, a: string, b: string, w: number)
+		for _, mo in motors do
+			local x, y, z = IntroPlan.joint(a, b, w, mo.Name)
+			mo.Transform = CFrame.fromEulerAnglesYXZ(rad(x), rad(y), rad(z))
+		end
 	end
 
 	local function placeOnFloor(m: Model, cf: CFrame)
@@ -912,21 +964,18 @@ function Cinematic.new(opts: any?): any
 			b.Parent = anchor
 			table.insert(headBeams, b)
 		end
-		-- the Rookie: the CHARACTER track's model when it exists, else the stand-in (TODO(character))
+		-- the Rookie: the CHARACTER track's template (ReplicatedStorage.CharacterKit.Rookie, R15, posed through its
+		-- Motor6Ds); the Part stand-in only if the kit never arrived
 		local rk = ST.rookie
 		local tpl = rookieTemplate()
 		if tpl then
 			local m = tpl:Clone()
-			for _, d in m:GetDescendants() do
-				if d:IsA("BasePart") then
-					quiet(d, true)
-				elseif d:IsA("Script") or d:IsA("LocalScript") then
-					d:Destroy()
-				end
-			end
+			m.Name = "Rookie"
+			rookieMotors = prepRookie(m, nil)
 			placeOnFloor(m, at(rk.at, rk.yaw))
 			m.Parent = f
 			rookieModel = m
+			setRookieFace(m, "idle")
 		else
 			rookie = buildStandIn(f, "RookieStandIn", nil)
 		end
@@ -936,14 +985,8 @@ function Cinematic.new(opts: any?): any
 			local rig: Rig? = nil
 			if tpl then
 				m = tpl:Clone()
-				for _, d in m:GetDescendants() do
-					if d:IsA("BasePart") then
-						quiet(d, false)
-						d.Color = hue
-					elseif d:IsA("Decal") or d:IsA("Script") or d:IsA("LocalScript") then
-						d:Destroy()
-					end
-				end
+				m.Name = "Clone" .. k
+				cloneMotors[k] = prepRookie(m, hue)
 				placeOnFloor(m, at(cp, rk.yaw + (if cp[1] < 130 then 8 else -8)))
 				m.Parent = f
 			else
@@ -1287,6 +1330,14 @@ function Cinematic.new(opts: any?): any
 		if rookie then
 			local a, b, w = IntroPlan.pose("rookie", t)
 			poseRig(rookie, at(ST.rookie.at, ST.rookie.yaw), a, b, w, partsBuf, cfBuf)
+		elseif rookieModel then
+			local a, b, w = IntroPlan.pose("rookie", t)
+			poseMotors(rookieMotors, a, b, w)
+			local mood = if (b == "grin" and w > 0.5) or a == "grin" then "smug" else "idle"
+			if mood ~= rookieFace then
+				rookieFace = mood
+				setRookieFace(rookieModel, mood)
+			end
 		end
 		for k, c in clones do
 			local pr = IntroPlan.clonePrint(k, t)
@@ -1301,6 +1352,9 @@ function Cinematic.new(opts: any?): any
 					partsBuf,
 					cfBuf
 				)
+			elseif cloneMotors[k] then -- copies of me: they strike the Rookie's pose
+				local a, b, w = IntroPlan.pose("rookie", t)
+				poseMotors(cloneMotors[k], a, b, w)
 			end
 			local flicker = if pr > 0
 					and pr < 1
