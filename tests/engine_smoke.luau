@@ -2747,5 +2747,193 @@ do
 	check(okParty, "party section ran" .. (if okParty then "" else ": " .. tostring(partyErr)))
 end
 
+-- 16. Badges (BADGES track; Shared/Heist/Badges, server Data/Awards). Owner detection in the real engine (this test
+-- experience is user-owned) and with a fake owner id: the boss attributes, time together earns Met the Boss for
+-- the others and never for the boss. Awards through a FAKE BadgeService (no real badge is ever awarded): one API
+-- call per badge, repeats answered from the cache, a failed award that the player already owns is marked sent, a
+-- disabled badge is skipped, an id of 0 calls nothing but stays earned. The saved flags (Heist.badges / badgesSent)
+-- survive a real DataStore round trip on a _TEST_ key and sanitize clean.
+do
+	local okBadges, badgesErr = pcall(function()
+		local sharedDir = ReplicatedStorage:WaitForChild("Shared")
+		local Config = require(sharedDir:WaitForChild("Config")) :: any
+		local Badges = require(sharedDir:WaitForChild("Heist"):WaitForChild("Badges"))
+		local Awards = require(server:WaitForChild("Data"):WaitForChild("Awards"))
+
+		-- real owner detection
+		local owner = Awards.resolveOwner()
+		check(
+			game.CreatorType ~= Enum.CreatorType.User or owner == game.CreatorId,
+			string.format("badges: the owner is the experience's creator (%d, %s)", owner, tostring(game.CreatorType))
+		)
+		check(owner > 0, "badges: an owner was found")
+
+		-- fake players and a fake BadgeService
+		local function fakePlayer(id: number): Folder
+			local f = Instance.new("Folder")
+			f.Name = "FakePlayer" .. id
+			f:SetAttribute("UserId", id)
+			return f
+		end
+		local OWNER, A, B = -101, -102, -103
+		local boss, pa, pb = fakePlayer(OWNER), fakePlayer(A), fakePlayer(B)
+		local here = { boss, pa, pb }
+		local calls = { award = 0, has = 0, info = 0 }
+		local failNext: { [number]: boolean } = {}
+		local owns: { [number]: boolean } = {}
+		local fakeBadges = {}
+		function fakeBadges:GetBadgeInfoAsync(id: number)
+			calls.info += 1
+			return { IsEnabled = id ~= 999, Name = "fake" }
+		end
+		function fakeBadges:AwardBadgeAsync(userId: number, _id: number): boolean
+			calls.award += 1
+			if failNext[userId] then
+				failNext[userId] = nil
+				error("HTTP 500 (fake)")
+			end
+			return true
+		end
+		function fakeBadges:UserHasBadgeAsync(userId: number, _id: number): boolean
+			calls.has += 1
+			return owns[userId] == true
+		end
+		local ids = { welcome = 111, first_heist = 222, ghost = 999, first_clone = 0 }
+		Awards.resetForTests()
+		Awards.start({
+			noLoops = true,
+			badgeService = fakeBadges,
+			ownerId = OWNER,
+			players = function()
+				return here
+			end,
+			present = function(p: any): boolean
+				return table.find(here, p) ~= nil
+			end,
+			userIdOf = function(p: any): number
+				return p:GetAttribute("UserId")
+			end,
+			idOf = function(key: string): number
+				return ids[key] or 444
+			end,
+		})
+		check(Awards.ownerId() == OWNER and Awards.isBoss(OWNER), "badges: a fake owner id is the boss")
+
+		-- the boss's marks and time together
+		check(Awards.refreshBoss() == OWNER, "badges: the boss is found among the players")
+		check(
+			boss:GetAttribute(Badges.ATTR_BOSS) == true
+				and pa:GetAttribute(Badges.ATTR_BOSS) == nil
+				and ReplicatedStorage:GetAttribute(Badges.ATTR_BOSS_HERE) == OWNER,
+			"badges: Boss on the owner, BossUserId on ReplicatedStorage"
+		)
+		local need = Config.Badges.BOSS_TOGETHER_SECONDS
+		local steps = 0
+		while not Awards.hasEarned(pa, "met_the_boss") and steps < 100 do
+			Awards.bossStep(Config.Badges.BOSS_TICK_SECONDS)
+			steps += 1
+		end
+		check(
+			Awards.hasEarned(pa, "met_the_boss")
+				and Awards.hasEarned(pb, "met_the_boss")
+				and not Awards.hasEarned(boss, "met_the_boss"),
+			string.format(
+				"badges: Met the Boss after %d s together, never for the boss",
+				steps * Config.Badges.BOSS_TICK_SECONDS
+			)
+		)
+		check(steps * Config.Badges.BOSS_TICK_SECONDS >= need, "badges: not before BOSS_TOGETHER_SECONDS")
+		check(
+			Badges.parseToast(pa:GetAttribute(Badges.ATTR_TOAST)) == "met_the_boss",
+			"badges: the card attribute is set"
+		)
+
+		-- awards through the fake BadgeService
+		local before = calls.award
+		check(Awards.earn(pa, "welcome") == true, "badges: welcome earned")
+		check(Awards.earn(pa, "welcome") == false, "badges: earned once")
+		Awards.drain(math.huge)
+		check(Awards.wasSent(pa, "welcome") and calls.award >= before + 1, "badges: awarded through BadgeService")
+		local afterFirst = calls.award
+		Awards.earn(pa, "welcome")
+		Awards.drain(math.huge)
+		check(calls.award == afterFirst, "badges: a sent badge never calls the API again")
+		-- a failed award the player already owns: marked sent after UserHasBadgeAsync
+		failNext[B] = true
+		owns[B] = true
+		Awards.earn(pb, "first_heist")
+		Awards.drain(math.huge)
+		check(Awards.wasSent(pb, "first_heist") and calls.has >= 1, "badges: failure + already owned = sent")
+		-- a failure then success: retried with backoff
+		failNext[A] = true
+		Awards.earn(pa, "crew_up")
+		Awards.drain(math.huge)
+		check(not Awards.wasSent(pa, "crew_up") and Awards.queued() >= 1, "badges: a failed award waits to retry")
+		Awards.drain(math.huge)
+		check(Awards.wasSent(pa, "crew_up"), "badges: the retry is sent")
+		-- disabled (id 999) and not created (id 0)
+		local n0 = calls.award
+		Awards.earn(pa, "ghost")
+		Awards.earn(pa, "first_clone")
+		Awards.drain(math.huge)
+		check(calls.award == n0, "badges: a disabled badge and an id of 0 call nothing")
+		check(
+			Awards.hasEarned(pa, "first_clone") and not Awards.wasSent(pa, "first_clone"),
+			"badges: id 0 stays earned, unsent"
+		)
+		-- the heist-end facts
+		Awards.onHeistOver(pb, {
+			complete = true,
+			tainted = false,
+			relaxed = false,
+			guarded = true,
+			spottedFinal = false,
+			inFinal = true,
+			crewPlayers = 2,
+		})
+		check(
+			Awards.hasEarned(pb, "ghost") and Awards.hasEarned(pb, "crew_up"),
+			"badges: Ghost and Crew Up from heist facts"
+		)
+
+		-- the saved flags: DataStore round trip on a _TEST_ key
+		local prof = PlayerData.prepare(nil, Schema.VERSION, Schema.MIGRATIONS, makeData)
+		assert(prof, "a new profile")
+		local h = prof.Data.Heist
+		h.badges.welcome = os.time()
+		h.badges.first_clone = os.time()
+		h.badgesSent.welcome = true
+		check(
+			#Schema.sanitize(h) == 0 and PlayerData.findUnsavable(prof.Data) == nil,
+			"badges: flags valid and savable"
+		)
+		if inTestUniverse then
+			local dsKey = GameConfig.Data.TEST_PREFIX .. "badges_" .. HttpService:GenerateGUID(false)
+			assert(Keys.isWritable(dsKey, true), "refusing a non-test key")
+			local store = DataStoreService:GetDataStore(GameConfig.Data.STORE_NAME)
+			store:SetAsync(dsKey, { Schema = Schema.VERSION, Data = prof.Data })
+			local options = Instance.new("DataStoreGetOptions")
+			options.UseCache = false
+			local back = store:GetAsync(dsKey, options)
+			store:RemoveAsync(dsKey)
+			local again = PlayerData.prepare(back, Schema.VERSION, Schema.MIGRATIONS, makeData)
+			local hb = again and again.Data.Heist
+			check(
+				hb ~= nil
+					and #Schema.sanitize(hb) == 0
+					and hb.badges.welcome == h.badges.welcome
+					and hb.badgesSent.welcome == true
+					and hb.badges.first_clone ~= nil
+					and hb.badgesSent.first_clone == nil
+					and #Badges.pending(hb.badges, hb.badgesSent) == 1,
+				"badges: earned + sent flags saved and read back (DataStore, _TEST_ key)"
+			)
+		end
+		Awards.resetForTests()
+		ReplicatedStorage:SetAttribute(Badges.ATTR_BOSS_HERE, 0)
+	end)
+	check(okBadges, "badges section ran" .. (if okBadges then "" else ": " .. tostring(badgesErr)))
+end
+
 table.insert(results, string.format("%d failure(s)", failures))
 return table.concat(results, "\n")

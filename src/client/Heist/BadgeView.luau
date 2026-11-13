@@ -10,7 +10,6 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
@@ -19,6 +18,7 @@ local Badges = require(HeistShared:WaitForChild("Badges"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
+local Motion = require(script.Parent:WaitForChild("Motion"))
 local Ui = require(script.Parent:WaitForChild("Ui"))
 
 local B = Config.Badges
@@ -220,11 +220,7 @@ function BadgeView.new(gui: Instance, toast: (text: string) -> (), opts: Opts?)
 		card.Visible = true
 		if not reduced() then
 			card.Position = UDim2.fromScale(0.5, B.TOAST_Y - 0.08)
-			TweenService:Create(
-				card,
-				TweenInfo.new(B.TOAST_IN_SECONDS, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-				{ Position = UDim2.fromScale(0.5, B.TOAST_Y) }
-			):Play()
+			Motion.timed(card, B.TOAST_IN_SECONDS, { Position = UDim2.fromScale(0.5, B.TOAST_Y) }, "enter")
 		else
 			card.Position = UDim2.fromScale(0.5, B.TOAST_Y)
 		end

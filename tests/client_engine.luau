@@ -2517,5 +2517,82 @@ local okParty, partyErr = pcall(function()
 end)
 check(okParty, "PARTY sheet builds and draws a van from its attributes (" .. tostring(partyErr) .. ")")
 
+-- O. Badges (BADGES track, Heist/BadgeView): the BADGE UNLOCKED card builds and shows a badge from the server's
+-- BadgeToast attribute (a stand-in local player: a Folder with attributes), with the fallback icon while the id is 0
+-- and the "N OF 8 BADGES" line; THE BOSS IS HERE! goes to the rail when BossUserId turns non-zero (a stand-in
+-- store), not for your own id; the gold THE BOSS pill builds over a Rookie-shaped model's head.
+local okBadge, badgeErr = pcall(function()
+	local BadgeView = require(clientHeist:WaitForChild("BadgeView"))
+	local Badges = require(shared:WaitForChild("Heist"):WaitForChild("Badges"))
+	local Strings = require(shared:WaitForChild("Heist"):WaitForChild("Strings"))
+	local gui = Instance.new("ScreenGui")
+	gui.Parent = scratch
+	local me = Instance.new("Folder")
+	me:SetAttribute("UserId", -7)
+	me:SetAttribute(Badges.ATTR_EARNED, 3)
+	local store = Instance.new("Folder")
+	store:SetAttribute(Badges.ATTR_BOSS_HERE, 0)
+	local toasts = {}
+	local view = BadgeView.new(gui, function(text: string)
+		table.insert(toasts, text)
+	end, {
+		localPlayer = me,
+		store = store,
+		players = function()
+			return {}
+		end,
+		reduced = function()
+			return true
+		end,
+	})
+	local card = view.card :: Frame
+	assert(card and not card.Visible, "the card starts hidden")
+	me:SetAttribute(Badges.ATTR_TOAST, Badges.toastValue("eight_of_me", 1))
+	task.wait()
+	assert(card.Visible, "the card shows on BadgeToast")
+	local function need(parent: Instance, childName: string): any
+		local x = parent:FindFirstChild(childName, true)
+		assert(x ~= nil, "missing " .. childName)
+		return x
+	end
+	local name = need(card, "BadgeName") :: TextLabel
+	assert(name.Text == "8 OF ME", "the badge name: " .. name.Text)
+	local title = need(card, "Title") :: TextLabel
+	assert(title.Text == Strings.BADGE_UNLOCKED, "BADGE UNLOCKED")
+	local count = need(card, "Count") :: TextLabel
+	assert(count.Text == Strings.badgeCount(3, #Badges.LIST), "count line: " .. count.Text)
+	local icon = need(card, "BadgeIcon")
+	if Badges.iconOf("eight_of_me") == 0 then
+		assert(icon:FindFirstChild("Mark", true) ~= nil, "the fallback mark while the icon id is 0")
+	end
+	view.show("ghost")
+	assert(view.pending() == 1, "a second card queues")
+	view.show("nope")
+	assert(view.pending() == 1, "unknown keys are ignored")
+	-- the boss
+	store:SetAttribute(Badges.ATTR_BOSS_HERE, -7)
+	task.wait()
+	assert(#toasts == 0, "no boss toast for your own id")
+	store:SetAttribute(Badges.ATTR_BOSS_HERE, 0)
+	store:SetAttribute(Badges.ATTR_BOSS_HERE, 42)
+	task.wait()
+	assert(#toasts == 1 and toasts[1] == Strings.BOSS_HERE, "THE BOSS IS HERE! on the rail")
+	local model = Instance.new("Model")
+	local head = Instance.new("Part")
+	head.Name = "Head"
+	head.Anchored = true
+	head.Parent = model
+	model.Parent = scratch
+	local pill = BadgeView.pill(model)
+	assert(pill and pill.Adornee == head, "the pill over the head")
+	assert(pill ~= nil, "a pill")
+	local text = need(pill, "Text") :: TextLabel
+	assert(text.Text == Strings.BOSS_PILL, "THE BOSS")
+	assert(BadgeView.pill(model) == pill, "one pill per head")
+	view.destroy()
+	return "card + boss"
+end)
+check(okBadge, "badge card and boss marks build (" .. tostring(badgeErr) .. ")")
+
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))
