@@ -1465,7 +1465,7 @@ def big_level(level, samples, out_dir):
     mid_z = max(oz0 + 14.0, -24.0)
     shots = [
         # first person: the shop from the street spawn, up the facade from the van, inside up at the ceiling and round
-        ("fp_street", _fp(sp["x"] - 3.0, oz1 + 15.0, fy, -0.12, 16.0), FP_FOV, (sp["x"] - 3.0, oz1 + 15.0), True),
+        ("fp_street", _fp(sp["x"] - 9.0, oz1 + 15.0, fy, -0.33, 14.0), FP_FOV, (sp["x"] - 9.0, oz1 + 15.0), True),
         ("fp_up", _fp(sp["x"] + 14.0, oz1 + 21.0, fy, 0.38, 36.0), FP_FOV, (sp["x"] + 14.0, oz1 + 21.0), True),
         ("fp_ceiling", _fp(0.0, mid_z + 6.0, fy, 0.0, 50.0), FP_FOV, (0.0, mid_z + 6.0), False),
         ("fp_inside", _fp(0.0, oz1 - 6.0, fy, 0.0, 6.0), FP_FOV, (0.0, oz1 - 6.0), False),

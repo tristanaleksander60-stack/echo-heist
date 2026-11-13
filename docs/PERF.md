@@ -172,3 +172,30 @@ Uses the existing Clone Bench place (`bench.project.json`; README "Clone phone b
 | 10:00 | Send the screenshots to the Shots inbox issue with the phone line | — |
 
 Pass bar (MASTERPLAN §8.11 S1, §6.8): at N=12, 30 fps or better (≤ 33 ms by the 1% low) on the low Android and 60 fps or better on the mid phone; clones ≤ 120 draw calls (`+dc`); client memory ≤ 60% of the device's. If look B misses on the low phone and look C passes, the tier 3 clone LOD (§5) is the next performance task. The 15-minute thermal soak is a separate run: leave the Clone Party going and note the fps at minute 1 and minute 15.
+
+## 9. BIG buildings (2026-11-13, PLAN_FIRST_PERSON §5; Saved v72)
+
+Every heist building now carries a 3-5 storey shell, a ceiling and a roof (server `Heist/Overhead`, `Config.Big`), the
+town grew to 4-8 storey blocks with a deeper street and two towers (`Config.Backdrop.TOWN`), and the garage became a
+warehouse. All of it is visual only: 0 lights, CanCollide / CanQuery / CanTouch / CastShadow off (perf_engine section E
+counts 0 "loud" parts on every instance). New layer rules keep the phones' views inside the per-tier budgets:
+
+| Layer (client `Heist/CutAway`) | Off from | What |
+|---|---|---|
+| `detail` | tier 2 | the back and side faces' window trims and crowns, the curtains |
+| `fine`, `xmas` | tier 3 | the coffered ceiling tiles (a flat slab inside them takes over), fire escapes, rooftop props, the light strings |
+| town far rows and towers | never decorated | no rooftop props or Christmas decor on what is only seen over roofs |
+| town far ring | tier 2 (was 3) | the taller town and its towers hide most of it |
+
+Measured (perf_engine on v72; section E per kit-built instance, section B the busiest view):
+
+| | Tier 1 | Tier 2 | Tier 3 | Tier 4 |
+|---|---|---|---|---|
+| One BIG building (L1 / L6) | 356 / 404 instances, ~50k / ~60k tris, 13 batches | ~24k / ~30k tris | ~11k / ~15k tris | as tier 3 |
+| Town round L6 (backdrop) | ~70k tris (budget 100k), 795 instances (budget 950) | ~63k | ~12k | ~12k |
+| Busiest view (L6, 4 players, 12 clones, 2 Gus) | ~333k tris / 450k, ~305 draws / 450 | **~297k / 300k**, ~303 / 350 | **~150k / 150k**, ~220 / 250 | ~150k / 120k ⚠, ~217 / 200 ⚠ (over before BIG too: ~128k / ~206) |
+| Warehouse garage Overhead | 274 instances, ~20k tris, 10 batches, 0 lights | | | |
+
+Tier 4 stays over its triangle and draw estimates (±50 %): the L6 interior (~84k) dominates; the BIG
+building adds ~15k there. If the phone bench (§8) shows tier 4 frame time trouble, the next cut is the front's window
+trims and the giant order at tier 4.
