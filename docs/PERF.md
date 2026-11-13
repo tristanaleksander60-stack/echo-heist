@@ -2,7 +2,7 @@
 
 _Performance track, 2026-11-12. PLAN_STEAM_PLUS §4.7 / §12 / §8.1 R1, MASTERPLAN §3.3 / §6.8 / §8.6, roblox_quality §1.4 / §2.2 / §6.4._
 
-**In one paragraph:** with 8 heist instances live, every phone used to receive about 5,000 instances and about 450k triangles of level art, while it only plays in one level. **StreamingEnabled is now ON.** A phone in a Big Score now holds about 1,550 replicated instances (69% fewer), and other crews' level builds no longer reach it. The per-tier budgets are in `Config.Perf` and the pure `Shared/Heist/Budget`, and the views enforce them. At tier 3 and up, the LightDirector switches to recipe C "Soft Toybox" by itself and switches back as the governor steps up. Measured in the engine, every hard-counted budget holds at every tier: lights, shadowed lights, floor glows, Highlights, snow, the worst particle moment and live instances. Two numbers were **estimates over the low-phone budget**: triangles (~210k against 150k) and draw calls (~275 against 250) at tiers 3-4, driven by the 16 avatar bodies. The §6.4 **clone LOD is now built** (tech polish track): from tier 3 a clone beyond 18 studs draws as the 216-triangle mannequin in its crew hue, which brings tier 3 to ~129k triangles and ~210 draws by estimate (tier 4 stays a little over: ~128k / 120k, ~206 / 200). Clients also **start at the tier their device suggests** (§4), every particle effect shares **one live budget**, and the `LightingStyle = Soft` at boot has a cause and a one-line fix (§4).
+**In one paragraph:** with 8 heist instances live, every phone used to receive about 5,000 instances and about 450k triangles of level art, while it only plays in one level. **StreamingEnabled is now ON.** A phone in a Big Score now holds about 1,550 replicated instances (69% fewer), and other crews' level builds no longer reach it. The per-tier budgets are in `Config.Perf` and the pure `Shared/Heist/Budget`, and the views enforce them. At tier 3 and up, the LightDirector switches to recipe C "Soft Toybox" by itself and switches back as the governor steps up. Measured in the engine, every hard-counted budget holds at every tier: lights, shadowed lights, floor glows, Highlights, snow, the worst particle moment and live instances. Two numbers were **estimates over the low-phone budget**: triangles (~210k against 150k) and draw calls (~275 against 250) at tiers 3-4, driven by the 16 avatar bodies. The §6.4 **clone LOD is now built** (tech polish track): from tier 3 a clone beyond 18 studs draws as the 216-triangle mannequin in its crew hue, which brings tier 3 to ~129k triangles and ~210 draws by estimate (tier 4 stays a little over: ~128k / 120k, ~206 / 200). Clients also **start at the tier their device suggests** (§4), every particle effect shares **one live budget**, and the `LightingStyle = Soft` at boot has a cause and a one-line fix (§4). **2026-11-13 (§11):** every tier's busiest view is now within its triangle and draw budget (336k / 293k / 144k / 116k triangles at tiers 1-4), measured on the real Rookie rigs, with the heaviest Bank props off from tier 2 and the kit's Christmas, the giant order and the near skyline off at tier 4; perf_engine asserts it.
 
 ## 1. How this was measured
 
@@ -217,3 +217,58 @@ Before this track: tier 1 ~333k, tier 2 ~297k, tiers 3-4 ~150k. Tier 2 is now ~3
 estimate counts the whole L6 (every room's props), not the view, and is ±50 %. If the phone bench shows tier 2 trouble,
 the next cut is the bank's heavy props at tier 2 (`Decor_DepositWall_8` 1,220 tris, `Decor_BrassRail_8` 768).
 Tiers 3-4 are where they were before (+1k: the hero displays and the tintable ceiling).
+
+## 11. Phone frame budget (2026-11-13, REVIEW_STEAM_PLUS gap 15; Saved v95)
+
+Every tier's busiest-view estimate is now inside its budget, and `tests/perf_engine.luau` **asserts** it (an `ok` / `FAIL`
+line per tier for triangles and draws; it was a `warn` before). Two kinds of change got there: the estimate now counts
+what the game really draws, and five cuts on the layers a phone sees least.
+
+**The estimate, measured instead of assumed:**
+
+- **Rookies, not catalog avatars.** Every player and clone has been a Rookie since the CH track, but the busiest view
+  still built 4 catalog avatars and charged 7k triangles and 17 meshes for each of 16 bodies. It now builds the 4 clone
+  templates with `Avatars.buildRookie` in 4 outfits (the default and the heaviest: bobble cap, chunky scarf, stripes,
+  knit gloves, eye mask) and counts their kit meshes: **5.4-6.1k triangles per Rookie**. Kit meshes instance, so a clone
+  draws in its owner's batches: **37-39 avatar draws** for 4 live Rookies + 12 clones (the old rule said 136).
+- **The level per tier.** The level is counted as each tier draws it (`tallyAt`: every part on a tier layer that is off
+  at that tier is skipped, by the same `Budget.layerOffTier` rule the client uses), so the draws drop with the layers too.
+  WorldView's client extras on the level now count (~5k).
+- **Whole kit table.** 96 manifest pieces were missing from the test's triangle table (the Rookie, the town's parked
+  cars, snowmen and gables): they counted as 0. They count now (+4k on the tier 1-2 town).
+- The clone LOD's light rig is measured: the old mannequin was ~484 triangles (a ball head is ~400), not 216.
+
+**The cuts** (one rule, `Shared/Heist/Budget.layerOffTier`; Heist/CutAway hides the BIG layers, Heist/LightDirector the
+interior and kit ones):
+
+| Layer (EH_Layer) | Off from | What | Saves (Big Score) |
+|---|---|---|---|
+| `decorHeavy` (Config.Interior.HEAVY) | tier 2 | the Bank's deposit-box walls, teller brass, palms and queue rope: the 8 heaviest props; the benches, desks, clocks and boxes stay to tier 3 | ~6k tris |
+| `trim` (Config.Big.TRIM_OFF_TIER) | tier 3 | the BIG street front's window trims (the bodies, panes and crown stay) | ~5k tris, 1 draw |
+| `festive` (Config.Interior.FESTIVE_OFF_TIER) | tier 4 | the base kit's Christmas: the garlands on the inner walls, the front's fairy lights, snow caps, wreath, snow piles | ~20k tris, ~6 draws |
+| `order` (Config.Big.ORDER_OFF_TIER) | tier 4 | the Bank's giant order of columns | ~4k tris, 1 draw |
+| near skyline ring (Config.Backdrop.NEAR_RING_OFF_TIER) | tier 4 | the 300-stud ring (mostly behind the 4-8 storey town already) | ~5k tris, 2 draws |
+| clone LOD light rig (`Rigs.buildMannequin(true)`) | tier 3 (with the LOD) | a block head instead of the ball past 18 studs | ~4.7k tris for 12 clones |
+
+**The busiest view (L6, 4 players, 12 clones, 2 Gus), perf_engine on v95 against v92:**
+
+| | Tier 1 | Tier 2 | Tier 3 | Tier 4 |
+|---|---|---|---|---|
+| Triangles, before (v92) | ~346k / 450k | **~310k / 300k** ⚠ | **~151k / 150k** ⚠ | **~151k / 120k** ⚠ |
+| Triangles, now (v95) | ~336k | **~293k** | **~144k** | **~116k** |
+| of which level / town / Rookies / Gus | 163k / 74k / 91k / 7k | 127k / 67k / 91k / 7k | 101k / 12k / 24k / 7k | 78k / 7k / 24k / 7k |
+| Draws, before (v92) | ~319 / 450 | ~317 / 350 | ~234 / 250 | **~231 / 200** ⚠ |
+| Draws, now (v95) | ~223 | ~216 | ~190 | ~163 |
+| The same view with the old catalog-avatar rule | ~356k, ~322 | ~314k, ~315 | ~150k, ~222 | ~121k, ~195 |
+
+The last row is honest bookkeeping: with the old 7k-per-body rule and the new full triangle table, tiers 2 and 4 would
+still read a little over. They are within budget because the bodies on screen are Rookies, which perf_engine now counts.
+Tiers 2-4 sit within 5 % of their triangle budget (a `warn` line): the next cuts, if the phone bench asks for them, are
+half the inner garlands at tier 3, the unlit ceiling fixtures at tier 4 (the room lamps are off there) and a Gus LOD.
+Frame time is still the phone bench's (§8): "16.6 ms in L6's busiest view and the yard on a mid Android" needs the owner's
+MicroProfiler run; these are estimates (±50 %).
+
+**Crew View and the budget.** Holding Crew View (REVIEW_STEAM_PLUS gap 5) lifts the camera to an overhead shot:
+CutAway opens the building's roof, ceiling and camera-side storeys (client_engine M: all 6 groups of the L2 building
+hide from the shot), so the building costs fewer triangles from up there, not more; the far clones go light at tier 3+
+as in the diorama. The town is seen from higher up; at tier 4 the near ring is off anyway.
