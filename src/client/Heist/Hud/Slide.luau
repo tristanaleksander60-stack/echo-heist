@@ -55,7 +55,9 @@ function Slide.build(ctx: any): any
 			btn.Visible = can
 		end
 	end
-	RunService.RenderStepped:Connect(update)
+	if RunService:IsClient() then -- a server builds the HUD only for an engine check (tests/client_engine.luau)
+		RunService.RenderStepped:Connect(update)
+	end
 
 	return ui
 end
