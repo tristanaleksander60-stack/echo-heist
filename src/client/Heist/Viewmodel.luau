@@ -5,12 +5,16 @@
 -- Config.FirstPerson.VIEWMODEL, pose maths in Heist/ViewmodelMath and the arm assembly in Heist/FpRig (both pure,
 -- Lune-tested; the Blender preview tools/blender/fp_hands_preview.py runs the same code).
 --
--- The rig, best first: the DEDICATED first-person arms (Rookie_FPArms in CharacterKit.Pieces, Viewmodel.fromFpArms:
--- a slim sleeve aimed at an off-screen elbow, a gloved hand with a palm, 4 fingers x 3 segments and a 3-segment
--- thumb, your outfit's glove cuff and sweater stripes or block, the REWIND watch); else the body-piece arms (the
--- old fromOutfit path); else the Rookie_Viewmodel model; else the placeholder below.
+-- The rig, best first: FP HANDS v2 (Rookie_FPHands*, Viewmodel.fromFpHands, docs/art/fp_hands_v2): ONE continuous
+-- skinned glove MeshPart a hand (palm, fingers and thumb in one smooth shell; Bone.Transform bends the wrist and every
+-- finger joint) with rigid forearm pieces (your gloves' cuff, the cream sleeve, the crew stripes or block, the watch),
+-- 4-5 parts a hand; else the v125 DEDICATED rigid arms (Rookie_FPArms, Viewmodel.fromFpArms: a slim sleeve aimed at an
+-- off-screen elbow, a palm, 4 fingers x 3 segments and a 3-segment thumb as separate capsules); else the body-piece
+-- arms (the old fromOutfit path); else the Rookie_Viewmodel model; else the placeholder below.
 -- Every part is drawn through the viewmodel FOV (Config VIEW_FOV, ViewmodelMath.project): as a narrower camera
--- would draw it, whatever the camera's FOV, so the corners never stretch (rule 5). Visibility (rule 13): at idle
+-- would draw it, whatever the camera's FOV, so the corners never stretch (rule 5). The v2 arms are never resized (a
+-- skinned mesh's Bones do not follow MeshPart.Size): each whole arm slides along the view axis instead
+-- (ViewmodelMath.armShift), the same picture at the wrist, and no per-frame Size writes. Visibility (rule 13): at idle
 -- the hands sink (VISIBILITY.MODE "lowered"), they raise for a look target, carrying, actions and REWIND. A weak
 -- client-only fill light keeps them readable in dim rooms (FILL, rule 12).
 --

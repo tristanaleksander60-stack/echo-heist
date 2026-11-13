@@ -128,3 +128,49 @@ interior) changed these first guesses:
 | REWIND: both hands crossing | two dark hands overlapping, the watch lost | the left forearm across with the watch face to the eye, the right index taps from below |
 | Point: index along the view | foreshortened, unreadable | the hand turned in 33 and rolled: the index reads in profile |
 | Budget 2,400 tris a hand set | the 4 x 3 + 3 segments (96 tris each) need more | **2,700** (left set with the watch: 2,688) |
+
+## 9. FP HANDS v2: one skinned glove a hand (owner on live v125: "the hands also look like trash")
+
+What the engine showed that the Blender preview hid (v125 capture, measured on Saved v141): each hand was 15 rigid
+8-sided capsules plus a palm (96 tris a segment): polygonal silhouettes at 15 % of the screen height, a visible seam at
+every joint, fingers splayed by the bind fan plus the pose spread, and the owner's Mustard knit (#B87A0A) reading as
+skin-brown under the warm lamps with near-black purple shadow sides (sampled: lit #BE7120, shadow #36102A). The
+normals were not the problem (EditableMesh: 0 split normals on the v125 pieces); the silhouette and the seams were.
+
+**Approach: a skinned mesh** (vault "Bones and Skinned Meshes", "Weight Painting and Skinning for Roblox"; measured
+through Open Cloud on this place):
+- An FBX with ONE mesh and its armature imports as one MeshPart with `HasSkinnedMesh` and its Bones under it (names
+  kept, weights and vertex colours kept: EditableMesh `GetVertexBoneWeights`, `GetColors`). With SEVERAL meshes in one
+  file the importer moves every Bone under a generated `RootPart` and welds the meshes to it, so each glove is its own
+  group (`Rookie_FPHands_R`, `Rookie_FPHands_L`); the rigid forearm pieces share `Rookie_FPHands`.
+- Leaf bones that carry no weight are dropped (18 of 23 kept): every fingertip shares its last segment's weight with
+  its Tip bone (no visual change).
+- `CreateMeshPartAsync` (KitService's collision rebuild) keeps the skinning; Bones re-parented to the new part work.
+- **A skinned MeshPart's Bones do not follow `MeshPart.Size`** (measured: a x2 resize leaves Bone.CFrame unchanged), so
+  the gloves are exported at the size the game draws them (`RookieData.fpHands.scale` 0.2) and never resized. The
+  viewmodel FOV (rule 5) becomes a rigid slide of each whole arm along the view axis (`ViewmodelMath.armShift`): an arm
+  k times larger at (k x, k y, z) is the same picture as the arm at its size at (x, y, z / k). Exact at the wrist pivot;
+  the forearm toward the eye grows a little more than the per-part method did (FOV 90 hands-up: the sleeve may leave
+  through a lower corner). No per-frame Size writes any more.
+- Bone.Transform is computed against each Bone's real rest CFrame (`FpRig.skin` / `FpRig.boneTransforms`), so the
+  importer's bone axes never matter; Root and Forearm stay at rest, Hand carries the wrist bend, 15 joints the curl
+  and spread.
+
+**Modelling (assets/blender/fp_hands.py, tools/blender/sdf_mesh.py):** a signed-distance glove (a rounded-box palm
+with a domed back and a wrist taper, knuckle swells, four 3-segment round-cone fingers each smooth-unioned onto the palm
+but never onto each other, a fleshy thumb, a wrist tube that runs into the cuff), meshed with Surface Nets, projected
+onto the surface, decimated to 2,600 tris, analytic normals from the field (one shell: no seams, no gaps, watertight).
+Greyscale vertex shading (SDF occlusion between the fingers and under the thumb, a darker palm side, the three stitched
+"points" on the back of the glove) multiplies the runtime glove colour, so every tone and the leather keep it. Weights:
+each vertex's nearest bone shape plus its chain neighbours, exp falloff (0.011), <= 4, normalised. Rigid pieces are
+revolved ring sections (watertight, rounded rims): a 14-rib knit cuff, a flared leather gauntlet with a strap and a
+stitch line, the cream sleeve with its own 10-rib cuff, crew bands, the watch. The glove cuff overlaps both the glove's
+wrist tube and the sleeve end, and all three ride the same forearm frame: nothing can part at any pose.
+
+**Rules that changed:**
+| # | v125 | v2 |
+|---|---|---|
+| 9 | 4 x 3 + 3 separate capsules, 96 tris each | one skinned shell a hand, 2,600 tris, 23 Bones (15 joints + Hand + tips) |
+| 11 | <= 2,700 tris a hand set | <= 5,600 a worn arm (`ARMS.TRI_BUDGET_V2`; measured 4,616-4,864, the left with the watch 5,264-5,512) |
+| 17 | relaxed curl with a +3 / +1 / -1 / -4 spread (on top of a bind fan: splayed) | the spread closes the bind fan: -3 / -1 / +2.5 / +5 (tips no further apart than the knuckles, tested) |
+| 5 | per-part (k x, k y, z) map + per-axis Size each frame | a rigid slide of each arm to depth z / k at the wrist (no resizing) |

@@ -224,11 +224,21 @@ if mode == "v2" then
 		out.poses[name] = pose
 		table.insert(out.order, name)
 	end
-elseif mode == "after" then
-	local Config = require("../src/shared/Config") :: any
-	local VMath = require("../src/client/Heist/ViewmodelMath") :: any
-	local FpRig = require("../src/client/Heist/FpRig") :: any
-	local RookieData = require("../src/shared/Heist/RookieData") :: any
+elseif mode == "after" or mode == "v125" then
+	-- v125: the live v125 modules (Config, ViewmodelMath, FpRig, RookieData from git, extracted by the preview into
+	-- build/fp_v125/), so BEFORE shows the poses the owner saw
+	local Config = (if mode == "v125" then require("../build/fp_v125/shared/Config") else require(
+		"../src/shared/Config"
+	)) :: any
+	local VMath = (if mode == "v125" then require("../build/fp_v125/client/Heist/ViewmodelMath") else require(
+		"../src/client/Heist/ViewmodelMath"
+	)) :: any
+	local FpRig = (if mode == "v125" then require("../build/fp_v125/client/Heist/FpRig") else require(
+		"../src/client/Heist/FpRig"
+	)) :: any
+	local RookieData = (if mode == "v125" then require("../build/fp_v125/shared/Heist/RookieData") else require(
+		"../src/shared/Heist/RookieData"
+	)) :: any
 	local VM = Config.FirstPerson.VIEWMODEL
 	local s = VM.SCALE
 	local outfit = table.clone(Config.Rookie.DEFAULT_OUTFIT)

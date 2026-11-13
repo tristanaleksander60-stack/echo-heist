@@ -736,17 +736,17 @@ Config.FirstPerson = {
 					thumb = { 12, 6 },
 				},
 				ready = { -- looking at something you can use: the hand opens a little, ready to take it
-					index = { 6, 6, 0 },
-					middle = { 8, 2, 0 },
-					ring = { 11, -2, 0 },
-					pinky = { 14, -7, 0 },
+					index = { 6, 1, 0 },
+					middle = { 8, 0, 0 },
+					ring = { 11, 1, 0 },
+					pinky = { 14, 2, 0 },
 					thumb = { 2, -6 },
 				},
-				reach = { -- spread wide as the hand goes for the loot
-					index = { -4, 10, 0 },
-					middle = { -2, 3, 0 },
-					ring = { 0, -4, 0 },
-					pinky = { 2, -12, 0 },
+				reach = { -- opening as the hand goes for the loot
+					index = { -4, 5, 0 },
+					middle = { -2, 1, 0 },
+					ring = { 0, -1, 0 },
+					pinky = { 2, -4, 0 },
 					thumb = { -10, -22 },
 				},
 				grip = { -- holding the loot: wrapped round it
@@ -756,11 +756,11 @@ Config.FirstPerson = {
 					pinky = { 64, -4, 6 },
 					thumb = { 26, 34 },
 				},
-				push = { -- a flat palm on the door, fingers a touch bent back
-					index = { -10, 5, -6 },
-					middle = { -10, 1, -6 },
-					ring = { -9, -3, -6 },
-					pinky = { -8, -7, -6 },
+				push = { -- a flat palm on the door, fingers together, a touch bent back
+					index = { -10, -2, -6 },
+					middle = { -10, -1, -6 },
+					ring = { -9, 1.5, -6 },
+					pinky = { -8, 3, -6 },
 					thumb = { -6, -14 },
 				},
 				point = { -- the index straight out, the rest folded, the thumb over them
@@ -777,11 +777,11 @@ Config.FirstPerson = {
 					pinky = { 80, -4, 12 },
 					thumb = { 30, 40 },
 				},
-				handsUp = { -- caught: fingers splayed
-					index = { -8, 12, -4 },
-					middle = { -8, 4, -4 },
-					ring = { -8, -5, -4 },
-					pinky = { -6, -14, -4 },
+				handsUp = { -- caught: fingers open (the gloves' bind fan does the rest)
+					index = { -8, 4, -4 },
+					middle = { -8, 1, -4 },
+					ring = { -8, -1, -4 },
+					pinky = { -6, -4, -4 },
 					thumb = { -14, -26 },
 				},
 			},

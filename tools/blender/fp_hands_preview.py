@@ -4,6 +4,9 @@
                                               [--spot front|back|lamp] [--bg l1|plain] [--samples 24] [--height 720]
     python3 tools/blender/fp_hands_preview.py --all [--mode ...]      # every pose and aspect, one process each
     python3 tools/blender/fp_hands_preview.py --sheet                 # docs/art/fp_hands/contact_sheet.png
+    python3 tools/blender/fp_hands_preview.py --mode v2|v125 --light roblox --outfit tone=Tone_Mustard \
+        --out docs/art/fp_hands_v2 --pose ready                       # FP HANDS v2 (skinned) vs v125 (rigid)
+    python3 tools/blender/fp_hands_preview.py --sheet-v2 [--capture owner.png]   # docs/art/fp_hands_v2 sheet
 
 The hands come from `lune run tools/fp_hands_plan.luau <mode> <fov>`: AFTER runs the game's own Heist/ViewmodelMath
 and Heist/FpRig on RookieData.fpArms (the dedicated arms, the viewmodel projection, the per-axis part sizes);
@@ -36,6 +39,7 @@ CREW = "#3DE8FF"                # Palette.CLONE_HUES[1] (seat 1)
 MARBLE = "#D8C8A8"              # Palette.marble (the glove lift target)
 PALETTE = {"marble": MARBLE, "marbleLo": "#A8987A", "marbleHi": "#EDE2C8"}
 BEFORE_REV = "af24400"          # v101 (the owner's last capture)
+V125_REV = "e8ed654"            # v125 Published (FP HANDS v2's BEFORE: the owner's capture)
 SAFE = (0.97, 0.85, -1.1)       # Config VIEWMODEL.SAFE: |x| <= X, y <= Y_TOP (drawn on --guides)
 # the contact sheet's extra row (rendered with --spot / --outfit): the light check and the other outfit
 EXTRAS = [("after_ready_16x9_back.png", "dim back room (ready)"), ("after_ready_16x9_lamp.png", "under a lamp (ready)"),
@@ -54,7 +58,15 @@ def lune_plan(mode, fov=FOV, outfit=None):
             txt = subprocess.run(["git", "show", f"{BEFORE_REV}:{src}"], cwd=REPO, capture_output=True, text=True,
                                  check=True).stdout
             open(path, "w").write(txt)
-    plan_mode = "after" if mode == "v125" else mode
+    if mode == "v125":       # the live v125 modules (main at V125_REV), so BEFORE is what the owner saw
+        for src in ("src/shared/Config.luau", "src/shared/Heist/RookieData.luau", "src/client/Heist/ViewmodelMath.luau",
+                    "src/client/Heist/FpRig.luau"):
+            path = os.path.join(BUILD, "fp_v125", src[4:])
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            txt = subprocess.run(["git", "show", f"{V125_REV}:{src}"], cwd=REPO, capture_output=True, text=True,
+                                 check=True).stdout
+            open(path, "w").write(txt)
+    plan_mode = mode
     args = ["lune", "run", "tools/fp_hands_plan.luau", plan_mode, str(fov)] + ([outfit] if outfit else [])
     out = subprocess.run(args, cwd=REPO, capture_output=True, text=True, check=True).stdout
     return json.loads(out)
@@ -460,6 +472,88 @@ def sheet(out_path, aspect_rows=("16x9", "19.5x9")):
     print("wrote", os.path.relpath(out_path, REPO))
 
 
+V2_POSES = ["idle", "ready", "reach", "carry", "point", "watch", "handsUp", "push"]
+V2_TAG = "_16x9_roblox_tone-Tone_Mustard"
+V2_EXTRAS = [("v2_ready_16x9_roblox.png", "AFTER: indigo knit (default)"),
+             ("v2_watch_16x9_roblox_gloves-Gloves_Leather_sweater-Sweater_Block.png", "AFTER: leather, block"),
+             ("v2_ready_19.5x9_roblox_tone-Tone_Mustard.png", "AFTER: 19.5:9 phone"),
+             ("v125_ready_16x9_back_roblox_tone-Tone_Mustard.png", "BEFORE: dim back room"),
+             ("v2_ready_16x9_back_roblox_tone-Tone_Mustard.png", "AFTER: dim back room")]
+
+
+def sheet_v2(out_dir, capture=None):
+    """FP HANDS v2 before / after (docs/art/fp_hands_v2/contact_sheet.png): the owner's v125 capture, BEFORE (v125,
+    the rigid capsule arms) and AFTER (v2, the skinned gloves) per pose in the owner's outfit (Mustard knit) under the
+    Roblox-like light, hand close-ups, and the extras (other outfits, the phone aspect, a dim room)."""
+    from PIL import Image, ImageDraw, ImageFont
+    tw, th = 300, 169
+    pad, lab = 6, 18
+    cols = V2_POSES
+    Wd = pad + 90 + len(cols) * (tw + pad)
+    rows_h = [th * 2 + lab, th + lab, th + lab, th * 2 + lab, th + lab]
+    H = 50 + sum(h + pad for h in rows_h)
+    im = Image.new("RGB", (Wd, H), (24, 26, 46))
+    d = ImageDraw.Draw(im)
+    try:
+        f = ImageFont.truetype("DejaVuSans.ttf", 14)
+        fb = ImageFont.truetype("DejaVuSans-Bold.ttf", 18)
+    except OSError:
+        f = fb = ImageFont.load_default()
+    d.text((pad, 10), "FP HANDS v2: BEFORE (v125 rigid capsule arms) vs AFTER (one skinned glove a hand). Owner's "
+                      "outfit (Mustard knit), L1, FOV 70, the game's own maths, Roblox-like light (flat ambient, warm "
+                      "lamp key)", fill=(244, 247, 255), font=fb)
+    y = 50
+    d.text((pad, y + 40), "OWNER\nv125\ncapture", fill=(255, 140, 140), font=f)
+    if capture and os.path.isfile(capture):
+        cap = Image.open(capture).convert("RGB")
+        w = int(cap.width * (th * 2) / cap.height)
+        im.paste(cap.resize((w, th * 2), Image.LANCZOS), (pad + 90, y + lab))
+        d.text((pad + 92, y), "the owner's live v125 screenshot (reference)", fill=(220, 224, 240), font=f)
+    y += rows_h[0] + pad
+    for mode, label, colr in (("v125", "BEFORE\nv125", (169, 178, 204)), ("v2", "AFTER\nv2", (255, 210, 122))):
+        d.text((pad, y + th // 2), label, fill=colr, font=f)
+        for i, pose in enumerate(cols):
+            x = pad + 90 + i * (tw + pad)
+            path = os.path.join(out_dir, f"{mode}_{pose}{V2_TAG}.png")
+            if os.path.isfile(path):
+                im.paste(Image.open(path).convert("RGB").resize((tw, th), Image.LANCZOS), (x, y + lab))
+            else:
+                d.rectangle([x, y + lab, x + tw, y + lab + th], outline=(80, 80, 110))
+            d.text((x + 2, y + 1), pose, fill=(220, 224, 240), font=f)
+        y += th + lab + pad
+    # close-ups: one hand of a few poses, BEFORE then AFTER, 2x
+    d.text((pad, y + th), "CLOSE\n2x", fill=(255, 210, 122), font=f)
+    x = pad + 90
+    for pose in ("ready", "point", "watch", "handsUp"):
+        for mode in ("v125", "v2"):
+            path = os.path.join(out_dir, f"{mode}_{pose}{V2_TAG}.png")
+            if not os.path.isfile(path):
+                continue
+            src = Image.open(path).convert("RGB")
+            W0, H0 = src.size
+            box = (int(W0 * 0.56), int(H0 * 0.52), int(W0 * 0.98), int(H0 * 1.0)) if pose != "watch" else \
+                (int(W0 * 0.10), int(H0 * 0.40), int(W0 * 0.62), int(H0 * 0.98))
+            crop = src.crop(box)
+            cw = int(crop.width * (th * 2) / crop.height)
+            if x + cw > Wd:
+                break
+            im.paste(crop.resize((cw, th * 2), Image.LANCZOS), (x, y + lab))
+            d.text((x + 2, y + 1), f"{'BEFORE' if mode == 'v125' else 'AFTER'} {pose}", fill=(220, 224, 240), font=f)
+            x += cw + pad
+    y += rows_h[3] + pad
+    d.text((pad, y + th // 2), "EXTRAS", fill=(255, 210, 122), font=f)
+    for i, (fname, title) in enumerate(V2_EXTRAS):
+        x = pad + 90 + i * (tw + pad)
+        path = os.path.join(out_dir, fname)
+        if os.path.isfile(path):
+            src = Image.open(path).convert("RGB")
+            im.paste(src.resize((tw, int(tw * src.height / src.width)), Image.LANCZOS), (x, y + lab))
+        d.text((x + 2, y + 1), title, fill=(220, 224, 240), font=f)
+    out = os.path.join(out_dir, "contact_sheet.png")
+    im.save(out, optimize=True)
+    print("wrote", os.path.relpath(out, REPO))
+
+
 def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument("--pose", default="idle", choices=POSES)
@@ -476,9 +570,14 @@ def main(argv):
     ap.add_argument("--out", help="output folder (default docs/art/fp_hands)")
     ap.add_argument("--all", action="store_true", help="every pose x aspect, one Blender process each")
     ap.add_argument("--sheet", action="store_true")
+    ap.add_argument("--sheet-v2", action="store_true", help="docs/art/fp_hands_v2/contact_sheet.png")
+    ap.add_argument("--capture", help="--sheet-v2: the owner's capture to show as the reference row")
     a = ap.parse_args(argv)
     if a.sheet:
         sheet(os.path.join(OUT, "contact_sheet.png"))
+        return
+    if a.sheet_v2:
+        sheet_v2(a.out or os.path.join(REPO, "docs", "art", "fp_hands_v2"), a.capture)
         return
     if a.all:
         for asp in ASPECTS:
