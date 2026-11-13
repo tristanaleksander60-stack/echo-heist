@@ -374,8 +374,8 @@ return function(test)
 		-- plus the fingers' length (about 1.3 studs at full size) along the look
 		Assert.le(far + 1.3 * VM.SCALE, 1.4, "the rig stays close (" .. far .. ")")
 		Assert.truthy(VM.WALL.RANGE >= far, "the wall pull starts before a wall reaches the hands")
-		Assert.near(ViewmodelMath.fovFit(VM.FOV_REF, VM.FOV_REF), 1, 1e-9, "same FOV, same spot")
-		Assert.truthy(ViewmodelMath.fovFit(90, 70) > 1, "a wider FOV spreads the hands out")
+		Assert.near(ViewmodelMath.viewK(VM.VIEW_FOV, VM.VIEW_FOV), 1, 1e-9, "same FOV: no mapping")
+		Assert.truthy(ViewmodelMath.viewK(90, VM.VIEW_FOV) > ViewmodelMath.viewK(70, VM.VIEW_FOV), "wider: more")
 		Assert.near(
 			ViewmodelMath.lootScale(2, VM.CARRY.LOOT_SIZE, VM.SCALE) * 2,
 			VM.CARRY.LOOT_SIZE * VM.SCALE,

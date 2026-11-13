@@ -179,6 +179,49 @@ The table below shows what Studio must show after the import (generated from `as
 | Rookie.fbx | Rookie_RightUpperArm | 0.696 x 1.032 x 0.647 | 180 | Box | SmoothPlastic | off | on | base |
 | Rookie.fbx | Rookie_RightUpperLeg | 0.739 x 0.661 x 0.704 | 80 | Box | SmoothPlastic | off | on | base |
 | Rookie.fbx | Rookie_UpperTorso | 2 x 1.27 x 1.625 | 772 | Box | SmoothPlastic | off | on | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Block | 0.329 x 0.296 x 0.18 | 144 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_CuffKnit | 0.356 x 0.347 x 0.145 | 252 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_CuffLeather | 0.412 x 0.425 x 0.205 | 264 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Index1 | 0.113 x 0.107 x 0.241 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Index2 | 0.105 x 0.102 x 0.201 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Index3 | 0.099 x 0.096 x 0.178 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Middle1 | 0.111 x 0.111 x 0.257 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Middle2 | 0.105 x 0.105 x 0.213 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Middle3 | 0.1 x 0.1 x 0.188 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Palm | 0.444 x 0.177 x 0.41 | 264 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Pinky1 | 0.101 x 0.096 x 0.203 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Pinky2 | 0.094 x 0.091 x 0.174 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Pinky3 | 0.089 x 0.086 x 0.157 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Ring1 | 0.107 x 0.105 x 0.243 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Ring2 | 0.101 x 0.1 x 0.201 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Ring3 | 0.095 x 0.095 x 0.178 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Sleeve | 0.42 x 0.378 x 2.65 | 312 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Stripes | 0.35 x 0.315 x 0.295 | 192 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Thumb1 | 0.202 x 0.175 x 0.244 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Thumb2 | 0.146 x 0.14 x 0.217 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Thumb3 | 0.124 x 0.124 x 0.193 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Left_Watch | 0.311 x 0.31 x 0.14 | 216 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Block | 0.329 x 0.296 x 0.18 | 144 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_CuffKnit | 0.356 x 0.347 x 0.145 | 252 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_CuffLeather | 0.412 x 0.425 x 0.205 | 264 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Index1 | 0.113 x 0.107 x 0.241 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Index2 | 0.105 x 0.102 x 0.201 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Index3 | 0.099 x 0.096 x 0.178 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Middle1 | 0.111 x 0.111 x 0.257 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Middle2 | 0.105 x 0.105 x 0.213 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Middle3 | 0.1 x 0.1 x 0.188 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Palm | 0.444 x 0.177 x 0.41 | 264 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Pinky1 | 0.101 x 0.096 x 0.203 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Pinky2 | 0.094 x 0.091 x 0.174 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Pinky3 | 0.089 x 0.086 x 0.157 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Ring1 | 0.107 x 0.105 x 0.243 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Ring2 | 0.101 x 0.1 x 0.201 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Ring3 | 0.095 x 0.095 x 0.178 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Sleeve | 0.42 x 0.378 x 2.65 | 312 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Stripes | 0.35 x 0.315 x 0.295 | 192 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Thumb1 | 0.202 x 0.175 x 0.244 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Thumb2 | 0.146 x 0.14 x 0.217 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPArms.fbx | Rookie_FP_Right_Thumb3 | 0.124 x 0.124 x 0.193 | 96 | Box | SmoothPlastic | off | off | base |
 | Rookie_Faces.fbx | Rookie_Face_Busted | 1.119 x 0.827 x 0.261 | 248 | Box | SmoothPlastic | off | off | base |
 | Rookie_Faces.fbx | Rookie_Face_Shocked | 1.119 x 0.983 x 0.262 | 544 | Box | SmoothPlastic | off | off | base |
 | Rookie_Faces.fbx | Rookie_Face_Smug | 1.119 x 0.848 x 0.319 | 680 | Box | SmoothPlastic | off | off | base |
@@ -272,7 +315,7 @@ The table below shows what Studio must show after the import (generated from `as
 | Xmas_Tree.fbx | Xmas_Tree_Lights | 4.119 x 5.64 x 4.033 | 400 | Box | Neon | off | off | xmas |
 | Xmas_Wreath.fbx | Xmas_Wreath | 2.826 x 3.56 x 1.135 | 548 | Box | SmoothPlastic | off | off | xmas |
 
-**99 FBX files, 254 MeshParts, 123,982 triangles in all.** Christmas layer: 19 parts.
+**100 FBX files, 297 MeshParts, 129,934 triangles in all.** Christmas layer: 19 parts.
 <!-- kit-table:end -->
 
 ---
@@ -573,5 +616,5 @@ Use this if the meshes, sizes or collision do not survive `rojo build`. Then we 
    ```
    Then it sets Size, TextureID, Material, PivotOffset and the other flags from the manifest. Each heist clones the cached parts.
 <!-- fallback-cost:start -->
-4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 254 MeshParts and 123,982 triangles about **5.6 s** at boot (generated by kit_docs.py). Boot only, never per heist.
+4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 297 MeshParts and 129,934 triangles about **6.6 s** at boot (generated by kit_docs.py). Boot only, never per heist.
 <!-- fallback-cost:end -->

@@ -14,12 +14,14 @@ The default Animate clips, the uploaded CloneClips and Roblox emotes key these j
 code: 2 x 2 x 1, its centre 3 studs above the floor (Config.Rookie.HIP_HEIGHT 2, the sim's root height), joined to
 the hip centre (Root, 1.62) below it.
 
-Four groups (FBX files):
+Six groups (FBX files):
   Rookie            the body (15 parts) + Rookie_Face_Idle (the default face, welded to the head)
   Rookie_Faces      Smug, Shocked, Busted: swapped with Idle by state (only one face shows)
   Rookie_Outfits    the outfit slots: cap x4, scarf x4, sweater x2 (overlays), gloves x2 (cuffs), mask x1 (+ none)
   Rookie_Viewmodel  the first-person forearms + gloved hands (LeftArm, RightArm; grips GripL / GripR)
   Rookie_Hands      the first-person gloves with fingers: palm + index / finger block / thumb, two segments each
+  Rookie_FPArms     the DEDICATED first-person arms (docs/research/fp_hands.md): slim sleeve, palm, 4 x 3 finger
+                    segments, a 3-segment thumb, knit / leather cuffs, crew stripes / block, the REWIND watch
 Outfit pieces and faces are authored on the body and seat-checked against it (A16 below), then moved apart for the
 turntable; their pivot is their attach point (manifest `attach`: body part + offset from that part's pivot, Roblox
 axes), so the game welds them by pivot, never by scene position.
@@ -642,6 +644,212 @@ def hand_pieces(k, side):
     return out
 
 
+# ---------------------------------------------------------------- dedicated first-person arms (FP hands pass)
+#
+# docs/research/fp_hands.md: premium games never reuse the body arm as the viewmodel. These arms are modelled for the
+# eye: a slim sweater sleeve (radius 0.135 at the cuff, was 0.27 on the body), a gloved hand with a palm that has
+# thickness, four fingers of three segments each with knuckles, a three-segment thumb, rounded and smooth-shaded.
+# Authored in the GRIP SPACE of each hand (Roblox axes, full size, origin = the palm centre): fingers along -Z, the
+# back of the hand +Y, the forearm along +Z; the right hand's thumb is on -X. One piece per finger segment (pivot =
+# its hinge), the palm and the glove cuffs on the hand frame, the sleeve, its crew stripes or colour-block cuff and
+# the REWIND watch on the forearm frame (pivot = the wrist hinge). The game (Heist/FpRig, Heist/Viewmodel) bends the
+# fingers about their hinges, the wrist about its hinge, and aims the forearm at an off-screen elbow.
+FP_GRIP_X = 0.9             # Blender x of each hand's grip in the asset (right hand at -X: Roblox +X)
+FP_WRIST_Z = 0.2            # the wrist hinge, grip space
+FP_FINGERS = [
+    # name, MCP hinge (grip space, right hand), segment lengths, base radius, fan (rest splay, toward the thumb +)
+    ("Index", (-0.162, 0.006, -0.178), (0.128, 0.094, 0.076), 0.058, 1.0),
+    ("Middle", (-0.054, 0.012, -0.194), (0.140, 0.102, 0.082), 0.060, 0.25),
+    ("Ring", (0.054, 0.006, -0.186), (0.132, 0.096, 0.078), 0.057, -0.5),
+    ("Pinky", (0.156, -0.006, -0.160), (0.102, 0.078, 0.066), 0.052, -1.0),
+]
+FP_TAPER = (1.0, 0.95, 0.9, 0.86)    # radius at each joint along a finger (base, PIP, DIP, tip) as shares of the base
+FP_THUMB = [
+    # name, length, radius base -> end, direction (grip space, right hand)
+    ("Thumb1", 0.130, (0.074, 0.068), (-0.52, -0.30, -0.80)),
+    ("Thumb2", 0.098, (0.066, 0.062), (-0.30, -0.22, -0.93)),
+    ("Thumb3", 0.082, (0.062, 0.056), (-0.22, -0.18, -0.96)),
+]
+FP_THUMB_BASE = (-0.135, -0.040, 0.070)
+FP_THUMB_UP = (-0.62, 0.78, 0.0)     # the thumbnail side (right hand)
+# sleeve profile along +Z from the wrist side (grip space z, radius): ribbed cuff, slim forearm, widening to the edge
+FP_SLEEVE = [(0.25, 0.128), (0.26, 0.142), (0.29, 0.147), (0.31, 0.140), (0.33, 0.147), (0.35, 0.140), (0.37, 0.147),
+             (0.39, 0.140), (0.41, 0.138), (0.9, 0.165), (1.6, 0.188), (2.3, 0.202), (2.9, 0.21)]
+FP_SLEEVE_RIB = 9           # profile edges before this index are the rib cuff (one value step darker)
+FP_STRIPES = (0.66, 0.88)   # Breton stripes (crew), grip-space z centres
+FP_STRIPE_W = 0.075
+FP_BLOCK = (0.42, 0.6)      # the colour-block cuff (crew), z from / to
+FP_WATCH_Z = 0.47
+
+
+def fp_sleeve_r(z):
+    for (z0, r0), (z1, r1) in zip(FP_SLEEVE, FP_SLEEVE[1:]):
+        if z0 <= z <= z1:
+            return r0 + (r1 - r0) * (z - z0) / (z1 - z0)
+    return FP_SLEEVE[-1][1]
+
+
+def fp_point(p, side):
+    """A grip-space point (Roblox axes, right-hand numbers mirrored for the left) -> Blender coordinates."""
+    x, y, z = p
+    x *= -side          # side -1 = right (Roblox +X is Blender -X), +1 = left (mirrored)
+    gx = -FP_GRIP_X if side < 0 else FP_GRIP_X
+    return Vector((gx - x, z, y))
+
+
+def fp_dir(d, side):
+    x, y, z = d
+    x *= -side
+    return Vector((-x, z, y)).normalized()
+
+
+def capsule(mb, a, b, r0, r1, col, segs=8, cap=2, part=None):
+    """A tapered capsule from a to b with hemispherical ends (finger segments: the overlapping ends read as knuckles
+    and stay closed when the joint bends)."""
+    a, b = Vector(a), Vector(b)
+    L_ = (b - a).length
+    prof = [(0.0, -r0)]
+    for i in range(1, cap + 1):
+        t = math.pi / 2 * i / (cap + 1)
+        prof.append((r0 * math.sin(t), -r0 * math.cos(t)))
+    prof += [(r0, 0.0), (r1, L_)]
+    for i in range(cap, 0, -1):
+        t = math.pi / 2 * i / (cap + 1)
+        prof.append((r1 * math.sin(t), L_ + r1 * math.cos(t)))
+    prof.append((0.0, L_ + r1))
+    return mb.lathe(prof, segs, col, tuple(a), tuple((b - a).normalized()), phase=math.pi / segs, part=part)
+
+
+def fp_palm(k, side, name):
+    """The glove's palm: a rounded box (a superellipsoid) with thickness, narrower at the wrist, the back domed, and
+    four knuckle bumps along the MCP line."""
+    mb = k.MB(name)
+    c = fp_point((0.0, 0.0, -0.005), side)
+    vs = mb.sphere(tuple(c), 1.0, 12, 8, "white", axis=(0, 1, 0), part="Palm")
+    e = 0.55
+    for v in vs:
+        n = v.co - c
+        if n.length < 1e-9:
+            continue
+        n.normalize()
+        # n.y runs along the hand (Blender +Y = Roblox +Z: toward the wrist), n.z is up (the back of the hand)
+        along = math.copysign(abs(n.y) ** e, n.y)
+        hw = 0.222 - 0.03 * max(0.0, along)                          # narrower toward the wrist
+        up = math.copysign(abs(n.z) ** 0.75, n.z)
+        th = 0.092 if up > 0 else 0.078                              # a domed back, a flatter palm side
+        v.co = c + Vector((math.copysign(abs(n.x) ** e, n.x) * hw, along * 0.205, up * th))
+        v.co.z += 0.012 * (1 - abs(along)) * (1 if up > 0 else 0.4)   # the back arches over the knuckles
+    for fname, hinge, _lens, r, _fan in FP_FINGERS:
+        h = fp_point((hinge[0], hinge[1] + 0.03, hinge[2] + 0.03), side)
+        ellipsoid(mb, tuple(h), 1.0, r * 0.95, r * 0.95, r * 0.75, "white", segs=6, rings=3, part="Knuckle" + fname)
+    return k.finalize(mb, shading="angle", angle=70, pivot=tuple(fp_point((0, 0, 0), side)))
+
+
+def fp_hand_pieces(k, side):
+    """One first-person glove: (ob, joint, parent, hinge (grip space), look, up) per piece."""
+    s = "Left" if side > 0 else "Right"
+    out = [(fp_palm(k, side, f"Rookie_FP_{s}_Palm"), "Palm", None, (0.0, 0.0, 0.0), (0, 0, -1), (0, 1, 0))]
+    up = (0.0, 1.0, 0.0)
+    for fname, hinge, lens, r, fan in FP_FINGERS:
+        d = Vector((-fan * 0.07, 0.0, -1.0)).normalized()     # grip space (right hand): the rest splay
+        p = Vector(hinge)
+        parent = "Palm"
+        for i, ln in enumerate(lens):
+            joint = f"{fname}{i + 1}"
+            mb = k.MB(f"Rookie_FP_{s}_{joint}")
+            a, b = p, p + d * ln
+            capsule(mb, fp_point(a, side), fp_point(b, side), r * FP_TAPER[i], r * FP_TAPER[i + 1], "white",
+                    part="Seg")
+            ob = k.finalize(mb, shading="angle", angle=70, pivot=tuple(fp_point(a, side)))
+            out.append((ob, joint, parent, tuple(a), tuple(d), up))
+            parent, p = joint, b
+    p = Vector(FP_THUMB_BASE)
+    parent = "Palm"
+    for joint, ln, (r0, r1), dd in FP_THUMB:
+        d = Vector(dd).normalized()
+        mb = k.MB(f"Rookie_FP_{s}_{joint}")
+        capsule(mb, fp_point(p, side), fp_point(p + d * ln, side), r0, r1, "white", part="Seg")
+        ob = k.finalize(mb, shading="angle", angle=70, pivot=tuple(fp_point(p, side)))
+        out.append((ob, joint, parent, tuple(p), tuple(d), FP_THUMB_UP))
+        parent, p = joint, p + d * ln
+    return out
+
+
+def fp_cuffs(k, side):
+    """The gloves slot's cuff on the first-person wrist (glove colour): the knit roll (three ridges) or the leather
+    gauntlet (a flare, a strap and a stud). Hand frame, pivot = the grip."""
+    s = "Left" if side > 0 else "Right"
+    axis = tuple(fp_dir((0, 0, 1), side))
+    c = fp_point((0, 0, 0), side)
+    out = []
+    mk = k.MB(f"Rookie_FP_{s}_CuffKnit")
+    prof = [(0.118, 0.13), (0.160, 0.13), (0.176, 0.15), (0.168, 0.175), (0.178, 0.20), (0.168, 0.225), (0.178, 0.25),
+            (0.162, 0.275), (0.118, 0.275)]
+    mk.lathe(prof, 14, "white", tuple(c), axis, closed=True, part="Roll")
+    out.append((k.finalize(mk, shading="angle", angle=50, pivot=tuple(c)), "CuffKnit", "Knit"))
+    ml = k.MB(f"Rookie_FP_{s}_CuffLeather")
+    prof = [(0.118, 0.12), (0.166, 0.12), (0.180, 0.16), (0.200, 0.27), (0.206, 0.31), (0.196, 0.325), (0.118, 0.325)]
+    ml.lathe(prof, 14, "white", tuple(c), axis, closed=True, part="Gauntlet")
+    a = fp_point((-0.075, 0.0, 0.215), side)
+    b = fp_point((0.075, 0.0, 0.215), side)
+    lo = Vector((min(a.x, b.x), min(a.y, b.y) - 0.025, 0.0))
+    top = fp_point((0, 0.188, 0.215), side).z
+    ml.box((lo.x, lo.y, top - 0.02), (max(a.x, b.x), lo.y + 0.05, top + 0.014), "white", chamfer=0.006, part="Strap")
+    st = fp_point((0, 0.204, 0.215), side)
+    ml.sphere(tuple(st), 0.02, 6, 3, "white", part="Stud")
+    out.append((k.finalize(ml, shading="angle", angle=50, pivot=tuple(c)), "CuffLeather", "Leather"))
+    return out
+
+
+def fp_arm_pieces(k, side):
+    """The forearm frame (pivot = the wrist hinge): the cream sleeve with its ribbed cuff, the Breton stripes and the
+    colour-block cuff (crew colour), and on the left the REWIND watch."""
+    s = "Left" if side > 0 else "Right"
+    axis = fp_dir((0, 0, 1), side)
+    wrist = fp_point((0, 0, FP_WRIST_Z), side)
+    c = fp_point((0, 0, 0), side)
+    out = []
+    ms = k.MB(f"Rookie_FP_{s}_Sleeve")
+    prof = [(0.0, FP_SLEEVE[0][0])] + [(r, z) for z, r in FP_SLEEVE] + [(0.0, FP_SLEEVE[-1][0])]
+    cols = ["marble_lo"] + ["marble_lo" if i < FP_SLEEVE_RIB else "marble" for i in range(len(FP_SLEEVE) - 1)] + \
+        ["marble_lo"]
+    vs = ms.lathe(prof, 12, cols, tuple(c), tuple(axis), part="Sleeve")
+    for v in vs:     # a forearm is wider than deep
+        v.co.z = c.z + (v.co.z - c.z) * 0.9
+    out.append((k.finalize(ms, shading="angle", angle=50, pivot=tuple(wrist)), "Sleeve", None, None))
+    mt = k.MB(f"Rookie_FP_{s}_Stripes")
+    for z in FP_STRIPES:
+        r = fp_sleeve_r(z)
+        ring(mt, tuple(c), r - 0.012, r + 0.011, z - FP_STRIPE_W / 2, z + FP_STRIPE_W / 2, "white", segs=12,
+             part=f"Band{z}", axis=tuple(axis))
+    for v in mt.bm.verts:
+        v.co.z = c.z + (v.co.z - c.z) * 0.9
+    out.append((k.finalize(mt, shading="angle", angle=50, pivot=tuple(wrist)), "Stripes", "sweater", "Stripes"))
+    mbk = k.MB(f"Rookie_FP_{s}_Block")
+    z0, z1 = FP_BLOCK
+    mbk.lathe([(fp_sleeve_r(z0) - 0.012, z0), (fp_sleeve_r(z0) + 0.012, z0), (fp_sleeve_r(z0) + 0.016, z0 + 0.02),
+               (fp_sleeve_r(z1) + 0.016, z1 - 0.02), (fp_sleeve_r(z1) + 0.012, z1), (fp_sleeve_r(z1) - 0.012, z1)],
+              12, "white", tuple(c), tuple(axis), closed=True, part="Block")
+    for v in mbk.bm.verts:
+        v.co.z = c.z + (v.co.z - c.z) * 0.9
+    out.append((k.finalize(mbk, shading="angle", angle=50, pivot=tuple(wrist)), "Block", "sweater", "Block"))
+    if side > 0:
+        mw = k.MB("Rookie_FP_Left_Watch")
+        r = fp_sleeve_r(FP_WATCH_Z)
+        ring(mw, tuple(c), r - 0.014, r + 0.014, FP_WATCH_Z - 0.032, FP_WATCH_Z + 0.032, "ink_hi", segs=12,
+             part="Band", axis=tuple(axis))
+        for v in mw.bm.verts:
+            v.co.z = c.z + (v.co.z - c.z) * 0.9
+        top = fp_point((0, r * 0.9 + 0.008, FP_WATCH_Z), side)
+        mw.cylinder(tuple(top), (0, 0, 1), 0.07, 0.0, 0.03, 12, "steel_hi", cap_col="marble_hi", chamfer=0.008,
+                    cham_col="steel", part="Face")
+        hz = top.z + 0.031
+        mw.box((top.x - 0.006, top.y - 0.045, hz - 0.004), (top.x + 0.006, top.y + 0.004, hz + 0.004), "ink", part="Min")
+        mw.box((top.x - 0.004, top.y - 0.004, hz - 0.004), (top.x + 0.032, top.y + 0.004, hz + 0.004), "ink", part="Hr")
+        out.append((k.finalize(mw, shading="angle", angle=40, pivot=tuple(wrist)), "Watch", None, None))
+    return out
+
+
 # ---------------------------------------------------------------- assembly
 
 R15_JOINTS = [
@@ -811,4 +1019,49 @@ def build(k):
     hands_asset = k.Asset("Rookie_Hands", hand_objs, notes="First-person gloves with fingers (REVIEW #10): palm + "
                                                            "index, finger block and thumb in two segments each, "
                                                            "pivots at the hinges; glove colour at runtime.")
-    return [rookie, faces_asset, outfits, viewmodel, hands_asset]
+    # ---- the dedicated first-person arms (FP hands pass, docs/research/fp_hands.md): new pieces, a new group
+    fp_objs = []
+    for side in (-1, 1):
+        s = "Left" if side > 0 else "Right"
+        grip = fp_point((0, 0, 0), side)
+
+        def rdir(d):
+            b = fp_dir(d, side)
+            return [round(-b.x, 4) + 0.0, round(b.z, 4) + 0.0, round(b.y, 4) + 0.0]
+
+        hand = fp_hand_pieces(k, side)
+        by = {j: ob for ob, j, *_r in hand}
+        check_seats(lf, [(ob, by[par]) for ob, _j, par, *_r in hand if par])
+        for ob, joint, parent, hinge, look, up in hand:
+            fp = {"side": s, "joint": joint, "parent": parent, "frame": "hand",
+                  "hinge": k.roblox_point(fp_point(hinge, side), grip)}
+            if parent:   # a finger segment: its hinge frame (the palm is rigid on the grip)
+                fp["look"], fp["up"] = rdir(look), rdir(up)
+            fp_objs.append(k.Obj(ob, "small", role="char", pivot="point", collision="Box", can_collide=False,
+                                 cast_shadow=False, atlas=False, tint=glove, tags=["EH_Rookie", "EH_FPArm"],
+                                 extra={"fp": fp}, notes=f"first-person {s.lower()} glove: {joint} (pivot = its hinge)"))
+        cuffs = fp_cuffs(k, side)
+        for ob, joint, variant in cuffs:
+            fp = {"side": s, "joint": joint, "parent": None, "frame": "hand", "hinge": [0.0, 0.0, 0.0],
+                  "slot": "gloves", "variant": variant}
+            fp_objs.append(k.Obj(ob, "small", role="char", pivot="point", collision="Box", can_collide=False,
+                                 cast_shadow=False, atlas=False, tint=glove, tags=["EH_Rookie", "EH_FPArm"],
+                                 extra={"fp": fp}, notes=f"first-person {s.lower()} {variant.lower()} glove cuff"))
+        arm = fp_arm_pieces(k, side)
+        sleeve = arm[0][0]
+        check_seats(lf, [(ob, sleeve) for ob, *_r in arm[1:]] + [(sleeve, cuffs[0][0]), (sleeve, cuffs[1][0])])
+        for ob, joint, slot, variant in arm:
+            fp = {"side": s, "joint": joint, "parent": None, "frame": "arm",
+                  "hinge": k.roblox_point(fp_point((0, 0, FP_WRIST_Z), side), grip)}
+            if slot:
+                fp["slot"], fp["variant"] = slot, variant
+            tinted = slot == "sweater"
+            fp_objs.append(k.Obj(ob, "small", role="char", pivot="point", collision="Box", can_collide=False,
+                                 cast_shadow=False, atlas=False if tinted else None, tint=crew if tinted else None,
+                                 free_shells=joint == "Stripes", tags=["EH_Rookie", "EH_FPArm"], extra={"fp": fp},
+                                 notes=f"first-person {s.lower()} forearm: {joint} (pivot = the wrist hinge)"))
+    fp_asset = k.Asset("Rookie_FPArms", fp_objs, budget_cls="creature",
+                       notes="Dedicated first-person arms: slim sleeve (ribbed cuff, crew stripes or block), gloved "
+                             "hands with a palm, 4 fingers x 3 segments, a 3-segment thumb, knit / leather cuffs, the "
+                             "REWIND watch. Grip space: fingers -Z, back of the hand +Y; pivots at the hinges.")
+    return [rookie, faces_asset, outfits, viewmodel, hands_asset, fp_asset]

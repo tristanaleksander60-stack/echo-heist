@@ -5924,6 +5924,2469 @@
    "slot": "cap",
    "variant": "Trapper"
   },
+  "Rookie_FP_Left_Block": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.329,
+    0.296,
+    0.18
+   ],
+   "tris": 144,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.165,
+    -0.148,
+    0.22
+   ],
+   "boundsMax": [
+    0.165,
+    0.148,
+    0.4
+   ],
+   "origin": [
+    -0.9,
+    0.0,
+    0.2
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "fp": {
+    "side": "Left",
+    "joint": "Block",
+    "parent": null,
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "slot": "sweater",
+    "variant": "Block"
+   }
+  },
+  "Rookie_FP_Left_CuffKnit": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.356,
+    0.347,
+    0.145
+   ],
+   "tris": 252,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.178,
+    -0.173,
+    0.13
+   ],
+   "boundsMax": [
+    0.178,
+    0.173,
+    0.275
+   ],
+   "origin": [
+    -0.9,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "CuffKnit",
+    "parent": null,
+    "frame": "hand",
+    "hinge": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "slot": "gloves",
+    "variant": "Knit"
+   }
+  },
+  "Rookie_FP_Left_CuffLeather": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.412,
+    0.425,
+    0.205
+   ],
+   "tris": 264,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.206,
+    -0.201,
+    0.12
+   ],
+   "boundsMax": [
+    0.206,
+    0.224,
+    0.325
+   ],
+   "origin": [
+    -0.9,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "CuffLeather",
+    "parent": null,
+    "frame": "hand",
+    "hinge": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "slot": "gloves",
+    "variant": "Leather"
+   }
+  },
+  "Rookie_FP_Left_Index1": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.113,
+    0.107,
+    0.241
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.053,
+    -0.054,
+    -0.183
+   ],
+   "boundsMax": [
+    0.06,
+    0.054,
+    0.058
+   ],
+   "origin": [
+    -0.738,
+    0.006,
+    -0.178
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Index1",
+    "parent": "Palm",
+    "frame": "hand",
+    "hinge": [
+     0.162,
+     0.006,
+     -0.178
+    ],
+    "look": [
+     0.0698,
+     0.0,
+     -0.9976
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Index2": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.105,
+    0.102,
+    0.201
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.051,
+    -0.051,
+    -0.146
+   ],
+   "boundsMax": [
+    0.055,
+    0.051,
+    0.055
+   ],
+   "origin": [
+    -0.729,
+    0.006,
+    -0.306
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Index2",
+    "parent": "Index1",
+    "frame": "hand",
+    "hinge": [
+     0.171,
+     0.006,
+     -0.306
+    ],
+    "look": [
+     0.0698,
+     0.0,
+     -0.9976
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Index3": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.099,
+    0.096,
+    0.178
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.048,
+    -0.048,
+    -0.126
+   ],
+   "boundsMax": [
+    0.051,
+    0.048,
+    0.052
+   ],
+   "origin": [
+    -0.723,
+    0.006,
+    -0.4
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Index3",
+    "parent": "Index2",
+    "frame": "hand",
+    "hinge": [
+     0.178,
+     0.006,
+     -0.399
+    ],
+    "look": [
+     0.0698,
+     0.0,
+     -0.9976
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Middle1": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.111,
+    0.111,
+    0.257
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.055,
+    -0.055,
+    -0.197
+   ],
+   "boundsMax": [
+    0.055,
+    0.055,
+    0.06
+   ],
+   "origin": [
+    -0.846,
+    0.012,
+    -0.194
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Middle1",
+    "parent": "Palm",
+    "frame": "hand",
+    "hinge": [
+     0.054,
+     0.012,
+     -0.194
+    ],
+    "look": [
+     0.0175,
+     0.0,
+     -0.9998
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Middle2": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.105,
+    0.105,
+    0.213
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.053,
+    -0.053,
+    -0.156
+   ],
+   "boundsMax": [
+    0.053,
+    0.053,
+    0.057
+   ],
+   "origin": [
+    -0.844,
+    0.012,
+    -0.334
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Middle2",
+    "parent": "Middle1",
+    "frame": "hand",
+    "hinge": [
+     0.056,
+     0.012,
+     -0.334
+    ],
+    "look": [
+     0.0175,
+     0.0,
+     -0.9998
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Middle3": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.1,
+    0.1,
+    0.188
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.05,
+    -0.05,
+    -0.134
+   ],
+   "boundsMax": [
+    0.05,
+    0.05,
+    0.054
+   ],
+   "origin": [
+    -0.842,
+    0.012,
+    -0.436
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Middle3",
+    "parent": "Middle2",
+    "frame": "hand",
+    "hinge": [
+     0.058,
+     0.012,
+     -0.436
+    ],
+    "look": [
+     0.0175,
+     0.0,
+     -0.9998
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Palm": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.444,
+    0.177,
+    0.41
+   ],
+   "tris": 264,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.222,
+    -0.073,
+    -0.21
+   ],
+   "boundsMax": [
+    0.222,
+    0.104,
+    0.2
+   ],
+   "origin": [
+    -0.9,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Palm",
+    "parent": null,
+    "frame": "hand",
+    "hinge": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Pinky1": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.101,
+    0.096,
+    0.203
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.053,
+    -0.048,
+    -0.151
+   ],
+   "boundsMax": [
+    0.048,
+    0.048,
+    0.052
+   ],
+   "origin": [
+    -1.056,
+    -0.006,
+    -0.16
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Pinky1",
+    "parent": "Palm",
+    "frame": "hand",
+    "hinge": [
+     -0.156,
+     -0.006,
+     -0.16
+    ],
+    "look": [
+     -0.0698,
+     0.0,
+     -0.9976
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Pinky2": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.094,
+    0.091,
+    0.174
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.049,
+    -0.046,
+    -0.124
+   ],
+   "boundsMax": [
+    0.045,
+    0.046,
+    0.049
+   ],
+   "origin": [
+    -1.063,
+    -0.006,
+    -0.262
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Pinky2",
+    "parent": "Pinky1",
+    "frame": "hand",
+    "hinge": [
+     -0.163,
+     -0.006,
+     -0.262
+    ],
+    "look": [
+     -0.0698,
+     0.0,
+     -0.9976
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Pinky3": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.089,
+    0.086,
+    0.157
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.046,
+    -0.043,
+    -0.11
+   ],
+   "boundsMax": [
+    0.043,
+    0.043,
+    0.047
+   ],
+   "origin": [
+    -1.069,
+    -0.006,
+    -0.34
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Pinky3",
+    "parent": "Pinky2",
+    "frame": "hand",
+    "hinge": [
+     -0.169,
+     -0.006,
+     -0.34
+    ],
+    "look": [
+     -0.0698,
+     0.0,
+     -0.9976
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Ring1": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.107,
+    0.105,
+    0.243
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.055,
+    -0.053,
+    -0.186
+   ],
+   "boundsMax": [
+    0.053,
+    0.053,
+    0.057
+   ],
+   "origin": [
+    -0.954,
+    0.006,
+    -0.186
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Ring1",
+    "parent": "Palm",
+    "frame": "hand",
+    "hinge": [
+     -0.054,
+     0.006,
+     -0.186
+    ],
+    "look": [
+     -0.035,
+     0.0,
+     -0.9994
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Ring2": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.101,
+    0.1,
+    0.201
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.051,
+    -0.05,
+    -0.147
+   ],
+   "boundsMax": [
+    0.05,
+    0.05,
+    0.054
+   ],
+   "origin": [
+    -0.959,
+    0.006,
+    -0.318
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Ring2",
+    "parent": "Ring1",
+    "frame": "hand",
+    "hinge": [
+     -0.059,
+     0.006,
+     -0.318
+    ],
+    "look": [
+     -0.035,
+     0.0,
+     -0.9994
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Ring3": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.095,
+    0.095,
+    0.178
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.048,
+    -0.047,
+    -0.127
+   ],
+   "boundsMax": [
+    0.047,
+    0.047,
+    0.051
+   ],
+   "origin": [
+    -0.962,
+    0.006,
+    -0.414
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Ring3",
+    "parent": "Ring2",
+    "frame": "hand",
+    "hinge": [
+     -0.062,
+     0.006,
+     -0.414
+    ],
+    "look": [
+     -0.035,
+     0.0,
+     -0.9994
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Sleeve": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.42,
+    0.378,
+    2.65
+   ],
+   "tris": 312,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.21,
+    -0.189,
+    0.05
+   ],
+   "boundsMax": [
+    0.21,
+    0.189,
+    2.7
+   ],
+   "origin": [
+    -0.9,
+    0.0,
+    0.2
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "fp": {
+    "side": "Left",
+    "joint": "Sleeve",
+    "parent": null,
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ]
+   }
+  },
+  "Rookie_FP_Left_Stripes": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.35,
+    0.315,
+    0.295
+   ],
+   "tris": 192,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.175,
+    -0.157,
+    0.422
+   ],
+   "boundsMax": [
+    0.175,
+    0.157,
+    0.718
+   ],
+   "origin": [
+    -0.9,
+    0.0,
+    0.2
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "fp": {
+    "side": "Left",
+    "joint": "Stripes",
+    "parent": null,
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "slot": "sweater",
+    "variant": "Stripes"
+   }
+  },
+  "Rookie_FP_Left_Thumb1": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.202,
+    0.175,
+    0.244
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.07,
+    -0.104,
+    -0.171
+   ],
+   "boundsMax": [
+    0.132,
+    0.071,
+    0.073
+   ],
+   "origin": [
+    -0.765,
+    -0.04,
+    0.07
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Thumb1",
+    "parent": "Palm",
+    "frame": "hand",
+    "hinge": [
+     0.135,
+     -0.04,
+     0.07
+    ],
+    "look": [
+     0.5199,
+     -0.2999,
+     -0.7998
+    ],
+    "up": [
+     0.6222,
+     0.7828,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Thumb2": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.146,
+    0.14,
+    0.217
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.06,
+    -0.079,
+    -0.152
+   ],
+   "boundsMax": [
+    0.086,
+    0.061,
+    0.065
+   ],
+   "origin": [
+    -0.697,
+    -0.079,
+    -0.034
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Thumb2",
+    "parent": "Thumb1",
+    "frame": "hand",
+    "hinge": [
+     0.203,
+     -0.079,
+     -0.034
+    ],
+    "look": [
+     0.2995,
+     -0.2196,
+     -0.9285
+    ],
+    "up": [
+     0.6222,
+     0.7828,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Thumb3": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.124,
+    0.124,
+    0.193
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.056,
+    -0.067,
+    -0.133
+   ],
+   "boundsMax": [
+    0.069,
+    0.057,
+    0.06
+   ],
+   "origin": [
+    -0.668,
+    -0.101,
+    -0.125
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Left",
+    "joint": "Thumb3",
+    "parent": "Thumb2",
+    "frame": "hand",
+    "hinge": [
+     0.232,
+     -0.101,
+     -0.125
+    ],
+    "look": [
+     0.2197,
+     -0.1798,
+     -0.9589
+    ],
+    "up": [
+     0.6222,
+     0.7828,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Left_Watch": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.311,
+    0.31,
+    0.14
+   ],
+   "tris": 216,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.155,
+    -0.14,
+    0.2
+   ],
+   "boundsMax": [
+    0.155,
+    0.17,
+    0.34
+   ],
+   "origin": [
+    -0.9,
+    0.0,
+    0.2
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "fp": {
+    "side": "Left",
+    "joint": "Watch",
+    "parent": null,
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ]
+   }
+  },
+  "Rookie_FP_Right_Block": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.329,
+    0.296,
+    0.18
+   ],
+   "tris": 144,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.165,
+    -0.148,
+    0.22
+   ],
+   "boundsMax": [
+    0.165,
+    0.148,
+    0.4
+   ],
+   "origin": [
+    0.9,
+    0.0,
+    0.2
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "fp": {
+    "side": "Right",
+    "joint": "Block",
+    "parent": null,
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "slot": "sweater",
+    "variant": "Block"
+   }
+  },
+  "Rookie_FP_Right_CuffKnit": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.356,
+    0.347,
+    0.145
+   ],
+   "tris": 252,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.178,
+    -0.173,
+    0.13
+   ],
+   "boundsMax": [
+    0.178,
+    0.173,
+    0.275
+   ],
+   "origin": [
+    0.9,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "CuffKnit",
+    "parent": null,
+    "frame": "hand",
+    "hinge": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "slot": "gloves",
+    "variant": "Knit"
+   }
+  },
+  "Rookie_FP_Right_CuffLeather": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.412,
+    0.425,
+    0.205
+   ],
+   "tris": 264,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.206,
+    -0.201,
+    0.12
+   ],
+   "boundsMax": [
+    0.206,
+    0.224,
+    0.325
+   ],
+   "origin": [
+    0.9,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "CuffLeather",
+    "parent": null,
+    "frame": "hand",
+    "hinge": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "slot": "gloves",
+    "variant": "Leather"
+   }
+  },
+  "Rookie_FP_Right_Index1": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.113,
+    0.107,
+    0.241
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.06,
+    -0.054,
+    -0.183
+   ],
+   "boundsMax": [
+    0.053,
+    0.054,
+    0.058
+   ],
+   "origin": [
+    0.738,
+    0.006,
+    -0.178
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Index1",
+    "parent": "Palm",
+    "frame": "hand",
+    "hinge": [
+     -0.162,
+     0.006,
+     -0.178
+    ],
+    "look": [
+     -0.0698,
+     0.0,
+     -0.9976
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Index2": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.105,
+    0.102,
+    0.201
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.055,
+    -0.051,
+    -0.146
+   ],
+   "boundsMax": [
+    0.051,
+    0.051,
+    0.055
+   ],
+   "origin": [
+    0.729,
+    0.006,
+    -0.306
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Index2",
+    "parent": "Index1",
+    "frame": "hand",
+    "hinge": [
+     -0.171,
+     0.006,
+     -0.306
+    ],
+    "look": [
+     -0.0698,
+     0.0,
+     -0.9976
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Index3": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.099,
+    0.096,
+    0.178
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.051,
+    -0.048,
+    -0.126
+   ],
+   "boundsMax": [
+    0.048,
+    0.048,
+    0.052
+   ],
+   "origin": [
+    0.723,
+    0.006,
+    -0.4
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Index3",
+    "parent": "Index2",
+    "frame": "hand",
+    "hinge": [
+     -0.178,
+     0.006,
+     -0.399
+    ],
+    "look": [
+     -0.0698,
+     0.0,
+     -0.9976
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Middle1": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.111,
+    0.111,
+    0.257
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.055,
+    -0.055,
+    -0.197
+   ],
+   "boundsMax": [
+    0.055,
+    0.055,
+    0.06
+   ],
+   "origin": [
+    0.846,
+    0.012,
+    -0.194
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Middle1",
+    "parent": "Palm",
+    "frame": "hand",
+    "hinge": [
+     -0.054,
+     0.012,
+     -0.194
+    ],
+    "look": [
+     -0.0175,
+     0.0,
+     -0.9998
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Middle2": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.105,
+    0.105,
+    0.213
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.053,
+    -0.053,
+    -0.156
+   ],
+   "boundsMax": [
+    0.053,
+    0.053,
+    0.057
+   ],
+   "origin": [
+    0.844,
+    0.012,
+    -0.334
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Middle2",
+    "parent": "Middle1",
+    "frame": "hand",
+    "hinge": [
+     -0.056,
+     0.012,
+     -0.334
+    ],
+    "look": [
+     -0.0175,
+     0.0,
+     -0.9998
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Middle3": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.1,
+    0.1,
+    0.188
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.05,
+    -0.05,
+    -0.134
+   ],
+   "boundsMax": [
+    0.05,
+    0.05,
+    0.054
+   ],
+   "origin": [
+    0.842,
+    0.012,
+    -0.436
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Middle3",
+    "parent": "Middle2",
+    "frame": "hand",
+    "hinge": [
+     -0.058,
+     0.012,
+     -0.436
+    ],
+    "look": [
+     -0.0175,
+     0.0,
+     -0.9998
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Palm": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.444,
+    0.177,
+    0.41
+   ],
+   "tris": 264,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.222,
+    -0.073,
+    -0.21
+   ],
+   "boundsMax": [
+    0.222,
+    0.104,
+    0.2
+   ],
+   "origin": [
+    0.9,
+    0.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Palm",
+    "parent": null,
+    "frame": "hand",
+    "hinge": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Pinky1": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.101,
+    0.096,
+    0.203
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.048,
+    -0.048,
+    -0.151
+   ],
+   "boundsMax": [
+    0.053,
+    0.048,
+    0.052
+   ],
+   "origin": [
+    1.056,
+    -0.006,
+    -0.16
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Pinky1",
+    "parent": "Palm",
+    "frame": "hand",
+    "hinge": [
+     0.156,
+     -0.006,
+     -0.16
+    ],
+    "look": [
+     0.0698,
+     0.0,
+     -0.9976
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Pinky2": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.094,
+    0.091,
+    0.174
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.045,
+    -0.046,
+    -0.124
+   ],
+   "boundsMax": [
+    0.049,
+    0.046,
+    0.049
+   ],
+   "origin": [
+    1.063,
+    -0.006,
+    -0.262
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Pinky2",
+    "parent": "Pinky1",
+    "frame": "hand",
+    "hinge": [
+     0.163,
+     -0.006,
+     -0.262
+    ],
+    "look": [
+     0.0698,
+     0.0,
+     -0.9976
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Pinky3": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.089,
+    0.086,
+    0.157
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.043,
+    -0.043,
+    -0.11
+   ],
+   "boundsMax": [
+    0.046,
+    0.043,
+    0.047
+   ],
+   "origin": [
+    1.069,
+    -0.006,
+    -0.34
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Pinky3",
+    "parent": "Pinky2",
+    "frame": "hand",
+    "hinge": [
+     0.169,
+     -0.006,
+     -0.34
+    ],
+    "look": [
+     0.0698,
+     0.0,
+     -0.9976
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Ring1": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.107,
+    0.105,
+    0.243
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.053,
+    -0.053,
+    -0.186
+   ],
+   "boundsMax": [
+    0.055,
+    0.053,
+    0.057
+   ],
+   "origin": [
+    0.954,
+    0.006,
+    -0.186
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Ring1",
+    "parent": "Palm",
+    "frame": "hand",
+    "hinge": [
+     0.054,
+     0.006,
+     -0.186
+    ],
+    "look": [
+     0.035,
+     0.0,
+     -0.9994
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Ring2": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.101,
+    0.1,
+    0.201
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.05,
+    -0.05,
+    -0.147
+   ],
+   "boundsMax": [
+    0.051,
+    0.05,
+    0.054
+   ],
+   "origin": [
+    0.959,
+    0.006,
+    -0.318
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Ring2",
+    "parent": "Ring1",
+    "frame": "hand",
+    "hinge": [
+     0.059,
+     0.006,
+     -0.318
+    ],
+    "look": [
+     0.035,
+     0.0,
+     -0.9994
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Ring3": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.095,
+    0.095,
+    0.178
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.047,
+    -0.047,
+    -0.127
+   ],
+   "boundsMax": [
+    0.048,
+    0.047,
+    0.051
+   ],
+   "origin": [
+    0.962,
+    0.006,
+    -0.414
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Ring3",
+    "parent": "Ring2",
+    "frame": "hand",
+    "hinge": [
+     0.062,
+     0.006,
+     -0.414
+    ],
+    "look": [
+     0.035,
+     0.0,
+     -0.9994
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Sleeve": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.42,
+    0.378,
+    2.65
+   ],
+   "tris": 312,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.21,
+    -0.189,
+    0.05
+   ],
+   "boundsMax": [
+    0.21,
+    0.189,
+    2.7
+   ],
+   "origin": [
+    0.9,
+    0.0,
+    0.2
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "fp": {
+    "side": "Right",
+    "joint": "Sleeve",
+    "parent": null,
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ]
+   }
+  },
+  "Rookie_FP_Right_Stripes": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.35,
+    0.315,
+    0.295
+   ],
+   "tris": 192,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.175,
+    -0.157,
+    0.422
+   ],
+   "boundsMax": [
+    0.175,
+    0.157,
+    0.718
+   ],
+   "origin": [
+    0.9,
+    0.0,
+    0.2
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "fp": {
+    "side": "Right",
+    "joint": "Stripes",
+    "parent": null,
+    "frame": "arm",
+    "hinge": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "slot": "sweater",
+    "variant": "Stripes"
+   }
+  },
+  "Rookie_FP_Right_Thumb1": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.202,
+    0.175,
+    0.244
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.132,
+    -0.104,
+    -0.171
+   ],
+   "boundsMax": [
+    0.07,
+    0.071,
+    0.073
+   ],
+   "origin": [
+    0.765,
+    -0.04,
+    0.07
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Thumb1",
+    "parent": "Palm",
+    "frame": "hand",
+    "hinge": [
+     -0.135,
+     -0.04,
+     0.07
+    ],
+    "look": [
+     -0.5199,
+     -0.2999,
+     -0.7998
+    ],
+    "up": [
+     -0.6222,
+     0.7828,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Thumb2": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.146,
+    0.14,
+    0.217
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.086,
+    -0.079,
+    -0.152
+   ],
+   "boundsMax": [
+    0.06,
+    0.061,
+    0.065
+   ],
+   "origin": [
+    0.697,
+    -0.079,
+    -0.034
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Thumb2",
+    "parent": "Thumb1",
+    "frame": "hand",
+    "hinge": [
+     -0.203,
+     -0.079,
+     -0.034
+    ],
+    "look": [
+     -0.2995,
+     -0.2196,
+     -0.9285
+    ],
+    "up": [
+     -0.6222,
+     0.7828,
+     0.0
+    ]
+   }
+  },
+  "Rookie_FP_Right_Thumb3": {
+   "model": "Rookie_FPArms",
+   "size": [
+    0.124,
+    0.124,
+    0.193
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.069,
+    -0.067,
+    -0.133
+   ],
+   "boundsMax": [
+    0.056,
+    0.057,
+    0.06
+   ],
+   "origin": [
+    0.668,
+    -0.101,
+    -0.125
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_FPArm"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "fp": {
+    "side": "Right",
+    "joint": "Thumb3",
+    "parent": "Thumb2",
+    "frame": "hand",
+    "hinge": [
+     -0.232,
+     -0.101,
+     -0.125
+    ],
+    "look": [
+     -0.2197,
+     -0.1798,
+     -0.9589
+    ],
+    "up": [
+     -0.6222,
+     0.7828,
+     0.0
+    ]
+   }
+  },
   "Rookie_Face_Busted": {
    "model": "Rookie_Faces",
    "size": [

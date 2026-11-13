@@ -49,6 +49,7 @@ def source():
            "-- attach: outfit pieces and faces weld to `part` with their pivot at that part's pivot + `offset`.",
            "-- tint: \"crew\" (seat hue) or \"gloves\" (Config.Rookie.GLOVES). viewmodel: first-person arms (pivot = elbow).",
            "-- hands: first-person gloves with fingers by side, chain order; offset = the hinge from the wrist (rest pose).",
+           "-- fpArms: the dedicated first-person arms by side (grip space: fingers -Z, the back of the hand +Y, full size).",
            "",
            "return {"]
     out.append("\tbody = {")
@@ -111,6 +112,36 @@ def source():
         for n, f, off in sorted(segs[side], key=lambda r: order.index(r[1]["name"]) if r[1]["name"] in order else 99):
             parent = f'"{f["parent"]}"' if f.get("parent") else "nil"
             out.append(f'\t\t\t{{ piece = "{n}", joint = "{f["name"]}", parent = {parent}, offset = {vec(off)} }},')
+        out.append("\t\t},")
+    out.append("\t},")
+    # the dedicated first-person arms (Rookie_FPArms): per side, the pieces in chain order (palm, fingers base to tip,
+    # the thumb, the cuffs, then the forearm frame's pieces); hinge / look / up in grip space, centre = the piece's
+    # box centre from its pivot (the MeshPart CFrame), size = the authored MeshPart size
+    fp = {}
+    for n, p in rk.items():
+        f = p.get("fp")
+        if f:
+            fp.setdefault(f["side"], []).append((n, f, p))
+    joint_order = ["Palm"] + [f"{a}{i}" for a in ("Index", "Middle", "Ring", "Pinky", "Thumb") for i in (1, 2, 3)] + \
+        ["CuffKnit", "CuffLeather", "Sleeve", "Stripes", "Block", "Watch"]
+    out.append("\tfpArms = {")
+    for side in sorted(fp):
+        out.append(f"\t\t{side} = {{")
+        for n, f, p in sorted(fp[side], key=lambda r: joint_order.index(r[1]["joint"])):
+            lo, hi = p["boundsMin"], p["boundsMax"]
+            centre = [(lo[i] + hi[i]) / 2 for i in range(3)]
+            fields = [f'piece = "{n}"', f'joint = "{f["joint"]}"',
+                      "parent = " + (f'"{f["parent"]}"' if f.get("parent") else "nil"), f'frame = "{f["frame"]}"',
+                      f"hinge = {vec(f['hinge'])}"]
+            if f.get("look"):
+                fields += [f"look = {vec(f['look'])}", f"up = {vec(f['up'])}"]
+            fields += [f"centre = {vec(centre)}", f"size = {vec(p['size'])}"]
+            if f.get("slot"):
+                fields += [f'slot = "{f["slot"]}"', f'variant = "{f["variant"]}"']
+            t = tint_of(p)
+            fields.append("tint = " + (f'"{t}"' if t else "nil"))
+            fields.append(f"tris = {p['tris']}")
+            out.append("\t\t\t{ " + ", ".join(fields) + " },")
         out.append("\t\t},")
     out.append("\t},")
     out.append("\tviewmodel = {")
