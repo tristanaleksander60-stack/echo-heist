@@ -101,3 +101,35 @@ This plan **extends** docs/PLAN_STEAM_PLUS.md. The quality bar (§2), the verifi
 - **Clone recognition without the Roblox avatar:** outfit + colour + name pill. The kid-test gate "4 of 5 find their clone" still applies.
 - **Phones in first person:** look + move + interact on touch. Fix: big tap targets, auto-aim assist on interactables within the reach cone (a "sticky" reticle).
 - **Scope:** the cut order: throw → the drive transition (keep a door wipe only) → outfit slots beyond 2 → aurora layers beyond 2.
+
+---
+
+## 5. Added 2026-11-13 (owner, approved): the story intro, and huge, thought-through buildings
+
+### INTRO: a very dramatic animated story intro (track INTRO)
+- **Story (MASTERPLAN §4.3, "Steal Back Christmas"):** Christmas Eve in a toy-sized town. Sir Hoardsworth (a tall, thin toy tycoon in burgundy and gold velvet with a monocle; never green or furry) switches on a giant vacuum on top of his tower, and every present in town is sucked up into his **Snow Globe Vault** under the northern lights. A kid's letter to Santa flutters down to a dark garage. Headlights flick on: **the Rookie** pulls down the flat cap and grins. Clones flicker in behind them, tape-print style, "it's going to take more than one of me". Title smash: **HEIST YOURSELF**.
+- **Length:** 30-40 s, about 6 shots, with dramatic camera moves (crane, push-in, whip-pan), lighting, snow and aurora. Music stinger hooks (empty cues until the commission lands) and big caption cards (no voice-over needed; sound-off readable, so TikTok-ready as a trailer too).
+- **Rules:**
+  - Plays on **first join only**, before the lobby. **SKIP** is visible from the first second.
+  - Rewatchable from the TV in the lobby.
+  - It replaces the 3 s title beat for new players. The premium G1 "control within 10 s" bar is waived for the intro by the owner's call; the kid tests measure whether kids skip it.
+- **Build:** a client `Cinematic` module (a shot list as data, camera splines and character keyframes driven by the Animator or Lua, stepped in time), in a Studio-only staging scene. Hoardsworth and the vacuum and Snow Globe tower are new Blender assets through the gates. Renders of key frames go in `docs/art/intro/` for review.
+
+### BIG: huge, thought-through buildings (track BIG)
+- **The problem:** levels today are single-storey, roofless cut-away boxes (built for the top-down diorama). In **first person** you look up and see sky inside a shop; from the street every building is a squat box, and the town feels small.
+- **Fix:**
+  1. **Every heist building is tall**: 3-5 storeys of facade, with lit apartment windows above the shop, cornices, signs, fire escapes and Christmas lights. The playable ground floor keeps the sim's footprint exactly; **no sim data changes**.
+  2. **Real ceilings and roofs over the playable interiors.** In first person the ceiling is there (with ceiling lamps).
+  3. **Camera-aware cut-away** for the diorama, classic and presentation shots: roofs, ceilings and upper floors between the camera and the player fade or hide locally (the wall-fade system extended to "everything above the player's floor" when the camera is above roof height). First person never hides them.
+  4. **The town around** (World 2.0) scales up to match: 4-8 storey blocks, a few landmark towers (Hoardsworth's), streets with depth.
+  5. **The garage/hideout** becomes a big warehouse-style space suited to a first-person lobby.
+- **Budgets:** upper floors are cheap facade shells (no interiors), instanced per prefab, CastShadow off, and fake light with emissive windows. They must stay inside docs/PERF.md's per-tier budgets: far facades simplify at tier ≥ 3.
+- **Tests:**
+  - an engine check that every level has a ceiling over its playable rooms;
+  - a first-person "look up" raycast hits a ceiling, never the sky;
+  - the diorama cut-away hides what is above the player when the camera is above;
+  - renders from both cameras.
+
+### Order update
+- Wave B gains **BIG** (after World 2.0 merges: same files) and **INTRO** (assets first; it needs the Rookie, so its code starts after the CH merge).
+- Wave B as a whole: LB lobby (which needs the big garage from BIG), SKY aurora, INTRO, BIG.
