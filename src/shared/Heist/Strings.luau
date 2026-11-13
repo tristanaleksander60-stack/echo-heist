@@ -402,8 +402,10 @@ Strings.WARDROBE_SLOT = table.freeze({
 	sweater = "SWEATER",
 	gloves = "GLOVES",
 	mask = "MASK",
+	tone = "KNIT COLOUR",
 } :: { [string]: string })
 Strings.WEARING = "WEARING"
+Strings.WARDROBE_RANDOM = "RANDOM"
 function Strings.unlockStars(n: number): string
 	return if n == 1 then "1 STAR" else string.format("%d STARS", n)
 end

@@ -2434,5 +2434,144 @@ do
 	check(okL2, "lobby 2 section ran" .. (if okL2 then "" else ": " .. tostring(l2Err)))
 end
 
+-- 14. Random characters and look pitch. A new profile (PlayerData.prepare, as a joining player's) gets its random
+-- outfit from DataService.firstOutfit: every slot a wearable id, the flag set, valid as saved, the same after a real
+-- DataStore round trip on a _TEST_ key, and never rolled again; a Rookie dressed in it wears its knit colour. Fresh
+-- players differ with high probability. Look pitch: the Heist.Ready remote exists, its Net validator takes an
+-- in-range { op = "look", n } and refuses bad ones, the remote's limit lets 10 Hz through and stops 60 Hz spam, and
+-- Heist/LookSync writes LookPitch on the character, drops a look sent too soon and a bad n.
+do
+	local okRl, rlErr = pcall(function()
+		local heistDir = server:WaitForChild("Heist")
+		local sharedDir = ReplicatedStorage:WaitForChild("Shared")
+		local Config = require(sharedDir:WaitForChild("Config")) :: any
+		local heistShared = sharedDir:WaitForChild("Heist")
+		local Outfit = require(heistShared:WaitForChild("Outfit"))
+		local LookPitch = require(heistShared:WaitForChild("LookPitch"))
+		local VanRules = require(heistShared:WaitForChild("VanRules"))
+		local Rookie = require(heistDir:WaitForChild("Rookie"))
+		local LookSync = require(heistDir:WaitForChild("LookSync"))
+		local RateLimit = require(ReplicatedStorage:WaitForChild("LihFolk"):WaitForChild("RateLimit"))
+		local R = Config.Rookie
+
+		-- a new player's random outfit
+		local prof = PlayerData.prepare(nil, Schema.VERSION, Schema.MIGRATIONS, makeData)
+		assert(prof, "a new profile")
+		local h = prof.Data.Heist
+		Schema.sanitize(h)
+		check(h.outfitRolled == false, "random outfit: a new profile has not rolled yet")
+		check(DataService.firstOutfit(h) == true and h.outfitRolled == true, "random outfit: rolled at first load")
+		local wearable = true
+		for _, slot in R.SLOTS do
+			wearable = wearable and (Outfit.canWear(h, slot, h.outfit[slot]))
+		end
+		check(wearable, "random outfit: every slot a wearable id (" .. Outfit.key(h.outfit) .. ")")
+		check(
+			#Schema.sanitize(h) == 0 and PlayerData.findUnsavable(prof.Data) == nil,
+			"random outfit: valid and savable"
+		)
+		local key = Outfit.key(h.outfit)
+		check(DataService.firstOutfit(h) == false and Outfit.key(h.outfit) == key, "random outfit: never rolled again")
+		if inTestUniverse then
+			local dsKey = GameConfig.Data.TEST_PREFIX .. "outfit_" .. HttpService:GenerateGUID(false)
+			assert(Keys.isWritable(dsKey, true), "refusing a non-test key")
+			local store = DataStoreService:GetDataStore(GameConfig.Data.STORE_NAME)
+			store:SetAsync(dsKey, { Schema = Schema.VERSION, Data = prof.Data })
+			local options = Instance.new("DataStoreGetOptions")
+			options.UseCache = false
+			local back = store:GetAsync(dsKey, options)
+			store:RemoveAsync(dsKey)
+			local again = PlayerData.prepare(back, Schema.VERSION, Schema.MIGRATIONS, makeData)
+			local hb = again and again.Data.Heist
+			check(
+				hb ~= nil
+					and #Schema.sanitize(hb) == 0
+					and Outfit.key(hb.outfit) == key
+					and DataService.firstOutfit(hb) == false,
+				"random outfit: saved and read back unchanged (DataStore, _TEST_ key)"
+			)
+		end
+		local m = Rookie.build(h.outfit, nil, "constraint")
+		local hand = m:FindFirstChild("RightHand")
+		check(
+			m:GetAttribute("EH_Outfit") == key
+				and hand ~= nil
+				and hand:IsA("BasePart")
+				and hand.Color:ToHex() == Color3.fromHex(Outfit.gloveHex(h.outfit)):ToHex(),
+			"random outfit: a Rookie wears it (gloves " .. Outfit.gloveHex(h.outfit) .. ")"
+		)
+		m:Destroy()
+		local differ, N = 0, 300
+		for _ = 1, N do
+			local a = PlayerData.prepare(nil, Schema.VERSION, Schema.MIGRATIONS, makeData)
+			local b = PlayerData.prepare(nil, Schema.VERSION, Schema.MIGRATIONS, makeData)
+			if a and b then
+				DataService.firstOutfit(a.Data.Heist)
+				DataService.firstOutfit(b.Data.Heist)
+				if Outfit.key(a.Data.Heist.outfit) ~= Outfit.key(b.Data.Heist.outfit) then
+					differ += 1
+				end
+			end
+		end
+		check(differ / N >= 0.88, string.format("random outfit: %d / %d pairs of new players differ", differ, N))
+
+		-- look pitch
+		local remotes = ReplicatedStorage:FindFirstChild("LihFolkRemotes")
+		check(remotes ~= nil and remotes:FindFirstChild("Heist.Ready") ~= nil, "look: rides the existing Heist.Ready")
+		local up = LookPitch.quantise(25)
+		check(VanRules.validReadyArg({ op = "look", n = up }), "look: an in-range pitch passes the Net validator")
+		local badOk = false
+		for _, bad in { { op = "look" }, { op = "look", n = 0 }, { op = "look", n = 99 }, { op = "look", n = 0.5 } } do
+			badOk = badOk or VanRules.validReadyArg(bad)
+		end
+		check(not badOk, "look: bad looks fail the Net validator")
+		local t = 0
+		local limiter = RateLimit.new(Config.Heist.RATE.Ready.burst, Config.Heist.RATE.Ready.perSecond, function()
+			return t
+		end)
+		local passed10 = 0
+		for i = 1, 50 do
+			t = i / 10
+			if limiter:Allow("p10") then
+				passed10 += 1
+			end
+		end
+		local passed60 = 0
+		for i = 1, 300 do
+			t = 100 + i / 60
+			if limiter:Allow("p60") then
+				passed60 += 1
+			end
+		end
+		check(
+			passed10 == 50 and passed60 < 120,
+			string.format("look: 10 Hz passes (%d / 50), 60 Hz spam does not (%d / 300)", passed10, passed60)
+		)
+		local char = Instance.new("Model")
+		char.Name = "LookDummy"
+		local A = R.LOOK.ATTRIBUTE
+		local key2 = {}
+		check(
+			LookSync.accept(key2, char, up, 1) and char:GetAttribute(A) == LookPitch.degrees(up),
+			"look: accepted, LookPitch written"
+		)
+		check(
+			not LookSync.accept(key2, char, LookPitch.quantise(-10), 1.02),
+			"look: a look 20 ms later is dropped (spam)"
+		)
+		check(char:GetAttribute(A) == LookPitch.degrees(up), "look: the dropped look changed nothing")
+		check(not LookSync.accept(key2, char, 99, 2), "look: a bad n is refused")
+		check(not LookSync.accept(key2, char, 0 / 0, 3), "look: NaN is refused")
+		check(
+			LookSync.accept(key2, char, 1, 4) and char:GetAttribute(A) == -R.LOOK.MAX_DEG,
+			"look: the next look counts"
+		)
+		check(not LookSync.accept({}, nil, up, 5), "look: no character, nothing")
+		LookSync.forget(key2)
+		char:Destroy()
+	end)
+	check(okRl, "random characters and look section ran" .. (if okRl then "" else ": " .. tostring(rlErr)))
+end
+
 table.insert(results, string.format("%d failure(s)", failures))
 return table.concat(results, "\n")

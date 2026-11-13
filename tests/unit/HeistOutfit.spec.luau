@@ -125,6 +125,7 @@ return function(test)
 		local ok: any = heistWith(9, { "Trophy_NightClerk" })
 		ok.outfit = { cap = "Cap_Trapper", scarf = "Scarf_Chunky", sweater = "Sweater_Block", gloves = "Gloves_Knit" }
 		ok.outfit.mask = "Mask_Eye"
+		ok.outfit.tone = "Tone_Plum"
 		local before = Outfit.key(ok.outfit)
 		local rep = Schema.sanitize(ok)
 		Assert.eq(Outfit.key(ok.outfit), before, "an unlocked outfit survives")
