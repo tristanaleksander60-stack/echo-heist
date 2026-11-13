@@ -152,7 +152,9 @@ function LobbyLook.orbit(root: { number }, facingYaw: number, t: number, reduced
 		root[2] + O.height,
 		root[3] - math.cos(yaw) * O.distance,
 	}
-	return eye, { root[1], root[2] + O.look, root[3] }
+	-- the look point slides to the camera's left so you stand right of centre, clear of the sheet on the left
+	local c, s = math.cos(yaw), math.sin(yaw)
+	return eye, { root[1] + c * O.shift, root[2] + O.look, root[3] - s * O.shift }
 end
 
 -- The free van nearest to (x, z) from a list of { bay, x, z, free } (the first-visit "PICK A VAN" hint).

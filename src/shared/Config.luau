@@ -1495,7 +1495,8 @@ Config.Hideout = {
 	FOCUS_SECONDS = 0.45, -- the eye's ease into a station view (reduced motion: a cut)
 	FOCUS_LEAVE_STUDS = 4, -- a station closes when you walk this far from where you opened it
 	-- The wardrobe's view of yourself: a third-person orbit round your Rookie (the mirror is dressing).
-	WARDROBE_ORBIT = { distance = 7.5, height = 1.2, yaw = 25, fov = 48, look = 0.4, spin = 18 }, -- spin: deg/s
+	-- spin: deg/s; shift: studs the look point slides left, so you stand right of the sheet (HudLayout.WARDROBE)
+	WARDROBE_ORBIT = { distance = 7.5, height = 1.2, yaw = 25, fov = 48, look = 0.4, spin = 18, shift = 1.8 },
 	-- Vans. Geometry in van space: `along` toward the cab, `up` from the floor, `out` toward the open side door. The
 	-- kit van (assets/blender/van.py) puts the cab at its local -X and the side door at its local -Z (engine-checked:
 	-- tests/engine_smoke.luau section 12), so a bay anchor's LookVector (yaw = the bay's) is the door's facing.

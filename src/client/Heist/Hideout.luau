@@ -332,6 +332,15 @@ function Hideout.new(state: any, deps: any): any
 		end
 	end
 
+	-- The crew's picked job as one key ("" = none; the daily vault is index 0 with its day).
+	local function jobKey(): string
+		local g = state.garage
+		if not g or g.job == nil then
+			return ""
+		end
+		return tostring(g.job) .. ":" .. tostring(g.jobDay or "")
+	end
+
 	local function openStation(it: any)
 		local st = it.station
 		local verb = st.verb
@@ -358,6 +367,7 @@ function Hideout.new(state: any, deps: any): any
 			fov = st.cam.fov,
 			startPos = r.Position,
 			opened = false,
+			job = jobKey(),
 			yaw = math.deg(math.atan2(-r.CFrame.LookVector.X, -r.CFrame.LookVector.Z)),
 		}
 		focus = f
@@ -582,8 +592,9 @@ function Hideout.new(state: any, deps: any): any
 
 	-- A garage sync while you are in the garage (your crew, your van, the job changed).
 	function h.refresh()
-		if focus and focus.verb == "jobs" and state.garage and (tonumber(state.garage.job) or 0) > 0 then
-			-- a job was picked on the board: back to the hideout, go to the van
+		local f = focus
+		if f and (f.verb == "jobs" or f.verb == "laptop") and jobKey() ~= f.job then
+			-- a job was picked on the board (or the laptop's daily vault): back to the hideout, go to the van
 			closeStation()
 			setRoam(true)
 		end
