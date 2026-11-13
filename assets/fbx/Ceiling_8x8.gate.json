@@ -4,7 +4,7 @@
   {
    "name": "Ceiling_8x8",
    "class": "module",
-   "tris": 264,
+   "tris": 168,
    "budget": [
     800,
     2000
@@ -43,7 +43,7 @@
     "Y": 0.0
    },
    "self_intersections": 0,
-   "cross_shell_overlaps": 87,
+   "cross_shell_overlaps": 68,
    "cap_overlaps": 0,
    "flipped_faces": 0,
    "boundary_edges": 0,
@@ -73,7 +73,7 @@
  ],
  "asset_fails": [],
  "lihfolk_bpy": "LihFolk plugin",
- "tris_total": 264,
+ "tris_total": 168,
  "seats": [],
  "align": [],
  "A11_atlas": [
@@ -82,10 +82,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "44f761ba21915c0aca00",
+ "contentHash": "f23ce3a166645b12578d",
  "fbx": {
   "path": "assets/fbx/Ceiling_8x8.fbx",
-  "bytes": 23148,
+  "bytes": 21468,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -103,5 +103,5 @@
  "spec": "assets/blender/tower.py",
  "notes": "Ceiling tile 8 x 8 x 0.55, coffered underside (BIG buildings: first person never sees sky indoors).",
  "turntable": "docs/art/turntables/Ceiling_8x8.png",
- "seconds": 76.3
+ "seconds": 4.3
 }

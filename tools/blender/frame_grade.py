@@ -92,6 +92,13 @@ def grade(path, ids=None, src=None):
         "glow_share": round(float((y >= GLOW_LUMA).mean()) * 100, 1),
         "near_black": round(float((y < NEAR_BLACK).mean()) * 100, 2),
         "dark_share": round(float((y < DARK).mean()) * 100, 1),
+        # BIG (LEVELS.md 11): value contrast (the spread of luma, p90 - p10, and its RMS) and the pink cast (the mean
+        # of the magenta axis, (R + B) / 2 - G, over the mid tones: > 0 reads pink / lavender, the washed-out
+        # complaint)
+        "value_spread": round(float(np.percentile(y, 90) - np.percentile(y, 10)), 3),
+        "rms_contrast": round(float(y.std()), 3),
+        "pink_cast": round(float(np.mean(((a[..., 0] + a[..., 2]) / 2 - a[..., 1])[(y > 0.2) & (y < 0.8)]) / 255.0)
+                           if ((y > 0.2) & (y < 0.8)).any() else 0.0, 3),
     }
     if ids is None:
         guess = os.path.splitext(path)[0] + "_ids.png"

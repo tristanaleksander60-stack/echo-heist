@@ -1025,13 +1025,43 @@ def garage_scene(g, lib):
     """The garage v1 as server Heist/Lobby builds it (kit, van paints, bay lines and numbers, lamps, the NEXT card)."""
     LG = g["lighting"]
     gbox("Floor", g["floor"], PAL["floor"])
+    groups = {}
     for it in g["kit"]:
         for piece in it["pieces"]:
             o = put(lib, piece, it["pivot"], it["scale"])
             if o is None:
                 continue
-            if piece["name"] == "Van_Paint" and it.get("color"):
+            if piece["name"] in ("Van_Paint", "Facade_8x10_Body") and it.get("color"):
                 tint(o, "#%02X%02X%02X" % tuple(it["color"]), rough=0.5)
+            if it.get("group"):
+                o.visible_shadow = False
+                groups.setdefault(it["group"], []).append(o)
+    # the warehouse's plain parts (LobbyPlan.warehouse): shell, roof, skylights, mezzanine, the stations' dressing
+    for p in g.get("parts") or []:
+        if (p.get("alpha") or 0) >= 1:
+            continue   # invisible colliders
+        s, c = p["size"], p["pos"]
+        if abs((p.get("yaw") or 0) % 180 - 90) < 1e-6:
+            s = (s[2], s[1], s[0])
+        b = [c[0] - s[0] / 2, c[1] - s[1] / 2, c[2] - s[2] / 2, c[0] + s[0] / 2, c[1] + s[1] / 2, c[2] + s[2] / 2]
+        mat = p.get("material")
+        o = gbox("Ware" + p["name"], b, _hexc(p["color"]), emit=2.2 if mat == "Neon" else 0.0,
+                 alpha=1 - (p.get("alpha") or 0), shadow=False)
+        gui = p.get("gui")
+        if gui:
+            face = {"Front": (0, -1), "Back": (0, 1), "Left": (-1, 0), "Right": (1, 0)}[gui["face"]]
+            yaw = math.radians(p.get("yaw") or 0)
+            fx = face[0] * math.cos(yaw) + face[1] * math.sin(yaw)
+            fz = -face[0] * math.sin(yaw) + face[1] * math.cos(yaw)
+            half = (s[0] / 2 if abs(fx) > 0.5 else s[2] / 2) + 0.04
+            ang = math.atan2(-fx, -fz)   # the text's Roblox facing (0 = toward -Z)
+            size = min(s[1] * 0.45, (s[2] if abs(fx) > 0.5 else s[0]) / max(1, len(gui["text"])) * 1.6)
+            t = text3(gui["text"], size, _hexc(gui["color"]), 2.2, rb(c[0] + fx * half, c[1], c[2] + fz * half),
+                      (math.pi / 2, 0, ang))
+            if p.get("group"):
+                groups.setdefault(p["group"], []).append(t)
+        if p.get("group"):
+            groups.setdefault(p["group"], []).append(o)
     L = g["lobby"]
     for b in g["lines"]:
         gbox("BayLine", b, "#%02X%02X%02X" % tuple(L["BAY_LINE"]["color"]), shadow=False)
@@ -1062,6 +1092,7 @@ def garage_scene(g, lib):
         if t.dimensions.x > wide:
             k = wide / t.dimensions.x
             t.scale = (k, k, k)
+    return groups
 
 
 # ------------------------------------------------------------------ WORLD 2.0: the full frame, both cameras
@@ -1442,6 +1473,48 @@ def big_level(level, samples, out_dir):
     pos = (ox1 + 40.0, fy + 34.0, oz1 + 70.0)
     tgt = ((ox0 + ox1) / 2, fy + 26.0, (oz0 + oz1) / 2)
     _w2_shoot(s, cam, f"{tag}_street_wide", pos, tgt, 60.0, pos, cfg, out_dir, level=level)
+
+
+def big_garage(g, samples, out_dir):
+    """BIG: the warehouse hideout from the first-person eye (the spawn view down the aisle, up at the trusses and
+    skylights, the mezzanine and the stations) and the diorama with the cut-away."""
+    import backdrop_shots as BS
+    W, Hh = W2_SIZE
+    os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(TMP, exist_ok=True)
+    s = MR.reset(samples)
+    s.view_settings.exposure = 0.3
+    lib = Lib(g["location"])
+    groups = garage_scene(g, lib)
+    BS.backdrop({"backdrop": g["backdrop"], "backdropConfig": g["backdropConfig"], "kit": [], "location": g["location"],
+                 "lighting": g["lighting"]}, lib, put, soft_pool_mat)
+    lighting(s)
+    BS.world_sky(s, TMP)
+    cam = _w2_camera(s, W, Hh)
+    cfg = g["backdropConfig"]
+    DF = g["camera"]["DIORAMA"]["FOV"]
+    t = g["tower"]
+    sx, sz = g["spawn"]
+    J = MR.figure("player", tuple(rb(sx, 0, sz + 30)), 180.0, colors=MR.ROOKIE)
+    shots = [
+        ("GA_fp_spawn", _fp(sx, sz, 0.0, math.radians(-38), 6.0)),          # toward your van, the board, the door
+        ("GA_fp_up", _fp(sx, sz - 6, 0.0, math.radians(-30), 48.0)),        # the trusses and the skylights
+        ("GA_fp_mezzanine", _fp(-10.0, -8.0, 0.0, math.radians(185), 14.0)),  # the mezzanine, the TV, the stair
+        ("GA_fp_stations", _fp(10.0, 2.0, 0.0, math.radians(-56), 4.0)),     # the laptop, the crew sign, the stair
+        ("GA_fp_wardrobe", _fp(-20.0, 4.0, 0.0, math.radians(100), 6.0)),    # the wardrobe corner and the tree
+    ]
+    for name, (pos, tgt) in shots:
+        cut(t, groups, pos, [])
+        _w2_shoot(s, cam, name, pos, tgt, FP_FOV, None, cfg, out_dir)
+    J["root"].location = rb(sx, 0, sz)
+    pos, tgt = _diorama(g["camera"], sx, 4.5, sz, 0.0)
+    print("cut GA diorama", sorted(cut(t, groups, pos, [(sx, 4.5, sz), (sx, 0.8, sz)])))
+    _w2_shoot(s, cam, "GA_diorama", pos, tgt, DF, None, cfg, out_dir)
+    # out in the snowy yard, looking back at the warehouse and its big roll-up door
+    yz = -g["lobby"]["HALF_Z"] - g["lobby"]["WALL_T"] - g["lobby"]["STREET_DEPTH"] * 0.8
+    pos, tgt = _fp(6.0, yz, 0.0, math.pi, 22.0)
+    cut(t, groups, pos, [])
+    _w2_shoot(s, cam, "GA_fp_yard", pos, tgt, FP_FOV, pos, cfg, out_dir)
 
 
 W2_COLS = ("diorama", "classic", "diorama_mid", "classic_rev")

@@ -198,41 +198,49 @@ return function(test: (string, () -> ()) -> ())
 	end)
 
 	-- The warehouse hideout (PLAN_FIRST_PERSON §5 "BIG", Config.Lobby.WAREHOUSE)
-	test("warehouse: a high roof on trusses with skylights, the shell's cut-away groups, a ceiling over the floor", function()
-		local W = C.WAREHOUSE
-		Assert.truthy(plan.topY >= 28, "a high roof (" .. plan.topY .. ")")
-		Assert.truthy(plan.ceilY > C.WALL_H + 8, "the trusses well over the ground course")
-		local names = {}
-		for _, g in plan.groups do
-			names[g.name] = g.kind
-		end
-		for _, n in { "front", "back", "left", "right" } do
-			Assert.eq(names[n], "face", n .. ": a face group")
-		end
-		Assert.eq(names.roof, "roof", "the roof group")
-		Assert.eq(names.trusses, "roof", "the trusses group")
-		local trusses, skylights, deckArea = 0, 0, 0
-		for _, it in plan.items do
-			if it.pieces[1] == "Truss_8" then
-				trusses += 1
+	test(
+		"warehouse: a high roof on trusses with skylights, the shell's cut-away groups, a ceiling over the floor",
+		function()
+			local W = C.WAREHOUSE
+			Assert.truthy(plan.topY >= 28, "a high roof (" .. plan.topY .. ")")
+			Assert.truthy(plan.ceilY > C.WALL_H + 8, "the trusses well over the ground course")
+			local names = {}
+			for _, g in plan.groups do
+				names[g.name] = g.kind
 			end
-		end
-		for _, p in plan.parts do
-			if p.name == "Skylight" then
-				skylights += 1
-				Assert.truthy((p.alpha or 0) > 0.3, "skylight glass you can see the aurora through")
-			elseif p.name == "RoofDeck" then
-				deckArea += p.size[1] * p.size[3]
+			for _, n in { "front", "back", "left", "right" } do
+				Assert.eq(names[n], "face", n .. ": a face group")
 			end
+			Assert.eq(names.roof, "roof", "the roof group")
+			Assert.eq(names.trusses, "roof", "the trusses group")
+			local trusses, skylights, deckArea = 0, 0, 0
+			for _, it in plan.items do
+				if it.pieces[1] == "Truss_8" then
+					trusses += 1
+				end
+			end
+			for _, p in plan.parts do
+				if p.name == "Skylight" then
+					skylights += 1
+					Assert.truthy((p.alpha or 0) > 0.3, "skylight glass you can see the aurora through")
+				elseif p.name == "RoofDeck" then
+					deckArea += p.size[1] * p.size[3]
+				end
+			end
+			Assert.truthy(trusses >= 40, "steel trusses across the depth (" .. trusses .. ")")
+			Assert.eq(skylights, #W.SKYLIGHTS, "the skylights")
+			local holes = 0
+			for _, sk in W.SKYLIGHTS do
+				holes += sk[3] * sk[4]
+			end
+			Assert.near(
+				deckArea + holes,
+				(2 * C.HALF_X) * (2 * C.HALF_Z),
+				1,
+				"the roof covers the floor but the skylights"
+			)
 		end
-		Assert.truthy(trusses >= 40, "steel trusses across the depth (" .. trusses .. ")")
-		Assert.eq(skylights, #W.SKYLIGHTS, "the skylights")
-		local holes = 0
-		for _, sk in W.SKYLIGHTS do
-			holes += sk[3] * sk[4]
-		end
-		Assert.near(deckArea + holes, (2 * C.HALF_X) * (2 * C.HALF_Z), 1, "the roof covers the floor but the skylights")
-	end)
+	)
 
 	test("warehouse: the mezzanine over the front row, its stair rises from the floor to the deck, guards", function()
 		local W = C.WAREHOUSE
@@ -283,10 +291,7 @@ return function(test: (string, () -> ()) -> ())
 			local a = byName[n]
 			for i, b in plan.bays do
 				local c = b.collider
-				Assert.falsy(
-					a.x > c.minX and a.x < c.maxX and a.z > c.minZ and a.z < c.maxZ,
-					n .. " inside van " .. i
-				)
+				Assert.falsy(a.x > c.minX and a.x < c.maxX and a.z > c.minZ and a.z < c.maxZ, n .. " inside van " .. i)
 			end
 		end
 		-- the same anchors without the kit (the greybox garage)

@@ -309,7 +309,7 @@
     0.55,
     8.0
    ],
-   "tris": 264,
+   "tris": 168,
    "class": "module",
    "collision": "Box",
    "material": "SmoothPlastic",

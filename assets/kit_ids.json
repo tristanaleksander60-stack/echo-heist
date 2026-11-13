@@ -157,9 +157,9 @@
    "pieces": [
     "Ceiling_8x8"
    ],
-   "revisionId": "1",
-   "sha256": "89f8583d433e4dd76101c0d9ba47725867b4b4e631a898f48a913ef00d6aed3c",
-   "uploaded": "2026-11-13T02:37:52Z"
+   "revisionId": "2",
+   "sha256": "62bf56d2071ef2495d987e54a98cb21cd70bd6ce51802e06f110764f00bdd550",
+   "uploaded": "2026-11-13T03:05:37Z"
   },
   "Clock_6": {
    "assetId": 129403410104922,
@@ -1119,6 +1119,17 @@
    "revisionId": "1",
    "sha256": "b4a5025dbdddcaefd0d8b4ead3532de99d737f9746b169775c82bcaff7025db7",
    "uploaded": "2026-11-12T17:39:08Z"
+  },
+  "EH_FX_Windows": {
+   "assetId": 74221995905275,
+   "file": "assets/ui/EH_FX_Windows.png",
+   "history": [
+    137130519457516
+   ],
+   "moderation": "Approved",
+   "revisionId": "1",
+   "sha256": "a6b9f321c703c93dc6e8abf4a4901fc90f4a0f656d5e28ac071c14f381011994",
+   "uploaded": "2026-11-13T03:06:33Z"
   },
   "EH_UI_Icons": {
    "assetId": 83898292746311,

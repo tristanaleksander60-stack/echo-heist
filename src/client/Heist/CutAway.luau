@@ -32,7 +32,7 @@ local MAX_SUBJECTS = 4
 
 type GroupState = {
 	math: CutMath.Group,
-	parts: { BasePart },
+	parts: { any }, -- BaseParts (and the town skins' Textures): whatever carries a LocalTransparencyModifier
 	guis: { SurfaceGui },
 	alpha: number,
 	target: number,
@@ -205,7 +205,7 @@ function CutAway.new(director: any?): any
 	end
 
 	-- The town's tall buildings (Heist/Backdrop): each { parts, min, max } hides by the occlusion rule only.
-	function self.addOccluders(list: { { parts: { BasePart }, min: Vector3, max: Vector3 } })
+	function self.addOccluders(list: { { parts: { any }, min: Vector3, max: Vector3 } })
 		if #list == 0 then
 			return
 		end

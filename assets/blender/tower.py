@@ -266,8 +266,8 @@ def ceiling(k):
             mb.box((c, a, 0.04), (d, b, 0.25), "marble", flat=("-x", "+x", "+z"), part="BeamY%d_%d" % (i, j))
     for cx in (2.09, 5.91):
         for cy in (2.09, 5.91):
-            mb.box((cx - 0.7, cy - 0.7, 0.13), (cx + 0.7, cy + 0.7, 0.25), "marble_hi", chamfer=0.04,
-                   cham_col="marble", flat=("+z",), part="Boss")
+            # flat bosses (no chamfer): the tile repeats 24-45 times per building, every triangle counts at tier 3
+            mb.box((cx - 0.7, cy - 0.7, 0.13), (cx + 0.7, cy + 0.7, 0.25), "marble_hi", part="Boss")
     ob = k.finalize(mb, shading="flat", pivot=(0, 0, 0.55))
     return k.Asset("Ceiling_8x8", [
         k.Obj(ob, "module", role="env", symmetric="XY", pivot="point", collision="Box", can_collide=False,

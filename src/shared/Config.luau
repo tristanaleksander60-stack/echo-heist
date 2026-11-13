@@ -1681,18 +1681,35 @@ Config.Backdrop = {
 			trim = { 226, 214, 190 }, -- cornices and sills (Warm Marble light)
 			door = { { 140, 47, 75 }, { 36, 112, 74 }, { 44, 58, 104 }, { 120, 78, 52 } },
 		},
-		-- maxPerFace: lit windows on one face at most (tall civic fronts would cost 30+ instances each)
+		-- maxPerFace: lit windows on one face at most (tall civic fronts would cost 30+ instances each). BIG: the window
+		-- grid itself is a Texture on one "Skin" part per face (SKIN); the lit panes (Neon) sit on its cells, so w / h /
+		-- SKIN.winTop must match tools/ui/make_window_fx.py (WIN_W, WIN_H, WIN_TOP).
 		WINDOW = {
-			w = 2.2,
-			h = 2.8,
-			floorH = 5,
-			colPitch = 4.5,
-			sill = 3.4,
+			w = 2.4,
+			h = 4.6,
+			colPitch = 4.5, -- one window bay
 			lit = 0.75,
 			depth = 0.2,
-			out = 0.06,
-			maxPerFace = 10,
+			out = 0.14,
+			maxPerFace = 6,
 		},
+		-- BIG (PLAN_FIRST_PERSON §5): the town scales up to 4-8 storey blocks with varied rooflines, a deeper street and
+		-- landmark towers either side of Hoardsworth's. A storey is STOREY studs over a GROUND-stud ground floor.
+		GROUND = 12,
+		STOREY = 9,
+		SKIN = {
+			image = "EH_FX_Windows", -- assets/ui/EH_FX_Windows.png (tools/ui/make_window_fx.py), uploaded with the UI kit
+			cols = 4, -- the image is 4 bays x 4 storeys
+			rows = 4,
+			inset = 1.2, -- studs of plain wall either side of the grid
+			out = 0.03, -- studs in front of the body
+			winTop = 0.2, -- a window's top under its storey's top (share of a storey)
+			color = { 255, 255, 255 },
+		},
+		ROOFTOP = { setback = 0.3, setbackH = 7, tank = 0.3, chimney = 0.35, antenna = 0.3, spire = 14 },
+		DEPTH = { back = 26, across = 26, overhang = 30, kinds = { "townhouse", "civic", "townhouse", "shop" } },
+		TOWERS = { { x = -58, back = 34, w = 24, d = 22 }, { x = 64, back = 46, w = 22, d = 22 } },
+		TOWER_STOREYS = { 11, 14 },
 		SHOP = { paneH = 4.2, paneSill = 1.3, awningY = 6.4, awningDepth = 2.6, doorW = 2.8, doorH = 5.2 },
 		HOUSE = { doorW = 2.4, doorH = 4.6 },
 		ROOF = { rise = 0.42, overhang = 0.6 }, -- gable height per stud of depth; eaves past the walls
@@ -1715,7 +1732,7 @@ Config.Backdrop = {
 					{ 168, 118, 96 },
 				},
 				awnings = { { 140, 47, 75 }, { 36, 112, 74 }, { 44, 58, 104 } },
-				heights = { shop = { 13, 15 }, house = { 10, 12 }, townhouse = { 16, 19 }, civic = { 18, 20 } },
+				storeys = { shop = { 4, 6 }, house = { 3, 4 }, townhouse = { 4, 7 }, civic = { 5, 7 } }, -- upper storeys
 				widths = { 16, 20, 18, 24 },
 				signature = "tree", -- a decorated tree on the far pavement
 			},
@@ -1732,7 +1749,7 @@ Config.Backdrop = {
 					{ 238, 214, 168 }, -- vanilla
 				},
 				awnings = { { 236, 96, 140 }, { 64, 170, 140 }, { 236, 190, 70 }, { 130, 100, 200 } },
-				heights = { shop = { 13, 16 }, house = { 10, 12 }, townhouse = { 17, 21 }, civic = { 18, 20 } },
+				storeys = { shop = { 4, 6 }, house = { 3, 4 }, townhouse = { 5, 7 }, civic = { 5, 7 } },
 				widths = { 16, 18, 20, 16 },
 				signature = "lights", -- fairy-light strings on every front, two trees
 				pave = { 192, 142, 128 }, -- rose sandstone paving (the lot and the pavements: warm under the pink lamps)
@@ -1750,7 +1767,7 @@ Config.Backdrop = {
 					{ 222, 206, 172 },
 				},
 				awnings = { { 36, 112, 74 }, { 140, 47, 75 } },
-				heights = { shop = { 14, 16 }, house = { 11, 12 }, townhouse = { 18, 22 }, civic = { 20, 24 } },
+				storeys = { shop = { 4, 5 }, house = { 3, 4 }, townhouse = { 5, 7 }, civic = { 6, 8 } },
 				widths = { 22, 26, 20 },
 				signature = "plaza", -- PLAZA: the paving, the big tree, its lamps
 				PLAZA = { width = 64, depth = 40, treeScale = 4.4, lamps = 4 },
@@ -1767,7 +1784,7 @@ Config.Backdrop = {
 					{ 206, 186, 146 },
 				},
 				awnings = { { 44, 58, 104 }, { 140, 47, 75 } },
-				heights = { shop = { 12, 14 }, house = { 10, 12 }, townhouse = { 15, 17 }, warehouse = { 11, 13 } },
+				storeys = { shop = { 3, 4 }, house = { 3, 4 }, townhouse = { 4, 6 }, warehouse = { 2, 3 } },
 				widths = { 22, 18, 26 },
 				signature = "yard", -- cars and a tree round the yard
 			},
@@ -1781,7 +1798,9 @@ Config.Backdrop = {
 		-- (the town never collides).
 		LOT_FENCE = { height = 24, thickness = 2 },
 		-- The whole backdrop at tier 1 (unit spec on every site; engine_smoke / perf_engine count the real build).
-		BUDGET = { instances = 650, draws = 45, tris = 70000, lights = 0 },
+		-- BIG: 4-8 storey blocks, a deeper street and two towers (the window grids are one Texture per face; rooftop
+		-- props are the "props" layer, gone from tier 3, which keeps the town near 12k triangles there)
+		BUDGET = { instances = 950, draws = 45, tris = 100000, lights = 0 },
 	},
 	WINDOW_COLOR = { 246, 192, 162 }, -- Bulb Warm #F6C0A2 (eh_palette.NEON, rule N1): the only glow allowed
 	SNOW_COLOR = { 192, 195, 213 }, -- Snow #C0C3D5 (small areas only, STYLE_BIBLE §1.3)
@@ -1820,6 +1839,9 @@ Config.Backdrop = {
 		"Xmas_Lights_8",
 		"Xmas_Lights_8_Bulbs",
 		"Xmas_SnowPile",
+		"Roof_WaterTank", -- BIG: the town's rooflines
+		"Roof_Chimney",
+		"Roof_Antenna",
 	},
 	-- Performance tiers (Config.Heist.PERF_TIERS): roblox_quality §6.4. Low phones keep the snowfield, the
 	-- streets, every building and its lit windows, the near ring and the sky: the frame is never black.
@@ -2233,17 +2255,17 @@ Config.Perf = {
 		Lighting = {
 			LightingStyle = "Soft",
 			PrioritizeLightingQuality = true,
-			Brightness = 1.7, -- WORLD 2.0: recipe A + 0.2 (was 1.6 on the old 1.4)
+			Brightness = 1.8, -- recipe A + 0.2 (BIG: A is 1.6)
 			ColorShift_Top = { 170, 190, 255 },
-			Ambient = { 146, 134, 160 },
-			OutdoorAmbient = { 184, 170, 196 },
+			Ambient = { 128, 132, 162 }, -- BIG: recipe A's bluer, less pink fill (+10)
+			OutdoorAmbient = { 160, 170, 204 },
 			EnvironmentDiffuseScale = 0.3,
 			EnvironmentSpecularScale = 0,
 			ExposureCompensation = 0.35, -- WORLD 2.0: recipe A's 0.4 less the Soft style's flatter fill
 			GlobalShadows = false, -- no sun shadow pass on low phones (was HeistClient's tier >= 3 rule)
 		},
 		Bloom = { Intensity = 0.9, Size = 24, Threshold = 1.0 }, -- Lighting.Bloom (the project file's)
-		ColorCorrection = { Contrast = 0.15, Saturation = 0.12 }, -- Lighting.ColorCorrection
+		ColorCorrection = { Contrast = 0.22, Saturation = 0.12 }, -- Lighting.ColorCorrection (BIG: A + 0.02)
 		-- Lighting.Atmosphere: thinner haze on low phones (a "black fog" is reported at the lowest quality levels,
 		-- roblox_quality §1.1; WORLD 2.0 keeps the distance a light haze there too)
 		Atmosphere = { Density = 0.2, Haze = 1.4 },

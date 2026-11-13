@@ -623,6 +623,7 @@ function HeistClient.start()
 		end
 		cutaway.bind(levelModel)
 		backdrop.showHeist(levelModel, state.level, state.origin, state.dressing)
+		cutaway.addOccluders(backdrop.occluders()) -- the tall town: a block between the camera and you fades
 		if state.level then
 			gus.setLevel(state.level)
 		end
@@ -657,6 +658,7 @@ function HeistClient.start()
 		lights.clear()
 		cutaway.bind(workspace:FindFirstChild("Garage"))
 		backdrop.showGarage()
+		cutaway.addOccluders(backdrop.occluders())
 		director.stop()
 		hud.hideAll()
 		hud.hidePreparing()

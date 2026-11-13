@@ -140,6 +140,63 @@ def world_sky(s, tmp):
 
 
 # ------------------------------------------------------------------ geometry
+_SKIN_MATS = {}
+WINDOWS_PNG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets", "ui", "EH_FX_Windows.png")
+
+
+def skin_mat(col, skin, size):
+    """The town's window grid (Heist/Backdrop: a Texture on the skin's outward face, tiled tileU x tileV studs from the
+    face's top-left seen from the front) over the wall colour. size = the skin part's Roblox size."""
+    n = skin["normal"]
+    key = (tuple(col), tuple(n), tuple(round(s, 3) for s in size), skin["tileU"], skin["tileV"])
+    if key in _SKIN_MATS:
+        return _SKIN_MATS[key]
+    m = bpy.data.materials.new("Skin")
+    m.use_nodes = True
+    nt = m.node_tree
+    b = next(x for x in nt.nodes if x.type == "BSDF_PRINCIPLED")
+    b.inputs["Roughness"].default_value = 0.7
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(tc.outputs["Object"], sep.inputs[0])
+    # the viewer's right in Blender axes (Roblox normal (nx, nz) -> Blender (-nx, nz, 0); right = -(N x Z))
+    bx, by = -n[0], n[1]
+    rx, ry = -by, bx
+    width = size[2] if abs(n[0]) > 0.5 else size[0]
+
+    def node(op, a, bval=None):
+        x = nt.nodes.new("ShaderNodeMath")
+        x.operation = op
+        for i, v in enumerate((a, bval)):
+            if v is None:
+                continue
+            if isinstance(v, (int, float)):
+                x.inputs[i].default_value = v
+            else:
+                nt.links.new(v, x.inputs[i])
+        return x.outputs[0]
+    u = node("ADD", node("MULTIPLY", sep.outputs["X"], rx), node("MULTIPLY", sep.outputs["Y"], ry))
+    u = node("DIVIDE", node("ADD", u, width / 2), skin["tileU"])
+    v = node("ADD", node("DIVIDE", node("SUBTRACT", sep.outputs["Z"], size[1] / 2), skin["tileV"]), 1.0)
+    comb = nt.nodes.new("ShaderNodeCombineXYZ")
+    nt.links.new(u, comb.inputs[0])
+    nt.links.new(v, comb.inputs[1])
+    img = nt.nodes.new("ShaderNodeTexImage")
+    img.image = bpy.data.images.load(os.path.normpath(WINDOWS_PNG), check_existing=True)
+    img.extension = "REPEAT"
+    img.interpolation = "Closest"
+    nt.links.new(comb.outputs[0], img.inputs[0])
+    mix = nt.nodes.new("ShaderNodeMix")
+    mix.data_type = "RGBA"
+    mix.inputs["A"].default_value = MR.lin(hexc(col))
+    nt.links.new(img.outputs["Alpha"], mix.inputs["Factor"])
+    nt.links.new(img.outputs["Color"], mix.inputs["B"])
+    nt.links.new(mix.outputs["Result"], b.inputs["Base Color"])
+    m.diffuse_color = MR.lin(hexc(col))
+    _SKIN_MATS[key] = m
+    return m
+
+
 def _box(name, lo, hi, mat, shadow=False):
     """An axis-aligned Roblox box (lo, hi corners) as a Blender cube."""
     a, b = rb(*lo), rb(*hi)
@@ -184,8 +241,10 @@ def backdrop(level, lib, put, pool_mat=None):
 
     def part(p):
         (sx, sy, sz), (cx, cy, cz) = p["size"], p["pos"]
+        m = skin_mat(p["color"], p["skin"], p["size"]) if p.get("skin") else \
+            mat(p["color"], NEON_EMIT if p.get("neon") else 0.0)
         o = _box(p["name"], (cx - sx / 2, cy - sy / 2, cz - sz / 2), (cx + sx / 2, cy + sy / 2, cz + sz / 2),
-                 mat(p["color"], NEON_EMIT if p.get("neon") else 0.0), shadow=p["layer"] == "building")
+                 m, shadow=p["layer"] == "building")
         o["eh_src"] = p.get("src") or ("ground" if p["layer"] == "ground" else "building")
         return o
     for p in bp["parts"]:

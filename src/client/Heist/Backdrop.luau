@@ -35,6 +35,7 @@ local B = Config.Backdrop
 local S = B.SNOW
 local LOC = Config.Lighting.LOCATION
 local POOL_IMAGE = Config.Lighting.POOL_SOFT.image
+local SKIN = Config.Backdrop.TOWN.SKIN
 
 -- Kit fronts (STYLE_BIBLE §5.1 local frame: X [-24, 0] along the front, Y up, -Z the street): the awning slopes
 -- and window sills of assets/blender/storefront.py, in Roblox axes. Awning: from the wall (z 0, y 9.75) down to
@@ -106,6 +107,55 @@ function Backdrop.new(): any
 	local lastInteriorCheck = 0
 	local buildToken = 0
 	local poolUri: string? = nil
+	-- BIG: the town's window grids (one Texture per "Skin" part, once the image resolves) and each building's pieces
+	-- for the cut-away (Heist/CutAway.addOccluders: a building between the camera and you fades whole)
+	local windowsUri: string? = nil
+	local skins: { { part: BasePart, skin: any } } = {}
+	local occ: { [number]: { parts: { any }, min: Vector3, max: Vector3 } } = {}
+
+	local function grid(part: BasePart, skin: any)
+		if not windowsUri or part:FindFirstChild("Windows") then
+			return
+		end
+		local n = skin.normal
+		local face = if n[2] > 0.5
+			then Enum.NormalId.Back
+			elseif n[2] < -0.5 then Enum.NormalId.Front
+			elseif n[1] > 0.5 then Enum.NormalId.Right
+			else Enum.NormalId.Left
+		local t = Instance.new("Texture")
+		t.Name = "Windows"
+		t.Texture = windowsUri :: string
+		t.Face = face
+		t.StudsPerTileU = skin.tileU
+		t.StudsPerTileV = skin.tileV
+		local c = SKIN.color
+		t.Color3 = Color3.fromRGB(c[1], c[2], c[3])
+		t.Parent = part
+		local o = part:GetAttribute("EH_Bld")
+		local entry = if type(o) == "number" then occ[o] else nil
+		if entry then
+			table.insert(entry.parts, t)
+		end
+	end
+
+	-- a building's piece for the cut-away (its world box grows the building's)
+	local function occlude(p: BasePart, bld: number?)
+		if bld == nil then
+			return
+		end
+		p:SetAttribute("EH_Bld", bld)
+		local h = p.Size / 2
+		local lo, hi = p.Position - h, p.Position + h
+		local e = occ[bld]
+		if e then
+			table.insert(e.parts, p)
+			e.min = e.min:Min(lo)
+			e.max = e.max:Max(hi)
+		else
+			occ[bld] = { parts = { p }, min = lo, max = hi }
+		end
+	end
 
 	local function track(p: BasePart?, gui: SurfaceGui?, layer: string)
 		table.insert(shown, { part = p, gui = gui, layer = layer, base = if p then p.Transparency else 0 })
@@ -406,6 +456,8 @@ function Backdrop.new(): any
 		table.clear(farParts)
 		table.clear(shown)
 		table.clear(pools)
+		table.clear(skins)
+		table.clear(occ)
 		snowPart, emitter = nil, nil
 		footprint, siteNow = nil, nil
 		interior = false
@@ -438,6 +490,11 @@ function Backdrop.new(): any
 			if ps.layer ~= "fence" then
 				track(p, nil, ps.layer)
 			end
+			occlude(p, ps.bld)
+			if ps.skin then
+				table.insert(skins, { part = p, skin = ps.skin })
+				grid(p, ps.skin)
+			end
 		end
 		for _, pl in plan.pools do
 			pool(f, pl)
@@ -466,6 +523,7 @@ function Backdrop.new(): any
 				if p then
 					placed[i] = true
 					track(p, nil, k.layer)
+					occlude(p, k.bld)
 					local fb = fallbacks[i]
 					if fb then
 						fb:Destroy()
@@ -521,6 +579,24 @@ function Backdrop.new(): any
 		-- (perf_engine builds this on a server, where RenderStepped does not exist: the snow just stays put there)
 		stepConn = if RunService:IsClient() then RunService.RenderStepped:Connect(follow) else nil
 		applyTier()
+	end
+
+	Theme.onImage(SKIN.image, function(uri: string)
+		windowsUri = uri
+		for _, s in skins do
+			if s.part.Parent then
+				grid(s.part, s.skin)
+			end
+		end
+	end)
+
+	-- The town's buildings for Heist/CutAway.addOccluders (each: its pieces and its world box).
+	function director.occluders(): { { parts: { any }, min: Vector3, max: Vector3 } }
+		local out = {}
+		for _, e in occ do
+			table.insert(out, e)
+		end
+		return out
 	end
 
 	Theme.onImage(POOL_IMAGE, function(uri: string)

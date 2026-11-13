@@ -292,7 +292,7 @@ end
 -- The garage v1 (server Heist/Lobby from Heist/LobbyPlan, Config.Lobby): kit items with their part frames, the
 -- lamps, the greybox floor and walls, bay lines and numbers, the NEXT card, and the backdrop round the garage site.
 local function garage(): any
-	local plan = LobbyPlan.plan(Config.Lobby, Config.Lighting, specs, KitPlan)
+	local plan = LobbyPlan.plan(Config.Lobby, Config.Lighting, specs, KitPlan, Strings)
 	local items = {}
 	for _, item in plan.items do
 		local pieces = {}
@@ -304,6 +304,7 @@ local function garage(): any
 			role = item.role,
 			index = item.index,
 			color = item.color,
+			group = item.group,
 			pivot = { item.pivot.x, item.pivot.y, item.pivot.z, item.pivot.yaw },
 			scale = item.scale,
 			pieces = pieces,
@@ -351,6 +352,23 @@ local function garage(): any
 		lighting = Config.Lighting,
 		lobby = Config.Lobby,
 		camera = Config.Heist.CAMERA,
+		-- the warehouse (LobbyPlan.warehouse): its plain parts, cut-away groups and anchors
+		parts = plan.parts,
+		tower = (function(): any
+			local groups = {}
+			for _, g in plan.groups do
+				table.insert(groups, { name = g.name, kind = g.kind, box = box(g.box), normal = g.normal, plane = g.plane })
+			end
+			local hx, hz, t = Config.Lobby.HALF_X, Config.Lobby.HALF_Z, Config.Lobby.WALL_T
+			return {
+				groups = groups,
+				ceilY = plan.ceilY,
+				topY = plan.topY,
+				outer = { -hx - t, hx + t, -hz - t, hz + t },
+				cut = Config.Big.CUT,
+			}
+		end)(),
+		anchors = plan.anchors,
 	}
 end
 
