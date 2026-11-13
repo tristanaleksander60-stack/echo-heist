@@ -1779,10 +1779,42 @@ INT_COLS = ("fp_spawn", "fp_front", "fp_left", "fp_window", "fp_ceiling", "fp_lo
             "fp_street", "diorama", "classic", "diorama_mid")
 
 
+def interiors_pops(folder):
+    """Premium A1 on every interior frame, from the ID masks the shots left in TMP: the loot's and the plates' value
+    lead over the band round them (frame_grade._pop, >= 0.15 passes), and whether a prop (the surface mask's decor
+    class) outshines the loot: the loot's median luma over the props' median."""
+    import numpy as np
+    from PIL import Image
+    import frame_grade as FG
+    path = os.path.join(folder, "surfaces.json")
+    sg = json.load(open(path)) if os.path.isfile(path) else {}
+    for name in sorted(sg):
+        frame = os.path.join(folder, name + ".png")
+        ids = os.path.join(TMP, f"w2_{name}_ids.png")
+        surf = os.path.join(TMP, f"int_{name}_surf.png")
+        if not (os.path.isfile(frame) and os.path.isfile(ids)):
+            continue
+        a = np.asarray(Image.open(frame).convert("RGB"), np.float32)
+        m = np.asarray(Image.open(ids).convert("RGB").resize((a.shape[1], a.shape[0]), Image.NEAREST), np.int32)
+        y = (0.2126 * a[..., 0] + 0.7152 * a[..., 1] + 0.0722 * a[..., 2]) / 255.0
+        for key, group in (("loot_pop", "cash"), ("plate_pop", "plate")):
+            mk = np.all(np.abs(m - np.array(FG.ID_COLOURS[group])) < 40, axis=-1)
+            sg[name][key] = FG._pop(a, mk, a.shape[0])
+        cash = np.all(np.abs(m - np.array(FG.ID_COLOURS["cash"])) < 40, axis=-1)
+        if os.path.isfile(surf) and cash.sum() >= 12:
+            sm = np.asarray(Image.open(surf).convert("RGBA").resize((a.shape[1], a.shape[0]), Image.NEAREST), np.int32)
+            dec = np.all(np.abs(sm[..., :3] - np.array(SURF_COLOURS["decor"])) < 40, axis=-1) & (sm[..., 3] > 128)
+            if dec.sum() >= 50:
+                sg[name].pop("loot_over_decor_p95", None)
+                sg[name]["loot_over_decor"] = round(float(np.median(y[cash]) - np.median(y[dec])), 3)
+    json.dump(sg, open(path, "w"), indent=1, sort_keys=True)
+
+
 def interiors_sheet(folder):
     """The INTERIORS contact sheet: one row per site (after), each frame with near-black % / median luma, and the
     ceiling / wall ratio and the signals' lead over the props where the frame shows them."""
     from PIL import Image, ImageDraw
+    interiors_pops(folder)
     g = json.load(open(os.path.join(folder, "grades.json")))
     sg = json.load(open(os.path.join(folder, "surfaces.json"))) if os.path.isfile(os.path.join(folder, "surfaces.json")) else {}
     tw, th = 300, 139
@@ -1796,7 +1828,7 @@ def interiors_sheet(folder):
     d = ImageDraw.Draw(sheet)
     f, _ = MR._font(12)
     d.text((8, 7), "INTERIORS (LEVELS.md 13): first person (eye 3.8), diorama, classic; near-black % / median luma; "
-           "c/w = ceiling / wall luma; s-d = signals' value over the props", font=f, fill=(230, 232, 245))
+           "c/w = ceiling / wall luma; loot / plate = A1 value pop over the surround", font=f, fill=(230, 232, 245))
     for r, (tag, cols) in enumerate(rows):
         y = 30 + r * (th + 40)
         for c, name in enumerate(cols):
@@ -1810,8 +1842,10 @@ def interiors_sheet(folder):
             extra = ""
             if "ceiling_wall" in sq:
                 extra += " c/w %.2f" % sq["ceiling_wall"]
-            if "signal_over_decor" in sq:
-                extra += " s-d %+.2f" % sq["signal_over_decor"]
+            if sq.get("loot_pop") is not None:
+                extra += " loot %+.2f" % sq["loot_pop"]
+            elif sq.get("plate_pop") is not None:
+                extra += " plate %+.2f" % sq["plate_pop"]
             d.text((c * tw + 4, y + th + 19), "%.1f%% / %.2f%s" % (q.get("near_black", -1), q.get("median_luma", -1),
                                                                   extra), font=f, fill=(200, 205, 225))
     out = os.path.join(folder, "contact_sheet.png")
