@@ -102,6 +102,7 @@ Strings.KEY_LABEL = table.freeze({
 	ButtonL1 = "LB",
 	ButtonL3 = "LS", -- the left stick pressed (the sprint toggle)
 	ButtonR1 = "RB",
+	ButtonSelect = "View",
 	ButtonL2 = "LT",
 	ButtonR2 = "RT",
 	ButtonStart = "Menu",

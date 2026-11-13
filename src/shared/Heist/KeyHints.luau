@@ -21,6 +21,7 @@ KeyHints.BINDINGS = table.freeze({
 	ready = { key = { "R" }, pad = { "ButtonY" } },
 	use = { key = { "E" }, pad = { "ButtonX" } }, -- GRAB / OPEN / the hideout's USE
 	menu = { key = { "M" }, pad = {} },
+	view = { key = { "V" }, pad = { "ButtonSelect" } }, -- switch camera view (first person -> diorama -> classic)
 	fast = { key = { "F" }, pad = { "ButtonR1" } }, -- hold to fast-forward (B is the slide's)
 	crew = { key = { "Q" }, pad = { "ButtonL1" } }, -- hold for Crew View (first-person run)
 	deck = { key = { "Q" }, pad = { "ButtonL1" } }, -- the Clone Deck between runs

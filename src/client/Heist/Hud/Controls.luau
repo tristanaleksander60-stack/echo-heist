@@ -202,6 +202,14 @@ function Controls.bind(ctx: any)
 		end
 		return Enum.ContextActionResult.Pass
 	end, false, codes("menu"))
+	-- V: switch the camera view (owner 2026-11-13), anywhere; saved like MENU > SETTINGS > CAMERA.
+	CAS:BindAction("HeistView", function(_, inputState)
+		if inputState == Enum.UserInputState.Begin and gui.Enabled and actions.toggleCamera then
+			actions.toggleCamera()
+			return Enum.ContextActionResult.Sink
+		end
+		return Enum.ContextActionResult.Pass
+	end, false, codes("view"))
 	-- Crew View: held in a first-person run (CameraDirector ignores it anywhere else; between runs Q is the deck's).
 	bindRun("HeistCrewView", function(_, inputState, input)
 		if actions.crewHold then
