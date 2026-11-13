@@ -1,0 +1,101 @@
+{
+ "G1_fp_spawn": {
+  "brightest_1pct_owner": {
+   "lamp": 7.6,
+   "other": 92.4,
+   "plate": 0.0,
+   "rug": 0.0,
+   "van": 0.0,
+   "zone": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 7.8,
+  "frame": "G1_fp_spawn.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.884,
+    "share": 0.08,
+    "warm": 0.1
+   },
+   "plate": {
+    "p95_luma": 0.855,
+    "share": 0.07,
+    "warm": 0.2
+   },
+   "rug": {
+    "p95_luma": 0.649,
+    "share": 0.5,
+    "warm": 60.5
+   },
+   "van": {
+    "p95_luma": 0.617,
+    "share": 14.61,
+    "warm": 51.8
+   },
+   "zone": {
+    "p95_luma": 0.624,
+    "share": 0.29,
+    "warm": 0.0
+   }
+  },
+  "median_luma": 0.299,
+  "near_black": 0.14,
+  "pink_cast": 0.04,
+  "plate_pop": 0.447,
+  "rms_contrast": 0.206,
+  "signal_pop": 0.416,
+  "sources": {
+   "building": {
+    "dark": 0.2,
+    "median_luma": 0.358,
+    "near_black": 0.0,
+    "p95_luma": 0.717,
+    "share": 45.0
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.56,
+    "near_black": 0.0,
+    "p95_luma": 0.699,
+    "share": 0.1
+   },
+   "level": {
+    "dark": 7.7,
+    "median_luma": 0.254,
+    "near_black": 0.14,
+    "p95_luma": 0.728,
+    "share": 51.3
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.577,
+    "near_black": 0.0,
+    "p95_luma": 0.718,
+    "share": 3.5
+   },
+   "props": {
+    "dark": 0.0,
+    "median_luma": 0.35,
+    "near_black": 0.0,
+    "p95_luma": 0.389,
+    "share": 0.1
+   },
+   "signal": {
+    "dark": 0.0,
+    "median_luma": 0.851,
+    "near_black": 0.0,
+    "p95_luma": 0.856,
+    "share": 0.0
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.1,
+   "median_luma": 0.283,
+   "near_black": 0.0,
+   "warm_share": 43.4
+  },
+  "value_spread": 0.541,
+  "warm_share": 45.7
+ }
+}

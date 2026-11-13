@@ -473,10 +473,17 @@ Config.Heist.CAMERA = {
 		MAX_PITCH = 42, -- degrees down at most (a crane over the van stands back rather than looking straight down)
 		FIGURE_HALF_WIDTH = 1.25,
 	},
-	-- Golden-frame staging (Studio only, workspace attribute EH_Scenario; docs/GOLDEN_FRAMES.md "Capture").
+	-- Golden-frame staging (Studio only, workspace attribute EH_Scenario; docs/GOLDEN_FRAMES.md "Capture";
+	-- re-specced for first person and the Rookie, REVIEW_STEAM_PLUS #4). G1 / G3 are first person: Heist/GoldenShots
+	-- turns your look (yaw toward the target, PITCH degrees down: negative looks up) once the camera is in your eyes.
 	GOLDEN = {
+		-- L1 from the street: spawn 1 stands 3.5 studs from the shop's door (the doorway fills the eyes), so the
+		-- staging walks you back past the van onto the street (STAND x, z, level space), turns you toward the cash
+		-- glinting through the shop's windows and tilts you up for the tall tenement and a strip of aurora
+		G1 = { STAND = { -10, 28 }, LOOT = "Cash", PITCH = -18, YAW_OFFSET = 0, FOV = 70 },
 		G2 = { PITCH = 45, FOV = 45, YAW = 0, MAX_DISTANCE = 70 },
-		G3 = { PITCH = 30, DISTANCE = 22, FOV = 45, YAW = 35 },
+		-- the hideout: you stand in the aisle at the vans (STAND x, z) and look between the job board and your van
+		G3 = { STAND = { 6, -5 }, LOOK_AT = { 18.5, 4.2, -21 }, PITCH = -3, FOV = 70 },
 	},
 }
 
