@@ -208,6 +208,112 @@ local function jobCard(parent: Instance, origin: Vector3, card: any)
 	gui.Parent = p
 end
 
+-- The warehouse (Config.Lobby.WAREHOUSE, LobbyPlan.warehouse): the shell over the ground course, the roof and its
+-- skylights, the mezzanine and its stair (the deck, posts, rail, guards and the stair's wedge collide), the stations'
+-- dressing, all in Garage/Overhead's cut-away groups or the garage itself; and the LOBBY track's anchors
+-- (Garage/Anchors: invisible, non-colliding Parts whose CFrame is the station's spot, LookVector its facing).
+local overheadModel: Model? = nil
+local groupModels: { [string]: Model } = {}
+
+local MATERIALS: { [string]: Enum.Material } = {
+	Neon = Enum.Material.Neon,
+	Glass = Enum.Material.Glass,
+	Brick = Enum.Material.Brick,
+	Wood = Enum.Material.WoodPlanks,
+	Metal = Enum.Material.Metal,
+}
+
+local function buildWarehouse(model: Model, origin: Vector3, plan: any)
+	local over = Instance.new("Model")
+	over.Name = "Overhead"
+	over:SetAttribute("EH_Kind", "overhead")
+	over:SetAttribute("Style", "Warehouse")
+	over:SetAttribute("FloorY", origin.Y)
+	over:SetAttribute("CeilY", origin.Y + plan.ceilY)
+	over:SetAttribute("TopY", origin.Y + plan.topY)
+	local b = plan.bounds
+	over:SetAttribute("OuterMin", origin + Vector3.new(plan.interior.minX - C.WALL_T, 0, plan.interior.minZ - C.WALL_T))
+	over:SetAttribute("OuterMax", origin + Vector3.new(plan.interior.maxX + C.WALL_T, plan.topY, b.maxZ))
+	for _, g in plan.groups do
+		local m = Instance.new("Model")
+		m.Name = g.name
+		m:SetAttribute("EH_CutKind", g.kind)
+		m:SetAttribute("EH_CutMin", origin + Vector3.new(g.box.minX, g.box.minY, g.box.minZ))
+		m:SetAttribute("EH_CutMax", origin + Vector3.new(g.box.maxX, g.box.maxY, g.box.maxZ))
+		if g.normal then
+			m:SetAttribute("EH_CutNormal", Vector3.new(g.normal[1], 0, g.normal[2]))
+			m:SetAttribute("EH_CutPlane", g.plane + (if g.normal[1] ~= 0 then origin.X else origin.Z))
+		end
+		m.Parent = over
+		groupModels[g.name] = m
+	end
+	for _, ps in plan.parts do
+		local p: BasePart = if ps.wedge then Instance.new("WedgePart") else Instance.new("Part")
+		p.Name = ps.name
+		p.Anchored = true
+		p.Size = Vector3.new(ps.size[1], ps.size[2], ps.size[3])
+		p.CFrame = CFrame.new(origin + Vector3.new(ps.pos[1], ps.pos[2], ps.pos[3]))
+			* CFrame.Angles(0, math.rad(ps.yaw or 0), 0)
+		p.Color = rgb(ps.color)
+		p.Material = MATERIALS[ps.material or ""] or Enum.Material.SmoothPlastic
+		p.TopSurface = Enum.SurfaceType.Smooth
+		p.BottomSurface = Enum.SurfaceType.Smooth
+		p.Transparency = ps.alpha or 0
+		p.CastShadow = false
+		if ps.collide then
+			p.CanCollide = true
+			p.CanTouch = false
+			p.CanQuery = true
+			p:SetAttribute("EH_Kind", "garageCollider")
+		else
+			visualOnly(p)
+		end
+		if ps.gui then
+			local gui = Instance.new("SurfaceGui")
+			gui.Name = "Sign"
+			gui.Face = (Enum.NormalId :: any)[ps.gui.face]
+			gui.LightInfluence = 0
+			gui.Brightness = 1.3
+			gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+			gui.PixelsPerStud = 30
+			gui.MaxDistance = 200
+			local tl = Instance.new("TextLabel")
+			tl.BackgroundTransparency = 1
+			tl.Position = UDim2.fromScale(0.06, 0.12)
+			tl.Size = UDim2.fromScale(0.88, 0.76)
+			tl.Font = Enum.Font.FredokaOne
+			tl.TextScaled = true
+			tl.TextColor3 = rgb(ps.gui.color)
+			tl.Text = ps.gui.text
+			tl.Parent = gui
+			gui.Parent = p
+		end
+		p.Parent = if ps.group then groupModels[ps.group] else model
+		-- the greybox stand-ins the kit replaces once it dresses the garage (the clerestory, trusses, the rail)
+		if ps.name == "Clerestory" or ps.name == "Truss" or ps.name == "MezzanineRail" then
+			table.insert(greyVisuals, p)
+		end
+	end
+	over.Parent = model
+	overheadModel = over
+	-- the anchors (named Parts: what the LOBBY track builds its stations on)
+	local anchors = Instance.new("Model")
+	anchors.Name = "Anchors"
+	for _, a in plan.anchors do
+		local p = Instance.new("Part")
+		p.Name = a.name
+		p.Size = Vector3.new(1, 1, 1)
+		p.CFrame = CFrame.new(origin + Vector3.new(a.x, a.y, a.z)) * CFrame.Angles(0, math.rad(a.yaw), 0)
+		p.Transparency = 1
+		p.Color = Palette.floor
+		p.CastShadow = false
+		visualOnly(p)
+		p:SetAttribute("EH_Kind", "garageAnchor")
+		p.Parent = anchors
+	end
+	anchors.Parent = model
+end
+
 -- The garage greybox (works without the kit) and its lights. Idempotent. kit: src/server/Kit/KitService (optional):
 -- the garage is dressed with the kit in the background once it is ready.
 function Lobby.build(kit: any?): Model
@@ -216,7 +322,7 @@ function Lobby.build(kit: any?): Model
 	end
 	local o = Config.Heist.LOBBY_ORIGIN
 	local origin = Vector3.new(o[1], o[2], o[3])
-	local plan = LobbyPlan.plan(C, LIGHT, nil, KitPlan)
+	local plan = LobbyPlan.plan(C, LIGHT, nil, KitPlan, Strings)
 	local model = Instance.new("Model")
 	model.Name = "Garage"
 	-- StreamingEnabled (docs/PERF.md): every player starts here and is put back here after each heist (3,000+
@@ -275,6 +381,7 @@ function Lobby.build(kit: any?): Model
 		lamp(model, origin, l, k)
 	end
 	jobCard(model, origin, plan.card)
+	buildWarehouse(model, origin, plan)
 	local spawn = Instance.new("SpawnLocation")
 	spawn.Name = "GarageSpawn"
 	spawn.Anchored = true
@@ -322,14 +429,15 @@ function Lobby.dress(kit: any): number
 	end
 	local o = Config.Heist.LOBBY_ORIGIN
 	local origin = Vector3.new(o[1], o[2], o[3])
-	local plan = LobbyPlan.plan(C, LIGHT, specs, KitPlan)
+	local plan = LobbyPlan.plan(C, LIGHT, specs, KitPlan, Strings)
 	local container = Instance.new("Model")
 	container.Name = "Kit"
 	container:SetAttribute("EH_Kind", "kit")
 	local placed = 0
 	for _, it in plan.items do
 		for _, name in it.pieces do
-			local color = if name == "Van_Paint" and it.color then rgb(it.color) else nil
+			local tinted = name == "Van_Paint" or name == "Facade_8x10_Body"
+			local color = if tinted and it.color then rgb(it.color) else nil
 			local p = kit.clone(name, { atlas = C.LOCATION, color = color })
 			if p then
 				local c, size = KitPlan.partFrame(specs[name], it.pivot, it.scale)
@@ -340,7 +448,12 @@ function Lobby.dress(kit: any): number
 				if it.role == "van" then
 					p:SetAttribute("EH_Bay", it.index)
 				end
-				p.Parent = container
+				-- the warehouse's shell, trusses and mezzanine dressing go in their cut-away group
+				local group = it.group and groupModels[it.group]
+				if group then
+					p.CastShadow = false
+				end
+				p.Parent = group or container
 				placed += 1
 			end
 		end
@@ -370,6 +483,19 @@ end
 -- The built garage (nil before Lobby.build) and whether the kit dressed it.
 function Lobby.model(): Model?
 	return built
+end
+
+-- The warehouse's cut-away model (Garage/Overhead) and a station's anchor by name (Garage/Anchors: JobBoardSpot,
+-- LaptopSpot, WardrobeSpot, TVSpot, CrewSign, VanBay1..8): its CFrame is the spot, its LookVector the facing.
+function Lobby.overhead(): Model?
+	return overheadModel
+end
+
+function Lobby.anchor(name: string): BasePart?
+	local m = built
+	local anchors = m and m:FindFirstChild("Anchors")
+	local p = anchors and anchors:FindFirstChild(name)
+	return if p and p:IsA("BasePart") then p else nil
 end
 
 function Lobby.isDressed(): boolean

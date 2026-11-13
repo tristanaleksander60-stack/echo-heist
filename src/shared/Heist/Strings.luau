@@ -339,6 +339,8 @@ Strings.BIG_SIGN = table.freeze({
 } :: { [string]: string })
 -- The warehouse garage's crew sign (server Heist/LobbyPlan, anchor CrewSign).
 Strings.GARAGE_CREW_SIGN = "THE CREW"
+Strings.GARAGE_LAPTOP = "DAILY VAULT" -- the laptop's screen (anchor LaptopSpot)
+Strings.GARAGE_TV = "HEIST YOURSELF" -- the TV under the mezzanine (anchor TVSpot: the intro rewatch)
 Strings.JOB_BOARD_NEXT = "NEXT JOB"
 Strings.JOB_BOARD_ALL_DONE = "ANY JOB!"
 -- The job board (U6, level select): pinned job photos; the NEXT one glows (Strings.JOB_BOARD_NEXT).

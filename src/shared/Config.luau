@@ -1323,7 +1323,8 @@ Config.Lobby = {
 	WALL_T = 2, -- the wall band outside the interior (the kit wall body is 2 deep)
 	STREET_DEPTH = 26, -- the street apron behind the back wall, under the half-open roll-up door
 	DOOR_X = 0, -- the GarageDoor_16x12 in the back wall
-	DOOR_W = 16,
+	DOOR_W = 20, -- the big roll-up door onto the snowy yard (the warehouse: 20 wide, DOOR_H tall)
+	DOOR_H = 18,
 	-- 8 van bays, bay 1 first (GoldenShots G3 frames the part named "Van": bay 1's collider). Back row against the
 	-- back wall (doors face +Z, the aisle), front row against the front wall (doors face -Z). x of each van. Your bay
 	-- (1) stands right of the roll-up door with the trophy shelf and the job board between them, so the G3 camera
@@ -1331,7 +1332,7 @@ Config.Lobby = {
 	BAYS = {
 		{ row = "back", x = 26 },
 		{ row = "front", x = 17.6 },
-		{ row = "back", x = -17 },
+		{ row = "back", x = -18.5 },
 		{ row = "back", x = -34 },
 		{ row = "front", x = -17.6 },
 		{ row = "front", x = 35.2 },
@@ -1392,14 +1393,14 @@ Config.Lobby = {
 	-- The trophy shelf: a Counter_8x2 against the back wall between the roll-up door and your van, with ornament
 	-- stands on top (Ornament_Stand; the ornament hangs from the arm tip, TROPHY_HANG in the stand's local axes). The
 	-- first trophy is lit (TROPHY_LIGHT over it); an empty stand waits for the next one.
-	TROPHY_SHELF = { x = 13, z = -26.8, yaw = 180 },
+	TROPHY_SHELF = { x = 14, z = -26.8, yaw = 180 },
 	TROPHY_HANG = { -0.45, 1.98, 0 },
 	TROPHIES = {
-		{ x = 10.6, ornament = "Ornament_VaultDoor" },
-		{ x = 13, ornament = "Ornament_Star" },
-		{ x = 15.4 },
+		{ x = 11.6, ornament = "Ornament_VaultDoor" },
+		{ x = 14, ornament = "Ornament_Star" },
+		{ x = 16.4 },
 	},
-	TROPHY_LIGHT_AT = { 12.5, 8.5, -21 }, -- between the board and the shelf behind it
+	TROPHY_LIGHT_AT = { 13.5, 8.5, -21 }, -- between the board and the shelf behind it
 	-- Snow drifting in at the door, and on the street (Xmas_SnowPile: x, z, yaw).
 	SNOW_PILES = { { -5, -25.2, 160 }, { 5.5, -25.6, 20 }, { -14, -36, 0 }, { 20, -47, 90 } },
 	BAY_LINE = { width = 0.3, color = { 168, 152, 122 } }, -- painted bay lines (Warm Marble shade)
@@ -1409,6 +1410,42 @@ Config.Lobby = {
 	LOCATION = "CornerShop", -- kit atlas: warm brick walls, pine, the warm checker floor
 	SPAWN = { 0, 10 }, -- the GarageSpawn centre (Lobby.spawnFor spreads crews round it)
 	KIT_WAIT_SECONDS = 90, -- the garage waits this long for the kit in the background (greybox until then)
+	-- The warehouse hideout (PLAN_FIRST_PERSON §5 "BIG": a big first-person lobby). Over the 12-stud brick ground
+	-- course: a band, a clerestory of Facade_8x10 bays (dark night panes), a frieze up to the roof; steel roof trusses
+	-- (Truss_8) across the depth every TRUSS_EVERY studs; a roof deck with skylights (the aurora above); a mezzanine
+	-- over the front row of vans with a stair up the right wall; dressing for the LOBBY track's stations, which are
+	-- exposed as named anchors (Garage/Anchors). Everything over the ground course is visual only and in the garage's
+	-- "Overhead" model (Heist/CutAway: the diorama sees in; first person never cuts). The mezzanine deck, its posts,
+	-- its rail and the stair collide (greybox colliders, the kit never collides).
+	WAREHOUSE = {
+		BAND = 2, -- 12 - 14
+		CLERESTORY = 10, -- 14 - 24: one storey of window bays
+		ROOF_Y = 28.6, -- the roof deck's underside (the trusses hang under it)
+		TRUSS_H = 4, -- Truss_8 depth: bottom chord at ROOF_Y - 0.6 - TRUSS_H
+		TRUSS_EVERY = 11, -- studs between trusses along X (8 trusses)
+		DECK = 0.6, -- roof deck thickness
+		SKYLIGHTS = { { -22, 0, 12, 16 }, { 0, 0, 12, 16 }, { 22, 0, 12, 16 } }, -- x, z, width, depth
+		SKYLIGHT_GLASS = { 150, 190, 220 },
+		SKYLIGHT_ALPHA = 0.55,
+		BODY = { 132, 70, 56 }, -- the upper brick (a value step over the ground course)
+		BAND_COLOR = { 104, 60, 50 },
+		ROOF_SNOW = { 196, 200, 226 },
+		ROOF_UNDER = { 92, 74, 70 }, -- the deck's underside: warm timber boards (seen from the floor in first person)
+		STEEL = { 78, 86, 117 }, -- posts, rails, stair stringers (Vault Steel shade)
+		TIMBER = { 123, 82, 68 }, -- the mezzanine deck and stair treads (Wood)
+		CABLE = { 42, 45, 82 }, -- the work lamps' drop cables to the trusses
+		MEZZANINE = { z0 = 16, deckY = 12, thick = 0.6, guard = 8 }, -- over the front row (z0 .. the front wall)
+		POSTS = { -43, -26.4, -8.8, 8.8, 26.4, 43 }, -- mezzanine posts along its aisle edge (between the vans)
+		STAIR = { x0 = 40, x1 = 44, z0 = -4, z1 = 16, steps = 16 }, -- up the right wall onto the deck
+		-- the stations (dressing; the LOBBY track builds the interaction on the anchors)
+		LAPTOP = { x = 39, z = -26.8, yaw = 180 }, -- a desk (Counter_8x2) in the back right corner
+		WARDROBE = { x = -41.6, z = 6, yaw = -90 }, -- the wardrobe and mirror corner on the left wall
+		TV = { x = 0, y = 9.2, z = 15.75, w = 10, h = 5.4 }, -- a big screen hung under the mezzanine's edge
+		CREW_SIGN = { x = 43.6, y = 9, z = -12, w = 10, h = 3 }, -- "THE CREW" on the right wall
+		CRATES = { { -36, 24, 0 }, { -30, 25, 20 }, { 30, 24.5, -10 }, { -12, 25.5, 0 } }, -- on the deck: x, z, yaw
+		SHELVES = { { -43, -6, -90 }, { -43, -14, -90 } }, -- Shelf_8x2 against the left wall
+		TREE = { -40, 13 }, -- a Christmas tree beside the wardrobe corner
+	},
 }
 
 -- Art kit (spike S2, automated path: docs/art/KIT_IMPORT.md "Automated path"). The asset ids and the
