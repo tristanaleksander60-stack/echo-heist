@@ -3,6 +3,7 @@
 --      --place 70772627070328 --script tests/client_engine.luau   (add --version N to skip publishing)
 -- 2026-11-12, place v21: 22 checks, 0 failed. Section F (camera track) and H (presentation shell) not yet run in the engine.
 -- Section J: first person (PLAN_FIRST_PERSON FP). 2026-11-13, Saved v50 and v52: 49 checks, 0 failed (J: 3 / 3).
+-- Section K: the northern lights (SKY track). 2026-11-13, Saved v59: 50 checks, 0 failed (K: 26 / 26 / 13 / 7 Beams).
 -- Loads every client module, builds L6 with the uploaded kit + Christmas layer and runs
 -- WorldView on it (vault door skin swing + dial, alarm beacons), the L5 till lock label,
 -- Gus on his mesh (every beat attached, head lead, Santa hat), the Line-up arrangement against the real van body, and
@@ -66,6 +67,8 @@ for _, name in
 		"LookTarget",
 		"FpWarn",
 		"Loading",
+		"Cinematic",
+		"Aurora",
 		"HeistClient",
 	}
 do
@@ -1380,6 +1383,261 @@ local okShell, shellErr = pcall(function()
 	return string.format("card built in %.1f ms", buildMs)
 end)
 check(okShell, "presentation shell: loading card, title card, reel, hint, van doors (" .. tostring(shellErr) .. ")")
+
+-- J. The story intro (docs/art/intro/STORYBOARD.md, PLAN_FIRST_PERSON §5): Heist/IntroKit publishes the intro
+-- meshes from the real kit, Heist/Cinematic builds the client stage from them and is stepped by hand through
+-- every shot (Hoardsworth on his mesh rig and posed, the presents in the air, the globe filling, the garage with
+-- the Rookie and the clones' tape print, the wordmark), then a SKIP lands in the same end state, and the camera,
+-- Lighting and Sky are restored both times.
+local okIntro, introErr = pcall(function()
+	local IntroKit = require(heistServer:WaitForChild("IntroKit"))
+	local Cinematic = require(clientHeist:WaitForChild("Cinematic"))
+	local IntroPlan = require(shared:WaitForChild("Heist"):WaitForChild("IntroPlan"))
+	local Config = require(shared:WaitForChild("Config")) :: any
+	local Lighting = game:GetService("Lighting")
+	local groups = IntroKit.publishNow(KitService)
+	-- the CHARACTER track's CharacterKit (server Heist/Rookie publishes it about 3 s after the kit loads)
+	if ReplicatedStorage:FindFirstChild(Config.Intro.CHARACTER_KIT) == nil then
+		pcall(function()
+			require(heistServer:WaitForChild("Rookie")).publishNow(KitService)
+		end)
+	end
+	local kitFolder = ReplicatedStorage:WaitForChild(Config.Intro.CHARACTER_KIT, 20)
+	assert(kitFolder and kitFolder:WaitForChild(Config.Intro.ROOKIE_TEMPLATE, 10), "CharacterKit.Rookie published")
+	assert(groups >= #IntroKit.MODELS - 1, "intro kit groups published: " .. groups .. "/" .. #IntroKit.MODELS)
+	local origin = Vector3.new(table.unpack(Config.Intro.STAGE_ORIGIN))
+	local ST = IntroPlan.STAGE
+	local function world(p: { number }): Vector3
+		return origin + Vector3.new(p[1], p[2], p[3])
+	end
+	local holder = Instance.new("Folder")
+	holder.Name = "IntroTest"
+	holder.Parent = workspace
+	local cam = Instance.new("Camera")
+	cam.CameraType = Enum.CameraType.Custom
+	cam.FieldOfView = 70
+	cam.Parent = holder
+	local ambient = Lighting.Ambient
+	local sky = Lighting:FindFirstChildOfClass("Sky")
+	local skyYaw = if sky then sky.SkyboxOrientation else nil
+	local ended: string? = nil
+	local t0 = os.clock()
+	local cine = Cinematic.new({
+		parent = holder,
+		gui = holder,
+		camera = cam,
+		tier = 1,
+		reduced = function()
+			return false
+		end,
+		onEnd = function(how: string)
+			ended = how
+		end,
+	})
+	local buildMs = (os.clock() - t0) * 1000
+	local stage = cine.stage()
+	assert(
+		stage:FindFirstChild("Town") and stage:FindFirstChild("Top") and stage:FindFirstChild("Aurora"),
+		"stage parts"
+	)
+	assert(cine.gui():FindFirstChild("Skip"), "SKIP from the first frame")
+	local counts = cine.counts()
+	assert(counts.windows > 40, "lit windows: " .. counts.windows)
+	for _, d in stage:GetDescendants() do
+		if d:IsA("BasePart") then
+			assert(d.Anchored and not d.CanCollide and not d.CanQuery, d:GetFullName() .. " is quiet")
+		end
+	end
+	local dt = 1 / 30
+	local function stepTo(t: number)
+		while cine.t() < t and not cine.isDone() do
+			cine.step(dt)
+		end
+	end
+	stepTo(8.0) -- shot 2: Hoardsworth, low angle
+	assert(cine.hoardKind() == "mesh", "Hoardsworth on his mesh rig (" .. cine.hoardKind() .. ")")
+	assert(cam.CameraType == Enum.CameraType.Scriptable, "the intro owns the camera")
+	local hw = world(ST.hoardsworth.at)
+	assert((cam.CFrame.Position - hw).Magnitude < 20, "the camera is on Hoardsworth")
+	local hoard = stage:FindFirstChild("Hoardsworth")
+	local headInst = if hoard then hoard:FindFirstChild("Hoardsworth_Head") else nil
+	local head = if headInst and headInst:IsA("BasePart") then headInst else nil
+	assert(head and math.abs(head.Position.Y - (hw.Y + 6.6)) < 1.5, "his head is at head height (posed rig)")
+	stepTo(15.6) -- shot 3: the vacuum and the swirl
+	assert(cine.counts().presents == Config.Intro.PRESENTS[1], "presents spawned")
+	local inAir = 0
+	for _, d in stage:GetChildren() do
+		if d.Name == "FlyingPresent" and (d :: BasePart).Transparency == 0 then
+			inAir += 1
+		end
+	end
+	assert(inAir > 0, "presents in the air")
+	stepTo(28.6) -- shot 5: the garage, headlights on, the Rookie
+	assert(cine.counts().presents == 0, "presents swallowed")
+	local rookieKind = cine.rookieKind()
+	local characterKit = ReplicatedStorage:FindFirstChild(Config.Intro.CHARACTER_KIT)
+	local hasRookie = characterKit ~= nil and characterKit:FindFirstChild(Config.Intro.ROOKIE_TEMPLATE) ~= nil
+	assert(rookieKind == (if hasRookie then "characterKit" else "standin"), "the Rookie (" .. rookieKind .. ")")
+	if hasRookie then
+		local g = stage:FindFirstChild("Garage")
+		local rk = g and g:FindFirstChild("Rookie")
+		local motors = 0
+		for _, d in (if rk then rk:GetDescendants() else {}) do
+			if d:IsA("Motor6D") then
+				motors += 1
+			end
+		end
+		assert(motors >= 10, "the kit Rookie keeps its R15 motors for posing: " .. motors)
+	end
+	assert(cine.counts().clones == #ST.clones, "clones built")
+	assert((cam.CFrame.Position - world(ST.rookie.at)).Magnitude < 20, "the camera is on the Rookie")
+	stepTo(33.0) -- shot 6: the clones printed in
+	local garage = stage:FindFirstChild("Garage")
+	local clone1 = garage and garage:FindFirstChild("Clone1")
+	local clonePart = clone1 and clone1:FindFirstChildWhichIsA("BasePart")
+	assert(clonePart == nil or clonePart.LocalTransparencyModifier < 0.5, "clone 1 printed in")
+	stepTo(35.0) -- the title smash
+	assert(cine.gui():FindFirstChild("Title"), "the wordmark is up")
+	stepTo(IntroPlan.total() + 1)
+	assert(cine.isDone() and ended == "finished", "watched to the end (" .. tostring(ended) .. ")")
+	local want = cine.state()
+	cine.destroy()
+	assert(holder:FindFirstChild("EH_IntroStage") == nil, "stage torn down")
+	assert(cam.CameraType == Enum.CameraType.Custom and cam.FieldOfView == 70, "camera restored")
+	assert(Lighting.Ambient == ambient and Lighting:FindFirstChild("EH_IntroGrade") == nil, "Lighting restored")
+	assert(sky == nil or sky.SkyboxOrientation == skyYaw, "Sky restored")
+
+	-- SKIP mid-shot lands in the same end state
+	local ended2: string? = nil
+	local cine2 = Cinematic.new({
+		parent = holder,
+		gui = holder,
+		camera = cam,
+		tier = 4,
+		reduced = function()
+			return true
+		end,
+		onEnd = function(how: string)
+			ended2 = how
+		end,
+	})
+	for _ = 1, 400 do
+		cine2.step(dt)
+	end
+	cine2.skip()
+	assert(cine2.isDone() and ended2 == "skipped", "SKIP ends it (" .. tostring(ended2) .. ")")
+	local got = cine2.state()
+	for k, v in want do
+		assert(got[k] == v, "skip end state " .. k .. ": " .. tostring(got[k]) .. " vs " .. tostring(v))
+	end
+	cine2.destroy()
+	assert(
+		cam.CameraType == Enum.CameraType.Custom and Lighting:FindFirstChild("EH_IntroBlur") == nil,
+		"restored after SKIP"
+	)
+	holder:Destroy()
+	return string.format("stage built in %.0f ms, %d kit groups, rookie %s", buildMs, groups, rookieKind)
+end)
+check(okIntro, "story intro: kit, stage, every shot stepped, SKIP end state, restore (" .. tostring(introErr) .. ")")
+-- K. The northern lights (PLAN_FIRST_PERSON "SKY"): Heist/Aurora builds every layer of Config.Aurora as a chain of
+-- additive Beams (valid uploaded image ids: Image assets), unlit, never colliding or queried, high over the anchor;
+-- the tier switches change how many draw (Budget.auroraLayers: 4 / 4 / 2 / 1) and tier 4 holds still; the layers
+-- follow the camera horizontally. Luau Execution servers render nothing (RenderStepped never fires), so the test
+-- steps it by hand and marks the textures loaded (ContentProvider preloads only on a client).
+local okSky, skyErr = pcall(function(): string
+	local Aurora = require(clientHeist:WaitForChild("Aurora"))
+	local Budget = require(shared:WaitForChild("Heist"):WaitForChild("Budget"))
+	local Config = require(shared:WaitForChild("Config")) :: any
+	local A = Config.Aurora
+	local MarketplaceService = game:GetService("MarketplaceService")
+	-- every tile is an uploaded Image (a Decal id here would draw nothing)
+	for _, id in A.TEXTURES do
+		local n = tonumber(string.match(id, "%d+"))
+		local okInfo, info = pcall(function()
+			return MarketplaceService:GetProductInfoAsync(n :: number, Enum.InfoType.Asset)
+		end)
+		assert(okInfo and info and info.AssetTypeId == 1, id .. " is an Image asset (" .. tostring(info) .. ")")
+	end
+	local holder = Instance.new("Folder")
+	holder.Name = "AuroraTest"
+	holder.Parent = workspace
+	local aurora = Aurora.new(holder)
+	local origin = Vector3.new(6000, 0, 0)
+	aurora.setAnchor(origin, 0)
+	local beams = aurora.beams()
+	local want = 0
+	for _, l in A.LAYERS do
+		want += l.points - 1
+	end
+	assert(#beams == want and aurora.layersBuilt() == #A.LAYERS, "every layer built: " .. #beams .. " Beams")
+	assert(aurora.layerCount() == 0, "nothing shows before the textures load")
+	for _, b in beams do
+		assert(b.Enabled == false, "hidden until loaded")
+	end
+	aurora.markLoaded()
+	local function enabled(): number
+		local n = 0
+		for _, b in beams do
+			if b.Enabled then
+				n += 1
+			end
+		end
+		return n
+	end
+	local counts = {}
+	for tier = 1, 4 do
+		aurora.setTier(tier)
+		counts[tier] = enabled()
+		assert(counts[tier] == Budget.auroraBeams(tier), "tier " .. tier .. ": " .. counts[tier] .. " Beams")
+		assert(aurora.layerCount() == Budget.auroraLayers(tier), "tier " .. tier .. " layers")
+	end
+	assert(counts[1] > counts[3] and counts[3] > counts[4] and counts[4] > 0, "the tiers change the count")
+	aurora.setTier(1)
+	local cam = origin + Vector3.new(40, 6, -25)
+	aurora.step(0, cam)
+	aurora.step(10, cam) -- past the 3 s fade-in
+	for _, b in beams do
+		local a0, a1 = b.Attachment0, b.Attachment1
+		assert(a0 and a1 and a0 ~= a1 and a0:IsDescendantOf(workspace), b:GetFullName() .. " has two attachments")
+		assert(table.find(A.TEXTURES, b.Texture) ~= nil, b.Name .. " shows an aurora tile")
+		assert(b.LightEmission == 1 and b.LightInfluence == 0 and b.FaceCamera, "additive and unlit")
+		assert(b.Segments == A.SEGMENTS and b.CurveSize0 > 0 and b.CurveSize1 > 0, "curved")
+		local holderPart = a0.Parent :: BasePart
+		assert(not holderPart.CanCollide and not holderPart.CanQuery and not holderPart.CanTouch, "quiet holder")
+		assert(holderPart.Transparency == 1 and not holderPart.CastShadow, "an invisible holder")
+		local low = math.min(a0.WorldPosition.Y, a1.WorldPosition.Y) - b.Width0 / 2
+		assert(low >= origin.Y + A.MIN_CLEARANCE - 1e-3, b:GetFullName() .. " never reachable (" .. low .. ")")
+	end
+	local first = beams[1]
+	local mid = first.Transparency.Keypoints[2].Value
+	assert(mid < 1, "revealed after the fade-in")
+	-- the layer that follows the camera fully sits over it
+	local found = holder:FindFirstChild("Aurora_Glow", true)
+	assert(found and found:IsA("BasePart"), "the Glow layer's holder")
+	local glowHolder = found :: BasePart
+	assert(
+		math.abs(glowHolder.Position.X - cam.X) < 1e-3 and math.abs(glowHolder.Position.Z - cam.Z) < 1e-3,
+		"the Glow follows the camera horizontally"
+	)
+	-- animated: the spine sways; tier 4: it holds still
+	local a = first.Attachment0 :: Attachment
+	local before = a.Position
+	aurora.step(14, cam)
+	assert((a.Position - before).Magnitude > 0.01, "tier 1 sways")
+	aurora.setTier(4)
+	aurora.step(20, cam)
+	local still = a.Position
+	aurora.step(40, cam)
+	assert((a.Position - still).Magnitude < 1e-6 and first.TextureSpeed == 0, "tier 4 is static")
+	aurora.setReducedMotion(true)
+	aurora.setTier(1)
+	assert(first.TextureSpeed ~= 0 and math.abs(first.TextureSpeed) < math.abs(A.LAYERS[1].scroll), "reduced: slower")
+	aurora.destroy()
+	assert(holder:FindFirstChild("EH_Aurora") == nil, "destroy removes it")
+	holder:Destroy()
+	return string.format("%d / %d / %d / %d Beams per tier", counts[1], counts[2], counts[3], counts[4])
+end)
+check(okSky, "aurora: layers of Beams, valid textures, tier counts, follow, sway (" .. tostring(skyErr) .. ")")
 
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))

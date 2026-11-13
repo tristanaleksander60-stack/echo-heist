@@ -1,0 +1,1455 @@
+{
+ "asset": "Hoardsworth",
+ "objects": [
+  {
+   "name": "Hoardsworth_LowerTorso",
+   "class": "small",
+   "tris": 308,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.44,
+    1.256,
+    1.98
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.72,
+     -0.5344,
+     -1.43
+    ],
+    "local_max": [
+     0.72,
+     0.7216,
+     0.55
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    3.55
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 118,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "Root",
+    "parent": null
+   },
+   "role": "villain",
+   "notes": "the root: place the Model by this part's pivot (hip centre, 3.55 above the floor)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_UpperTorso",
+   "class": "small",
+   "tris": 552,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.88,
+    1.379,
+    2.7
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.94,
+     -0.7168,
+     -0.08
+    ],
+    "local_max": [
+     0.94,
+     0.662,
+     2.62
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi",
+    "snow"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    4.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 207,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "Waist",
+    "parent": "Hoardsworth_LowerTorso"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_Head",
+   "class": "small",
+   "tris": 756,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    1.269,
+    1.195,
+    1.44
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.6347,
+     -0.8,
+     -0.08
+    ],
+    "local_max": [
+     0.6347,
+     0.3948,
+     1.36
+    ]
+   },
+   "swatches": [
+    "ink",
+    "marble_hi",
+    "skin",
+    "skin_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    6.1
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 212,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "Neck",
+    "parent": "Hoardsworth_UpperTorso"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_Hat",
+   "class": "small",
+   "tris": 364,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.6,
+    1.44,
+    1.42
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.8,
+     -0.72,
+     -0.02
+    ],
+    "local_max": [
+     0.8,
+     0.72,
+     1.4
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_lo",
+    "ribbon",
+    "ribbon_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    7.36
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 36,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "HatAttach",
+    "parent": "Hoardsworth_Head"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_Monocle",
+   "class": "tiny",
+   "tris": 192,
+   "budget": [
+    150,
+    300
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    0.475,
+    0.349,
+    0.721
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.265,
+     -0.03,
+     -0.5167
+    ],
+    "local_max": [
+     0.21,
+     0.3186,
+     0.2047
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_lo",
+    "steel_hi"
+   ],
+   "location": [
+    -0.2,
+    -0.47,
+    6.92
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 62,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "Monocle",
+    "parent": "Hoardsworth_Head"
+   },
+   "role": "villain",
+   "notes": "pivot = the lens centre: the code glint sits here",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_RightUpperArm",
+   "class": "small",
+   "tris": 180,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.632,
+    0.571,
+    1.379
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3325,
+     -0.2853,
+     -1.0792
+    ],
+    "local_max": [
+     0.3,
+     0.2853,
+     0.3
+    ]
+   },
+   "swatches": [
+    "ribbon",
+    "ribbon_hi"
+   ],
+   "location": [
+    -0.92,
+    0.0,
+    5.8
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 22,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "RightShoulder",
+    "parent": "Hoardsworth_UpperTorso"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_RightLowerArm",
+   "class": "small",
+   "tris": 160,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.518,
+    0.476,
+    1.044
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3028,
+     -0.2378,
+     -0.9732
+    ],
+    "local_max": [
+     0.2155,
+     0.2378,
+     0.0708
+    ]
+   },
+   "swatches": [
+    "marble_lo",
+    "ribbon",
+    "snow"
+   ],
+   "location": [
+    -1.04,
+    0.0,
+    4.8
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 72,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "RightElbow",
+    "parent": "Hoardsworth_RightUpperArm"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_RightHand",
+   "class": "small",
+   "tris": 116,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.418,
+    0.42,
+    0.525
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.168,
+     -0.23,
+     -0.5025
+    ],
+    "local_max": [
+     0.25,
+     0.19,
+     0.0225
+    ]
+   },
+   "swatches": [
+    "snow"
+   ],
+   "location": [
+    -1.1,
+    0.0,
+    3.9
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 14,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "RightWrist",
+    "parent": "Hoardsworth_RightLowerArm"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_LeftUpperArm",
+   "class": "small",
+   "tris": 180,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.632,
+    0.571,
+    1.379
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3,
+     -0.2853,
+     -1.0792
+    ],
+    "local_max": [
+     0.3325,
+     0.2853,
+     0.3
+    ]
+   },
+   "swatches": [
+    "ribbon",
+    "ribbon_hi"
+   ],
+   "location": [
+    0.92,
+    0.0,
+    5.8
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 22,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "LeftShoulder",
+    "parent": "Hoardsworth_UpperTorso"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_LeftLowerArm",
+   "class": "small",
+   "tris": 160,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.518,
+    0.476,
+    1.044
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.2155,
+     -0.2378,
+     -0.9732
+    ],
+    "local_max": [
+     0.3028,
+     0.2378,
+     0.0708
+    ]
+   },
+   "swatches": [
+    "marble_lo",
+    "ribbon",
+    "snow"
+   ],
+   "location": [
+    1.04,
+    0.0,
+    4.8
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 72,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "LeftElbow",
+    "parent": "Hoardsworth_LeftUpperArm"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_LeftHand",
+   "class": "small",
+   "tris": 116,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.418,
+    0.42,
+    0.525
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.25,
+     -0.23,
+     -0.5025
+    ],
+    "local_max": [
+     0.168,
+     0.19,
+     0.0225
+    ]
+   },
+   "swatches": [
+    "snow"
+   ],
+   "location": [
+    1.1,
+    0.0,
+    3.9
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 14,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "LeftWrist",
+    "parent": "Hoardsworth_LeftLowerArm"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_RightUpperLeg",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.44,
+    0.418,
+    1.62
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.22,
+     -0.2092,
+     -1.56
+    ],
+    "local_max": [
+     0.22,
+     0.2092,
+     0.06
+    ]
+   },
+   "swatches": [
+    "ink_hi"
+   ],
+   "location": [
+    -0.36,
+    0.0,
+    3.42
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "RightHip",
+    "parent": "Hoardsworth_LowerTorso"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_RightLowerLeg",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.36,
+    0.342,
+    1.62
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.18,
+     -0.1712,
+     -1.56
+    ],
+    "local_max": [
+     0.18,
+     0.1712,
+     0.06
+    ]
+   },
+   "swatches": [
+    "ink_hi"
+   ],
+   "location": [
+    -0.36,
+    0.0,
+    1.92
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "RightKnee",
+    "parent": "Hoardsworth_RightUpperLeg"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_RightFoot",
+   "class": "small",
+   "tris": 140,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.42,
+    1.25,
+    0.62
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.21,
+     -0.95,
+     -0.42
+    ],
+    "local_max": [
+     0.21,
+     0.3,
+     0.2
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble_lo"
+   ],
+   "location": [
+    -0.36,
+    0.0,
+    0.42
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 47,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "RightAnkle",
+    "parent": "Hoardsworth_RightLowerLeg"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_LeftUpperLeg",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.44,
+    0.418,
+    1.62
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.22,
+     -0.2092,
+     -1.56
+    ],
+    "local_max": [
+     0.22,
+     0.2092,
+     0.06
+    ]
+   },
+   "swatches": [
+    "ink_hi"
+   ],
+   "location": [
+    0.36,
+    0.0,
+    3.42
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "LeftHip",
+    "parent": "Hoardsworth_LowerTorso"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_LeftLowerLeg",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.36,
+    0.342,
+    1.62
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.18,
+     -0.1712,
+     -1.56
+    ],
+    "local_max": [
+     0.18,
+     0.1712,
+     0.06
+    ]
+   },
+   "swatches": [
+    "ink_hi"
+   ],
+   "location": [
+    0.36,
+    0.0,
+    1.92
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "LeftKnee",
+    "parent": "Hoardsworth_LeftUpperLeg"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Hoardsworth_LeftFoot",
+   "class": "small",
+   "tris": 140,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.42,
+    1.25,
+    0.62
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.21,
+     -0.95,
+     -0.42
+    ],
+    "local_max": [
+     0.21,
+     0.3,
+     0.2
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble_lo"
+   ],
+   "location": [
+    0.36,
+    0.0,
+    0.42
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 47,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": {
+    "name": "LeftAnkle",
+    "parent": "Hoardsworth_LeftLowerLeg"
+   },
+   "role": "villain",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 3684,
+ "asset_budget": {
+  "class": "creature",
+  "target": 5000,
+  "ceiling": 10742
+ },
+ "seats": [
+  {
+   "name": "Hoardsworth_UpperTorso",
+   "gap": 0.0,
+   "penetration": 2.41442,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_Head",
+   "gap": 0.0,
+   "penetration": 0.1039,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_Hat",
+   "gap": 0.0,
+   "penetration": 0.11923,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_Monocle",
+   "gap": 0.0,
+   "penetration": 0.0672,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_RightUpperArm",
+   "gap": 0.0,
+   "penetration": 0.111,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_RightLowerArm",
+   "gap": 0.0,
+   "penetration": 0.11992,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_RightHand",
+   "gap": 0.0,
+   "penetration": 0.05295,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_LeftUpperArm",
+   "gap": 0.0,
+   "penetration": 0.111,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_LeftLowerArm",
+   "gap": 0.0,
+   "penetration": 0.11992,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_LeftHand",
+   "gap": 0.0,
+   "penetration": 0.05295,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_RightUpperLeg",
+   "gap": 0.0,
+   "penetration": 0.33,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_RightLowerLeg",
+   "gap": 0.0,
+   "penetration": 0.12,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_RightFoot",
+   "gap": 0.0,
+   "penetration": 0.0316,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_LeftUpperLeg",
+   "gap": 0.0,
+   "penetration": 0.47641,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_LeftLowerLeg",
+   "gap": 0.0,
+   "penetration": 0.12,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Hoardsworth_LeftFoot",
+   "gap": 0.0,
+   "penetration": 0.0316,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "ccf6477e200c846a34e7",
+ "fbx": {
+  "path": "assets/fbx/Hoardsworth.fbx",
+  "bytes": 135772,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Hoardsworth_Hat",
+   "Hoardsworth_Head",
+   "Hoardsworth_LeftFoot",
+   "Hoardsworth_LeftHand",
+   "Hoardsworth_LeftLowerArm",
+   "Hoardsworth_LeftLowerLeg",
+   "Hoardsworth_LeftUpperArm",
+   "Hoardsworth_LeftUpperLeg",
+   "Hoardsworth_LowerTorso",
+   "Hoardsworth_Monocle",
+   "Hoardsworth_RightFoot",
+   "Hoardsworth_RightHand",
+   "Hoardsworth_RightLowerArm",
+   "Hoardsworth_RightLowerLeg",
+   "Hoardsworth_RightUpperArm",
+   "Hoardsworth_RightUpperLeg",
+   "Hoardsworth_UpperTorso"
+  ],
+  "geometry_extents": [
+   [
+    0.342,
+    0.36,
+    1.62
+   ],
+   [
+    0.342,
+    0.36,
+    1.62
+   ],
+   [
+    0.349,
+    0.475,
+    0.721
+   ],
+   [
+    0.418,
+    0.42,
+    0.525
+   ],
+   [
+    0.418,
+    0.42,
+    0.525
+   ],
+   [
+    0.418,
+    0.44,
+    1.62
+   ],
+   [
+    0.418,
+    0.44,
+    1.62
+   ],
+   [
+    0.42,
+    0.62,
+    1.25
+   ],
+   [
+    0.42,
+    0.62,
+    1.25
+   ],
+   [
+    0.476,
+    0.518,
+    1.044
+   ],
+   [
+    0.476,
+    0.518,
+    1.044
+   ],
+   [
+    0.571,
+    0.632,
+    1.379
+   ],
+   [
+    0.571,
+    0.632,
+    1.379
+   ],
+   [
+    1.195,
+    1.269,
+    1.44
+   ],
+   [
+    1.256,
+    1.44,
+    1.98
+   ],
+   [
+    1.379,
+    1.88,
+    2.7
+   ],
+   [
+    1.42,
+    1.44,
+    1.6
+   ]
+  ]
+ },
+ "spec": "assets/blender/intro.py",
+ "notes": "Sir Hoardsworth: rigid R15-style rig (17 parts), joint pivots for the code pose player; top hat, monocle (glint at its pivot), velvet tails.",
+ "turntable": "docs/art/turntables/Hoardsworth.png",
+ "seconds": 7.5
+}

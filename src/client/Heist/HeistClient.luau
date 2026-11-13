@@ -8,7 +8,7 @@
 --   EchoView (clones from Rec/Sampler), GusView (Guards.patrol + pose attributes),
 --   WorldView (doors/lasers/plates/loot/alarm from attributes, kit door skins), LightDirector
 --   (lamp shadows and floor pools by performance tier), Backdrop (ground, facades, skyline rings, sky turn and
---   falling snow round the heist instance or the garage),
+--   falling snow round the heist instance or the garage), Aurora (the northern lights, tier-gated),
 --   RewindDirector, Hud, and at heist end the LineupDirector (Crew Line-up cut).
 -- The camera is CameraDirector's (diorama / classic, wall fade, run-start beat); the
 -- Line-up borrows it through state.camera (suspend / resume), the rewind's FOV dip goes
@@ -47,6 +47,7 @@ local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local Net = require(ReplicatedStorage:WaitForChild("LihFolk"):WaitForChild("Net"))
 
 local Heist = script.Parent
+local Aurora = require(Heist:WaitForChild("Aurora"))
 local Backdrop = require(Heist:WaitForChild("Backdrop"))
 local EchoView = require(Heist:WaitForChild("EchoView"))
 local CameraDirector = require(Heist:WaitForChild("CameraDirector"))
@@ -132,6 +133,7 @@ function HeistClient.start()
 	Sound.setReducedMotion(state.reduced == true)
 	Ui.setReducedMotion(state.reduced == true)
 	local backdropRef: any = nil -- set below, once the Backdrop exists
+	local auroraRef: any = nil -- set below, once the Aurora exists
 	-- Reduced motion: the device's setting, or the player's own (Settings "reducedMotion").
 	local function applyReduced()
 		state.reduced = GuiService.ReducedMotionEnabled or Settings.get("reducedMotion") == true
@@ -139,6 +141,9 @@ function HeistClient.start()
 		Ui.setReducedMotion(state.reduced == true)
 		if backdropRef then
 			backdropRef.setReducedMotion(state.reduced == true)
+		end
+		if auroraRef then
+			auroraRef.setReducedMotion(state.reduced == true)
 		end
 	end
 	GuiService:GetPropertyChangedSignal("ReducedMotionEnabled"):Connect(applyReduced)
@@ -187,6 +192,14 @@ function HeistClient.start()
 	local backdrop = Backdrop.new()
 	backdropRef = backdrop
 	backdrop.setReducedMotion(state.reduced == true)
+	-- The northern lights (SKY track): one client-built aurora for the whole session, anchored to the garage or the
+	-- crew's instance; its landmark direction is read from Lighting.Sky (the Backdrop turns it per site).
+	local aurora = Aurora.new()
+	auroraRef = aurora
+	aurora.setReducedMotion(state.reduced == true)
+	if Config.Aurora.ENABLED then
+		lights.setExteriorTint(Config.Aurora.OUTDOOR_ADD)
+	end
 	local ffOn = false
 	local doors: any = nil -- Heist/Transition, once the HUD's fx layer exists
 	-- A level pick: the doors start closing at once and hold while the server builds the heist
@@ -258,6 +271,11 @@ function HeistClient.start()
 		cursorLocked = function(): boolean
 			return camera.cursorLocked()
 		end,
+		-- Your newest clone this run, where it is drawn (world space), or nil: the L1 look cue (Hud/Hints).
+		ownClone = function(): Vector3?
+			local id = echo.newestOwn()
+			return if id ~= 0 then echo.positionOf(id) else nil
+		end,
 	}
 	FirstTime.init() -- first-time beats, seeded from the profile (Heist/FirstTime)
 	local hud = Hud.new(state, actions)
@@ -291,7 +309,7 @@ function HeistClient.start()
 		return state.reduced == true
 	end
 	doors = Transition.new(hud.fxGui, isReduced)
-	local boot = Loading.boot(doors, isReduced)
+	local boot = Loading.boot(doors, isReduced, camera, Telemetry.tier) -- camera + tier: the story intro
 	local intro = LevelIntro.new(camera, state)
 	local revealPending = false
 	-- The doors (or, at boot, the card / the title) open onto what was just built; controlAt: when the
@@ -365,6 +383,7 @@ function HeistClient.start()
 		lights.setTier(tier)
 		backdrop.setTier(tier)
 		cutaway.setTier(tier)
+		aurora.setTier(tier)
 	end)
 	DebugChip.start(echo, Telemetry.tier) -- Studio only: clones drawn / healthy / tier / avatar
 	GoldenShots.start(camera, state, echo) -- Studio only: golden-frame staging (EH_Scenario)
@@ -624,6 +643,7 @@ function HeistClient.start()
 		cutaway.bind(levelModel)
 		backdrop.showHeist(levelModel, state.level, state.origin, state.dressing)
 		cutaway.addOccluders(backdrop.occluders()) -- the tall town: a block between the camera and you fades
+		aurora.setAnchor(state.origin + Vector3.new(0, if state.level then state.level.floorY or 0 else 0, 0))
 		if state.level then
 			gus.setLevel(state.level)
 		end
@@ -659,6 +679,8 @@ function HeistClient.start()
 		cutaway.bind(workspace:FindFirstChild("Garage"))
 		backdrop.showGarage()
 		cutaway.addOccluders(backdrop.occluders())
+		local lobby = Config.Heist.LOBBY_ORIGIN
+		aurora.setAnchor(Vector3.new(lobby[1], lobby[2], lobby[3]))
 		director.stop()
 		hud.hideAll()
 		hud.hidePreparing()

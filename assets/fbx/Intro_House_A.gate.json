@@ -1,0 +1,192 @@
+{
+ "asset": "Intro_House_A",
+ "objects": [
+  {
+   "name": "Intro_House_A",
+   "class": "medium",
+   "tris": 984,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    13.6,
+    12.8,
+    17.79
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -6.8,
+     -6.5,
+     0.0
+    ],
+    "local_max": [
+     6.8,
+     6.3,
+     17.79
+    ]
+   },
+   "swatches": [
+    "holly",
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "snow",
+    "wood",
+    "wood_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 461,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "toy-town house: walls, gable roof with a snow layer, chimney, door + wreath",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Intro_House_A_Windows",
+   "class": "small",
+   "tris": 108,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    12.16,
+    6.48,
+    7.3
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -6.08,
+     -5.58,
+     2.0
+    ],
+    "local_max": [
+     6.08,
+     0.9,
+     9.3
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "Bulb Warm #F6C0A2; Vault Steel shade #4E5675 once the presents are gone (eh_palette.NEON)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "lit windows (Neon): the town's warmth, switched off on '...GONE.'",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 1092,
+ "seats": [
+  {
+   "name": "Intro_House_A_Windows",
+   "gap": 0.0,
+   "penetration": 0.05,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "418b51022e3d2b40cde7",
+ "fbx": {
+  "path": "assets/fbx/Intro_House_A.fbx",
+  "bytes": 37580,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Intro_House_A",
+   "Intro_House_A_Windows"
+  ],
+  "geometry_extents": [
+   [
+    6.48,
+    7.3,
+    12.16
+   ],
+   [
+    12.8,
+    13.6,
+    17.79
+   ]
+  ]
+ },
+ "spec": "assets/blender/intro.py",
+ "notes": "Intro_House_A: a cosy toy-town house for the intro's town.",
+ "turntable": "docs/art/turntables/Intro_House_A.png",
+ "seconds": 99.1
+}

@@ -584,6 +584,7 @@ Config.FirstPerson = {
 		RETICLE_RING = 26, -- px: the ring round it while a target is under it
 		RETICLE_ALPHA = 0.25,
 		LOOT_PEEK_SECONDS = 4, -- the loot meter shows this long after it changes (and while you carry)
+		KEY_CAP_WIDE = 44, -- px: the prompt chip's key cap for a word ("TAP" on touch); a letter's is square
 	},
 	-- Gus in first person: a screen-edge tint while his cone is on you ("?", stage 1) or he is sure ("!",
 	-- stage 2), strongest on the side he is on. A steady tint, not a flash: only its "!" pulse asks the flash
@@ -1883,6 +1884,159 @@ Config.Backdrop = {
 	},
 }
 
+-- Northern lights (PLAN_FIRST_PERSON "SKY"; STYLE_BIBLE §16 sky exception; docs/PERF.md §4). Client only: Heist/Aurora
+-- builds chains of additive Beams along curved spines from the pure Shared/Heist/AuroraPlan; tier counts in
+-- Shared/Heist/Budget. Every layer is a band of the sky seen from the camera's ground point: a spine on a big circle
+-- whose centre lies behind the viewer (real aurora arcs run in parallel bands), so a band passes `dist` studs ahead
+-- of the viewer at its middle and curves back at its ends. Local frame: x to the right, z forward = toward the
+-- landmark (the site's first view, Hoardsworth's tower in the sky), y up; studs.
+Config.Aurora = {
+	ENABLED = true,
+	-- assets/sky/EH_Aurora_{A,B,C}.png (tools/blender/aurora_textures.py), uploaded with kit_upload.py --sky and
+	-- resolved to image ids with --resolve-sky (assets/sky/sky_ids.json). The three tiles share their edge columns,
+	-- so a chain may mix them without a seam.
+	TEXTURES = {
+		"rbxassetid://110364872208024",
+		"rbxassetid://112410864664438",
+		"rbxassetid://80686493108095",
+	},
+	-- The tiles are authored with image x along the beam and image top = the curtain's top. If Studio shows the
+	-- violet tips at the bottom, set this: the chains are built from the other end, which flips the image.
+	REVERSE_SPINE = false,
+	SEGMENTS = 20, -- Beam.Segments per spine piece (a smooth curve, 40 triangles a piece)
+	UPDATE_HZ = 15, -- sway and breathing writes a second (the shimmer is the engine's TextureSpeed)
+	REVEAL_SECONDS = 3, -- the fade-in once every texture has loaded (an unloaded Beam texture draws a solid bar)
+	PRELOAD_RETRY_SECONDS = 30, -- one more preload after a failure; until then nothing is shown
+	BRIGHTNESS = 1.4, -- Beam.Brightness before each layer's own factor (LightInfluence 0: unlit)
+	REDUCED_MOTION = 0.35, -- sway, scroll and breathing speed under reduced motion (slower, never off)
+	-- Never reachable, never in a room (unit spec over every sway phase): every ribbon's lower edge stays at least
+	-- MIN_CLEARANCE studs over the anchor and MIN_ELEVATION degrees over the viewer's horizon.
+	MIN_CLEARANCE = 40,
+	MIN_ELEVATION = 3,
+	-- Colour breathing: each Beam's Color runs between these two tints (multiplied onto the texture), as a slow wave
+	-- along the band; white keeps the texture's own green.
+	TINT_A = { 255, 255, 255 },
+	TINT_B = { 190, 255, 238 }, -- a teal lean
+	TINT_WAVE = 2, -- tint waves along a whole band
+	END_FADE = 0.55, -- a band's second point from each end shows this much (its end points: nothing)
+	-- The layers in priority order: a tier keeps the first Budget.auroraLayers(tier). Fields:
+	--   dist / side / height: the band's middle, studs ahead of, right of and above the viewer; radius: its circle
+	--   (bigger = straighter); span: studs of band left and right of the middle; turn: degrees the band swings about
+	--   its middle (+ brings the right end nearer); tilt: studs the right end rises over the left; points: spine
+	--   control points (points - 1 Beams);
+	--   width: the ribbon's width (the curtain's height on screen); fold / foldWaves / foldPhase: the band's static
+	--   folds toward and away from the viewer; lift: a static height wave;
+	--   sway = { z, y, period }: the control points' slow drift (studs, studs, seconds per cycle);
+	--   breathe = { amount, period }: Brightness x (1 +- amount); scroll: TextureSpeed (tiles a second, sign = way);
+	--   transparency: the ribbon's base Transparency; brightness: x BRIGHTNESS; follow: the share of the camera's
+	--   horizontal moves the band follows (1 = a sky element; less = slight parallax between the bands).
+	LAYERS = {
+		{
+			name = "Veil", -- the hero band: rises from low on the left to high on the right, over the landmark (every tier)
+			dist = 360,
+			side = 0,
+			height = 320,
+			radius = 1600,
+			span = 950,
+			turn = 14,
+			tilt = 150,
+			points = 8,
+			width = 230,
+			fold = 70,
+			foldWaves = 1.6,
+			foldPhase = 0.2,
+			lift = 26,
+			sway = { 34, 18, 31 },
+			breathe = { 0.18, 13 },
+			scroll = 0.012,
+			transparency = 0.18,
+			brightness = 1,
+			texture = 1,
+			follow = 0.95,
+		},
+		{
+			name = "Crown", -- crosses the zenith the other way: first person looking up
+			dist = 40,
+			side = 0,
+			height = 480,
+			radius = 2200,
+			span = 1000,
+			turn = -55,
+			tilt = -90,
+			points = 7,
+			width = 260,
+			fold = 90,
+			foldWaves = 1.2,
+			foldPhase = 0.65,
+			lift = 34,
+			sway = { 40, 22, 37 },
+			breathe = { 0.22, 17 },
+			scroll = -0.009,
+			transparency = 0.5,
+			brightness = 0.85,
+			texture = 2,
+			follow = 0.9,
+		},
+		{
+			name = "Drape", -- a shorter curtain far off to the right: depth behind the Veil
+			dist = 620,
+			side = 260,
+			height = 255,
+			radius = 1700,
+			span = 700,
+			turn = 35,
+			tilt = 60,
+			points = 7,
+			width = 200,
+			fold = 60,
+			foldWaves = 2,
+			foldPhase = 0.45,
+			lift = 22,
+			sway = { 30, 14, 27 },
+			breathe = { 0.24, 11 },
+			scroll = 0.015,
+			transparency = 0.45,
+			brightness = 0.9,
+			texture = 3,
+			follow = 0.97,
+		},
+		{
+			name = "Glow", -- low and wide over the horizon: the soft glow at the top of the classic frame
+			dist = 850,
+			side = -60,
+			height = 190,
+			radius = 2000,
+			span = 1300,
+			turn = -10,
+			tilt = -40,
+			points = 8,
+			width = 180,
+			fold = 50,
+			foldWaves = 2.5,
+			foldPhase = 0.1,
+			lift = 16,
+			sway = { 26, 10, 23 },
+			breathe = { 0.25, 9 },
+			scroll = -0.011,
+			transparency = 0.38,
+			brightness = 0.8,
+			texture = 2,
+			follow = 1,
+		},
+	},
+	-- Per runtime tier (Config.Heist.PERF_TIERS; Shared/Heist/Budget): tier 1-2 everything, tier 3 two layers,
+	-- tier 4 one static layer (no sway, scroll or breathing).
+	TIERS = {
+		{ layers = 4, animated = true },
+		{ layers = 4, animated = true },
+		{ layers = 2, animated = true },
+		{ layers = 1, animated = false },
+	},
+	-- The aurora's light on the snow: added to Lighting.OutdoorAmbient (0-255 per channel) through LightDirector's
+	-- setExteriorTint (it owns Lighting). Only adds, so Ambient <= OutdoorAmbient still holds. Very low.
+	OUTDOOR_ADD = { 0, 7, 4 },
+}
+
 -- Audio: cue table and pure rules in src/shared/Audio (Cues, Manifest, CueCheck, Voices, Mix), the client
 -- player in src/client/Audio/AudioDirector (Audio API graph). MASTERPLAN §7.1-7.3, docs/research/feel.md D5,
 -- docs/AUDIO.md. Per-cue data (asset ids, level, jitter, voices, cooldown) lives in Audio/Cues like level data;
@@ -2169,6 +2323,18 @@ Config.Onboarding = {
 	POINTER_PERIOD = 0.9, -- s per tap
 	POINTER_TRAVEL = 14, -- px it moves in toward the button on each tap
 	ADVICE_DELAY = 0.15, -- s after the failure event before its counterplay line (<= 1 s, G4)
+	-- First person (PLAN_FIRST_PERSON wave C). The look cue: while your L1 clone ("YOU, 10 SEC AGO") or the chalk
+	-- ghost is out of view, a finger at the screen edge points the way (behind you: at the bottom, on its side).
+	LOOK_CUE_INSET = 0.12, -- share of the half-screen kept clear at the edges (the finger stays inside it)
+	LOOK_CUE_MARGIN = 0.06, -- a target this far inside the frame's edge (share of the half-screen) still cues
+	LOOK_CUE_SECONDS = 6, -- the L1 clone cue's longest stretch after control returns (it also ends on the plate)
+	-- The chalk ghost never starts inside your camera: in first person it starts from the first point of its
+	-- walk at least this far in front of your eyes (studs, along your look), within the first GHOST_FP_SKIP_MAX s.
+	GHOST_FP_AHEAD = 3,
+	GHOST_FP_SKIP_MAX = 2.5,
+	-- The L1 clone's "YOU, 10 SEC AGO" label in first person: studs over its head anchor (3.6 in the other
+	-- cameras), so it is in frame from a few studs behind the clone as it walks out of you.
+	YOU_LABEL_FP_LIFT = 1.5,
 }
 
 -- Performance track (PLAN_STEAM_PLUS §4.7, MASTERPLAN §6.8 / §8.6, roblox_quality §1.4 / §6.4; docs/PERF.md).
@@ -2604,6 +2770,58 @@ Config.Big = {
 	-- hides the "detail" layer (curtains, rooftop props, fire escapes, light strings) on the client.
 	BUDGET = { instances = 560, draws = 26, tris = 72000, lights = 0 },
 	DETAIL_OFF_TIER = 3,
+}
+
+-- The story intro (docs/PLAN_FIRST_PERSON.md §5 "INTRO", docs/art/intro/STORYBOARD.md; MASTERPLAN §4.3): a
+-- 30-40 s cinematic on first join only, before L1 or the lobby, with SKIP from the first frame. The shot list
+-- is data in Shared/Heist/IntroPlan (pure, unit-tested); the client Heist/Cinematic builds the stage locally
+-- (never replicated, never collides, never queried) and plays it. Numbers here; story and framing there.
+Config.Intro = {
+	ENABLED = true, -- replaces the 3 s title beat for new players (Heist/Loading)
+	-- Where the client builds its stage: far from every heist slot (Heist.INSTANCE_SPACING grid) and their
+	-- backdrop rings, so nothing of a level is ever in a shot. Client-made parts are never streamed.
+	STAGE_ORIGIN = { 0, 0, 7500 },
+	KIT_FOLDER = "EH_IntroKit", -- ReplicatedStorage folder the server fills (Heist/IntroKit)
+	KIT_WAIT_SECONDS = 4, -- the loading card holds this long at most for the meshes; then stand-ins
+	-- The CHARACTER track's folder; its "Rookie" model replaces the stand-in as soon as it exists.
+	CHARACTER_KIT = "CharacterKit",
+	ROOKIE_TEMPLATE = "Rookie",
+	-- The server holds a new account's first heist until the client says the intro is over (Heist.Ready
+	-- while preparing) or this long (a client that never answers never traps anyone).
+	SERVER_HOLD_SECONDS = 48,
+	-- Studio without data (offline) plays it only when staged (EH_Scenario = "INTRO"): every Play would
+	-- otherwise open on 36 s of cinematic.
+	STUDIO_AUTOPLAY = false,
+	-- Caption cards (big, short, sound-off readable: the MASTERPLAN §9.2 clip rules).
+	CAPTION = {
+		SIZE = 72, -- design px at UI scale 1
+		MIN_SIZE = 34, -- never smaller on a phone
+		IN = 0.22, -- s fade + punch in
+		OUT = 0.25, -- s fade out
+		PUNCH = 1.18, -- scale at the first frame, settling to 1
+		Y = 0.8, -- screen fraction of the card's centre (lower third, clear of the SKIP button)
+		WORDS_MAX = 6, -- unit-tested on every caption
+		BAR = 0.16, -- letterbox bars, screen-height fraction each (0 under reduced motion: no slide)
+	},
+	SKIP = {
+		ANY_KEY = true, -- any keyboard key skips too (PC); touch and gamepad use the button (or ButtonB)
+		HOLD_OFF = 0.35, -- s after the start in which a key is ignored (the press that started the game)
+		SIZE = { 150, 52 }, -- design px
+		MARGIN = 24, -- px from the top-right safe corner
+	},
+	FADE_IN = 0.6, -- s from ink at the start
+	WHIP_SECONDS = 0.32, -- a whip-pan between shots (reduced motion: a cut)
+	WHIP_BLUR = 18, -- BlurEffect size at the middle of a whip
+	FLASH_SECONDS = 0.18, -- white flashes (vacuum switch, title smash); FlashLimit applies
+	SHAKE = { AMP = 0.35, FREQ = 13 }, -- studs, Hz (Settings "shake" off or reduced motion: none)
+	PRESENTS = { 30, 20, 12, 6 }, -- flying presents per perf tier 1..4
+	PRESENT_SPIN = 2.2, -- rad/s tumble
+	SWIRL_PARTICLES = 60, -- asked of Heist/Particles per sparkle burst (the budget may grant fewer)
+	TOWN_LIGHTS = { 8, 6, 3, 0 }, -- PointLights in the town per tier (windows are Neon either way)
+	AURORA_LAYERS = { 3, 3, 2, 1 }, -- curtain layers per tier
+	SNOW_RATE = 60, -- flakes/s in the stage snow (x0.5 under reduced motion)
+	SNOW_MAX = 240, -- alive at most (rate x lifetime is reported to Heist/Particles as steady)
+	HANDOFF_SECONDS = 0.35, -- the wordmark rests this long before the title card takes over
 }
 
 return Config

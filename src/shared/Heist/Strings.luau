@@ -78,9 +78,13 @@ function Strings.grab(value: string): string
 end
 -- First person (Hud/Reticle's prompt chip): the verb of what you look at, and the key cap beside it.
 Strings.FP_VERB = table.freeze({ grab = "GRAB", open = "OPEN", press = "PRESS", bank = "BANK" } :: { [string]: string })
-Strings.FP_BANK = "BANK: WALK IN"
+-- The van while you carry: banking is walking in (no key, no button).
+Strings.FP_BANK = "WALK IN TO BANK"
+-- The chip's key cap by device: E on a keyboard (a left click works too), X on a gamepad, TAP on touch (the
+-- GRAB button below is the tap target there).
 Strings.KEY_E = "E"
 Strings.KEY_PAD = "X"
+Strings.KEY_TAP = "TAP"
 function Strings.lockedFor(clock: string): string
 	return "LOCKED " .. clock
 end
@@ -486,10 +490,63 @@ end
 Strings.OBJ_STAY_ON_PLATE = "Stay on it. Tap REWIND."
 Strings.OBJ_STEP_ON_PLATE = "Step on the plate"
 Strings.OBJ_CLONE_STOPS = "Your clone stops where you stop."
-Strings.OBJ_WAIT_FOR_CLONE = "Watch your clone open the door." -- P2-1: the L1 intro fits 30 words
-Strings.OBJ_BANK_IT = "Bank it at the van"
+-- P2-1: the L1 intro fits 30 words, its longest device line counted (tests/unit/HeistHelp.spec.luau). In first
+-- person the clone walks out of your own body, so the line does not say "watch": the look cue (Hud/Hints)
+-- points at it whenever it is off screen.
+Strings.OBJ_WAIT_FOR_CLONE = "Your clone opens the door!"
+Strings.OBJ_BANK_IT = "Back to the van!"
 Strings.OBJ_GRAB_CASH = "Grab the cash"
 Strings.OBJ_GRAB_LOOT = "Grab the loot"
+
+-- First person (the default camera, PLAN_FIRST_PERSON wave C): a line that names a button names the one this
+-- device presses. In first person on a keyboard the cursor is locked, so REWIND is a key (R) and GRAB is "look
+-- at it, press E" (or a left click); a gamepad has Y and X; touch keeps its buttons. Keyed by device
+-- ("key" | "pad" | "touch"); Strings.forDevice picks one, other cameras keep the plain line.
+Strings.OBJ_STAY_ON_PLATE_BY = table.freeze({
+	key = "Stay. Press R to REWIND.",
+	pad = "Stay. Press Y to REWIND.",
+	touch = "Stay on it. Tap REWIND.",
+} :: { [string]: string })
+Strings.OBJ_GRAB_CASH_BY = table.freeze({
+	key = "Look at the cash. Press E.",
+	pad = "Look at the cash. Press X.",
+	touch = "Look at the cash. Tap GRAB.",
+} :: { [string]: string })
+Strings.OBJ_GRAB_LOOT_BY = table.freeze({
+	key = "Look at the loot. Press E.",
+	pad = "Look at the loot. Press X.",
+	touch = "Look at the loot. Tap GRAB.",
+} :: { [string]: string })
+Strings.OBJ_STAY_TAP_REWIND_BY = table.freeze({
+	key = "Stay here. Press R to REWIND.",
+	pad = "Stay here. Press Y to REWIND.",
+	touch = "Stay here. Tap REWIND.",
+} :: { [string]: string })
+Strings.GOAL_BANKED_BY = table.freeze({
+	key = "You got it! R to REWIND, or grab more.",
+	pad = "You got it! Y to REWIND, or grab more.",
+	touch = "You got it! Tap REWIND to finish, or grab more.",
+} :: { [string]: string })
+Strings.FAIL_TIMEOUT_BY = table.freeze({
+	key = "Press R to REWIND when you're done.",
+	pad = "Press Y to REWIND when you're done.",
+	touch = "Tap REWIND when you're done.",
+} :: { [string]: string })
+-- The plain line `key` (a Strings key) for a device in first person; other cameras get the plain line.
+function Strings.forDevice(key: string, device: string, firstPerson: boolean): string
+	local plain = (Strings :: any)[key]
+	if firstPerson then
+		local by = (Strings :: any)[key .. "_BY"]
+		local line = type(by) == "table" and by[device]
+		if type(line) == "string" then
+			return line
+		end
+	end
+	return if type(plain) == "string" then plain else ""
+end
+-- The look cue (Hud/Hints, first person): a finger at the screen edge toward your clone or the chalk ghost
+-- while it is out of view.
+Strings.LOOK_CUE = table.freeze({ clone = "YOUR CLONE", ghost = "LOOK" } :: { [string]: string })
 -- Level lines for the first seconds of run 1, and again when stuck, by LevelSpec id.
 Strings.LEVEL_LINES = table.freeze({
 	cs2_two_doors = "Two plates. You need two clones.",
@@ -571,6 +628,18 @@ end
 ---------------------------------------------------------------------------
 Strings.REWIND_BANNER = "REWIND"
 Strings.SKIP = "SKIP"
+-- The story intro's caption cards (Heist/Cinematic, Shared/Heist/IntroPlan; docs/art/intro/STORYBOARD.md):
+-- six words at most each (Config.Intro.CAPTION.WORDS_MAX, unit-tested), readable with the sound off.
+Strings.INTRO = table.freeze({
+	EVE = "CHRISTMAS EVE.",
+	HOARD = "SIR HOARDSWORTH WANTS IT ALL.",
+	EVERY = "EVERY PRESENT IN TOWN...",
+	GONE = "...GONE.",
+	ONE = "ONE ROBBER. ONE NIGHT.",
+	MORE = "IT'LL TAKE MORE OF ME.",
+	TITLE = "HEIST YOURSELF",
+} :: { [string]: string })
+Strings.INTRO_SKIP_HINT = "ANY KEY"
 -- The blooper cut at heist end (MASTERPLAN §9.2 #2): the caption over the clone's failure replay.
 Strings.BLOOPER_CAPTION = "MY CLONE BETRAYED ME"
 Strings.ME = "ME"

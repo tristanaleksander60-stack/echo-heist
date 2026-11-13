@@ -102,6 +102,9 @@ local inHeist: { [Player]: boolean } = {}
 -- Players whose first Sync is still being decided (data, kit, FTUE autostart): their
 -- client shows a "preparing" card, never the garage, until the server decides.
 local preparing: { [Player]: boolean } = {}
+-- New accounts whose client said the story intro is over (Heist.Ready while preparing; Heist/Cinematic): the
+-- FTUE heist is held until then (at most Config.Intro.SERVER_HOLD_SECONDS), so run 1 never ticks under the intro.
+local introDone: { [Player]: boolean } = {}
 -- os.clock() of the last heist a player's pick created (INSTANCE_COOLDOWN_SECONDS).
 local lastStartBy: { [Player]: number } = {}
 local tryFtueStart: (player: Player) -> boolean
@@ -992,6 +995,8 @@ local function declareRemotes()
 			local inst = instanceOf(player)
 			if inst then
 				HeistInstance.ready(inst, player.UserId, reduced)
+			elseif preparing[player] then
+				introDone[player] = true -- the intro is over (or not shown): the first heist may start
 			end
 		end,
 	})
@@ -1240,6 +1245,17 @@ local function onPlayerAdded(player: Player)
 				return
 			end
 		end
+		if Config.Intro.ENABLED and crew and H.FTUE_AUTOSTART and isNewAccount(player) then
+			-- the story intro plays on the client first (Heist/Cinematic): hold run 1 until it says so
+			local holdUntil = os.clock() + Config.Intro.SERVER_HOLD_SECONDS
+			while not introDone[player] and player.Parent == Players and os.clock() < holdUntil do
+				task.wait(0.1)
+			end
+			if player.Parent ~= Players then
+				preparing[player] = nil
+				return
+			end
+		end
 		if
 			crew
 			and H.FTUE_AUTOSTART
@@ -1274,6 +1290,7 @@ local function onPlayerRemoving(player: Player)
 	leaveCrew(player)
 	inHeist[player] = nil
 	preparing[player] = nil
+	introDone[player] = nil
 	lastStartBy[player] = nil
 	Avatars.release(player)
 end

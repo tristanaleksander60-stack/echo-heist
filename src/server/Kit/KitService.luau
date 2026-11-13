@@ -474,6 +474,11 @@ local function prepare(name: string, kit: Folder)
 				spec.size[3]
 			)
 		)
+		-- Resilience: an asset re-uploaded under the same id with new proportions (LoadAsset always gets the
+		-- latest version) must not turn the whole game back to greybox. Scale the piece to the size this
+		-- build's KitData expects, so placement stays right; the size error stays in the report, so
+		-- tests/kit_engine still fails until KitData is regenerated (kit_upload.py --gen).
+		part.Size = Vector3.new(spec.size[1], spec.size[2], spec.size[3])
 	end
 	if report.source == "cloud" then
 		local want = KitLib.scenePosition(spec)
@@ -541,7 +546,9 @@ local function boot()
 	table.sort(report.positionErrors)
 	table.sort(report.fidelityKept)
 	report.seconds = os.clock() - t0
-	report.ok = report.loaded == report.expected and #report.sizeErrors == 0
+	-- Every piece loaded is enough to dress levels: size errors were scaled to spec above (logged, and
+	-- failed by tests/kit_engine), so one re-uploaded asset never sends the live game back to greybox.
+	report.ok = report.loaded == report.expected
 	print("[Kit] " .. KitService.summary())
 	finish()
 end

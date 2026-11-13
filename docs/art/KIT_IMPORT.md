@@ -20,6 +20,8 @@ The table below shows what Studio must show after the import (generated from `as
 | BankFront_24x12.fbx | BankFront_24x12 | 24 x 13.9 x 2.94 | 2244 | PreciseConvexDecomposition | SmoothPlastic | on | on | base |
 | BankersLamp.fbx | BankersLamp | 1.32 x 1.44 x 0.86 | 328 | Box | SmoothPlastic | off | off | base |
 | Candy.fbx | Candy | 2.64 x 1.1 x 1.1 | 336 | Box | SmoothPlastic | on | off | base |
+| Car_Parked.fbx | Car_Parked | 4.1 x 3.743 x 9.44 | 476 | Box | SmoothPlastic | off | off | base |
+| Car_Parked.fbx | Car_Parked_Paint | 4.2 x 2.6 x 9 | 88 | Box | SmoothPlastic | off | off | base |
 | CashBag.fbx | CashBag | 1.9 x 2.02 x 1.97 | 600 | Box | SmoothPlastic | on | off | base |
 | CashRegister.fbx | CashRegister | 4.14 x 3.95 x 3.2 | 1032 | Box | SmoothPlastic | off | on | base |
 | CashRegister.fbx | CashRegister_Drawer | 2.97 x 0.67 x 2.77 | 488 | Box | SmoothPlastic | off | off | base |
@@ -59,6 +61,39 @@ The table below shows what Studio must show after the import (generated from `as
 | Hide_Curtain.fbx | Hide_Curtain | 6.38 x 10.78 x 1.84 | 468 | Box | SmoothPlastic | off | on | base |
 | Hide_DepositStack.fbx | Hide_DepositStack | 6.24 x 7 x 6.355 | 696 | Box | SmoothPlastic | off | on | base |
 | Hide_Plant.fbx | Hide_Plant | 6.293 x 6.174 x 5.969 | 568 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_Hat | 1.6 x 1.42 x 1.44 | 364 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_Head | 1.269 x 1.44 x 1.195 | 756 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_LeftFoot | 0.42 x 0.62 x 1.25 | 140 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_LeftHand | 0.418 x 0.525 x 0.42 | 116 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_LeftLowerArm | 0.518 x 1.044 x 0.476 | 160 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_LeftLowerLeg | 0.36 x 1.62 x 0.342 | 80 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_LeftUpperArm | 0.632 x 1.379 x 0.571 | 180 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_LeftUpperLeg | 0.44 x 1.62 x 0.418 | 80 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_LowerTorso | 1.44 x 1.98 x 1.256 | 308 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_Monocle | 0.475 x 0.721 x 0.349 | 192 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_RightFoot | 0.42 x 0.62 x 1.25 | 140 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_RightHand | 0.418 x 0.525 x 0.42 | 116 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_RightLowerArm | 0.518 x 1.044 x 0.476 | 160 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_RightLowerLeg | 0.36 x 1.62 x 0.342 | 80 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_RightUpperArm | 0.632 x 1.379 x 0.571 | 180 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_RightUpperLeg | 0.44 x 1.62 x 0.418 | 80 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth.fbx | Hoardsworth_UpperTorso | 1.88 x 2.7 x 1.379 | 552 | Box | SmoothPlastic | off | on | base |
+| Intro_House_A.fbx | Intro_House_A | 13.6 x 17.79 x 12.8 | 984 | Box | SmoothPlastic | off | on | base |
+| Intro_House_A.fbx | Intro_House_A_Windows | 12.16 x 7.3 x 6.48 | 108 | Box | Neon | off | off | base |
+| Intro_House_B.fbx | Intro_House_B | 16.6 x 17.05 x 12.8 | 984 | Box | SmoothPlastic | off | on | base |
+| Intro_House_B.fbx | Intro_House_B_Windows | 15.16 x 5.3 x 6.48 | 108 | Box | Neon | off | off | base |
+| Intro_Letter.fbx | Intro_Letter | 2.4 x 1.6 x 0.2 | 160 | Box | SmoothPlastic | off | off | base |
+| Intro_Lever.fbx | Intro_Lever | 2 x 3.059 x 1.4 | 200 | Box | SmoothPlastic | off | on | base |
+| Intro_Lever.fbx | Intro_Lever_Handle | 0.6 x 2.582 x 1.076 | 188 | Box | SmoothPlastic | off | on | base |
+| Intro_Present_A.fbx | Intro_Present_A | 2.52 x 3.97 x 2.52 | 196 | Box | SmoothPlastic | off | off | base |
+| Intro_Present_B.fbx | Intro_Present_B | 3.72 x 2.63 x 2.72 | 196 | Box | SmoothPlastic | off | off | base |
+| Intro_Present_C.fbx | Intro_Present_C | 2.72 x 3.43 x 2.72 | 196 | Box | SmoothPlastic | off | off | base |
+| Intro_SnowGlobe.fbx | Intro_SnowGlobe | 25.028 x 12.5 x 25.028 | 1008 | Box | SmoothPlastic | off | on | base |
+| Intro_SnowGlobe.fbx | Intro_SnowGlobe_Cap | 7.6 x 2.6 x 7.6 | 240 | Box | SmoothPlastic | off | on | base |
+| Intro_SnowGlobe.fbx | Intro_SnowGlobe_Glass | 32 x 32 x 32 | 960 | Box | Glass (T 0.55) | off | off | base |
+| Intro_SnowGlobe.fbx | Intro_SnowGlobe_Presents | 20.8 x 15.185 x 20.8 | 4044 | Box | SmoothPlastic | off | off | base |
+| Intro_Vacuum.fbx | Intro_Vacuum | 42.296 x 41.897 x 43.209 | 3752 | Box | SmoothPlastic | off | on | base |
+| Intro_Vacuum.fbx | Intro_Vacuum_Lights | 36.083 x 10.986 x 27.64 | 584 | Box | Neon | off | off | base |
 | JobBoard.fbx | JobBoard | 5.4 x 7.32 x 1 | 844 | Box | SmoothPlastic | off | on | base |
 | Lamp_Ceiling.fbx | Lamp_Ceiling | 3.2 x 3.38 x 3.2 | 568 | Box | SmoothPlastic | off | off | base |
 | Lamp_Ceiling.fbx | Lamp_Ceiling_Bulb | 0.84 x 0.84 x 0.84 | 120 | Box | Neon | off | off | base |
@@ -78,6 +113,7 @@ The table below shows what Studio must show after the import (generated from `as
 | Plate_4x4.fbx | Plate_4x4 | 4 x 0.36 x 4 | 484 | Box | SmoothPlastic | on | off | base |
 | Plate_4x4.fbx | Plate_4x4_Ring | 3.3 x 0.14 x 3.3 | 288 | Box | Neon | off | off | base |
 | Present.fbx | Present | 2.101 x 2.021 x 1.9 | 388 | Box | SmoothPlastic | on | off | base |
+| Roof_Gable.fbx | Roof_Gable | 10.4 x 3.62 x 8.6 | 32 | Box | SmoothPlastic | off | off | base |
 | Rookie.fbx | Rookie_Face_Idle | 1.023 x 0.834 x 0.252 | 368 | Box | SmoothPlastic | off | off | base |
 | Rookie.fbx | Rookie_Head | 2.097 x 1.66 x 1.89 | 644 | Box | SmoothPlastic | off | on | base |
 | Rookie.fbx | Rookie_LeftFoot | 0.76 x 0.66 x 1.3 | 152 | Box | SmoothPlastic | off | on | base |
@@ -128,6 +164,7 @@ The table below shows what Studio must show after the import (generated from `as
 | Skyline_Far.fbx | Skyline_Far_Windows | 561.626 x 86 x 596.373 | 1236 | Box | Neon | off | off | base |
 | Skyline_Near.fbx | Skyline_Near | 316.773 x 55.878 x 323.381 | 292 | Box | SmoothPlastic | off | off | base |
 | Skyline_Near.fbx | Skyline_Near_Windows | 288.575 x 44.4 x 297.02 | 996 | Box | Neon | off | off | base |
+| Snowman.fbx | Snowman | 4.005 x 6.24 x 2.568 | 724 | Box | SmoothPlastic | off | off | base |
 | Storefront_24x12.fbx | Storefront_24x12 | 24 x 12 x 4.75 | 1980 | PreciseConvexDecomposition | SmoothPlastic | on | on | base |
 | Storefront_24x12.fbx | Storefront_24x12_Glass | 22.4 x 6.08 x 0.06 | 24 | Box | Glass (T 0.6) | off | off | base |
 | StreetLamp.fbx | StreetLamp | 1.5 x 11.05 x 1.4 | 468 | Box | SmoothPlastic | off | on | base |
@@ -163,7 +200,7 @@ The table below shows what Studio must show after the import (generated from `as
 | Xmas_Tree.fbx | Xmas_Tree_Lights | 4.119 x 5.64 x 4.033 | 400 | Box | Neon | off | off | xmas |
 | Xmas_Wreath.fbx | Xmas_Wreath | 2.826 x 3.56 x 1.135 | 548 | Box | SmoothPlastic | off | off | xmas |
 
-**63 FBX files, 145 MeshParts, 63,890 triangles in all.** Christmas layer: 17 parts.
+**76 FBX files, 182 MeshParts, 82,802 triangles in all.** Christmas layer: 17 parts.
 <!-- kit-table:end -->
 
 ---
@@ -215,7 +252,7 @@ Measured boot (real server, Nov 12): **2.1 to 2.5 s** for all 92 pieces from 50 
 
 `opts = { atlas = "CornerShop", color = Color3 }`: `atlas` swaps the texture on atlas pieces only (STYLE_BIBLE §1.4), `color` tints (tintable ornaments). Templates live in `ServerStorage/Kit/<Model>`.
 
-**Atlas ids.** The Bank atlas also comes with the FBX upload. The location swaps (`EH_Palette_CornerShop`, `EH_Palette_ToyShop`) and the dial-face maps are uploaded as Decals (`--images`). A Decal id is not an image id: `LoadAsset(decalId)` returns a Model with a `Decal` whose `Texture` is the image (measured). `kit_ids.json` records each image id (`--set-image <stem> <imageId>`, done for all six on Nov 12); KitService resolves any unrecorded one at boot the same way. `Config.Kit.Atlas.<Location>` overrides any of them. Nov 12 ids: Bank `125339359087334`, CornerShop `108976991965311`, ToyShop `77723873181805`.
+**Atlas ids.** The Bank atlas also comes with the FBX upload. The location swaps (`EH_Palette_CornerShop`, `EH_Palette_ToyShop`) and the dial-face maps are uploaded as Decals (`--images`). A Decal id is not an image id: `LoadAsset(decalId)` returns a Model with a `Decal` whose `Texture` is the image (measured). `kit_ids.json` records each image id (`--set-image <stem> <imageId>`, done for all six on Nov 12); KitService resolves any unrecorded one at boot the same way. `Config.Kit.Atlas.<Location>` overrides any of them. Nov 12 ids: Bank `125339359087334`, CornerShop `108976991965311`, ToyShop `77723873181805` (navy), replaced on Nov 13 by the warm berry-plum walls: Decal `92072228703618`, image `90000315473532`.
 
 **Hero SurfaceAppearance.** Runtime scripts **cannot** write SurfaceAppearance maps (`ColorMapContent`: "lacking capability Plugin", measured), but they can load, clone and parent one. So `--appearances` builds `KitAppearances.rbxm` with Lune (one SurfaceAppearance per manifest piece with a `texture`, named after the piece: colour, roughness and emissive mask = the uploaded image ids, EmissiveStrength 2, EmissiveTint = the dial ring's idle colour), uploads it as a Model, and KitService clones it onto `VaultDoor_DialFace` (and clears its TextureID). Level code may still set `EmissiveTint` at runtime (it follows `VaultDoor_DialRing.Color`). Without the asset, the dial face keeps the colour map the FBX import made.
 
@@ -464,5 +501,5 @@ Use this if the meshes, sizes or collision do not survive `rojo build`. Then we 
    ```
    Then it sets Size, TextureID, Material, PivotOffset and the other flags from the manifest. Each heist clones the cached parts.
 <!-- fallback-cost:start -->
-4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 145 MeshParts and 63,890 triangles about **3.2 s** at boot (generated by kit_docs.py). Boot only, never per heist.
+4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 182 MeshParts and 82,802 triangles about **4.0 s** at boot (generated by kit_docs.py). Boot only, never per heist.
 <!-- fallback-cost:end -->

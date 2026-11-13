@@ -20,11 +20,22 @@ local Solutions = {}
 Solutions.PLACEHOLDER = true
 
 -- L1 Back Room: run 1 stands on the plate (auto-ends after 2 s); run 2 walks
--- through the held door, grabs the cash and banks it.
+-- through the held door, grabs the cash (behind the right window, off the door's axis) and banks it.
 Solutions.cs1_back_room = {
 	runs = {
 		{ [1] = { { goPlate = "A" }, { stay = true } } },
-		{ [1] = { { goLoot = "Cash" }, { grab = "Cash" }, { goVan = true }, { stay = true } } },
+		{
+			[1] = {
+				{ go = { 0, -17 } },
+				{ go = { 0, -23 } },
+				{ goLoot = "Cash" },
+				{ grab = "Cash" },
+				{ go = { 0, -23 } },
+				{ go = { 0, -17 } },
+				{ goVan = true },
+				{ stay = true },
+			},
+		},
 	},
 }
 

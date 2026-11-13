@@ -14,6 +14,7 @@ local Protocol = require("../../src/shared/Heist/Protocol")
 local LevelSpec = require("../../src/shared/Sim/LevelSpec")
 local Catalog = require("../../src/shared/Levels/Catalog")
 local Help = require("../../src/shared/Heist/Help")
+local IntroPlan = require("../../src/shared/Heist/IntroPlan")
 local Assert = require("./Assert")
 
 local P = Config.Presentation
@@ -202,6 +203,48 @@ return function(test)
 	---------------------------------------------------------------------------
 	-- Gates
 	---------------------------------------------------------------------------
+	test("story intro gate: first join only (one of intro / title), staged in Studio, off by the flag", function()
+		local function due(over: { [string]: any }): boolean
+			local o = {
+				enabled = true,
+				status = "seeded",
+				seen = false,
+				boot = "preparing",
+				studio = false,
+				staged = false,
+				studioAutoplay = false,
+			}
+			for k, v in over do
+				(o :: any)[k] = v
+			end
+			return PresentPlan.introDue(o :: any)
+		end
+		Assert.truthy(due({}), "a new profile while the server holds the first heist")
+		Assert.truthy(due({ boot = "heistFtue" }), "the server already started L1 (the hold timed out)")
+		Assert.falsy(due({ seen = true }), "a returning player never sees it again (the title kind marks both)")
+		Assert.falsy(due({ boot = "heist" }), "never in front of someone joining a heist in progress")
+		Assert.falsy(due({ status = "pending" }), "unknown yet: wait for the profile")
+		Assert.falsy(due({ enabled = false }), "Config.Intro.ENABLED off: the title beat instead")
+		Assert.falsy(due({ studio = true, status = "none" }), "offline Studio: not on every Play")
+		Assert.truthy(due({ studio = true, status = "none", studioAutoplay = true }), "unless autoplay is on")
+		Assert.truthy(due({ studio = true, staged = true, seen = true, boot = "garage" }), "EH_Scenario INTRO: always")
+		Assert.falsy(due({ staged = true, seen = true, boot = "garage" }), "never staged outside Studio")
+		-- wherever the intro is due, the title beat would have been due: it replaces the beat, never adds a gate
+		for _, status in { "pending", "seeded", "none" } do
+			for _, boot in { "preparing", "garage", "heistFtue", "heist" } do
+				for _, seen in { false, true } do
+					if due({ status = status, boot = boot, seen = seen }) then
+						Assert.truthy(
+							PresentPlan.titleDue(status, seen, boot),
+							"intro implies title: " .. status .. "/" .. boot
+						)
+					end
+				end
+			end
+		end
+		Assert.truthy(Config.Intro.SERVER_HOLD_SECONDS > IntroPlan.total(), "the server hold outlasts the intro")
+	end)
+
 	test("first-join gate: the title plays for a new account only, never for someone joining a heist", function()
 		Assert.truthy(PresentPlan.titleDue("pending", false, "heistFtue"), "the server autostarted L1")
 		Assert.truthy(PresentPlan.titleDue("seeded", false, "preparing"), "a new profile while the server prepares")

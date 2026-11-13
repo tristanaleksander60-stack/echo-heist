@@ -1,0 +1,105 @@
+{
+ "asset": "Intro_Present_A",
+ "objects": [
+  {
+   "name": "Intro_Present_A",
+   "class": "small",
+   "tris": 196,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.52,
+    2.52,
+    3.97
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.26,
+     -1.26,
+     -1.66
+    ],
+    "local_max": [
+     1.26,
+     1.26,
+     2.3104
+    ]
+   },
+   "swatches": [
+    "ribbon",
+    "snow"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    1.6
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 80,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Intro"
+   ],
+   "joint": null,
+   "role": "present",
+   "notes": "flying present A: tall, burgundy paper, snow ribbon",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 196,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "3f94c8421b39fc9627af",
+ "fbx": {
+  "path": "assets/fbx/Intro_Present_A.fbx",
+  "bytes": 23468,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Intro_Present_A"
+  ],
+  "geometry_extents": [
+   [
+    2.52,
+    2.52,
+    3.97
+   ]
+  ]
+ },
+ "spec": "assets/blender/intro.py",
+ "notes": "flying present A: tall, burgundy paper, snow ribbon",
+ "turntable": "docs/art/turntables/Intro_Present_A.png",
+ "seconds": 64.4
+}

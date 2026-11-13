@@ -42,14 +42,16 @@ local SHOP_STREET = { { -12.5, 12.5 }, { 12.5, 12.5 } }
 local DOORMAT = { x = 0, z = 11.4, sx = 0.5, sz = 0.3 }
 
 local LevelDress: { [string]: Dress } = {
-	-- L1: plate (10, -8), hero over the cash (0, -28), the counter (-10, -2); windows either side of the
-	-- back-room door.
+	-- L1: plate (10, -8), hero over the cash (10, -26), the counter (-10, -2); windows either side of the
+	-- back-room door. The cash sits on a Safe behind the right window: its top half clears the sill from the
+	-- Rookie's eyes at every spawn seat (tests/unit/HeistL1Cash.spec.luau).
 	cs1_back_room = {
 		rooms = { { -10, -2 } },
 		windows = { { axis = "X", line = -20 } },
+		displays = { Cash = "Safe" },
 		street = SHOP_STREET,
 		-- the entrance rug (front room), the back-room rug under the cash's hero pool, the doormat
-		rugs = { { x = 0, z = 5.5 }, { x = 0, z = -27 }, DOORMAT },
+		rugs = { { x = 0, z = 5.5 }, { x = 10, z = -26 }, DOORMAT },
 	},
 	-- L2: plates (-10, -8) and (10, -8), the middle room (0, -26), hero over the safe (0, -40).
 	cs2_two_doors = {

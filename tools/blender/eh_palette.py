@@ -70,7 +70,7 @@ SWATCHES = [
 # Cells that a location atlas swap may recolour (walls, floors, furniture wood). Characters, loot, signals and
 # metal never change between locations, so roles in FIXED_ROLES may not use these cells (rule P3).
 LOCATION_CELLS = ("plum_deep", "plum", "plum_hi", "floor_a", "floor_b", "wood_lo", "wood", "wood_hi")
-FIXED_ROLES = ("char",)
+FIXED_ROLES = ("char", "villain")
 
 # Location atlases: same cells, new colours (MASTERPLAN 6.7 "atlas swaps"). Bank is the base atlas the kit is
 # exported with (assets/textures/EH_Palette_Bank.png); the others are uploaded once and swapped in by code
@@ -84,9 +84,13 @@ LOCATIONS = {
         # enough that counter tops also read against the cut-away brick wall tops (plum_hi) in the B3 planning view
         "wood_lo": "#816243", "wood": "#9A7755", "wood_hi": "#B3916D",
     },
-    "ToyShop": {      # storybook-navy walls, slate / cocoa checker, light pine (Drop 1, Dec 11) [decision, owner review]
+    "ToyShop": {      # warm berry-plum walls, slate / cocoa checker, light pine (Drop 1, Dec 11) [decision, owner review]
         # pass 2: the first sage walls and green-grey floor hid every plant and curtain (R1: leaf on sage 0.01)
-        "plum_deep": "#143352", "plum": "#1F3F5F", "plum_hi": "#3D5E7F",
+        # pass 3 (2026-11-13, owner-approved, LEVELS.md 9-10): the storybook navy (#143352 / #1F3F5F / #3D5E7F) stayed
+        # the coolest big shape under the shop's pink and gold light (G2 21 % warm); the same values (Oklch L 0.32 /
+        # 0.36 / 0.47) at hue 352 and chroma 0.08: warm under that light, clear of Clone Magenta (338 deg) by the
+        # chroma rule, darker and calmer than Ribbon Burgundy, and not the Corner Shop's brick (38 deg)
+        "plum_deep": "#4F1E36", "plum": "#5C2941", "plum_hi": "#7D475F",
         "floor_a": "#242B39", "floor_b": "#453127",
         "wood_lo": "#7D6441", "wood": "#967952", "wood_hi": "#B0936B",
     },
@@ -118,6 +122,10 @@ NEON = {
     "Xmas_Tree_Lights":    (WARM_BULB, "fixed (bulbs and the star)", ()),
     "Skyline_Near_Windows": (WARM_BULB, "fixed (lit windows of the backdrop skyline, PLAN 3.1 exception)", ()),
     "Skyline_Far_Windows":  (WARM_BULB, "fixed (lit windows of the backdrop skyline, PLAN 3.1 exception)", ()),
+    # the story intro's stage (Heist/Cinematic, client-only): lit house windows (out on "...GONE.") and the vacuum
+    "Intro_House_A_Windows": (WARM_BULB, "fixed; Vault Steel shade #4E5675 once the presents are gone", ("#4E5675",)),
+    "Intro_House_B_Windows": (WARM_BULB, "fixed; Vault Steel shade #4E5675 once the presents are gone", ("#4E5675",)),
+    "Intro_Vacuum_Lights":   ("#4E5675", "Bulb Warm #F6C0A2 while the vacuum runs", (WARM_BULB,)),
 }
 GLASS_TINT = "#A9B2CC"
 
@@ -180,6 +188,9 @@ ROLE_RULES = {
                                           # Christmas reds and greens; never loot gold or a signal colour
     "story":  {"env", "xmas", "tint"},    # comfort and storytelling props (the warm Rug_8x6, the garage JobBoard's
                                           # red string): may use the Ribbon reds; never loot gold or a signal colour
+    "villain": {"env", "char", "xmas", "tint"},   # Sir Hoardsworth and his machines (the story intro): burgundy
+                                          # velvet (Ribbon), antique-gold trim (Warm Marble shade), Gus's skin cells;
+                                          # never loot gold or a signal colour; no location cells (rule P3)
 }
 
 INDEX = {k: i for i, (k, *_r) in enumerate(SWATCHES)}
