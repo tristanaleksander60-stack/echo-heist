@@ -31,6 +31,15 @@ local U = Config.Ui
 
 local Controls = {}
 
+-- Key binds only on a client: a server builds the HUD for the engine check (tests/client_engine.luau) and binds nothing.
+local CAS: any = if game:GetService("RunService"):IsClient()
+	then ContextActionService
+	else {
+		BindAction = function() end,
+		UnbindAction = function() end,
+		BindActionAtPriority = function() end,
+	}
+
 -- The Enum.KeyCodes bound to a KeyHints action, as arguments.
 local function codes(action: string): ...Enum.KeyCode
 	return table.unpack(Common.keyCodes(action))
@@ -140,9 +149,9 @@ function Controls.bind(ctx: any)
 		for _, b in runBinds do
 			if on then
 				local keys = b[4]
-				ContextActionService:BindAction(b[1], b[2], b[3], table.unpack(keys, 1, keys.n))
+				CAS:BindAction(b[1], b[2], b[3], table.unpack(keys, 1, keys.n))
 			else
-				ContextActionService:UnbindAction(b[1])
+				CAS:UnbindAction(b[1])
 			end
 		end
 	end
@@ -182,7 +191,7 @@ function Controls.bind(ctx: any)
 	end)
 	-- M: the MENU sheet (in first person the cursor is locked during play; a sheet frees it, and so does
 	-- holding Left Alt).
-	ContextActionService:BindAction("HeistMenu", function(_, inputState)
+	CAS:BindAction("HeistMenu", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin and gui.Enabled and ctx.msg and ctx.msg.menuSheet then
 			local sheet = ctx.msg.menuSheet
 			if Ui.isShown(sheet) then
@@ -220,7 +229,7 @@ function Controls.bind(ctx: any)
 		return Enum.ContextActionResult.Pass
 	end, false, codes("fast"))
 	-- BACK closes the top sheet: the settings, else the MENU sheet (bound above the slide, which also uses B).
-	ContextActionService:BindActionAtPriority("HeistBack", function(_, inputState)
+	CAS:BindActionAtPriority("HeistBack", function(_, inputState)
 		if inputState ~= Enum.UserInputState.Begin or not gui.Enabled then
 			return Enum.ContextActionResult.Pass
 		end
