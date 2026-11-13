@@ -364,7 +364,7 @@ return function(test)
 
 	test("lamps: L1, L2 and Clone Party at the LEVELS.md §4 P0-3 spots", function()
 		local want = {
-			cs1_back_room = { { 10, -8, "plate" }, { 0, -28, "hero" }, { -10, -2, "room" } },
+			cs1_back_room = { { 10, -8, "plate" }, { 10, -26, "hero" }, { -10, -2, "room" } },
 			cs2_two_doors = { { -10, -8, "plate" }, { 10, -8, "plate" }, { 0, -26, "room" }, { 0, -40, "hero" } },
 			cs5_clone_party = { { -4, -14, "room" }, { 4, -14, "room" }, { -8.5, -1, "hero" }, { 0, -34, "room" } },
 		}

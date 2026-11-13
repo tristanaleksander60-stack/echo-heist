@@ -302,6 +302,17 @@ function EchoView.new(state: any): any
 		g.Adornee = anchor
 		g.Enabled = true
 	end
+	-- First person (wave C): the clone walks out of your own body at your eye height, so its label sits just
+	-- over its head, in frame from a few studs behind it, not 3.6 studs up and above the frame.
+	local function placeYouLabel()
+		local gui = youGui
+		if gui then
+			local lift = if state.fpView == true then Config.Onboarding.YOU_LABEL_FP_LIFT else 3.6
+			if gui.StudsOffset.Y ~= lift then
+				gui.StudsOffset = Vector3.new(0, lift, 0)
+			end
+		end
+	end
 	local function hideYouLabel()
 		if youGui then
 			youGui.Enabled = false
@@ -1128,6 +1139,8 @@ function EchoView.new(state: any): any
 			if entry.youLabel and now > (entry.labelUntil or 0) then
 				entry.youLabel = false
 				hideYouLabel()
+			elseif entry.youLabel then
+				placeYouLabel()
 			end
 		end
 		if #parts > 0 then

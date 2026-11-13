@@ -84,9 +84,13 @@ LOCATIONS = {
         # enough that counter tops also read against the cut-away brick wall tops (plum_hi) in the B3 planning view
         "wood_lo": "#816243", "wood": "#9A7755", "wood_hi": "#B3916D",
     },
-    "ToyShop": {      # storybook-navy walls, slate / cocoa checker, light pine (Drop 1, Dec 11) [decision, owner review]
+    "ToyShop": {      # warm berry-plum walls, slate / cocoa checker, light pine (Drop 1, Dec 11) [decision, owner review]
         # pass 2: the first sage walls and green-grey floor hid every plant and curtain (R1: leaf on sage 0.01)
-        "plum_deep": "#143352", "plum": "#1F3F5F", "plum_hi": "#3D5E7F",
+        # pass 3 (2026-11-13, owner-approved, LEVELS.md 9-10): the storybook navy (#143352 / #1F3F5F / #3D5E7F) stayed
+        # the coolest big shape under the shop's pink and gold light (G2 21 % warm); the same values (Oklch L 0.32 /
+        # 0.36 / 0.47) at hue 352 and chroma 0.08: warm under that light, clear of Clone Magenta (338 deg) by the
+        # chroma rule, darker and calmer than Ribbon Burgundy, and not the Corner Shop's brick (38 deg)
+        "plum_deep": "#4F1E36", "plum": "#5C2941", "plum_hi": "#7D475F",
         "floor_a": "#242B39", "floor_b": "#453127",
         "wood_lo": "#7D6441", "wood": "#967952", "wood_hi": "#B0936B",
     },

@@ -32,6 +32,7 @@ local Catalog = require("../../src/shared/Levels/Catalog")
 local Config = require("../../src/shared/Config")
 local EventLog = require("../../src/shared/Sim/EventLog")
 local Harness = require("./Harness")
+local NaiveKid = require("./NaiveKid")
 local Solutions = require("./Solutions")
 
 local H = Config.Heist
@@ -115,6 +116,23 @@ local function botLevel(n: number): number
 	return t + WRAP[1]
 end
 
+-- L1 from first control (the run 1 intro included) to the first clone forming and the first bank.
+local function l1Times(runs: { any }): (number?, number?)
+	local t = H.FIRST_RUN_INTRO
+	local clone = nil
+	for r, run in runs do
+		if r >= 2 and not clone then
+			clone = t + H.TUTORIAL_CLONE_FADE_IN
+		end
+		local b = EventLog.firstTick(run.log, EV.Bank)
+		if b then
+			return clone, t + b / HZ
+		end
+		t += run.t + rewind(1, r + 1) + H.TUTORIAL_BETWEEN_SECONDS
+	end
+	return clone, nil
+end
+
 local function band(lo: number, hi: number): { number }
 	return { lo, hi }
 end
@@ -129,6 +147,37 @@ end
 
 return function(test)
 	local party = Harness.level(5)
+
+	-- MASTERPLAN §7.5's bars (first clone <= 30 s, first bank <= 45 s), for the scripted run and the
+	-- median of 40 naive kids (who follow the §7.5 hints; the cash shows through the right window).
+	test("L1: first clone <= 30 s and first bank <= 45 s (bot, and the naive kids' median)", function()
+		local level = Harness.level(1)
+		local _, runs = Harness.play(level, Solutions.planFor(level))
+		local c, b = l1Times(runs)
+		Assert.truthy(c and c <= 30, "bot: first clone within 30 s")
+		Assert.truthy(b and b <= 45, "bot: first bank within 45 s")
+		local cs, bs = {}, {}
+		for seed = 1, 40 do
+			local _, kr = Harness.play(level, NaiveKid.plan(level, seed, 3))
+			local kc, kb = l1Times(kr)
+			table.insert(cs, kc or math.huge)
+			table.insert(bs, kb or math.huge)
+		end
+		table.sort(cs)
+		table.sort(bs)
+		print(
+			string.format(
+				"        [L1] bot: clone %.1f s, bank %.1f s; kids' median: clone %.1f s, bank %.1f s (p90 %.1f s)",
+				c :: number,
+				b :: number,
+				cs[20],
+				bs[20],
+				bs[36]
+			)
+		)
+		Assert.le(cs[20], 30, "kids' median first clone within 30 s")
+		Assert.le(bs[20], 45, "kids' median first bank within 45 s")
+	end)
 
 	test("play order: L1, L2, the Clone Party break, L3, L4, then the Big Score", function()
 		local nums = {}

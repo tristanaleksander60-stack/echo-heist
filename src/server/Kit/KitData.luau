@@ -90,7 +90,7 @@ return {
 	images = {
 		EH_Palette_Bank = { decal = 108670745274453, image = 125339359087334 },
 		EH_Palette_CornerShop = { decal = 74736138806862, image = 108976991965311 },
-		EH_Palette_ToyShop = { decal = 120624084393346, image = 77723873181805 },
+		EH_Palette_ToyShop = { decal = 92072228703618, image = 90000315473532 },
 		VaultDoor_DialFace_Color = { decal = 96422763187604, image = 72384496565045 },
 		VaultDoor_DialFace_Emissive = { decal = 94820075279396, image = 70794957142854 },
 		VaultDoor_DialFace_Roughness = { decal = 129386366200891, image = 72897257789999 },

@@ -3,9 +3,9 @@
 -- Both sit on the edge-to-edge fx layer, centred on the WHOLE screen where the camera ray goes (HudLayout
 -- SCREEN_CENTRED: RETICLE, PROMPT), under the HUD's device scale. The reticle: a small dot (with an ink
 -- stroke, so it reads on snow and on the night sky), and a ring round it in the target's colour while a
--- target is under it. The chip, just right of it: the key ("E" on a keyboard, "X" on a gamepad, nothing on
--- touch: the GRAB button is the tap target there), the verb's icon and its word ("GRAB $100", "LOCKED 0:07",
--- "OPEN", "BANK"). Nothing here is interactive (Active off), so a locked cursor's clicks fall through.
+-- target is under it. The chip, just right of it: the key ("E" on a keyboard, "X" on a gamepad, "TAP" on
+-- touch, where the GRAB button is the tap target), the verb's icon and its word ("GRAB $100", "LOCKED 0:07",
+-- "OPEN", "WALK IN TO BANK": the van has no key). Nothing here is interactive (Active off), so a locked cursor's clicks fall through.
 -- Motion: the ring and the chip pop in (Ui.pop / Ui.show), go with the exit token; reduced motion: no pop.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -31,7 +31,7 @@ export type Prompt = {
 	verb: string, -- Strings.FP_VERB key ("grab" | "locked" | "open" | "press" | "bank")
 	text: string, -- the word(s) shown
 	colour: Color3,
-	key: string?, -- the key cap ("E", "X"), nil on touch
+	key: string?, -- the key cap ("E", "X", "TAP"), nil for the van
 }
 
 -- The icon for each verb (the 38-icon sheet).
@@ -162,8 +162,12 @@ function Reticle.build(ctx: any): any
 			shownKey = key
 			keyCap.Visible = key ~= ""
 			keyLabel.Text = key
-			word.Position = UDim2.new(0, if key ~= "" then 40 else 12, 0.5, 0)
-			word.Size = UDim2.new(1, if key ~= "" then -48 else -20, 1, -8)
+			-- one letter: a square cap; a word (TAP): a wider one
+			local capW = if #key > 1 then FH.KEY_CAP_WIDE else 26
+			keyCap.Size = UDim2.fromOffset(capW, 26)
+			local left = if key ~= "" then capW + 14 else 12
+			word.Position = UDim2.new(0, left, 0.5, 0)
+			word.Size = UDim2.new(1, -(left + 8), 1, -8)
 		end
 		if prompt.text ~= shownText then
 			shownText = prompt.text
