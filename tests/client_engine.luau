@@ -2,7 +2,7 @@
 -- Run: ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960 \
 --      --place 70772627070328 --script tests/client_engine.luau   (add --version N to skip publishing)
 -- 2026-11-12, place v21: 22 checks, 0 failed. Section F (camera track) and H (presentation shell) not yet run in the engine.
--- Section J: first person (PLAN_FIRST_PERSON FP).
+-- Section J: first person (PLAN_FIRST_PERSON FP). 2026-11-13, Saved v50: 49 checks, 0 failed (J: 3 / 3).
 -- Loads every client module, builds L6 with the uploaded kit + Christmas layer and runs
 -- WorldView on it (vault door skin swing + dial, alarm beacons), the L5 till lock label,
 -- Gus on his mesh (every beat attached, head lead, Santa hat), the Line-up arrangement against the real van body, and
@@ -783,8 +783,10 @@ do
 		local model = Players:CreateHumanoidModelFromDescriptionAsync(desc, Enum.HumanoidRigType.R15)
 		model:PivotTo(CFrame.new(0, 80, 0))
 		model.Parent = scratch
-		local root = model:FindFirstChild("HumanoidRootPart") :: BasePart
-		local head = model:FindFirstChild("Head") :: BasePart
+		local rootI = model:FindFirstChild("HumanoidRootPart")
+		local headI = model:FindFirstChild("Head")
+		assert(rootI and rootI:IsA("BasePart") and headI and headI:IsA("BasePart"), "an R15 root and head")
+		local root, head = rootI :: BasePart, headI :: BasePart
 		local dy = head.Position.Y - root.Position.Y
 		local eye = FpMath.eye({ root.Position.X, root.Position.Y, root.Position.Z }, dy, 0, Cfg.Heist.CAMERA.FP)
 		local headTop = head.Position.Y + head.Size.Y / 2
