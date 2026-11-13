@@ -239,6 +239,7 @@ return {
 			"Rookie_Cap_Beanie",
 			"Rookie_Cap_Bobble",
 			"Rookie_Cap_Flat",
+			"Rookie_Cap_Santa",
 			"Rookie_Cap_Trapper",
 			"Rookie_Gloves_Knit_Left",
 			"Rookie_Gloves_Knit_Right",
@@ -264,6 +265,7 @@ return {
 		Rookie_Cap_Beanie = { part = "Head", offset = { 0, 1.2, 0 } },
 		Rookie_Cap_Bobble = { part = "Head", offset = { 0, 1.2, 0 } },
 		Rookie_Cap_Flat = { part = "Head", offset = { 0, 1.2, 0 } },
+		Rookie_Cap_Santa = { part = "Head", offset = { 0, 1.2, 0 } },
 		Rookie_Cap_Trapper = { part = "Head", offset = { 0, 1.2, 0 } },
 		Rookie_Face_Busted = { part = "Head", offset = { 0, 0.72, -0.84 } },
 		Rookie_Face_Idle = { part = "Head", offset = { 0, 0.72, -0.84 } },
@@ -303,6 +305,7 @@ return {
 			Beanie = { "Rookie_Cap_Beanie" },
 			Bobble = { "Rookie_Cap_Bobble" },
 			Flat = { "Rookie_Cap_Flat" },
+			Santa = { "Rookie_Cap_Santa" },
 			Trapper = { "Rookie_Cap_Trapper" },
 		},
 		gloves = {

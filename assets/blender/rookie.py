@@ -17,7 +17,7 @@ the hip centre (Root, 1.62) below it.
 Six groups (FBX files):
   Rookie            the body (15 parts) + Rookie_Face_Idle (the default face, welded to the head)
   Rookie_Faces      Smug, Shocked, Busted: swapped with Idle by state (only one face shows)
-  Rookie_Outfits    the outfit slots: cap x4, scarf x4, sweater x2 (overlays), gloves x2 (cuffs), mask x1 (+ none)
+  Rookie_Outfits    the outfit slots: cap x5 (Santa: Christmas), scarf x4, sweater x2 (overlays), gloves x2 (cuffs), mask x1 (+ none)
   Rookie_Viewmodel  the first-person forearms + gloved hands (LeftArm, RightArm; grips GripL / GripR)
   Rookie_Hands      the first-person gloves with fingers: palm + index / finger block / thumb, two segments each
   Rookie_FPArms     the DEDICATED first-person arms (docs/research/fp_hands.md): slim sleeve, palm, 4 x 3 finger
@@ -400,6 +400,22 @@ def cap_trapper(k):
         mb.box((sx * 0.98 - 0.12, -0.36, 3.42), (sx * 0.98 + 0.12, 0.3, 4.12), "hair", chamfer=0.08, cham_col="hair",
                part="Flap")
         mb.box((sx * 1.08 - 0.05, -0.3, 3.46), (sx * 1.08 + 0.05, 0.24, 3.66), "marble_hi", part="FlapFur")
+    return k.finalize(mb, pivot=J["HatAttach"])
+
+
+def cap_santa(k):
+    """The Christmas cap (ICON_THUMBNAILS 3.1 "Christmas"): a Ribbon Burgundy cone flopping back over the head, a
+    thick Snow fur band (the trim carries the 64 px read: burgundy alone is only 0.14 luma over Ink Indigo) and a
+    pompom that peeks out behind the head in a 3/4 view. The Bobble's footprint and attach point."""
+    mb = k.MB("Rookie_Cap_Santa")
+    path = [(0, 0.0, 4.02), (0, 0.04, 4.46), (0, 0.18, 4.88), (0, 0.44, 5.2), (0, 0.8, 5.32), (0, 1.12, 5.14),
+            (0, 1.26, 4.82)]
+    L.tube(mb, path, [1.0, 0.92, 0.74, 0.52, 0.34, 0.2, 0.12], 16, "ribbon",
+           cols=["ribbon", "ribbon", "ribbon_hi", "ribbon", "ribbon_hi", "ribbon"], cap_col="ribbon", part="Cone",
+           normal=(1, 0, 0))
+    mb.lathe([(0.94, 3.92), (1.12, 3.92), (1.15, 4.1), (1.12, 4.28), (0.96, 4.28)], 16,
+             ["snow", "snow", "snow", "snow", "snow"], (0, 0, 0), closed=True, part="Fur")
+    mb.sphere((0, 1.3, 4.62), 0.3, 10, 6, "snow", part="Pompom")
     return k.finalize(mb, pivot=J["HatAttach"])
 
 
@@ -929,7 +945,7 @@ def build(k):
                            "Scarf and stripes are outfit parts (crew colour).")
 
     # ---- outfits: built on the body, seat-checked against it, then laid out for the turntable
-    caps = [cap_flat(k), cap_beanie(k), cap_bobble(k), cap_trapper(k)]
+    caps = [cap_flat(k), cap_beanie(k), cap_bobble(k), cap_trapper(k), cap_santa(k)]
     scarves = [scarf_long(k), scarf_chunky(k), scarf_bandana(k), scarf_knot(k)]
     tail = scarf_tail(k)
     st_torso, st_arms = sweater_stripes(k)
@@ -947,10 +963,10 @@ def build(k):
     pairs += [(faces[m], body["Head"]) for m in ("smug", "shocked", "busted")]
     check_seats(lf, pairs)
 
-    def outfit(ob, slot, variant, part_, point, tint=None, sym=None, cls="small", bands=False):
+    def outfit(ob, slot, variant, part_, point, tint=None, sym=None, cls="small", bands=False, role="char"):
         ex = {**attach(k, part_, point), "slot": slot, "variant": variant}
         # bands: separate rings held by the body part (seat-checked against it above), like glass panes in a frame
-        return k.Obj(ob, cls, role="char", pivot="point", collision="Box", can_collide=False, symmetric=sym,
+        return k.Obj(ob, cls, role=role, pivot="point", collision="Box", can_collide=False, symmetric=sym,
                      free_shells=bands,
                      atlas=False if tint else None, tint=tint, tags=["EH_Rookie", "EH_Outfit"], extra=ex,
                      notes=f"outfit {slot}: {variant}")
@@ -958,8 +974,10 @@ def build(k):
     crew = "crew colour (Palette seat hue)"
     glove = "glove colour (Config.Rookie.GLOVE_COLOURS)"
     o = []
-    for ob, v in zip(caps, ("Flat", "Beanie", "Bobble", "Trapper")):
-        o.append(outfit(ob, "cap", v, "Head", J["HatAttach"], sym="X"))
+    for ob, v in zip(caps, ("Flat", "Beanie", "Bobble", "Trapper", "Santa")):
+        # the Santa cap's Ribbon Burgundy and Snow are Christmas cells (role xmas, like Gus_SantaHat); it is an
+        # outfit piece (an unlock you keep), not the removable Christmas dressing layer
+        o.append(outfit(ob, "cap", v, "Head", J["HatAttach"], sym="X", role="xmas" if v == "Santa" else "char"))
     for ob, v in zip(scarves, ("Long", "Chunky", "Bandana", "Knot")):
         o.append(outfit(ob, "scarf", v, "UpperTorso", J["Neck"], tint=crew))
     for i, ob in enumerate(tail):   # the long scarf's swaying tail (Heist/ScarfSway): pivot = its hinge
@@ -983,7 +1001,7 @@ def build(k):
         i = col_n.get(slot, 0) + (4 if slot == "mask" else 0)
         col_n[slot] = col_n.get(slot, 0) + 1
         ob.ob.location += Vector((i * 2.6 - 4.0, 0.0, -rows[slot] * 2.6))
-    outfits = k.Asset("Rookie_Outfits", o, notes="Outfit slots: cap x4 (atlas), scarf x4 + sweater x2 (crew colour), "
+    outfits = k.Asset("Rookie_Outfits", o, notes="Outfit slots: cap x5 (atlas; Santa = Christmas cells), scarf x4 + sweater x2 (crew colour), "
                                                   "gloves x2 (glove colour), mask x1 (+ none). Pivot = attach point.")
     fo = [face_obj(m, faces[m]) for m in ("smug", "shocked", "busted")]
     for i, ob in enumerate(fo):

@@ -80,7 +80,7 @@ Feeds: **TH1 "8 OF ME"**, the T1/T2 stills, trailer 11 (a better take), CLIPS fo
 
 ## 7. Key art (not capturable in a heist)
 
-Some candidates are composed on the story intro's town (`thumbs/TH3`, `TH6`, the icons `IC1-IC3`). That stage exists only while the intro plays, so these can't be captured in normal play. Two routes (owner decides, ICON_THUMBNAILS.md §0.3):
+Some candidates are composed on the story intro's town (`thumbs/TH3`, `TH6`, the icons `IC1-IC3`). That stage exists only while the intro plays, so these can't be captured in normal play. Two routes (owner decides, ICON_THUMBNAILS.md §0.4):
 1. **The illustrator** finishes the icon (and, if wanted, one key-art thumbnail) from the Blender render as the reference (ICON_THUMBNAILS.md §3.5 brief).
 2. **A Studio key-art stage** (an owner-kit request for the code track: an `EH_Scenario` value that builds the intro town and poses Rookies from a data table). Not built; no code was changed for this checklist.
 

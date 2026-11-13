@@ -173,6 +173,7 @@ local WANT = {
 	Rookie_Cap_Beanie = { model = "Rookie_Outfits", size = Vector3.new(2.18, 1.02, 2.18), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = true, atlas = true },
 	Rookie_Cap_Bobble = { model = "Rookie_Outfits", size = Vector3.new(2.14, 1.48, 2.14), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = true, atlas = true },
 	Rookie_Cap_Flat = { model = "Rookie_Outfits", size = Vector3.new(2.12, 0.679, 2.351), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = true, atlas = true },
+	Rookie_Cap_Santa = { model = "Rookie_Outfits", size = Vector3.new(2.3, 1.738, 2.735), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = true, atlas = true },
 	Rookie_Cap_Trapper = { model = "Rookie_Outfits", size = Vector3.new(2.26, 1.48, 2.1), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = true, atlas = true },
 	Rookie_FP_Left_Block = { model = "Rookie_FPArms", size = Vector3.new(0.329, 0.296, 0.18), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = false, atlas = false },
 	Rookie_FP_Left_CuffKnit = { model = "Rookie_FPArms", size = Vector3.new(0.356, 0.347, 0.145), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = false, atlas = false },

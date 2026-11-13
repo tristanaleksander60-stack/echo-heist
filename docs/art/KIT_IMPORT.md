@@ -245,6 +245,7 @@ The table below shows what Studio must show after the import (generated from `as
 | Rookie_Outfits.fbx | Rookie_Cap_Beanie | 2.18 x 1.02 x 2.18 | 384 | Box | SmoothPlastic | off | on | base |
 | Rookie_Outfits.fbx | Rookie_Cap_Bobble | 2.14 x 1.48 x 2.14 | 484 | Box | SmoothPlastic | off | on | base |
 | Rookie_Outfits.fbx | Rookie_Cap_Flat | 2.12 x 0.679 x 2.351 | 336 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Cap_Santa | 2.3 x 1.738 x 2.735 | 484 | Box | SmoothPlastic | off | on | base |
 | Rookie_Outfits.fbx | Rookie_Cap_Trapper | 2.26 x 1.48 x 2.1 | 284 | Box | SmoothPlastic | off | on | base |
 | Rookie_Outfits.fbx | Rookie_Gloves_Knit_Left | 0.645 x 0.256 x 0.63 | 168 | Box | SmoothPlastic | off | on | base |
 | Rookie_Outfits.fbx | Rookie_Gloves_Knit_Right | 0.645 x 0.256 x 0.63 | 168 | Box | SmoothPlastic | off | on | base |

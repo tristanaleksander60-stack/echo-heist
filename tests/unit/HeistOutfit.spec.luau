@@ -79,6 +79,11 @@ return function(test)
 		Assert.falsy(Outfit.isUnlocked(medals, "Cap_Bobble"), "6-star cap still locked")
 		Assert.falsy(Outfit.isUnlocked(fresh, "Cap_Trapper"), "trophy cap locked")
 		Assert.truthy(Outfit.isUnlocked(heistWith(0, { "Trophy_NightClerk" }), "Cap_Trapper"), "trophy unlocks it")
+		Assert.falsy(Outfit.isUnlocked(fresh, "Cap_Santa"), "Christmas cap locked")
+		Assert.truthy(
+			Outfit.isUnlocked(heistWith(0, { "Orn_Advent2026_03" }), "Cap_Santa"),
+			"the launch-day advent ornament unlocks the Santa cap"
+		)
 		Assert.falsy(Outfit.isUnlocked(fresh, "Nope"), "unknown id")
 		Assert.falsy(Outfit.isUnlocked(nil, "Mask_Eye"), "no profile: free only")
 		Assert.truthy(Outfit.isUnlocked(nil, "Mask_None"), "no profile: free ok")

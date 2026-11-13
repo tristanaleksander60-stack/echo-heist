@@ -5876,6 +5876,54 @@
    "slot": "cap",
    "variant": "Flat"
   },
+  "Rookie_Cap_Santa": {
+   "model": "Rookie_Outfits",
+   "size": [
+    2.3,
+    1.738,
+    2.735
+   ],
+   "tris": 484,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.15,
+    -0.28,
+    -1.15
+   ],
+   "boundsMax": [
+    1.15,
+    1.458,
+    1.585
+   ],
+   "origin": [
+    -6.4,
+    4.2,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "attach": {
+    "part": "Head",
+    "offset": [
+     0.0,
+     1.2,
+     0.0
+    ]
+   },
+   "slot": "cap",
+   "variant": "Santa"
+  },
   "Rookie_Cap_Trapper": {
    "model": "Rookie_Outfits",
    "size": [
