@@ -40,7 +40,7 @@ Everything on this page must be **true for every player who reads it**. When the
 
 ---
 
-## 3. Description, English (889 characters, limit 1,000 **[UNVERIFIED]**: check the counter in Creator Hub)
+## 3. Description, English (924 characters, limit 1,000 **[UNVERIFIED]**: check the counter in Creator Hub)
 
 Paste exactly (the bullets are the "•" character). **Revised 2026-11-13** for the first-person pivot; the 2026-11-12 text is in git history.
 
@@ -55,7 +55,7 @@ ROB IT TOGETHER: one clone holds the door, one stands on the plate, you take the
 • Your clone stops where you stop, and repeats your mistakes. Every. Single. Time.
 • Hide from Gus the night guard and his big flashlight, or let a clone distract him.
 • Hold CREW VIEW to see your whole crew from above.
-• Pick a van in your hideout: go SOLO (the full game) or bring up to 3 friends. Private servers are free.
+• Pick a van in your hideout: go SOLO (the full game) or bring up to 3 friends. Friends only, open or invite only. Private servers are free.
 
 6 heists, outfits for your Rookie, trophies for your hideout. Runs last 30-45 seconds.
 ```
@@ -110,7 +110,7 @@ If the Nov 30 go/no-go slips launch to **Thu Dec 10** (§10.2), the Wrapping Roo
 
 ---
 
-## 4. Description, Danish (960 characters; revised 2026-11-13 for the pivot)
+## 4. Description, Danish (995 characters; revised 2026-11-13 for the pivot and the van party menu)
 
 **[DECISION]** Upload the Danish title and description on launch day if Creator Hub offers Danish for experience information (Localization → Danish → Experience information) **[UNVERIFIED that Danish is in that list]**. This is store metadata only; the in-game Danish table still ships Jan 8 (§4.4), so the last sentence says the game is in English for now. If the Danish field is not offered, use this text for Danish posts, the Danish kid-wave invitations and the Jan 8 table. The owner (native speaker) proofreads before upload.
 
@@ -125,7 +125,7 @@ STJÆL SAMMEN: én klon holder døren, én står på trykpladen, og du tager kas
 • Din klon stopper, hvor du stopper, og gentager dine fejl. Hver. Eneste. Gang.
 • Gem dig for nattevagten Gus og hans store lommelygte, eller lad en klon lokke ham væk.
 • Hold CREW VIEW nede for at se hele din bande oppefra.
-• Vælg en varevogn i skjulestedet: kør SOLO (hele spillet), eller tag op til 3 venner med. Private servere er gratis.
+• Vælg en varevogn i skjulestedet: kør SOLO (hele spillet), eller tag op til 3 venner med. Kun venner, åben eller invitation. Private servere er gratis.
 
 6 kup, tøj til din Rookie, trofæer til skjulestedet. En runde varer 30-45 sekunder. Spillet er på engelsk indtil videre.
 ```
