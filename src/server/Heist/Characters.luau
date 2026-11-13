@@ -8,7 +8,8 @@
 --     StarterPlayer before anyone spawns: Players.CharacterAutoLoads is off until then, and this service spawns
 --     everyone (first spawn and respawns) with Player:LoadCharacterAsync.
 --   * LoadCharacterAsync keeps everything the engine does on a normal spawn: the default R15 Animate (so walk,
---     emotes and our clips work), Health, camera subject, network ownership. A manual `player.Character = model`
+--     emotes and our clips work; its walk, run, idle, jump and fall ids become the Rookie's own clips on spawn,
+--     Shared/Heist/RookieAnimate), Health, camera subject, network ownership. A manual `player.Character = model`
 --     would lose the Animate insertion (vault: "belongs to the normal spawn path").
 --   * StarterPlayer.LoadCharacterAppearance is off, so no avatar accessory, clothing or body colour is put on it.
 --   * The StarterCharacter is never swapped per player (the vault warns runtime swaps cause odd spawn bugs): each
@@ -29,6 +30,7 @@ local HeistShared = Shared:WaitForChild("Heist")
 local Outfit = require(HeistShared:WaitForChild("Outfit"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Rookie = require(script.Parent:WaitForChild("Rookie"))
+local RookieAnimate = require(HeistShared:WaitForChild("RookieAnimate"))
 
 local R = Config.Rookie
 
@@ -142,6 +144,13 @@ local function onCharacter(player: Player, char: Model)
 		return
 	end
 	Characters.dress(player)
+	-- the Rookie's own walk, run, idle, jump and fall in the engine's Animate (REVIEW_STEAM_PLUS #6)
+	task.spawn(function()
+		local animate = RookieAnimate.find(char, Config.Rookie.ANIM.ANIMATE_WAIT)
+		if animate and char.Parent then
+			RookieAnimate.apply(animate)
+		end
+	end)
 	local hum = char:FindFirstChildOfClass("Humanoid")
 	if hum then
 		hum.Died:Once(function()

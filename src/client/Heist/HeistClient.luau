@@ -73,6 +73,7 @@ local Loading = require(Heist:WaitForChild("Loading"))
 local Transition = require(Heist:WaitForChild("Transition"))
 local LevelIntro = require(Heist:WaitForChild("LevelIntro"))
 local Viewmodel = require(Heist:WaitForChild("Viewmodel"))
+local RookieAnim = require(Heist:WaitForChild("RookieAnim"))
 local LookTarget = require(Heist:WaitForChild("LookTarget"))
 local FpWarn = require(Heist:WaitForChild("FpWarn"))
 local HudCommon = require(Heist:WaitForChild("Hud"):WaitForChild("Common"))
@@ -175,6 +176,7 @@ function HeistClient.start()
 	local cutaway = CutAway.new(camera)
 	-- First person (PLAN_FIRST_PERSON FP): the hands, look-to-interact and Gus's edge warning.
 	local momentsRef: any = nil -- MomentDirector, made after the HUD (the hands hold during its hit-stop)
+	RookieAnim.start() -- your character in the Rookie's own walk, run, idle, jump, fall and land
 	local hands = Viewmodel.new(state, {
 		camera = camera,
 		world = world,

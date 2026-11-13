@@ -2147,9 +2147,10 @@ Config.Clone = {
 	STOP_SPEED = 0.5, -- ... and it stands again under this (hysteresis)
 	AIR_RISE = 2.5, -- |vertical speed| above this without the GROUNDED flag = jumping / falling
 
-	-- Catalog animations (A3 default path): the owner's Animate pack (template attributes EH_Anim_<slot>,
-	-- read by Avatars.strip) or these default R15 ids. Slots: idle, walk, run, jump, fall.
-	ANIM_SLOTS = { "idle", "walk", "run", "jump", "fall" },
+	-- Locomotion clips: the Rookie's own (Shared/Heist/RookieClips, Config.Rookie.ANIM), the same your character
+	-- plays; a template attribute EH_Anim_<slot> overrides a slot, and these default R15 ids are the last fallback.
+	-- Slots: idle, walk, run, jump, fall, land (land: Rigs.land, as a clone touches down).
+	ANIM_SLOTS = { "idle", "walk", "run", "jump", "fall", "land" },
 	ANIM = {
 		idle = "rbxassetid://507766666",
 		walk = "rbxassetid://507777826",
@@ -2157,15 +2158,10 @@ Config.Clone = {
 		jump = "rbxassetid://507765000",
 		fall = "rbxassetid://507767968",
 	},
-	-- Gait (CloneGait, as the R15 Animate script): both clips play at speed 1 at GAIT_BASE studs/s of
-	-- ground speed (16 / 1.25); walk alone under WALK_ONLY, run alone over RUN_ONLY, blended between.
-	-- Ground speed = recorded speed x the view's clock rate (1x, 3x fast-forward): no foot sliding.
-	GAIT_BASE = 12.8,
-	WALK_ONLY = 4.2,
-	RUN_ONLY = 8.4,
+	-- Gait (CloneGait): the R15 Animate's walk / run blend and rates (numbers in Config.Rookie.ANIM), ground
+	-- speed = recorded speed x the view's clock rate (1x, 3x fast-forward): no foot sliding.
 	GAIT_SPEED_EPS = 0.01, -- relative clip-speed change before AdjustSpeed is called again
 	GAIT_WEIGHT_STEP = 0.1, -- walk/run weights are sent in steps of this
-	STRIDE = 12.8, -- studs per clip cycle at speed 1 (GAIT_BASE x 1 s): the foot-slide unit (premium C7)
 	MAX_VIEW_RATE = 4, -- clamp of the view's measured clock rate (a seek is not a rate)
 	ANIM_FADE = 0.2, -- cross-fade between locomotion clips
 	ANIM_DISTANCE = 90, -- beyond this many studs from the camera, clips stop (the root still moves)
@@ -2778,8 +2774,11 @@ Config.Rookie = {
 		LOOK = { length = 4.0, yaw = 0.85, chest = 0.22 },
 		JUMP = { length = 0.36, tuck = 0.14 },
 		FALL = { length = 0.5, flail = 0.35 },
-		LAND = { length = 0.42, squash = 0.3, minFall = 0.32, fade = 0.05 }, -- minFall: s of fall before a land plays
+		-- minFall: s in the air before a land plays; at fullSpeed studs/s and over, its weight drops by runShare
+		LAND = { length = 0.42, squash = 0.3, minFall = 0.32, fade = 0.05, fullSpeed = 12.8, runShare = 0.7 },
 		FADE = 0.15, -- cross-fade into a clone's land / idle variant
+		IDLE_WEIGHTS = { idle = 9, look = 1 }, -- the Animate's idle set: the look-around about one loop in ten
+		ANIMATE_WAIT = 5, -- s to wait for a spawned character's Animate script
 	},
 	PORTRAIT = { -- crew cards: a ViewportFrame of your clone template's head (Hud/Deck)
 		FOV = 30,

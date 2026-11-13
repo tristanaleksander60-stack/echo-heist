@@ -30,6 +30,8 @@ local Config = require(Shared:WaitForChild("Config")) :: any
 local Palette = require(Shared:WaitForChild("Heist"):WaitForChild("Palette"))
 local RigJoints = require(Shared:WaitForChild("Heist"):WaitForChild("RigJoints"))
 local CloneClips = require(Shared:WaitForChild("Heist"):WaitForChild("CloneClips"))
+local CloneGait = require(Shared:WaitForChild("Heist"):WaitForChild("CloneGait"))
+local RookieClips = require(Shared:WaitForChild("Heist"):WaitForChild("RookieClips")) :: { [string]: string }
 
 local Rigs = {}
 
@@ -62,8 +64,13 @@ export type Rig = {
 	face: string?, -- Rookie: the face shown
 }
 
+-- The Line-up walk-in: the Rookie's run clip (the figures walk in at Config.Heist.LINEUP_WALK_SPEED, a run), its rate
+-- = speed / the run's ground speed at rate 1 (Config.Rookie.ANIM); the default R15 walk if the clip id is missing.
 local walkAnim = Instance.new("Animation")
-walkAnim.AnimationId = Config.ECHO_WALK_ANIM
+walkAnim.AnimationId = RookieClips.run or Config.ECHO_WALK_ANIM
+local WALK_BASE = if RookieClips.run
+	then Config.Rookie.ANIM.SCALE * Config.Rookie.ANIM.RUN_NORM / Config.Rookie.ANIM.ROOT_MOTION
+	else Config.Heist.WALK_ANIM_BASE_SPEED
 
 local SWING = math.rad(32)
 
@@ -409,7 +416,7 @@ function Rigs.setSpeed(rig: Rig, speed: number)
 		local bucket = math.floor(speed * 2 + 0.5)
 		if bucket ~= rig.speedBucket then
 			rig.speedBucket = bucket
-			track:AdjustSpeed(bucket / 2 / Config.Heist.WALK_ANIM_BASE_SPEED)
+			track:AdjustSpeed(bucket / 2 / WALK_BASE)
 		end
 	elseif track.IsPlaying then
 		track:Stop(0.2)
@@ -470,14 +477,18 @@ local function animation(id: string): Animation
 	return a
 end
 
--- The animation ids for a template: its EH_Anim_<slot> attributes (the owner's Animate pack, read
--- by the server strip), else the default R15 ids in Config.Clone.ANIM.
+-- The animation ids for a template: its EH_Anim_<slot> attributes when set, else the Rookie's own clips
+-- (Shared/Heist/RookieClips: the walk your character plays, REVIEW_STEAM_PLUS #6), else the default R15 ids in
+-- Config.Clone.ANIM.
 function Rigs.packOf(template: Instance?): { [string]: string }
 	local C = Config.Clone
 	local ids: { [string]: string } = {}
 	for _, slot in C.ANIM_SLOTS do
 		local v = if template then template:GetAttribute("EH_Anim_" .. slot) else nil
-		ids[slot] = if type(v) == "string" and string.find(v, "%d") then v else C.ANIM[slot]
+		local id = if type(v) == "string" and string.find(v, "%d") then v else RookieClips[slot] or C.ANIM[slot]
+		if id then
+			ids[slot] = id
+		end
 	end
 	return ids
 end
@@ -495,8 +506,11 @@ function Rigs.loadPack(rig: Rig, ids: { [string]: string })
 			return animator:LoadAnimation(animation(id))
 		end)
 		if ok and track then
-			track.Looped = slot ~= "jump"
-			track.Priority = if slot == "idle" then Enum.AnimationPriority.Idle else Enum.AnimationPriority.Movement
+			track.Looped = slot ~= "jump" and slot ~= "land"
+			track.Priority = if slot == "idle"
+				then Enum.AnimationPriority.Idle
+				elseif slot == "land" then Enum.AnimationPriority.Action
+				else Enum.AnimationPriority.Movement
 			tracks[slot] = track
 		end
 	end
@@ -525,17 +539,20 @@ local LOCO_SLOTS: { [string]: { string } } = {
 }
 
 -- Plays the clip set for `loco` ("idle" | "move" | "jump" | "fall" | "none"), cross-fading from the
--- last one. For "move": clip speed and walk/run weights (Shared/Heist/CloneGait), sent only when
--- `sendSpeed` / `sendWeights` say they changed; `phase` (0..1) starts fresh walk clips in step.
+-- last one. For "move": the walk and run clip rates and weights (Shared/Heist/CloneGait, the R15 Animate's blend),
+-- sent only when `sendSpeed` / `sendWeights` say they changed; `walkPhase` / `runPhase` (0..1) start fresh clips in
+-- step with the distance walked.
 function Rigs.locomote(
 	rig: Rig,
 	loco: string,
-	speed: number,
+	walkRate: number,
+	runRate: number,
 	walkW: number,
 	runW: number,
 	sendSpeed: boolean,
 	sendWeights: boolean,
-	phase: number?
+	walkPhase: number?,
+	runPhase: number?
 )
 	local tracks = rig.tracks
 	if not tracks then
@@ -555,7 +572,9 @@ function Rigs.locomote(
 			local t = tracks[slot]
 			if t then
 				local w = if slot == "walk" then walkW elseif slot == "run" then runW else 1
-				t:Play(fade, math.max(w, 1e-3), if loco == "move" then speed else 1)
+				local r = if loco ~= "move" then 1 elseif slot == "run" then runRate else walkRate
+				t:Play(fade, math.max(w, 1e-3), r)
+				local phase = if slot == "run" then runPhase else walkPhase
 				if phase and loco == "move" and t.Length > 0 then
 					t.TimePosition = phase * t.Length
 				end
@@ -570,10 +589,10 @@ function Rigs.locomote(
 	local walk, run = tracks.walk, tracks.run
 	if sendSpeed then
 		if walk then
-			walk:AdjustSpeed(speed)
+			walk:AdjustSpeed(walkRate)
 		end
 		if run then
-			run:AdjustSpeed(speed)
+			run:AdjustSpeed(runRate)
 		end
 	end
 	if sendWeights then
@@ -583,6 +602,15 @@ function Rigs.locomote(
 		if run then
 			run:AdjustWeight(math.max(runW, 1e-3), fade)
 		end
+	end
+end
+
+-- The landing squash (the Rookie's land clip, Action priority, short) as a clone touches down after a fall, at the
+-- weight your own character uses for that speed (CloneGait.landWeight); a no-op on rigs without it.
+function Rigs.land(rig: Rig, speed: number)
+	local t = rig.tracks and rig.tracks.land
+	if t then
+		t:Play(Config.Rookie.ANIM.LAND.fade, CloneGait.landWeight(speed), 1)
 	end
 end
 

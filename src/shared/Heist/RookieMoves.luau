@@ -294,7 +294,7 @@ function RookieMoves.foot(G: any, S: number, q: number, x: number): Foot
 end
 
 -- Lowers the pelvis (root y) until every planted leg is in reach.
-local function fitRoot(pose: Pose, pm: Mat, pt: Vec, feet: { [string]: Foot }): Vec
+local function fitRoot(pm: Mat, pt: Vec, feet: { [string]: Foot }): Vec
 	local root = PIV.LowerTorso
 	local t = { pt[1], pt[2], pt[3] }
 	for _ = 1, 6 do
@@ -347,7 +347,7 @@ local function gait(G: any, S: number, p: number, running: boolean): (Pose, { [s
 		Right = RookieMoves.foot(G, S, p % 1, PIV.RightFoot[1]),
 		Left = RookieMoves.foot(G, S, (p + 0.5) % 1, PIV.LeftFoot[1]),
 	}
-	local pt = fitRoot(pose, pm, { sway, y, 0 }, feet)
+	local pt = fitRoot(pm, { sway, y, 0 }, feet)
 	pose.LowerTorso = { pelvisPitch, yaw, roll, pt[1], pt[2], pt[3] }
 	for side, f in feet do
 		solveLeg(pose, side, pm, pt, f.pos, f.pitch, pelvisPitch, yaw)
@@ -388,7 +388,7 @@ local function stand(pose: Pose, pitch: number, yaw: number, roll: number, sx: n
 		Right = { pos = STANCE.Right, pitch = 0, planted = true },
 		Left = { pos = STANCE.Left, pitch = 0, planted = true },
 	}
-	pt = fitRoot(pose, pm, pt, feet :: any)
+	pt = fitRoot(pm, pt, feet :: any)
 	pose.LowerTorso = { pitch, yaw, roll, pt[1], pt[2], pt[3] }
 	for side, f in feet do
 		solveLeg(pose, side, pm, pt, f.pos, 0, pitch, yaw)

@@ -173,11 +173,10 @@ end
 
 -- Builds an owner's clone template from the Rookie in an outfit (no player needed: the engine tests use it).
 -- Returns the filed template, or nil when the rig would not hold together (the client keeps the mannequin).
-function Avatars.buildRookie(ownerId: number, outfit: Outfit.Outfit, character: Model?): Model?
+function Avatars.buildRookie(ownerId: number, outfit: Outfit.Outfit, _character: Model?): Model?
 	local rig = Rookie.build(outfit, nil, "constraint")
-	if character then
-		Avatars.readPack(character, rig) -- the live character's Animate holds the pack the player really walks with
-	end
+	-- no readPack: every player is a Rookie and walks in the Rookie's own clips (Shared/Heist/RookieClips), which
+	-- Heist/Rigs.packOf plays on the clone; the live Animate may still hold the engine's ids for a moment at spawn.
 	Avatars.strip(rig)
 	local joints = RigJoints.whole(rig)
 	if joints < Config.Heist.CLONE_MIN_JOINTS then
