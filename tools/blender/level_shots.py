@@ -1540,6 +1540,42 @@ def big_garage(g, samples, out_dir):
     _w2_shoot(s, cam, "GA_fp_yard", pos, tgt, FP_FOV, pos, cfg, out_dir)
 
 
+BIG_COLS = ("fp_street", "fp_up", "fp_corner", "fp_ceiling", "fp_inside", "diorama", "classic", "diorama_mid",
+            "street_wide")
+GA_COLS = ("GA_fp_spawn", "GA_fp_up", "GA_fp_mezzanine", "GA_fp_stations", "GA_fp_wardrobe", "GA_diorama",
+           "GA_fp_yard")
+
+
+def big_sheet(folder):
+    """The BIG contact sheet: one row per site, each frame with its near-black share, median luma, value spread and
+    pink cast (frame_grade)."""
+    from PIL import Image, ImageDraw
+    g = json.load(open(os.path.join(folder, "grades.json")))
+    tw, th = 320, 148
+    rows = [(tag, [f"{tag}_{c}" for c in BIG_COLS]) for tag in BIG_SITES if tag != "garage"] + [("garage", list(GA_COLS))]
+    rows = [(t, cols) for t, cols in rows if any(os.path.isfile(os.path.join(folder, c + ".png")) for c in cols)]
+    sheet = Image.new("RGB", (tw * len(BIG_COLS), (th + 40) * len(rows) + 30), (24, 25, 36))
+    d = ImageDraw.Draw(sheet)
+    f, _ = MR._font(13)
+    d.text((8, 7), "BIG buildings (LEVELS.md 12): first person (eye 3.8), diorama and classic with the cut-away; "
+           "near-black % / median luma / value spread / pink cast", font=f, fill=(230, 232, 245))
+    for r, (tag, cols) in enumerate(rows):
+        y = 30 + r * (th + 40)
+        for c, name in enumerate(cols):
+            p = os.path.join(folder, name + ".png")
+            if not os.path.isfile(p):
+                continue
+            sheet.paste(Image.open(p).convert("RGB").resize((tw, th), Image.LANCZOS), (c * tw, y))
+            q = g.get(name, {})
+            d.text((c * tw + 4, y + th + 3), name, font=f, fill=(230, 232, 245))
+            d.text((c * tw + 4, y + th + 19), "%.1f%% / %.2f / %.2f / %+.3f" % (
+                q.get("near_black", -1), q.get("median_luma", -1), q.get("value_spread", -1), q.get("pink_cast", 0)),
+                font=f, fill=(200, 205, 225))
+    out = os.path.join(folder, "contact_sheet.png")
+    sheet.save(out, optimize=True)
+    print("wrote", out)
+
+
 W2_COLS = ("diorama", "classic", "diorama_mid", "classic_rev")
 
 
@@ -1691,6 +1727,7 @@ def main(argv):
                          "sources) into --out (default docs/audit/levels/world2/after)")
     ap.add_argument("--world2-sheet", nargs=3, metavar=("BEFORE", "AFTER", "OUT"),
                     help="the WORLD 2.0 before / after contact sheet")
+    ap.add_argument("--big-sheet", action="store_true", help="the BIG contact sheet from --out (default big/)")
     ap.add_argument("--big", action="store_true",
                     help="BIG buildings (LEVELS.md 11): BIG_SITES (or --only one) from the first-person eye and the "
                          "diorama / classic cameras with the cut-away, graded into --out (default docs/audit/levels/big)")
@@ -1702,12 +1739,16 @@ def main(argv):
     if a.world2_sheet:
         world2_sheet(*(os.path.abspath(p) for p in a.world2_sheet))
         return
+    if a.big_sheet:
+        big_sheet(os.path.abspath(a.out) if a.out else BIG)
+        return
     if a.big:
         out = os.path.abspath(a.out) if a.out else BIG
         if not a.only:
             for tag in BIG_SITES:   # one Blender process per site
                 subprocess.run([sys.executable, os.path.abspath(__file__), "--big", "--only", tag, "--samples",
                                 str(a.samples), "--out", out], check=True)
+            big_sheet(out)
             return
         plan = load_plan(not a.plain, a.only.upper().startswith("DV"))
         if a.only == "garage":
