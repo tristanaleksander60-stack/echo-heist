@@ -1736,7 +1736,9 @@ def interiors_level(level, samples, out_dir, before=False):
         ("fp_window", _fp(0.0, fz0 + 3.0, fy, math.pi, 3.0), (0.0, fz0 + 3.0), False),
         ("fp_ceiling", _fp(0.0, fm, fy, 0.0, 32.0), (0.0, fm), False),
         ("fp_loot", _fp(cx, cz, fy, math.atan2(-(gx - cx), -(gz - cz)), -6.0), (cx, cz), False),
-        ("fp_loot_round", _fp(gx * 0.8, gz + 2.0, fy, math.pi, 3.0), (gx * 0.8, gz + 2.0), False),
+        # beside the loot, turned to look across its room (the room round the goal at eye level)
+        ("fp_loot_round", _fp(gx - (2.0 if gx >= 0 else -2.0), gz, fy, math.pi / 2 if gx >= 0 else -math.pi / 2, 2.0),
+         (gx - (2.0 if gx >= 0 else -2.0), gz), False),
         ("fp_street", _fp(sp["x"] + 3.0, oz1 + 9.0, fy, -0.15, 10.0), (sp["x"] + 3.0, oz1 + 9.0), True),
     ]
     surf = {}
