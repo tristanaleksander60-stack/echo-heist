@@ -359,7 +359,7 @@ function Hideout.new(state: any, deps: any): any
 	hud.invite = invite -- the Quick Crew sheet's INVITE FRIENDS (Hud/Garage)
 
 	local function watchIntro()
-		if playingIntro or Cinematic.isPlaying() then
+		if not Config.Intro.ENABLED or playingIntro or Cinematic.isPlaying() then
 			return
 		end
 		-- never the intro on block stand-ins: its meshes and the Rookie must be here (they are seconds after boot)
