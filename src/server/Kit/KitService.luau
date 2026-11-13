@@ -23,6 +23,9 @@
 --   KitService.start()                      begin loading (idempotent; ready() calls it)
 --   KitService.ready(timeout?) -> boolean    yield until loaded; true when every piece is in the library
 --   KitService.isReady() -> boolean          loaded (no yield)
+--   KitService.priorityReady(timeout?) / isPriorityReady()   the first phase (Config.Kit.PRIORITY_PREFIXES: the
+--                                            Rookie's groups) is loaded and prepared: players spawn without waiting
+--                                            for the rest of the kit
 --   KitService.has(name) -> boolean
 --   KitService.clone(name, opts?) -> MeshPart?   one piece, at its scene position (part:PivotTo it)
 --   KitService.cloneModel(model, opts?) -> Model? a whole group, pivot = the group's scene origin
@@ -67,6 +70,7 @@ export type Report = {
 	atlasSource: string,
 	hero: string, -- how VaultDoor_DialFace is textured
 	seconds: number,
+	prioritySeconds: number, -- the first phase (the Rookie's groups) ready, seconds from boot
 }
 
 type Spec = KitLib.PartSpec
@@ -105,6 +109,7 @@ local function newReport(): Report
 		atlasSource = "",
 		hero = "",
 		seconds = 0,
+		prioritySeconds = 0,
 	}
 end
 
@@ -495,14 +500,40 @@ local function prepare(name: string, kit: Folder)
 	templates[name] = part
 end
 
+local priorityDone = false
+local priorityWaiters: { thread } = {}
+
+local function finishPriority()
+	if priorityDone then
+		return
+	end
+	priorityDone = true
+	local list = priorityWaiters
+	priorityWaiters = {}
+	for _, thread in list do
+		task.spawn(thread)
+	end
+end
+
 local function finish()
 	state = "done"
 	report.done = true
+	finishPriority()
 	local list = waiters
 	waiters = {}
 	for _, thread in list do
 		task.spawn(thread)
 	end
+end
+
+-- A group loaded in the first phase (Config.Kit.PRIORITY_PREFIXES: the Rookie's groups).
+function KitService.isPriorityGroup(model: string): boolean
+	for _, prefix in cfg.PRIORITY_PREFIXES or {} do
+		if string.sub(model, 1, #prefix) == prefix then
+			return true
+		end
+	end
+	return false
 end
 
 local function boot()
@@ -517,12 +548,37 @@ local function boot()
 	end
 
 	local kit = folder()
+	local atlasesResolved = false
 	if not indexExisting(kit) then
-		pool(order, cfg.LOAD_CONCURRENCY, function(model: string)
+		-- Phase 1: the priority groups (the Rookie: every first spawn waits for it), loaded and prepared first,
+		-- so players spawn in seconds while the rest of the kit (levels, hideout dressing) keeps loading.
+		local first, rest = {}, {}
+		for _, model in order do
+			table.insert(if KitService.isPriorityGroup(model) then first else rest, model)
+		end
+		pool(first, cfg.LOAD_CONCURRENCY, function(model: string)
+			loadGroup(model, groups[model])
+		end)
+		resolveAtlases() -- the Rookie's pieces are atlas pieces (the shared palette atlas): resolve it now
+		atlasesResolved = true
+		local early = {}
+		for name in found do
+			table.insert(early, name)
+		end
+		table.sort(early)
+		pool(early, cfg.REBUILD_CONCURRENCY, function(name: string)
+			prepare(name, kit)
+			found[name] = nil
+		end)
+		report.prioritySeconds = os.clock() - t0
+		finishPriority()
+		pool(rest, cfg.LOAD_CONCURRENCY, function(model: string)
 			loadGroup(model, groups[model])
 		end)
 	end
-	resolveAtlases()
+	if not atlasesResolved then
+		resolveAtlases()
+	end
 	loadAppearances()
 
 	local names = {}
@@ -566,6 +622,29 @@ function KitService.start()
 			finish()
 		end
 	end)
+end
+
+-- The priority groups are loaded and prepared (or the whole kit is done / failed): their pieces clone now.
+function KitService.isPriorityReady(): boolean
+	return priorityDone or state == "done"
+end
+
+-- Yields until isPriorityReady() (or the timeout); true when it is.
+function KitService.priorityReady(timeout: number?): boolean
+	KitService.start()
+	if not KitService.isPriorityReady() then
+		local thread = coroutine.running()
+		table.insert(priorityWaiters, thread)
+		task.delay(timeout or cfg.READY_TIMEOUT, function()
+			local i = table.find(priorityWaiters, thread)
+			if i then
+				table.remove(priorityWaiters, i)
+				task.spawn(thread)
+			end
+		end)
+		coroutine.yield()
+	end
+	return KitService.isPriorityReady()
 end
 
 function KitService.isReady(): boolean

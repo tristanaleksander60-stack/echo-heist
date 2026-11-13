@@ -1848,6 +1848,9 @@ Config.Kit = {
 	SIZE_TOLERANCE = 0.05, -- studs per axis, MeshPart.Size vs kit_manifest.json
 	POSITION_TOLERANCE = 0.05, -- studs: a piece's centre vs origin + bounds centre (catches an FBX axis change)
 	LOAD_CONCURRENCY = 6, -- parallel InsertService:LoadAsset calls at boot
+	-- Groups loaded and prepared first (KitService.priorityReady): the Rookie, so the first spawn never waits for
+	-- the whole kit (owner 2026-11-13: "it still takes a really long time to load in").
+	PRIORITY_PREFIXES = { "Rookie" },
 	REBUILD_CONCURRENCY = 8, -- parallel AssetService:CreateMeshPartAsync calls at boot
 	LOAD_ATTEMPTS = 4, -- per asset; backoff RETRY_BASE_SECONDS x 1, 2, 4
 	REBUILD_ATTEMPTS = 2,
@@ -3666,6 +3669,7 @@ Config.Intro = {
 -- section 17; tests/unit/HeistPresent.spec.luau adds up the waits a client can meet. Seconds unless named _MS.
 Config.Boot = {
 	KIT_READY_SECONDS = 12, -- the whole art kit (LoadAsset + collision rebuilds) on a cold server (measured 4.3-4.8 s)
+	KIT_PRIORITY_SECONDS = 5, -- the Rookie's groups (KitService phase 1): the first spawn waits only for these
 	KIT_PUBLISH_SECONDS = 1, -- CharacterKit and EH_IntroKit in ReplicatedStorage after the kit is ready
 	LOBBY_BUILD_SECONDS = 2, -- HeistService.start with the hideout (Lobby.build + Vans.build)
 	L1_BUILD_SECONDS = 2, -- the FTUE heist instance (LevelBuilder + kit dressing)

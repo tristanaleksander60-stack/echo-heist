@@ -368,7 +368,7 @@ function Rookie.publishNow(kit: any): boolean
 	if Rookie.kitFolder() ~= nil then
 		return true
 	end
-	if kit == nil or not kit.isReady() then
+	if kit == nil or not (kit.isReady() or (kit.isPriorityReady and kit.isPriorityReady())) then
 		return false
 	end
 	local folder = Instance.new("Folder")
@@ -410,7 +410,11 @@ function Rookie.publish(kit: any)
 	publishing = true
 	task.spawn(function()
 		local ok, err = pcall(function()
-			kit.ready()
+			if kit.priorityReady then
+				kit.priorityReady() -- the Rookie's groups load first (Config.Kit.PRIORITY_PREFIXES)
+			else
+				kit.ready()
+			end
 			if not Rookie.publishNow(kit) then
 				warn("[Rookie] the kit has no Rookie pieces: players are block Rookies")
 			end

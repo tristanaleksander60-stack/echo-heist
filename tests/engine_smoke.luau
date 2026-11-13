@@ -2971,6 +2971,14 @@ do
 		end
 		local report = KitService.report()
 		within("kit load", if report.done then report.seconds else nil, B.KIT_READY_SECONDS, " s")
+		check(KitService.isPriorityReady(), "boot: the kit's priority phase (the Rookie) is ready")
+		if report.source == "cloud" then
+			within("kit priority (the Rookie)", report.prioritySeconds, B.KIT_PRIORITY_SECONDS, " s")
+			check(
+				report.prioritySeconds > 0 and report.prioritySeconds < report.seconds,
+				"boot: the Rookie is ready before the whole kit"
+			)
+		end
 		for _, name in { Config.Intro.KIT_FOLDER, Config.Rookie.KIT_FOLDER } do
 			local published = ReplicatedStorage:FindFirstChild(name)
 			if published then
