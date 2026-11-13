@@ -241,13 +241,13 @@ function TownPlan.build(input: Input): Town
 			return
 		end
 		local sw, sh = cols * W.colPitch, rows * T.STOREY
-		local top = fromV + sh
+		local gridTop = fromV + sh
 		-- the skin is the wall's own colour: the Texture's transparent wall shows it, so the face reads as one wall
 		local skin = part("Skin", size(sw, sh, 0.05), at(0, fromV + sh / 2, SK.out), wall, "building", "building")
 		skin.skin = { normal = { nx, nz }, tileU = SK.cols * W.colPitch, tileV = SK.rows * T.STOREY }
 		local lit = 0
 		for r = 0, rows - 1 do
-			local v = top - (r + SK.winTop) * T.STOREY -- the window's top on this storey (from the skin's top)
+			local v = gridTop - (r + SK.winTop) * T.STOREY -- the window's top on this storey (from the skin's top)
 			for c = 0, cols - 1 do
 				local u = -sw / 2 + (c + 0.5) * W.colPitch
 				local blocked = doorU ~= nil
