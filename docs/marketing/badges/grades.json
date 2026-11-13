@@ -1,0 +1,154 @@
+{
+ "crew_up": {
+  "items": {
+   "colour_pop": 8.6,
+   "contrast_64px": 8.8,
+   "crop_safe": 10.0,
+   "judged_clutter": 8.5,
+   "judged_emotion": 8.0,
+   "judged_focal": 8.5,
+   "judged_meaning": 8.5,
+   "judged_novelty_in_set": 8.0,
+   "judged_text": 10.0,
+   "original": 10.0,
+   "rim_and_tier": 9.5,
+   "subject_centred": 10.0,
+   "value_range": 10.0
+  },
+  "score": 9.11,
+  "tier": "silver"
+ },
+ "daily_streak_3": {
+  "items": {
+   "colour_pop": 8.5,
+   "contrast_64px": 10.0,
+   "crop_safe": 10.0,
+   "judged_clutter": 8.5,
+   "judged_emotion": 8.0,
+   "judged_focal": 8.5,
+   "judged_meaning": 8.5,
+   "judged_novelty_in_set": 9.0,
+   "judged_text": 9.5,
+   "original": 10.0,
+   "rim_and_tier": 9.5,
+   "subject_centred": 10.0,
+   "value_range": 10.0
+  },
+  "score": 9.23,
+  "tier": "silver"
+ },
+ "eight_of_me": {
+  "items": {
+   "colour_pop": 10.0,
+   "contrast_64px": 8.4,
+   "crop_safe": 10.0,
+   "judged_clutter": 8.0,
+   "judged_emotion": 8.5,
+   "judged_focal": 9.0,
+   "judged_meaning": 9.5,
+   "judged_novelty_in_set": 9.0,
+   "judged_text": 9.5,
+   "original": 10.0,
+   "rim_and_tier": 9.5,
+   "subject_centred": 9.0,
+   "value_range": 9.4
+  },
+  "score": 9.22,
+  "tier": "silver"
+ },
+ "first_clone": {
+  "items": {
+   "colour_pop": 10.0,
+   "contrast_64px": 7.8,
+   "crop_safe": 10.0,
+   "judged_clutter": 9.0,
+   "judged_emotion": 8.0,
+   "judged_focal": 9.0,
+   "judged_meaning": 9.0,
+   "judged_novelty_in_set": 8.5,
+   "judged_text": 10.0,
+   "original": 10.0,
+   "rim_and_tier": 9.5,
+   "subject_centred": 10.0,
+   "value_range": 9.8
+  },
+  "score": 9.28,
+  "tier": "bronze"
+ },
+ "first_heist": {
+  "items": {
+   "colour_pop": 10.0,
+   "contrast_64px": 7.3,
+   "crop_safe": 10.0,
+   "judged_clutter": 9.0,
+   "judged_emotion": 8.5,
+   "judged_focal": 9.5,
+   "judged_meaning": 9.5,
+   "judged_novelty_in_set": 9.0,
+   "judged_text": 10.0,
+   "original": 10.0,
+   "rim_and_tier": 9.5,
+   "subject_centred": 10.0,
+   "value_range": 7.7
+  },
+  "score": 9.23,
+  "tier": "bronze"
+ },
+ "ghost": {
+  "items": {
+   "colour_pop": 10.0,
+   "contrast_64px": 6.7,
+   "crop_safe": 10.0,
+   "judged_clutter": 8.5,
+   "judged_emotion": 9.0,
+   "judged_focal": 8.0,
+   "judged_meaning": 8.5,
+   "judged_novelty_in_set": 9.5,
+   "judged_text": 9.5,
+   "original": 10.0,
+   "rim_and_tier": 9.5,
+   "subject_centred": 10.0,
+   "value_range": 7.4
+  },
+  "score": 8.97,
+  "tier": "gold"
+ },
+ "met_the_boss": {
+  "items": {
+   "colour_pop": 10.0,
+   "contrast_64px": 8.6,
+   "crop_safe": 10.0,
+   "judged_clutter": 9.0,
+   "judged_emotion": 9.0,
+   "judged_focal": 9.0,
+   "judged_meaning": 9.5,
+   "judged_novelty_in_set": 9.5,
+   "judged_text": 9.0,
+   "original": 10.0,
+   "rim_and_tier": 9.5,
+   "subject_centred": 9.5,
+   "value_range": 9.4
+  },
+  "score": 9.39,
+  "tier": "boss"
+ },
+ "welcome": {
+  "items": {
+   "colour_pop": 10.0,
+   "contrast_64px": 7.2,
+   "crop_safe": 10.0,
+   "judged_clutter": 9.0,
+   "judged_emotion": 9.0,
+   "judged_focal": 9.0,
+   "judged_meaning": 8.5,
+   "judged_novelty_in_set": 8.5,
+   "judged_text": 9.0,
+   "original": 10.0,
+   "rim_and_tier": 9.5,
+   "subject_centred": 10.0,
+   "value_range": 8.4
+  },
+  "score": 9.08,
+  "tier": "bronze"
+ }
+}
