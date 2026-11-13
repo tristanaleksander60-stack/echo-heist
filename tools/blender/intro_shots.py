@@ -20,6 +20,7 @@ from mathutils import Matrix, Vector  # noqa: E402
 
 import marketing_renders as MR  # noqa: E402
 import kit_preview as K  # noqa: E402
+import aurora_shots as AS  # noqa: E402
 import backdrop_shots as BS  # noqa: E402
 import eh_palette as P  # noqa: E402
 
@@ -198,38 +199,16 @@ def set_neon(objs, name_part, hexc, strength):
             o.data.materials.append(m)
 
 
-def tower(st, lit):
+def tower(st, lit, P_):
+    """Hoardsworth Tower: the kit's art-deco landmark (assets/fbx/Intro_Tower.fbx), turned to face the town, its
+    windows warm (out on "...GONE.") and the giant H in Sign Gold with its floodlight."""
     T = st["tower"]
-    bx, _by, bz = T["base"]
-    y = 0.0
-    body, trim, dark = MR.mat(H["ribbon"], 0.55), MR.mat(H["marble_lo"], 0.35), MR.mat(H["ink_hi"], 0.6)
-    win = emissive(WARM if lit else H["steel_lo"], 2.2 if lit else 0.2, key=("twin", lit))
-    for i, (w, h) in enumerate(T["tiers"]):
-        box(f"Tier{i}", (bx - w / 2, y, bz - w / 2), (bx + w / 2, y + h, bz + w / 2), body)
-        box(f"Cornice{i}", (bx - w / 2 - 1, y + h - 1.6, bz - w / 2 - 1), (bx + w / 2 + 1, y + h, bz + w / 2 + 1), trim)
-        # columns of lit windows on the front (+Z) and the sides
-        rows = int((h - 6) // 7)
-        cols = int((w - 6) // 6)
-        for r in range(rows):
-            for c in range(cols):
-                x = bx - (cols - 1) * 3 + c * 6
-                yy = y + 4 + r * 7
-                box(f"W{i}_{r}_{c}", (x - 1.3, yy, bz + w / 2 - 0.2), (x + 1.3, yy + 4, bz + w / 2 + 0.25), win, False)
-                box(f"WS{i}_{r}_{c}", (bx + w / 2 - 0.2, yy, bz - (cols - 1) * 3 + c * 6 - 1.3),
-                    (bx + w / 2 + 0.25, yy + 4, bz - (cols - 1) * 3 + c * 6 + 1.3), win, False)
-        # gold fins up the corners
-        for sx in (-1, 1):
-            box(f"Fin{i}_{sx}", (bx + sx * w / 2 - 1.2, y, bz + w / 2 - 1.2), (bx + sx * w / 2 + 1.2, y + h - 1.6,
-                                                                             bz + w / 2 + 1.2), trim)
-        y += h
-    dy = st["deckY"]
-    dw, dh, dd = T["deck"]
-    box("Deck", (bx - dw / 2, dy - dh, bz - dd / 2), (bx + dw / 2, dy, bz + dd / 2), dark)
-    box("DeckTrim", (bx - dw / 2 - 0.4, dy - dh - 0.6, bz - dd / 2 - 0.4), (bx + dw / 2 + 0.4, dy - dh + 0.4,
-                                                                           bz + dd / 2 + 0.4), trim)
-    for sx in (-1, 1):   # railing posts on the front edge
-        box(f"Rail{sx}", (bx + sx * dw / 2 - 0.3, dy, bz + dd / 2 - 0.6), (bx + sx * dw / 2 + 0.3, dy + 3.2,
-                                                                          bz + dd / 2), trim)
+    objs = place("Intro_Tower", tuple(T["base"]), T["yaw"])
+    set_neon(objs, "Intro_Tower_Windows", WARM if lit else H["steel_lo"], 2.2 if lit else 0.15)
+    set_neon(objs, "Intro_Tower_Sign", P_["signColour"], 5.0)
+    sx, sy, sz = T["sign"]
+    MR.light("POINT", tuple(rb(sx, sy, sz + 8)), None, P_["signColour"], 5000, size=3, shadow=False)
+    return objs
 
 
 def town(st, lit, shot_id):
@@ -291,16 +270,18 @@ def hoardsworth(at, yaw, pose, rig):
 
 
 
-ROOKIE_OUTFIT = ("Rookie_Cap_Flat", "Rookie_Scarf_Long", "Rookie_Stripes_Torso", "Rookie_Stripes_LeftArm",
-                 "Rookie_Stripes_RightArm", "Rookie_Gloves_Knit_Left", "Rookie_Gloves_Knit_Right")
-CREW_HUE = "#3DE8FF"     # the template's seat-1 hue (server Heist/Rookie)
+ROOKIE_OUTFIT = ("Rookie_Cap_Flat", "Rookie_Scarf_Long", "Rookie_Scarf_Long_Tail1", "Rookie_Scarf_Long_Tail2",
+                 "Rookie_Stripes_Torso", "Rookie_Stripes_LeftArm", "Rookie_Stripes_RightArm", "Rookie_Gloves_Knit_Left",
+                 "Rookie_Gloves_Knit_Right")
+CREW_HUE = "#3DE8FF"     # the template's seat-1 hue (server Heist/Rookie; Palette.hueFor(1))
 GLOVES = "#2A2D52"       # Config.Rookie.GLOVES.Gloves_Knit
 
 
-def rookie(at, yaw, pose, face="idle", clone=None, dim=0.0):
+def rookie(at, yaw, pose, face="idle", crew=CREW_HUE):
     """The CHARACTER track's Rookie (assets/fbx/Rookie*.fbx, the kit manifest's joints and attach points) posed like
     Heist/Cinematic poses the CharacterKit template: Motor6D.Transform = the IntroPlan joint angles; default outfit
-    (flat cap, long scarf, stripes, knit gloves) in the seat hue; `clone` = a clone's hue (emissive copy)."""
+    (flat cap, long scarf with its two tail pieces, stripes, knit gloves), the crew pieces in `crew`, the hands and
+    cuffs in the glove colour. Returns its objects."""
     man = K.MANIFEST
 
     def load(fbx, keep):
@@ -317,7 +298,7 @@ def rookie(at, yaw, pose, face="idle", clone=None, dim=0.0):
 
     body = load("Rookie", lambda n: n != "Rookie_Face_Idle" or face == "idle")
     extra = load("Rookie_Outfits", lambda n: n in ROOKIE_OUTFIT)
-    if face != "idle" and not clone:
+    if face != "idle":
         extra.update(load("Rookie_Faces", lambda n: n == "Rookie_Face_" + face.capitalize()))
     place_m = Matrix.Translation(rbv(at)) @ Matrix.Rotation(math.radians(yaw), 4, "Z")
     joints = {n: v for n, v in man.items() if v.get("model") == "Rookie" and v.get("joint")}
@@ -336,29 +317,93 @@ def rookie(at, yaw, pose, face="idle", clone=None, dim=0.0):
         world[name] = w
         return w
 
+    objs = []
+
     def put(o, W, origin, tint=None):
         delta = W @ Matrix.Translation(origin).inverted()
         o.matrix_world = place_m @ (C4 @ delta @ C4I) @ o.matrix_world
-        if clone:
-            m = MR.mat(clone, 0.45, emit=1.1, key=("rkclone", clone, dim))
-            m.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = MR.lin(clone, 0.4 * (1 - dim))
-            o.data.materials.clear()
-            o.data.materials.append(m)
-            o.visible_shadow = False
-        else:
-            K.style(o, LOC, tint)
+        K.style(o, LOC, tint)
+        objs.append(o)
 
     for name, o in body.items():
         if name in joints:
-            put(o, solve(name), joints[name]["origin"])
+            put(o, solve(name), joints[name]["origin"], GLOVES if name.endswith("Hand") else None)
         else:   # the idle face: rigid with the head
             put(o, solve("Rookie_Head"), man[name]["origin"])
     for name, o in extra.items():
         v = man[name]
         a = v.get("attach") or {"part": "Head", "offset": [0, 0, 0]}
         W = solve("Rookie_" + a["part"]) @ Matrix.Translation(tuple(a["offset"]))
-        tint = GLOVES if "Gloves" in name else (CREW_HUE if v.get("tint") else None)
+        tint = GLOVES if "Gloves" in name else (crew if v.get("tint") else None)
         put(o, W, v["origin"], tint)
+    return objs
+
+
+def clone_hue(rank, count, P_):
+    """EchoView's hue for your own solo clones: the seat hue drifting toward violet and dimmer with each older run
+    (CloneState.driftHue, Palette.dim)."""
+    import colorsys
+    c = P_["clone"]
+    r, g, b = (int(CREW_HUE[i:i + 2], 16) / 255 for i in (1, 3, 5))
+    h, sat, v = colorsys.rgb_to_hsv(r, g, b)
+    if count > 1:
+        h = (h + (rank / (count - 1)) * c["drift"] / 360) % 1
+    v = min(1.0, v * max(1 - c["ageDim"] * rank, 0.35))
+    r, g, b = colorsys.hsv_to_rgb(h, sat, v)
+    return "#%02X%02X%02X" % (round(r * 255), round(g * 255), round(b * 255))
+
+
+def clone_look(objs, hue, fill_alpha):
+    """The owner Highlight over a clone (EchoView): the crew-hue fill over its own colours (unlit, FillTransparency
+    `fill`) and a crew-hue outline (an inverted hull); clones cast no shadow."""
+    out_m = MR.mat(hue, 0.5, emit=3.0, cull=True, key=("hl_outline", hue))
+    for o in objs:
+        for slot in o.material_slots:
+            if not slot.material or not slot.material.node_tree:
+                continue
+            m = slot.material.copy()
+            nt = m.node_tree
+            outn = next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL")
+            src = outn.inputs["Surface"].links[0].from_socket if outn.inputs["Surface"].links else None
+            em = nt.nodes.new("ShaderNodeEmission")
+            em.inputs["Color"].default_value = MR.lin(hue)
+            em.inputs["Strength"].default_value = 1.0
+            mix = nt.nodes.new("ShaderNodeMixShader")
+            mix.inputs["Fac"].default_value = 1 - fill_alpha
+            if src is not None:
+                nt.links.new(src, mix.inputs[1])
+            nt.links.new(em.outputs[0], mix.inputs[2])
+            nt.links.new(mix.outputs[0], outn.inputs["Surface"])
+            slot.material = m
+        o.visible_shadow = False
+        o.data = o.data.copy()
+        o.data.materials.append(out_m)
+        sol = o.modifiers.new("Outline", "SOLIDIFY")
+        sol.thickness = 0.045
+        sol.offset = 1.0
+        sol.use_flip_normals = True
+        sol.material_offset = len(o.data.materials) - 1
+        sol.use_rim = False
+
+
+def clone_print(objs, floor_z, h):
+    """The tape print mid-way: parts whose bottom is above `h` studs over the feet are not printed yet."""
+    for o in list(objs):
+        zmin = min((o.matrix_world @ Vector(c)).z for c in o.bound_box)
+        if zmin - floor_z > h:
+            bpy.data.objects.remove(o, do_unlink=True)
+            objs.remove(o)
+
+
+def clone_fx(at, hue, print_h, P_):
+    """A clone's floor glow (an unlit crew-hue disc) and, while it prints, the scan band at the print height."""
+    glow = MR.mat(hue, 0.5, emit=1.4, alpha=0.4, key=("glow", hue))
+    o = MR.cyl("FloorGlow", 1.6, 1.6, 0.02, glow, None, tuple(rb(at[0], 0.07, at[2])), seg=32)
+    o.visible_shadow = False
+    if print_h is not None:
+        band = MR.mat(hue, 0.5, emit=6.0, alpha=1 - P_["clone"]["bandAlpha"], key=("band", hue))
+        o = MR.cyl("PrintBand", 1.6, 1.6, 0.06, band, None, tuple(rb(at[0], print_h, at[2])), seg=32)
+        o.visible_shadow = False
 
 
 FIG_JOINT = {"RightShoulder": "shR", "RightElbow": "elR", "LeftShoulder": "shL", "LeftElbow": "elL", "Neck": "neck",
@@ -412,19 +457,6 @@ def garage(st, lights_on):
 
 
 # ------------------------------------------------------------------ effects
-def aurora(layers=3):
-    cols = (("#46D88A", "#7A5CC8"), ("#38B878", "#5E4AB0"), ("#62E09A", "#8A6AD8"))
-    for k in range(layers):
-        z = -420 - 120 * k
-        pts = []
-        for i in range(40):
-            x = -460 + i * 24
-            pts.append((x, 150 + 40 * k + 18 * math.sin(i * 0.33 + k), z + 60 * math.sin(i * 0.21 + k * 1.7)))
-        bottom, top = cols[k % 3]
-        m = gradient_mat(f"Aurora{k}", bottom, top, 1.5 - 0.3 * k, 0.42 - 0.1 * k, 0.0)
-        ribbon(f"Aurora{k}", pts, 150, m, wave=8, seed=k + 3)
-
-
 def snowfall(centre, size, n=900, seed=5, cam=None):
     rng = random.Random(seed)
     m = MR.mat("#E6E9F7", 0.9, emit=0.5, key="snowflake")
@@ -440,6 +472,51 @@ def snowfall(centre, size, n=900, seed=5, cam=None):
     o = MR._obj("Snow", bm, m)
     o.visible_shadow = False
     return o
+
+
+def vortex(st, P_, cam_pos):
+    """The suction vortex at the mouth (Heist/Cinematic, Config.Intro.VORTEX): spiral arms on a funnel that narrows
+    along the mouth's aim into the throat, additive, brightest where they pour in. Each arm is the smooth curve the
+    game's Beams draw between its control points, as a camera-facing ribbon (FaceCamera)."""
+    V = P_["vortex"]
+    n_arms = V["ARMS"][0]
+    nz = Vector(st["nozzle"])
+    aim = Vector(st["aim"]).normalized()
+    u = aim.orthogonal().normalized()
+    w = aim.cross(u)
+    eye = Vector(cam_pos)
+    col0, col1 = V["COLOURS"]
+    for arm in range(n_arms):
+        a0 = 2 * math.pi * arm / n_arms
+        pts, widths, alphas = [], [], []
+        steps = 48
+        for j in range(steps + 1):
+            s = j / steps
+            r = V["MOUTH_RADIUS"] + (V["FAR_RADIUS"] - V["MOUTH_RADIUS"]) * s ** V["FLARE"]
+            ang = a0 + V["TURNS"] * 2 * math.pi * (1 - s)
+            pts.append(nz + aim * V["LENGTH"] * s + (u * math.cos(ang) + w * math.sin(ang)) * r)
+            widths.append(V["WIDTH"][0] + (V["WIDTH"][1] - V["WIDTH"][0]) * s)
+            alphas.append(1 - (V["ALPHA"][0] + (V["ALPHA"][1] - V["ALPHA"][0]) * s))
+        bm = bmesh.new()
+        uvl = bm.loops.layers.uv.new("UVMap")
+        prev = None
+        for j, p in enumerate(pts):
+            tg = (pts[min(j + 1, steps)] - pts[max(j - 1, 0)]).normalized()
+            wd = tg.cross(p - eye).normalized() * widths[j] / 2
+            v0, v1 = bm.verts.new(rbv(p - wd)), bm.verts.new(rbv(p + wd))
+            if prev:
+                f = bm.faces.new((prev[0], v0, v1, prev[1]))
+                for lp, uv in zip(f.loops, ((0, (j - 1) / steps), (0, j / steps), (1, j / steps), (1, (j - 1) / steps))):
+                    lp[uvl].uv = uv
+            prev = (v0, v1)
+        me = bpy.data.meshes.new("vortex")
+        bm.to_mesh(me)
+        bm.free()
+        o = bpy.data.objects.new("Vortex", me)
+        bpy.context.scene.collection.objects.link(o)
+        # UV v runs from the mouth (0) to the far end (1): bright and warm at the mouth, faint violet out there
+        me.materials.append(gradient_mat(f"Vortex{arm}", col0, col1, 2.6, alphas[0], alphas[-1]))
+        o.visible_shadow = False
 
 
 def suction(st):
@@ -488,7 +565,7 @@ def build(shot, P_):
     live, fx = set(shot["live"]), set(shot["fx"])
     lit = "windowsOut" not in fx
     town(st, lit, shot["id"])
-    tower(st, lit)
+    tower(st, lit, P_)
     g = st["globe"]
     gc = g["centre"]
     globe = place("Intro_SnowGlobe", (gc[0], st["deckY"], gc[2]), 0)
@@ -505,11 +582,12 @@ def build(shot, P_):
     MR.light("POINT", tuple(rb(gc[0], gc[1] - 4, gc[2])), None, "#FFD9B0", 9000 if shot["globeFill"] > 0.5 else 3000,
              size=6, shadow=False)
     vac = st["vacuum"]
-    vobjs = place("Intro_Vacuum", tuple(vac["at"]), 180)
+    vobjs = place("Intro_Vacuum", tuple(vac["at"]), vac["yaw"])
     on = "vacuum" in fx
     set_neon(vobjs, "Intro_Vacuum_Lights", WARM if on else H["steel_lo"], 5.0 if on else 0.2)
     if on:
         suction(st)
+        vortex(st, P_, shot["cam"]["pos"])
     lv = st["lever"]
     lobjs = place("Intro_Lever", tuple(lv["at"]), lv["yaw"])
     pulled = shot["lever"] in ("pull", "point") or shot["t"] > 10.2
@@ -544,12 +622,24 @@ def build(shot, P_):
         rk = st["rookie"]["at"]
         grin = shot["t"] >= 29.0
         rookie(rk, st["rookie"]["yaw"], shot["rookie"], face="smug" if grin else "idle")
+        # the clones: Rookie copies drawn as EchoView draws yours (crew pieces in the age-ramped hue, the owner
+        # Highlight's fill and outline, floor glows), pulling his face; one still mid tape-print (scan band)
+        n = len(st["clones"])
         for k, c in enumerate(st["clones"]):
-            if shot["clones"][k] > 0.5:
-                rookie(c, st["rookie"]["yaw"] + (8 if c[0] < 130 else -8), shot["rookie"],
-                       clone=MR.hsv_shift(MR.CLONE["P1"], 0.12 * k, 6 * k), dim=0.12 * k)
-    if "aurora" in fx:
-        aurora(3)
+            pr = shot["clones"][k]
+            if pr <= 0:
+                continue
+            hue = clone_hue(n - 1 - k, n, P_)
+            objs = rookie(c, st["rookie"]["yaw"] + (8 if c[0] < 130 else -8), shot["rookie"],
+                          face="smug" if grin else "idle", crew=hue)
+            print_h = None
+            if pr < 1:
+                print_h = pr * 4.7
+                clone_print(objs, 0.0, print_h)
+            clone_look(objs, hue, P_["clone"]["fill"])
+            clone_fx(c, hue, print_h, P_)
+    if "aurora" in fx:   # the game's own Heist/Aurora (AuroraPlan at this moment, every layer at tier 1)
+        AS.ribbons(bpy.context.scene, AS.load_plan(shot["t"]), shot["cam"]["pos"], AS.TIER_LAYERS[1])
     if "snow" in fx:
         cp = shot["cam"]["pos"]
         lk = shot["cam"]["look"]

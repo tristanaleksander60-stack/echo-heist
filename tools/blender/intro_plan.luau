@@ -12,7 +12,8 @@ local IntroRig = require("../../src/shared/Heist/IntroRig")
 local Strings = require("../../src/shared/Heist/Strings")
 
 -- The key frame of each shot (s into it): the moment the storyboard draws.
-local KEY = { eve = 4.6, hoard = 2.0, every = 2.2, gone = 2.6, one = 6.6, more = 3.2, title = 0.9 }
+-- (shot 6: clone 4 mid-print, the scan band on it; the others printed)
+local KEY = { eve = 4.6, hoard = 2.0, every = 2.2, gone = 2.6, one = 6.6, more = 2.15, title = 0.9 }
 
 local function poseTable(track: string, t: number): { [string]: { number } }
 	local a, b, w = IntroPlan.pose(track, t)
@@ -103,4 +104,12 @@ print(serde.encode("json", {
 	shots = shots,
 	total = IntroPlan.total(),
 	letterScale = IntroPlan.LETTER_SCALE,
+	vortex = Config.Intro.VORTEX,
+	signColour = Config.Intro.SIGN_COLOUR,
+	clone = {
+		fill = Config.Heist.CLONE_FILL_TRANSPARENCY,
+		ageDim = Config.Heist.CLONE_AGE_DIM,
+		drift = Config.Clone.DRIFT_DEGREES,
+		bandAlpha = Config.Clone.PRINT_BAND_ALPHA,
+	},
 }, false))
