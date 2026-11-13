@@ -1012,7 +1012,9 @@ local function instanceOf(player: Player): any
 	return nil
 end
 
-local INTERACT_KINDS = { KIND.Grab, KIND.Release, KIND.Press, KIND.Hide, KIND.Emote }
+-- Heist.Interact(kind, arg): the queued intents, and Slide (arg 0 / 1; Sim/Interact.slide records it at once and
+-- has its own server cooldown: the validator's raised speed window, Config.Slide)
+local INTERACT_KINDS = { KIND.Grab, KIND.Release, KIND.Press, KIND.Hide, KIND.Emote, KIND.Slide }
 
 -- Why a tape is locked, in kid words ("Clear Two Doors first." / "2 more ★ to open it.").
 local function lockedText(player: Player, index: number): string

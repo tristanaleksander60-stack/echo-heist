@@ -151,6 +151,31 @@ Config.Sim = {
 	ALARM_HINT_SECONDS = 10, -- a clone that trips the alarm this early earns "Clone #N sets off the alarm: Redo #N?"
 }
 
+-- The slide (Ctrl, or Ctrl + Shift for the fast one; B / B + LB; the touch SLIDE button). The client pushes your
+-- character with a short burst along your move direction (Shared/Heist/SlideMath: the envelope, the camera dip, the
+-- gate; Heist/Slide drives it), and in a heist sends Heist.Interact(EVENT.Slide, kind - 1). The server records the
+-- Slide event (Sim/Interact.slide: its own cooldown) and Rec/Validator raises the allowed speed only inside the
+-- window that event opens, so a slide never taints or clamps the run. Index 1 = slide, 2 = fast slide.
+Config.Slide = {
+	BURST = { 18, 30 }, -- studs/s on top of WalkSpeed at the burst's peak
+	SECONDS = { 0.65, 0.75 }, -- the burst decays to nothing over this long (from the press)
+	ATTACK_SECONDS = 0.06, -- the push-off: 0 -> full burst over this long (the remote overtakes the first steps)
+	COOLDOWN = 1.2, -- client: seconds from one slide's start to the next
+	FORCE_PER_MASS = 2000, -- the LinearVelocity's force limit = assembly mass x this
+	MIN_MOVE = 0.2, -- a move direction shorter than this slides along the look instead
+	-- First person (Heist/CameraDirector): the eye dips low and comes back; a slight FOV kick (off under reduced
+	-- motion or with camera shake off)
+	DIP = { 1.3, 1.6 }, -- studs the eye drops at the bottom of the dip
+	DIP_IN_SECONDS = 0.12, -- down this fast
+	DIP_OUT_SECONDS = 0.3, -- back up over this long once the burst is spent
+	FOV_KICK = { 4, 6 }, -- degrees added at the burst's peak (follows the burst; <= Heist.CAMERA.FOV_KICK_MAX)
+	-- Server (Sim/Interact.slide) and Rec/Validator: the validated slide window
+	SERVER_COOLDOWN = 1.0, -- seconds between accepted slides (< COOLDOWN: the remote's arrival jitter)
+	WINDOW_SECONDS = 0.8, -- the raised speed allowance lasts at most this long after the Slide event (>= SECONDS)
+	WINDOW_GRACE = 0.2, -- + this and the measured ping (capped at Rec.PING_ALLOWANCE_CAP): late position packets
+	ALLOW_MARGIN = 1.15, -- the allowance is BURST x this on top of the normal max speed, flat over the window
+}
+
 -- Level content rules shared by the authored levels (src/shared/Levels), MASTERPLAN
 -- §3.1, §4.2, §4.3, §5.3. Per-level numbers (par, cap, goal, geometry) live in each
 -- level's spec; these are the numbers every level of a kind shares.
