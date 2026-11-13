@@ -150,9 +150,14 @@ local function attachPiece(model: Model, p: BasePart, name: string): boolean
 	return true
 end
 
+export type Joints = "motor" | "constraint"
+
 -- Assembles a whole character from a piece source (the published Pieces folder, or nil for blocks). The default
--- outfit and seat-1 hue are applied; Rookie.apply changes them.
-function Rookie.assemble(pieces: Instance?): Model
+-- outfit and seat-1 hue are applied; Rookie.apply changes them. joints: "motor" (Motor6Ds: the StarterCharacter;
+-- the engine's Avatar Joint Upgrade may turn them into AnimationConstraints at spawn) or "constraint" (kinematic
+-- AnimationConstraints on the rig attachments, as 2026 avatar rigs: the clone templates, which the engine tests
+-- animate by stepping the Animator).
+function Rookie.assemble(pieces: Instance?, joints: Joints?): Model
 	local model = Instance.new("Model")
 	model.Name = "Rookie"
 	model:SetAttribute("EH_Rookie", true)
@@ -195,7 +200,7 @@ function Rookie.assemble(pieces: Instance?): Model
 	end
 	model:SetAttribute("EH_Blocks", fromKit < #RookieData.body)
 
-	-- Joints: a Motor6D named as the R15 joint in the child part, and the two rig attachments, at the art's pivot.
+	-- Joints: named as the R15 joint, in the child part, with the two rig attachments at the art's pivot.
 	for _, b in RookieData.body do
 		local part = parts[b.part]
 		local parent: BasePart = if b.parent then parts[b.parent] else root
@@ -209,13 +214,22 @@ function Rookie.assemble(pieces: Instance?): Model
 		a1.Name = attName
 		a1.CFrame = part.CFrame:ToObjectSpace(at)
 		a1.Parent = part
-		local m = Instance.new("Motor6D")
-		m.Name = b.joint
-		m.Part0 = parent
-		m.Part1 = part
-		m.C0 = a0.CFrame
-		m.C1 = a1.CFrame
-		m.Parent = part
+		if joints == "constraint" then
+			local c = Instance.new("AnimationConstraint")
+			c.Name = b.joint
+			c.Attachment0 = a0
+			c.Attachment1 = a1
+			c.IsKinematic = true
+			c.Parent = part
+		else
+			local m = Instance.new("Motor6D")
+			m.Name = b.joint
+			m.Part0 = parent
+			m.Part1 = part
+			m.C0 = a0.CFrame
+			m.C1 = a1.CFrame
+			m.Parent = part
+		end
 	end
 	for _, spec in ACCESSORY do
 		local part = parts[spec[1]]
@@ -305,8 +319,8 @@ function Rookie.apply(model: Model, outfit: Outfit.Outfit, hue: Color3)
 end
 
 -- A whole character in an outfit and hue: from the published kit, or blocks when the kit is not there.
-function Rookie.build(outfit: Outfit.Outfit?, hue: Color3?): Model
-	local model = Rookie.assemble(piecesFolder())
+function Rookie.build(outfit: Outfit.Outfit?, hue: Color3?, joints: Joints?): Model
+	local model = Rookie.assemble(piecesFolder(), joints)
 	Rookie.apply(model, outfit or Outfit.default(), hue or Palette.hueFor(1))
 	return model
 end

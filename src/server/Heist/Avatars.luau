@@ -174,7 +174,7 @@ end
 -- Builds an owner's clone template from the Rookie in an outfit (no player needed: the engine tests use it).
 -- Returns the filed template, or nil when the rig would not hold together (the client keeps the mannequin).
 function Avatars.buildRookie(ownerId: number, outfit: Outfit.Outfit, character: Model?): Model?
-	local rig = Rookie.build(outfit)
+	local rig = Rookie.build(outfit, nil, "constraint")
 	if character then
 		Avatars.readPack(character, rig) -- the live character's Animate holds the pack the player really walks with
 	end

@@ -1354,5 +1354,214 @@ do
 	check(okReq, "L6 row and lobby section ran" .. (if okReq then "" else ": " .. tostring(err)))
 end
 
+-- 10. The Rookie (PLAN_FIRST_PERSON "CH"): every player is a Rookie. Heist/Rookie publishes
+-- ReplicatedStorage.CharacterKit from the uploaded art kit (the template, the pieces, the first-person arms), and
+-- Heist/Characters makes the StarterCharacter a Rookie. Luau Execution has no real Player, so a joining fake player
+-- gets exactly what LoadCharacterAsync gives a real one (a clone of the StarterCharacter in workspace), then the
+-- CharacterAdded dressing in its outfit and seat colour.
+do
+	local okRookie, rookieErr = pcall(function()
+		local heistDir = server:WaitForChild("Heist")
+		local KitService = require(server:WaitForChild("Kit"):WaitForChild("KitService"))
+		local Rookie = require(heistDir:WaitForChild("Rookie"))
+		local Characters = require(heistDir:WaitForChild("Characters"))
+		local sharedDir = ReplicatedStorage:WaitForChild("Shared")
+		local Config = require(sharedDir:WaitForChild("Config")) :: any
+		local heistShared = sharedDir:WaitForChild("Heist")
+		local Outfit = require(heistShared:WaitForChild("Outfit"))
+		local Palette = require(heistShared:WaitForChild("Palette"))
+		local RigJoints = require(heistShared:WaitForChild("RigJoints"))
+		local RookieData = require(heistShared:WaitForChild("RookieData")) :: any
+		KitService.start()
+		KitService.ready(60)
+		check(Rookie.publishNow(KitService), "rookie: CharacterKit published")
+		local kit = ReplicatedStorage:FindFirstChild(Config.Rookie.KIT_FOLDER)
+		local template = kit and kit:FindFirstChild("Rookie")
+		local vm = kit and kit:FindFirstChild("Rookie_Viewmodel")
+		local pieces = kit and kit:FindFirstChild("Pieces")
+		local nPieces = 0
+		for _, names in RookieData.groups do
+			for _, name in names do
+				if pieces and pieces:FindFirstChild(name) then
+					nPieces += 1
+				end
+			end
+		end
+		check(
+			template ~= nil and vm ~= nil and pieces ~= nil and nPieces == #pieces:GetChildren() and nPieces >= 40,
+			"rookie: CharacterKit holds Rookie, Rookie_Viewmodel and every kit piece (" .. nPieces .. ")"
+		)
+		-- the first-person arms the FP track looks for
+		local left = vm and vm:FindFirstChild("LeftArm")
+		local right = vm and vm:FindFirstChild("RightArm")
+		check(
+			left ~= nil
+				and right ~= nil
+				and left:IsA("BasePart")
+				and right:IsA("BasePart")
+				and left:FindFirstChild("GripL") ~= nil
+				and right:FindFirstChild("GripR") ~= nil
+				and left.Anchored
+				and not left.CanCollide
+				and not right.CastShadow,
+			"rookie: Rookie_Viewmodel LeftArm / RightArm with GripL / GripR (anchored, no collision, no shadow)"
+		)
+
+		-- an R15 character: 15 named parts, 15 whole joints, the rig attachments, HipHeight 2, the root 3 up
+		local function r15(model: Model, tag: string)
+			local hum = model:FindFirstChildOfClass("Humanoid")
+			local hrp = model:FindFirstChild("HumanoidRootPart")
+			local named, rigAtt = 0, 0
+			for _, b in RookieData.body do
+				local p = model:FindFirstChild(b.part)
+				if p and p:IsA("BasePart") then
+					named += 1
+					local att = (if b.joint == "Root" then "Root" else b.joint) .. "RigAttachment"
+					if p:FindFirstChild(att) then
+						rigAtt += 1
+					end
+				end
+			end
+			local feet = if hrp
+					and hrp:IsA("BasePart")
+					and hum
+				then hrp.Position.Y - hrp.Size.Y / 2 - hum.HipHeight
+				else 0
+			local lowest = math.huge
+			for _, d in model:GetDescendants() do
+				if d:IsA("BasePart") and d ~= hrp then
+					lowest = math.min(lowest, d.Position.Y - d.Size.Y / 2)
+				end
+			end
+			check(
+				hum ~= nil
+					and hum.RigType == Enum.HumanoidRigType.R15
+					and math.abs(hum.HipHeight - Config.Rookie.HIP_HEIGHT) < 1e-3
+					and hum:FindFirstChildOfClass("Animator") ~= nil
+					and named == 15
+					and rigAtt == 15
+					and RigJoints.whole(model) == 15
+					and model.PrimaryPart == hrp,
+				string.format(
+					"%s: R15 (%d parts, %d rig attachments, %d joints, HipHeight %.2f)",
+					tag,
+					named,
+					rigAtt,
+					RigJoints.whole(model),
+					if hum then hum.HipHeight else -1
+				)
+			)
+			check(
+				math.abs(lowest - feet) < 0.15,
+				string.format("%s: the boots stand on the floor HipHeight puts them on (gap %.3f)", tag, lowest - feet)
+			)
+		end
+		if template then
+			r15(template, "rookie template")
+			check(template:GetAttribute("EH_Blocks") == false, "rookie template: kit meshes, not blocks")
+		end
+
+		Characters.start() -- no players here: it turns auto-loading and avatar appearance off and builds the starter
+		Characters.ensureStarter()
+		local starter = game:GetService("StarterPlayer"):FindFirstChild("StarterCharacter")
+		check(
+			starter ~= nil and starter:GetAttribute("EH_Rookie") == true and starter:GetAttribute("EH_Blocks") == false,
+			"rookie: StarterPlayer.StarterCharacter is the kit Rookie"
+		)
+		check(
+			game:GetService("StarterPlayer").LoadCharacterAppearance == false
+				and game:GetService("Players").CharacterAutoLoads == false,
+			"rookie: no avatar auto-load, no avatar appearance on the Rookie"
+		)
+
+		-- a joining fake player: the spawn clone, then the CharacterAdded dressing (outfit + seat 2)
+		if starter then
+			local char = starter:Clone()
+			char.Name = "FakeRookie"
+			char:PivotTo(CFrame.new(0, 400, 0))
+			for _, d in char:GetDescendants() do
+				if d:IsA("BasePart") then
+					d.Anchored = d.Name == "HumanoidRootPart" -- hold it in the air: nothing simulates here anyway
+				end
+			end
+			char.Parent = workspace
+			r15(char, "fake player's character")
+			local outfit = {
+				cap = "Cap_Trapper",
+				scarf = "Scarf_Knot",
+				sweater = "Sweater_Block",
+				gloves = "Gloves_Leather",
+				mask = "Mask_Eye",
+			}
+			check(Characters.dressModel(char, outfit, 2), "rookie: the fake player's character is dressed")
+			local want = {}
+			for _, piece in Outfit.pieces(outfit) do
+				want[piece] = true
+			end
+			local have, extra, crew, crewOk, welded = 0, 0, 0, true, true
+			for _, d in char:GetChildren() do
+				if d:GetAttribute("EH_Slot") ~= nil then
+					if want[d.Name] then
+						have += 1
+					else
+						extra += 1
+					end
+					local w = d:FindFirstChild("EH_Weld")
+					welded = welded and w ~= nil and w:IsA("Weld") and w.Part0 ~= nil and w.Part0.Parent == char
+				end
+				if d:IsA("BasePart") and d:GetAttribute("EH_Tint") == "crew" then
+					crew += 1
+					crewOk = crewOk and d.Color == Palette.hueFor(2)
+				end
+			end
+			local nWant = 0
+			for _ in want do
+				nWant += 1
+			end
+			check(
+				have == nWant and extra == 0 and welded,
+				string.format("rookie: outfit applied and welded (%d of %d pieces, %d extra)", have, nWant, extra)
+			)
+			check(crew >= 2 and crewOk, "rookie: crew pieces in the seat-2 hue (" .. crew .. ")")
+			local hand = char:FindFirstChild("LeftHand")
+			check(
+				hand ~= nil
+					and hand:IsA("BasePart")
+					and hand.Color == Color3.fromHex(Config.Rookie.GLOVES.Gloves_Leather),
+				"rookie: hands in the leather glove colour"
+			)
+			-- the cap sits on the head (welded by pivot at the head's hat point)
+			local cap = char:FindFirstChild("Rookie_Cap_Trapper")
+			local head = char:FindFirstChild("Head")
+			check(
+				cap ~= nil
+					and head ~= nil
+					and cap:IsA("BasePart")
+					and head:IsA("BasePart")
+					and (cap:GetPivot().Position - (head:GetPivot() * CFrame.new(0, 1.2, 0)).Position).Magnitude
+						< 0.05,
+				"rookie: the cap sits at the head's hat point"
+			)
+			-- faces: one shows at a time
+			Rookie.setFace(char, "busted")
+			local shown = {}
+			for _, d in char:GetChildren() do
+				if d:IsA("BasePart") and d:GetAttribute("EH_Face") ~= nil and d.Transparency < 1 then
+					table.insert(shown, d:GetAttribute("EH_Face"))
+				end
+			end
+			check(#shown == 1 and shown[1] == "busted", "rookie: one face shows (" .. table.concat(shown, ",") .. ")")
+			-- dressing again in the default outfit removes the old pieces
+			Characters.dressModel(char, Outfit.default(), 1)
+			check(
+				char:FindFirstChild("Rookie_Cap_Trapper") == nil and char:FindFirstChild("Rookie_Cap_Flat") ~= nil,
+				"rookie: a new outfit replaces the old pieces"
+			)
+			char:Destroy()
+		end
+	end)
+	check(okRookie, "rookie section ran" .. (if okRookie then "" else ": " .. tostring(rookieErr)))
+end
+
 table.insert(results, string.format("%d failure(s)", failures))
 return table.concat(results, "\n")
