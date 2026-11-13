@@ -921,12 +921,12 @@ do
 	check(okRig and made ~= nil, "rookie clips: a Rookie (AnimationConstraint joints, as a clone) builds")
 	if okRig and made then
 		local rig = made :: Model
-		local root = rig:FindFirstChild("HumanoidRootPart") :: BasePart
+		local root = rig:WaitForChild("HumanoidRootPart") :: BasePart
 		root.Anchored = true
 		rig:PivotTo(CFrame.new(origin + Vector3.new(30, 40, 0)))
 		rig.Parent = workspace
-		local hum = rig:FindFirstChildOfClass("Humanoid") :: Humanoid
-		local animator = hum:FindFirstChildOfClass("Animator") :: Animator
+		local hum = rig:WaitForChild("Humanoid") :: Humanoid
+		local animator = hum:WaitForChild("Animator") :: Animator
 		local function att(part: string, name: string): Attachment?
 			local p = rig:FindFirstChild(part)
 			local a = p and p:FindFirstChild(name)
@@ -937,7 +937,7 @@ do
 			return root.CFrame:PointToObjectSpace(p)
 		end
 		local function partAt(name: string): Vector3
-			local p = rig:FindFirstChild(name) :: BasePart
+			local p = rig:WaitForChild(name) :: BasePart
 			return rootSpace(p.Position)
 		end
 		local loaded = 0
@@ -977,7 +977,7 @@ do
 				handYMax = math.max(handYMax, partAt("RightHand").Y)
 				handOverHead = math.max(handOverHead, partAt("RightHand").Y - partAt("Head").Y)
 				torsoYMin = math.min(torsoYMin, partAt("LowerTorso").Y)
-				local head = rig:FindFirstChild("Head") :: BasePart
+				local head = rig:WaitForChild("Head") :: BasePart
 				local look = root.CFrame:VectorToObjectSpace(head.CFrame.LookVector)
 				headYaw = math.max(headYaw, math.deg(math.abs(math.atan2(-look.X, -look.Z))))
 			end
