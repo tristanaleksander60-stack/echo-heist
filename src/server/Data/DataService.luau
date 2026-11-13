@@ -247,7 +247,7 @@ function DataService.getBagLevel(player: Player): number
 	return if profile then heistOf(profile).bagLevel else 0
 end
 
-function DataService.getSettings(player: Player): { [string]: boolean | number }
+function DataService.getSettings(player: Player): { [string]: boolean | number | string }
 	local profile = PlayerData.Get(player)
 	local settings = if profile then heistOf(profile).settings else Schema.defaultHeist().settings
 	return table.clone(settings :: any)

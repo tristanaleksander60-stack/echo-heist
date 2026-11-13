@@ -13,6 +13,11 @@
 -- event so clones replay it. To never offer what the server refuses, a target must also pass the sim's own
 -- range rule from your root (FpMath.inSimRange, less LOOK.RANGE_MARGIN), and nothing solid may stand between
 -- your eyes and it (raycasts for the best few candidates only: no grabbing through walls).
+--
+-- Carry and drop are the sim's as before (loot rides in your hands, Heist/Viewmodel; it drops where you are
+-- taken out). TODO(cut list, PLAN_FIRST_PERSON §4): throw. Sim/Interact has no throw verb (Release only drops
+-- where you stand), so first person has none at launch; adding one is a sim change (a recorded event the
+-- clones replay), not a client one.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
