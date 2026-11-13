@@ -162,11 +162,11 @@ Replace everything in [brackets]. Keep the personal line real: name one video an
 ```text
 Hi [creator name]! Your [video title] made me laugh, especially [specific moment].
 
-I'm [first name], the solo developer of a Roblox heist game where your past self is your crew. Every run is recorded; next run, your clones replay it: one holds the door, one stands on the plate, you grab the loot. Solo you end up with 8 of you; with 3 friends it's 16 robbers. 15 seconds of it: [attached clip]
+I'm [first name], the solo developer of a Roblox heist game where your past self is your crew. You play first person as the Rookie; every run is recorded, and next run your clones replay it: one holds the door, one stands on the plate, you grab the loot. Solo you end up with 8 of you; with 3 friends it's 16 robbers. 15 seconds of it: [attached clip]
 
 It's called "Heist Yourself: Rob With Your Clones", a Christmas edition opening on Roblox in early December.
 
-I'd love to send you early access, a private server and your own share link. Videos can go up from Fri Dec 11 with our Christmas update, as long as the game is open to all ages by then (I'll confirm the exact time). No payment and no script: say what you really think.
+I'd love to send you early access, a private server and your own share link. Videos can go up from Fri Dec 11, once the game is open to all ages (I'll confirm). No payment and no script: say what you really think.
 
 Interested? Just reply.
 Thanks, [first name]
@@ -183,7 +183,7 @@ Hi [creator name],
 
 I loved [video title], especially [specific moment], so I wanted to show you my game first.
 
-"Heist Yourself: Rob With Your Clones" is a Roblox heist game where your past self is your crew. Every 30-45 second run is recorded; on the next run your clones replay it while you do the next job. Solo you can be 8 robbers at once; with 3 friends it's 16. Gus the night guard is there to catch the wrong one. Here's a 15-second clip: [attachment]
+"Heist Yourself: Rob With Your Clones" is a Roblox heist game where your past self is your crew. You play first person as the Rookie, a robber in your own outfit; every 30-45 second run is recorded, and on the next run your clones (copies of your Rookie) replay it while you do the next job. Hold Crew View to see the whole crew from above. Solo you can be 8 robbers at once; with 3 friends it's 16. Gus the night guard is there to catch the wrong one. Here's a 15-second clip: [attachment]
 
 What I can offer:
 • Early access to the launch build (from Nov 30), so you can film before anyone else.

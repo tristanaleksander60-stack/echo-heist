@@ -4,6 +4,8 @@ _Marketing kit, file 1 of 5 (docs/marketing/). Written 2026-11-12 for the Thu De
 
 Everything on this page must be **true for every player who reads it**. When the game changes, this page changes the same day (§8 below).
 
+> **Revised 2026-11-13 for the first-person pivot** (docs/PLAN_FIRST_PERSON.md). What changed on this page: you play **first person as the Rookie** (your outfit, your crew colour), never as your Roblox avatar, and your clones are copies of *your Rookie*; the button is **REWIND** (was END RUN); new true claims: **Crew View**, the **hideout and its vans** (SOLO or crew), **outfits**, the **story intro** (Sir Hoardsworth and the Snow Globe Vault). The description now teaches the game in a **3-verb block** (RUN IT / REWIND IT / ROB IT TOGETHER, §3), and the launch NEW line names the villain. Positioning note for MASTERPLAN §9.1 (outside this folder, for the owner or integrator): "your own Roblox avatar as the clone" no longer holds; the line becomes **"your own Rookie (your outfit, your crew colour) as the clone"**.
+
 ---
 
 ## 1. The rules this page follows (2026)
@@ -38,44 +40,49 @@ Everything on this page must be **true for every player who reads it**. When the
 
 ---
 
-## 3. Description, English (880 characters, limit 1,000 **[UNVERIFIED]**: check the counter in Creator Hub)
+## 3. Description, English (889 characters, limit 1,000 **[UNVERIFIED]**: check the counter in Creator Hub)
 
-Paste exactly (the bullets are the "•" character):
+Paste exactly (the bullets are the "•" character). **Revised 2026-11-13** for the first-person pivot; the 2026-11-12 text is in git history.
 
 ```text
 Your past self is your crew! Rob it solo with up to 8 of you, or with friends: up to 16 robbers, 1 vault.
-NEW: Steal Back Christmas! Christmas heists, a daily vault that doubles as an advent calendar, and Gus the night guard in a Santa hat.
+NEW: Steal Back Christmas! Sir Hoardsworth took every present in town. Steal them back, with a daily vault that doubles as an advent calendar.
 
-HOW IT WORKS
-• Every run is recorded. Tap END RUN and the tape rewinds.
-• Your clone replays your last run while you do the next job.
-• One clone holds the door, one stands on the plate, you grab the loot!
-• Your clone stops where you stop.
-• Clones repeat your mistakes too. Every. Single. Time.
+RUN IT: sneak in as the Rookie, grab the loot, get back to the van.
+REWIND IT: your run turns into a clone of you that does it all again.
+ROB IT TOGETHER: one clone holds the door, one stands on the plate, you take the cash!
 
-SNEAK PAST GUS
-• Hide from his big flashlight, or let a clone distract him.
-• Grab the top loot and the alarm goes off. Run for the van!
+• Your clone stops where you stop, and repeats your mistakes. Every. Single. Time.
+• Hide from Gus the night guard and his big flashlight, or let a clone distract him.
+• Hold CREW VIEW to see your whole crew from above.
+• Pick a van in your hideout: go SOLO (the full game) or bring up to 3 friends. Private servers are free.
 
-CREW UP
-• Solo is the full game. Bring up to 3 friends for a bigger crew.
-• Each party gets its own heist. Private servers are free.
-
-6 heists, medals and trophies for your van. Runs last 30-45 seconds.
+6 heists, outfits for your Rookie, trophies for your hideout. Runs last 30-45 seconds.
 ```
+
+### 3.0 The 3-verb block (the Fisch pattern)
+
+The games that teach well on the store page (Fisch is the reference the owner named) use **one line per verb, in the order you play them**, so a reader learns the loop in three lines before the bullets. Ours is **RUN IT / REWIND IT / ROB IT TOGETHER**:
+
+| Verb | What it teaches | Why this wording |
+|---|---|---|
+| **RUN IT** | You are one robber (the Rookie), you sneak, grab, and get back to the van | "Run" is the player noun (MASTERPLAN §0 C2) and the action; "the Rookie" names the character so "copies of you" later means copies of *him in your outfit*, not your Roblox avatar |
+| **REWIND IT** | The button (REWIND) ends the run; the run becomes a clone that repeats it | Uses the real button label (`Strings.REWIND`); "turns into a clone of you" is the twist in 9 words |
+| **ROB IT TOGETHER** | Clones are crew: door, plate, cash | The concrete picture a 10-year-old can repeat; "together" bridges to the friends line |
+
+Rules: three lines, each **≤ 90 characters**, each starting with the verb in caps and a colon, kid words only (§1). If a future update changes the loop (e.g. a hand-off), the bullets change, not the three verbs.
 
 ### 3.1 Why each line is there
 
 | Line | Job | Search ideas it carries in normal sentences |
 |---|---|---|
 | 1 "Your past self is your crew! Rob it solo with up to 8 of you, or with friends: up to 16 robbers, 1 vault." | Verb (rob) + fantasy (your past self is your crew) + social hook (friends, 16 robbers). The MASTERPLAN §1.1 line, with "up to" added for truth | rob, past self, crew, friends, robbers, vault |
-| 2 "NEW: Steal Back Christmas! ..." | Freshness hook; replaced every update (§5) | steal, christmas, heist, daily, advent, night guard |
-| HOW IT WORKS | The mechanic in kid words, including the key rule "your clone stops where you stop" (§7.5) | run, recorded, rewind, clone, loot |
-| SNEAK PAST GUS | The threat with a face (market F2) and the Alarm Run | sneak, guard, hide, alarm, van |
-| CREW UP | Solo is complete; co-op is bigger; no stranger chaos (§3.3) | friends, crew, private server |
-| Last line | Size and length of the game, honestly | heists, medals, trophies |
+| 2 "NEW: Steal Back Christmas! Sir Hoardsworth took every present..." | Freshness hook with the story's villain (the intro); replaced every update (§5) | steal, christmas, presents, daily, advent |
+| RUN IT / REWIND IT / ROB IT TOGETHER | The loop in three verbs (§3.0), including the key picture "one clone holds the door" | run, sneak, loot, van, rewind, clone, cash |
+| Bullets | The rule "your clone stops where you stop" (§7.5) and the mistakes joke; the threat with a face (Gus, market F2); Crew View (the first-person answer to "where are my clones?"); the hideout and the van choice (solo is complete, co-op is bigger, no stranger chaos, §3.3) | guard, flashlight, hide, crew, hideout, friends, private server |
+| Last line | Size and length of the game, honestly, plus the two progression hooks (outfits, trophies) | heists, outfits, trophies |
 
-**Words we deliberately left out:** "puzzle" (MASTERPLAN §1.3: puzzle framing failed for ECHOES: Clone Puzzles, 0 playing), "echo", "take", "free" except for private servers (a plain fact), "Robux", any price.
+**Words we deliberately left out:** "puzzle" (MASTERPLAN §1.3: puzzle framing failed for ECHOES: Clone Puzzles, 0 playing), "echo", "take", "free" except for private servers (a plain fact), "Robux", any price, "first person" / "FPS" (shooter connotation for parents and the Mild questionnaire: we say "sneak in as the Rookie" instead), "avatar" (your Roblox avatar is never shown in the game), "Santa hat" (moved out of line 2 to make room for the villain; Gus still wears it, so it can come back in a bullet if the count allows), "alarm" (the Alarm Run is still in Clone Party and the Big Score; it lost its bullet to Crew View and can return in the Dec 11 text).
 
 ### 3.2 Truth check (re-run after every update)
 
@@ -84,49 +91,50 @@ CREW UP
 | "up to 8 of you" | Clone Party and The Big Score grant 8 slots; Dawn at run 8 = 7 clones + you ("8 OF ME" stamp, `L5_CloneParty.luau` hooks) | Clone Party or Big Score caps drop below 8 |
 | "up to 16 robbers" | 4 players × (1 + 3 clones) = 16 (cap 12 clones per heist instance, `floor(12 / 4) = 3`, §0 C3) | Crew size or the 12-clone instance cap changes |
 | "Bring up to 3 friends" | Party of up to 4 per heist instance (§3.3) | Party size changes |
-| "a daily vault that doubles as an advent calendar" | Daily vault = advent calendar Dec 3-24, ornament per first clear (§4.3) | After Dec 31 this text must go (catch-up ends Dec 31) |
-| "Gus ... in a Santa hat" | Christmas dressing layer, Dec 3 - Jan 4 (`Gus_SantaHat`, STYLE_BIBLE §13) | After Jan 4 |
-| "Each party gets its own heist" | Per-party heist instances in a shared garage lobby (§0 C11); strangers only via opt-in Quick Crew | If Quick Crew is cut, the sentence is still true |
+| "a daily vault that doubles as an advent calendar" | Daily vault = advent calendar Dec 3-24, ornament per first clear (§4.3); the hideout's laptop shows it and the catch-up | After Dec 31 this text must go (catch-up ends Dec 31) |
+| "Sir Hoardsworth took every present in town" | The story intro (`Shared/Heist/IntroPlan`: the vacuum on his tower, the Snow Globe Vault), first join and the lobby TV (WATCH INTRO) | If the intro is cut or turned off (`Config.Intro.ENABLED`) |
+| "sneak in as the Rookie" | Every player is a Rookie (`server/Heist/Characters`, StarterCharacter), first person by default (`CameraDirector` "fp") | If the Roblox avatar ever comes back as the character |
+| "REWIND IT ... a clone of you" | The REWIND button (`Strings.REWIND`, R / Y / tap); clones are copies of your Rookie in your outfit (`Avatars.buildRookie`) | — |
+| "Hold CREW VIEW" | Hold Q / LB / the touch CREW button in a first-person run (`Shared/Heist/CrewView`) | If Crew View is cut or renamed |
+| "Pick a van in your hideout: go SOLO ... or bring up to 3 friends" | The hideout lobby: PICK VAN, SOLO · GO, CREW seats for friends (`Heist/Vans`, `VanRules`), seats = `Config.Sim.MAX_CREW` (4) | Crew size changes |
+| "outfits for your Rookie" | Wardrobe: 5 slots, unlocks by stars or trophies (`Config.Rookie`, `Outfit`) | — |
+| "trophies for your hideout" | The trophy shelf in the hideout | — |
+| "Each party gets its own heist" (no longer in the text; kept for the creator and parent FAQ) | Per-party heist instances from a shared hideout (§0 C11); strangers only via opt-in Quick Crew (not built yet: the crew sign invites friends) | — |
 | "Private servers are free" | §5.4 | If private servers get a price |
 | "6 heists" | L1-L4, Clone Party, The Big Score: Bank | Dec 11 → "8 heists"; Dec 18 → "9 heists" |
 | "Runs last 30-45 seconds" | Corner Shop 30 s, Bank and Christmas levels 45 s, daily vaults 30 s (§3.1) | Jan 22 Museum (60 s) → "30-60 seconds" |
-| "the alarm goes off" | Alarm Run in Clone Party, every Big Score and the finale (§3.6) | If the Alarm Run is cut from Clone Party (cut list), it is still true in the Big Score |
 | "Hide ... let a clone distract him" | Hiding spots (§3.1); Gus chases the nearest actor, so a clone is a decoy (§3.6 #3) | — |
+| "Gus the night guard" (and his Santa hat in the art) | Gus is in L4, Clone Party and the Big Score; the Christmas dressing layer gives him the Santa hat Dec 3 - Jan 4 (`Gus_SantaHat`) | After Jan 4, no Santa hat in new art |
 
 If the Nov 30 go/no-go slips launch to **Thu Dec 10** (§10.2), the Wrapping Room levels ship inside the launch: change "6 heists" to "8 heists" and use the Dec 11 NEW line from the start.
 
 ---
 
-## 4. Description, Danish (943 characters)
+## 4. Description, Danish (960 characters; revised 2026-11-13 for the pivot)
 
 **[DECISION]** Upload the Danish title and description on launch day if Creator Hub offers Danish for experience information (Localization → Danish → Experience information) **[UNVERIFIED that Danish is in that list]**. This is store metadata only; the in-game Danish table still ships Jan 8 (§4.4), so the last sentence says the game is in English for now. If the Danish field is not offered, use this text for Danish posts, the Danish kid-wave invitations and the Jan 8 table. The owner (native speaker) proofreads before upload.
 
 ```text
 Dit gamle jeg er din røverbande! Lav kuppet alene med op til 8 udgaver af dig selv, eller med vennerne: op til 16 røvere, 1 boks.
-NYT: Stjæl julen tilbage! Julekup, en daglig boks, der også er julekalender, og nattevagten Gus med nissehue.
+NYT: Stjæl julen tilbage! Sir Hoardsworth har taget alle byens gaver. Stjæl dem tilbage, med en daglig boks, der også er julekalender.
 
-SÅDAN VIRKER DET
-• Hver runde bliver optaget. Tryk END RUN, og båndet spoler tilbage.
-• Din klon gentager din sidste runde, mens du klarer næste del.
-• Én klon holder døren, én står på trykpladen, og du snupper byttet!
-• Din klon stopper, hvor du stopper.
-• Klonerne gentager også dine fejl. Hver. Eneste. Gang.
+SNIG: snig dig ind som Rookien, snup byttet, og kom tilbage til varevognen.
+SPOL TILBAGE: din runde bliver til en klon af dig, der gør det hele igen.
+STJÆL SAMMEN: én klon holder døren, én står på trykpladen, og du tager kassen!
 
-SNIG FORBI GUS
-• Gem dig for hans store lommelygte, eller lad en klon lokke ham væk.
-• Snup det største bytte, og alarmen går. Løb til varevognen!
+• Din klon stopper, hvor du stopper, og gentager dine fejl. Hver. Eneste. Gang.
+• Gem dig for nattevagten Gus og hans store lommelygte, eller lad en klon lokke ham væk.
+• Hold CREW VIEW nede for at se hele din bande oppefra.
+• Vælg en varevogn i skjulestedet: kør SOLO (hele spillet), eller tag op til 3 venner med. Private servere er gratis.
 
-SAML BANDEN
-• Du kan spille det hele alene. Tag op til 3 venner med.
-• Hver gruppe får sit eget kup. Private servere er gratis.
-
-6 kup, medaljer og trofæer til din varevogn. En runde varer 30-45 sekunder. Spillet er på engelsk indtil videre.
+6 kup, tøj til din Rookie, trofæer til skjulestedet. En runde varer 30-45 sekunder. Spillet er på engelsk indtil videre.
 ```
 
 Translator notes:
 - "Heist" → **kup** (et kup = a heist; kids also know "heist"). "Vault" → **boks** (bankboks), **everywhere**, names included (*Snekugleboksen*, not *Snekuglehvælvingen*): one word per thing for kids; "advent calendar" → **julekalender** (Danish kids open one every day in December, so "daily vault = julekalender" lands perfectly). "Santa hat" → **nissehue**. "Crew" → **røverbande** (kid-book word, not "bande" alone, which sounds like a real gang).
 - **Revised after review (2026-11-12), still for the owner's native proofread:** "8 of you" → **8 udgaver af dig (selv)**, never the word-for-word "8 af dig"; "Rob it solo" → **Lav kuppet alene** (not "Tag kuppet"); "the plate" → **trykpladen** ("pladen" alone can mean a record or a dinner plate); short event names a 10-year-old can say: Wrapping Room → **Gaverummet** (alternatives: *Pakkerummet*, *Indpakningsrummet*), Snow Globe Vault → **Snekugleboksen**, the Gift-Wrap clone style → **Gavepapir-klonstilen**. The owner picks the final words; keep them identical in the event titles, the NEW line and the announcements.
-- "END RUN" stays English because it is the button text until the Jan 8 table. Change it to the Danish button text then.
+- "REWIND" and "CREW VIEW" stay English because they are the button and HUD texts until the Jan 8 table; the three verbs are Danish (**SNIG / SPOL TILBAGE / STJÆL SAMMEN**), never "RØV" alone (§2). Change the button names to the Danish button texts then.
+- **"the Rookie"** is a name: **Rookien** (definite) / **din Rookie**; the owner checks it reads naturally to a 10-year-old (alternative: keep "the Rookie" in English in quotes). "Hideout" → **skjulested**; "outfits" → **tøj**.
 - Danish search words we cover: røver, kup, stjæle, kloner, jul, julekalender, nattevagt, boks. Not covered on purpose: "bankrøveri" (sounds like real crime news).
 
 ---
@@ -137,7 +145,7 @@ Change it the same hour the content goes live (drops are Fridays 17:00 CET, publ
 
 | Date (CET) | English line 2 | Danish line 2 | Also change |
 |---|---|---|---|
-| Thu Dec 3 15:00 | `NEW: Steal Back Christmas! Christmas heists, a daily vault that doubles as an advent calendar, and Gus the night guard in a Santa hat.` | `NYT: Stjæl julen tilbage! Julekup, en daglig boks, der også er julekalender, og nattevagten Gus med nissehue.` | Title gets `[🎄] ` |
+| Thu Dec 3 15:00 | `NEW: Steal Back Christmas! Sir Hoardsworth took every present in town. Steal them back, with a daily vault that doubles as an advent calendar.` (revised 2026-11-13: the story intro gives the season a villain; the Santa-hat line is the fallback if the intro is off) | `NYT: Stjæl julen tilbage! Sir Hoardsworth har taget alle byens gaver. Stjæl dem tilbage, med en daglig boks, der også er julekalender.` | Title gets `[🎄] ` |
 | Fri Dec 11 17:00 | `NEW: Wrapping Room! 2 new Christmas heists with presents so big your clone has to help carry them.` | `NYT: Gaverummet! 2 nye julekup med gaver så store, at din klon skal hjælpe med at bære dem.` | "6 heists" → "8 heists" / "6 kup" → "8 kup" |
 | Fri Dec 18 17:00 | `NEW: The Snow Globe Vault! Steal back the Giant Present with 8 of you before morning.` | `NYT: Snekugleboksen! Stjæl kæmpegaven tilbage med 8 udgaver af dig selv, før det bliver morgen.` | "8 heists" → "9 heists" |
 | Wed Dec 23 (the description cannot be unlocked by server time, so the owner edits it before the freeze; the wording names the dates) | `NEW: Gift for everyone: the Gift-Wrap clone style on Dec 25-26, plus double Stars in the daily vault.` | `NYT: Gave til alle: Gavepapir-klonstilen d. 25.-26. december, og dobbelte stjerner i den daglige boks.` | — |
@@ -235,6 +243,45 @@ KNOWN ISSUES
 NEXT (only if sure)
 • [One line]                              e.g. Fri Dec 18: The Snow Globe Vault.
 ```
+
+### 8.1b The launch note: the Christmas edition (Thu Dec 3; written 2026-11-13 for the pivot build)
+
+The first What's New a player can open (the hideout TV or the What's New panel). Every line is true in the v97+ build; re-check against the launch build on Dec 1 (LAUNCH_CHECKLIST).
+
+```text
+Steal Back Christmas: Sir Hoardsworth took every present in town.
+
+NEW
+• Play as the Rookie - pick your outfit at the wardrobe in your hideout.
+• Every run you REWIND turns into a clone of you. Hold CREW VIEW to see them all.
+• Pick a van in your hideout. Go SOLO, or let up to 3 friends sit in the back.
+• 6 heists, Gus the night guard (in a Santa hat), and a daily vault that is also an advent calendar - on the laptop.
+• Missed the story? WATCH INTRO on the hideout TV.
+
+KNOWN ISSUES
+• [filled on Dec 1 from the launch build's open list]
+
+NEXT
+• Fri Dec 11: Wrapping Room.
+```
+
+Danish (for posts and the Jan 8 table; the owner proofreads):
+
+```text
+Stjæl julen tilbage: Sir Hoardsworth har taget alle byens gaver.
+
+NYT
+• Spil som Rookien - vælg dit tøj ved garderoben i skjulestedet.
+• Hver runde, du spoler tilbage (REWIND), bliver til en klon af dig. Hold CREW VIEW nede for at se dem alle.
+• Vælg en varevogn i skjulestedet. Kør SOLO, eller lad op til 3 venner sætte sig bagi.
+• 6 kup, nattevagten Gus (med nissehue) og en daglig boks, der også er julekalender - på den bærbare.
+• Gik du glip af historien? WATCH INTRO på tv'et i skjulestedet.
+
+NÆSTE
+• Fredag d. 11. december: Gaverummet.
+```
+
+The one-line **update log entry** for the change log (§8.4 step 6) and the creator FAQ: `Dec 3 - Christmas edition: first person as the Rookie, clones of your Rookie, Crew View, the hideout and its vans, the story intro, 6 heists.`
 
 ### 8.2 In-game What's New (Danish, from Jan 8 when the table ships)
 
