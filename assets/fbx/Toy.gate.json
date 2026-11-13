@@ -85,10 +85,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "7eec3edc0fdbd70ae514",
+ "contentHash": "90a24571e62d9ef4b858",
  "fbx": {
   "path": "assets/fbx/Toy.fbx",
-  "bytes": 28860,
+  "bytes": 29068,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -105,6 +105,6 @@
  },
  "spec": "assets/blender/loot.py",
  "notes": "Loot: wind-up tin robot 1.6 x 1.1 x 2.8 in Diamond Ice: chest dial, gold lights, antenna, gold key.",
- "turntable": "docs/art/turntables/Toy.png",
- "seconds": 5.1
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Toy.png"
 }

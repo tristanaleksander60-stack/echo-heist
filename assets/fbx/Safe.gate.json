@@ -163,10 +163,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "4e96eaf03bc9fa5976a4",
+ "contentHash": "645bc6a7bf4cc79d842d",
  "fbx": {
   "path": "assets/fbx/Safe.fbx",
-  "bytes": 38956,
+  "bytes": 39228,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -189,6 +189,6 @@
  },
  "spec": "assets/blender/props.py",
  "notes": "Floor safe 3.2x3x3.95: hollow steel body (dark interior, shelf), front lip, hinged door with dial and 3-spoke handle.",
- "turntable": "docs/art/turntables/Safe.png",
- "seconds": 5.7
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Safe.png"
 }

@@ -427,10 +427,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "3b7fd1b2389883f13a18",
+ "contentHash": "e5c3280c5de1d3dd6fbc",
  "fbx": {
   "path": "assets/fbx/VaultDoor.fbx",
-  "bytes": 225292,
+  "bytes": 225916,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -471,6 +471,6 @@
  },
  "spec": "assets/blender/vault_door.py",
  "notes": "Golden pass: stepped bezel, rivets, keystone + plaque, 24-bolt door face, bolt mechanism on the back, emissive combination face.",
- "turntable": "docs/art/turntables/VaultDoor.png",
- "seconds": 6.7
+ "seconds": 0.5,
+ "turntable": "docs/art/turntables/VaultDoor.png"
 }

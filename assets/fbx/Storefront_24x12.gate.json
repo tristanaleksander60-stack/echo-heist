@@ -176,10 +176,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "8d6e98308548cbe91311",
+ "contentHash": "0df3436df610849ed330",
  "fbx": {
   "path": "assets/fbx/Storefront_24x12.fbx",
-  "bytes": 53772,
+  "bytes": 53868,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -202,6 +202,6 @@
  },
  "spec": "assets/blender/storefront.py",
  "notes": "Storefront 24x12: 8x10 entrance (LevelSpec gap -4..4), 2 display windows with striped awnings, sign board.",
- "turntable": "docs/art/turntables/Storefront_24x12.png",
- "seconds": 6.1
+ "seconds": 0.4,
+ "turntable": "docs/art/turntables/Storefront_24x12.png"
 }

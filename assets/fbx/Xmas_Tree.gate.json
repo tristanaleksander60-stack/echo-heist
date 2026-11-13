@@ -158,10 +158,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "fc0507ba901482e8713e",
+ "contentHash": "699b5ec856ab55d68276",
  "fbx": {
   "path": "assets/fbx/Xmas_Tree.fbx",
-  "bytes": 35788,
+  "bytes": 36012,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -184,6 +184,6 @@
  },
  "spec": "assets/blender/xmas.py",
  "notes": "Small Christmas tree (6.97 tall): three holly tiers, Ribbon pot; Neon star and bulbs; 22 ornament hooks.",
- "turntable": "docs/art/turntables/Xmas_Tree.png",
- "seconds": 55.0
+ "seconds": 0.0,
+ "turntable": "docs/art/turntables/Xmas_Tree.png"
 }

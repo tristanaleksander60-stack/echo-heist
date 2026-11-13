@@ -82,7 +82,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "39b696a3bcc065687342",
+ "contentHash": "49cbcc3170e6ac572b71",
  "fbx": {
   "path": "assets/fbx/Pediment_24.fbx",
   "bytes": 23804,
@@ -102,6 +102,6 @@
  },
  "spec": "assets/blender/tower.py",
  "notes": "Pediment 24.8 x 2.4 x 6.3 (BIG buildings: the Bank).",
- "turntable": "docs/art/turntables/Pediment_24.png",
- "seconds": 61.7
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Pediment_24.png"
 }

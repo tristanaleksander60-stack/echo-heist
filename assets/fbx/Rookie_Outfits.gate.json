@@ -1510,10 +1510,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "09f54d5ed252dd235d0f",
+ "contentHash": "152de572396bdc79a282",
  "fbx": {
   "path": "assets/fbx/Rookie_Outfits.fbx",
-  "bytes": 166092,
+  "bytes": 166108,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -1656,6 +1656,6 @@
  },
  "spec": "assets/blender/rookie.py",
  "notes": "Outfit slots: cap x5 (atlas; Santa = Christmas cells), scarf x4 + sweater x2 (crew colour), gloves x2 (glove colour), mask x1 (+ none). Pivot = attach point.",
- "turntable": "docs/art/turntables/Rookie_Outfits.png",
- "seconds": 6.2
+ "seconds": 0.5,
+ "turntable": "docs/art/turntables/Rookie_Outfits.png"
 }

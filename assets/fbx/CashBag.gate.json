@@ -81,10 +81,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "348e24896ab7b7532fc7",
+ "contentHash": "7fcae1c4a3394c11cb8a",
  "fbx": {
   "path": "assets/fbx/CashBag.fbx",
-  "bytes": 32156,
+  "bytes": 31660,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -101,6 +101,6 @@
  },
  "spec": "assets/blender/props.py",
  "notes": "Loot: cash sack (1.9 x 2.02), cinched neck and a raised $ badge; Heist Gold only.",
- "turntable": "docs/art/turntables/CashBag.png",
- "seconds": 14.3
+ "seconds": 0.0,
+ "turntable": "docs/art/turntables/CashBag.png"
 }

@@ -78,10 +78,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "48f2b3f3343369e6bb59",
+ "contentHash": "26f16b200419514c7307",
  "fbx": {
   "path": "assets/fbx/Truss_8.fbx",
-  "bytes": 20268,
+  "bytes": 20252,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -98,6 +98,6 @@
  },
  "spec": "assets/blender/tower.py",
  "notes": "Truss segment 8 x 0.7 x 4 (the warehouse garage's roof).",
- "turntable": "docs/art/turntables/Truss_8.png",
- "seconds": 84.0
+ "seconds": 0.0,
+ "turntable": "docs/art/turntables/Truss_8.png"
 }

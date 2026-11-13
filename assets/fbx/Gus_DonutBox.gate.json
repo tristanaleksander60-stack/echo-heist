@@ -86,10 +86,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "25ceb5baf40c100ead48",
+ "contentHash": "4decb3f72f9d8879616f",
  "fbx": {
   "path": "assets/fbx/Gus_DonutBox.fbx",
-  "bytes": 28092,
+  "bytes": 29116,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -106,6 +106,6 @@
  },
  "spec": "assets/blender/gus.py",
  "notes": "Gus's donut box: open pastry box, two donuts left (vanilla and chocolate), one eaten, crumbs.",
- "turntable": "docs/art/turntables/Gus_DonutBox.png",
- "seconds": 21.9
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Gus_DonutBox.png"
 }

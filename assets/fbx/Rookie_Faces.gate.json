@@ -224,10 +224,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "dbc388d0dcdb4d9de5ba",
+ "contentHash": "5a57356c94d077c955a5",
  "fbx": {
   "path": "assets/fbx/Rookie_Faces.fbx",
-  "bytes": 58780,
+  "bytes": 55212,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -256,6 +256,6 @@
  },
  "spec": "assets/blender/rookie.py",
  "notes": "Faces swapped with the idle face by state: smug (banked, side-eye), shocked (zapped, seen), busted (caught).",
- "turntable": "docs/art/turntables/Rookie_Faces.png",
- "seconds": 14.0
+ "seconds": 0.6,
+ "turntable": "docs/art/turntables/Rookie_Faces.png"
 }

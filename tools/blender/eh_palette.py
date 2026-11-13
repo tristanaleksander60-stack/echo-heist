@@ -245,13 +245,21 @@ def cell_rect(key):
     return cx * CELL_PX, cy * CELL_PX, (cx + 1) * CELL_PX, (cy + 1) * CELL_PX
 
 
+# Half-size of the UV square every face gets inside its cell, in atlas pixels (docs/audit/STUDIO_FIDELITY.md). Every
+# cell is one solid colour, so the UVs only need to land on it: 1 px around the cell centre (the corner of 4 texels of
+# the same cell) samples that colour exactly at every mip down to 8 x 8 (cell = 1 px). The old quarter cell (8 px)
+# bled into neighbour cells from mip 3 on (32 x 32), which the engine uses on far or small faces and on devices that
+# load lower texture quality: odd tints at a distance.
+UV_HALF_PX = 1.0
+
+
 def cell_uv(key):
     """UV centre of a swatch's cell (Blender UV, origin bottom-left) and the half-size of the safe square
-    (a quarter cell, so bilinear filtering and the first 3 mips never bleed into a neighbour)."""
+    (UV_HALF_PX: bilinear filtering and every mip down to 8 x 8 stay inside the cell)."""
     x0, y0, x1, y1 = cell_rect(key)
     u = (x0 + x1) / 2 / ATLAS_PX
     v = 1 - (y0 + y1) / 2 / ATLAS_PX
-    return u, v, (CELL_PX / 4) / ATLAS_PX
+    return u, v, UV_HALF_PX / ATLAS_PX
 
 
 def _png(path, w, h, rows):

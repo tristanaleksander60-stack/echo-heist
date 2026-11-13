@@ -92,10 +92,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "ee79102d7d07c133ac9c",
+ "contentHash": "79b5b18df6a4b380adfe",
  "fbx": {
   "path": "assets/fbx/Xmas_SnowCap_8.fbx",
-  "bytes": 29180,
+  "bytes": 29276,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -112,6 +112,6 @@
  },
  "spec": "assets/blender/xmas.py",
  "notes": "Snow on an 8-stud wall top: lumpy slab, a drooping front lip, three drifts; flat ends so it tiles.",
- "turntable": "docs/art/turntables/Xmas_SnowCap_8.png",
- "seconds": 37.6
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Xmas_SnowCap_8.png"
 }

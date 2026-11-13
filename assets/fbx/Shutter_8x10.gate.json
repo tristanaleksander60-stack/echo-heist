@@ -84,10 +84,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "e68cea942ee7f36923ae",
+ "contentHash": "4088451298b512acc184",
  "fbx": {
   "path": "assets/fbx/Shutter_8x10.fbx",
-  "bytes": 28732,
+  "bytes": 28860,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -104,6 +104,6 @@
  },
  "spec": "assets/blender/storefront.py",
  "notes": "Security shutter 8.1 x 10.35 x 1.0: steel ribs both faces, ink bottom bar, pull handles, padlock.",
- "turntable": "docs/art/turntables/Shutter_8x10.png",
- "seconds": 26.2
+ "seconds": 0.0,
+ "turntable": "docs/art/turntables/Shutter_8x10.png"
 }

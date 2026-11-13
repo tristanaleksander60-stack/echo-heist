@@ -159,10 +159,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "fcfd7321e0126a56aaf1",
+ "contentHash": "37792baa2b7f91c9a409",
  "fbx": {
   "path": "assets/fbx/Plate_4x4.fbx",
-  "bytes": 34540,
+  "bytes": 34668,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -185,6 +185,6 @@
  },
  "spec": "assets/blender/mechanisms.py",
  "notes": "Pressure plate 4x4x0.36: chamfered steel slab (walk-on), dark ring seat, glyph disc; Neon ring part.",
- "turntable": "docs/art/turntables/Plate_4x4.png",
- "seconds": 5.2
+ "seconds": 0.2,
+ "turntable": "docs/art/turntables/Plate_4x4.png"
 }

@@ -1249,10 +1249,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "50d907df833110e065ea",
+ "contentHash": "bbe7cf44b39acbbfe111",
  "fbx": {
   "path": "assets/fbx/Rookie.fbx",
-  "bytes": 139260,
+  "bytes": 136124,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -1359,6 +1359,6 @@
  },
  "spec": "assets/blender/rookie.py",
  "notes": "The Rookie: R15-compatible rigid body (15 parts, R15 joint pivots) + the idle face. Scarf and stripes are outfit parts (crew colour).",
- "turntable": "docs/art/turntables/Rookie.png",
- "seconds": 6.7
+ "seconds": 0.8,
+ "turntable": "docs/art/turntables/Rookie.png"
 }

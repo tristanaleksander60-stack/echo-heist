@@ -83,10 +83,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "6356742fe058d63044fe",
+ "contentHash": "52bcfb12aa3fdd6d1671",
  "fbx": {
   "path": "assets/fbx/Intro_Letter.fbx",
-  "bytes": 22540,
+  "bytes": 22508,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -103,6 +103,6 @@
  },
  "spec": "assets/blender/intro.py",
  "notes": "A kid's letter to Santa: cream envelope, burgundy seal, a crayon star and two lines.",
- "turntable": "docs/art/turntables/Intro_Letter.png",
- "seconds": 90.7
+ "seconds": 0.2,
+ "turntable": "docs/art/turntables/Intro_Letter.png"
 }

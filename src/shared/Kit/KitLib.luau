@@ -198,6 +198,18 @@ function KitLib.gameCollision(name: string, spec: PartSpec, colliders: { [string
 	return "Box"
 end
 
+-- The RenderFidelity a piece is built with (docs/audit/STUDIO_FIDELITY.md): "Precise" for the hero pieces whose
+-- names start with one of `prefixes` (Config.Kit.PRECISE_PREFIXES: the characters, the vault door, the skyline
+-- seen from far away), "Automatic" (full detail under ~250 studs, the engine's LoDs beyond) for everything else.
+function KitLib.renderFidelity(name: string, prefixes: { string }?): string
+	for _, p in prefixes or {} do
+		if string.sub(name, 1, #p) == p then
+			return "Precise"
+		end
+	end
+	return "Automatic"
+end
+
 -- Does a loaded part need a rebuild for its CollisionFidelity? mode: "all" | "colliding" | "none".
 function KitLib.needsRebuild(current: string, spec: PartSpec, mode: string): boolean
 	if current == spec.collision or mode == "none" then

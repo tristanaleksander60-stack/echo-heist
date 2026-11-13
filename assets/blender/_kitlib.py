@@ -165,6 +165,14 @@ def tube(mb, path, r, segs, col, cols=None, cap_col=None, part=None, normal=None
         k = (j + 1) % segs
         mb.f([a, rings[0][k], rings[0][j]], cap_col or col)
         mb.f([b, rings[-1][j], rings[-1][k]], cap_col or col)
+    if segs >= 6 and hasattr(mb, "soften"):
+        # round tube: around the circumference and across gentle path bends shade smooth (eh_kit.SOFT_MAX_DEG keeps
+        # the 90-degree cap rims hard)
+        for i in range(len(rings)):
+            for j in range(segs):
+                mb.soften(rings[i][j], rings[i][(j + 1) % segs])
+                if i + 1 < len(rings):
+                    mb.soften(rings[i][j], rings[i + 1][j])
     vs = [v for R in rings for v in R] + [a, b]
     mb._part(part, vs)
     return vs

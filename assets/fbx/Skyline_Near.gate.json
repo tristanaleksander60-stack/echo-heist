@@ -151,10 +151,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "5c2d41368b7485d9ed2a",
+ "contentHash": "a7dfff1624171be95764",
  "fbx": {
   "path": "assets/fbx/Skyline_Near.fbx",
-  "bytes": 42188,
+  "bytes": 42204,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -177,6 +177,6 @@
  },
  "spec": "assets/blender/backdrop.py",
  "notes": "Skyline Near: 13 buildings on a quarter arc, radius 300; windows 3.2x4.4.",
- "turntable": "docs/art/turntables/Skyline_Near.png",
- "seconds": 5.6
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Skyline_Near.png"
 }

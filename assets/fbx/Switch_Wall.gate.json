@@ -234,10 +234,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "40ebc2bcb9ce1f0e9596",
+ "contentHash": "c383c332f7e028cbe0ea",
  "fbx": {
   "path": "assets/fbx/Switch_Wall.fbx",
-  "bytes": 32780,
+  "bytes": 32652,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -266,6 +266,6 @@
  },
  "spec": "assets/blender/mechanisms.py",
  "notes": "Wall switch: steel housing with a lever (own pivot) and a Neon state lamp; mounted at hand height.",
- "turntable": "docs/art/turntables/Switch_Wall.png",
- "seconds": 13.3
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Switch_Wall.png"
 }

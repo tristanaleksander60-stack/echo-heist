@@ -82,7 +82,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "30f4d333f261d700237c",
+ "contentHash": "2b4f74c0c2e65fd56d68",
  "fbx": {
   "path": "assets/fbx/Roof_Gable.fbx",
   "bytes": 19980,
@@ -102,6 +102,6 @@
  },
  "spec": "assets/blender/town.py",
  "notes": "Gable roof 10.4 x 8.6 x 3.6 under a snow blanket (WORLD 2.0 town, client backdrop only).",
- "turntable": "docs/art/turntables/Roof_Gable.png",
- "seconds": 8.5
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Roof_Gable.png"
 }

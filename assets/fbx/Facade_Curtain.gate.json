@@ -81,7 +81,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "75178bb4ec6fd20df94d",
+ "contentHash": "4638eb4b86a884dbf887",
  "fbx": {
   "path": "assets/fbx/Facade_Curtain.fbx",
   "bytes": 21052,
@@ -101,6 +101,6 @@
  },
  "spec": "assets/blender/tower.py",
  "notes": "Window curtains for the facade bay (role story: the comfort reds).",
- "turntable": "docs/art/turntables/Facade_Curtain.png",
- "seconds": 11.8
+ "seconds": 0.2,
+ "turntable": "docs/art/turntables/Facade_Curtain.png"
 }

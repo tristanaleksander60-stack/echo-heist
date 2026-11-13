@@ -494,10 +494,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "51bfdd9d15b3378d0255",
+ "contentHash": "1440a94f6689e8a0891f",
  "fbx": {
   "path": "assets/fbx/Ornaments.fbx",
-  "bytes": 75180,
+  "bytes": 75276,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -550,6 +550,6 @@
  },
  "spec": "assets/blender/ornaments.py",
  "notes": "Advent ornaments: Bauble, Star, Bell, VaultDoor, Donut (Gus's), Van, plus a shelf stand. Origin = hang point.",
- "turntable": "docs/art/turntables/Ornaments.png",
- "seconds": 5.3
+ "seconds": 0.1,
+ "turntable": "docs/art/turntables/Ornaments.png"
 }

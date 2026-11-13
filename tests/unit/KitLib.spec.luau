@@ -127,6 +127,16 @@ return function(test)
 		Assert.falsy(KitLib.needsRebuild("Default", spec({ canCollide = false }), "colliding"), "walk-in hide")
 	end)
 
+	test("renderFidelity: Precise only for the hero prefixes (STUDIO_FIDELITY)", function()
+		local pre = { "Rookie_", "Gus_", "VaultDoor_" }
+		Assert.eq(KitLib.renderFidelity("Rookie_Head", pre), "Precise", "Rookie")
+		Assert.eq(KitLib.renderFidelity("Gus_LeftHand", pre), "Precise", "Gus")
+		Assert.eq(KitLib.renderFidelity("VaultDoor_Door", pre), "Precise", "vault")
+		Assert.eq(KitLib.renderFidelity("Wall_8x12", pre), "Automatic", "a wall")
+		Assert.eq(KitLib.renderFidelity("Gus", pre), "Automatic", "the prefix needs the underscore")
+		Assert.eq(KitLib.renderFidelity("Rookie_Head", nil), "Automatic", "no list")
+	end)
+
 	test("atlasUri: override, then the uploaded image, then the imported fallback", function()
 		local d = data({}, {})
 		d.images = { EH_Palette_Bank = { decal = 5, image = 6 } }

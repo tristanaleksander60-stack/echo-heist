@@ -158,7 +158,7 @@
   {
    "name": "CashRegister_Drawer",
    "gap": 0.0,
-   "penetration": 0.3,
+   "penetration": 0.38,
    "gap_frac": 0.0,
    "seated": true
   }
@@ -170,10 +170,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "be66bfe643fd4e8be326",
+ "contentHash": "7b67981547440ca885e5",
  "fbx": {
   "path": "assets/fbx/CashRegister.fbx",
-  "bytes": 47436,
+  "bytes": 47580,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -196,6 +196,6 @@
  },
  "spec": "assets/blender/hero_props.py",
  "notes": "Hero prop: chrome retro register (3.4x3.2x3.95), 16 keys, crank, sale tab; drawer of gold bills as its own part.",
- "turntable": "docs/art/turntables/CashRegister.png",
- "seconds": 5.4
+ "seconds": 0.2,
+ "turntable": "docs/art/turntables/CashRegister.png"
 }
