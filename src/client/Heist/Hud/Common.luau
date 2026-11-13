@@ -10,7 +10,10 @@ local UserInputService = game:GetService("UserInputService")
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")) :: any
 local HeistShared = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Heist")
 local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
+local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
+
+local Ui = require(script.Parent.Parent:WaitForChild("Ui"))
 
 local Common = {}
 
@@ -144,6 +147,51 @@ function Common.sheetBlocksTouch(who: string, sheet: GuiObject)
 	end
 	sheet:GetAttributeChangedSignal("UiShown"):Connect(sync)
 	sheet:GetPropertyChangedSignal("Visible"):Connect(sync)
+end
+
+-- Is any sheet up (results, MENU, settings)? First person frees the cursor for it (Heist/CameraDirector).
+function Common.sheetUp(): boolean
+	return next(touchBlockers) ~= nil
+end
+
+-- Touch is the input in use (the last input was a touch, or the device has nothing else).
+function Common.usingTouch(): boolean
+	local last = UserInputService:GetLastInputType()
+	if last == Enum.UserInputType.Touch then
+		return true
+	end
+	return UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not Common.usingGamepad()
+end
+
+-- The onboarding finger (§6.2): a cartoon hand pointing right, the index finger, the palm and a thumb
+-- (frames, no glyph), `size` px square, anchored at its fingertip's side (right, middle). Hidden.
+function Common.finger(parent: Instance, size: number, z: number): Frame
+	local f = Ui.frame(parent, {
+		Name = "FingerPointer",
+		BackgroundTransparency = 1,
+		Size = UDim2.fromOffset(size, size),
+		AnchorPoint = Vector2.new(1, 0.5),
+		Visible = false,
+		ZIndex = z,
+		Active = false,
+	})
+	local function piece(name: string, x: number, y: number, w: number, h: number)
+		local p = Ui.frame(f, {
+			Name = name,
+			BackgroundColor3 = Palette.white,
+			BackgroundTransparency = 0,
+			Position = UDim2.fromScale(x, y),
+			Size = UDim2.fromScale(w, h),
+			ZIndex = z,
+			Active = false,
+		})
+		Ui.pill(p)
+		Ui.stroke(p, Palette.ink, 2)
+	end
+	piece("Palm", 0.0, 0.3, 0.55, 0.55)
+	piece("Thumb", 0.25, 0.12, 0.22, 0.3)
+	piece("Finger", 0.38, 0.36, 0.62, 0.22)
+	return f
 end
 
 function Common.myActor(a: any): boolean

@@ -76,6 +76,11 @@ Strings.GRAB = "GRAB"
 function Strings.grab(value: string): string
 	return "GRAB " .. value
 end
+-- First person (Hud/Reticle's prompt chip): the verb of what you look at, and the key cap beside it.
+Strings.FP_VERB = table.freeze({ grab = "GRAB", open = "OPEN", press = "PRESS", bank = "BANK" } :: { [string]: string })
+Strings.FP_BANK = "BANK: WALK IN"
+Strings.KEY_E = "E"
+Strings.KEY_PAD = "X"
 function Strings.lockedFor(clock: string): string
 	return "LOCKED " .. clock
 end

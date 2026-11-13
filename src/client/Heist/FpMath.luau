@@ -227,4 +227,24 @@ function FpMath.glance(elapsed: number, seconds: number): number
 	return math.sin(math.pi * elapsed / seconds)
 end
 
+-- Gus's screen-edge warning (Heist/FpWarn): how strong each edge (left, right, top, bottom) is for a threat
+-- at `relDeg` from where you look (FpMath.wrap(threatYaw - lookYaw): positive is to your left, 180 behind).
+-- The side he is on is strongest; every edge keeps at least `sideMin`, so a cone on you is always felt.
+function FpMath.edgeWeights(relDeg: number, sideMin: number): (number, number, number, number)
+	local r = rad(relDeg)
+	local s, c = math.sin(r), math.cos(r)
+	local function w(v: number): number
+		return sideMin + (1 - sideMin) * math.clamp(v, 0, 1)
+	end
+	return w(s), w(-s), w(c), w(-c)
+end
+
+-- The strength an edge tint eases toward over time: up over `inS`, down over `outS` (linear, 0..1 a second).
+function FpMath.approach(current: number, target: number, dt: number, inS: number, outS: number): number
+	if target > current then
+		return math.min(target, current + dt / math.max(inS, 1e-6))
+	end
+	return math.max(target, current - dt / math.max(outS, 1e-6))
+end
+
 return table.freeze(FpMath)

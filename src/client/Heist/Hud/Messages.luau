@@ -172,8 +172,10 @@ function Messages.build(ctx: any): any
 		setRailText(spectate, "")
 	end
 
+	-- First person during a run (ctx.fpRail, Hud/Run.fpLayout): the bottom box, clear of the reticle.
 	function hud.placeRail(overDeck: boolean)
-		rail.Position = Common.position(if overDeck then HudLayout.RAIL_DECK else HudLayout.RAIL)
+		local box = if overDeck then HudLayout.RAIL_DECK elseif ctx.fpRail then HudLayout.RAIL_FP else HudLayout.RAIL
+		rail.Position = Common.position(box)
 	end
 
 	---------------------------------------------------------------------------

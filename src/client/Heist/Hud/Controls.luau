@@ -3,10 +3,13 @@
 -- REWIND on the right edge (it ends your run; the remote stays Heist.EndRun) with its
 -- 1.5 s lock ring, the contextual Interact (GRAB) lower right, the hold-to-skip FAST
 -- pill, and the keyboard / gamepad bindings (R / ButtonY REWIND or the next run,
--- E / ButtonX Interact, Q / ButtonL1 Clone Deck, hold F / ButtonB fast-forward).
+-- E / ButtonX Interact, Q / ButtonL1 Clone Deck, hold F / ButtonB fast-forward). First person: a left
+-- click with the cursor locked also interacts (with what you look at: Heist/LookTarget), and the Interact
+-- button is the touch fallback, labelled for the looked-at target (GRAB $100, OPEN).
 
 local ContextActionService = game:GetService("ContextActionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
@@ -125,6 +128,19 @@ function Controls.bind(ctx: any)
 		end
 		return Enum.ContextActionResult.Pass
 	end, false, Enum.KeyCode.E, Enum.KeyCode.ButtonX)
+	-- First person with the cursor locked: a left click uses what you look at (a click on a GUI is the GUI's).
+	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
+		if
+			not processed
+			and input.UserInputType == Enum.UserInputType.MouseButton1
+			and gui.Enabled
+			and runHud.Visible
+			and actions.cursorLocked
+			and actions.cursorLocked()
+		then
+			hud.interact()
+		end
+	end)
 	ContextActionService:BindAction("HeistDeck", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin then
 			hud.toggleDeck()
