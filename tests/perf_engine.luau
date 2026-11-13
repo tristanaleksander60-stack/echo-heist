@@ -1158,7 +1158,63 @@ if cloneActor and six then
 	)
 	lights.setTier(4)
 	check(bloom == nil or bloom.Enabled == false, "tier 4: Bloom off")
-	lights.setTier(2)
+	-- INTERIORS: tier 4 hides every decor part (LightDirector), tier 2 shows them again; the wall washes are off
+	-- from tier 2; the pool fade: full from above, capped at eye height, lowest across a pool far ahead
+	do
+		local decorParts, hidden4 = {}, 0
+		for _, d in levelModel:GetDescendants() do
+			if d:IsA("BasePart") and d:GetAttribute("EH_Layer") == "decor" then
+				table.insert(decorParts, d)
+				hidden4 += if d.Transparency >= 1 then 1 else 0
+			end
+		end
+		local washOn = 0
+		for _, d in levelModel:GetDescendants() do
+			local holder = d:IsA("Light") and d:FindFirstAncestorWhichIsA("BasePart") or nil
+			if holder and holder:GetAttribute("EH_LampKind") == "wash" and (d :: Light).Enabled then
+				washOn += 1
+			end
+		end
+		lights.setTier(2)
+		local shown2 = 0
+		for _, d in decorParts do
+			shown2 += if d.Transparency < 1 then 1 else 0
+		end
+		local pool: BasePart? = nil
+		for _, d in levelModel:GetDescendants() do
+			if d:IsA("BasePart") and d:GetAttribute("EH_Kind") == "lightPool" then
+				pool = d
+				break
+			end
+		end
+		local high, stand, far = -1, -1, -1
+		if pool then
+			local c = pool.Position
+			high = lights.poolFade(c + Vector3.new(0, 24, 18), pool)
+			stand = lights.poolFade(c + Vector3.new(0, 3.8, 0), pool)
+			far = lights.poolFade(c + Vector3.new(0, 3.8, 20), pool)
+		end
+		local F = Config.Interior.POOL_FADE
+		check(
+			#decorParts > 0
+				and hidden4 == #decorParts
+				and shown2 == #decorParts
+				and washOn == 0
+				and math.abs(high - 1) < 1e-6
+				and math.abs(stand - F.max) < 1e-3
+				and math.abs(far - F.min) < 1e-3,
+			string.format(
+				"interiors: %d decor parts hidden at tier 4 (%d), shown at tier 2 (%d); wall washes on at tier 4: %d; pool fade from above %.2f, standing in it %.2f, 20 studs ahead %.2f",
+				#decorParts,
+				hidden4,
+				shown2,
+				washOn,
+				high,
+				stand,
+				far
+			)
+		)
+	end
 	lights.setTier(1)
 	recipe = lights.recipe()
 	check(
