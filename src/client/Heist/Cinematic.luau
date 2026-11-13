@@ -1518,11 +1518,16 @@ function Cinematic.play(opts: any?): any
 		for _, c in conns do
 			c:Disconnect()
 		end
+		-- the caller's next frame first (the title card sits one layer under the intro), then the intro goes:
+		-- no frame of bare game between them
+		if userEnd then
+			local ok, err = pcall(userEnd, how)
+			if not ok then
+				warn("[Cinematic] onEnd: " .. tostring(err))
+			end
+		end
 		if cine then
 			cine.destroy()
-		end
-		if userEnd then
-			userEnd(how)
 		end
 	end
 	cine = Cinematic.new(o)
