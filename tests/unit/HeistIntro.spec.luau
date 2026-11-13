@@ -7,6 +7,9 @@ local IntroPlan = require("../../src/shared/Heist/IntroPlan")
 local Strings = require("../../src/shared/Heist/Strings")
 local Config = require("../../src/shared/Config")
 local Cues = require("../../src/shared/Audio/Cues")
+local IntroRig = require("../../src/shared/Heist/IntroRig")
+local fs = require("@lune/fs")
+local serde = require("@lune/serde")
 local Assert = require("./Assert")
 
 local I = Config.Intro
@@ -230,6 +233,38 @@ return function(test)
 		end
 		for id in spawned do
 			Assert.truthy(gone[id], id .. " despawned on skip")
+		end
+	end)
+
+	test("Hoardsworth's rig data matches the kit manifest (joints, parents, origins, bounds)", function()
+		local manifest = serde.decode("json", fs.readFile("assets/fbx/kit_manifest.json")).parts
+		local seen = {}
+		for i, p in IntroRig.PARTS do
+			local m = manifest[p.name]
+			Assert.truthy(m ~= nil, p.name .. " is in the manifest")
+			Assert.eq(m.model, "Hoardsworth", p.name .. ": model")
+			Assert.eq(m.joint.name, p.joint, p.name .. ": joint")
+			Assert.eq(m.joint.parent, p.parent, p.name .. ": parent")
+			for k = 1, 3 do
+				Assert.near(m.origin[k], p.origin[k], 1e-3, p.name .. ": origin")
+				Assert.near(m.boundsMin[k], p.min[k], 1e-3, p.name .. ": min")
+				Assert.near(m.boundsMax[k], p.max[k], 1e-3, p.name .. ": max")
+			end
+			if p.parent then
+				Assert.truthy(seen[p.parent], p.name .. ": parent listed first")
+			end
+			seen[p.name] = i
+		end
+		local n = 0
+		for _, m in manifest do
+			if m.model == "Hoardsworth" then
+				n += 1
+			end
+		end
+		Assert.eq(n, #IntroRig.PARTS, "every Hoardsworth part in the rig")
+		Assert.truthy(seen[IntroRig.MONOCLE], "the monocle (glint) is a rig part")
+		for _, p in IntroRig.PARTS do
+			Assert.truthy(IntroRig.ROLE_HEX[p.role] ~= nil, p.name .. ": a box-rig colour")
 		end
 	end)
 

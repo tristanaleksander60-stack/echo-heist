@@ -254,7 +254,7 @@ function HeistClient.start()
 		return state.reduced == true
 	end
 	doors = Transition.new(hud.fxGui, isReduced)
-	local boot = Loading.boot(doors, isReduced)
+	local boot = Loading.boot(doors, isReduced, camera, Telemetry.tier) -- camera + tier: the story intro
 	local intro = LevelIntro.new(camera, state)
 	local revealPending = false
 	-- The doors (or, at boot, the card / the title) open onto what was just built; controlAt: when the

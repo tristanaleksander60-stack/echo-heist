@@ -85,7 +85,7 @@ IntroPlan.STAGE = table.freeze({
 	globe = { centre = { 0, 150, -205 }, radius = 16 },
 	vacuum = { at = { 11, 130, -192 }, yaw = 0 },
 	nozzle = { 34, 146, -168 }, -- the intake's mouth (presents vanish into it)
-	lever = { at = { -9, 130, -181.5 }, yaw = 180 },
+	lever = { at = { -12.6, 130, -184.6 }, yaw = 180 }, -- at his right hand
 	hoardsworth = { at = { -9, 130, -185 }, yaw = 180 }, -- faces +Z: the town
 	garage = { centre = { 130, 0, 46 }, size = { 36, 14, 24 } },
 	van = { at = { 130, 0, 42 }, yaw = 90 }, -- the kit van's cab is local -X: yaw 90 turns it to +Z
@@ -101,55 +101,86 @@ IntroPlan.STAGE = table.freeze({
 ---------------------------------------------------------------------------
 IntroPlan.MOODS = table.freeze({
 	-- the cosy town under the northern lights: cool moon, warm windows
-	town = { ambient = { 70, 66, 110 }, outdoor = { 100, 110, 160 }, brightness = 1.6, exposure = 0.2, tint = { 236, 240, 255 } },
+	town = {
+		ambient = { 70, 66, 110 },
+		outdoor = { 100, 110, 160 },
+		brightness = 1.6,
+		exposure = 0.2,
+		tint = { 236, 240, 255 },
+	},
 	-- the villain: a hot burgundy-gold underlight, deep shadows
-	tower = { ambient = { 60, 34, 52 }, outdoor = { 92, 62, 96 }, brightness = 1.2, exposure = 0.1, tint = { 255, 232, 236 } },
+	tower = {
+		ambient = { 60, 34, 52 },
+		outdoor = { 92, 62, 96 },
+		brightness = 1.2,
+		exposure = 0.1,
+		tint = { 255, 232, 236 },
+	},
 	-- the town robbed: everything a step colder and darker
-	gone = { ambient = { 44, 46, 86 }, outdoor = { 62, 70, 120 }, brightness = 1.0, exposure = -0.1, tint = { 222, 230, 255 } },
+	gone = {
+		ambient = { 44, 46, 86 },
+		outdoor = { 62, 70, 120 },
+		brightness = 1.0,
+		exposure = -0.1,
+		tint = { 222, 230, 255 },
+	},
 	-- the dark garage: headlights only
-	garage = { ambient = { 26, 26, 46 }, outdoor = { 40, 40, 70 }, brightness = 0.6, exposure = 0.0, tint = { 245, 238, 255 } },
+	garage = {
+		ambient = { 26, 26, 46 },
+		outdoor = { 40, 40, 70 },
+		brightness = 0.6,
+		exposure = 0.0,
+		tint = { 245, 238, 255 },
+	},
 })
 
 ---------------------------------------------------------------------------
--- Poses (degrees per joint, R15 joint names; missing = rest). Hoardsworth is a rigid-part rig like Gus
+-- Poses (degrees per joint {x, y, z} as CFrame.fromEulerAnglesYXZ, R15 joint names; missing = rest). A
+-- character faces -Z: +x swings an arm forward and up, tips the head up; on the right arm (+X side) -z
+-- swings the hand in toward the body. Hoardsworth is a rigid-part rig like Gus
 -- (Shared/Heist/IntroRig); the Rookie stand-in uses the same names.
 ---------------------------------------------------------------------------
 IntroPlan.POSES = table.freeze({
 	rest = {},
-	gloat = { -- hands clasped behind his back, chin up
-		Neck = { -12, 0, 0 },
-		RightShoulder = { 25, 0, 18 },
-		LeftShoulder = { 25, 0, -18 },
-		RightElbow = { 40, 0, 0 },
-		LeftElbow = { 40, 0, 0 },
-		Waist = { -4, 0, 0 },
+	gloat = { -- chin up, twirling the moustache with his right hand, left hand at the hip
+		Neck = { 10, 8, 0 },
+		Waist = { 4, 0, 0 },
+		RightShoulder = { 118, 0, -28 },
+		RightElbow = { 62, 0, 0 },
+		LeftShoulder = { -10, 0, 22 },
+		LeftElbow = { 30, 0, 0 },
 	},
 	lever = { -- right hand high on the lever, leaning in
-		Neck = { 8, -10, 0 },
-		RightShoulder = { -150, 0, -8 },
-		RightElbow = { -20, 0, 0 },
-		LeftShoulder = { 10, 0, 12 },
-		Waist = { 6, -8, 0 },
+		Neck = { -6, 10, 0 },
+		Waist = { -6, 8, 0 },
+		RightShoulder = { 150, 0, -6 },
+		RightElbow = { 18, 0, 0 },
+		LeftShoulder = { -8, 0, 14 },
 	},
 	pull = { -- the lever yanked down: hand at the hip
-		Neck = { 4, -6, 0 },
-		RightShoulder = { -40, 0, -10 },
-		RightElbow = { -60, 0, 0 },
-		LeftShoulder = { 10, 0, 14 },
-		Waist = { 10, -4, 0 },
+		Neck = { -4, 6, 0 },
+		Waist = { -10, 4, 0 },
+		RightShoulder = { 40, 0, -10 },
+		RightElbow = { 60, 0, 0 },
+		LeftShoulder = { -8, 0, 16 },
 	},
-	point = { -- the cane hand flung at the town: "ALL of it"
-		Neck = { -8, 14, 0 },
-		RightShoulder = { -95, -20, 0 },
-		LeftShoulder = { 30, 0, 20 },
+	point = { -- arm flung out at the town: "ALL of it"
+		Neck = { 8, -14, 0 },
+		Waist = { 6, -10, 0 },
+		RightShoulder = { 95, -20, 0 },
+		LeftShoulder = { -30, 0, 22 },
 		LeftElbow = { 50, 0, 0 },
-		Waist = { -6, 10, 0 },
 	},
-	-- the Rookie
+	-- the Rookie (stand-in or CharacterKit rig with the same joint names)
 	stand = {},
-	capTug = { RightShoulder = { -135, 0, -20 }, RightElbow = { -85, 0, 0 }, Neck = { 10, 0, 0 } },
-	grin = { RightShoulder = { -20, 0, -6 }, Neck = { -6, 12, 6 }, LeftShoulder = { -40, 0, 8 } },
-	catch = { LeftShoulder = { -70, 0, 10 }, LeftElbow = { -30, 0, 0 }, Neck = { 12, -10, 0 } },
+	catch = { LeftShoulder = { 70, 0, 10 }, LeftElbow = { 30, 0, 0 }, Neck = { -12, -10, 0 } },
+	capTug = {
+		RightShoulder = { 140, 0, -22 },
+		RightElbow = { 80, 0, 0 },
+		LeftShoulder = { 30, 0, 8 },
+		Neck = { -6, 0, 0 },
+	},
+	grin = { RightShoulder = { 20, 0, -6 }, LeftShoulder = { 40, 0, 8 }, LeftElbow = { 40, 0, 0 }, Neck = { 6, 12, 6 } },
 } :: { [string]: { [string]: { number } } })
 
 ---------------------------------------------------------------------------
@@ -188,8 +219,8 @@ IntroPlan.SHOTS = table.freeze({
 		caption = "HOARD",
 		captionAt = 0.6,
 		keys = {
-			{ t = 0, pos = { -5.5, 126.5, -165 }, look = { -9, 137.5, -185 }, fov = 50 },
-			{ t = 1, pos = { -7.2, 129.2, -173.5 }, look = { -9, 137, -185 }, fov = 40 },
+			{ t = 0, pos = { -6.2, 130.9, -173.5 }, look = { -9.6, 136.6, -185 }, fov = 52 },
+			{ t = 1, pos = { -7.6, 131.4, -177.6 }, look = { -9.4, 136.9, -185 }, fov = 42 },
 		},
 		events = {
 			{ at = 0, kind = "spawn", id = "hoardsworth" },
@@ -234,8 +265,8 @@ IntroPlan.SHOTS = table.freeze({
 		caption = "GONE",
 		captionAt = 1.7,
 		keys = {
-			{ t = 0, pos = { -15, 174, -238 }, look = { 22, 36, 30 }, fov = 50 },
-			{ t = 1, pos = { -11, 168, -229 }, look = { 22, 28, 30 }, fov = 46 },
+			{ t = 0, pos = { -36, 168, -250 }, look = { 12, 44, 30 }, fov = 52 },
+			{ t = 1, pos = { -31, 164, -241 }, look = { 12, 38, 30 }, fov = 48 },
 		},
 		events = {
 			{ at = 0.5, kind = "fx", id = "windowsOut" },
@@ -319,8 +350,23 @@ IntroPlan.SHOTS = table.freeze({
 
 -- Pose tracks (absolute seconds): between two keys the pose blends with a sine ease.
 IntroPlan.TRACKS = table.freeze({
-	hoardsworth = { { 0, "gloat" }, { 8.7, "gloat" }, { 9.2, "lever" }, { 9.9, "lever" }, { 10.2, "pull" }, { 11.0, "point" } },
-	rookie = { { 0, "stand" }, { 26.4, "stand" }, { 26.9, "catch" }, { 27.6, "catch" }, { 28.0, "capTug" }, { 28.8, "capTug" }, { 29.2, "grin" } },
+	hoardsworth = {
+		{ 0, "gloat" },
+		{ 8.7, "gloat" },
+		{ 9.2, "lever" },
+		{ 9.9, "lever" },
+		{ 10.2, "pull" },
+		{ 11.0, "point" },
+	},
+	rookie = {
+		{ 0, "stand" },
+		{ 26.4, "stand" },
+		{ 26.9, "catch" },
+		{ 27.6, "catch" },
+		{ 28.0, "capTug" },
+		{ 28.8, "capTug" },
+		{ 29.2, "grin" },
+	},
 } :: { [string]: { { any } } })
 
 -- The kid's letter (absolute seconds): drifting from over the town into the Rookie's left hand.

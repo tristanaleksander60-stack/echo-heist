@@ -57,6 +57,8 @@ if Config.GAME_MODE == "sim" then
 			require(script:WaitForChild("Heist"):WaitForChild("BackdropKit")).start(KitService)
 			-- Gus's mesh for the client rig (box Gus until it arrives)
 			require(script:WaitForChild("Heist"):WaitForChild("GusTemplate")).publish(KitService)
+			-- the story intro's meshes for the client stage (stand-ins until they arrive)
+			require(script:WaitForChild("Heist"):WaitForChild("IntroKit")).publish(KitService)
 		end
 	end)
 	if not okKit then
