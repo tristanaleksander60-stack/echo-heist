@@ -303,7 +303,7 @@ function LightDirector.new(): any
 			local host = d.Parent
 			if host and host:GetAttribute("EH_Kind") == "lightPool" and host:IsA("BasePart") then
 				table.insert(pools, d)
-				local f: PoolFade = { gui = d, host = host, alpha = 1, base = {} }
+				local f: PoolFade = { gui = d, host = host, alpha = -1, base = {} } -- -1: the first step always writes
 				table.insert(fades, f)
 				task.defer(function() -- its children may replicate a frame after it
 					soften(d)
@@ -314,6 +314,7 @@ function LightDirector.new(): any
 							f.base[c] = c.BackgroundTransparency
 						end
 					end
+					f.alpha = -1 -- the next step writes the fade onto what was just captured
 				end)
 			end
 		elseif d:IsA("BasePart") and d:GetAttribute("EH_Layer") == "decor" then
