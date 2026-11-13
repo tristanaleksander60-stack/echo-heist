@@ -43,7 +43,7 @@ end
 
 return function(test)
 	test("config: diorama and classic numbers inside the plan's bands (C0, POLISH §4.5)", function()
-		Assert.eq(C.DEFAULT_MODE, "diorama", "diorama is the default mode")
+		Assert.eq(C.DEFAULT_MODE, "fp", "first person is the default mode (PLAN_FIRST_PERSON)")
 		Assert.truthy(D.PITCH >= 45 and D.PITCH <= 55, "pitch 45-55")
 		Assert.truthy(D.PITCH_MIN >= 35 and D.PITCH_MIN <= D.PITCH and D.PITCH <= D.PITCH_MAX, "pitch clamp >= 35")
 		Assert.truthy(D.DISTANCE >= 26 and D.DISTANCE <= 32, "distance 26-32")

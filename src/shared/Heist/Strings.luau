@@ -118,12 +118,18 @@ Strings.SETTING_LABEL = table.freeze({
 	shake = "Camera shake",
 	reducedMotion = "Reduced motion",
 	captions = "Captions",
-	colourBlindGlyphs = "Colour-blind shapes",
-	classicCamera = "Camera",
+	colourBlindGlyphs = "Colour-blind",
+	cameraMode = "Camera",
+	fpFov = "Field of view",
 	guardPath = "Show guard path",
 	haptics = "Vibration",
 } :: { [string]: string })
-Strings.SETTING_CAMERA = table.freeze({ diorama = "DIORAMA", classic = "CLASSIC" } :: { [string]: string })
+Strings.SETTING_CAMERA =
+	table.freeze({ fp = "FIRST PERSON", diorama = "DIORAMA", classic = "CLASSIC" } :: { [string]: string })
+-- The first-person field of view on its slider (degrees, a bare number: "70").
+function Strings.fovValue(v: number): string
+	return string.format("%d", math.floor(v + 0.5))
+end
 function Strings.percent(v: number): string
 	return string.format("%d%%", math.floor(v * 100 + 0.5))
 end
