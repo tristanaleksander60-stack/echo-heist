@@ -32,7 +32,7 @@
     "ink",
     "ink_hi",
     "marble",
-    "marble_lo"
+    "marble_hi"
    ],
    "location": [
     -1.1,
@@ -102,7 +102,7 @@
     "ink",
     "ink_hi",
     "marble",
-    "marble_lo"
+    "marble_hi"
    ],
    "location": [
     1.1,
@@ -153,10 +153,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "57b59fbf51894e612277",
+ "contentHash": "ddbe55ff5652d90ce285",
  "fbx": {
   "path": "assets/fbx/Rookie_Viewmodel.fbx",
-  "bytes": 43020,
+  "bytes": 42972,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -180,5 +180,5 @@
  "spec": "assets/blender/rookie.py",
  "notes": "First-person arms (FP track): LeftArm / RightArm, pivot = elbow, GripL / GripR at the palms; sleeve + knit glove, one mesh each.",
  "turntable": "docs/art/turntables/Rookie_Viewmodel.png",
- "seconds": 36.7
+ "seconds": 16.4
 }
