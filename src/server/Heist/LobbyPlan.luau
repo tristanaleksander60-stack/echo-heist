@@ -709,8 +709,9 @@ function LobbyPlan.warehouse(plan: Plan, cfg: any, light: any, kit: { [string]: 
 		local zA = st.z0 + (k - 1) * run / st.steps
 		local yT = k * rise / st.steps
 		slab("StairTread", box(st.x0, yT - 0.3, zA, st.x1, yT, zA + run / st.steps + 0.05), W.TIMBER, nil, "Wood")
+		-- a stepped steel stringer on the open side (an open-riser stair; the wedge under it is the collider)
+		slab("Stringer", box(st.x0 - 0.25, yT - 0.9, zA, st.x0, yT + 0.1, zA + run / st.steps), W.STEEL, nil, "Metal")
 	end
-	slab("Stringer", box(st.x0 - 0.3, 0, st.z0, st.x0, rise, st.z1), W.STEEL, nil, "Metal")
 
 	---------------------------------------------------------------- the stations' dressing (the LOBBY track's anchors)
 	local deskTop = 3.5

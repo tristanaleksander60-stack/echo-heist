@@ -1493,8 +1493,8 @@ def big_level(level, samples, out_dir):
     _w2_shoot(s, cam, f"{tag}_diorama_mid", pos, tgt, DF, None, cfg, out_dir, level=level)
     # a high establishing view of the block from across the street (presentation height, nothing cut)
     cut(t, groups, (0, 999, 999), [])
-    pos = (ox1 + 40.0, fy + 34.0, oz1 + 70.0)
-    tgt = ((ox0 + ox1) / 2, fy + 26.0, (oz0 + oz1) / 2)
+    pos = (ox1 + 6.0, fy + 20.0, oz1 + 25.0)     # a drone over the road: the block, its neighbours, the towers behind
+    tgt = ((ox0 + ox1) / 2, fy + 28.0, oz0 + 6.0)
     _w2_shoot(s, cam, f"{tag}_street_wide", pos, tgt, 60.0, pos, cfg, out_dir, level=level)
 
 
