@@ -50,3 +50,37 @@ The owner runs it; Claude reads the notes and the screen video afterwards.
 | | First bank at __:__ | | | |
 
 Then drop the sheet as a photo, plus the screen video if you can, into the Shots inbox (GitHub issue #1).
+
+## Next kid test: run 2 clarity (RUN2 CLARITY track, from the owner's report on v125)
+
+The owner's report on v125 was "round 2 is way too confusing". The build now has a run coach on L1 (the mandatory
+tutorial) and on L2. Watch these moments in particular. Write down the time and the kid's words at each one.
+
+**The tutorial, L1 (it should take about 15 s of play: the sim's coached kids' median is 15.1 s)**
+
+| Beat | What the kid should see | Watch for |
+|---|---|---|
+| Run 1, 0 s | "Step on the plate" and a white arrow bobbing over the plate | Does the kid go to the plate, or to the cash in the window? |
+| On the plate | "Now press R" (Y on a gamepad, "Tap REWIND now" on touch), the finger on REWIND | Do they press it themselves? (After 3 s it rewinds anyway.) Note the seconds they stand there. |
+| Rewind | The tape scrub, then "RUN 2" | Any "what happened?" |
+| Run 2 beat (about 1 s, frozen) | The camera holds on their clone with "YOU, 10 SEC AGO" over it, a dashed path in its colour to a ring on the plate, and the card "Clone holds the plate!" | **Ask nothing.** After L1, ask question 2 ("Who were the other people?"). |
+| Run 2 | "YOU: through the door!" and the arrow on the door, then "Grab the cash!" / "Grab it: press E", then "Back to the van!" | Do they wait at the door, or walk off? Do they go before the clone reaches the plate? |
+
+**L2 "Two Doors"**
+
+| Beat | What the kid should see | Watch for |
+|---|---|---|
+| Run 1 | "Stand on plate A. Then REWIND." and the arrow on plate A. The clone strip is empty (v125 still showed L1's "1"). | Do they press REWIND without a 3 s auto-rewind? (L2 has none.) |
+| Run 2 beat | "Clone holds plate A!" (or "That run missed the plates." if run 1 ended off a plate) | Does the kid say why the run is not over yet? |
+| Run 2 | "Stand on plate B. Then REWIND." and the arrow on plate B | Do they understand that clone A is still there? |
+| Run 3 beat + run | "Clone holds plate B!", then "YOU: through the doors!", "Grab the safe!" | First try clear, or a stall? |
+
+**Pass bars for these moments (add to the sheet)**
+
+- L1: 4 of 5 kids bank the cash in run 2 (no run 3), and 3 of 5 press REWIND themselves in run 1.
+- L1: no stall over 5 s after the run 2 beat (the old build had kids standing still while the clone walked).
+- L2: 4 of 5 clear it in 3 or 4 runs, with no help asked.
+- Every kid can say what the dashed line was ("where my clone goes"), in their own words, if asked after L2.
+
+**Studio replay for the observer:** set the Workspace attribute `EH_Scenario = "TUTORIAL"` before Play. It starts the tutorial
+(L1) and shows every first-time beat again, whatever the profile says. It only works in Studio.

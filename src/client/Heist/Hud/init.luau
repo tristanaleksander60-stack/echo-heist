@@ -18,6 +18,8 @@
 --   Hints     the objective line's text, the L1 FTUE lines and the L1 stuck hints, the help
 --             after L1 (world-state lines, SHOW ME? and the chalk ghost, TRY RELAXED?), the
 --             finger pointer, failure counterplay and the first-time beats
+--   Coach     the run coach on L1 / L2 (Shared/Heist/RunCoach): the run-start card, the beat's clone path and
+--             camera focus, the one world arrow over your next target
 --   Run       run state, events and the per-frame update (and first person's reduced layout)
 --   Reticle   first person: the centre reticle and the look-to-interact prompt chip (on the fx layer)
 --   CrewView  first person: the hold-to-peek Crew View's touch CREW button, vignette, label and one-time hint
@@ -43,6 +45,7 @@ local Ui = require(script.Parent:WaitForChild("Ui"))
 local TypeSpecimen = require(script.Parent:WaitForChild("TypeSpecimen"))
 local BankFly = require(script:WaitForChild("BankFly"))
 local Controls = require(script:WaitForChild("Controls"))
+local Coach = require(script:WaitForChild("Coach"))
 local CrewView = require(script:WaitForChild("CrewView"))
 local Deck = require(script:WaitForChild("Deck"))
 local Garage = require(script:WaitForChild("Garage"))
@@ -160,6 +163,7 @@ function Hud.new(state: any, actions: Actions): any
 	ctx.deck = Deck.build(ctx)
 	ctx.results = Results.build(ctx)
 	ctx.garage = Garage.build(ctx)
+	ctx.coach = Coach.build(ctx) -- before Hints: the run coach's card, arrow and clone path (RUN2 CLARITY)
 	ctx.hints = Hints.build(ctx)
 	ctx.settings = SettingsPanel.build(ctx)
 	BankFly.build(ctx)
@@ -202,6 +206,12 @@ function Hud.new(state: any, actions: Actions): any
 	hud.onDeck = function(...)
 		deckOnDeck(...)
 		ctx.hints.onDeck()
+	end
+
+	-- The coach's camera focus for this run's start (level space; nil = the default framing), read by HeistClient
+	-- right after hud.onRun.
+	function hud.coachFocus(): Vector3?
+		return ctx.coach.focus()
 	end
 
 	-- Set by HeistClient (RewindDirector): (text, colour, hold seconds?).

@@ -44,6 +44,7 @@ local Codec = require(Rec:WaitForChild("Codec"))
 local Validator = require(Rec:WaitForChild("Validator"))
 local Catalog = require(Shared:WaitForChild("Levels"):WaitForChild("Catalog"))
 local Help = require(Shared:WaitForChild("Heist"):WaitForChild("Help"))
+local RunCoach = require(Shared:WaitForChild("Heist"):WaitForChild("RunCoach"))
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local Badges = require(Shared:WaitForChild("Heist"):WaitForChild("Badges"))
 
@@ -1191,6 +1192,10 @@ end
 local function startRun(inst: any, now: number)
 	local sim = inst.sim
 	local transition, kind = chooseTransition(inst)
+	-- The coached levels' run-start beat (Shared/Heist/RunCoach): the frozen transition is BEAT_SECONDS longer, so
+	-- the camera can hold on your newest clone's path before control (no run clock, nobody moves: no desync).
+	local beat = RunCoach.beatSeconds(inst.level.id, sim.runIndex + 1)
+	transition += beat
 	local runIndex = HeistSim.startRun(sim, now + transition)
 	if not runIndex then
 		if sim.phase == "Over" then
@@ -1224,6 +1229,7 @@ local function startRun(inst: any, now: number)
 	end
 	setFrozen(inst, true)
 	local msg = runMessage(inst, transition, kind)
+	msg.beat = beat -- the last `beat` s of the transition are the coach's beat (Hud/Coach)
 	inst.runMsg = msg
 	for _, m in inst.members do
 		ensureRecs(inst, m, msg.keys)

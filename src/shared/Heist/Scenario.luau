@@ -11,6 +11,8 @@
 --             (Config.Heist.CAMERA.GOLDEN.G3: where you stand and what you look at)
 --   TYPE      G1 plus the type specimen overlay (decision D8)
 --   INTRO     the story intro (Heist/Cinematic) over the garage, whatever the profile says
+--   TUTORIAL  replay the mandatory tutorial (L1 "Back Room" with the run coach), whatever the profile says; no
+--             staged camera (shot "PLAY": you play it as a new player would)
 --   CLONE_AB  G2; EH_Variant = "B" strips the clone templates' textures and clothing (the
 --             hologram arm of the recognisability A/B), "A" (default) keeps them
 -- Pure (no engine calls), so tests/unit/HeistScenario.spec.luau checks the gate. Every caller
@@ -26,7 +28,8 @@ Scenario.TAPES = 7 -- G2: clones seeded from the solution, + you = 8 OF ME
 export type Spec = {
 	level: string?, -- LevelSpec id to start (nil = stay in the garage)
 	tapes: number?, -- solution recordings seeded into your deck before run 1
-	shot: string, -- the camera: "G1" (first person, L1), "G2" (pull-back), "G3" (first person, the hideout), "INTRO"
+	shot: string, -- the camera: "G1" (first person, L1), "G2" (pull-back), "G3" (first person, the hideout), "INTRO",
+	-- "PLAY" (no staging: the game's own camera)
 	fp: boolean?, -- first person: the camera stays in your eyes (hands, reticle, HUD); the look is staged
 	specimen: boolean?, -- the type specimen overlay
 	variant: boolean?, -- reads EH_Variant (A / B)
@@ -39,6 +42,7 @@ Scenario.SPECS = table.freeze({
 	TYPE = table.freeze({ level = "cs1_back_room", shot = "G1", fp = true, specimen = true }),
 	CLONE_AB = table.freeze({ level = "cs5_clone_party", tapes = Scenario.TAPES, shot = "G2", variant = true }),
 	INTRO = table.freeze({ shot = "INTRO" }), -- the garage under the story intro (Heist/Loading plays it)
+	TUTORIAL = table.freeze({ level = "cs1_back_room", shot = "PLAY" }), -- the RUN2 CLARITY track's replay
 } :: { [string]: Spec })
 
 -- The scenario to stage, or nil. Only in Studio (isStudio = RunService:IsStudio()) and only

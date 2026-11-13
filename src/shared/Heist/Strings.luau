@@ -785,9 +785,77 @@ end
 -- The look cue (Hud/Hints, first person): a finger at the screen edge toward your clone or the chalk ghost
 -- while it is out of view.
 Strings.LOOK_CUE = table.freeze({ clone = "YOUR CLONE", ghost = "LOOK" } :: { [string]: string })
--- Level lines for the first seconds of run 1, and again when stuck, by LevelSpec id.
+---------------------------------------------------------------------------
+-- The run coach (Shared/Heist/RunCoach, Hud/Coach; RUN2 CLARITY track): the coached levels (L1, L2) say one
+-- thing to do at a time, computed from the level and what your clones hold. Every line is 6 words or fewer;
+-- L1's (the mandatory tutorial) 4 or fewer (tests/unit/HeistRunCoach.spec.luau counts them, device lines too).
+---------------------------------------------------------------------------
+Strings.COACH = table.freeze({
+	-- Your own next move (the world arrow points at its target).
+	STEP_ON_PLATE = "Step on the plate", -- L1 (one plate)
+	STAY_REWIND = "Tap REWIND now", -- on the plate your next clone must hold (plain: touch / classic camera)
+	GO_DOOR = "YOU: through the door!", -- every plate is held: you walk in
+	GO_DOORS = "YOU: through the doors!",
+	BANK = "Back to the van!",
+	-- The run-start beat (the camera on your newest clone, "YOU, 10 SEC AGO" over it).
+	CLONE_HOLDS = "Clone holds the plate!", -- L1
+	RUN_MISSED = "That run missed the plate.", -- the run before ended off every plate (L1)
+	RUN_MISSED_PLATES = "That run missed the plates.", -- (L2: more plates)
+} :: { [string]: string })
+-- On the plate: the REWIND key for this device in first person (Strings.coachLine picks one).
+Strings.COACH_STAY_REWIND_BY = table.freeze({
+	key = "Now press R",
+	pad = "Now press Y",
+	touch = "Tap REWIND now",
+} :: { [string]: string })
+-- Grab the goal: "Grab the cash!" (a camera with the GRAB button), "Grab it: press E" (first person).
+Strings.COACH_GRAB_BY = table.freeze({
+	key = "Grab it: press E",
+	pad = "Grab it: press X",
+	touch = "Tap GRAB on it!",
+} :: { [string]: string })
+-- What a goal loot is called in a line, by loot id (anything else: "loot").
+Strings.COACH_LOOT_NAMES = table.freeze({ Cash = "cash", Safe = "safe" } :: { [string]: string })
+function Strings.coachGrab(lootId: string?): string
+	local name = lootId and Strings.COACH_LOOT_NAMES[lootId] or "loot"
+	return "Grab the " .. name .. "!"
+end
+-- More than one plate (L2): "Stand on plate A. Then REWIND."
+function Strings.coachStandPlate(plate: string): string
+	return "Stand on plate " .. plate .. ". Then REWIND."
+end
+-- The beat on a level with more plates: "Clone holds plate A!" / "Plate A already has one."
+function Strings.coachCloneHolds(plate: string): string
+	return "Clone holds plate " .. plate .. "!"
+end
+function Strings.coachAlreadyHeld(plate: string): string
+	return "Plate " .. plate .. " already has one."
+end
+-- A coach line (RunCoach.Line = {key, plate?, loot?}) for a device; `firstPerson` picks the device's key wording.
+function Strings.coachLine(line: any, device: string, firstPerson: boolean): string
+	local key = line and line.key
+	if key == "STAND_PLATE" then
+		return Strings.coachStandPlate(tostring(line.plate))
+	elseif key == "CLONE_HOLDS_PLATE" then
+		return Strings.coachCloneHolds(tostring(line.plate))
+	elseif key == "ALREADY_HELD" then
+		return Strings.coachAlreadyHeld(tostring(line.plate))
+	elseif key == "STAY_REWIND" then
+		return if firstPerson or device == "touch"
+			then Strings.COACH_STAY_REWIND_BY[device] or Strings.COACH.STAY_REWIND
+			else Strings.COACH.STAY_REWIND
+	elseif key == "GRAB" then
+		return if firstPerson
+			then Strings.COACH_GRAB_BY[device] or Strings.coachGrab(line.loot)
+			else Strings.coachGrab(line.loot)
+	end
+	return if type(key) == "string" then Strings.COACH[key] or "" else ""
+end
+
+-- Level lines for the first seconds of run 1, and again when stuck, by LevelSpec id. (The coached levels, L1 and
+-- L2, show the coach's staged plan instead on run 1: "Stand on plate A. Then REWIND.")
 Strings.LEVEL_LINES = table.freeze({
-	cs2_two_doors = "Two plates. You need two clones.",
+	cs2_two_doors = "Clones on both plates. Then go!",
 	cs5_clone_party = "Rob it all. Bank it before sunrise.",
 	cs3_lights_out = "Plate B turns the lasers off.",
 	cs4_night_clerk = "Hide from Gus. Cross while he looks away.",

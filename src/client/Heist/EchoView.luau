@@ -47,6 +47,7 @@ local ClonePose = require(HeistShared:WaitForChild("ClonePose"))
 local CloneState = require(HeistShared:WaitForChild("CloneState"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Protocol = require(HeistShared:WaitForChild("Protocol"))
+local RunCoach = require(HeistShared:WaitForChild("RunCoach"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
 local Icons = require(script.Parent:WaitForChild("Icons"))
@@ -699,7 +700,7 @@ function EchoView.new(state: any): any
 			if a == newestOwn then
 				newestOwnId = a.id
 			end
-			if a == newestOwn and state.level and state.level.tutorial ~= nil then
+			if a == newestOwn and RunCoach.coached(state.level) then
 				entry.lodExempt = true -- the "YOU, 10 SEC AGO" moment is always your own avatar
 				-- "◀ YOU, 10 SEC AGO" (§6.5 #5, §7.5): the number is always true (CLIPS §1.2).
 				local duration = Sampler.duration(rec)
@@ -708,6 +709,12 @@ function EchoView.new(state: any): any
 				-- walks out of you, and its label stays until it has stopped on the plate.
 				local controlAt = startLocal + (msg.transition or 0) * 0.25
 				entry.visibleAt = controlAt + H.TUTORIAL_CLONE_FADE_IN
+				local beat = tonumber(msg.beat) or 0
+				if beat > 0 then
+					-- The coach's run-start beat (Hud/Coach, RUN2 CLARITY): the camera holds on your clone before
+					-- control, so it is there, labelled, for the whole beat (it walks once control returns).
+					entry.visibleAt = controlAt - beat
+				end
 				youLabel(Rigs.anchorPart(entry.rig), Ui.agoLabel("YOU", secs, Palette.hueFor(a.seat)))
 				entry.youLabel = true
 				entry.labelUntil = controlAt

@@ -34,6 +34,7 @@ local RunService = game:GetService("RunService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
+local Scenario = require(Shared:WaitForChild("Heist"):WaitForChild("Scenario"))
 local Net = require(ReplicatedStorage:WaitForChild("LihFolk"):WaitForChild("Net"))
 local PresentPlan = require(script.Parent:WaitForChild("PresentPlan"))
 
@@ -118,6 +119,10 @@ function FirstTime.init()
 		return
 	end
 	started = true
+	if Scenario.resolve(RunService:IsStudio(), workspace:GetAttribute(Scenario.ATTRIBUTE)) == "TUTORIAL" then
+		setStatus("none") -- Studio replay of the tutorial: every first-time beat again, whatever the profile says
+		return
+	end
 	task.spawn(function()
 		local folder = ReplicatedStorage:WaitForChild(REMOTES, 10)
 		if not folder or not folder:WaitForChild(SNAPSHOT, 10) then

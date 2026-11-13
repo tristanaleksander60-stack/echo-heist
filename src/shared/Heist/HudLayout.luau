@@ -82,6 +82,12 @@ HudLayout.CREW_LABEL = box(0.5, 0, 0.5, 0, 0, 98, 168, 28)
 -- your right thumb. Shown in a first-person run and in the hideout whenever a slide may start; hold FAST with it on
 -- touch for the fast slide.
 HudLayout.SLIDE = box(1, 1, 1, -(124 + H.INTERACT_BUTTON + 56 + 8), 1, -16, TAP, H.INTERACT_BUTTON)
+-- The run coach's card (Hud/Coach, RUN2 CLARITY track): one big line under the clone strip while a coached run's
+-- transition holds you (run 1's first look, and the run-start beat on your newest clone). It takes the diorama
+-- objective line's place (that line hides while the card is up); control hides the card, so it never meets the
+-- first-person reticle, its prompt chip, REWIND or Interact (none of them shows before control: scenes beat, fpBeat).
+-- 380 wide: clear of FAST (x 88..162) on the narrowest 720-wide canvas, and 30 high: clear of the rail (y 136).
+HudLayout.COACH_CARD = box(0.5, 0, 0.5, 0, 0, 98, 380, 30)
 -- Key caps (Hud/Common.keyCap) straddle a button's corner by this much: less than GAP, so a cap never reaches a
 -- neighbouring box.
 HudLayout.KEY_CAP_OUT = 6
@@ -229,6 +235,23 @@ HudLayout.SCENES = table.freeze({
 		"CREW",
 		"SLIDE",
 		"CREW_LABEL",
+		"RAIL_FP",
+		"HELP_CHIP",
+	},
+	-- A coached run's frozen transition (Hud/Coach): the run box, the strip and the coach card; REWIND, Interact,
+	-- the reticle and its chip wait for control. Both rails: the camera mode picks one.
+	beat = { "LOOT", "TOP", "STRIP", "MENU", "FAST_FORWARD", "COACH_CARD", "HIDDEN", "RAIL", "HELP_CHIP" },
+	fpBeat = {
+		"LOOT",
+		"TOP",
+		"STRIP",
+		"MENU",
+		"FAST_FORWARD",
+		"COACH_CARD",
+		"HIDDEN",
+		"OBJECTIVE_FP",
+		"CREW",
+		"SLIDE",
 		"RAIL_FP",
 		"HELP_CHIP",
 	},
