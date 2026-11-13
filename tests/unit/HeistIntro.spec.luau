@@ -46,10 +46,27 @@ return function(test)
 		Assert.truthy(total >= 30 and total <= 40, "30-40 s, got " .. total)
 		Assert.truthy(total <= 34, "tightened (REVIEW_STEAM_PLUS #7): <= 34 s, got " .. total)
 		Assert.truthy(#IntroPlan.SHOTS >= 6 and #IntroPlan.SHOTS <= 8, "about 6 shots")
-		Assert.truthy(I.SERVER_HOLD_SECONDS > total + 8, "the server hold outlasts the intro and the title card")
+		Assert.eq(I.SERVER_HOLD_SECONDS, nil, "no server hold (the intro plays over the hideout)")
 		for i, shot in IntroPlan.SHOTS do
 			Assert.near(IntroPlan.at(shot.id, 0), IntroPlan.startOf(i), 1e-9, "at(" .. shot.id .. ", 0) is its start")
 		end
+	end)
+
+	test("play() never freezes: liveness watchdog, explicit SKIP keys (INTRO LOAD FIX)", function()
+		Assert.truthy(I.START_WATCHDOG_SECONDS > 0 and I.START_WATCHDOG_SECONDS <= 5, "a dead intro ends within 5 s")
+		Assert.truthy(I.MIN_ADVANCE > 0 and I.MIN_ADVANCE < I.START_WATCHDOG_SECONDS, "advance within the window")
+		Assert.truthy(I.STALL_SECONDS > 0 and I.STALL_SECONDS <= 5, "a frozen intro ends within 5 s")
+		Assert.truthy(I.FTUE_START_WAIT_SECONDS > 0 and I.FTUE_START_WAIT_SECONDS <= 10, "L1 or the hideout soon")
+		Assert.falsy(I.SKIP.ANY_KEY, "not any key: W, a click or a chat key must not skip it")
+		local keys: { [string]: boolean } = {}
+		for _, k in I.SKIP.KEYS do
+			keys[k] = true
+		end
+		Assert.truthy(keys.Space and keys.ButtonB, "Space (the cap shows it) and B skip")
+		for _, k in { "W", "A", "S", "D", "Up", "Down", "Left", "Right", "LeftShift", "E", "Thumbstick1" } do
+			Assert.falsy(keys[k], "a movement or use key never skips: " .. k)
+		end
+		Assert.truthy(I.KIT_WAIT_SECONDS <= 4, "the card waits at most 4 s for the intro meshes")
 	end)
 
 	test("every shot has a caption of at most six words, ASCII, in Strings", function()

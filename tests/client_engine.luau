@@ -2684,5 +2684,166 @@ local okBadge, badgeErr = pcall(function()
 end)
 check(okBadge, "badge card and boss marks build (" .. tostring(badgeErr) .. ")")
 
+-- P. The intro really plays (INTRO LOAD FIX: the owner saw one frozen frame). (1) Stepped by hand: over stepped
+-- time the camera CFrame and the shot index change, every shot is reached, and each frame is within the budget.
+-- (2) Cinematic.play drives it by itself through a real per-frame connection (opts.bind: Heartbeat here; on a client
+-- BindToRenderStep after the camera): after ~1.5 s of real time the plan has advanced in step with the clock and the
+-- camera has moved; SKIP ends it and restores the camera. (3) A frame driver that never fires (the frozen-frame
+-- case): play's watchdog ends it as "stalled" within START_WATCHDOG_SECONDS, camera restored, so Heist/Loading shows
+-- the title card instead of a frozen screen.
+local okPlay, playErr = pcall(function()
+	local RunService = game:GetService("RunService")
+	local Cinematic = require(clientHeist:WaitForChild("Cinematic"))
+	local IntroPlan = require(shared:WaitForChild("Heist"):WaitForChild("IntroPlan"))
+	local Config = require(shared:WaitForChild("Config")) :: any
+	local B = Config.Boot
+	local holder = Instance.new("Folder")
+	holder.Name = "IntroPlayTest"
+	holder.Parent = scratch
+	local function newCam(): Camera
+		local cam = Instance.new("Camera")
+		cam.CameraType = Enum.CameraType.Custom
+		cam.FieldOfView = 70
+		cam.CFrame = CFrame.new(0, 50, 0)
+		cam.Parent = holder
+		return cam
+	end
+	-- (1) by hand
+	local cam = newCam()
+	local t0 = os.clock()
+	local cine = Cinematic.new({ parent = holder, gui = holder, camera = cam, tier = 1 })
+	local buildMs = (os.clock() - t0) * 1000
+	assert(buildMs <= B.INTRO_BUILD_MS, string.format("build %.0f ms <= %d", buildMs, B.INTRO_BUILD_MS))
+	local shotsSeen: { [number]: boolean } = {}
+	local lastShot = 0
+	local shotChanges = 0
+	local moved = 0
+	local prev = cam.CFrame
+	local worst = 0
+	local steps = 0
+	while not cine.isDone() and steps < 60 * 60 do
+		local s = os.clock()
+		cine.step(1 / 60)
+		worst = math.max(worst, os.clock() - s)
+		steps += 1
+		if not cine.isDone() then
+			local shot = cine.shot()
+			shotsSeen[shot] = true
+			if shot ~= lastShot then
+				shotChanges += 1
+				lastShot = shot
+			end
+			if steps % 30 == 0 then
+				if
+					(cam.CFrame.Position - prev.Position).Magnitude > 0.05
+					or cam.CFrame.LookVector:Dot(prev.LookVector) < 0.9999
+				then
+					moved += 1
+				end
+				prev = cam.CFrame
+			end
+		end
+	end
+	assert(cine.isDone(), "plays to its end")
+	local reached = 0
+	for _ in shotsSeen do
+		reached += 1
+	end
+	assert(reached == #IntroPlan.SHOTS, "every shot reached: " .. reached .. "/" .. #IntroPlan.SHOTS)
+	assert(shotChanges >= #IntroPlan.SHOTS, "the shot index advances")
+	local samples = math.floor(steps / 30)
+	assert(moved >= samples * 0.8, string.format("the camera moves over time (%d of %d half-seconds)", moved, samples))
+	assert(worst * 1000 <= B.INTRO_FRAME_MS, string.format("worst frame %.1f ms <= %d", worst * 1000, B.INTRO_FRAME_MS))
+	cine.destroy()
+	assert(cam.CameraType == Enum.CameraType.Custom, "camera restored once torn down")
+
+	-- (2) play() with a real per-frame connection
+	local cam2 = newCam()
+	local ended: string? = nil
+	local frames = 0
+	local played = Cinematic.play({
+		parent = holder,
+		gui = holder,
+		camera = cam2,
+		tier = 1,
+		bind = function(step: (number) -> ())
+			local c = RunService.Heartbeat:Connect(function(dt: number)
+				frames += 1
+				step(dt)
+			end)
+			return function()
+				c:Disconnect()
+			end
+		end,
+		onEnd = function(how: string)
+			ended = how
+		end,
+	})
+	assert(played ~= nil, "play() starts with a frame driver")
+	assert(Cinematic.isPlaying(), "isPlaying while it runs")
+	local p0 = cam2.CFrame
+	local wallStart = os.clock()
+	task.wait(1.5)
+	local wall = os.clock() - wallStart
+	local t = played.t()
+	assert(frames >= 10, "driven every frame (" .. frames .. " frames in 1.5 s)")
+	assert(t >= wall * 0.6 and t <= wall + 0.2, string.format("plan time %.2f s follows the clock (%.2f s)", t, wall))
+	assert(cam2.CameraType == Enum.CameraType.Scriptable, "the intro owns the camera while it plays")
+	assert((cam2.CFrame.Position - p0.Position).Magnitude > 1, "the camera moved")
+	local pMid = cam2.CFrame
+	task.wait(0.5)
+	assert(cam2.CFrame ~= pMid, "and keeps moving (not one frozen shot)")
+	played.skip()
+	local deadline = os.clock() + 3
+	while ended == nil and os.clock() < deadline do
+		task.wait(0.05)
+	end
+	assert(ended == "skipped", "SKIP ends it (" .. tostring(ended) .. ")")
+	assert(not Cinematic.isPlaying(), "nothing playing after SKIP")
+	assert(cam2.CameraType == Enum.CameraType.Custom and cam2.FieldOfView == 70, "camera restored after SKIP")
+
+	-- (3) a frame driver that never fires: degrade fast, never freeze
+	local cam3 = newCam()
+	local ended3: string? = nil
+	local s3 = os.clock()
+	local dead = Cinematic.play({
+		parent = holder,
+		gui = holder,
+		camera = cam3,
+		tier = 1,
+		bind = function(_step: (number) -> ())
+			return function() end
+		end,
+		onEnd = function(how: string)
+			ended3 = how
+		end,
+	})
+	assert(dead ~= nil, "play() with a dead driver still starts")
+	local limit = Config.Intro.START_WATCHDOG_SECONDS + Config.Intro.HANDOFF_SECONDS + 1.5
+	while ended3 == nil and os.clock() - s3 < limit do
+		task.wait(0.05)
+	end
+	local took = os.clock() - s3
+	assert(ended3 == "stalled", "a frozen intro ends as stalled (" .. tostring(ended3) .. ")")
+	assert(took <= limit, string.format("within %.1f s (%.1f s)", limit, took))
+	assert(cam3.CameraType == Enum.CameraType.Custom, "camera restored after a stall")
+	assert(not Cinematic.isPlaying(), "nothing left playing")
+	holder:Destroy()
+	return string.format(
+		"build %.0f ms, worst frame %.1f ms, %d frames in %.1f s, stall caught in %.1f s",
+		buildMs,
+		worst * 1000,
+		frames,
+		wall,
+		took
+	)
+end)
+check(
+	okPlay,
+	"intro plays: camera + shot index advance, play() per-frame driver, SKIP, stall -> title ("
+		.. tostring(playErr)
+		.. ")"
+)
+
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))

@@ -830,9 +830,28 @@ function HeistClient.start()
 					return
 				end
 				if boot.active() then
-					boot.arrive("garage")
-					toGarage(p)
-					reveal(nil) -- the card fades on the garage's first built frame
+					if state.where == "garage" and boot.awaiting() then
+						-- a refresh while a new account's L1 is on its way (the card / intro / title still up)
+						state.garage = p
+						hud.showGarage()
+						pcall(JobBoard.show, p)
+						hideout.refresh()
+						if p.ftue ~= true then
+							reveal(nil) -- the server dropped the start (a friend joined, a van picked): the hideout
+						end
+						return
+					end
+					boot.arrive(if p.ftue == true then "garageFtue" else "garage")
+					toGarage(p) -- the hideout is built behind the card (or the intro) either way
+					if p.ftue == true then
+						-- a new account: the intro / title plays, its Ready starts L1 (the doors open onto it); the
+						-- hideout shows only if L1 never comes (Config.Intro.FTUE_START_WAIT_SECONDS)
+						boot.awaitFtue(function()
+							reveal(nil)
+						end)
+					else
+						reveal(nil) -- the card fades on the garage's first built frame
+					end
 				else
 					doors.close() -- results / heist -> garage behind the van doors (C4)
 					toGarage(p)

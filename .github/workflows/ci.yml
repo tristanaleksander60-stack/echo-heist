@@ -77,6 +77,9 @@ jobs:
       - name: No text glyphs in UI strings (docs/PLAN_STEAM_PLUS.md §1 S4)
         run: lune run tests/glyph_check.luau
 
+      - name: No unbounded client waits on the boot path (WaitForChild timeouts, capped preloads)
+        run: lune run tests/wait_check.luau
+
       - name: UI kit (UIStroke text, motion tokens only, no default fonts, panels enter with motion; PLAN_STEAM_PLUS §4.3)
         run: lune run tests/ui_kit_check.luau
 
