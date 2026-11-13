@@ -59,6 +59,7 @@ return function(test)
 
 	test("accepts sprinting right at WalkSpeed x 1.3", function()
 		clean(Validator.validate(walkRun(16 * 1.3, 10)), "1.3x")
+		clean(Validator.validate(walkRun(16 * Config.Sprint.MULT, 10)), "the Shift sprint")
 	end)
 
 	test("accepts a lag burst within the ping allowance", function()
@@ -160,7 +161,7 @@ return function(test)
 	end)
 
 	test("speed hack under the bucket slack is caught within a second", function()
-		local rec = walkRun(16 * 1.6, 3)
+		local rec = walkRun(16 * Config.Rec.SPEED_MULT * 1.2, 3)
 		local report = Validator.validate(rec)
 		Assert.hasBit(report.flags, F.SPEED, "SPEED")
 		Assert.le(report.violations[1].t, 1, "first violation time")

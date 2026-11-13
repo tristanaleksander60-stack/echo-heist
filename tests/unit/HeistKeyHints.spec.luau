@@ -1,6 +1,6 @@
 -- L1: Shared/Heist/KeyHints, the key caps every on-screen action wears: the label per device (keyboard key, gamepad
 -- button as a text label, nothing on touch), chords, the prompt chip's cap, and that the bindings themselves come from
--- the same table (Hud/Controls and Heist/Slide name no KeyCode of their own).
+-- the same table (Hud/Controls, Heist/Slide and Heist/Sprint name no KeyCode of their own).
 
 local fs = require("@lune/fs")
 
@@ -19,6 +19,7 @@ return function(test)
 			{ "deck", "Q", "LB" },
 			{ "ready", "R", "Y" },
 			{ "slide", "Ctrl", "B" },
+			{ "sprint", "Shift", "LS" },
 			{ "back", "Bksp", "B" },
 			{ "skip", "Space", "A" },
 			{ "confirm", "", "A" },
@@ -32,9 +33,16 @@ return function(test)
 	end)
 
 	test("key hints: chords and the prompt chip's cap", function()
-		Assert.eq(KeyHints.chord("slide", "slideFast", "key"), "Ctrl+Shift", "fast slide on keys")
-		Assert.eq(KeyHints.chord("slide", "slideFast", "pad"), "B+LB", "fast slide on a pad")
-		Assert.eq(KeyHints.chord("slide", "slideFast", "touch"), "", "touch: no label")
+		Assert.eq(KeyHints.chord("sprint", "slide", "key"), "Shift+Ctrl", "slide out of a sprint on keys")
+		Assert.eq(KeyHints.chord("sprint", "slide", "pad"), "LS+B", "on a pad")
+		Assert.eq(KeyHints.chord("sprint", "slide", "touch"), "", "touch: no label")
+		Assert.eq(KeyHints.BINDINGS.slideFast, nil, "no fast slide (Shift is the sprint)")
+		for _, device in { "key", "pad" } do
+			local line = Strings.SPRINT_HINTS[device]
+			local cap = KeyHints.label("sprint", device)
+			Assert.truthy(string.find(line, cap, 1, true) ~= nil, `the {device} sprint hint names {cap}`)
+		end
+		Assert.eq(Strings.SPRINT_HINTS.touch, nil, "no sprint hint on touch (the stick sprints)")
 		Assert.eq(KeyHints.prompt("key"), Strings.KEY_E, "keyboard prompt")
 		Assert.eq(KeyHints.prompt("pad"), Strings.KEY_PAD, "gamepad prompt")
 		Assert.eq(KeyHints.prompt("touch"), Strings.KEY_TAP, "touch prompt")
@@ -56,8 +64,8 @@ return function(test)
 		end
 	end)
 
-	test("key hints: in a run the slide and the fast-forward never share a button", function()
-		local inRun = { "rewind", "use", "menu", "fast", "crew", "slide" }
+	test("key hints: in a run the slide, the sprint and the fast-forward never share a button", function()
+		local inRun = { "rewind", "use", "menu", "fast", "crew", "slide", "sprint" }
 		for _, device in { "key", "pad" } do
 			local seen: { [string]: string } = {}
 			for _, action in inRun do
@@ -71,7 +79,9 @@ return function(test)
 	end)
 
 	test("key hints: the run's controls and the slide bind from KeyHints only", function()
-		for _, path in { "src/client/Heist/Hud/Controls.luau", "src/client/Heist/Slide.luau" } do
+		for _, path in
+			{ "src/client/Heist/Hud/Controls.luau", "src/client/Heist/Slide.luau", "src/client/Heist/Sprint.luau" }
+		do
 			local src = fs.readFile(path)
 			Assert.falsy(string.find(src, "BindAction[^\n]*Enum%.KeyCode%."), path .. ": a KeyCode bound by hand")
 			Assert.falsy(string.find(src, "end, false, Enum%.KeyCode%."), path .. ": a KeyCode bound by hand")

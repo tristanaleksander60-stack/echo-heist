@@ -315,8 +315,9 @@ return function(test)
 		local walk, fast = race(1), race(Config.Rec.SPEED_MULT)
 		print(
 			string.format(
-				"        [dv06] bell to vault %.2f s (x1.35: %.2f s) vs door shut %.2f s after the ring",
+				"        [dv06] bell to vault %.2f s (x%.2f: %.2f s) vs door shut %.2f s after the ring",
 				walk,
+				Config.Rec.SPEED_MULT,
 				fast,
 				closeAt
 			)

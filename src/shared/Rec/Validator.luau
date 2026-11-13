@@ -4,7 +4,9 @@
 --
 -- Movement rules, per 20 Hz sample, from the server's own view:
 --   * horizontal speed <= WalkSpeed x SPEED_MULT, through a leaky bucket whose
---     slack grows with ping (lag bursts pass, sustained speed does not)
+--     slack grows with ping (lag bursts pass, sustained speed does not). SPEED_MULT
+--     sits above the sprint (Config.Sprint.MULT): a sprint needs no event and never
+--     taints (anyone may sprint at any time, so a Sprint flag would allow the same)
 --   * one step bigger than the whole bucket is a TELEPORT
 --   * vertical rise <= JumpHeight + RISE_MARGIN above the last grounded sample
 --   * no segment through a no-go box or a closed dynamic blocker
@@ -14,7 +16,8 @@
 --   * a slide (Config.Slide): a Slide event (recorded by the server, Sim/Interact.slide)
 --     raises the allowed speed by BURST x ALLOW_MARGIN for the samples strictly after
 --     it, up to WINDOW_SECONDS + WINDOW_GRACE + ping later; Slide events closer than
---     SERVER_COOLDOWN, or with an unknown arg, open no window (and fail checkEvents).
+--     SERVER_COOLDOWN, or with an arg other than 0 (the fast slide is gone), open no
+--     window (and fail checkEvents).
 --     The window is read from the recording itself, so streaming (Validator.step) and
 --     whole-run validation give the same result.
 -- Violations are clamped in place (the last valid sample advanced at max speed
@@ -193,13 +196,12 @@ function Validator.new(rec: Recording, opts: Options?): State
 	}
 end
 
--- The extra speed (studs/s) a Slide event with this arg allows, or nil for an unknown arg.
+-- The extra speed (studs/s) a Slide event with this arg allows, or nil for an unknown arg (only 0: one slide kind).
 function Validator.slideExtra(arg: number): number?
-	local burst = Config.Slide.BURST[arg + 1]
-	if arg ~= math.floor(arg) or burst == nil then
+	if arg ~= 0 then
 		return nil
 	end
-	return burst * Config.Slide.ALLOW_MARGIN
+	return Config.Slide.BURST * Config.Slide.ALLOW_MARGIN
 end
 
 -- Opens slide windows for the Slide events at or before loop time t (events in time order).

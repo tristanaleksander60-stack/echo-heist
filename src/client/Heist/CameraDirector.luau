@@ -42,7 +42,8 @@
 -- which in first person holds on the objective from above and eases into your eyes.
 --
 -- The slide (Config.Slide, Heist/Slide): setSlide(dip, fovKick) lowers first person's eye (world down) and adds a
--- slight FOV kick on top of every other kick; the hand-over and Crew View ignore it.
+-- slight FOV kick on top of every other kick; the hand-over and Crew View ignore it. The sprint (Config.Sprint,
+-- Heist/Sprint): setSprint(fovKick) adds its own small kick; slide + sprint together stay within FOV_KICK_MAX.
 -- Crew View (REVIEW_STEAM_PLUS gap 5; Config.Heist.CAMERA.CREW, pure maths in Shared/Heist/CrewView): in a first-
 -- person run, while setCrewHeld(who, true) holds (Q / LB / the touch CREW button, Hud/CrewView), the camera eases
 -- from your eyes up to an overhead diorama shot centred on you that frames your clones and the objective (the
@@ -130,6 +131,7 @@ function CameraDirector.new(state: any): any
 	local hiddenParts: { [Instance]: boolean } = {}
 	local eyeCf: CFrame? = nil -- the fp eye this frame (before a moment's blend)
 	local slideDip, slideKick = 0, 0 -- the slide (Heist/Slide): studs the eye drops, degrees added to the FOV
+	local sprintKick = 0 -- the sprint (Heist/Sprint): degrees added to the FOV
 
 	-- Crew View.
 	local crewHold = CrewView.newHold()
@@ -610,7 +612,7 @@ function CameraDirector.new(state: any): any
 		end
 	end
 
-	-- Crew View: drop it at once (the B + LB fast-slide chord: LB also holds Crew View).
+	-- Crew View: drop it at once.
 	function director.cancelCrew()
 		dropCrew()
 	end
@@ -620,6 +622,12 @@ function CameraDirector.new(state: any): any
 	function director.setSlide(dip: number, fovKick: number)
 		slideDip = math.max(0, dip)
 		slideKick = math.clamp(fovKick, 0, C.FOV_KICK_MAX)
+	end
+
+	-- The sprint (Heist/Sprint, Shared/Heist/SprintMath): first person's FOV gains `fovKick` degrees (the caller zeroes
+	-- it under reduced motion or with shake off).
+	function director.setSprint(fovKick: number)
+		sprintKick = math.clamp(fovKick, 0, C.FOV_KICK_MAX)
 	end
 
 	-- Crew View: what to frame (world space): points() your clones, objective() the run's objective (nil when there
@@ -1056,7 +1064,7 @@ function CameraDirector.new(state: any): any
 					focusAt = focusAt:Lerp(crewFocus :: Vector3, crewW)
 				end
 			end
-			write(cf, fov + kick + slideKick * (1 - crewW))
+			write(cf, fov + kick + math.min(slideKick + sprintKick, C.FOV_KICK_MAX) * (1 - crewW))
 			cam.Focus = CFrame.new(focusAt)
 			setBodyHidden((cam.CFrame.Position - eye.Position).Magnitude <= FP.HIDE_BODY_WITHIN)
 			return

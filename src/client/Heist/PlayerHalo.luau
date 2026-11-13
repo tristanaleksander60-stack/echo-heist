@@ -3,7 +3,7 @@
 -- G1: "the player avatar with its warm rim light and ground ring, readable against the floor"), so a
 -- dark outfit never sinks into a dark floor. Client-only, built once, never per frame:
 --   * rim: one Highlight on your character, outline only (Bulb Warm, fill off, depth-occluded);
---   * light: one warm PointLight behind and above you, no shadows (perf tiers 1-2 only);
+--   * light: one warm PointLight behind and above you, no shadows (perf tiers 1-2, never in first person);
 --   * ring: a flat disc under your feet (an unlit SurfaceGui: a soft warm disc with a ring rim),
 --     put on the floor by one downward ray a frame.
 -- Heist/EchoView drives it (update in a heist, hide in the garage).
@@ -136,7 +136,7 @@ function PlayerHalo.new(folder: Instance): any
 	end
 
 	-- Shows the halo on your live character (called every heist frame). inEyes: first person with the camera
-	-- at your eyes (Heist/CameraDirector): your body is hidden, so its rim is off (the ring and light stay).
+	-- at your eyes (Heist/CameraDirector): your body is hidden, so its rim and light are off (the ring stays).
 	function halo.update(inEyes: boolean?)
 		local lp = Players.LocalPlayer
 		local char = lp and lp.Character
@@ -151,7 +151,8 @@ function PlayerHalo.new(folder: Instance): any
 			return
 		end
 		rimHl.Enabled = inEyes ~= true
-		light.Enabled = lightOk
+		-- the light is for your body in third person; at your eyes it only lit the door frame you stood in (v125)
+		light.Enabled = lightOk and inEyes ~= true
 		local hit = workspace:Raycast(root.Position, Vector3.new(0, -C.HALO_RAY, 0), params)
 		if hit then
 			ringPart.CFrame = CFrame.new(hit.Position + Vector3.new(0, 0.06, 0))

@@ -14,10 +14,10 @@
         "ColorShift_Top": [0.588235, 0.686275, 1.0],
         "ColorShift_Bottom": [0.156863, 0.117647, 0.27451],
         "Ambient": [0.462745, 0.478431, 0.596078],
-        "OutdoorAmbient": [0.588235, 0.627451, 0.760784],
+        "OutdoorAmbient": [0.627451, 0.666667, 0.8],
         "EnvironmentDiffuseScale": 0.36,
-        "EnvironmentSpecularScale": 0.4,
-        "ExposureCompensation": 0.4,
+        "EnvironmentSpecularScale": 0.25,
+        "ExposureCompensation": 0,
         "ShadowSoftness": 0.3
       },
       "Sky": {
@@ -50,17 +50,17 @@
       "Bloom": {
         "$className": "BloomEffect",
         "$properties": {
-          "Intensity": 0.6,
-          "Size": 24,
-          "Threshold": 1.15
+          "Intensity": 0.25,
+          "Size": 16,
+          "Threshold": 1.6
         }
       },
       "ColorCorrection": {
         "$className": "ColorCorrectionEffect",
         "$properties": {
           "Brightness": 0,
-          "Contrast": 0.2,
-          "Saturation": 0.1,
+          "Contrast": 0.08,
+          "Saturation": 0.08,
           "TintColor": [0.933333, 0.94902, 1.0]
         }
       },

@@ -86,10 +86,10 @@ expectProps(lighting, "Lighting", {
 	ColorShift_Top = { 150, 175, 255 },
 	ColorShift_Bottom = { 40, 30, 70 },
 	Ambient = { 118, 122, 152 }, -- BIG: less pink (blue night by hue), more contrast
-	OutdoorAmbient = { 150, 160, 194 },
+	OutdoorAmbient = { 160, 170, 204 }, -- LIGHT AND SPRINT: +10 (the exposure went to 0)
 	EnvironmentDiffuseScale = 0.36,
-	EnvironmentSpecularScale = 0.4,
-	ExposureCompensation = 0.4,
+	EnvironmentSpecularScale = 0.25,
+	ExposureCompensation = 0, -- LIGHT AND SPRINT (owner v125 "way too sharp"): neutral, was 0.4
 	ShadowSoftness = 0.3,
 })
 -- Lighting.Technology must agree with the LightingStyle + PrioritizeLightingQuality pair. Rojo writes only the
@@ -165,10 +165,11 @@ local LIGHTING_CHILDREN: { [string]: { class: string, props: { [string]: any } }
 			Haze = 1.6,
 		},
 	},
-	Bloom = { class = "BloomEffect", props = { Intensity = 0.6, Size = 24, Threshold = 1.15 } },
+	-- LIGHT AND SPRINT: subtle, only true light sources over 1.6 bloom (was 0.6 / 24 / 1.15)
+	Bloom = { class = "BloomEffect", props = { Intensity = 0.25, Size = 16, Threshold = 1.6 } },
 	ColorCorrection = {
 		class = "ColorCorrectionEffect",
-		props = { Brightness = 0, Contrast = 0.2, Saturation = 0.1, TintColor = { 238, 242, 255 } },
+		props = { Brightness = 0, Contrast = 0.08, Saturation = 0.08, TintColor = { 238, 242, 255 } },
 	},
 	ColorGrading = { class = "ColorGradingEffect", props = { TonemapperPreset = "Default" } },
 }
@@ -403,6 +404,9 @@ expect(
 
 local client = sps and sps:FindFirstChild("Client")
 expect(client ~= nil and client.ClassName == "LocalScript", "StarterPlayerScripts.Client is a LocalScript")
+-- Shift is the sprint (Config.Sprint, Heist/Sprint): Roblox's shift-lock would take the same key (vault "Shift-Lock
+-- Sprint and Gamepad B for Menus"); first person locks the mouse itself.
+expect((sp :: any).EnableMouseLockOption == false, "StarterPlayer.EnableMouseLockOption is off (Shift sprints)")
 
 -- ReplicatedFirst (POLISH §4.6, PLAN_STEAM_PLUS §4.1 W7): the branded loading card replaces the default
 -- screen on the first frame. Its LocalScript and the modules it (and Heist/Title, Heist/Loading,

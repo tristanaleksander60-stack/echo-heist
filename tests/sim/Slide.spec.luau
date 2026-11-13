@@ -1,10 +1,11 @@
--- L2: the slide in the server-authoritative sim (Config.Slide). A live player walks, slides (the client's push,
--- integrated at 240 Hz from Shared/Heist/SlideMath, sent to the sim the way HeistInstance samples it) and asks for
--- the Slide through HeistSim.request (Heist.Interact on the wire). Asserted:
---   1. the run is accepted untainted and nothing is clamped (the recording is exactly what the server saw), for both
---      kinds, with the push a tick ahead of the request and with 0-150 ms of latency;
---   2. the same push without a Slide request taints the run (the window is what lets it through);
---   3. the server cooldown refuses a second Slide too soon, and fast-forward refuses one;
+-- L2: the slide in the server-authoritative sim (Config.Slide). A live player walks or sprints, slides (the client's
+-- push, integrated at 240 Hz from Shared/Heist/SlideMath on top of the speed it moves at, sent to the sim the way
+-- HeistInstance samples it) and asks for the Slide through HeistSim.request (Heist.Interact on the wire). Asserted:
+--   1. the run is accepted untainted and nothing is clamped (the recording is exactly what the server saw), out of a
+--      walk and out of a sprint, with the push a tick ahead of the request and with 0-150 ms of latency;
+--   2. a slide out of a sprint held at its peak for the whole window needs the Slide request (without it: tainted);
+--   3. the server cooldown refuses a second Slide too soon, arg 1 (the retired fast slide) is refused, and
+--      fast-forward refuses one;
 --   4. the next run's clone replays the slide (its positions are the recorded ones, tick for tick), and its recorded
 --      Slide event does nothing (no shrug).
 
@@ -18,17 +19,19 @@ local TestLevels = require("./TestLevels")
 local SL = Config.Slide
 local HZ = Config.Rec.HZ
 local WALK = Config.Rec.WALK_SPEED
+local SPRINT = WALK * Config.Sprint.MULT
 local SLIDE = Codec.EVENT.Slide
 local G = Codec.FLAG.GROUNDED
 
 type Plan = {
-	slides: { { at: number, kind: number, dir: number, request: boolean?, early: number? } },
+	-- base: the speed the slide starts from (WALK or SPRINT); hold: seconds the push stays at its peak past SECONDS
+	slides: { { at: number, base: number, dir: number, request: boolean?, early: number?, hold: number? } },
 	latency: number?, -- one-way seconds
 	stopAt: number?, -- seconds: END RUN
 }
 
 -- Where the player is at loop time t: walks +X from the spawn for 0.5 s, then each slide pushes along `dir` (+1 / -1
--- on X) at SlideMath's speed while walking on; stands in between.
+-- on X) at SlideMath's speed on top of its base (a walk or a sprint); stands in between.
 local function positionAt(plan: Plan, t: number): number
 	local x = 0
 	local sub = 12
@@ -41,8 +44,10 @@ local function positionAt(plan: Plan, t: number): number
 		end
 		for _, sl in plan.slides do
 			local age = ts - sl.at
-			if SlideMath.active(age, sl.kind, SL) then
-				v = sl.dir * SlideMath.speed(WALK, age, sl.kind, SL)
+			if sl.hold and age >= SL.ATTACK_SECONDS and age < SL.SECONDS + sl.hold then
+				v = sl.dir * (sl.base + SL.BURST)
+			elseif SlideMath.active(age, SL) then
+				v = sl.dir * SlideMath.speed(sl.base, age, SL)
 			end
 		end
 		x += v / (HZ * sub)
@@ -70,7 +75,7 @@ local function playRun(sim: any, plan: Plan): any
 			local arrive = sl.at + (sl.early or 0) + lat
 			if not sent[k] and sl.request ~= false and tServer - 1 / HZ >= arrive - 1e-9 then
 				sent[k] = true
-				results[k] = HeistSim.request(sim, 1, SLIDE, sl.kind - 1)
+				results[k] = HeistSim.request(sim, 1, SLIDE, 0)
 			end
 		end
 		if plan.stopAt and tServer >= plan.stopAt then
@@ -93,22 +98,22 @@ end
 
 return function(test)
 	test(
-		"slide: a sliding run is accepted untainted, nothing clamped (both kinds, push first, 0-150 ms latency)",
+		"slide: a sliding run is accepted untainted, nothing clamped (walk and sprint, push first, 0-150 ms latency)",
 		function()
 			for _, lat in { 0, 0.05, 0.1, 0.15 } do
 				for _, early in { 0, 1 / HZ } do
 					local sim = newSim()
 					local plan: Plan = {
 						slides = {
-							{ at = 1, kind = 1, dir = 1, early = early },
-							{ at = 2.5, kind = 2, dir = -1, early = early },
+							{ at = 1, base = WALK, dir = 1, early = early },
+							{ at = 2.5, base = SPRINT, dir = -1, early = early },
 						},
 						latency = lat,
 						stopAt = 4.5,
 					}
 					local results = playRun(sim, plan)
 					Assert.truthy(results[1], "slide accepted")
-					Assert.truthy(results[2], "fast slide accepted")
+					Assert.truthy(results[2], "slide out of a sprint accepted")
 					Assert.falsy(sim.lastRun.tainted, string.format("untainted (latency %.2f, early %.2f)", lat, early))
 					local rec = liveRec(sim)
 					Assert.eq(rec.vflags, 0, "no validator flags")
@@ -130,10 +135,14 @@ return function(test)
 		end
 	)
 
-	test("slide: the same push without the Slide request taints the run", function()
+	test("slide: out of a sprint, held at its peak for the whole window, it needs the Slide request", function()
+		local hold = SL.WINDOW_SECONDS + SL.WINDOW_GRACE - SL.SECONDS
+		local ok = newSim()
+		playRun(ok, { slides = { { at = 1, base = SPRINT, dir = 1, hold = hold } }, stopAt = 3 })
+		Assert.falsy(ok.lastRun.tainted, "with the request: untainted")
 		local sim = newSim()
-		playRun(sim, { slides = { { at = 1, kind = 2, dir = 1, request = false } }, stopAt = 3 })
-		Assert.truthy(sim.lastRun.tainted, "tainted")
+		playRun(sim, { slides = { { at = 1, base = SPRINT, dir = 1, request = false, hold = hold } }, stopAt = 3 })
+		Assert.truthy(sim.lastRun.tainted, "without it: tainted")
 	end)
 
 	test("slide: the server cooldown and fast-forward refuse a Slide", function()
@@ -146,12 +155,13 @@ return function(test)
 		end
 		Assert.truthy(HeistSim.request(sim, 1, SLIDE, 0), "first slide")
 		HeistSim.step(sim)
-		Assert.falsy(HeistSim.request(sim, 1, SLIDE, 1), "inside the cooldown")
+		Assert.falsy(HeistSim.request(sim, 1, SLIDE, 0), "inside the cooldown")
 		Assert.falsy(HeistSim.request(sim, 1, SLIDE, 5), "unknown kind")
 		for _ = 1, math.ceil(SL.SERVER_COOLDOWN * HZ) do
 			HeistSim.step(sim)
 		end
-		Assert.truthy(HeistSim.request(sim, 1, SLIDE, 1), "after the cooldown")
+		Assert.falsy(HeistSim.request(sim, 1, SLIDE, 1), "arg 1: the retired fast slide")
+		Assert.truthy(HeistSim.request(sim, 1, SLIDE, 0), "after the cooldown")
 		sim.rate = Config.Rec.SKIP_SPEED
 		for _ = 1, math.ceil(SL.SERVER_COOLDOWN * HZ) do
 			HeistSim.step(sim)
@@ -162,7 +172,7 @@ return function(test)
 
 	test("slide: the next run's clone replays the slide tick for tick, its Slide event shrugs nothing", function()
 		local sim = newSim()
-		local plan: Plan = { slides = { { at = 1, kind = 2, dir = 1 } }, stopAt = 3 }
+		local plan: Plan = { slides = { { at = 1, base = SPRINT, dir = 1 } }, stopAt = 3 }
 		playRun(sim, plan)
 		Assert.falsy(sim.lastRun.tainted, "run 1 untainted")
 		local rec1 = liveRec(sim)

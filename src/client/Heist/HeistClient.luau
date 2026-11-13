@@ -78,6 +78,7 @@ local Transition = require(Heist:WaitForChild("Transition"))
 local LevelIntro = require(Heist:WaitForChild("LevelIntro"))
 local Viewmodel = require(Heist:WaitForChild("Viewmodel"))
 local Slide = require(Heist:WaitForChild("Slide"))
+local Sprint = require(Heist:WaitForChild("Sprint"))
 local RookieAnim = require(Heist:WaitForChild("RookieAnim"))
 local LookTarget = require(Heist:WaitForChild("LookTarget"))
 local LookTilt = require(Heist:WaitForChild("LookTilt"))
@@ -236,7 +237,6 @@ function HeistClient.start()
 		end,
 	})
 	local ffOn = false
-	local slideRef: any = nil -- Heist/Slide, made once the HUD exists
 	local doors: any = nil -- Heist/Transition, once the HUD's fx layer exists
 	-- A level pick: the doors start closing at once and hold while the server builds the heist
 	-- (they open again by themselves, or on the refusal toast, if no heist comes).
@@ -264,8 +264,9 @@ function HeistClient.start()
 		ready = function()
 			Net.Send(R.Ready, state.reduced == true)
 		end,
-		fastForward = function(on: boolean)
-			if on ~= ffOn then
+		-- force: send even when unchanged (the pill held while you moved: the server refused it, now you stand)
+		fastForward = function(on: boolean, force: boolean?)
+			if on ~= ffOn or (force == true and on) then
 				ffOn = on
 				Net.Send(R.FastForward, on)
 			end
@@ -324,15 +325,6 @@ function HeistClient.start()
 		crewAllowed = function(): boolean
 			return camera.crewAllowed()
 		end,
-		-- The slide (Hud/Slide's touch button; the keys are Heist/Slide's own).
-		slide = function(fast: boolean)
-			if slideRef then
-				slideRef.start(fast)
-			end
-		end,
-		slideAllowed = function(): boolean
-			return slideRef ~= nil and slideRef.allowed()
-		end,
 		-- Your newest clone this run, where it is drawn (world space), or nil: the L1 look cue (Hud/Hints).
 		ownClone = function(): Vector3?
 			local id = echo.newestOwn()
@@ -372,8 +364,8 @@ function HeistClient.start()
 			return director.isPlaying()
 		end,
 	})
-	-- The slide (Config.Slide): Ctrl / B / SLIDE; in a run the server records it (Heist.Interact Slide).
-	slideRef = Slide.new(state, {
+	-- The slide (Config.Slide): Ctrl / B; in a run the server records it (Heist.Interact Slide).
+	Slide.new(state, {
 		camera = camera,
 		send = function(arg: number)
 			Net.Send(R.Interact, Codec.EVENT.Slide, arg)
@@ -385,9 +377,15 @@ function HeistClient.start()
 		rewinding = function(): boolean
 			return director.isPlaying()
 		end,
-		crewCancel = function()
-			camera.cancelCrew()
+	})
+	-- The sprint (Config.Sprint): hold Shift, L3, or the touch stick at its edge; nothing goes to the server.
+	Sprint.new(state, {
+		camera = camera,
+		sheetOpen = hud.sheetOpen,
+		rewinding = function(): boolean
+			return director.isPlaying()
 		end,
+		toast = hud.toast,
 	})
 	hud.bigStamp = function(text: string, color: Color3, hold: number?)
 		director.stamp(text, color, hold or 1.2, not state.reduced)

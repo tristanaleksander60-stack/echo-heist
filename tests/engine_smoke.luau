@@ -380,12 +380,15 @@ do
 		check(inst.folder:GetAttribute("K1State") == "Carried", "sim: cash grabbed through Interact (attribute)")
 		walkTo(0, -23)
 		walkTo(0, -16)
-		-- A fast slide (Config.Slide) back up the corridor: the Slide request (Heist.Interact) first, then the push
-		-- at SlideMath's speeds; the server's validator window must keep the run untainted and unclamped.
-		local slideOk = HeistInstance.interact(inst, FAKE, Codec.EVENT.Slide, 1)
+		-- A slide out of a sprint (Config.Slide, Config.Sprint) back up the corridor: the Slide request
+		-- (Heist.Interact, arg 0) first, then the push at SlideMath's speeds on top of sprint speed; the server's
+		-- validator window must keep the run untainted and unclamped. Arg 1 (the retired fast slide) is refused.
+		local fastRefused = HeistInstance.interact(inst, FAKE, Codec.EVENT.Slide, 1) ~= true
+		local slideOk = HeistInstance.interact(inst, FAKE, Codec.EVENT.Slide, 0)
 		local slideT = 0
-		while slideT < SimConfig.Slide.SECONDS[2] do
-			local v = SlideMath.speed(SimConfig.Rec.WALK_SPEED, slideT, 2, SimConfig.Slide)
+		local sprintSpeed = SimConfig.Rec.WALK_SPEED * SimConfig.Sprint.MULT
+		while slideT < SimConfig.Slide.SECONDS + 0.5 do
+			local v = SlideMath.speed(sprintSpeed, slideT, SimConfig.Slide)
 			HeistInstance.setFakeInput(inst, FAKE, fakeIn.x, 3, fakeIn.z + v * 0.05, math.pi)
 			step(0.05)
 			slideT += 0.05
@@ -398,9 +401,9 @@ do
 			end
 		end
 		check(
-			slideOk == true and slideEvents == 1 and slideLive ~= nil and slideLive.rec.vflags == 0,
+			fastRefused and slideOk == true and slideEvents == 1 and slideLive ~= nil and slideLive.rec.vflags == 0,
 			string.format(
-				"sim: a fast slide is recorded (Slide event) and validated clean (vflags %s, at z %.1f)",
+				"sim: a slide out of a sprint is recorded (Slide event) and validated clean (vflags %s, at z %.1f)",
 				tostring(slideLive and slideLive.rec.vflags),
 				fakeIn.z
 			)

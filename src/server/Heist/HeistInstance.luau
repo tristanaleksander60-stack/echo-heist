@@ -558,6 +558,8 @@ local function syncAttributes(inst: any, now: number)
 	setAttr(inst, "Banked", sim.banked)
 	setAttr(inst, "TierMet", sim.tierMet)
 	setAttr(inst, "CanFF", sim.phase == "Run" and now >= inst.startAt and HeistSim.canFastForward(sim))
+	-- the HOLD FAST pill shows on this (a clone still to play), not on CanFF: walking must not flicker it
+	setAttr(inst, "FFPending", sim.phase == "Run" and now >= inst.startAt and HeistSim.ffPending(sim))
 	setAttr(inst, "AutoEndArmed", sim.phase == "Run" and HeistSim.autoEndArmed(sim) ~= nil)
 	-- Sim state only changes on its 20 Hz ticks: skip the frames in between.
 	if sim.tick == inst.attrTick and sim.phase == "Run" then

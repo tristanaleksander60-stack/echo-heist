@@ -1,7 +1,8 @@
 --!strict
--- Heist/Slide: the slide on this client (Config.Slide; the pure maths in Shared/Heist/SlideMath). Ctrl slides,
--- Ctrl + Shift slides fast; on a gamepad B, and B with LB held; on touch the SLIDE button (Hud/Slide), with the FAST
--- pill held for the fast one. Keys come from Shared/Heist/KeyHints ("slide", "slideFast").
+-- Heist/Slide: the slide on this client (Config.Slide; the pure maths in Shared/Heist/SlideMath). Ctrl slides; on a
+-- gamepad B. No touch slide and no on-screen button (owner, live v125). Keys come from Shared/Heist/KeyHints
+-- ("slide"). The burst rides on the speed you already move at, so a slide out of a sprint (Heist/Sprint) starts
+-- from sprint speed.
 --   * the push: a LinearVelocity in Plane mode (X and Z constrained, Y free, so you still fall off ledges and jump)
 --     on your root, its target WalkSpeed + BURST x SlideMath.envelope along the direction you moved (or looked, from a
 --     standstill), with Humanoid:Move kept on that direction every frame so the Humanoid agrees with the mover (vault
@@ -9,7 +10,7 @@
 --   * the camera: first person dips low and kicks the FOV a little (CameraDirector.setSlide; the kick is off under
 --     reduced motion or with camera shake off);
 --   * the sound: the story intro's whoosh (IntroWhoosh, docs/AUDIO.md);
---   * in a heist run the server is told first (Heist.Interact(EVENT.Slide, kind - 1)): it records the Slide event and
+--   * in a heist run the server is told first (Heist.Interact(EVENT.Slide, 0)): it records the Slide event and
 --     Rec/Validator raises your allowed speed for that window only, so the run never taints or rubber-bands. Your
 --     clones replay the slide from their recorded positions. In the hideout nothing is sent (nothing is recorded).
 -- Never during a presentation moment, Crew View, the rewind, a sheet, a station or the drive (SlideMath.allowed).
@@ -34,22 +35,7 @@ local Slide = {}
 local ACTION = "EH_Slide"
 local RENDER_NAME = "EH_Slide"
 
-local function isDown(action: string): boolean
-	for _, code in Common.keyCodes(action) do
-		local name = code.Name
-		if string.sub(name, 1, 6) == "Button" then
-			if UserInputService:IsGamepadButtonDown(Enum.UserInputType.Gamepad1, code) then
-				return true
-			end
-		elseif UserInputService:IsKeyDown(code) then
-			return true
-		end
-	end
-	return false
-end
-
--- deps: camera (CameraDirector), send(arg) the Heist.Interact Slide, fastForwardOff(), sheetOpen(), rewinding(),
--- crewCancel() (the B + LB chord drops Crew View at once).
+-- deps: camera (CameraDirector), send(arg) the Heist.Interact Slide, fastForwardOff(), sheetOpen(), rewinding().
 function Slide.new(state: any, deps: any): any
 	local SL = Config.Slide
 	local player = Players.LocalPlayer
@@ -57,7 +43,6 @@ function Slide.new(state: any, deps: any): any
 
 	type Active = {
 		t0: number,
-		kind: number,
 		dx: number,
 		dz: number,
 		hum: Humanoid,
@@ -66,7 +51,7 @@ function Slide.new(state: any, deps: any): any
 		lv: LinearVelocity,
 	}
 	local active: Active? = nil
-	local camT0, camKind = -math.huge, 1
+	local camT0 = -math.huge
 	local lastStart = -math.huge
 
 	local function parts(): (Humanoid?, BasePart?)
@@ -116,17 +101,12 @@ function Slide.new(state: any, deps: any): any
 		a.att:Destroy()
 	end
 
-	-- May a slide start now (the touch button shows only then)?
-	function slide.allowed(): boolean
-		return (gate(os.clock(), true))
-	end
-
 	function slide.active(): boolean
 		return active ~= nil
 	end
 
-	-- Starts a slide (fast = the bigger burst). Returns whether it started.
-	function slide.start(fast: boolean?): boolean
+	-- Starts a slide. Returns whether it started.
+	function slide.start(): boolean
 		local now = os.clock()
 		if not gate(now) then
 			return false
@@ -135,7 +115,6 @@ function Slide.new(state: any, deps: any): any
 		if not hum or not root then
 			return false
 		end
-		local kind = SlideMath.kindOf(fast)
 		local move = hum.MoveDirection
 		local look = root.CFrame.LookVector
 		local cam = workspace.CurrentCamera
@@ -151,7 +130,7 @@ function Slide.new(state: any, deps: any): any
 		-- The server first (the request opens the validator's window), and no fast-forward under a slide.
 		call(deps.fastForwardOff)
 		if state.where == "heist" then
-			call(deps.send, kind - 1)
+			call(deps.send, 0)
 		end
 		local att = Instance.new("Attachment")
 		att.Name = "EH_SlideAttachment"
@@ -166,11 +145,11 @@ function Slide.new(state: any, deps: any): any
 		lv.ForceLimitsEnabled = true
 		lv.ForceLimitMode = Enum.ForceLimitMode.Magnitude
 		lv.MaxForce = root.AssemblyMass * SL.FORCE_PER_MASS
-		local v = SlideMath.speed(hum.WalkSpeed, 0, kind, SL)
+		local v = SlideMath.speed(hum.WalkSpeed, 0, SL)
 		lv.PlaneVelocity = Vector2.new(dx, dz) * v
 		lv.Parent = root
-		active = { t0 = now, kind = kind, dx = dx, dz = dz, hum = hum, root = root, att = att, lv = lv }
-		camT0, camKind = now, kind
+		active = { t0 = now, dx = dx, dz = dz, hum = hum, root = root, att = att, lv = lv }
+		camT0 = now
 		Sound.play("IntroWhoosh")
 		return true
 	end
@@ -183,14 +162,14 @@ function Slide.new(state: any, deps: any): any
 			local age = now - a.t0
 			local okGate = gate(now, true)
 			if
-				not SlideMath.active(age, a.kind, SL)
+				not SlideMath.active(age, SL)
 				or not okGate
 				or a.hum.Health <= 0
 				or not a.root:IsDescendantOf(workspace)
 			then
 				stop()
 			else
-				local v = SlideMath.speed(a.hum.WalkSpeed, age, a.kind, SL)
+				local v = SlideMath.speed(a.hum.WalkSpeed, age, SL)
 				a.lv.PlaneVelocity = Vector2.new(a.dx, a.dz) * v
 				a.hum:Move(Vector3.new(a.dx, 0, a.dz), false)
 			end
@@ -199,9 +178,9 @@ function Slide.new(state: any, deps: any): any
 		local cam = deps.camera
 		if cam and cam.setSlide then
 			local age = now - camT0
-			if SlideMath.cameraActive(age, camKind, SL) and (active ~= nil or (gate(now, true))) then
+			if SlideMath.cameraActive(age, SL) and (active ~= nil or (gate(now, true))) then
 				local comfort = { reduced = state.reduced == true, shake = Settings.get("shake") ~= false }
-				cam.setSlide(SlideMath.dip(age, camKind, SL), SlideMath.fovKick(age, camKind, comfort, SL))
+				cam.setSlide(SlideMath.dip(age, SL), SlideMath.fovKick(age, comfort, SL))
 			else
 				camT0 = -math.huge
 				cam.setSlide(0, 0)
@@ -210,18 +189,13 @@ function Slide.new(state: any, deps: any): any
 	end
 	RunService:BindToRenderStep(RENDER_NAME, Enum.RenderPriority.Input.Value + 1, step)
 
-	-- Keys: Ctrl / B slides, with Shift / LB held the fast one. Bound low so a station's BACK (B) and the settings'
-	-- close (B) take B first while they are up.
-	local function onSlide(_: string, inputState: Enum.UserInputState, input: InputObject): Enum.ContextActionResult
+	-- Keys: Ctrl / B slides. Bound low so a station's BACK (B) and the settings' close (B) take B first while they
+	-- are up.
+	local function onSlide(_: string, inputState: Enum.UserInputState): Enum.ContextActionResult
 		if inputState ~= Enum.UserInputState.Begin or UserInputService:GetFocusedTextBox() ~= nil then
 			return Enum.ContextActionResult.Pass
 		end
-		local pad = input.KeyCode == Enum.KeyCode.ButtonB
-		local fast = isDown("slideFast")
-		if pad and fast and state.crewView == true then
-			call(deps.crewCancel) -- B + LB: LB also holds Crew View; the chord means the fast slide
-		end
-		slide.start(fast)
+		slide.start()
 		return Enum.ContextActionResult.Pass
 	end
 	ContextActionService:BindActionAtPriority(

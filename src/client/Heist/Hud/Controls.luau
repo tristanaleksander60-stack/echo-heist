@@ -93,7 +93,7 @@ function Controls.build(ctx: any): any
 	controls.interactIcon = Ui.iconWord(interactBtn, "coin", "left", U.ICON_SIZE)
 	Common.keyCap(interactBtn, "use")
 
-	-- Fast-forward pill: hold to skip (held, it is also the touch fast slide's modifier: Hud/Slide).
+	-- Fast-forward pill: hold to skip (ctx.ffHeld: held while you walk, Hud/Run asks again once you stand).
 	ffPill.InputBegan:Connect(function(input: InputObject)
 		if
 			input.UserInputType == Enum.UserInputType.MouseButton1
@@ -188,8 +188,10 @@ function Controls.bind(ctx: any)
 	end, false, codes("deck"))
 	ContextActionService:BindAction("HeistFastForward", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin then
+			ctx.ffHeld = true
 			actions.fastForward(true)
-		elseif inputState == Enum.UserInputState.End then
+		elseif inputState == Enum.UserInputState.End or inputState == Enum.UserInputState.Cancel then
+			ctx.ffHeld = false
 			actions.fastForward(false)
 		end
 		return Enum.ContextActionResult.Pass

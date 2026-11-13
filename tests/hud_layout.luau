@@ -23,10 +23,11 @@ local HudLayout = require("../src/shared/Heist/HudLayout")
 local GAP = HudLayout.GAP
 assert(GAP >= 8, "the HUD gap is at least 8 design px")
 -- Key caps (Hud/Common.keyCap) straddle a button's corner: they must stay inside the gap, so they never touch a
--- neighbouring box; the touch SLIDE button is laid out in every first-person run scene and in the hideout.
+-- neighbouring box. No SLIDE button anywhere (owner, live v125: the slide is Ctrl / B only, the sprint has no button).
 assert(HudLayout.KEY_CAP_OUT < GAP, "a key cap reaches less than GAP past its button")
-for _, scene in { "fpRun", "fpRunAlarm", "fpCrew", "fpCrewAlarm", "lobby" } do
-	assert(table.find(HudLayout.SCENES[scene], "SLIDE"), "SLIDE is laid out in " .. scene)
+assert((HudLayout :: any).SLIDE == nil, "no SLIDE box")
+for scene, names in HudLayout.SCENES do
+	assert(not table.find(names, "SLIDE"), "no SLIDE button in " .. scene)
 end
 local TOP_BAR = 58
 

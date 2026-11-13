@@ -1,14 +1,15 @@
 --!strict
 -- Heist/SlideMath: the pure half of the slide (numbers in Config.Slide; Heist/Slide drives your character with it,
 -- Heist/CameraDirector draws the dip, tests/unit/HeistSlide.spec.luau and tests/sim/Slide.spec.luau check it in Lune).
---   kindOf(fast)                 1 = slide (Ctrl, B, SLIDE), 2 = fast slide (Ctrl + Shift, B + LB, FAST + SLIDE)
---   envelope(age, kind, cfg)     the burst's share 0..1: a short push-off (ATTACK_SECONDS), then a quadratic decay to
---                                0 at SECONDS[kind]
---   speed(walk, age, kind, cfg)  the push's target speed: WalkSpeed + BURST[kind] x envelope
---   dip(age, kind, cfg)          how far the first-person eye drops (studs): down over DIP_IN_SECONDS, held while the
+-- One kind of slide (Ctrl, B); the fast Ctrl + Shift slide and the touch button are gone (Shift is the sprint).
+--   envelope(age, cfg)           the burst's share 0..1: a short push-off (ATTACK_SECONDS), then a quadratic decay to
+--                                0 at SECONDS
+--   speed(walk, age, cfg)        the push's target speed: the speed you move at (WalkSpeed, sprint included) +
+--                                BURST x envelope
+--   dip(age, cfg)                how far the first-person eye drops (studs): down over DIP_IN_SECONDS, held while the
 --                                burst lasts, back up over DIP_OUT_SECONDS
---   fovKick(age, kind, comfort)  degrees added to the FOV (follows the burst); 0 under reduced motion or shake off
---   active(age, kind, cfg)       the push still runs; cameraActive: the dip is not back yet
+--   fovKick(age, comfort, cfg)   degrees added to the FOV (follows the burst); 0 under reduced motion or shake off
+--   active(age, cfg)             the push still runs; cameraActive: the dip is not back yet
 --   direction(mx, mz, lx, lz)    the slide's flat unit direction: your move direction, or your look when you stand
 --   allowed(gate)                may a slide start now? -> ok, reason (never in a presentation moment or Crew View)
 
@@ -34,12 +35,8 @@ local function smooth(u: number): number
 	return u * u * (3 - 2 * u)
 end
 
-function SlideMath.kindOf(fast: boolean?): number
-	return if fast == true then 2 else 1
-end
-
-function SlideMath.envelope(age: number, kind: number, cfg: any): number
-	local total = cfg.SECONDS[kind] or cfg.SECONDS[1]
+function SlideMath.envelope(age: number, cfg: any): number
+	local total = cfg.SECONDS
 	if age < 0 or age >= total then
 		return 0
 	end
@@ -51,35 +48,34 @@ function SlideMath.envelope(age: number, kind: number, cfg: any): number
 	return (1 - u) * (1 - u)
 end
 
-function SlideMath.speed(walk: number, age: number, kind: number, cfg: any): number
-	return walk + (cfg.BURST[kind] or cfg.BURST[1]) * SlideMath.envelope(age, kind, cfg)
+function SlideMath.speed(walk: number, age: number, cfg: any): number
+	return walk + cfg.BURST * SlideMath.envelope(age, cfg)
 end
 
-function SlideMath.active(age: number, kind: number, cfg: any): boolean
-	return age >= 0 and age < (cfg.SECONDS[kind] or cfg.SECONDS[1])
+function SlideMath.active(age: number, cfg: any): boolean
+	return age >= 0 and age < cfg.SECONDS
 end
 
-function SlideMath.cameraActive(age: number, kind: number, cfg: any): boolean
-	return age >= 0 and age < (cfg.SECONDS[kind] or cfg.SECONDS[1]) + cfg.DIP_OUT_SECONDS
+function SlideMath.cameraActive(age: number, cfg: any): boolean
+	return age >= 0 and age < cfg.SECONDS + cfg.DIP_OUT_SECONDS
 end
 
-function SlideMath.dip(age: number, kind: number, cfg: any): number
-	local depth = cfg.DIP[kind] or cfg.DIP[1]
-	local total = cfg.SECONDS[kind] or cfg.SECONDS[1]
+function SlideMath.dip(age: number, cfg: any): number
+	local total = cfg.SECONDS
 	if age < 0 or age >= total + cfg.DIP_OUT_SECONDS then
 		return 0
 	end
 	local down = smooth(age / math.max(cfg.DIP_IN_SECONDS, 1e-6))
 	local up = if age <= total then 0 else smooth((age - total) / math.max(cfg.DIP_OUT_SECONDS, 1e-6))
-	return depth * down * (1 - up)
+	return cfg.DIP * down * (1 - up)
 end
 
 -- comfort: { reduced: boolean?, shake: boolean? } (shake false = camera shake off in Settings)
-function SlideMath.fovKick(age: number, kind: number, comfort: { reduced: boolean?, shake: boolean? }, cfg: any): number
+function SlideMath.fovKick(age: number, comfort: { reduced: boolean?, shake: boolean? }, cfg: any): number
 	if comfort.reduced == true or comfort.shake == false then
 		return 0
 	end
-	return (cfg.FOV_KICK[kind] or cfg.FOV_KICK[1]) * SlideMath.envelope(age, kind, cfg)
+	return cfg.FOV_KICK * SlideMath.envelope(age, cfg)
 end
 
 -- The flat unit direction: the move direction (mx, mz) when it is at least minMove long, else the look (lx, lz).
@@ -97,7 +93,8 @@ function SlideMath.direction(mx: number, mz: number, lx: number, lz: number, min
 end
 
 -- Whether a slide may start, and why not ("ok" when it may). Order: where you are, a presentation moment, Crew View,
--- the rewind, a sheet, your character, the cooldown.
+-- the rewind, a sheet, your character, the cooldown. Heist/Sprint uses the same gate (without the cooldown and the
+-- floor check).
 function SlideMath.allowed(g: Gate): (boolean, string)
 	if g.where == "heist" then
 		if g.phase ~= "Run" then
