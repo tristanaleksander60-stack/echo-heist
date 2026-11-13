@@ -16,10 +16,12 @@ pays for the new villain close-up (3.4 s). If the kid tests (REVIEW #2) show pla
 next cut is shot 1 to 3.5 s and the letter's fall to 4.5 s (about 31 s).
 
 **Rules:** first join only (the FirstTime "title" kind, so a player sees the intro or the old title beat once, never
-both), SKIP visible from the first frame (any key on a keyboard, ButtonB on a gamepad), reduced motion = cuts instead
-of the whip-pan, no shake, no flashes, no letterbox slide. The owner waived the "control within 10 s" bar for the
-intro; the server holds the first heist until the intro ends (`Heist.Ready` while preparing, at most
-`Config.Intro.SERVER_HOLD_SECONDS`, 48 s: longer than the intro plus the title card, unit-tested). Rewatchable:
+both), SKIP visible from the first frame (Space / Enter on a keyboard, ButtonB / Start on a gamepad:
+`Config.Intro.SKIP.KEYS`; not any key, so a player pressing W while it loads still sees it), reduced motion = cuts
+instead of the whip-pan, no shake, no flashes, no letterbox slide. No server hold (INTRO LOAD FIX, 2026-11-13): a new
+account is in the hideout as soon as its profile is read, the intro plays over it, and the client's boot `Heist.Ready`
+(intro or title over) starts L1. `Cinematic.play` watches its own frames: if the plan stops advancing it ends at once
+("stalled") and the title card shows, never a frozen frame. Rewatchable:
 `Cinematic.play()` (the lobby TV). The beats are authored per shot (`IntroPlan.at(shot, seconds)`), so a retimed shot
 never strands a pose, the letter or the swirl in the wrong shot.
 

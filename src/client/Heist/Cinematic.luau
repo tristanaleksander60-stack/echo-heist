@@ -28,10 +28,16 @@
 --     cine.skip()                      SKIP: the same end state as watching to the end
 --     cine.isDone() / cine.t()         state
 --     cine.destroy()                   tear down and restore everything (idempotent)
---   Cinematic.play(opts?) -> cine      first join and the lobby TV: build, play in real time, hand back
+--     cine.shot() -> (index, s)        the shot playing now (IntroPlan.SHOTS) and the seconds into it
+--   Cinematic.play(opts?) -> cine      first join and the lobby TV: build, play in real time, hand back. It is
+--                                      driven by a real per-frame connection (BindToRenderStep after the camera;
+--                                      opts.bind replaces it in tests) and watched: if the plan stops advancing
+--                                      (Config.Intro.START_WATCHDOG_SECONDS / STALL_SECONDS) it ends at once
+--                                      ("stalled") so the caller shows the title, never a frozen frame.
 --   Cinematic.isPlaying() -> boolean
 -- opts: { parent: Instance? (workspace), gui: Instance? (PlayerGui), camera: Camera?, director: any? (CameraDirector),
---         reduced: (() -> boolean)?, tier: number?, onEnd: ((how: string) -> ())? ("finished" | "skipped") }
+--         reduced: (() -> boolean)?, tier: number?, onEnd: ((how: string) -> ())? ("finished" | "skipped" |
+--         "stalled"), bind: ((step: (dt: number) -> ()) -> () -> ())? (play only: the frame driver, returns unbind) }
 
 local GuiService = game:GetService("GuiService")
 local Lighting = game:GetService("Lighting")
@@ -973,7 +979,9 @@ function Cinematic.new(opts: any?): any
 				end
 			elseif d:IsA("Motor6D") then
 				table.insert(motors, d)
-			elseif d:IsA("Script") or d:IsA("LocalScript") then
+			elseif d:IsA("Script") or d:IsA("LocalScript") or d:IsA("Animator") then
+				-- no Animator on a stage copy: on a live client it rewrites Motor6D.Transform every animation step,
+				-- so the plan's poses (written per render frame) would never show (a frozen Rookie)
 				d:Destroy()
 			elseif d:IsA("Humanoid") then
 				d.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
@@ -1894,6 +1902,11 @@ function Cinematic.new(opts: any?): any
 		return st.t
 	end
 
+	-- The shot playing now (IntroPlan.SHOTS index) and the seconds into it.
+	function cine.shot(): (number, number)
+		return IntroPlan.locate(st.t)
+	end
+
 	function cine.state(): any
 		return IntroPlan.summary(st)
 	end
@@ -1945,10 +1958,15 @@ end
 ---------------------------------------------------------------------------
 -- Real-time play (first join, the lobby TV)
 ---------------------------------------------------------------------------
-local SKIP_KEYS: { [Enum.KeyCode]: boolean } = {
-	[Enum.KeyCode.ButtonB] = true,
-	[Enum.KeyCode.ButtonStart] = true,
-}
+local SKIP_KEYS: { [Enum.KeyCode]: boolean } = {}
+for _, name in I.SKIP.KEYS do
+	local ok, code = pcall(function()
+		return (Enum.KeyCode :: any)[name]
+	end)
+	if ok and code then
+		SKIP_KEYS[code] = true
+	end
+end
 
 -- Waits up to Config.Intro.KIT_WAIT_SECONDS for the intro kit (the server publishes it once the art kit loads).
 function Cinematic.waitForKit(): boolean
@@ -1967,27 +1985,43 @@ function Cinematic.isPlaying(): boolean
 	return playing ~= nil
 end
 
--- Builds and plays the intro now; opts.onEnd(how) once it is over ("finished" | "skipped"), after the camera,
--- lighting and HUD are restored. Returns the cinematic (nil when one is already playing or on the server).
+-- The real frame driver: after the camera, every rendered frame (client only).
+local function renderBind(step: (dt: number) -> ()): () -> ()
+	RunService:BindToRenderStep(RENDER_NAME, Enum.RenderPriority.Camera.Value + 2, step)
+	return function()
+		RunService:UnbindFromRenderStep(RENDER_NAME)
+	end
+end
+
+-- Builds and plays the intro now; opts.onEnd(how) once it is over ("finished" | "skipped" | "stalled"), after the
+-- camera, lighting and HUD are restored. Returns the cinematic (nil when one is already playing, or on a server
+-- without opts.bind). An error in the build is raised to the caller (Heist/Loading falls back to the title).
 function Cinematic.play(opts: any?): any
-	if playing or not RunService:IsClient() then
+	local o = table.clone(opts or {})
+	local bind = o.bind
+	if playing or (bind == nil and not RunService:IsClient()) then
 		return nil
 	end
-	local o = table.clone(opts or {})
+	o.bind = nil
 	local userEnd = o.onEnd
 	local cine: any
 	local conns: { RBXScriptConnection } = {}
+	local unbind: (() -> ())? = nil
+	local stalled = false
 	local startedAt = os.clock()
 	o.onEnd = function(how: string)
 		task.wait(I.HANDOFF_SECONDS)
-		RunService:UnbindFromRenderStep(RENDER_NAME)
+		if unbind then
+			unbind()
+			unbind = nil
+		end
 		for _, c in conns do
 			c:Disconnect()
 		end
 		-- the caller's next frame first (the title card sits one layer under the intro), then the intro goes:
 		-- no frame of bare game between them
 		if userEnd then
-			local ok, err = pcall(userEnd, how)
+			local ok, err = pcall(userEnd, if stalled then "stalled" else how)
 			if not ok then
 				warn("[Cinematic] onEnd: " .. tostring(err))
 			end
@@ -1998,17 +2032,33 @@ function Cinematic.play(opts: any?): any
 	end
 	cine = Cinematic.new(o)
 	playing = cine
-	RunService:BindToRenderStep(RENDER_NAME, Enum.RenderPriority.Camera.Value + 2, function(dt: number)
+	local frames = 0
+	local lastT, lastMoveAt = 0, os.clock()
+	local function stall(why: string)
+		if stalled or cine.isDone() then
+			return
+		end
+		stalled = true
+		warn("[Cinematic] " .. why .. ": ending the intro")
+		cine.skip()
+	end
+	unbind = (bind or renderBind)(function(dt: number)
+		frames += 1
 		local ok, err = pcall(cine.step, math.min(dt, 0.1))
 		if not ok then
 			warn("[Cinematic] " .. tostring(err))
 			cine.skip()
+			return
+		end
+		local t = cine.t()
+		if t > lastT then
+			lastT, lastMoveAt = t, os.clock()
 		end
 	end)
 	table.insert(
 		conns,
-		UserInputService.InputBegan:Connect(function(io: InputObject)
-			if os.clock() - startedAt < I.SKIP.HOLD_OFF then
+		UserInputService.InputBegan:Connect(function(io: InputObject, processed: boolean)
+			if processed or os.clock() - startedAt < I.SKIP.HOLD_OFF then
 				return
 			end
 			if (I.SKIP.ANY_KEY and io.UserInputType == Enum.UserInputType.Keyboard) or SKIP_KEYS[io.KeyCode] then
@@ -2016,6 +2066,25 @@ function Cinematic.play(opts: any?): any
 			end
 		end)
 	)
+	-- liveness: the plan must advance in real time, or the player gets the title card now (never a frozen frame)
+	task.spawn(function()
+		while playing == cine and not cine.isDone() do
+			task.wait(0.1)
+			local now = os.clock()
+			if now - startedAt >= I.START_WATCHDOG_SECONDS and cine.t() < I.MIN_ADVANCE then
+				stall(
+					string.format(
+						"no frames (%d stepped, t %.2f) %.1f s after start",
+						frames,
+						cine.t(),
+						now - startedAt
+					)
+				)
+			elseif cine.t() >= I.MIN_ADVANCE and now - lastMoveAt >= I.STALL_SECONDS then
+				stall(string.format("frozen at t %.2f for %.1f s", cine.t(), now - lastMoveAt))
+			end
+		end
+	end)
 	-- watchdog: whatever happens, the player gets the game back
 	task.delay(IntroPlan.total() + 10, function()
 		if playing == cine and not cine.isDone() then

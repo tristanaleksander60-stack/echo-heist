@@ -17,6 +17,9 @@ local function check(cond: any, msg: string)
 	end
 end
 
+-- Boot timings gathered along the way (section 17 checks them against Config.Boot).
+local bootTimes: { [string]: number } = {}
+
 -- 0. Boot the game server (Luau Execution sessions don't run place scripts).
 local server = ServerScriptService:WaitForChild("Server")
 require(server:WaitForChild("Main")).start()
@@ -1049,7 +1052,9 @@ do
 	check(okLobby, "garage: Lobby loads" .. (if okLobby then "" else ": " .. tostring(Lobby)))
 	local okKit, KitService = pcall(require, server:WaitForChild("Kit"):WaitForChild("KitService"))
 	if okLobby then
+		local lobbyT0 = os.clock()
 		local okBuild, garage = pcall(Lobby.build, if okKit then KitService else nil)
+		bootTimes.lobby = os.clock() - lobbyT0
 		check(okBuild and garage ~= nil, "garage: Lobby.build" .. (if okBuild then "" else ": " .. tostring(garage)))
 		if okBuild and garage then
 			check(garage.Parent == workspace and garage.Name == "Garage", "garage: workspace.Garage")
@@ -2933,6 +2938,89 @@ do
 		ReplicatedStorage:SetAttribute(Badges.ATTR_BOSS_HERE, 0)
 	end)
 	check(okBadges, "badges section ran" .. (if okBadges then "" else ": " .. tostring(badgesErr)))
+end
+
+-- 17. Boot timing (INTRO LOAD FIX): the server's join path against Config.Boot, on this cold Luau Execution server.
+-- The art kit's own load (KitService.report().seconds, loaded in section 7), CharacterKit and EH_IntroKit published
+-- from it, the hideout (Lobby.build, section 8), the FTUE heist (L1), and the client intro's build and frames. And
+-- the shape of the join: no server hold for the intro; the hideout answer waits only for the profile and the flags.
+do
+	local Config = GameConfig :: any
+	local B = Config.Boot
+	local heistServer = server:WaitForChild("Heist")
+	local okT, tErr = pcall(function()
+		local KitService = require(server:WaitForChild("Kit"):WaitForChild("KitService"))
+		local HeistService = require(heistServer:WaitForChild("HeistService"))
+		local IntroKit = require(heistServer:WaitForChild("IntroKit"))
+		local Rookie = require(heistServer:WaitForChild("Rookie"))
+		local Cinematic = require(
+			game:GetService("StarterPlayer")
+				:WaitForChild("StarterPlayerScripts")
+				:WaitForChild("Client")
+				:WaitForChild("Heist")
+				:WaitForChild("Cinematic")
+		)
+		local lines = {}
+		local function within(name: string, value: number?, budget: number, unit: string)
+			local v = value or math.huge
+			table.insert(lines, string.format("%s %.2f%s (budget %s%s)", name, v, unit, tostring(budget), unit))
+			check(v <= budget, string.format("boot: %s %.2f%s within %s%s", name, v, unit, tostring(budget), unit))
+		end
+		if not KitService.isReady() then
+			KitService.ready(B.KIT_READY_SECONDS * 2)
+		end
+		local report = KitService.report()
+		within("kit load", if report.done then report.seconds else nil, B.KIT_READY_SECONDS, " s")
+		for _, name in { Config.Intro.KIT_FOLDER, Config.Rookie.KIT_FOLDER } do
+			local published = ReplicatedStorage:FindFirstChild(name)
+			if published then
+				published:Destroy()
+			end
+		end
+		local p0 = os.clock()
+		local groups = IntroKit.publishNow(KitService)
+		local okRookie = Rookie.publishNow(KitService)
+		within("kit publish (intro + character)", os.clock() - p0, B.KIT_PUBLISH_SECONDS, " s")
+		check(groups > 0 and okRookie, "boot: EH_IntroKit and CharacterKit published from the kit")
+		within("hideout build", bootTimes.lobby, B.LOBBY_BUILD_SECONDS, " s")
+		local l1 = HeistService.indexOf(Config.Heist.FTUE_L1_LEVEL) :: number
+		local b0 = os.clock()
+		local inst = HeistService.createInstance(l1, {
+			{ userId = -171, name = "Boot", fake = { x = 0, y = 3, z = 14, yaw = 0 } },
+		}, -171, true)
+		within("L1 build", if inst then os.clock() - b0 else nil, B.L1_BUILD_SECONDS, " s")
+		if inst then
+			HeistService.destroyInstance(inst)
+		end
+		local stageHolder = Instance.new("Folder")
+		stageHolder.Parent = workspace
+		local cam = Instance.new("Camera")
+		cam.Parent = stageHolder
+		local c0 = os.clock()
+		local cine = Cinematic.new({ parent = stageHolder, gui = stageHolder, camera = cam, tier = 1 })
+		within("intro build", (os.clock() - c0) * 1000, B.INTRO_BUILD_MS, " ms")
+		local worst = 0
+		for _ = 1, 240 do
+			local s0 = os.clock()
+			cine.step(1 / 60)
+			worst = math.max(worst, os.clock() - s0)
+		end
+		within("intro frame (worst of 240)", worst * 1000, B.INTRO_FRAME_MS, " ms")
+		cine.destroy()
+		stageHolder:Destroy()
+		-- the join's shape (HeistService.onPlayerAdded): no hold, the hideout after the profile and flags only
+		check(Config.Intro.SERVER_HOLD_SECONDS == nil, "boot: no server hold for the intro")
+		local P = Config.Presentation
+		local answer = math.max(Config.Heist.DATA_WAIT_SECONDS, Config.Heist.FLAGS_WAIT_SECONDS)
+		within(
+			"join -> hideout control (worst waits)",
+			answer + P.PRELOAD_MAX_SECONDS + P.LOADING.FADE_SECONDS,
+			B.JOIN_TO_CONTROL_SECONDS,
+			" s"
+		)
+		table.insert(results, "      " .. table.concat(lines, "; "))
+	end)
+	check(okT, "boot timing section ran" .. (if okT then "" else ": " .. tostring(tErr)))
 end
 
 table.insert(results, string.format("%d failure(s)", failures))

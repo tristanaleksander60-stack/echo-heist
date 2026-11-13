@@ -115,13 +115,19 @@ local inHeist: { [Player]: boolean } = {}
 -- Players whose first Sync is still being decided (data, kit, FTUE autostart): their
 -- client shows a "preparing" card, never the garage, until the server decides.
 local preparing: { [Player]: boolean } = {}
--- New accounts whose client said the story intro is over (Heist.Ready while preparing; Heist/Cinematic): the
--- FTUE heist is held until then (at most Config.Intro.SERVER_HOLD_SECONDS), so run 1 never ticks under the intro.
-local introDone: { [Player]: boolean } = {}
+-- The first heist of a new account (FTUE, intro -> L1) without a server hold: the player is in the hideout with
+-- control as soon as the profile is read, the story intro plays over it on the client (Heist/Cinematic), and the
+-- client's boot Heist.Ready (the intro or the title is over) starts L1. Nothing waits on a client that never
+-- answers: without the Ready the player simply stays in the hideout (the job board offers L1).
+--   ftuePending: a new account in the hideout whose L1 start waits for that Ready (the garage Sync says `ftue`);
+--   earlyReady: the boot Ready came while the server was still preparing (no intro on that client): L1 at once.
+local ftuePending: { [Player]: boolean } = {}
+local earlyReady: { [Player]: boolean } = {}
 -- os.clock() of the last heist a player's pick created (INSTANCE_COOLDOWN_SECONDS).
 local lastStartBy: { [Player]: number } = {}
 local tryFtueStart: (player: Player) -> boolean
 local retryFtue: (player: Player) -> ()
+local startFtueAfterReady: (player: Player) -> ()
 -- The hideout's vans (Shared/Heist/VanRules; Heist/Vans draws them): one state for the whole server.
 local vans = VanRules.new()
 -- Quick Crew (Shared/Heist/QuickCrew; Config.Hideout.QUICK): the seekers on this server and their held seats.
@@ -421,7 +427,10 @@ end
 local function isNewAccount(player: Player): boolean
 	local snap = snapshotOf(player)
 	if not snap then
-		return true -- offline / not loaded: treat as new so the FTUE path is the default
+		-- offline Studio (no data): new, so the FTUE path is the default there. A live profile that has not
+		-- loaded yet (a session lock from the last server, a slow DataStore) is unknown: the hideout, never a
+		-- returning player's intro and L1 by mistake.
+		return DataService == nil or DataService.status() == "offline"
 	end
 	local key = ftueDataKey()
 	local rec = key and snap.heist and snap.heist.levels and snap.heist.levels[key]
@@ -576,6 +585,8 @@ local function garageState(player: Player): any
 		van = vanBayOf(crew) or 0,
 		job = if crew and crew.job then crew.job.index else 0,
 		jobDay = if crew and crew.job then crew.job.day else nil,
+		-- a new account's first visit: the client plays the intro (or the title) here and its Ready starts L1
+		ftue = ftuePending[player] == true,
 	}
 end
 
@@ -1841,7 +1852,10 @@ local function declareRemotes()
 			if inst then
 				HeistInstance.ready(inst, player.UserId, reduced)
 			elseif preparing[player] then
-				introDone[player] = true -- the intro is over (or not shown): the first heist may start
+				earlyReady[player] = true -- the boot Ready before the server decided: no intro on that client
+			elseif ftuePending[player] then
+				ftuePending[player] = nil -- the intro (or the title) is over: L1 now (yields: off the handler)
+				task.spawn(startFtueAfterReady, player)
 			end
 		end,
 	})
@@ -2026,6 +2040,21 @@ tryFtueStart = function(player: Player): boolean
 	return startHeist(crew, ftueIndex(), nil)
 end
 
+-- The client's boot Ready for a new account in the hideout (the intro or the title is over): the art kit (bounded,
+-- usually long loaded by then), then L1. Called off the remote handler (it yields).
+startFtueAfterReady = function(player: Player)
+	waitForKit()
+	if player.Parent ~= Players or not isNewAccount(player) then
+		return
+	end
+	if not tryFtueStart(player) then
+		local crew = crewOf[player]
+		if crew and not crew.instance then
+			task.spawn(retryFtue, player) -- every van out: retry while still new, solo and idle
+		end
+	end
+end
+
 -- A failed FTUE start (every van out) retries a few times while the player is still a
 -- new, solo leader in the garage; they can also tap the first tape themselves.
 retryFtue = function(player: Player)
@@ -2076,12 +2105,13 @@ local function onPlayerAdded(player: Player)
 	end
 	ftueHook(player, "Joined")
 	task.spawn(function()
-		-- The boot Sync shows "preparing" (the van door), not the garage, until the server
-		-- has decided: a new account goes straight into the FTUE level (§7.5).
+		-- The boot Sync shows "preparing" (the loading card), not the hideout, until the server has read the
+		-- profile: a new account's first heist is L1 (§7.5), started by the client's boot Ready (no server hold).
 		preparing[player] = true
-		-- The profile, the first LiveFlags read (kill switches apply before the first heist) and the
-		-- art kit are awaited side by side: a cold server costs the longest wait, not the sum (premium
-		-- G1: control within 10 s of the first frame; PresentPlan.serverWait).
+		-- The profile and the first LiveFlags read (kill switches apply before the first heist) are awaited
+		-- side by side, each bounded: a cold server costs the longest wait, not the sum (premium G1: control
+		-- within 10 s of the first frame; PresentPlan.serverWait). The art kit is never waited on here: only
+		-- the first heist's start waits for it (bounded, from join).
 		local kitDone = false
 		task.spawn(function()
 			pcall(waitForKit)
@@ -2112,17 +2142,6 @@ local function onPlayerAdded(player: Player)
 				return
 			end
 		end
-		if Config.Intro.ENABLED and crew and H.FTUE_AUTOSTART and isNewAccount(player) then
-			-- the story intro plays on the client first (Heist/Cinematic): hold run 1 until it says so
-			local holdUntil = os.clock() + Config.Intro.SERVER_HOLD_SECONDS
-			while not introDone[player] and player.Parent == Players and os.clock() < holdUntil do
-				task.wait(0.1)
-			end
-			if player.Parent ~= Players then
-				preparing[player] = nil
-				return
-			end
-		end
 		if
 			crew
 			and H.FTUE_AUTOSTART
@@ -2131,18 +2150,25 @@ local function onPlayerAdded(player: Player)
 			and not crew.instance
 			and isNewAccount(player)
 		then
-			while not kitDone do -- started at join, so at most KIT_WAIT_SECONDS from then
-				task.wait()
-			end
-			if tryFtueStart(player) then
+			if earlyReady[player] then
+				-- the client plays no intro (seen, or off): L1 straight away, as before the hideout
+				earlyReady[player] = nil
+				while not kitDone do -- started at join, so at most KIT_WAIT_SECONDS from then
+					task.wait()
+				end
+				if tryFtueStart(player) then
+					return
+				end
+				-- Full server (or the player moved on): the hideout now, and retry while new.
+				preparing[player] = nil
+				push(player, "Sync", syncPayload(player))
+				task.spawn(retryFtue, player)
 				return
 			end
-			-- Full server (or the player moved on): the garage now, and retry while new.
-			preparing[player] = nil
-			push(player, "Sync", syncPayload(player))
-			task.spawn(retryFtue, player)
-			return
+			-- The hideout now (control), the intro over it on the client; its Ready starts L1. No server hold.
+			ftuePending[player] = true
 		end
+		earlyReady[player] = nil
 		preparing[player] = nil
 		push(player, "Sync", syncPayload(player))
 	end)
@@ -2161,7 +2187,8 @@ local function onPlayerRemoving(player: Player)
 	leaveCrew(player)
 	inHeist[player] = nil
 	preparing[player] = nil
-	introDone[player] = nil
+	ftuePending[player] = nil
+	earlyReady[player] = nil
 	lastStartBy[player] = nil
 	Avatars.release(player)
 end

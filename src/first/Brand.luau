@@ -40,7 +40,7 @@ Brand.LOADING = table.freeze({
 	REEL_PERIOD = 1.2,
 	FADE_SECONDS = 0.3,
 	MAX_SECONDS = 12,
-	HOLD_MAX_SECONDS = 30,
+	HOLD_MAX_SECONDS = 15,
 	ORDER = 200,
 })
 

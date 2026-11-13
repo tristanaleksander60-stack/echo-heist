@@ -94,9 +94,9 @@ function PresentPlan.bootControl(o: {
 	return control, start + fade + o.open, cut
 end
 
--- How long the server makes a new account wait before its first heist (HeistService.onPlayerAdded):
--- the profile, the first LiveFlags read and the art kit are awaited side by side, so a cold server
--- costs the longest of the three, not their sum.
+-- How long the server's first answer can take (HeistService.onPlayerAdded): the profile and the first LiveFlags
+-- read are awaited side by side, so a cold server costs the longest, not their sum. kit: the art kit's bounded wait
+-- where a first heist starts by itself (pass 0 for the hideout, which never waits for it).
 function PresentPlan.serverWait(data: number, flags: number, kit: number): number
 	return math.max(data, flags, kit)
 end
@@ -106,14 +106,15 @@ end
 ---------------------------------------------------------------------------
 
 -- Does this boot play the title beat? status: Heist/FirstTime's seeding ("pending" | "seeded" | "none");
--- seen: FirstTime.seen("title"); boot: what the server said first ("preparing", "garage", "heistFtue" =
--- the server started the FTUE level itself, "heist" = joining a crew's heist).
+-- seen: FirstTime.seen("title"); boot: what the server said first ("preparing", "garage", "garageFtue" = a new
+-- account in the hideout whose L1 follows the boot Ready, "heistFtue" = the server started the FTUE level itself,
+-- "heist" = joining a crew's heist).
 function PresentPlan.titleDue(status: string, seen: boolean, boot: string): boolean
 	if seen then
 		return false
 	end
-	if boot == "heistFtue" then
-		return true -- the server autostarts L1 for a new account only
+	if boot == "heistFtue" or boot == "garageFtue" then
+		return true -- the server marks a new account only (its profile says so)
 	end
 	if boot == "heist" then
 		return false -- never hold back someone joining a heist in progress

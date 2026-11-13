@@ -2627,7 +2627,7 @@ Config.Presentation = {
 		REEL_PERIOD = 1.2, -- s per turn of the reel (static under reduced motion)
 		FADE_SECONDS = 0.3, -- the card fades out over this on the first built frame (garage)
 		MAX_SECONDS = 12, -- watchdog: the card goes after this unless the client holds it ...
-		HOLD_MAX_SECONDS = 30, -- ... and after this even when held (a stuck server never traps anyone)
+		HOLD_MAX_SECONDS = 15, -- ... and after this even when held (a stuck server never traps anyone)
 		ORDER = 200, -- ScreenGui.DisplayOrder (above every game gui)
 	},
 	PRELOAD_MAX_SECONDS = 1.5, -- the client preloads the HUD's first-frame images and fonts for this long at most
@@ -3541,9 +3541,16 @@ Config.Intro = {
 	-- The CHARACTER track's folder; its "Rookie" model replaces the stand-in as soon as it exists.
 	CHARACTER_KIT = "CharacterKit",
 	ROOKIE_TEMPLATE = "Rookie",
-	-- The server holds a new account's first heist until the client says the intro is over (Heist.Ready
-	-- while preparing) or this long (a client that never answers never traps anyone).
-	SERVER_HOLD_SECONDS = 48,
+	-- No server hold (INTRO LOAD FIX): a new account is in the hideout as soon as the profile is read and the intro
+	-- plays over it; the client's boot Heist.Ready (intro or title over) starts L1. The client keeps the title card
+	-- up this long after that Ready for the L1 doors, then shows the hideout (a full server, a lost message).
+	FTUE_START_WAIT_SECONDS = 6,
+	-- Liveness: play() must advance the plan by MIN_ADVANCE seconds within START_WATCHDOG_SECONDS of real time,
+	-- else it is ended at once ("stalled": the title card, never a frozen frame). Same check later: no advance for
+	-- STALL_SECONDS of real time ends it too.
+	START_WATCHDOG_SECONDS = 3,
+	MIN_ADVANCE = 0.25,
+	STALL_SECONDS = 4, -- a load hitch on a phone stays under this
 	-- Studio without data (offline) plays it only when staged (EH_Scenario = "INTRO"): every Play would
 	-- otherwise open on 34 s of cinematic.
 	STUDIO_AUTOPLAY = false,
@@ -3559,7 +3566,10 @@ Config.Intro = {
 		BAR = 0.16, -- letterbox bars, screen-height fraction each (0 under reduced motion: no slide)
 	},
 	SKIP = {
-		ANY_KEY = true, -- any keyboard key skips too (PC); touch and gamepad use the button (or ButtonB)
+		-- Only these keys skip (plus the button). Any key used to skip: a PC player pressing W or a mouse button
+		-- while it loads landed on the title card at once and never saw the intro (INTRO LOAD FIX).
+		ANY_KEY = false,
+		KEYS = { "Space", "Return", "ButtonB", "ButtonStart" },
 		HOLD_OFF = 0.35, -- s after the start in which a key is ignored (the press that started the game)
 		SIZE = { 150, 52 }, -- design px
 		MARGIN = 24, -- px from the top-right safe corner
@@ -3642,6 +3652,18 @@ Config.Intro = {
 	SNOW_RATE = 60, -- flakes/s in the stage snow (x0.5 under reduced motion)
 	SNOW_MAX = 240, -- alive at most (rate x lifetime is reported to Heist/Particles as steady)
 	HANDOFF_SECONDS = 0.35, -- the wordmark rests this long before the title card takes over
+}
+
+-- Boot budgets (INTRO LOAD FIX): the join path, measured on a cold Luau Execution server by tests/engine_smoke.luau
+-- section 17; tests/unit/HeistPresent.spec.luau adds up the waits a client can meet. Seconds unless named _MS.
+Config.Boot = {
+	KIT_READY_SECONDS = 12, -- the whole art kit (LoadAsset + collision rebuilds) on a cold server (measured 4.3-4.8 s)
+	KIT_PUBLISH_SECONDS = 1, -- CharacterKit and EH_IntroKit in ReplicatedStorage after the kit is ready
+	LOBBY_BUILD_SECONDS = 2, -- HeistService.start with the hideout (Lobby.build + Vans.build)
+	L1_BUILD_SECONDS = 2, -- the FTUE heist instance (LevelBuilder + kit dressing)
+	INTRO_BUILD_MS = 250, -- Heist/Cinematic.new (the client builds its stage)
+	INTRO_FRAME_MS = 16, -- the worst intro frame (cine.step)
+	JOIN_TO_CONTROL_SECONDS = 10, -- a returning player: the server's profile / flags wait, the HUD preload, the fade
 }
 
 -- Badges (BADGES track; docs/marketing/BADGES.md, Shared/Heist/Badges, server Data/Awards). The launch set is 8

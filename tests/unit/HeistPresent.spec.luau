@@ -188,6 +188,28 @@ return function(test)
 		Assert.eq(P.CONTROL_LIMIT_SECONDS, 10, "premium G1")
 	end)
 
+	test(
+		"hideout boot: join -> control within the budget, and no server hold for the intro (INTRO LOAD FIX)",
+		function()
+			-- The hideout never waits for the art kit; the server answers after the profile / flags (side by side).
+			local CLIENT_READY = 5 -- a phone loads the place and starts the client in ~5 s from the first frame
+			local server = PresentPlan.serverWait(H.DATA_WAIT_SECONDS, H.FLAGS_WAIT_SECONDS, 0)
+			Assert.eq(server, math.max(H.DATA_WAIT_SECONDS, H.FLAGS_WAIT_SECONDS), "the kit is not on the hideout path")
+			local control = math.max(server, CLIENT_READY) + P.PRELOAD_MAX_SECONDS + P.LOADING.FADE_SECONDS
+			Assert.le(
+				control,
+				Config.Boot.JOIN_TO_CONTROL_SECONDS,
+				string.format("join -> hideout control %.1f s", control)
+			)
+			Assert.le(Config.Boot.JOIN_TO_CONTROL_SECONDS, P.CONTROL_LIMIT_SECONDS, "the budget is the 10 s rule")
+			Assert.eq(Config.Intro.SERVER_HOLD_SECONDS, nil, "no server hold: the intro plays over the hideout")
+			-- a new account: the intro's kit wait is the only extra time before its first frame
+			Assert.le(server + Config.Intro.KIT_WAIT_SECONDS, P.CONTROL_LIMIT_SECONDS, "the intro starts within 10 s")
+			-- the card's held watchdog is a safety net, not a wait anyone should meet
+			Assert.le(P.LOADING.HOLD_MAX_SECONDS, 15, "a stuck boot shows the game within 15 s")
+		end
+	)
+
 	test("van doors: close + open <= 0.6 s, reduced motion a 0.15 s crossfade (premium H4, C4)", function()
 		Assert.le(D.CLOSE_SECONDS + D.OPEN_SECONDS, 0.6, "authored in/out <= 0.6 s")
 		Assert.eq(D.OPEN_SECONDS, 0.3, "doors slide apart in 0.3 s")
@@ -219,8 +241,10 @@ return function(test)
 			end
 			return PresentPlan.introDue(o :: any)
 		end
-		Assert.truthy(due({}), "a new profile while the server holds the first heist")
-		Assert.truthy(due({ boot = "heistFtue" }), "the server already started L1 (the hold timed out)")
+		Assert.truthy(due({}), "a new profile while the server reads it")
+		Assert.truthy(due({ boot = "garageFtue" }), "a new account in the hideout (L1 follows the intro)")
+		Assert.truthy(due({ boot = "garageFtue", status = "pending" }), "the server says new: no wait for the profile")
+		Assert.truthy(due({ boot = "heistFtue" }), "the server already started L1")
 		Assert.falsy(due({ seen = true }), "a returning player never sees it again (the title kind marks both)")
 		Assert.falsy(due({ boot = "heist" }), "never in front of someone joining a heist in progress")
 		Assert.falsy(due({ status = "pending" }), "unknown yet: wait for the profile")
@@ -231,7 +255,7 @@ return function(test)
 		Assert.falsy(due({ staged = true, seen = true, boot = "garage" }), "never staged outside Studio")
 		-- wherever the intro is due, the title beat would have been due: it replaces the beat, never adds a gate
 		for _, status in { "pending", "seeded", "none" } do
-			for _, boot in { "preparing", "garage", "heistFtue", "heist" } do
+			for _, boot in { "preparing", "garage", "garageFtue", "heistFtue", "heist" } do
 				for _, seen in { false, true } do
 					if due({ status = status, boot = boot, seen = seen }) then
 						Assert.truthy(
@@ -242,11 +266,15 @@ return function(test)
 				end
 			end
 		end
-		Assert.truthy(Config.Intro.SERVER_HOLD_SECONDS > IntroPlan.total(), "the server hold outlasts the intro")
+		Assert.truthy(
+			Config.Intro.FTUE_START_WAIT_SECONDS < IntroPlan.total(),
+			"the L1 wait is short next to the intro"
+		)
 	end)
 
 	test("first-join gate: the title plays for a new account only, never for someone joining a heist", function()
 		Assert.truthy(PresentPlan.titleDue("pending", false, "heistFtue"), "the server autostarted L1")
+		Assert.truthy(PresentPlan.titleDue("pending", false, "garageFtue"), "the server marked a new account")
 		Assert.truthy(PresentPlan.titleDue("seeded", false, "preparing"), "a new profile while the server prepares")
 		Assert.truthy(PresentPlan.titleDue("seeded", false, "garage"), "a new profile in a full server")
 		Assert.truthy(PresentPlan.titleDue("none", false, "preparing"), "no data: the server treats it as new")
@@ -254,7 +282,7 @@ return function(test)
 		Assert.falsy(PresentPlan.titleDue("none", false, "garage"), "no data, garage: a returning player")
 		Assert.falsy(PresentPlan.titleDue("seeded", false, "heist"), "joining a heist in progress")
 		for _, status in { "pending", "seeded", "none" } do
-			for _, boot in { "preparing", "garage", "heistFtue", "heist" } do
+			for _, boot in { "preparing", "garage", "garageFtue", "heistFtue", "heist" } do
 				Assert.falsy(
 					PresentPlan.titleDue(status, true, boot),
 					"seen: never again (" .. status .. ", " .. boot .. ")"
