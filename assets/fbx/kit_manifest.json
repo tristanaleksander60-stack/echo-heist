@@ -2417,6 +2417,1829 @@
    ],
    "sim": "loot point (LevelSpec loot x, y, z)"
   },
+  "Rookie_Block_LeftCuff": {
+   "model": "Rookie_Outfits",
+   "size": [
+    0.587,
+    0.239,
+    0.542
+   ],
+   "tris": 80,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.337,
+    -0.427,
+    -0.271
+   ],
+   "boundsMax": [
+    0.249,
+    -0.189,
+    0.271
+   ],
+   "origin": [
+    -10.1,
+    -3.04,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "attach": {
+    "part": "LeftLowerArm",
+    "offset": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "slot": "sweater",
+   "variant": "Block"
+  },
+  "Rookie_Block_RightCuff": {
+   "model": "Rookie_Outfits",
+   "size": [
+    0.587,
+    0.239,
+    0.542
+   ],
+   "tris": 80,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.249,
+    -0.427,
+    -0.271
+   ],
+   "boundsMax": [
+    0.337,
+    -0.189,
+    0.271
+   ],
+   "origin": [
+    -5.3,
+    -3.04,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "attach": {
+    "part": "RightLowerArm",
+    "offset": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "slot": "sweater",
+   "variant": "Block"
+  },
+  "Rookie_Block_Torso": {
+   "model": "Rookie_Outfits",
+   "size": [
+    2.05,
+    0.36,
+    1.558
+   ],
+   "tris": 192,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.025,
+    0.35,
+    -0.779
+   ],
+   "boundsMax": [
+    1.025,
+    0.71,
+    0.779
+   ],
+   "origin": [
+    -3.8,
+    -3.25,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "attach": {
+    "part": "UpperTorso",
+    "offset": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "slot": "sweater",
+   "variant": "Block"
+  },
+  "Rookie_Cap_Beanie": {
+   "model": "Rookie_Outfits",
+   "size": [
+    2.18,
+    1.02,
+    2.18
+   ],
+   "tris": 384,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.09,
+    -0.24,
+    -1.09
+   ],
+   "boundsMax": [
+    1.09,
+    0.78,
+    1.09
+   ],
+   "origin": [
+    1.4,
+    4.2,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "attach": {
+    "part": "Head",
+    "offset": [
+     0.0,
+     1.2,
+     0.0
+    ]
+   },
+   "slot": "cap",
+   "variant": "Beanie"
+  },
+  "Rookie_Cap_Bobble": {
+   "model": "Rookie_Outfits",
+   "size": [
+    2.14,
+    1.48,
+    2.14
+   ],
+   "tris": 484,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.07,
+    -0.24,
+    -1.07
+   ],
+   "boundsMax": [
+    1.07,
+    1.24,
+    1.07
+   ],
+   "origin": [
+    -1.2,
+    4.2,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "attach": {
+    "part": "Head",
+    "offset": [
+     0.0,
+     1.2,
+     0.0
+    ]
+   },
+   "slot": "cap",
+   "variant": "Bobble"
+  },
+  "Rookie_Cap_Flat": {
+   "model": "Rookie_Outfits",
+   "size": [
+    2.12,
+    0.679,
+    2.351
+   ],
+   "tris": 336,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.06,
+    -0.139,
+    -1.344
+   ],
+   "boundsMax": [
+    1.06,
+    0.54,
+    1.007
+   ],
+   "origin": [
+    4.0,
+    4.2,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "attach": {
+    "part": "Head",
+    "offset": [
+     0.0,
+     1.2,
+     0.0
+    ]
+   },
+   "slot": "cap",
+   "variant": "Flat"
+  },
+  "Rookie_Cap_Trapper": {
+   "model": "Rookie_Outfits",
+   "size": [
+    2.26,
+    1.48,
+    2.1
+   ],
+   "tris": 284,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.13,
+    -0.78,
+    -1.06
+   ],
+   "boundsMax": [
+    1.13,
+    0.7,
+    1.04
+   ],
+   "origin": [
+    -3.8,
+    4.2,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "attach": {
+    "part": "Head",
+    "offset": [
+     0.0,
+     1.2,
+     0.0
+    ]
+   },
+   "slot": "cap",
+   "variant": "Trapper"
+  },
+  "Rookie_Face_Busted": {
+   "model": "Rookie_Faces",
+   "size": [
+    0.923,
+    0.646,
+    0.105
+   ],
+   "tris": 96,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.461,
+    -0.413,
+    0.004
+   ],
+   "boundsMax": [
+    0.461,
+    0.233,
+    0.109
+   ],
+   "origin": [
+    -2.0,
+    3.72,
+    -0.84
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Face"
+   ],
+   "attach": {
+    "part": "Head",
+    "offset": [
+     0.0,
+     0.72,
+     -0.84
+    ]
+   },
+   "face": "busted"
+  },
+  "Rookie_Face_Idle": {
+   "model": "Rookie",
+   "size": [
+    1.023,
+    0.834,
+    0.252
+   ],
+   "tris": 368,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.511,
+    -0.406,
+    -0.058
+   ],
+   "boundsMax": [
+    0.511,
+    0.428,
+    0.194
+   ],
+   "origin": [
+    0.0,
+    3.72,
+    -0.84
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Face"
+   ],
+   "attach": {
+    "part": "Head",
+    "offset": [
+     0.0,
+     0.72,
+     -0.84
+    ]
+   },
+   "face": "idle"
+  },
+  "Rookie_Face_Shocked": {
+   "model": "Rookie_Faces",
+   "size": [
+    1.023,
+    1.004,
+    0.252
+   ],
+   "tris": 408,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.511,
+    -0.48,
+    -0.058
+   ],
+   "boundsMax": [
+    0.511,
+    0.524,
+    0.194
+   ],
+   "origin": [
+    0.0,
+    3.72,
+    -0.84
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Face"
+   ],
+   "attach": {
+    "part": "Head",
+    "offset": [
+     0.0,
+     0.72,
+     -0.84
+    ]
+   },
+   "face": "shocked"
+  },
+  "Rookie_Face_Smug": {
+   "model": "Rookie_Faces",
+   "size": [
+    1.021,
+    0.911,
+    0.29
+   ],
+   "tris": 496,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.51,
+    -0.437,
+    -0.058
+   ],
+   "boundsMax": [
+    0.511,
+    0.474,
+    0.232
+   ],
+   "origin": [
+    2.0,
+    3.72,
+    -0.84
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Face"
+   ],
+   "attach": {
+    "part": "Head",
+    "offset": [
+     0.0,
+     0.72,
+     -0.84
+    ]
+   },
+   "face": "smug"
+  },
+  "Rookie_Gloves_Knit_Left": {
+   "model": "Rookie_Outfits",
+   "size": [
+    0.645,
+    0.256,
+    0.63
+   ],
+   "tris": 168,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.319,
+    -0.103,
+    -0.315
+   ],
+   "boundsMax": [
+    0.326,
+    0.153,
+    0.315
+   ],
+   "origin": [
+    0.22,
+    -6.2,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "attach": {
+    "part": "LeftHand",
+    "offset": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "slot": "gloves",
+   "variant": "Knit"
+  },
+  "Rookie_Gloves_Knit_Right": {
+   "model": "Rookie_Outfits",
+   "size": [
+    0.645,
+    0.256,
+    0.63
+   ],
+   "tris": 168,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.326,
+    -0.103,
+    -0.315
+   ],
+   "boundsMax": [
+    0.319,
+    0.153,
+    0.315
+   ],
+   "origin": [
+    5.18,
+    -6.2,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "attach": {
+    "part": "RightHand",
+    "offset": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "slot": "gloves",
+   "variant": "Knit"
+  },
+  "Rookie_Gloves_Leather_Left": {
+   "model": "Rookie_Outfits",
+   "size": [
+    0.72,
+    0.301,
+    0.73
+   ],
+   "tris": 132,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.366,
+    -0.12,
+    -0.37
+   ],
+   "boundsMax": [
+    0.354,
+    0.181,
+    0.36
+   ],
+   "origin": [
+    -4.98,
+    -6.2,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "attach": {
+    "part": "LeftHand",
+    "offset": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "slot": "gloves",
+   "variant": "Leather"
+  },
+  "Rookie_Gloves_Leather_Right": {
+   "model": "Rookie_Outfits",
+   "size": [
+    0.72,
+    0.301,
+    0.73
+   ],
+   "tris": 132,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.354,
+    -0.12,
+    -0.37
+   ],
+   "boundsMax": [
+    0.366,
+    0.181,
+    0.36
+   ],
+   "origin": [
+    -0.02,
+    -6.2,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+   "attach": {
+    "part": "RightHand",
+    "offset": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "slot": "gloves",
+   "variant": "Leather"
+  },
+  "Rookie_Head": {
+   "model": "Rookie",
+   "size": [
+    2.097,
+    1.66,
+    1.89
+   ],
+   "tris": 644,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.048,
+    -0.04,
+    -0.972
+   ],
+   "boundsMax": [
+    1.048,
+    1.62,
+    0.918
+   ],
+   "origin": [
+    0.0,
+    3.0,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "Neck",
+    "parent": "Rookie_UpperTorso"
+   }
+  },
+  "Rookie_LeftFoot": {
+   "model": "Rookie",
+   "size": [
+    0.76,
+    0.66,
+    1.3
+   ],
+   "tris": 152,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.38,
+    -0.5,
+    -0.9
+   ],
+   "boundsMax": [
+    0.38,
+    0.16,
+    0.4
+   ],
+   "origin": [
+    -0.44,
+    0.5,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "LeftAnkle",
+    "parent": "Rookie_LeftLowerLeg"
+   }
+  },
+  "Rookie_LeftHand": {
+   "model": "Rookie",
+   "size": [
+    0.62,
+    0.64,
+    0.571
+   ],
+   "tris": 244,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.3,
+    -0.59,
+    -0.325
+   ],
+   "boundsMax": [
+    0.32,
+    0.05,
+    0.245
+   ],
+   "origin": [
+    -1.18,
+    1.6,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "LeftWrist",
+    "parent": "Rookie_LeftLowerArm"
+   },
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS, by the gloves slot)"
+  },
+  "Rookie_LeftLowerArm": {
+   "model": "Rookie",
+   "size": [
+    0.609,
+    0.754,
+    0.533
+   ],
+   "tris": 120,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.35,
+    -0.646,
+    -0.266
+   ],
+   "boundsMax": [
+    0.259,
+    0.108,
+    0.266
+   ],
+   "origin": [
+    -1.1,
+    2.16,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "LeftElbow",
+    "parent": "Rookie_LeftUpperArm"
+   }
+  },
+  "Rookie_LeftLowerLeg": {
+   "model": "Rookie",
+   "size": [
+    0.7,
+    0.64,
+    0.666
+   ],
+   "tris": 120,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.37,
+    -0.55,
+    -0.333
+   ],
+   "boundsMax": [
+    0.33,
+    0.09,
+    0.333
+   ],
+   "origin": [
+    -0.42,
+    0.98,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "LeftKnee",
+    "parent": "Rookie_LeftUpperLeg"
+   }
+  },
+  "Rookie_LeftUpperArm": {
+   "model": "Rookie",
+   "size": [
+    0.696,
+    1.032,
+    0.647
+   ],
+   "tris": 180,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.356,
+    -0.693,
+    -0.323
+   ],
+   "boundsMax": [
+    0.34,
+    0.34,
+    0.323
+   ],
+   "origin": [
+    -1.0,
+    2.76,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "LeftShoulder",
+    "parent": "Rookie_UpperTorso"
+   }
+  },
+  "Rookie_LeftUpperLeg": {
+   "model": "Rookie",
+   "size": [
+    0.739,
+    0.661,
+    0.704
+   ],
+   "tris": 80,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.372,
+    -0.57,
+    -0.352
+   ],
+   "boundsMax": [
+    0.367,
+    0.091,
+    0.352
+   ],
+   "origin": [
+    -0.4,
+    1.48,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "LeftHip",
+    "parent": "Rookie_LowerTorso"
+   }
+  },
+  "Rookie_LowerTorso": {
+   "model": "Rookie",
+   "size": [
+    1.84,
+    0.68,
+    1.243
+   ],
+   "tris": 184,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.84,
+    -0.32,
+    -0.622
+   ],
+   "boundsMax": [
+    1.0,
+    0.36,
+    0.622
+   ],
+   "origin": [
+    0.0,
+    1.62,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "Root",
+    "parent": null
+   }
+  },
+  "Rookie_Mask_Eye": {
+   "model": "Rookie_Outfits",
+   "size": [
+    2.02,
+    0.713,
+    1.763
+   ],
+   "tris": 328,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.01,
+    -0.277,
+    -0.054
+   ],
+   "boundsMax": [
+    1.01,
+    0.436,
+    1.709
+   ],
+   "origin": [
+    -6.4,
+    -4.08,
+    -0.84
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "attach": {
+    "part": "Head",
+    "offset": [
+     0.0,
+     0.72,
+     -0.84
+    ]
+   },
+   "slot": "mask",
+   "variant": "Eye"
+  },
+  "Rookie_RightFoot": {
+   "model": "Rookie",
+   "size": [
+    0.76,
+    0.66,
+    1.3
+   ],
+   "tris": 152,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.38,
+    -0.5,
+    -0.9
+   ],
+   "boundsMax": [
+    0.38,
+    0.16,
+    0.4
+   ],
+   "origin": [
+    0.44,
+    0.5,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "RightAnkle",
+    "parent": "Rookie_RightLowerLeg"
+   }
+  },
+  "Rookie_RightHand": {
+   "model": "Rookie",
+   "size": [
+    0.62,
+    0.64,
+    0.571
+   ],
+   "tris": 244,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.32,
+    -0.59,
+    -0.325
+   ],
+   "boundsMax": [
+    0.3,
+    0.05,
+    0.245
+   ],
+   "origin": [
+    1.18,
+    1.6,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "RightWrist",
+    "parent": "Rookie_RightLowerArm"
+   },
+   "tint": "glove colour (Config.Rookie.GLOVE_COLOURS, by the gloves slot)"
+  },
+  "Rookie_RightLowerArm": {
+   "model": "Rookie",
+   "size": [
+    0.609,
+    0.754,
+    0.533
+   ],
+   "tris": 120,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.259,
+    -0.646,
+    -0.266
+   ],
+   "boundsMax": [
+    0.35,
+    0.108,
+    0.266
+   ],
+   "origin": [
+    1.1,
+    2.16,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "RightElbow",
+    "parent": "Rookie_RightUpperArm"
+   }
+  },
+  "Rookie_RightLowerLeg": {
+   "model": "Rookie",
+   "size": [
+    0.7,
+    0.64,
+    0.666
+   ],
+   "tris": 120,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.33,
+    -0.55,
+    -0.333
+   ],
+   "boundsMax": [
+    0.37,
+    0.09,
+    0.333
+   ],
+   "origin": [
+    0.42,
+    0.98,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "RightKnee",
+    "parent": "Rookie_RightUpperLeg"
+   }
+  },
+  "Rookie_RightUpperArm": {
+   "model": "Rookie",
+   "size": [
+    0.696,
+    1.032,
+    0.647
+   ],
+   "tris": 180,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.34,
+    -0.693,
+    -0.323
+   ],
+   "boundsMax": [
+    0.356,
+    0.34,
+    0.323
+   ],
+   "origin": [
+    1.0,
+    2.76,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "RightShoulder",
+    "parent": "Rookie_UpperTorso"
+   }
+  },
+  "Rookie_RightUpperLeg": {
+   "model": "Rookie",
+   "size": [
+    0.739,
+    0.661,
+    0.704
+   ],
+   "tris": 80,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.367,
+    -0.57,
+    -0.352
+   ],
+   "boundsMax": [
+    0.372,
+    0.091,
+    0.352
+   ],
+   "origin": [
+    0.4,
+    1.48,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "RightHip",
+    "parent": "Rookie_LowerTorso"
+   }
+  },
+  "Rookie_Scarf_Bandana": {
+   "model": "Rookie_Outfits",
+   "size": [
+    1.6,
+    0.78,
+    1.772
+   ],
+   "tris": 256,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.8,
+    -0.58,
+    -0.9
+   ],
+   "boundsMax": [
+    0.8,
+    0.2,
+    0.872
+   ],
+   "origin": [
+    -1.2,
+    0.4,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "attach": {
+    "part": "UpperTorso",
+    "offset": [
+     0.0,
+     1.05,
+     0.0
+    ]
+   },
+   "slot": "scarf",
+   "variant": "Bandana"
+  },
+  "Rookie_Scarf_Chunky": {
+   "model": "Rookie_Outfits",
+   "size": [
+    1.96,
+    0.48,
+    1.686
+   ],
+   "tris": 320,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.98,
+    -0.14,
+    -0.843
+   ],
+   "boundsMax": [
+    0.98,
+    0.34,
+    0.843
+   ],
+   "origin": [
+    1.4,
+    0.4,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "attach": {
+    "part": "UpperTorso",
+    "offset": [
+     0.0,
+     1.05,
+     0.0
+    ]
+   },
+   "slot": "scarf",
+   "variant": "Chunky"
+  },
+  "Rookie_Scarf_Knot": {
+   "model": "Rookie_Outfits",
+   "size": [
+    1.72,
+    0.792,
+    1.71
+   ],
+   "tris": 284,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.86,
+    -0.592,
+    -0.97
+   ],
+   "boundsMax": [
+    0.86,
+    0.2,
+    0.74
+   ],
+   "origin": [
+    -3.8,
+    0.4,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "attach": {
+    "part": "UpperTorso",
+    "offset": [
+     0.0,
+     1.05,
+     0.0
+    ]
+   },
+   "slot": "scarf",
+   "variant": "Knot"
+  },
+  "Rookie_Scarf_Long": {
+   "model": "Rookie_Outfits",
+   "size": [
+    2.48,
+    1.165,
+    3.135
+   ],
+   "tris": 268,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.62,
+    -0.96,
+    -0.95
+   ],
+   "boundsMax": [
+    0.86,
+    0.205,
+    2.185
+   ],
+   "origin": [
+    4.0,
+    0.4,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "attach": {
+    "part": "UpperTorso",
+    "offset": [
+     0.0,
+     1.05,
+     0.0
+    ]
+   },
+   "slot": "scarf",
+   "variant": "Long"
+  },
+  "Rookie_Stripes_LeftArm": {
+   "model": "Rookie_Outfits",
+   "size": [
+    0.658,
+    0.416,
+    0.594
+   ],
+   "tris": 160,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.384,
+    -0.567,
+    -0.297
+   ],
+   "boundsMax": [
+    0.274,
+    -0.151,
+    0.297
+   ],
+   "origin": [
+    -2.2,
+    -2.44,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "attach": {
+    "part": "LeftUpperArm",
+    "offset": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "slot": "sweater",
+   "variant": "Stripes"
+  },
+  "Rookie_Stripes_RightArm": {
+   "model": "Rookie_Outfits",
+   "size": [
+    0.658,
+    0.416,
+    0.594
+   ],
+   "tris": 160,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.274,
+    -0.567,
+    -0.297
+   ],
+   "boundsMax": [
+    0.384,
+    -0.151,
+    0.297
+   ],
+   "origin": [
+    2.4,
+    -2.44,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "attach": {
+    "part": "RightUpperArm",
+    "offset": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "slot": "sweater",
+   "variant": "Stripes"
+  },
+  "Rookie_Stripes_Torso": {
+   "model": "Rookie_Outfits",
+   "size": [
+    2.028,
+    0.62,
+    1.541
+   ],
+   "tris": 384,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.014,
+    0.21,
+    -0.771
+   ],
+   "boundsMax": [
+    1.014,
+    0.83,
+    0.771
+   ],
+   "origin": [
+    4.0,
+    -3.25,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "tint": "crew colour (Palette seat hue)",
+   "attach": {
+    "part": "UpperTorso",
+    "offset": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "slot": "sweater",
+   "variant": "Stripes"
+  },
+  "Rookie_UpperTorso": {
+   "model": "Rookie",
+   "size": [
+    2.0,
+    1.27,
+    1.625
+   ],
+   "tris": 644,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": true,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.0,
+    -0.17,
+    -0.834
+   ],
+   "boundsMax": [
+    1.0,
+    1.1,
+    0.791
+   ],
+   "origin": [
+    0.0,
+    1.95,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "Waist",
+    "parent": "Rookie_LowerTorso"
+   }
+  },
+  "Rookie_VM_LeftArm": {
+   "model": "Rookie_Viewmodel",
+   "size": [
+    0.654,
+    1.258,
+    0.635
+   ],
+   "tris": 460,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.395,
+    -1.15,
+    -0.325
+   ],
+   "boundsMax": [
+    0.259,
+    0.108,
+    0.31
+   ],
+   "origin": [
+    -1.1,
+    2.16,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Viewmodel"
+   ],
+   "grip": {
+    "name": "GripL",
+    "offset": [
+     -0.11,
+     -0.83,
+     -0.09
+    ]
+   }
+  },
+  "Rookie_VM_RightArm": {
+   "model": "Rookie_Viewmodel",
+   "size": [
+    0.654,
+    1.258,
+    0.635
+   ],
+   "tris": 460,
+   "class": "small",
+   "collision": "Box",
+   "material": "SmoothPlastic",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": true,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.259,
+    -1.15,
+    -0.325
+   ],
+   "boundsMax": [
+    0.395,
+    0.108,
+    0.31
+   ],
+   "origin": [
+    1.1,
+    2.16,
+    0.0
+   ],
+   "tags": [
+    "EH_Rookie",
+    "EH_Viewmodel"
+   ],
+   "grip": {
+    "name": "GripR",
+    "offset": [
+     0.11,
+     -0.83,
+     -0.09
+    ]
+   }
+  },
   "Rug_8x6": {
    "model": "Rug_8x6",
    "size": [
