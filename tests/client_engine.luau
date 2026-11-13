@@ -2986,7 +2986,7 @@ local okPolish, polishErr = pcall(function()
 	)
 	local used = cine.standIns()
 	assert(#used == 0, "no stand-ins with the kit: " .. table.concat(used, ", "))
-	assert(cine.hoardKind() == "mesh", "Hoardsworth on his kit meshes (" .. cine.hoardKind() .. ")")
+	-- (Hoardsworth has left the stage by the end: his meshes and textures were checked while he was on it)
 	assert(cine.rookieKind() == "characterKit", "the Rookie is the CharacterKit template (" .. cine.rookieKind() .. ")")
 	local stage = cine.stage()
 	for _, d in stage:GetDescendants() do

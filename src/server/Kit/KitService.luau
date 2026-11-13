@@ -587,7 +587,9 @@ local function boot()
 		-- so players spawn in seconds while the rest of the kit (levels, hideout dressing) keeps loading.
 		-- Phase 2: the story intro's groups (Heist/IntroKit publishes them at once: a new player's intro has its
 		-- meshes, never block stand-ins). Then the rest.
-		local first, second, rest = KitLib.phases(order, cfg.PRIORITY_PREFIXES, cfg.INTRO_GROUPS)
+		-- (the intro phase only while the intro is on: Config.Intro.ENABLED; off, its groups load with the rest)
+		local introGroups = if Config.Intro.ENABLED then cfg.INTRO_GROUPS else {}
+		local first, second, rest = KitLib.phases(order, cfg.PRIORITY_PREFIXES, introGroups)
 		local function phase(list: { string }, name: string)
 			pool(list, cfg.LOAD_CONCURRENCY, function(model: string)
 				loadGroup(model, groups[model])

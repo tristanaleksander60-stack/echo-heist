@@ -2987,8 +2987,19 @@ do
 		-- EH_IntroKit as the server publishes it at boot (section 7 started the kit and IntroKit.publish): from the
 		-- kit's start (the server's boot), at the kit's intro phase (Config.Kit.INTRO_GROUPS), before the whole kit
 		local it = IntroKit.timing()
-		check(it.published, "boot: EH_IntroKit published in the background (IntroKit.publish)")
-		within("EH_IntroKit published (from the server's start)", it.sinceKitStart, B.INTRO_KIT_PUBLISHED_SECONDS, " s")
+		local introOn = Config.Intro.ENABLED == true -- off (owner, v128): no intro phase, IntroKit.publish waits
+		check(not introOn or it.published, "boot: EH_IntroKit published in the background (IntroKit.publish)")
+		if introOn then
+			within(
+				"EH_IntroKit published (from the server's start)",
+				it.sinceKitStart,
+				B.INTRO_KIT_PUBLISHED_SECONDS,
+				" s"
+			)
+		else
+			table.insert(lines, "intro OFF (Config.Intro.ENABLED): EH_IntroKit timing not measured")
+			IntroKit.publishNow(KitService) -- still publishable from the finished kit (client_engine Q builds on it)
+		end
 		local introFolder = IntroKit.folder()
 		check(
 			introFolder ~= nil and introFolder.Parent == ReplicatedStorage,
@@ -3002,7 +3013,7 @@ do
 				.. #Config.Kit.INTRO_GROUPS
 				.. ")"
 		)
-		if report.source == "cloud" then
+		if report.source == "cloud" and introOn then
 			within("kit intro phase (the intro's groups)", report.introSeconds, B.KIT_INTRO_SECONDS, " s")
 			check(
 				report.introSeconds >= report.prioritySeconds and report.introSeconds < report.seconds,
