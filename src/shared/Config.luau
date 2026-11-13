@@ -1457,10 +1457,10 @@ Config.Backdrop = {
 		TRACKS = { width = 0.9, gauge = 4.2, lanes = { -5, 5 } }, -- tyre tracks: across the road's centre line
 		COLORS = {
 			roofSnow = { 196, 200, 226 }, -- fresh snow on roofs and cornices (the diorama sees roofs from above)
-			yard = { 140, 142, 180 }, -- packed snow on the lot's outdoor floor (V 71 %)
-			pave = { 158, 140, 138 }, -- swept warm stone paving under a dusting (V 62 %: warm under the lamps)
-			road = { 152, 154, 190 }, -- packed snow on the road (V 75 %)
-			track = { 104, 94, 110 }, -- slushy tyre tracks (V 43 %)
+			yard = { 160, 136, 128 }, -- the lot's outdoor floor: warm cobbles under a dusting (V 63 %; the snow is outside)
+			pave = { 180, 144, 126 }, -- swept warm sandstone paving (V 71 %: warm under the lamps)
+			road = { 164, 158, 180 }, -- packed snow on the road, warmed by the windows (V 71 %)
+			track = { 116, 96, 94 }, -- slushy tyre tracks (V 45 %)
 			kerb = { 172, 164, 152 }, -- warm kerb stone
 			plaza = { 170, 164, 176 }, -- the Bank plaza's snow-dusted paving
 			trim = { 226, 214, 190 }, -- cornices and sills (Warm Marble light)
@@ -1520,8 +1520,8 @@ Config.Backdrop = {
 				heights = { shop = { 13, 16 }, house = { 10, 12 }, townhouse = { 17, 21 }, civic = { 18, 20 } },
 				widths = { 16, 18, 20, 16 },
 				signature = "lights", -- fairy-light strings on every front, two trees
-				pave = { 182, 140, 146 }, -- rose paving (the lot and the pavements: warm under the pink lamps)
-				yard = { 178, 150, 160 },
+				pave = { 192, 142, 128 }, -- rose sandstone paving (the lot and the pavements: warm under the pink lamps)
+				yard = { 172, 136, 138 },
 			},
 			Bank = { -- "Bank plaza": stone fronts and a plaza with a big Christmas tree across the street
 				near = { "townhouse", "civic", "townhouse" },
@@ -2020,8 +2020,8 @@ Config.Perf = {
 			PrioritizeLightingQuality = true,
 			Brightness = 1.7, -- WORLD 2.0: recipe A + 0.2 (was 1.6 on the old 1.4)
 			ColorShift_Top = { 170, 190, 255 },
-			Ambient = { 138, 130, 178 },
-			OutdoorAmbient = { 172, 162, 210 },
+			Ambient = { 146, 134, 160 },
+			OutdoorAmbient = { 184, 170, 196 },
 			EnvironmentDiffuseScale = 0.3,
 			EnvironmentSpecularScale = 0,
 			ExposureCompensation = 0.45, -- WORLD 2.0: recipe A's 0.5 less the Soft style's flatter fill
