@@ -283,6 +283,77 @@
    "passed": true
   },
   {
+   "name": "Rookie_Cap_Santa",
+   "class": "small",
+   "tris": 484,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.3,
+    2.735,
+    1.738
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.15,
+     -1.15,
+     -0.28
+    ],
+    "local_max": [
+     1.15,
+     1.5853,
+     1.4585
+    ]
+   },
+   "swatches": [
+    "ribbon",
+    "ribbon_hi",
+    "snow"
+   ],
+   "location": [
+    6.4,
+    0.0,
+    4.2
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 87,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "xmas",
+   "notes": "outfit cap: Santa",
+   "fails": [],
+   "passed": true
+  },
+  {
    "name": "Rookie_Scarf_Long",
    "class": "small",
    "tris": 224,
@@ -1430,7 +1501,7 @@
  ],
  "asset_fails": [],
  "lihfolk_bpy": "LihFolk plugin",
- "tris_total": 4664,
+ "tris_total": 5148,
  "seats": [],
  "align": [],
  "A11_atlas": [
@@ -1439,10 +1510,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "d37d1102578c04764650",
+ "contentHash": "09f54d5ed252dd235d0f",
  "fbx": {
   "path": "assets/fbx/Rookie_Outfits.fbx",
-  "bytes": 153404,
+  "bytes": 166092,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -1453,6 +1524,7 @@
    "Rookie_Cap_Beanie",
    "Rookie_Cap_Bobble",
    "Rookie_Cap_Flat",
+   "Rookie_Cap_Santa",
    "Rookie_Cap_Trapper",
    "Rookie_Gloves_Knit_Left",
    "Rookie_Gloves_Knit_Right",
@@ -1574,11 +1646,16 @@
     1.48,
     2.14,
     2.14
+   ],
+   [
+    1.738,
+    2.3,
+    2.735
    ]
   ]
  },
  "spec": "assets/blender/rookie.py",
- "notes": "Outfit slots: cap x4 (atlas), scarf x4 + sweater x2 (crew colour), gloves x2 (glove colour), mask x1 (+ none). Pivot = attach point.",
+ "notes": "Outfit slots: cap x5 (atlas; Santa = Christmas cells), scarf x4 + sweater x2 (crew colour), gloves x2 (glove colour), mask x1 (+ none). Pivot = attach point.",
  "turntable": "docs/art/turntables/Rookie_Outfits.png",
- "seconds": 24.8
+ "seconds": 6.2
 }

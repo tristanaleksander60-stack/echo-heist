@@ -173,6 +173,7 @@ local WANT = {
 	Rookie_Cap_Beanie = { model = "Rookie_Outfits", size = Vector3.new(2.18, 1.02, 2.18), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = true, atlas = true },
 	Rookie_Cap_Bobble = { model = "Rookie_Outfits", size = Vector3.new(2.14, 1.48, 2.14), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = true, atlas = true },
 	Rookie_Cap_Flat = { model = "Rookie_Outfits", size = Vector3.new(2.12, 0.679, 2.351), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = true, atlas = true },
+	Rookie_Cap_Santa = { model = "Rookie_Outfits", size = Vector3.new(2.3, 1.738, 2.735), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = true, atlas = true },
 	Rookie_Cap_Trapper = { model = "Rookie_Outfits", size = Vector3.new(2.26, 1.48, 2.1), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = true, atlas = true },
 	Rookie_Face_Busted = { model = "Rookie_Faces", size = Vector3.new(1.119, 0.827, 0.261), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = false, atlas = true },
 	Rookie_Face_Idle = { model = "Rookie", size = Vector3.new(1.119, 0.775, 0.273), collision = "Box", material = "SmoothPlastic", canCollide = false, castShadow = false, atlas = true },

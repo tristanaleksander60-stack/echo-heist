@@ -2920,6 +2920,14 @@ Config.Rookie = {
 			name = "Trapper Hat",
 			unlock = { trophy = "Trophy_NightClerk" },
 		},
+		-- Christmas unlock (Steal Back Christmas): clear the launch-day advent vault (Dec 3; catch-up until
+		-- Config.Data.Advent.CATCH_UP_UNTIL). Yours to keep after the event; the Christmas icon shows it.
+		Cap_Santa = {
+			slot = "cap",
+			variant = "Santa",
+			name = "Santa Cap",
+			unlock = { trophy = "Orn_Advent2026_03" },
+		},
 		Scarf_Long = { slot = "scarf", variant = "Long", name = "Long Scarf", free = true },
 		Scarf_Chunky = { slot = "scarf", variant = "Chunky", name = "Chunky Scarf", free = true },
 		Scarf_Bandana = { slot = "scarf", variant = "Bandana", name = "Bandana", unlock = { stars = 3 } },

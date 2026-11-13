@@ -1346,6 +1346,14 @@ local PARTS: { [string]: any } = {
 		collision = "Box",
 		canCollide = false,
 	},
+	Rookie_Cap_Santa = {
+		model = "Rookie_Outfits",
+		size = { 2.3, 1.738, 2.735 },
+		center = { 0, 0.589, 0.2175 },
+		scene = { -6.4, 4.789, 0.2175 },
+		collision = "Box",
+		canCollide = false,
+	},
 	Rookie_Cap_Trapper = {
 		model = "Rookie_Outfits",
 		size = { 2.26, 1.48, 2.1 },
