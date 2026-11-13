@@ -124,7 +124,32 @@ function Controls.bind(ctx: any)
 	local gui = ctx.gui
 	local runHud = ctx.runHud
 	local endBtn = ctx.controls.endBtn
-	ContextActionService:BindAction("HeistEndRun", function(_, inputState)
+	-- The run's own keys (REWIND / next run, USE, CREW, DECK, FAST) are bound only while a heist is on
+	-- (controls.setRunBinds: HeistClient turns them on with a heist's Sync, Hud.hideHeist turns them off). MENU and
+	-- BACK stay bound everywhere (the garage's sheets use them).
+	local runBinds: { { any } } = {}
+	local runBound = false
+	local function bindRun(name: string, fn: any, touch: boolean, ...: Enum.KeyCode)
+		table.insert(runBinds, { name, fn, touch, table.pack(...) })
+	end
+	function ctx.controls.setRunBinds(on: boolean)
+		if on == runBound then
+			return
+		end
+		runBound = on
+		for _, b in runBinds do
+			if on then
+				local keys = b[4]
+				ContextActionService:BindAction(b[1], b[2], b[3], table.unpack(keys, 1, keys.n))
+			else
+				ContextActionService:UnbindAction(b[1])
+			end
+		end
+	end
+	function ctx.controls.runBindsOn(): boolean
+		return runBound
+	end
+	bindRun("HeistEndRun", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin and gui.Enabled then
 			if state.phase == "Between" then
 				Sound.play("UIConfirm")
@@ -136,7 +161,7 @@ function Controls.bind(ctx: any)
 		end
 		return Enum.ContextActionResult.Pass
 	end, false, codes("rewind"))
-	ContextActionService:BindAction("HeistInteract", function(_, inputState)
+	bindRun("HeistInteract", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin and gui.Enabled and runHud.Visible then
 			hud.interact()
 		end
@@ -169,7 +194,7 @@ function Controls.bind(ctx: any)
 		return Enum.ContextActionResult.Pass
 	end, false, codes("menu"))
 	-- Crew View: held in a first-person run (CameraDirector ignores it anywhere else; between runs Q is the deck's).
-	ContextActionService:BindAction("HeistCrewView", function(_, inputState, input)
+	bindRun("HeistCrewView", function(_, inputState, input)
 		if actions.crewHold then
 			local who = if input.UserInputType == Enum.UserInputType.Keyboard then "key" else "pad"
 			if inputState == Enum.UserInputState.Begin then
@@ -180,13 +205,13 @@ function Controls.bind(ctx: any)
 		end
 		return Enum.ContextActionResult.Pass
 	end, false, codes("crew"))
-	ContextActionService:BindAction("HeistDeck", function(_, inputState)
+	bindRun("HeistDeck", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin then
 			hud.toggleDeck()
 		end
 		return Enum.ContextActionResult.Pass
 	end, false, codes("deck"))
-	ContextActionService:BindAction("HeistFastForward", function(_, inputState)
+	bindRun("HeistFastForward", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin then
 			actions.fastForward(true)
 		elseif inputState == Enum.UserInputState.End then

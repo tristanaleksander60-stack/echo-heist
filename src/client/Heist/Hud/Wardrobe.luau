@@ -116,7 +116,9 @@ function Wardrobe.build(ctx: any): any
 
 	local slot = R.TAB_SLOTS[1]
 	local heist: any = nil -- the profile slice (Data.Snapshot), nil until it answers (free items only then)
-	local wearing: { [string]: string } = Outfit.fromKey(localPlayer:GetAttribute("Outfit"))
+	-- (no LocalPlayer when the HUD is built for an engine check on a server: tests/client_engine.luau)
+	local wearing: { [string]: string } =
+		Outfit.fromKey(if localPlayer then localPlayer:GetAttribute("Outfit") else nil)
 	local selected: string? = nil
 	local busy = false
 
@@ -308,14 +310,16 @@ function Wardrobe.build(ctx: any): any
 		x += 66
 	end
 
-	localPlayer:GetAttributeChangedSignal("Outfit"):Connect(function()
-		if not busy then
-			wearing = Outfit.fromKey(localPlayer:GetAttribute("Outfit"))
-			if Ui.isShown(sheet) then
-				render()
+	if localPlayer then
+		localPlayer:GetAttributeChangedSignal("Outfit"):Connect(function()
+			if not busy then
+				wearing = Outfit.fromKey(localPlayer:GetAttribute("Outfit"))
+				if Ui.isShown(sheet) then
+					render()
+				end
 			end
-		end
-	end)
+		end)
+	end
 
 	-- Opens the sheet (closeFn: what BACK does: Heist/Hideout leaves the station).
 	function w.open(closeFn: () -> ())
