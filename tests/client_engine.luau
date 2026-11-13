@@ -71,6 +71,8 @@ for _, name in
 		"Loading",
 		"Cinematic",
 		"Aurora",
+		"Drive",
+		"Hideout",
 		"HeistClient",
 	}
 do
@@ -1778,6 +1780,104 @@ local okSky, skyErr = pcall(function(): string
 	return string.format("%d / %d / %d / %d Beams per tier", counts[1], counts[2], counts[3], counts[4])
 end)
 check(okSky, "aurora: layers of Beams, valid textures, tier counts, follow, sway (" .. tostring(skyErr) .. ")")
+
+-- M. The hideout lobby (LOBBY track, Config.Hideout) on the real kit-dressed warehouse garage: each station's look
+-- target is in reach and in sight from a spot in front of it (Heist/LookTarget.lineOfSight, real workspace rays
+-- against the garage), the station camera's eye (LobbyLook.focusFrame) is not inside a wall, every van's side door
+-- point is lookable from the aisle, and the drive's stage (Heist/Drive.build) copies the bay's kit van with its
+-- plate, never collides or is queried, and its camera frames the van while the town scrolls past.
+local okHide, hideErr = pcall(function(): string
+	local Cfg = require(shared:WaitForChild("Config")) :: any
+	local HD = Cfg.Hideout
+	local Lobby = require(heistServer:WaitForChild("Lobby"))
+	local Vans = require(heistServer:WaitForChild("Vans"))
+	local LookTarget = require(clientHeist:WaitForChild("LookTarget"))
+	local Drive = require(clientHeist:WaitForChild("Drive"))
+	local LobbyLook = require(shared:WaitForChild("Heist"):WaitForChild("LobbyLook"))
+	local garage = Lobby.model() or Lobby.build(KitService)
+	if not Lobby.isDressed() then
+		Lobby.dress(KitService)
+	end
+	Vans.build(nil)
+	local anchors = garage:WaitForChild("Anchors")
+	local exclude: { Instance } = {}
+	local stationsOk, notes = 0, {}
+	for _, st in HD.STATIONS do
+		local a = anchors:FindFirstChild(st.anchor)
+		if a and a:IsA("BasePart") then
+			local t = st.target
+			local target = (a.CFrame * CFrame.new(t[1], t[2], -t[3])).Position
+			-- a kid standing 4.5 studs in front of the station, eyes 5 up
+			local flat = Vector3.new(a.CFrame.LookVector.X, 0, a.CFrame.LookVector.Z).Unit
+			local stand = Vector3.new(target.X, garage:GetPivot().Position.Y, target.Z) + flat * 4.5
+			local eye = stand + Vector3.new(0, 5, 0)
+			local dist = (target - eye).Magnitude
+			local seen = LookTarget.lineOfSight(eye, target, t[4], a, exclude)
+			local camEye = LobbyLook.focusFrame({ target.X, target.Y, target.Z }, flat.X, flat.Z, st.cam)
+			local params = RaycastParams.new()
+			params.FilterType = Enum.RaycastFilterType.Exclude
+			local camV = Vector3.new(camEye[1], camEye[2], camEye[3])
+			local hit = workspace:Raycast(target + (camV - target).Unit * (t[4] + 0.2), camV - target, params)
+			local camClear = hit == nil or (hit.Position - target).Magnitude >= (camV - target).Magnitude - 0.5
+			if seen and dist <= HD.REACH and camClear then
+				stationsOk += 1
+			else
+				table.insert(
+					notes,
+					string.format("%s seen %s dist %.1f cam %s", st.anchor, tostring(seen), dist, tostring(camClear))
+				)
+			end
+		else
+			table.insert(notes, st.anchor .. " missing")
+		end
+	end
+	assert(stationsOk == #HD.STATIONS, "stations: " .. table.concat(notes, "; "))
+	-- every van's side door from the aisle
+	local vansOk = 0
+	local vans = garage:WaitForChild("Vans")
+	for bay = 1, HD.BAYS do
+		local m = vans:FindFirstChild("Van" .. bay)
+		local door = m and m:FindFirstChild("Door")
+		local a = Vans.anchor(bay)
+		local body: BasePart? = nil
+		for _, d in garage:GetChildren() do
+			if d:IsA("BasePart") and d:GetAttribute("EH_Kind") == "garageVan" and d:GetAttribute("EH_Bay") == bay then
+				body = d
+			end
+		end
+		if door and door:IsA("BasePart") and a and body then
+			local eye = door.Position + a.LookVector * 5 + Vector3.new(0, 0.8, 0)
+			if LookTarget.lineOfSight(eye, door.Position, 2.4, body, exclude) then
+				vansOk += 1
+			end
+		end
+	end
+	assert(vansOk == HD.BAYS, "van side doors in sight: " .. vansOk)
+	-- the drive's stage
+	local st = Drive.build(2)
+	local loud, stageParts = 0, 0
+	for _, d in st.model:GetDescendants() do
+		if d:IsA("BasePart") then
+			stageParts += 1
+			if d.CanCollide or d.CanQuery or d.CanTouch then
+				loud += 1
+			end
+		end
+	end
+	assert(st.copied >= 3, "the van copied: " .. st.copied .. " pieces")
+	assert(loud == 0, loud .. " stage part(s) collide or are queried")
+	local cf0 = Drive.pose(st, 0, 0)
+	local first = st.movers[1].p.Position
+	local cf1 = Drive.pose(st, 1, 0)
+	local moved = (st.movers[1].p.Position - first).Magnitude
+	local toVan = (st.origin.Position + Vector3.new(0, 3, 0) - cf1.Position).Unit
+	assert(cf0.Position == cf1.Position, "the camera tracks the van (no shake)")
+	assert(cf1.LookVector:Dot(toVan) > 0.95, "the camera looks at the van")
+	assert(moved > HD.DRIVE.SPEED * 0.5, string.format("the town scrolls past (%.1f studs in 1 s)", moved))
+	st.model:Destroy()
+	return string.format("%d stations, %d vans, %d stage parts", stationsOk, vansOk, stageParts)
+end)
+check(okHide, "hideout: stations in reach and sight, van doors, the drive's stage (" .. tostring(hideErr) .. ")")
 
 scratch:Destroy()
 return string.format("%d checks, %d failed\n%s", #results, failures, table.concat(results, "\n"))

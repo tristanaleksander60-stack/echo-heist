@@ -111,15 +111,16 @@ local function copyVan(stage: Instance, bay: number, at: CFrame): number
 	return copied
 end
 
-function Drive.play(opts: any): any
-	local drive = {}
+-- Builds the stage (not parented): the copy of the bay's van at the origin, the road and kerbs, the moving town.
+-- Returns { model, movers, loop, origin, copied } (tests/client_engine.luau section M builds it on the real garage).
+function Drive.build(bay: number): any
 	local o = D.STAGE_ORIGIN
 	local origin = CFrame.new(o[1], o[2], o[3])
 	local stage = Instance.new("Model")
 	stage.Name = "EH_Drive"
 	-- the van, still, at the stage origin; the street runs along the van's length (local X) and scrolls past it
 	local cabX = Config.Hideout.VAN.CAB_X
-	copyVan(stage, opts.bay or 1, origin)
+	local copied = copyVan(stage, bay, origin)
 	local W = D.STREET_W
 	local len = 520
 	part(stage, "Road", Vector3.new(len, 1, W), origin * CFrame.new(0, -0.5, 0), Color3.fromRGB(40, 42, 64))
@@ -199,6 +200,32 @@ function Drive.play(opts: any): any
 	light.Brightness = 3
 	light.Color = WINDOW
 	light.Parent = glow
+	return { model = stage, movers = movers, loop = loop, origin = origin, copied = copied }
+end
+
+-- Poses the moving town for t seconds into the drive and returns the camera's frame (shake in studs).
+function Drive.pose(st: any, t: number, shake: number): CFrame
+	local C = D.CAM
+	local dirX = -Config.Hideout.VAN.CAB_X -- the van drives toward its cab: the world slides the other way
+	local loop = st.loop
+	local shift = (t * D.SPEED) % loop
+	for _, m in st.movers do
+		local x = ((m.x + shift * dirX) % loop) - loop / 2
+		m.p.CFrame = st.origin * CFrame.new(x, 0, 0) * m.rest
+	end
+	local sx = math.sin(t * 37) * shake
+	local sy = math.sin(t * 53 + 1) * shake
+	local eye = VanRules.localPoint(C.along, C.up, C.out)
+	local at = VanRules.localPoint(C.lookAlong, C.lookUp, 0)
+	local eyeW = st.origin * Vector3.new(eye[1] + sx, eye[2] + sy, eye[3])
+	local atW = st.origin * Vector3.new(at[1], at[2], at[3])
+	return CFrame.lookAt(eyeW, atW)
+end
+
+function Drive.play(opts: any): any
+	local drive = {}
+	local st = Drive.build(opts.bay or 1)
+	local stage = st.model
 	stage.Parent = workspace
 
 	local director = opts.director
@@ -212,24 +239,9 @@ function Drive.play(opts: any): any
 	local stopCue = Sound.play(D.CUE)
 	local t0 = os.clock()
 	local done = false
-	local C = D.CAM
-	-- the van drives toward its cab: the world slides the other way
-	local dirX = -cabX
 	local function frame(t: number)
-		local shift = (t * D.SPEED) % loop
-		for _, m in movers do
-			local x = ((m.x + shift * dirX) % loop) - loop / 2
-			m.p.CFrame = origin * CFrame.new(x, 0, 0) * m.rest
-		end
-		local shake = if opts.shake then D.SHAKE else 0
-		local sx = math.sin(t * 37) * shake
-		local sy = math.sin(t * 53 + 1) * shake
-		local eye = VanRules.localPoint(C.along, C.up, C.out)
-		local at = VanRules.localPoint(C.lookAlong, C.lookUp, 0)
-		local eyeW = origin * Vector3.new(eye[1] + sx, eye[2] + sy, eye[3])
-		local atW = origin * Vector3.new(at[1], at[2], at[3])
-		cam.CFrame = CFrame.lookAt(eyeW, atW)
-		cam.FieldOfView = C.fov
+		cam.CFrame = Drive.pose(st, t, if opts.shake then D.SHAKE else 0)
+		cam.FieldOfView = D.CAM.fov
 	end
 	local function finish(how: string)
 		if done then
