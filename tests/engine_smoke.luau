@@ -2600,5 +2600,152 @@ do
 	check(okRl, "random characters and look section ran" .. (if okRl then "" else ": " .. tostring(rlErr)))
 end
 
+-- 15. The PARTY sheet (PARTY track, Config.Hideout.PARTY): the van leader's size / privacy / kick ops on the real
+-- anchors with fake members (Luau Execution has no players). L claims VanBay7 and sets crew size 2, friends only:
+-- a stranger cannot sit, a friend can, and the next friend finds it full (the size cap); Heist/Vans writes Size and
+-- Privacy and fades the seats past the size; a kick frees the seat and keeps that player out (and out of Quick Crew
+-- for that van); size 4 + OPEN lets Quick Crew match strangers into the free seats; the validator takes the new ops.
+do
+	local okParty, partyErr = pcall(function()
+		local heistDir = server:WaitForChild("Heist")
+		local sharedDir = ReplicatedStorage:WaitForChild("Shared")
+		local Config = require(sharedDir:WaitForChild("Config")) :: any
+		local HD = Config.Hideout
+		local Lobby = require(heistDir:WaitForChild("Lobby"))
+		local Vans = require(heistDir:WaitForChild("Vans"))
+		local VanRules = require(sharedDir:WaitForChild("Heist"):WaitForChild("VanRules"))
+		local QuickCrew = require(sharedDir:WaitForChild("Heist"):WaitForChild("QuickCrew"))
+		local garage = Lobby.model() or Lobby.build(nil)
+		local folder = Vans.build(nil)
+		if not (garage and folder) then
+			check(false, "party: no garage")
+			return
+		end
+		local bay = 7
+		local anchor = Vans.anchor(bay)
+		check(anchor ~= nil, "party: VanBay7's anchor")
+		if not anchor then
+			return
+		end
+		-- standing outside the side door (the server measures from the root to the nearest van point)
+		local doorPos = Vans.point(bay, "door") :: Vector3
+		local near = ((doorPos + anchor.LookVector * 3 + Vector3.new(0, -1.2, 0)) - doorPos).Magnitude
+		local L, F, G, S = -801, -802, -803, -804
+		local crewL: VanRules.Crew = { id = 9801, leaderId = L, members = { L } }
+		local st = VanRules.new()
+		check(VanRules.claim(st, bay, crewL, L, near), "party: L claims VanBay7")
+		local van = VanRules.van(st, bay) :: VanRules.Van
+		local friends = table.find(HD.PARTY.PRIVACY, "friends") :: number
+		local open = table.find(HD.PARTY.PRIVACY, "open") :: number
+		local okSize = VanRules.setSize(st, bay, crewL, L, 2, #crewL.members, near)
+		local okPriv = VanRules.setPrivacy(st, bay, crewL, L, friends, 1, near)
+		local names = { [L] = "FakeL", [F] = "FakeF", [G] = "FakeG", [S] = "FakeS" }
+		Vans.render(bay, van, names, 0)
+		local rig = folder:WaitForChild("Van" .. bay) :: Model
+		local plate = rig:WaitForChild("Plate") :: BasePart
+		local gui = plate:FindFirstChildOfClass("SurfaceGui")
+		local pip4 = gui and gui:FindFirstChild("Pip4")
+		check(
+			okSize
+				and okPriv
+				and van.mode == VanRules.MODE.Crew
+				and rig:GetAttribute("Size") == 2
+				and rig:GetAttribute("Privacy") == "friends"
+				and pip4 ~= nil
+				and (pip4 :: Frame).BackgroundTransparency > 0.8,
+			"party: size 2 + friends only (CREW mode, Size / Privacy written, seats past the size faded)"
+		)
+		local okS, codeS = VanRules.canSit(st, bay, { userId = S, crewId = 0, friend = false }, 1, near)
+		check(not okS and codeS == "NotFriend", "party: a stranger cannot sit in a friends-only van")
+		local okF, codeF = VanRules.canSit(st, bay, { userId = F, crewId = 0, friend = true }, 1, near)
+		check(okF and codeF == "Join", "party: a friend can")
+		crewL.members = { L, F }
+		VanRules.syncSeats(van, crewL)
+		VanRules.markSeated(st, bay, F, true)
+		local okG, codeG = VanRules.canSit(st, bay, { userId = G, crewId = 0, friend = true }, 2, near)
+		check(not okG and codeG == "Full", "party: the size cap holds (2 of 2: the next friend is refused)")
+		local okLow, codeLow = VanRules.setSize(st, bay, crewL, L, 2, 2, near)
+		local okBelow = VanRules.setSize(st, bay, { id = 9801, leaderId = L, members = { L, F, G } }, L, 2, 3, near)
+		check(okLow and codeLow == "Ok" and not okBelow, "party: the size never drops below the seats taken")
+		-- the kick: the seat frees, the player stays out
+		local clock = 100
+		local okK, codeK, kicked = VanRules.kick(st, bay, crewL, L, 2, clock, near)
+		crewL.members = { L } -- the server takes them out of the crew (back to the lobby, solo)
+		VanRules.syncSeats(van, crewL)
+		Vans.render(bay, van, names, 0)
+		local card2 = rig:WaitForChild("SeatCard2") :: BasePart
+		local cardGui = card2:FindFirstChildOfClass("SurfaceGui")
+		local cardName = cardGui and cardGui:FindFirstChild("Name")
+		check(
+			okK
+				and codeK == "Ok"
+				and kicked == F
+				and #van.seats == 1
+				and cardName ~= nil
+				and (cardName :: TextLabel).Text == "FREE SEAT",
+			"party: a kick frees the seat (seat 2's card says FREE SEAT)"
+		)
+		local okBack, codeBack = VanRules.canSit(
+			st,
+			bay,
+			{ userId = F, crewId = 0, friend = true, kicked = VanRules.isKicked(van, F, clock + 1) },
+			1,
+			near
+		)
+		local okG2 = VanRules.canSit(st, bay, { userId = G, crewId = 0, friend = true }, 1, near)
+		check(not okBack and codeBack == "Kicked" and okG2, "party: the kicked friend stays out, another friend fits")
+		-- OPEN + size 4: Quick Crew matches strangers into the free seats, never the kicked player
+		local okOpen = VanRules.setPrivacy(st, bay, crewL, L, open, clock, near)
+		local okBig = VanRules.setSize(st, bay, crewL, L, 4, 1, near)
+		local q = QuickCrew.new()
+		QuickCrew.optIn(q, F, 1)
+		QuickCrew.optIn(q, S, 2)
+		QuickCrew.optIn(q, -805, 3)
+		QuickCrew.optIn(q, -806, 4)
+		local blocked = { [F] = VanRules.isKicked(van, F, clock + 1) }
+		local res = QuickCrew.pass(q, {
+			{
+				bay = bay,
+				crewSize = #crewL.members,
+				openedAt = van.openedAt,
+				leaderId = L,
+				size = VanRules.capOf(van),
+				blocked = blocked,
+			},
+		}, clock + 1)
+		Vans.render(bay, van, names, QuickCrew.heldIn(q, bay))
+		check(
+			okOpen
+				and okBig
+				and van.open
+				and #res.matched == 3
+				and QuickCrew.holdOf(q, F) == nil
+				and QuickCrew.holdOf(q, S) == bay
+				and rig:GetAttribute("Privacy") == "open"
+				and rig:GetAttribute("Open") == true
+				and rig:GetAttribute("Held") == 3,
+			string.format("party: OPEN lets Quick Crew match (%d held, the kicked one waits)", #res.matched)
+		)
+		local okSq = VanRules.canSit(st, bay, { userId = S, crewId = 0, friend = false, quick = true }, 1 + 2, near)
+		check(okSq, "party: the matched stranger sits in the open van")
+		-- back to friends only: strangers are out again
+		VanRules.setPrivacy(st, bay, crewL, L, friends, clock + 2, near)
+		local okSf = VanRules.canSit(st, bay, { userId = S, crewId = 0, friend = false, quick = true }, 1, near)
+		check(not okSf and not van.open, "party: friends only closes the van to Quick Crew")
+		check(
+			VanRules.validReadyArg({ op = "size", bay = bay, n = 2 })
+				and VanRules.validReadyArg({ op = "privacy", bay = bay, n = open })
+				and VanRules.validReadyArg({ op = "kick", bay = bay, n = 2 })
+				and not VanRules.validReadyArg({ op = "size", bay = bay, n = 9 })
+				and not VanRules.validReadyArg({ op = "kick", bay = bay, n = 1 })
+				and not VanRules.validReadyArg({ op = "privacy", bay = bay }),
+			"party: Heist.Ready validates size / privacy / kick"
+		)
+		Vans.render(bay, nil, {})
+		check(rig:GetAttribute("Size") == VanRules.cap(), "party: a free van takes every seat again")
+	end)
+	check(okParty, "party section ran" .. (if okParty then "" else ": " .. tostring(partyErr)))
+end
+
 table.insert(results, string.format("%d failure(s)", failures))
 return table.concat(results, "\n")

@@ -131,10 +131,14 @@ return function(test: (string, () -> ()) -> ())
 		Assert.eq(#Schema.sanitize(h), 0, "a good style stays")
 	end)
 
-	test("the STYLE verb: only your own van's leader, at the rear wheel; its action passes the validator", function()
+	test("the rear wheel: only your own van's leader (the PARTY sheet); its action passes the validator", function()
 		local mine = { bay = 2, mode = "parked", crewId = 1, leaderId = 101, waiting = 0, size = 1 }
 		local leader = { userId = 101, crewId = 1, leader = true, crewSize = 1, seatedBay = nil, ready = false }
-		Assert.eq(LobbyLook.vanVerb(mine, "style", leader), "style", "the leader restyles")
+		Assert.eq(
+			LobbyLook.vanVerb(mine, "style", leader),
+			"party",
+			"the leader opens the PARTY sheet (STYLE is in it)"
+		)
 		local member = { userId = 102, crewId = 1, leader = false, crewSize = 2, seatedBay = nil, ready = false }
 		Assert.eq(LobbyLook.vanVerb(mine, "style", member), nil, "a member: nothing")
 		local stranger = { userId = 301, crewId = 3, leader = true, crewSize = 1, seatedBay = nil, ready = false }

@@ -19,11 +19,17 @@
 -- (canSit: a friend of the leader, or a Quick Crew seat the server reserved in an open van; Shared/Heist/QuickCrew).
 -- "look" (n = Shared/Heist/LookPitch's 1..STEPS) is not a van op: your first-person camera pitch, anywhere, at most
 -- 10 Hz (HeistService hands it to Heist/LookSync before the lobby).
+-- PARTY ops (the leader's PARTY sheet, Config.Hideout.PARTY): "size" (bay, n = MIN_SIZE..cap: how many may come
+-- along; never below the seats already taken; picking a size opens a parked van's side door), "privacy" (bay, n = a
+-- PARTY.PRIVACY index: FRIENDS ONLY / OPEN to Quick Crew / INVITE ONLY), "kick" (bay, n = a cargo seat 2..: the
+-- member is put back in the lobby as a solo crew and cannot sit in again for KICK_BLOCK_SECONDS). canSit respects
+-- the size and the privacy; Quick Crew only matches OPEN vans with free seats under the size.
 
 local Config = require("../Config")
 local LookPitch = require("./LookPitch")
 
 local HD = Config.Hideout
+local PARTY = HD.PARTY
 
 local VanRules = {}
 
@@ -53,6 +59,9 @@ VanRules.OPS = table.freeze({
 	"open",
 	"shut",
 	"look",
+	"size",
+	"privacy",
+	"kick",
 })
 local NEEDS_BAY: { [string]: boolean } = {
 	claim = true,
@@ -65,9 +74,19 @@ local NEEDS_BAY: { [string]: boolean } = {
 	style = true,
 	open = true,
 	shut = true,
+	size = true,
+	privacy = true,
+	kick = true,
 }
 -- ops that take n (and need it)
-local NEEDS_N: { [string]: boolean } = { paint = true, style = true, look = true }
+local NEEDS_N: { [string]: boolean } =
+	{ paint = true, style = true, size = true, privacy = true, kick = true, look = true }
+-- the PARTY ops' own n ranges (the validator refuses anything outside them; the rules check again)
+local N_RANGE: { [string]: { number } } = {
+	size = { PARTY.MIN_SIZE, math.min(Config.Sim.MAX_CREW, #HD.VAN.SEATS) },
+	privacy = { 1, #PARTY.PRIVACY },
+	kick = { 2, #HD.VAN.SEATS },
+}
 
 export type Seat = { userId: number, seat: number, seated: boolean, ready: boolean }
 export type Van = {
@@ -77,7 +96,10 @@ export type Van = {
 	mode: string,
 	paint: number, -- Config.Hideout.VAN.PAINTS index, 0 = the bay's own paint
 	style: number, -- Config.Hideout.VAN.STYLES index (1 = the step van)
-	open: boolean, -- open to Quick Crew strangers (only ever true in CREW mode)
+	open: boolean, -- open to Quick Crew strangers (only ever true in CREW mode; = privacy "open")
+	size: number, -- how many may come along, the driver included (PARTY: MIN_SIZE..cap)
+	privacy: string, -- who can join: Config.Hideout.PARTY.PRIVACY ("friends" | "open" | "invite")
+	kicked: { [number]: number }, -- userId -> until when (the rules' clock) a kicked player cannot sit in
 	openedAt: number, -- when it was opened (Quick Crew fills the oldest open van first)
 	seats: { Seat }, -- seats[1] = the leader (driver)
 }
@@ -133,6 +155,10 @@ function VanRules.validAction(v: any): boolean
 		return false
 	end
 	if op == "look" and not LookPitch.validN(v.n) then
+		return false
+	end
+	local range = N_RANGE[op]
+	if range and not isInt(v.n, range[1], range[2]) then
 		return false
 	end
 	return true
@@ -225,6 +251,33 @@ function VanRules.styleIndex(id: any): number
 	return 1
 end
 
+-- The most a van ever seats: the driver + the cargo bench, never past Config.Sim.MAX_CREW.
+function VanRules.cap(): number
+	return math.min(Config.Sim.MAX_CREW, #HD.VAN.SEATS)
+end
+
+-- How many this van takes now: its party size (PARTY), never past the seats.
+function VanRules.capOf(v: Van): number
+	local n = if isInt(v.size, 1, VanRules.cap()) then v.size else VanRules.cap()
+	return math.min(n, VanRules.cap())
+end
+
+-- A PARTY.PRIVACY index to its name (nil = not one).
+function VanRules.privacyName(n: any): string?
+	return if isInt(n, 1, #PARTY.PRIVACY) then PARTY.PRIVACY[n] else nil
+end
+
+-- A privacy name to its index (unknown = the default).
+function VanRules.privacyIndex(name: any): number
+	return table.find(PARTY.PRIVACY, name) or PARTY.DEFAULT_PRIVACY
+end
+
+-- Is this user blocked from the van after a kick (at `now` on the rules' clock)?
+function VanRules.isKicked(v: Van, userId: number, now: number): boolean
+	local untilT = v.kicked and v.kicked[userId]
+	return untilT ~= nil and now < untilT
+end
+
 -- PICK: the crew leader claims a free van standing near it. A leader who already has a van moves to this one (the
 -- old one is released). style: the leader's saved style (an index; default 1). Returns ok, code ("Ok" | "Moved" |
 -- "Already" | "NoBay" | "NotLeader" | "InHeist" | "Taken" | "TooFar" | "Busy").
@@ -258,6 +311,7 @@ function VanRules.claim(
 	local mine = VanRules.vanOfCrew(st, crew.id)
 	local code = "Ok"
 	local open, openedAt = false, 0
+	local size, privacy, kicked = VanRules.cap(), PARTY.PRIVACY[PARTY.DEFAULT_PRIVACY], {}
 	if mine then
 		if mine.mode == VanRules.MODE.Departing or mine.mode == VanRules.MODE.Away then
 			return false, "Busy"
@@ -265,6 +319,7 @@ function VanRules.claim(
 		st.vans[mine.bay] = nil
 		code = "Moved"
 		open, openedAt = mine.open, mine.openedAt -- a moved crew stays open to Quick Crew
+		size, privacy, kicked = mine.size, mine.privacy, mine.kicked -- and keeps its party settings
 	end
 	local nv: Van = {
 		bay = bay,
@@ -275,6 +330,9 @@ function VanRules.claim(
 		style = if VanRules.validStyle(style) then style :: number else 1,
 		open = open,
 		openedAt = openedAt,
+		size = size,
+		privacy = privacy,
+		kicked = kicked,
 		seats = {},
 	}
 	VanRules.syncSeats(nv, crew)
@@ -365,6 +423,7 @@ function VanRules.setOpen(
 			return true, "Already"
 		end
 		v.open = false
+		v.privacy = PARTY.PRIVACY[PARTY.DEFAULT_PRIVACY] -- closed to strangers: back to friends only
 		return true, "Ok"
 	end
 	if v.mode == VanRules.MODE.Departing or v.mode == VanRules.MODE.Away or crew.inHeist then
@@ -373,16 +432,141 @@ function VanRules.setOpen(
 	if not within(dist) then
 		return false, "TooFar"
 	end
-	if #crew.members >= math.min(Config.Sim.MAX_CREW, #HD.VAN.SEATS) then
+	if #crew.members >= VanRules.capOf(v) then
 		return false, "Full"
 	end
 	if v.open then
 		return true, "Already"
 	end
 	v.open = true
+	v.privacy = "open"
 	v.openedAt = now
 	v.mode = VanRules.MODE.Crew
 	return true, "Ok"
+end
+
+-- PARTY: how many may come along (n = MIN_SIZE..cap, the driver included). Never below the seats already taken
+-- (taken = the crew's members + those waiting + Quick Crew seats held for this van: the caller counts). A parked van
+-- opens its side door (picking a crew size means you want a crew). Returns ok, code ("Ok" | "NotYours" |
+-- "NotLeader" | "Busy" | "TooFar" | "BadSize" | "BelowTaken").
+function VanRules.setSize(
+	st: State,
+	bay: number,
+	crew: Crew,
+	actorId: number,
+	n: number,
+	taken: number,
+	dist: number?
+): (boolean, string)
+	local v = st.vans[bay]
+	if not v or v.crewId ~= crew.id then
+		return false, "NotYours"
+	end
+	if crew.leaderId ~= actorId then
+		return false, "NotLeader"
+	end
+	if v.mode == VanRules.MODE.Departing or v.mode == VanRules.MODE.Away or crew.inHeist then
+		return false, "Busy"
+	end
+	if not within(dist) then
+		return false, "TooFar"
+	end
+	if not isInt(n, PARTY.MIN_SIZE, VanRules.cap()) then
+		return false, "BadSize"
+	end
+	if n < math.max(taken, #crew.members) then
+		return false, "BelowTaken"
+	end
+	v.size = n
+	v.mode = VanRules.MODE.Crew
+	return true, "Ok"
+end
+
+-- PARTY: who can join (n = a PARTY.PRIVACY index). OPEN is the Quick Crew open (VanRules.setOpen: CREW mode, the
+-- seat cap); FRIENDS ONLY and INVITE ONLY close the van to strangers (the caller gives held seats back). Returns ok,
+-- code ("Ok" | "Already" | "NotYours" | "NotLeader" | "Busy" | "TooFar" | "Full" | "BadPrivacy").
+function VanRules.setPrivacy(
+	st: State,
+	bay: number,
+	crew: Crew,
+	actorId: number,
+	n: number,
+	now: number,
+	dist: number?
+): (boolean, string)
+	local name = VanRules.privacyName(n)
+	if name == nil then
+		return false, "BadPrivacy"
+	end
+	local v = st.vans[bay]
+	if not v or v.crewId ~= crew.id then
+		return false, "NotYours"
+	end
+	if crew.leaderId ~= actorId then
+		return false, "NotLeader"
+	end
+	if v.mode == VanRules.MODE.Departing or v.mode == VanRules.MODE.Away or crew.inHeist then
+		return false, "Busy"
+	end
+	if not within(dist) then
+		return false, "TooFar"
+	end
+	if name == "open" then
+		return VanRules.setOpen(st, bay, crew, actorId, true, now, dist)
+	end
+	if v.privacy == name and not v.open then
+		return true, "Already"
+	end
+	v.open = false
+	v.privacy = name
+	return true, "Ok"
+end
+
+-- PARTY: the leader kicks the member in cargo seat `seatN` (2..). The member's seat goes (the caller takes them out
+-- of the crew, back to the lobby as a solo crew) and they cannot sit in this van until now + KICK_BLOCK_SECONDS.
+-- Returns ok, code, the kicked user id ("Ok" | "NotYours" | "NotLeader" | "Busy" | "TooFar" | "NoSeat" | "Driver").
+function VanRules.kick(
+	st: State,
+	bay: number,
+	crew: Crew,
+	actorId: number,
+	seatN: number,
+	now: number,
+	dist: number?
+): (boolean, string, number?)
+	local v = st.vans[bay]
+	if not v or v.crewId ~= crew.id then
+		return false, "NotYours", nil
+	end
+	if crew.leaderId ~= actorId then
+		return false, "NotLeader", nil
+	end
+	if v.mode == VanRules.MODE.Departing or v.mode == VanRules.MODE.Away or crew.inHeist then
+		return false, "Busy", nil
+	end
+	if not within(dist) then
+		return false, "TooFar", nil
+	end
+	if seatN == 1 then
+		return false, "Driver", nil
+	end
+	local target: Seat? = nil
+	for _, s in v.seats do
+		if s.seat == seatN then
+			target = s
+		end
+	end
+	if target == nil or target.userId == crew.leaderId then
+		return false, "NoSeat", nil
+	end
+	local uid = target.userId
+	local i = table.find(v.seats, target)
+	if i then
+		table.remove(v.seats, i)
+	end
+	v.kicked = v.kicked or {}
+	v.kicked[uid] = now + PARTY.KICK_BLOCK_SECONDS
+	return true, "Ok", uid
 end
 
 -- CREW (open the side door) or PARK (close it again: only while nobody else is in the crew).
@@ -424,12 +608,22 @@ end
 -- SIT: walk in at a CREW van's side door. Your own crew's van always takes you back; another crew's only when you
 -- are friends with its leader, or hold the Quick Crew seat the server reserved for you in this van while it is open
 -- to Quick Crew (strangers: only through the opt-in Quick Crew, MASTERPLAN §3.3), and it has a free seat.
--- who = { userId, crewId, friend (with the van's leader), quick (your Quick Crew reservation is this bay) };
--- vanCrewSize = the van crew's size now (members + those waiting + seats held for OTHER Quick Crew players).
+-- who = { userId, crewId, friend (with the van's leader), quick (your Quick Crew reservation is this bay), invited
+-- (you came in on the leader's invite or followed them: the server reads the join data), kicked (the leader kicked
+-- you from this van a moment ago: VanRules.isKicked) }; vanCrewSize = the van crew's size now (members + those
+-- waiting + seats held for OTHER Quick Crew players). PARTY: the van's size caps the seats and its privacy picks who
+-- may walk in (FRIENDS ONLY: friends; OPEN: friends and held Quick Crew seats; INVITE ONLY: invited friends).
 function VanRules.canSit(
 	st: State,
 	bay: number,
-	who: { userId: number, crewId: number, friend: boolean, quick: boolean? },
+	who: {
+		userId: number,
+		crewId: number,
+		friend: boolean,
+		quick: boolean?,
+		invited: boolean?,
+		kicked: boolean?,
+	},
 	vanCrewSize: number,
 	dist: number?
 ): (boolean, string)
@@ -449,10 +643,17 @@ function VanRules.canSit(
 		end
 		return true, "Back"
 	end
-	if not who.friend and not (who.quick == true and v.open) then
+	if who.kicked == true then
+		return false, "Kicked"
+	end
+	if v.privacy == "invite" and not v.open then
+		if not (who.friend and who.invited == true) then
+			return false, if who.friend then "NotInvited" else "NotFriend"
+		end
+	elseif not who.friend and not (who.quick == true and v.open) then
 		return false, if v.open then "NotMatched" else "NotFriend"
 	end
-	if vanCrewSize >= math.min(Config.Sim.MAX_CREW, #HD.VAN.SEATS) then
+	if vanCrewSize >= VanRules.capOf(v) then
 		return false, "Full"
 	end
 	return true, "Join"

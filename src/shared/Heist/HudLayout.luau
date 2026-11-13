@@ -108,8 +108,32 @@ HudLayout.LOBBY_SKIP = box(1, 0, 1, -8, 0, 6, 140, TAP)
 -- Quick Crew (LOBBY 2): "LOOKING FOR CREW" / "FOLLOW THE ARROW" with STOP, top left while you look for a crew (the
 -- run's LOOT box place: nothing else is there in the lobby).
 HudLayout.LOBBY_QUICK = box(0, 0, 0, 8, 0, 6, 300, TAP)
-HudLayout.SHEETS =
-	table.freeze({ results = true, garage = true, menu = true, settings = true, station = true, wardrobe = true })
+-- The PARTY sheet (PARTY track, Hud/Party): the van leader's one menu, centred, the garage sheet's size (touch
+-- controls off while up). The read-only van card everyone else sees at a claimed van sits left, under LOBBY_QUICK
+-- and clear of the low rail (RAIL_FP), while you roam.
+HudLayout.PARTY = box(0.5, 0.5, 0.5, 0, 0.5, 0, 700, 326)
+HudLayout.PARTY_CARD = box(0, 0, 0, 8, 0, 6 + TAP + 8, 260, 104)
+-- The PARTY sheet's inner blocks, sheet-local design px { x, y, w, h } (Hud/Party places from them; tests/hud_layout
+-- checks they stay inside the sheet and apart): the CREW row (SOLO 2 3 4), the JOIN row, the info line, the READY
+-- CHECK seat list (its caption on top), the tools row (INVITE PAINT STYLE BACK) and GO.
+HudLayout.PARTY_INNER = table.freeze({
+	crew = table.freeze({ 92, 44, 4 * 86 + 3 * 6, TAP }),
+	join = table.freeze({ 92, 44 + TAP + 8, 3 * 124 + 2 * 6, TAP }),
+	info = table.freeze({ 16, 44 + 2 * (TAP + 8), 458, 32 }),
+	seats = table.freeze({ 486, 44, 200, 24 + 4 + 4 * 42 - 4 }),
+	tools = table.freeze({ 16, 326 - 12 - TAP, 4 * 110 + 3 * 6, TAP }),
+	go = table.freeze({ 486, 326 - 12 - TAP, 200, TAP }),
+} :: { [string]: { number } })
+HudLayout.PARTY_INNER_GAP = 6
+HudLayout.SHEETS = table.freeze({
+	results = true,
+	garage = true,
+	menu = true,
+	settings = true,
+	station = true,
+	wardrobe = true,
+	party = true,
+})
 
 -- What shows together (tests/hud_layout.luau checks each scene for overlaps).
 HudLayout.SCENES = table.freeze({
@@ -219,6 +243,8 @@ HudLayout.SCENES = table.freeze({
 	station = { "GARAGE" },
 	wardrobe = { "WARDROBE" },
 	drive = { "LOBBY_SKIP" },
+	party = { "PARTY" },
+	lobbyCard = { "RETICLE", "PROMPT", "RAIL_FP", "LOBBY_USE", "LOBBY_QUICK", "PARTY_CARD" },
 } :: { [string]: { string } })
 
 -- The HUD's device scale for a safe area of w x h px (one UIScale on the HUD root).

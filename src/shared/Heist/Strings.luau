@@ -393,6 +393,7 @@ Strings.LOBBY_VERB = table.freeze({
 	unready = "NOT READY",
 	taken = "TAKEN",
 	busy = "ON A JOB",
+	party = "YOUR VAN",
 } :: { [string]: string })
 function Strings.lobbyWaiting(n: number): string
 	return string.format("WAITING · %d", n)
@@ -492,7 +493,78 @@ Strings.LOBBY_REFUSED = table.freeze({
 	FarSign = "Go to the crew sign.",
 	Slow = "One moment...",
 	BadStyle = "That style is not here.",
+	BadSize = "Pick a crew of 2 to 4.",
+	BelowTaken = "More are in your crew than that.",
+	BadPrivacy = "Pick who can join.",
+	Kicked = "That crew left you out for now.",
+	NotInvited = "That crew is invite only.",
+	NoSeat = "Nobody sits there.",
 } :: { [string]: string })
+-- The PARTY sheet (PARTY track, Config.Hideout.PARTY; Hud/Party): the leader's one menu for their van, and the
+-- read-only card everyone else sees at a claimed van. No free text.
+Strings.PARTY_TITLE = "YOUR VAN"
+Strings.PARTY_CREW = "CREW"
+Strings.PARTY_SOLO = "SOLO"
+Strings.PARTY_JOIN = "JOIN"
+Strings.PARTY_READY_CHECK = "READY CHECK"
+Strings.PARTY_PRIVACY = table.freeze({
+	friends = "FRIENDS ONLY",
+	open = "OPEN",
+	invite = "INVITE ONLY",
+} :: { [string]: string })
+Strings.PARTY_PRIVACY_INFO = table.freeze({
+	friends = "Your friends can walk in and SIT.",
+	open = "Friends, and players looking for a crew (Quick Crew), can join.",
+	invite = "Only friends you invited (or who joined you) can SIT.",
+} :: { [string]: string })
+Strings.PARTY_SOLO_INFO = "Just you. GO from the driver's seat."
+Strings.PARTY_SEAT = table.freeze({
+	driver = "DRIVER",
+	ready = "READY",
+	seated = "SEATED",
+	out = "STEPPED OUT",
+	held = "ON THE WAY",
+	free = "FREE SEAT",
+	closed = "",
+} :: { [string]: string })
+Strings.PARTY_KICK = "KICK"
+Strings.PARTY_INVITE = "INVITE"
+Strings.PARTY_PAINT = "PAINT"
+Strings.PARTY_STYLE = "STYLE"
+Strings.PARTY_GO = "GO!"
+Strings.PARTY_SOLO_GO = "SOLO · GO"
+function Strings.partyWait(n: number): string
+	return string.format("WAITING · %d", n)
+end
+-- A key hint on a button ("GO!  [ENTER]"). Kept in one place so the shared key-hint helper can replace it.
+function Strings.partyKey(text: string, key: string?): string
+	if key == nil or key == "" then
+		return text
+	end
+	return text .. "  [" .. key .. "]"
+end
+Strings.KEY_ENTER = "ENTER"
+Strings.KEY_ESC = "ESC"
+Strings.KEY_PAD_BACK = "B"
+Strings.KEY_PAD_GO = "Y"
+function Strings.partyCardTitle(name: string): string
+	return string.upper(name) .. "'S VAN"
+end
+function Strings.partySeats(seated: number, cap: number): string
+	return string.format("SEATS %d / %d", seated, cap)
+end
+Strings.PARTY_CARD_WHY = table.freeze({
+	Closed = "Door shut: going solo.",
+	Full = "Full.",
+	NotFriend = "Friends of the leader only.",
+	NotMatched = "Open to Quick Crew: use the crew sign.",
+	Seated = "You are in this crew.",
+	Busy = "On a job.",
+} :: { [string]: string })
+Strings.PARTY_KICKED = "You were left out of that crew. You are on your own again."
+function Strings.partyKickedLeader(name: string): string
+	return name .. " is out of your van."
+end
 -- The laptop's board (LOBBY 2): today's biggest haul on this server, the top 10 and your row.
 Strings.BOARD_TITLE = "TODAY'S BIGGEST HAUL"
 Strings.BOARD_EMPTY = "No hauls yet today. Be the first!"

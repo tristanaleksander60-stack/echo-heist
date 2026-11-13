@@ -127,6 +127,8 @@ local vans = VanRules.new()
 local quick = QuickCrew.new()
 -- os.clock() of a player's last quick / open / style op (Config.Hideout.QUICK.COOLDOWN).
 local lastLobbyOp: { [Player]: number } = {}
+-- os.clock() of a leader's last PARTY op (size / privacy / kick; Config.Hideout.PARTY.COOLDOWN).
+local lastPartyOp: { [Player]: number } = {}
 local quickPassFn: (() -> ())? = nil
 
 ---------------------------------------------------------------------------
@@ -741,6 +743,33 @@ local function seatsHeld(crew: Crew): number
 	return if v then QuickCrew.heldIn(quick, v.bay) else 0
 end
 
+-- How many a crew takes (PARTY): its van's crew size in the hideout, else MAX_CREW.
+local function crewCap(crew: Crew): number
+	local v = VanRules.vanOfCrew(vans, crew.id)
+	return if v then VanRules.capOf(v) else Config.Sim.MAX_CREW
+end
+
+-- Did this player come in on the leader's invite, follow the leader into the server, or arrive in their Roblox
+-- party? (PARTY: INVITE ONLY vans; read from the server's own join data, never from a client.)
+local function invitedBy(player: Player, leader: Player): boolean
+	if player.FollowUserId == leader.UserId then
+		return true
+	end
+	if player.PartyId ~= "" and player.PartyId == leader.PartyId then
+		return true
+	end
+	local ok, data = pcall(function()
+		return player:GetJoinData()
+	end)
+	return ok and type(data) == "table" and data.ReferredByPlayerId == leader.UserId
+end
+
+-- Has the leader of the crew's van kicked this player a moment ago? (PARTY.KICK_BLOCK_SECONDS)
+local function kickedFrom(crew: Crew, player: Player): boolean
+	local v = VanRules.vanOfCrew(vans, crew.id)
+	return v ~= nil and VanRules.isKicked(v, player.UserId, os.clock())
+end
+
 ---------------------------------------------------------------------------
 -- Instances
 ---------------------------------------------------------------------------
@@ -1271,11 +1300,17 @@ local function openVans(): { QuickCrew.OpenVan }
 		if v.open and v.mode == VanRules.MODE.Crew then
 			local crew = crewById(v.crewId)
 			if crew and crew.instance == nil and crew.departing == nil and #crew.members > 0 then
+				local blocked: { [number]: boolean } = {}
+				for uid in v.kicked or {} do
+					blocked[uid] = VanRules.isKicked(v, uid, os.clock()) or nil
+				end
 				table.insert(out, {
 					bay = bay,
 					crewSize = crewSize(crew),
 					openedAt = v.openedAt,
 					leaderId = crew.leader.UserId,
+					size = VanRules.capOf(v), -- PARTY: never past the crew size
+					blocked = blocked,
 				})
 			end
 		end
@@ -1471,6 +1506,85 @@ local function pinJob(player: Player, job: { index: number, day: number? }): boo
 	return true
 end
 
+-- The PARTY sheet's ops (Config.Hideout.PARTY; Shared/Heist/VanRules setSize / setPrivacy / kick): the leader near
+-- their van, one per PARTY.COOLDOWN seconds. Everything checked here again.
+local function partyTooSoon(player: Player): boolean
+	local now = os.clock()
+	local last = lastPartyOp[player]
+	if last and now - last < HD.PARTY.COOLDOWN then
+		return true
+	end
+	lastPartyOp[player] = now
+	return false
+end
+
+-- Heist.Ready { op = "size" | "privacy" | "kick", bay, n } (validated shape and n range).
+local function partyAction(player: Player, crew: Crew, op: string, bay: number, n: number)
+	if partyTooSoon(player) then
+		refused(player, "Slow")
+		return
+	end
+	local uid = player.UserId
+	local dist = vanDist(player, bay, "any")
+	if op == "size" then
+		local ok, code = VanRules.setSize(vans, bay, crewInfo(crew), uid, n, crewSize(crew) + seatsHeld(crew), dist)
+		if not ok then
+			refused(player, code)
+			return
+		end
+		renderVan(crew)
+		quickPass() -- the room for Quick Crew changed
+	elseif op == "privacy" then
+		local name = VanRules.privacyName(n)
+		if name == "open" and not quickOn() then
+			quickToast(player, "paused")
+			return
+		end
+		local ok, code = VanRules.setPrivacy(vans, bay, crewInfo(crew), uid, n, os.clock(), dist)
+		if not ok then
+			refused(player, code)
+			return
+		end
+		if name == "open" then
+			if QuickCrew.drop(quick, uid) then
+				quickAttrs(player) -- a host does not look for another crew
+			end
+			if code == "Ok" then
+				quickToast(player, "opened")
+			end
+		else
+			-- closed to strangers: their held seats go back (they queue again at once)
+			for _, other in QuickCrew.release(quick, bay) do
+				local p = Players:GetPlayerByUserId(other)
+				if p then
+					quickAttrs(p)
+					quickToast(p, "gone")
+				end
+			end
+		end
+		renderVan(crew)
+		pushGarage(crew)
+		quickPass()
+	elseif op == "kick" then
+		local ok, code, kickedId = VanRules.kick(vans, bay, crewInfo(crew), uid, n, os.clock(), dist)
+		if not ok or kickedId == nil then
+			refused(player, code)
+			return
+		end
+		local target = Players:GetPlayerByUserId(kickedId)
+		if target and crewOf[target] == crew then
+			-- back in the lobby as a solo crew, stepped out beside the van (leaveCrew unseats them outside the door)
+			leaveCrew(target)
+			newCrew(target)
+			push(target, "Sync", garageState(target))
+			push(target, "Toast", { text = Strings.PARTY_KICKED })
+			push(player, "Toast", { text = Strings.partyKickedLeader(target.DisplayName) })
+		end
+		renderVan(crew)
+		quickPass()
+	end
+end
+
 -- One lobby action from a player (validated shape: VanRules.validAction). Everything is checked here again.
 local function lobbyAction(player: Player, a: { [string]: any })
 	if not lobbyOn() or preparing[player] or instanceOf(player) ~= nil then
@@ -1492,6 +1606,10 @@ local function lobbyAction(player: Player, a: { [string]: any })
 	end
 	if op == "quick" or op == "unquick" or op == "open" or op == "shut" then
 		quickAction(player, crew, op, bay)
+		return
+	end
+	if op == "size" or op == "privacy" or op == "kick" then
+		partyAction(player, crew, op, bay, a.n)
 		return
 	end
 	if op == "claim" then
@@ -1578,13 +1696,14 @@ local function lobbyAction(player: Player, a: { [string]: any })
 		local quickSeat = vanCrew ~= crew and QuickCrew.holdOf(quick, uid) == bay and quickOn()
 		-- seats held for OTHER matched players count as taken (a friend never takes one)
 		local held = QuickCrew.heldIn(quick, bay, uid)
-		local ok, code = VanRules.canSit(
-			vans,
-			bay,
-			{ userId = uid, crewId = mine.id, friend = friend, quick = quickSeat },
-			crewSize(vanCrew) + held,
-			vanDist(player, bay, "door")
-		)
+		local ok, code = VanRules.canSit(vans, bay, {
+			userId = uid,
+			crewId = mine.id,
+			friend = friend,
+			quick = quickSeat,
+			invited = vanCrew ~= crew and invitedBy(player, vanCrew.leader),
+			kicked = vanCrew ~= crew and VanRules.isKicked(v, uid, os.clock()),
+		}, crewSize(vanCrew) + held, vanDist(player, bay, "door"))
 		if not ok then
 			refused(player, code)
 			return
@@ -1802,8 +1921,12 @@ local function declareRemotes()
 			if crewOf[player] == crew or instanceOf(player) ~= nil then
 				return
 			end
-			if crewSize(crew) + seatsHeld(crew) >= Config.Sim.MAX_CREW then
+			if crewSize(crew) + seatsHeld(crew) >= math.min(Config.Sim.MAX_CREW, crewCap(crew)) then
 				push(player, "Toast", { text = "That crew is full." })
+				return
+			end
+			if kickedFrom(crew, player) then
+				refused(player, "Kicked")
 				return
 			end
 			joinCrew(player, crew)
@@ -1921,7 +2044,7 @@ local function onPlayerAdded(player: Player)
 	if party ~= "" then
 		for _, other in Players:GetPlayers() do
 			local crew = other ~= player and other.PartyId == party and crewOf[other]
-			if crew and crewSize(crew) + seatsHeld(crew) < Config.Sim.MAX_CREW then
+			if crew and crewSize(crew) + seatsHeld(crew) < math.min(Config.Sim.MAX_CREW, crewCap(crew)) then
 				crewOf[player] = crew
 				if crew.instance then
 					table.insert(crew.pending, player)
@@ -2027,6 +2150,7 @@ local function onPlayerRemoving(player: Player)
 	end
 	QuickCrew.drop(quick, player.UserId)
 	lastLobbyOp[player] = nil
+	lastPartyOp[player] = nil
 	leaveCrew(player)
 	inHeist[player] = nil
 	preparing[player] = nil

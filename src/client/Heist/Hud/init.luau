@@ -23,6 +23,7 @@
 --   CrewView  first person: the hold-to-peek Crew View's touch CREW button, vignette, label and one-time hint
 --   Lobby     the hideout's minimal HUD: the reticle's prompt, the touch USE button, the drive's SKIP
 --   Wardrobe  the hideout's outfit picker (Data.Equip), opened at the wardrobe station
+--   Party     the van leader's PARTY sheet (SOLO / crew size / who can join / ready check / GO) and the van card
 --   Common    shared helpers
 -- Every player-facing string is in Shared/Heist/Strings and every run-HUD box in
 -- Shared/Heist/HudLayout (checked by tests/hud_layout.luau at 7 viewports).
@@ -56,6 +57,7 @@ local SettingsPanel = require(script:WaitForChild("SettingsPanel"))
 local Slide = require(script:WaitForChild("Slide"))
 local TopBar = require(script:WaitForChild("TopBar"))
 local Wardrobe = require(script:WaitForChild("Wardrobe"))
+local Party = require(script:WaitForChild("Party"))
 
 local localPlayer = Players.LocalPlayer
 
@@ -167,9 +169,11 @@ function Hud.new(state: any, actions: Actions): any
 	ctx.wardrobe = Wardrobe.build(ctx)
 	ctx.slide = Slide.build(ctx) -- the SLIDE button (a run and the hideout)
 	Common.selectionCap() -- a gamepad's selected button shows its "A"
+	ctx.party = Party.build(ctx)
 	-- The hideout (Heist/Hideout): the lobby HUD, the station sheets.
 	hud.lobby = ctx.lobby
 	hud.wardrobe = ctx.wardrobe
+	hud.party = ctx.party
 	function hud.openStation(mode: string, back: () -> ())
 		ctx.garage.openStation(mode, back)
 	end
@@ -215,6 +219,8 @@ function Hud.new(state: any, actions: Actions): any
 		ctx.reticle.set(false, nil)
 		ctx.lobby.hide()
 		ctx.wardrobe.close()
+		ctx.party.close()
+		ctx.party.setCard(nil, nil)
 		runHud.Visible = false
 		ctx.deck.panel.Visible = false
 		ctx.results.card.Visible = false

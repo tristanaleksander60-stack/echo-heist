@@ -6,7 +6,8 @@
 --   * A solo player opts in at the crew sign (a "seeker"); they can opt out any time.
 --   * A crew leader opens their CREW van to Quick Crew (VanRules.setOpen). Open vans with free seats receive seekers:
 --     the oldest open van first, the longest-waiting seeker first (ties by user id), never past the seat cap
---     (Config.Sim.MAX_CREW: the crew's members + seats already held for matched seekers).
+--     (Config.Sim.MAX_CREW: the crew's members + seats already held for matched seekers; PARTY: the van's crew
+--     size, and a player its leader just kicked is never matched back in).
 --   * A match HOLDS a seat for RESERVE_SECONDS: the seeker walks in (a waypoint arrow, client) and SITs at the side
 --     door, which joins the crew (the server's sit path; QuickCrew.drop). A lapsed hold puts them at the back of the
 --     queue; MAX_MISSES lapses in a row opt them out (away from the keyboard).
@@ -29,8 +30,16 @@ export type Seeker = {
 }
 export type State = { seekers: { [number]: Seeker } }
 -- An open van as the server sees it this pass: its bay, its crew's size now (members + waiting), when it opened, its
--- leader (never matched into their own van).
-export type OpenVan = { bay: number, crewSize: number, openedAt: number, leaderId: number }
+-- leader (never matched into their own van). PARTY: size = the van's crew size (its seats stop there; nil = every
+-- seat), blocked = players the leader kicked a moment ago (never matched back in).
+export type OpenVan = {
+	bay: number,
+	crewSize: number,
+	openedAt: number,
+	leaderId: number,
+	size: number?,
+	blocked: { [number]: boolean }?,
+}
 export type Pass = {
 	matched: { { userId: number, bay: number } }, -- new holds this pass
 	requeued: { number }, -- holds that lapsed or whose van went: waiting again
@@ -44,6 +53,16 @@ end
 -- The seat cap of a van crew (the driver + the cargo bench).
 function QuickCrew.cap(): number
 	return math.min(Config.Sim.MAX_CREW, #Config.Hideout.VAN.SEATS)
+end
+
+-- The seat cap of one open van: its PARTY crew size (never past the seats).
+function QuickCrew.capOf(v: OpenVan): number
+	local all = QuickCrew.cap()
+	local n = v.size
+	if type(n) == "number" and n == n and n >= 1 then
+		return math.min(math.floor(n), all)
+	end
+	return all
 end
 
 function QuickCrew.isSeeking(st: State, userId: number): boolean
@@ -140,14 +159,13 @@ function QuickCrew.pass(st: State, vans: { OpenVan }, now: number): Pass
 	end
 	-- holds in vans that went (closed, left, released) or overflow (the crew grew some other way: the newest holds
 	-- go back first)
-	local cap = QuickCrew.cap()
 	local q = queue(st)
 	for i = #q, 1, -1 do
 		local s = q[i]
 		local bay = s.bay
 		if bay ~= nil then
 			local v = byBay[bay]
-			local room = if v then cap - v.crewSize else 0
+			local room = if v then QuickCrew.capOf(v) - v.crewSize else 0
 			if v == nil or QuickCrew.heldIn(st, bay) > room then
 				s.bay, s.holdUntil = nil, nil
 				table.insert(out.requeued, s.userId)
@@ -169,12 +187,13 @@ function QuickCrew.pass(st: State, vans: { OpenVan }, now: number): Pass
 		end
 	end
 	for _, v in order do
-		local free = cap - v.crewSize - QuickCrew.heldIn(st, v.bay)
+		local free = QuickCrew.capOf(v) - v.crewSize - QuickCrew.heldIn(st, v.bay)
+		local blocked = v.blocked or {}
 		for _, s in waiting do
 			if free <= 0 then
 				break
 			end
-			if s.bay == nil and s.userId ~= v.leaderId then
+			if s.bay == nil and s.userId ~= v.leaderId and not blocked[s.userId] then
 				s.bay = v.bay
 				s.holdUntil = now + Q.RESERVE_SECONDS
 				free -= 1
@@ -194,10 +213,9 @@ function QuickCrew.counts(st: State, vans: { OpenVan }): (number, number)
 			waiting += 1
 		end
 	end
-	local cap = QuickCrew.cap()
 	local open = 0
 	for _, v in vans do
-		if cap - v.crewSize - QuickCrew.heldIn(st, v.bay) > 0 then
+		if QuickCrew.capOf(v) - v.crewSize - QuickCrew.heldIn(st, v.bay) > 0 then
 			open += 1
 		end
 	end

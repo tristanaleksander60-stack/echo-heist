@@ -185,5 +185,33 @@ for _, vp in VIEWPORTS do
 	end
 end
 
+-- The PARTY sheet's inner blocks (HudLayout.PARTY_INNER, sheet-local): inside the sheet and PARTY_INNER_GAP apart.
+-- The sheet itself is checked on every viewport above (scene "party"); its inner layout is fixed design px.
+do
+	local sheet = HudLayout.PARTY
+	local inner: { Rect } = {}
+	for name, r in HudLayout.PARTY_INNER do
+		table.insert(inner, { name = name, x0 = r[1], y0 = r[2], x1 = r[1] + r[3], y1 = r[2] + r[4] })
+	end
+	table.sort(inner, function(a, b)
+		return a.name < b.name
+	end)
+	for _, r in inner do
+		checks += 1
+		if r.x0 < 8 or r.y0 < 8 or r.x1 > sheet.w - 8 or r.y1 > sheet.h - 8 then
+			fail(string.format("PARTY: %s leaves the sheet's 8 px margin", r.name))
+		end
+	end
+	for i = 1, #inner do
+		for j = i + 1, #inner do
+			checks += 1
+			local g = gapBetween(inner[i], inner[j])
+			if g < HudLayout.PARTY_INNER_GAP then
+				fail(string.format("PARTY: %s and %s are too close (%.1f px)", inner[i].name, inner[j].name, g))
+			end
+		end
+	end
+end
+
 print(string.format("\nhud layout: %d check(s), %d failure(s)", checks, failures))
 process.exit(if failures > 0 then 1 else 0)
