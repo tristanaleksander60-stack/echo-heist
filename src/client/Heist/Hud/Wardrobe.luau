@@ -103,6 +103,7 @@ function Wardrobe.build(ctx: any): any
 		end
 	end, "UIBack")
 	Ui.iconWord(back, "close", "left", U.ICON_SMALL)
+	Common.keyCap(back, "back")
 
 	local slot = R.SLOTS[1]
 	local heist: any = nil -- the profile slice (Data.Snapshot), nil until it answers (free items only then)

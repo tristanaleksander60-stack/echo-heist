@@ -26,7 +26,6 @@ export type Gate = {
 	grounded: boolean?, -- on the floor (nil counts as grounded)
 	seated: boolean?, -- sitting (a van seat) or PlatformStand
 	frozen: boolean?, -- your root is anchored (between runs, the transition)
-	ended: boolean?, -- your run is over (you watch the others)
 	cooling: boolean?, -- the last slide's cooldown runs
 }
 
@@ -103,9 +102,6 @@ function SlideMath.allowed(g: Gate): (boolean, string)
 	if g.where == "heist" then
 		if g.phase ~= "Run" then
 			return false, "phase"
-		end
-		if g.ended == true then
-			return false, "ended"
 		end
 	elseif g.where == "garage" then
 		if g.lobbyRoam ~= true then

@@ -109,7 +109,6 @@ return function(test)
 		local cases: { { any } } = {
 			{ { where = "boot" }, "where" },
 			{ { where = "heist", phase = "Between" }, "phase" },
-			{ { where = "heist", phase = "Run", ended = true }, "ended" },
 			{ { where = "garage", lobbyRoam = false }, "station" },
 			{ { where = "heist", phase = "Run", presenting = true }, "presenting" },
 			{ { where = "garage", lobbyRoam = true, presenting = true }, "presenting" },

@@ -51,6 +51,13 @@ function SettingsPanel.build(ctx: any): any
 		ZIndex = 41,
 	})
 	local fromMenu = false
+	-- DONE (or Backspace / B: Hud/Controls "HeistBack") closes it, back to the MENU sheet when it came from there.
+	function panelUi.close()
+		Ui.hide(panel)
+		if fromMenu and hud.openMenu then
+			hud.openMenu()
+		end
+	end
 	local doneBtn = Ui.button(panel, {
 		Name = "Done",
 		AnchorPoint = Vector2.new(1, 0),
@@ -61,12 +68,10 @@ function SettingsPanel.build(ctx: any): any
 		Text = Strings.DONE,
 		ZIndex = 41,
 	}, function()
-		Ui.hide(panel)
-		if fromMenu and hud.openMenu then
-			hud.openMenu()
-		end
+		panelUi.close()
 	end, "UIBack")
 	Ui.iconWord(doneBtn, "check", "left", U.ICON_SMALL)
+	Common.keyCap(doneBtn, "back")
 
 	local gridTop = TAP + 12
 	local cellW = math.floor((box.w - 24 - (COLS - 1) * CELL_GAP) / COLS)

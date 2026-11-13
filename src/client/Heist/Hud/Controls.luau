@@ -4,7 +4,9 @@
 -- 1.5 s lock ring, the contextual Interact (GRAB) lower right, the hold-to-skip FAST
 -- pill, and the keyboard / gamepad bindings (R / ButtonY REWIND or the next run,
 -- E / ButtonX Interact, Q / ButtonL1 Clone Deck between runs and, in a first-person run, hold Q / ButtonL1 for
--- Crew View (Hud/CrewView has its touch button), hold F / ButtonB fast-forward, M the MENU sheet).
+-- Crew View (Hud/CrewView has its touch button), hold F / ButtonR1 fast-forward (B is the slide's: Heist/Slide), M the
+-- MENU sheet, Backspace / ButtonB closes the settings or the MENU sheet). Every binding comes from Shared/Heist/
+-- KeyHints, and every button here wears its key cap (Hud/Common.keyCap; none on touch).
 -- First person: a left click with the cursor locked also interacts (with what you look at:
 -- Heist/LookTarget), and the Interact button is the touch fallback, labelled for the looked-at
 -- target (GRAB $100, OPEN).
@@ -29,6 +31,11 @@ local U = Config.Ui
 
 local Controls = {}
 
+-- The Enum.KeyCodes bound to a KeyHints action, as arguments.
+local function codes(action: string): ...Enum.KeyCode
+	return table.unpack(Common.keyCodes(action))
+end
+
 function Controls.build(ctx: any): any
 	local hud = ctx.hud
 	local actions = ctx.actions
@@ -45,6 +52,7 @@ function Controls.build(ctx: any): any
 	}, function() end, "")
 	Common.place(ffPill, HudLayout.FAST_FORWARD)
 	Ui.iconWord(ffPill, "fast_forward", "top", U.ICON_SMALL)
+	Common.keyCap(ffPill, "fast")
 	controls.ffPill = ffPill
 
 	local endBtn = Ui.button(runHud, {
@@ -65,6 +73,7 @@ function Controls.build(ctx: any): any
 	-- that go out over the 1.5 s lock (Run.update).
 	controls.endIcon = Ui.iconWord(endBtn, "rewind", "top", U.ICON_SIZE + 8)
 	controls.lock = Ui.lockRing(endBtn, HudLayout.END_RUN.h - 8, Palette.ink)
+	Common.keyCap(endBtn, "rewind", "tl")
 
 	-- Interact sits where touch players expect a contextual action: lower right, left of
 	-- the jump button, well away from REWIND (a thumb slipping off GRAB must not end the
@@ -82,13 +91,15 @@ function Controls.build(ctx: any): any
 	Common.place(interactBtn, HudLayout.INTERACT)
 	controls.interactBtn = interactBtn
 	controls.interactIcon = Ui.iconWord(interactBtn, "coin", "left", U.ICON_SIZE)
+	Common.keyCap(interactBtn, "use")
 
-	-- Fast-forward pill: hold to skip.
+	-- Fast-forward pill: hold to skip (held, it is also the touch fast slide's modifier: Hud/Slide).
 	ffPill.InputBegan:Connect(function(input: InputObject)
 		if
 			input.UserInputType == Enum.UserInputType.MouseButton1
 			or input.UserInputType == Enum.UserInputType.Touch
 		then
+			ctx.ffHeld = true
 			actions.fastForward(true)
 		end
 	end)
@@ -97,6 +108,7 @@ function Controls.build(ctx: any): any
 			input.UserInputType == Enum.UserInputType.MouseButton1
 			or input.UserInputType == Enum.UserInputType.Touch
 		then
+			ctx.ffHeld = false
 			actions.fastForward(false)
 		end
 	end)
@@ -123,13 +135,13 @@ function Controls.bind(ctx: any)
 			end
 		end
 		return Enum.ContextActionResult.Pass
-	end, false, Enum.KeyCode.R, Enum.KeyCode.ButtonY)
+	end, false, codes("rewind"))
 	ContextActionService:BindAction("HeistInteract", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin and gui.Enabled and runHud.Visible then
 			hud.interact()
 		end
 		return Enum.ContextActionResult.Pass
-	end, false, Enum.KeyCode.E, Enum.KeyCode.ButtonX)
+	end, false, codes("use"))
 	-- First person with the cursor locked: a left click uses what you look at (a click on a GUI is the GUI's).
 	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
 		if
@@ -155,7 +167,7 @@ function Controls.bind(ctx: any)
 			end
 		end
 		return Enum.ContextActionResult.Pass
-	end, false, Enum.KeyCode.M)
+	end, false, codes("menu"))
 	-- Crew View: held in a first-person run (CameraDirector ignores it anywhere else; between runs Q is the deck's).
 	ContextActionService:BindAction("HeistCrewView", function(_, inputState, input)
 		if actions.crewHold then
@@ -167,13 +179,13 @@ function Controls.bind(ctx: any)
 			end
 		end
 		return Enum.ContextActionResult.Pass
-	end, false, Enum.KeyCode.Q, Enum.KeyCode.ButtonL1)
+	end, false, codes("crew"))
 	ContextActionService:BindAction("HeistDeck", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin then
 			hud.toggleDeck()
 		end
 		return Enum.ContextActionResult.Pass
-	end, false, Enum.KeyCode.Q, Enum.KeyCode.ButtonL1)
+	end, false, codes("deck"))
 	ContextActionService:BindAction("HeistFastForward", function(_, inputState)
 		if inputState == Enum.UserInputState.Begin then
 			actions.fastForward(true)
@@ -181,7 +193,24 @@ function Controls.bind(ctx: any)
 			actions.fastForward(false)
 		end
 		return Enum.ContextActionResult.Pass
-	end, false, Enum.KeyCode.F, Enum.KeyCode.ButtonB)
+	end, false, codes("fast"))
+	-- BACK closes the top sheet: the settings, else the MENU sheet (bound above the slide, which also uses B).
+	ContextActionService:BindActionAtPriority("HeistBack", function(_, inputState)
+		if inputState ~= Enum.UserInputState.Begin or not gui.Enabled then
+			return Enum.ContextActionResult.Pass
+		end
+		local settings = ctx.settings and ctx.settings.panel
+		if settings and Ui.isShown(settings) and ctx.settings.close then
+			ctx.settings.close()
+			return Enum.ContextActionResult.Sink
+		end
+		local sheet = ctx.msg and ctx.msg.menuSheet
+		if sheet and Ui.isShown(sheet) then
+			Ui.hide(sheet)
+			return Enum.ContextActionResult.Sink
+		end
+		return Enum.ContextActionResult.Pass
+	end, false, Enum.ContextActionPriority.High.Value, codes("back"))
 end
 
 return Controls

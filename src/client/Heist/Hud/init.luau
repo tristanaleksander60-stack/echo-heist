@@ -53,6 +53,7 @@ local Results = require(script:WaitForChild("Results"))
 local Common = require(script:WaitForChild("Common"))
 local Run = require(script:WaitForChild("Run"))
 local SettingsPanel = require(script:WaitForChild("SettingsPanel"))
+local Slide = require(script:WaitForChild("Slide"))
 local TopBar = require(script:WaitForChild("TopBar"))
 local Wardrobe = require(script:WaitForChild("Wardrobe"))
 
@@ -74,6 +75,9 @@ export type Actions = {
 	-- First person (optional): the look-to-interact picker (Heist/LookTarget) and the hands (Heist/Viewmodel).
 	look: any?,
 	hands: ((action: string) -> ())?,
+	-- The slide (Heist/Slide, optional): start one (fast = the bigger burst), may one start now?
+	slide: ((fast: boolean) -> ())?,
+	slideAllowed: (() -> boolean)?,
 }
 
 function Hud.new(state: any, actions: Actions): any
@@ -161,6 +165,8 @@ function Hud.new(state: any, actions: Actions): any
 	ctx.crew = CrewView.build(ctx) -- after Reticle (the prompt chip) and Run
 	ctx.lobby = Lobby.build(ctx) -- after Run: it uses ctx.fpLayout
 	ctx.wardrobe = Wardrobe.build(ctx)
+	ctx.slide = Slide.build(ctx) -- the SLIDE button (a run and the hideout)
+	Common.selectionCap() -- a gamepad's selected button shows its "A"
 	-- The hideout (Heist/Hideout): the lobby HUD, the station sheets.
 	hud.lobby = ctx.lobby
 	hud.wardrobe = ctx.wardrobe

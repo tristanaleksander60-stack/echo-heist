@@ -85,6 +85,29 @@ Strings.FP_BANK = "WALK IN TO BANK"
 Strings.KEY_E = "E"
 Strings.KEY_PAD = "X"
 Strings.KEY_TAP = "TAP"
+-- Key caps on the buttons (Shared/Heist/KeyHints, Hud/Common.keyCap), by Enum.KeyCode name: the gamepad's buttons
+-- as text labels (ASCII: tests/glyph_check.luau). A key not listed shows its KeyCode name.
+Strings.KEY_LABEL = table.freeze({
+	LeftControl = "Ctrl",
+	RightControl = "Ctrl",
+	LeftShift = "Shift",
+	RightShift = "Shift",
+	Backspace = "Bksp",
+	Return = "Enter",
+	Space = "Space",
+	ButtonA = "A",
+	ButtonB = "B",
+	ButtonX = "X",
+	ButtonY = "Y",
+	ButtonL1 = "LB",
+	ButtonR1 = "RB",
+	ButtonL2 = "LT",
+	ButtonR2 = "RT",
+	ButtonStart = "Menu",
+} :: { [string]: string })
+Strings.KEY_JOIN = "+" -- a chord: "Ctrl+Shift", "B+LB"
+-- The slide's touch button (Hud/Slide; Ctrl / B on keys and pads)
+Strings.SLIDE = "SLIDE"
 function Strings.lockedFor(clock: string): string
 	return "LOCKED " .. clock
 end

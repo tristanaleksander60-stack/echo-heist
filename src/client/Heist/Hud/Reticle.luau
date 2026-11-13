@@ -122,27 +122,16 @@ function Reticle.build(ctx: any): any
 
 	local chip = Ui.panel(layer, { Name = "Prompt", Visible = false, Active = false, ZIndex = 4 })
 	Common.place(chip, HudLayout.PROMPT)
-	local keyCap = Ui.frame(chip, {
+	-- The key cap (Hud/Common.keyCapFrame: the one style every button's key cap shares).
+	local keyCap, keyLabel = Common.keyCapFrame(chip, {
 		Name = "Key",
 		AnchorPoint = Vector2.new(0, 0.5),
 		Position = UDim2.new(0, 8, 0.5, 0),
 		Size = UDim2.fromOffset(26, 26),
-		BackgroundColor3 = Palette.white,
-		BackgroundTransparency = 0,
-		Active = false,
 		ZIndex = 5,
+		Visible = true,
 	})
-	Ui.corner(keyCap)
-	Ui.stroke(keyCap, Palette.ink, 2)
-	local keyLabel = Ui.label(keyCap, {
-		Size = UDim2.fromScale(1, 1),
-		Text = "E",
-		TextColor3 = Palette.ink,
-		TextSize = U.TYPE_SCALE[1],
-		stroke = false,
-		ZIndex = 6,
-		Active = false,
-	})
+	keyLabel.Text = "E"
 	local word = Ui.label(chip, {
 		Name = "Word",
 		AnchorPoint = Vector2.new(0, 0.5),

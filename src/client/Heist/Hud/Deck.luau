@@ -176,6 +176,7 @@ function Deck.build(ctx: any): any
 	Ui.iconWord(bustedBtn, "delete", "top", U.ICON_SMALL)
 	Ui.iconWord(startOverBtn, "replay", "top", U.ICON_SMALL)
 	Ui.iconWord(readyBtn, "play", "left", U.ICON_SMALL)
+	Common.keyCap(readyBtn, "ready")
 
 	-- RedoAlarm hint (§3.6): the deck's title says "Clone 3 sets off the alarm. Redo it?",
 	-- that card is picked and REDO turns Alarm Red (no extra banner: small phones).
@@ -194,6 +195,7 @@ function Deck.build(ctx: any): any
 	Common.place(readyWait, HudLayout.READY_WAIT)
 	Ui.fit(readyWait, 22, H.UI_TEXT_MIN)
 	Ui.iconWord(readyWait, "play", "left", U.ICON_SMALL)
+	Common.keyCap(readyWait, "ready")
 	deckUi.readyWait = readyWait
 
 	local function deckFull(): boolean

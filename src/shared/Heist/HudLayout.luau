@@ -65,9 +65,11 @@ HudLayout.HELP_CHIP = box(1, 0, 1, -8, 0, 6, 168, TAP)
 HudLayout.RETICLE = box(0.5, 0.5, 0.5, 0, 0.5, 0, 28, 28)
 HudLayout.PROMPT = box(0, 0.5, 0.5, 26, 0.5, 0, 196, 40)
 HudLayout.SCREEN_CENTRED = table.freeze({ RETICLE = true, PROMPT = true })
-HudLayout.RAIL_FP = box(0.5, 1, 0.5, -68, 1, -8, 336, 98)
-HudLayout.OBJECTIVE_FP = box(0.5, 1, 0.5, -68, 1, -114, 360, 28)
-HudLayout.ALARM_FP = box(0.5, 1, 0.5, -68, 1, -114, 360, 30)
+-- (Left of centre by FP_SHIFT: the touch SLIDE button sits between them and Interact.)
+local FP_SHIFT = -148
+HudLayout.RAIL_FP = box(0.5, 1, 0.5, FP_SHIFT, 1, -8, 336, 98)
+HudLayout.OBJECTIVE_FP = box(0.5, 1, 0.5, FP_SHIFT, 1, -114, 360, 28)
+HudLayout.ALARM_FP = box(0.5, 1, 0.5, FP_SHIFT, 1, -114, 360, 30)
 -- Crew View (first person; Hud/CrewView, REVIEW_STEAM_PLUS gap 5): the touch CREW button (hold) sits above Interact,
 -- left of REWIND, clear of the jump button (on the right, under your right thumb: the left one keeps moving you);
 -- while held, "CREW VIEW" sits under the clone strip (where the diorama's objective line goes: in first person that
@@ -76,6 +78,13 @@ HudLayout.ALARM_FP = box(0.5, 1, 0.5, -68, 1, -114, 360, 30)
 -- (HudLayout.crewYields; you are looking at something to use, not peeking).
 HudLayout.CREW = box(1, 1, 1, -124, 1, -(16 + H.INTERACT_BUTTON + 10), 80, TAP)
 HudLayout.CREW_LABEL = box(0.5, 0, 0.5, 0, 0, 98, 168, 28)
+-- The slide (Config.Slide, Heist/Slide): the SLIDE button, bottom row, left of Interact (in the hideout, of USE), under
+-- your right thumb. Shown in a first-person run and in the hideout whenever a slide may start; hold FAST with it on
+-- touch for the fast slide.
+HudLayout.SLIDE = box(1, 1, 1, -(124 + H.INTERACT_BUTTON + 56 + 8), 1, -16, TAP, H.INTERACT_BUTTON)
+-- Key caps (Hud/Common.keyCap) straddle a button's corner by this much: less than GAP, so a cap never reaches a
+-- neighbouring box.
+HudLayout.KEY_CAP_OUT = 6
 
 -- Centred sheets (they cover the run HUD, so each is a scene of its own): the job sheet (results),
 -- the garage with its job board, the MENU sheet and the settings panel (PLAN_STEAM_PLUS §4.3 U5-U7).
@@ -143,6 +152,7 @@ HudLayout.SCENES = table.freeze({
 		"END_RUN",
 		"INTERACT",
 		"CREW",
+		"SLIDE",
 		"RETICLE",
 		"PROMPT",
 		"RAIL_FP",
@@ -159,6 +169,7 @@ HudLayout.SCENES = table.freeze({
 		"END_RUN",
 		"INTERACT",
 		"CREW",
+		"SLIDE",
 		"RETICLE",
 		"PROMPT",
 		"RAIL_FP",
@@ -176,6 +187,7 @@ HudLayout.SCENES = table.freeze({
 		"END_RUN",
 		"INTERACT",
 		"CREW",
+		"SLIDE",
 		"CREW_LABEL",
 		"RAIL_FP",
 		"HELP_CHIP",
@@ -191,6 +203,7 @@ HudLayout.SCENES = table.freeze({
 		"END_RUN",
 		"INTERACT",
 		"CREW",
+		"SLIDE",
 		"CREW_LABEL",
 		"RAIL_FP",
 		"HELP_CHIP",
@@ -202,7 +215,7 @@ HudLayout.SCENES = table.freeze({
 	menu = { "MENU_SHEET" },
 	settings = { "SETTINGS" },
 	garageButtons = { "GARAGE_SETTINGS" },
-	lobby = { "RETICLE", "PROMPT", "RAIL_FP", "LOBBY_USE", "LOBBY_QUICK" },
+	lobby = { "RETICLE", "PROMPT", "RAIL_FP", "LOBBY_USE", "LOBBY_QUICK", "SLIDE" },
 	station = { "GARAGE" },
 	wardrobe = { "WARDROBE" },
 	drive = { "LOBBY_SKIP" },

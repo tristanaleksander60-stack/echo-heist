@@ -52,6 +52,7 @@ local Motion = require(script.Parent:WaitForChild("Motion"))
 local Rigs = require(script.Parent:WaitForChild("Rigs"))
 local Sound = require(script.Parent:WaitForChild("Sound"))
 local Ui = require(script.Parent:WaitForChild("Ui"))
+local HudCommon = require(script.Parent:WaitForChild("Hud"):WaitForChild("Common"))
 
 local H = Config.Heist
 local CAM = H.CAMERA
@@ -157,6 +158,7 @@ function LineupDirector.new(state: any, fxGui: ScreenGui, echo: any, world: any,
 	local skipCorner = Instance.new("UICorner")
 	skipCorner.CornerRadius = UDim.new(0, 14)
 	skipCorner.Parent = skipChip
+	HudCommon.keyCap(skipChip, "skip") -- Space / Enter / A (any tap)
 
 	local function controls(on: boolean)
 		local lp = Players.LocalPlayer

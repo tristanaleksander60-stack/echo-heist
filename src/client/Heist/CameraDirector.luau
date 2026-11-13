@@ -41,6 +41,8 @@
 -- golden staging and the level intro (setShot) replace the frame, then hand back to the run-start beat,
 -- which in first person holds on the objective from above and eases into your eyes.
 --
+-- The slide (Config.Slide, Heist/Slide): setSlide(dip, fovKick) lowers first person's eye (world down) and adds a
+-- slight FOV kick on top of every other kick; the hand-over and Crew View ignore it.
 -- Crew View (REVIEW_STEAM_PLUS gap 5; Config.Heist.CAMERA.CREW, pure maths in Shared/Heist/CrewView): in a first-
 -- person run, while setCrewHeld(who, true) holds (Q / LB / the touch CREW button, Hud/CrewView), the camera eases
 -- from your eyes up to an overhead diorama shot centred on you that frames your clones and the objective (the
@@ -127,6 +129,7 @@ function CameraDirector.new(state: any): any
 	local bodyHidden = false
 	local hiddenParts: { [Instance]: boolean } = {}
 	local eyeCf: CFrame? = nil -- the fp eye this frame (before a moment's blend)
+	local slideDip, slideKick = 0, 0 -- the slide (Heist/Slide): studs the eye drops, degrees added to the FOV
 
 	-- Crew View.
 	local crewHold = CrewView.newHold()
@@ -607,6 +610,18 @@ function CameraDirector.new(state: any): any
 		end
 	end
 
+	-- Crew View: drop it at once (the B + LB fast-slide chord: LB also holds Crew View).
+	function director.cancelCrew()
+		dropCrew()
+	end
+
+	-- The slide (Heist/Slide, Shared/Heist/SlideMath): first person's eye drops `dip` studs (world down, whatever you
+	-- look at) and the FOV gains `fovKick` degrees (the caller zeroes it under reduced motion or with shake off).
+	function director.setSlide(dip: number, fovKick: number)
+		slideDip = math.max(0, dip)
+		slideKick = math.clamp(fovKick, 0, C.FOV_KICK_MAX)
+	end
+
 	-- Crew View: what to frame (world space): points() your clones, objective() the run's objective (nil when there
 	-- is none), rewinding() true while the rewind finish plays.
 	function director.setCrewSource(src: any)
@@ -948,7 +963,7 @@ function CameraDirector.new(state: any): any
 		local glance = FP.GLANCE_DOWN * FpMath.glance(os.clock() - glanceT0, FP.GLANCE_SECONDS)
 		local eye = v3(FpMath.eye(t3(root.Position), headDy :: number, fpYaw, FP))
 		local p = math.clamp(fpPitch + glance, FP.PITCH_MIN, FP.PITCH_MAX)
-		return CameraDirector.lookFrame(eye, fpYaw, p) * CFrame.new(bx, by + dipX, 0)
+		return CameraDirector.lookFrame(eye, fpYaw, p) * CFrame.new(bx, by + dipX, 0) - Vector3.new(0, slideDip, 0)
 	end
 
 	local function step(dt: number)
@@ -1041,7 +1056,7 @@ function CameraDirector.new(state: any): any
 					focusAt = focusAt:Lerp(crewFocus :: Vector3, crewW)
 				end
 			end
-			write(cf, fov + kick)
+			write(cf, fov + kick + slideKick * (1 - crewW))
 			cam.Focus = CFrame.new(focusAt)
 			setBodyHidden((cam.CFrame.Position - eye.Position).Magnitude <= FP.HIDE_BODY_WITHIN)
 			return

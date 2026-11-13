@@ -42,6 +42,7 @@ function Lobby.build(ctx: any): any
 		end
 	end, "UIConfirm")
 	Common.place(use, HudLayout.LOBBY_USE)
+	Common.keyCap(use, "use")
 	local skip = Ui.button(ctx.root, {
 		Name = "DriveSkip",
 		BackgroundColor3 = Palette.exit,

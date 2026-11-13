@@ -27,6 +27,7 @@ local UserInputService = game:GetService("UserInputService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local HeistShared = Shared:WaitForChild("Heist")
+local KeyHints = require(HeistShared:WaitForChild("KeyHints"))
 local LobbyLook = require(HeistShared:WaitForChild("LobbyLook"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
@@ -247,12 +248,7 @@ function Hideout.new(state: any, deps: any): any
 	end
 
 	local function keyCap(): string
-		if Common.usingTouch() then
-			return Strings.KEY_TAP
-		elseif Common.usingGamepad() then
-			return Strings.KEY_PAD
-		end
-		return Strings.KEY_E
+		return KeyHints.prompt(Common.device())
 	end
 
 	local function promptFor(verb: string, it: any?): any
@@ -770,13 +766,13 @@ function Hideout.new(state: any, deps: any): any
 			use()
 		end
 		return Enum.ContextActionResult.Pass
-	end, false, Enum.KeyCode.E, Enum.KeyCode.ButtonX)
+	end, false, table.unpack(Common.keyCodes("use")))
 	ContextActionService:BindAction("HideoutBack", function(_, inputState: Enum.UserInputState)
 		if inputState == Enum.UserInputState.Begin and h.isActive() and backPressed() then
 			return Enum.ContextActionResult.Sink
 		end
 		return Enum.ContextActionResult.Pass
-	end, false, Enum.KeyCode.Backspace, Enum.KeyCode.ButtonB)
+	end, false, table.unpack(Common.keyCodes("back")))
 	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
 		if not h.isActive() then
 			return

@@ -10,6 +10,7 @@ local UserInputService = game:GetService("UserInputService")
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")) :: any
 local HeistShared = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Heist")
 local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
+local KeyHints = require(HeistShared:WaitForChild("KeyHints"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
@@ -259,6 +260,153 @@ end
 
 function Common.myActor(a: any): boolean
 	return a ~= nil and a.kind == "live" and a.owner == Players.LocalPlayer.UserId
+end
+
+---------------------------------------------------------------------------
+-- Key caps (Shared/Heist/KeyHints): the prompt chip's key-cap style (a white rounded cap, an ink rim, ink letters) on
+-- every button that has a key, for the device in use; none on touch. They follow the device live
+-- (UserInputService.LastInputTypeChanged).
+---------------------------------------------------------------------------
+local CAP_H = 24
+local CAP_TEXT = Config.Ui.TYPE_SCALE[1]
+
+-- The Enum.KeyCodes bound to a KeyHints action (ContextActionService binds them all; Hud/Controls, Heist/Slide,
+-- Heist/Hideout).
+function Common.keyCodes(action: string): { Enum.KeyCode }
+	local out = {}
+	for _, name in KeyHints.codes(action) do
+		local ok, code = pcall(function()
+			return (Enum.KeyCode :: any)[name]
+		end)
+		if ok and code then
+			table.insert(out, code)
+		end
+	end
+	return out
+end
+
+-- A cap's width for its text: a letter is square, a word or a chord is wider.
+function Common.keyCapWidth(text: string): number
+	return math.max(CAP_H, 10 + 9 * #text)
+end
+
+-- The cap itself (Hud/Reticle's chip uses it too): a frame and its label, hidden until given text.
+function Common.keyCapFrame(parent: Instance, props: { [string]: any }?): (Frame, TextLabel)
+	local cap = Ui.frame(parent, {
+		Name = "KeyCap",
+		Size = UDim2.fromOffset(CAP_H, CAP_H),
+		BackgroundColor3 = Palette.white,
+		BackgroundTransparency = 0,
+		Active = false,
+		Visible = false,
+	})
+	for k, v in props or {} do
+		(cap :: any)[k] = v
+	end
+	Ui.corner(cap)
+	Ui.stroke(cap, Palette.ink, 2)
+	local label = Ui.label(cap, {
+		Name = "Key",
+		Size = UDim2.fromScale(1, 1),
+		Text = "",
+		TextColor3 = Palette.ink,
+		TextSize = CAP_TEXT,
+		stroke = false,
+		ZIndex = cap.ZIndex + 1,
+		Active = false,
+	})
+	return cap, label
+end
+
+type CapEntry = { cap: Frame, label: TextLabel, text: () -> string }
+local caps: { [Frame]: CapEntry } = {}
+local capsHooked = false
+
+local function renderCap(e: CapEntry)
+	local ok, text = pcall(e.text)
+	local t = if ok and type(text) == "string" then text else ""
+	if e.label.Text ~= t then
+		e.label.Text = t
+		e.cap.Size = UDim2.fromOffset(Common.keyCapWidth(t), CAP_H)
+	end
+	e.cap.Visible = t ~= ""
+end
+
+-- Re-reads every cap (the device changed, or a cap's text source did).
+function Common.refreshKeyCaps()
+	for cap, e in caps do
+		if cap.Parent == nil then
+			caps[cap] = nil
+		else
+			renderCap(e)
+		end
+	end
+end
+
+-- A key cap on a button's top-right corner (or "tl"), straddling it by HudLayout.KEY_CAP_OUT (inside the gap every
+-- HUD box keeps, so it never touches a neighbour). Top right by default: Ui.iconWord's UIPadding (left or bottom)
+-- never moves that corner. `action` is a KeyHints action, or a function returning the cap's text ("" hides it).
+-- Returns the cap.
+function Common.keyCap(button: GuiObject, action: string | () -> string, corner: string?): Frame
+	local right = corner ~= "tl"
+	local out = HudLayout.KEY_CAP_OUT
+	local cap, label = Common.keyCapFrame(button, {
+		AnchorPoint = Vector2.new(if right then 1 else 0, 0),
+		Position = UDim2.new(if right then 1 else 0, if right then out else -out, 0, -out),
+		ZIndex = button.ZIndex + 2,
+	})
+	local text: () -> string
+	if type(action) == "function" then
+		text = action
+	else
+		local name: string = action :: any
+		text = function(): string
+			return KeyHints.label(name, Common.device())
+		end
+	end
+	local e: CapEntry = { cap = cap, label = label, text = text }
+	caps[cap] = e
+	renderCap(e)
+	if not capsHooked then
+		capsHooked = true
+		UserInputService.LastInputTypeChanged:Connect(Common.refreshKeyCaps)
+	end
+	return cap
+end
+
+-- The gamepad's selected button gets an "A" cap (KeyHints "confirm"): results, the garage, the MENU sheet, any
+-- sheet the pad drives. Called once by the HUD.
+function Common.selectionCap()
+	local cap: Frame?, label: TextLabel? = nil, nil
+	local function place()
+		local obj = GuiService.SelectedObject
+		local text = KeyHints.label("confirm", Common.device())
+		local c = cap
+		if c and not c:IsDescendantOf(game) then
+			c:Destroy() -- it went with a button a sheet re-rendered
+			cap, label = nil, nil
+		end
+		if obj and obj:IsA("GuiButton") and text ~= "" then
+			if not cap then
+				cap, label = Common.keyCapFrame(obj, { Name = "SelectionKeyCap" })
+			end
+			local cc, ll = cap :: Frame, label :: TextLabel
+			local out = HudLayout.KEY_CAP_OUT
+			cc.AnchorPoint = Vector2.new(1, 0)
+			cc.Position = UDim2.new(1, out, 0, -out)
+			cc.ZIndex = obj.ZIndex + 2
+			ll.ZIndex = cc.ZIndex + 1
+			ll.Text = text
+			cc.Size = UDim2.fromOffset(Common.keyCapWidth(text), CAP_H)
+			cc.Parent = obj
+			cc.Visible = true
+		elseif cap then
+			(cap :: Frame).Visible = false
+		end
+	end
+	GuiService:GetPropertyChangedSignal("SelectedObject"):Connect(place)
+	UserInputService.LastInputTypeChanged:Connect(place)
+	place()
 end
 
 return Common
