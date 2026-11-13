@@ -3401,5 +3401,465 @@
   },
   "value_spread": 0.577,
   "warm_share": 30.0
+ },
+ "L6_classic": {
+  "brightest_1pct_owner": {
+   "lamp": 8.2,
+   "other": 91.8,
+   "rug": 0.0,
+   "van": 0.0,
+   "zone": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 2.5,
+  "frame": "L6_classic.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.868,
+    "share": 0.08,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.787,
+    "share": 0.48,
+    "warm": 28.2
+   },
+   "van": {
+    "p95_luma": 0.441,
+    "share": 7.95,
+    "warm": 4.2
+   },
+   "zone": {
+    "p95_luma": 0.626,
+    "share": 4.43,
+    "warm": 0.0
+   }
+  },
+  "median_luma": 0.577,
+  "near_black": 0.04,
+  "pink_cast": 0.021,
+  "rms_contrast": 0.247,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.632,
+    "near_black": 0.0,
+    "p95_luma": 0.814,
+    "share": 13.1
+   },
+   "ground": {
+    "dark": 0.0,
+    "median_luma": 0.653,
+    "near_black": 0.0,
+    "p95_luma": 0.714,
+    "share": 0.1
+   },
+   "level": {
+    "dark": 2.5,
+    "median_luma": 0.316,
+    "near_black": 0.04,
+    "p95_luma": 0.749,
+    "share": 57.7
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.747,
+    "near_black": 0.0,
+    "p95_luma": 0.834,
+    "share": 29.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.487,
+   "near_black": 0.0,
+   "warm_share": 31.9
+  },
+  "value_spread": 0.66,
+  "warm_share": 29.4
+ },
+ "L6_diorama": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "lamp": 4.4,
+   "other": 95.3,
+   "rug": 0.0,
+   "zone": 0.3
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.1,
+  "frame": "L6_diorama.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.66,
+    "share": 0.02,
+    "warm": 94.4
+   },
+   "lamp": {
+    "p95_luma": 0.872,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.725,
+    "share": 1.04,
+    "warm": 47.4
+   },
+   "zone": {
+    "p95_luma": 0.637,
+    "share": 3.23,
+    "warm": 0.0
+   }
+  },
+  "median_luma": 0.59,
+  "near_black": 0.0,
+  "pink_cast": 0.028,
+  "rms_contrast": 0.238,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.612,
+    "near_black": 0.0,
+    "p95_luma": 0.684,
+    "share": 6.2
+   },
+   "level": {
+    "dark": 1.1,
+    "median_luma": 0.366,
+    "near_black": 0.0,
+    "p95_luma": 0.799,
+    "share": 60.6
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.723,
+    "near_black": 0.0,
+    "p95_luma": 0.823,
+    "share": 33.2
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.494,
+   "near_black": 0.0,
+   "warm_share": 34.2
+  },
+  "value_spread": 0.651,
+  "warm_share": 32.3
+ },
+ "L6_fp_ceiling": {
+  "brightest_1pct_owner": {
+   "lamp": 20.1,
+   "other": 79.9
+  },
+  "brightest_group": "lamp",
+  "dark_share": 1.2,
+  "frame": "L6_fp_ceiling.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.899,
+    "share": 0.35,
+    "warm": 0.0
+   }
+  },
+  "median_luma": 0.336,
+  "near_black": 0.0,
+  "pink_cast": -0.022,
+  "rms_contrast": 0.233,
+  "sources": {
+   "building": {
+    "dark": 0.1,
+    "median_luma": 0.174,
+    "near_black": 0.0,
+    "p95_luma": 0.309,
+    "share": 31.1
+   },
+   "level": {
+    "dark": 1.1,
+    "median_luma": 0.394,
+    "near_black": 0.0,
+    "p95_luma": 0.894,
+    "share": 68.9
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.301,
+   "near_black": 0.0,
+   "warm_share": 11.2
+  },
+  "value_spread": 0.615,
+  "warm_share": 9.6
+ },
+ "L6_fp_front": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "lamp": 8.4,
+   "other": 91.6,
+   "rug": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 2.6,
+  "frame": "L6_fp_front.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.723,
+    "share": 0.05,
+    "warm": 99.1
+   },
+   "lamp": {
+    "p95_luma": 0.888,
+    "share": 0.08,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.712,
+    "share": 4.72,
+    "warm": 64.6
+   }
+  },
+  "median_luma": 0.287,
+  "near_black": 0.4,
+  "pink_cast": 0.002,
+  "rms_contrast": 0.191,
+  "sources": {
+   "building": {
+    "dark": 0.2,
+    "median_luma": 0.174,
+    "near_black": 0.0,
+    "p95_luma": 0.372,
+    "share": 21.9
+   },
+   "level": {
+    "dark": 2.3,
+    "median_luma": 0.378,
+    "near_black": 0.4,
+    "p95_luma": 0.71,
+    "share": 78.1
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.4,
+   "median_luma": 0.265,
+   "near_black": 0.0,
+   "warm_share": 22.4
+  },
+  "value_spread": 0.498,
+  "warm_share": 22.2
+ },
+ "L6_fp_left": {
+  "brightest_1pct_owner": {
+   "lamp": 0.9,
+   "other": 99.1,
+   "plate": 0.0,
+   "rug": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 2.9,
+  "frame": "L6_fp_left.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.883,
+    "share": 0.01,
+    "warm": 0.0
+   },
+   "plate": {
+    "p95_luma": 0.682,
+    "share": 0.04,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.791,
+    "share": 0.03,
+    "warm": 0.0
+   }
+  },
+  "median_luma": 0.276,
+  "near_black": 0.0,
+  "pink_cast": -0.003,
+  "plate_pop": 0.318,
+  "rms_contrast": 0.224,
+  "sources": {
+   "building": {
+    "dark": 0.0,
+    "median_luma": 0.165,
+    "near_black": 0.0,
+    "p95_luma": 0.578,
+    "share": 14.2
+   },
+   "level": {
+    "dark": 2.9,
+    "median_luma": 0.334,
+    "near_black": 0.0,
+    "p95_luma": 0.763,
+    "share": 85.8
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.0,
+   "median_luma": 0.264,
+   "near_black": 0.0,
+   "warm_share": 9.4
+  },
+  "value_spread": 0.57,
+  "warm_share": 9.3
+ },
+ "L6_fp_loot": {
+  "brightest_1pct_owner": {
+   "cash": 91.9,
+   "other": 8.1
+  },
+  "brightest_group": "cash",
+  "dark_share": 9.8,
+  "frame": "L6_fp_loot.png",
+  "glow_share": 0.1,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.874,
+    "share": 8.08,
+    "warm": 62.7
+   }
+  },
+  "median_luma": 0.367,
+  "near_black": 0.29,
+  "pink_cast": -0.042,
+  "rms_contrast": 0.221,
+  "sources": {
+   "level": {
+    "dark": 9.8,
+    "median_luma": 0.367,
+    "near_black": 0.29,
+    "p95_luma": 0.704,
+    "share": 100.0
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.5,
+   "median_luma": 0.315,
+   "near_black": 0.0,
+   "warm_share": 15.8
+  },
+  "value_spread": 0.558,
+  "warm_share": 16.1
+ },
+ "L6_fp_spawn": {
+  "brightest_1pct_owner": {
+   "cash": 0.0,
+   "lamp": 2.5,
+   "other": 95.7,
+   "rug": 1.8
+  },
+  "brightest_group": "lamp",
+  "dark_share": 4.6,
+  "frame": "L6_fp_spawn.png",
+  "glow_share": 0.0,
+  "groups": {
+   "cash": {
+    "p95_luma": 0.204,
+    "share": 1.29,
+    "warm": 1.9
+   },
+   "lamp": {
+    "p95_luma": 0.88,
+    "share": 0.03,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.707,
+    "share": 2.77,
+    "warm": 52.8
+   }
+  },
+  "median_luma": 0.316,
+  "near_black": 0.18,
+  "pink_cast": -0.001,
+  "rms_contrast": 0.215,
+  "sources": {
+   "building": {
+    "dark": 0.3,
+    "median_luma": 0.165,
+    "near_black": 0.0,
+    "p95_luma": 0.352,
+    "share": 15.2
+   },
+   "level": {
+    "dark": 4.3,
+    "median_luma": 0.408,
+    "near_black": 0.18,
+    "p95_luma": 0.692,
+    "share": 84.8
+   }
+  },
+  "standard_view": {
+   "dark_share": 0.2,
+   "median_luma": 0.284,
+   "near_black": 0.0,
+   "warm_share": 8.9
+  },
+  "value_spread": 0.527,
+  "warm_share": 8.7
+ },
+ "L6_fp_street": {
+  "brightest_1pct_owner": {
+   "lamp": 9.2,
+   "other": 90.8,
+   "rug": 0.0
+  },
+  "brightest_group": "lamp",
+  "dark_share": 11.7,
+  "frame": "L6_fp_street.png",
+  "glow_share": 0.0,
+  "groups": {
+   "lamp": {
+    "p95_luma": 0.872,
+    "share": 0.09,
+    "warm": 0.0
+   },
+   "rug": {
+    "p95_luma": 0.692,
+    "share": 1.76,
+    "warm": 50.7
+   }
+  },
+  "median_luma": 0.342,
+  "near_black": 1.42,
+  "pink_cast": 0.025,
+  "rms_contrast": 0.247,
+  "sources": {
+   "building": {
+    "dark": 0.1,
+    "median_luma": 0.535,
+    "near_black": 0.0,
+    "p95_luma": 0.824,
+    "share": 13.8
+   },
+   "level": {
+    "dark": 11.6,
+    "median_luma": 0.289,
+    "near_black": 1.42,
+    "p95_luma": 0.717,
+    "share": 81.6
+   },
+   "lot": {
+    "dark": 0.0,
+    "median_luma": 0.638,
+    "near_black": 0.0,
+    "p95_luma": 0.73,
+    "share": 4.6
+   }
+  },
+  "standard_view": {
+   "dark_share": 1.9,
+   "median_luma": 0.309,
+   "near_black": 0.0,
+   "warm_share": 15.6
+  },
+  "value_spread": 0.597,
+  "warm_share": 15.1
  }
 }
