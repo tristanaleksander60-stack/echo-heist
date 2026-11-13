@@ -1040,6 +1040,56 @@ do
 		rig:Destroy()
 	end
 
+	-- Your character: the Rookie clips go into the engine's Animate script (its sets of Animations, as the R15 Animate
+	-- holds them), the idle set gets the look-around as its rare variant, and a second pass changes nothing.
+	do
+		local RookieAnimate = require(shared:WaitForChild("Heist"):WaitForChild("RookieAnimate")) :: any
+		local animate = Instance.new("Folder")
+		animate.Name = "Animate"
+		local function set(name: string, anims: { string })
+			local sv = Instance.new("StringValue")
+			sv.Name = name
+			for _, an in anims do
+				local a = Instance.new("Animation")
+				a.Name = an
+				a.AnimationId = "rbxassetid://507766666"
+				local w = Instance.new("NumberValue")
+				w.Name = "Weight"
+				w.Value = 5
+				w.Parent = a
+				a.Parent = sv
+			end
+			sv.Parent = animate
+		end
+		set("idle", { "Animation1", "Animation2" })
+		set("walk", { "WalkAnim" })
+		set("run", { "RunAnim" })
+		set("jump", { "JumpAnim" })
+		set("fall", { "FallAnim" })
+		set("climb", { "ClimbAnim" })
+		local changed = RookieAnimate.apply(animate)
+		local idle1 = animate.idle.Animation1 :: Animation
+		local idle2 = animate.idle.Animation2 :: Animation
+		local W = Config.Rookie.ANIM.IDLE_WEIGHTS
+		check(
+			changed == 6
+				and (animate.walk.WalkAnim :: Animation).AnimationId == RookieClips.walk
+				and (animate.run.RunAnim :: Animation).AnimationId == RookieClips.run
+				and (animate.jump.JumpAnim :: Animation).AnimationId == RookieClips.jump
+				and (animate.fall.FallAnim :: Animation).AnimationId == RookieClips.fall
+				and idle1.AnimationId == RookieClips.idle
+				and idle2.AnimationId == RookieClips.look
+				and (idle1.Weight :: NumberValue).Value == W.idle
+				and (idle2.Weight :: NumberValue).Value == W.look
+				and (animate.climb.ClimbAnim :: Animation).AnimationId == "rbxassetid://507766666"
+				and RookieAnimate.apply(animate) == 0,
+			"your Animate: walk, run, jump, fall, idle + the rare look set to the Rookie clips, climb kept, idempotent ("
+				.. tostring(changed)
+				.. " changed)"
+		)
+		animate:Destroy()
+	end
+
 	-- A replaying clone's boots: each heel / toe that touches the floor stays put until it lifts (1x and 3x).
 	local c1 = cases[1]
 	local cloneRig = c1 and c1.rig
