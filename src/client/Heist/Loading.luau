@@ -169,7 +169,9 @@ function Loading.boot(doors: any, reduced: () -> boolean, camera: any?, tier: ((
 			return
 		end
 		FirstTime.markSeen(PresentPlan.TITLE_KIND)
-		doors.cover()
+		-- No doors.cover() here: the doors live in the HUD and would hide the intro's 3D stage (only the caption
+		-- cards above them showed: owner capture 2026-11-13). The title at the intro's end covers them again.
+		doors.clear()
 		intro = true -- reserved while the kit arrives (the card stays up meanwhile, at most KIT_WAIT_SECONDS)
 		task.spawn(function()
 			-- Every step is guarded: an error here used to leave `intro` reserved for good (no Ready, the card on
@@ -261,8 +263,8 @@ function Loading.boot(doors: any, reduced: () -> boolean, camera: any?, tier: ((
 			awaitFallback = nil -- the L1 that garageFtue waited for (or a plain hideout) is here
 		end
 		decide(kind)
-		if kind == "heist" or kind == "heistFtue" then
-			doors.cover() -- the heist binds behind closed doors, under the card or the title
+		if (kind == "heist" or kind == "heistFtue") and not (intro and not introOver) then
+			doors.cover() -- the heist binds behind closed doors, under the card or the title (after the intro)
 		end
 	end
 

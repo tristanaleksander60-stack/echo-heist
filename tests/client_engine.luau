@@ -1480,6 +1480,15 @@ local okShell, shellErr = pcall(function()
 	local veil = layer:WaitForChild("VanDoorVeil", 1) :: Frame
 	assert(veil and veil.Visible and veil.BackgroundTransparency == 0 and not left.Visible, "reduced: an ink veil")
 	assert(doors.openSeconds() == 0.15, "reduced: a 0.15 s crossfade")
+	doors.clear()
+	assert(not doors.isClosed() and not veil.Visible and not left.Visible, "clear: open at once (reduced)")
+	reduced = false
+	doors.cover()
+	doors.clear()
+	assert(
+		not doors.isClosed() and not left.Visible and not right.Visible,
+		"clear: the intro's stage is never behind them"
+	)
 	doors.open()
 
 	local Wordmark = require(rf:WaitForChild("Wordmark"))

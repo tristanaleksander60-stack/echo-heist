@@ -13,6 +13,7 @@
 --                      a close() / cover() claimed the doors meanwhile (garage pick -> heist)
 --   doors.cover()      closed at once, no motion (under the loading card or the title beat)
 --   doors.open()       starts opening (does not yield)
+--   doors.clear()      open at once, no motion (the story intro's 3D stage must never sit behind them)
 --   doors.isClosed()   closed or closing
 --   doors.openSeconds() how long the reveal takes (the slide, or the crossfade)
 -- Purely visual: nothing waits on the doors except the client's own hand-off.
@@ -102,6 +103,13 @@ function Transition.new(layer: Instance, reduced: () -> boolean): any
 
 	function doors.isClosed(): boolean
 		return closed
+	end
+
+	function doors.clear()
+		token += 1
+		cancel()
+		closed = false
+		settleOpen()
 	end
 
 	function doors.cover()
