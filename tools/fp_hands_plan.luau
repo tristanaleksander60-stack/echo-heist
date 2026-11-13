@@ -6,7 +6,8 @@
 -- v101 rig (the body-piece arms of the old Viewmodel.fromOutfit at the old Config) from copies of the old modules
 -- the preview extracts from git into build/fp_before/.
 --
---   lune run tools/fp_hands_plan.luau after [fov] > build/fp_hands_after.json
+--   lune run tools/fp_hands_plan.luau v2 [fov] [outfit] > build/fp_hands_v2.json  (FP HANDS v2: the skinned gloves)
+--   lune run tools/fp_hands_plan.luau after [fov] > build/fp_hands_after.json       (v125: the rigid FP arms)
 --   lune run tools/fp_hands_plan.luau before [fov] > build/fp_hands_before.json
 --
 -- Each part: { piece, cf = 12 CFrame components (camera space: x right, y up, -z forward; world studs, the part's
@@ -105,13 +106,139 @@ local function lootCf(VM: any, R: { number }, L: { number }, s: number): any
 	)
 end
 
+-- the glove colour as Outfit.gloveHex picks it: the knit tone for toned gloves, else the gloves' own colour
+local function gloveHex(Config: any, outfit: any): string
+	local R = Config.Rookie
+	local tone = R.OUTFIT[outfit.tone or ""]
+	if R.TONED[outfit.gloves] and tone and type(tone.hex) == "string" then
+		return tone.hex
+	end
+	return R.GLOVES[outfit.gloves]
+end
+
 local out: { [string]: any } = { mode = mode, fov = fov, poses = {}, order = {} }
 
-if mode == "after" then
+if mode == "v2" then
+	-- FP HANDS v2: the skinned gloves (RookieData.fpHands) exactly as Heist/Viewmodel.placeArm places them. Each
+	-- part's cf is final (the arm already slid along the view axis for the viewmodel FOV; never resized: scale 1).
+	-- Per glove: `skins[glove]` = { bone -> its hinge frame in the glove part's space, posed } and `rest[side]` = the
+	-- same at the rest pose; the preview poses the FBX armature from them.
 	local Config = require("../src/shared/Config") :: any
 	local VMath = require("../src/client/Heist/ViewmodelMath") :: any
 	local FpRig = require("../src/client/Heist/FpRig") :: any
 	local RookieData = require("../src/shared/Heist/RookieData") :: any
+	local VM = Config.FirstPerson.VIEWMODEL
+	local data = RookieData.fpHands
+	local s = data.scale
+	local outfit = table.clone(Config.Rookie.DEFAULT_OUTFIT)
+	if process.args[3] then
+		for kv in string.gmatch(process.args[3], "[^,]+") do
+			local slot, id = string.match(kv, "^(%w+)=([%w_]+)$")
+			if slot and id then
+				outfit[slot] = id
+			end
+		end
+	end
+	local keep = FpRig.wears(outfit)
+	local hands, gloves, rests = {}, {}, {}
+	for _, side in { "Right", "Left" } do
+		local list = table.clone(data[side])
+		for _, b in data.bones[side] do
+			table.insert(list, b)
+		end
+		local hand = FpRig.build(CFrame, Vector3, side, list, s, keep)
+		hands[side] = hand
+		for _, e in data[side] do
+			if e.skinned then
+				gloves[side] = e.piece
+			end
+		end
+		local frames = FpRig.restFrames(CFrame, Vector3, hand)
+		local g = frames[gloves[side]]
+		local rest = {}
+		for _, b in data.bones[side] do
+			rest[b.piece] = comps(g:Inverse() * frames[b.piece])
+		end
+		rests[side] = rest
+	end
+	local info: { [string]: any } = {}
+	for _, side in { "Right", "Left" } do
+		for _, e in data[side] do
+			info[e.piece] = e
+		end
+	end
+	local k = VMath.viewK(fov, VM.VIEW_FOV)
+	out.viewK = k
+	out.scale = s
+	out.v2 = true
+	out.glove = gloveHex(Config, outfit)
+	out.gloveLift = { VM.ARMS.GLOVE_LIFT, VM.ARMS.GLOVE_LIFT_TO }
+	out.materials = VM.ARMS.MATERIALS
+	out.sleeveColour = VM.ARMS.SLEEVE_COLOUR
+	out.outfit = outfit
+	out.fill = VM.FILL
+	out.lootSize = VM.CARRY.LOOT_SIZE * VM.SCALE
+	out.rest = rests
+	out.gloves = gloves
+	for _, entry in VMath.showcase(VM) do
+		local name, f = entry[1], entry[2]
+		local R, L = VMath.hands(VM, f)
+		local fR, fL = VMath.fingers(VM, f)
+		local parts, skins, bends, shifts = {}, {}, {}, {}
+		for _, side in { { "Right", R, fR, "R" }, { "Left", L, fL, "L" } } do
+			local handCf = poseCf(side[2], s)
+			local elbow = v3(VMath.elbow(VM, side[4], side[2]), s)
+			local placed = FpRig.place(CFrame, Vector3, hands[side[1]], handCf, elbow, side[3], VM.ARMS.WRIST_ROLL)
+			local dz = VMath.armShift((handCf * hands[side[1]].wrist).Position.Z, k)
+			local shift = CFrame.new(0, 0, dz)
+			local at = {}
+			for _, pc in placed do
+				at[pc[1]] = pc[2]
+				local e = info[pc[1]]
+				if e then
+					table.insert(parts, {
+						piece = pc[1],
+						cf = comps(shift * pc[2]),
+						scale = { 1, 1, 1 },
+						tint = e.tint,
+						joint = e.joint,
+						skinned = e.skinned,
+					})
+				end
+			end
+			local P = at[gloves[side[1]]]
+			local bones = {}
+			for _, b in data.bones[side[1]] do
+				bones[b.piece] = comps(P:Inverse() * at[b.piece])
+			end
+			skins[gloves[side[1]]] = bones
+			local armCf = FpRig.armFrame(CFrame, Vector3, hands[side[1]], handCf, elbow, VM.ARMS.WRIST_ROLL)
+			bends[side[4]] = FpRig.wristBend(handCf, armCf)
+			shifts[side[4]] = dz
+		end
+		local pose: { [string]: any } = { parts = parts, skins = skins, R = R, L = L, wristBend = bends, shift = shifts }
+		if f.carry > 0 then
+			local lc, lf = VMath.project(comps(lootCf(VM, R, L, VM.SCALE)), { 1, 1, 1 }, k)
+			pose.loot = { cf = lc, scale = lf }
+		end
+		out.poses[name] = pose
+		table.insert(out.order, name)
+	end
+elseif mode == "after" or mode == "v125" then
+	-- v125: the live v125 modules (Config, ViewmodelMath, FpRig, RookieData from git, extracted by the preview into
+	-- build/fp_v125/), so BEFORE shows the poses the owner saw
+	local Config = (if mode == "v125" then require("../build/fp_v125/shared/Config") else require(
+		"../src/shared/Config"
+	)) :: any
+	local VMath = (if mode == "v125" then require("../build/fp_v125/client/Heist/ViewmodelMath") else require(
+		"../src/client/Heist/ViewmodelMath"
+	)) :: any
+	local FpRig = (if mode == "v125" then require("../build/fp_v125/client/Heist/FpRig") else require(
+		"../src/client/Heist/FpRig"
+	)) :: any
+	local RookieData = (if mode == "v125" then require("../build/fp_v125/shared/Heist/RookieData") else require(
+		"../src/shared/Heist/RookieData"
+	)) :: any
 	local VM = Config.FirstPerson.VIEWMODEL
 	local s = VM.SCALE
 	local outfit = table.clone(Config.Rookie.DEFAULT_OUTFIT)
@@ -137,7 +264,7 @@ if mode == "after" then
 	local k = VMath.viewK(fov, VM.VIEW_FOV)
 	out.viewK = k
 	out.scale = s
-	out.glove = Config.Rookie.GLOVES[outfit.gloves]
+	out.glove = gloveHex(Config, outfit)
 	out.gloveLift = { VM.ARMS.GLOVE_LIFT, VM.ARMS.GLOVE_LIFT_TO }
 	out.materials = VM.ARMS.MATERIALS
 	out.outfit = outfit

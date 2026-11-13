@@ -148,4 +148,72 @@ function FpRig.place(
 	return out
 end
 
+-- FP HANDS v2 (Rookie_FPHands, RookieData.fpHands): ONE skinned glove MeshPart a hand. Its Bones are FpRig entries
+-- too (piece = the Bone's name): Root / Forearm ride the forearm frame like the glove MeshPart, Hand the hand frame,
+-- the finger and thumb bones are hinged segments. FpRig.place gives every bone's wanted frame; the Bone.Transform that
+-- puts it there is worked out against the Bone's real rest CFrame (read from the mesh), so the bone axes the importer
+-- chose never matter: offset O = (the hinge frame at rest)^-1 * (the Bone's rest), both in the glove part's space.
+export type Skin = {
+	glove: string, -- the glove's piece name
+	order: { string }, -- Bone names, parents first
+	parent: { [string]: string? }, -- Bone name -> its parent Bone's name (nil: the MeshPart)
+	rest: { [string]: any }, -- Bone name -> Bone.CFrame (relative to its parent)
+	base: { [string]: any }, -- Bone name -> rest in the glove part's space
+	offset: { [string]: any }, -- Bone name -> O
+}
+
+-- The rest pose's frames in grip space (handCf = the grip, the forearm straight back): { piece -> CFrame }.
+function FpRig.restFrames(CF: any, V3: any, hand: Hand): { [string]: any }
+	local w = hand.wrist.Position
+	local out: { [string]: any } = {}
+	for _, pc in FpRig.place(CF, V3, hand, CF.new(), w + V3.new(0, 0, 1), {}, 0) do
+		out[pc[1]] = pc[2]
+	end
+	return out
+end
+
+-- order: the glove's Bone names, parents first; parent: Bone -> parent Bone (nil = the MeshPart); rest: Bone ->
+-- Bone.CFrame. Bones the hand has no entry for keep their rest.
+function FpRig.skin(
+	CF: any,
+	V3: any,
+	hand: Hand,
+	glove: string,
+	order: { string },
+	parent: { [string]: string? },
+	rest: { [string]: any }
+): Skin
+	local frames = FpRig.restFrames(CF, V3, hand)
+	local g = frames[glove] or CF.new()
+	local base: { [string]: any } = {}
+	local offset: { [string]: any } = {}
+	for _, name in order do
+		local p = parent[name]
+		base[name] = (if p then base[p] else CF.new()) * rest[name]
+		local h = frames[name]
+		offset[name] = if h then (g:Inverse() * h):Inverse() * base[name] else CF.new()
+	end
+	return { glove = glove, order = order, parent = parent, rest = rest, base = base, offset = offset }
+end
+
+-- Each Bone's Transform for this frame from FpRig.place's output ({ piece, cf } with the glove and every bone).
+function FpRig.boneTransforms(CF: any, skin: Skin, placed: { { any } }): { [string]: any }
+	local at: { [string]: any } = {}
+	for _, pc in placed do
+		at[pc[1]] = pc[2]
+	end
+	local P = at[skin.glove]
+	local want: { [string]: any } = {}
+	local out: { [string]: any } = {}
+	for _, name in skin.order do
+		local h = at[name]
+		local d = if P and h then P:Inverse() * h * skin.offset[name] else skin.base[name]
+		want[name] = d
+		local p = skin.parent[name]
+		local from = (if p then want[p] else CF.new()) * skin.rest[name]
+		out[name] = from:Inverse() * d
+	end
+	return out
+end
+
 return table.freeze(FpRig)
