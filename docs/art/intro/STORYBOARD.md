@@ -42,6 +42,6 @@ the letterbox, punch in (1.18 → 1) and fade with each shot; six words at most 
 | Intro_Letter | the kid's letter: cream envelope, burgundy seal, crayon star | 160 |
 | Intro_House_A/B | toy-town houses with snow roofs, wreaths, sills; lit windows are Neon (out on "...GONE.") | 1,092 each |
 
-The Rookie: `ReplicatedStorage.CharacterKit.Rookie` when the CHARACTER track publishes it (read when the garage is
-built); until then a labelled stand-in (TODO(character)). The van, street lamps and the tree are launch-kit pieces.
+The Rookie: `ReplicatedStorage.CharacterKit.Rookie` (the CHARACTER track, R15, posed through its Motor6Ds; read when the garage is
+built); a Part stand-in only if the kit never arrived. The van, street lamps and the tree are launch-kit pieces.
 The tower, ground, garage walls and the aurora are built by code.
