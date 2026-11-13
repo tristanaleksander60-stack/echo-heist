@@ -13,6 +13,7 @@
 -- Disable, never delete. The tier comes from Heist/Telemetry.onTier: the PerfSample governor steps one tier at a
 -- time with its own hysteresis (PerfSample.stepUp: 60 good seconds, doubling after each step up), so the recipe
 -- never flickers. This module is the tier's only lighting listener.
+-- setExteriorTint (SKY track): the aurora's faint green on the snow, added to OutdoorAmbient over either recipe.
 
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -66,8 +67,48 @@ local recipe = {
 	styleOk = nil :: boolean?, -- whether this client could set Lighting.LightingStyle (docs/PERF.md)
 }
 
+-- The exterior tint (setExteriorTint, the aurora's light on the snow): a small RGB amount added on top of
+-- OutdoorAmbient. `base` is the OutdoorAmbient without it; a recipe switch takes the tint off first, so recipe C
+-- saves and restores untinted values, then it goes back on over the new base.
+local tint = {
+	add = nil :: { number }?,
+	base = nil :: Color3?,
+	applied = nil :: Color3?,
+}
+
+local function tintedOf(base: Color3, add: { number }): Color3
+	return Color3.fromRGB(
+		math.min(255, math.floor(base.R * 255 + 0.5) + add[1]),
+		math.min(255, math.floor(base.G * 255 + 0.5) + add[2]),
+		math.min(255, math.floor(base.B * 255 + 0.5) + add[3])
+	)
+end
+
+local function tintOff()
+	if tint.applied and tint.base and Lighting.OutdoorAmbient == tint.applied then
+		Lighting.OutdoorAmbient = tint.base
+	end
+	tint.applied = nil
+end
+
+local function tintOn()
+	local add = tint.add
+	if add == nil then
+		return
+	end
+	local base = Lighting.OutdoorAmbient
+	tint.base = base
+	local c = tintedOf(base, add)
+	Lighting.OutdoorAmbient = c
+	tint.applied = c
+end
+
 local function applyRecipe(tier: number)
 	local soft = Budget.softToybox(tier)
+	local switching = soft ~= recipe.soft
+	if switching then
+		tintOff()
+	end
 	if soft and not recipe.soft then
 		local saved: { [string]: { [string]: any } } = {}
 		for _, group in GROUPS do
@@ -104,6 +145,9 @@ local function applyRecipe(tier: number)
 		end
 		recipe.saved = nil
 		recipe.soft = false
+	end
+	if switching then
+		tintOn()
 	end
 	local bloomOn = Budget.bloomOn(tier)
 	if bloomOn ~= recipe.bloomOn then
@@ -230,6 +274,15 @@ function LightDirector.new(): any
 		tierNow = tier
 		applyRecipe(tier)
 		apply()
+	end
+
+	-- The aurora's faint light on the snow (Heist/Aurora, Config.Aurora.OUTDOOR_ADD): `add` = {r, g, b} (0-255) added
+	-- to Lighting.OutdoorAmbient on top of the recipe in force; nil takes it off. Only ever adds, so Ambient <=
+	-- OutdoorAmbient still holds. This module stays the only writer of the Lighting service.
+	function director.setExteriorTint(add: { number }?)
+		tintOff()
+		tint.add = if add and (add[1] ~= 0 or add[2] ~= 0 or add[3] ~= 0) then add else nil
+		tintOn()
 	end
 
 	-- Diagnostics (tests, docs/PERF.md): "A" or "C", and whether LightingStyle took a script write (nil before
