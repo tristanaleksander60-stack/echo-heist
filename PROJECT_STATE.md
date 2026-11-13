@@ -636,7 +636,8 @@ _Last updated: 2026-11-13 (SKY track: northern lights)_
 - **Checks:**
   - Local: unit 683, sim 240, compile 250, StyLua, Selene, pure 42, wait 704, LihFolk 369 files 0, 4 places + place_check 0, hud_layout 5,634/0.
   - Engine on Saved **v148**: engine_smoke 0 failures; kit_engine 0 failed, including new B2 (298/298 material + atlas + RenderFidelity, 154 Precise; 8 curved samples render smooth normals, e.g. Rookie_LeftLowerArm 0.33 flat, was 0.67); client_engine 74/0; clone_engine 0; perf_engine 0.
-- **Owner check (v148):**
+- **Merged main (fp-hands-v2):** the kit was re-uploaded once more under new ids (the FBX bytes changed after a gate run; Blender's export is not deterministic). Engine on Saved **v150**: engine_smoke 0, kit_engine 0 failed (B2 311/311, 167 Precise), client_engine 74/0, clone_engine 0, perf_engine 0. Local: unit 690, sim 240.
+- **Owner check (v150):**
   - Rookie / Gus arms and hands, the vault dial, lamps and the tree shade round in first person.
   - No colour fringes on far parts at graphics quality 1-3.
   - The blue-violet cast in shadow remains: it is a Lighting call.

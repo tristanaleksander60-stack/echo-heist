@@ -82,7 +82,7 @@ Per piece, flat corners (curved faces in brackets):
 
 On the "after" side, the flat corners that remain are on caps and on hard edges that are meant to be hard.
 
-The engine reads the same on Saved v148 (`kit_engine` B2, EditableMesh): Rookie_LeftLowerArm **0.33** (was 0.67), Rookie_LeftUpperArm 0.11 (0.33), Gus_LeftHand 0.00 (0.35), Gus_LeftLowerArm 0.33, Gus_Flashlight 0.50, Hoardsworth_LeftLowerArm 0.38, Snowman 0.18.
+The engine reads the same on Saved v148 and v150 (`kit_engine` B2, EditableMesh): Rookie_LeftLowerArm **0.33** (was 0.67), Rookie_LeftUpperArm 0.11 (0.33), Gus_LeftHand 0.00 (0.35), Gus_LeftLowerArm 0.33, Gus_Flashlight 0.50, Hoardsworth_LeftLowerArm 0.38, Snowman 0.18.
 
 **What stays flat, on purpose or by method:**
 - Hard-surface pieces built from chamfered boxes and prisms: walls, counters, floors, the van body panels, the cash register, the shop front.
@@ -179,17 +179,17 @@ The engine received exactly the FBX triangle counts, so nothing was decimated. B
 
 | Group | New id |
 |---|---|
-| Rookie | 112942630766773 |
-| Gus | 72197163944783 |
-| Hoardsworth | 124725406715101 |
-| Van | 134631115032056 |
-| VaultDoor | 120607936918816 |
-| Storefront_24x12 | 105804922661253 |
-| CashRegister | 112719122802969 |
-| JobBoard | 137136339238108 |
-| StreetLamp | 78725831105629 |
+| Rookie | 117436482372643 |
+| Gus | 116363918374646 |
+| Hoardsworth | 72521842741137 |
+| Van | 91214118094893 |
+| VaultDoor | 90916123034782 |
+| Storefront_24x12 | 103589756688620 |
+| CashRegister | 103310876103897 |
+| JobBoard | 75018872592118 |
+| StreetLamp | 74172021833368 |
 
-The other 88 groups are in `src/server/Kit/KitData.luau`. Not re-uploaded: Rookie_FPArms, Rookie_Viewmodel and Rookie_Hands, which keep their FBX and ids for fp-hands-v2. The atlases and the hero appearance are unchanged: the atlas PNGs did not change.
+The other 88 groups are in `src/server/Kit/KitData.luau`. These are the ids of the second `--new` upload: a `--no-render` gate run re-exported every FBX, and Blender's FBX bytes are not deterministic, so the files were uploaded again under fresh ids to keep the `kit_ids.json` hashes honest. The first batch of new ids is in each entry's `history`. Not re-uploaded: Rookie_FPArms, Rookie_Viewmodel and Rookie_Hands, which keep their FBX and ids for fp-hands-v2. The atlases and the hero appearance are unchanged: the atlas PNGs did not change.
 
 ## For the FP hands (branch `fp-hands-v2`): what to apply
 
@@ -215,13 +215,13 @@ Check any change in `roblox_look.py` first; it reads the project file.
 - **Triangles:** unchanged (130,418 in the kit, identical per piece in the engine).
 - **Draw calls, instances, textures:** unchanged (same parts, same single atlas).
 - **Vertices:** smooth normals can only merge corners, never add any.
-- **Precise RenderFidelity:** 154 of 298 pieces get it. That is mostly the Rookie's many outfit and first-person pieces, plus Gus, Hoardsworth, the vault door, the vans and the intro tower. Precise only changes rendering beyond ~250 studs, where every one of these is small. The clone LOD (PERF.md §6.4) still swaps far clones for the mannequin, so the tier budgets are untouched.
-- **Boot:** 298 pieces in 9.6 s on v148 (8.3 s on v143, within the noise of a cold server; no extra rebuilds).
-- **perf_engine** on v148: 0 failures. Garage ~75k tris; level instances 92k to 115k tris, as before.
+- **Precise RenderFidelity:** 167 of 311 pieces get it. That is mostly the Rookie's many outfit and first-person pieces, plus Gus, Hoardsworth, the vault door, the vans and the intro tower. Precise only changes rendering beyond ~250 studs, where every one of these is small. The clone LOD (PERF.md §6.4) still swaps far clones for the mannequin, so the tier budgets are untouched.
+- **Boot:** 311 pieces (main's skinned gloves included) in 10.5 s on v150 (298 in 8.3 s on v143; the same one-rebuild-per-piece path).
+- **perf_engine** on v148 and v150: 0 failures. Garage ~75k tris; level instances 92k to 115k tris, as before.
 
 ## Owner check in Studio
 
-Play Saved **v148**: Studio Play, or the test place, not the live game.
+Play Saved **v150** (main with fp-hands-v2 merged in): Studio Play, or the test place, not the live game.
 
 1. **First person, close to things.** The Rookie's sleeves and Gus's arms, hands and flashlight should shade round, not as bands of flat faces. Also check the vault dial, street lamps, the advent tree and the snowman.
 2. **Far away** (the street, the skyline, the hideout from the van). There should be no odd colour fringes on small or distant parts. Repeat with Settings > Graphics quality at 1-3, where the engine loads lower texture mips.
@@ -231,3 +231,9 @@ Play Saved **v148**: Studio Play, or the test place, not the live game.
 To preview any asset the way the game shows it:
 - `python3 tools/blender/fidelity_sheet.py --before <dir> --only <Model>`
 - or the turntables' new bottom-right tile, "Roblox-faithful".
+
+## Merge with main (fp-hands-v2)
+
+- Main's skinned gloves (`Rookie_FPHands*`, built by `assets/blender/fp_hands.py` with their own smooth custom normals) are untouched. Only their gate content hashes were recomputed under `fbx-2`, so they read "unchanged" (their FBX does not use the eh_kit primitives).
+- The legacy `Rookie_FPArms`, `Rookie_Viewmodel` and `Rookie_Hands` are built from `rookie.py` lathes, so the next `build_asset.py --all` re-exports them with round normals. That is harmless; upload them only if they are still used.
+- Engine on Saved **v150**: engine_smoke 0 failures; kit_engine 0 failed (B2 311/311, 167 Precise, the 8 smooth-normal samples unchanged); client_engine 74/0; clone_engine 0; perf_engine 0.
