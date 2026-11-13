@@ -1,0 +1,259 @@
+{
+ "asset": "Rookie_Faces",
+ "objects": [
+  {
+   "name": "Rookie_Face_Smug",
+   "class": "small",
+   "tris": 496,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.021,
+    0.29,
+    0.911
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.5113,
+     -0.058,
+     -0.4366
+    ],
+    "local_max": [
+     0.5101,
+     0.2322,
+     0.4745
+    ]
+   },
+   "swatches": [
+    "hair",
+    "ink",
+    "ink_hi",
+    "marble_hi",
+    "skin_lo"
+   ],
+   "location": [
+    -2.0,
+    -0.84,
+    3.72
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 163,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Face"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "face 'smug': one face shows at a time",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Face_Shocked",
+   "class": "small",
+   "tris": 408,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.023,
+    0.252,
+    1.004
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.5113,
+     -0.058,
+     -0.48
+    ],
+    "local_max": [
+     0.5113,
+     0.1942,
+     0.5237
+    ]
+   },
+   "swatches": [
+    "hair",
+    "ink",
+    "ink_hi",
+    "marble_hi"
+   ],
+   "location": [
+    0.0,
+    -0.84,
+    3.72
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 36,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Face"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "face 'shocked': one face shows at a time",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Face_Busted",
+   "class": "small",
+   "tris": 96,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.923,
+    0.105,
+    0.646
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.4613,
+     0.0045,
+     -0.4135
+    ],
+    "local_max": [
+     0.4613,
+     0.1092,
+     0.233
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi"
+   ],
+   "location": [
+    2.0,
+    -0.84,
+    3.72
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 19,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Face"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "face 'busted': one face shows at a time",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 1000,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "89eeab11760bd61d7357",
+ "fbx": {
+  "path": "assets/fbx/Rookie_Faces.fbx",
+  "bytes": 45596,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Rookie_Face_Busted",
+   "Rookie_Face_Shocked",
+   "Rookie_Face_Smug"
+  ],
+  "geometry_extents": [
+   [
+    0.105,
+    0.646,
+    0.923
+   ],
+   [
+    0.252,
+    1.004,
+    1.023
+   ],
+   [
+    0.29,
+    0.911,
+    1.021
+   ]
+  ]
+ },
+ "spec": "assets/blender/rookie.py",
+ "notes": "Faces swapped with the idle face by state: smug (banked, side-eye), shocked (zapped, seen), busted (caught).",
+ "turntable": "docs/art/turntables/Rookie_Faces.png",
+ "seconds": 17.8
+}

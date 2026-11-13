@@ -13,6 +13,7 @@
 -- sanitize() then repairs anything of the wrong type.
 
 local Config = require("../Config")
+local Outfit = require("../Heist/Outfit")
 
 local Schema = {}
 
@@ -82,6 +83,8 @@ export type Heist = {
 		seenStarCrew: boolean,
 		seenStarClean: boolean,
 	},
+	-- The Rookie's outfit (additive, no migration; sanitize repairs it with Heist/Outfit): slot -> Config.Rookie.OUTFIT id.
+	outfit: { [string]: string },
 	ftueStep: number,
 	firstHeistDone: boolean,
 	stats: { heists: number, clears: number },
@@ -158,6 +161,7 @@ function Schema.defaultHeist(): Heist
 			haulTimeMs = 0,
 		},
 		settings = Schema.defaultSettings(),
+		outfit = Outfit.default(),
 		ftueStep = 0,
 		firstHeistDone = false,
 		stats = { heists = 0, clears = 0 },
@@ -348,6 +352,11 @@ function Schema.sanitize(heist: Heist): { string }
 			h.stats[key] = default
 			table.insert(repairs, "stats." .. key)
 		end
+	end
+	-- Outfit: known slots only, each a known and unlocked id of its slot (else the default).
+	local _, outfitFixed = Outfit.repair(h.outfit, h)
+	for _, slot in outfitFixed do
+		table.insert(repairs, "outfit." .. slot)
 	end
 	if not isWhole(h.ftueStep, 0, Config.Data.MAX_FTUE_STEP) then
 		h.ftueStep = wholeOr(h.ftueStep, 0, Config.Data.MAX_FTUE_STEP, 0)

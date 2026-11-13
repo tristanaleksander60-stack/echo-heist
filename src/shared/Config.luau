@@ -1526,7 +1526,7 @@ Config.Ui = {
 		W = 96, -- px: a card (the paper); 4 cards fit the deck without scrolling
 		H = 88,
 		PAD = 5, -- paper border round the photo
-		PHOTO_H = 56, -- the photo (your headshot on a crew-colour backdrop)
+		PHOTO_H = 56, -- the photo (your Rookie's portrait on a crew-colour backdrop; Config.Rookie.PORTRAIT)
 		CAPTION_H = 22, -- the caption strip under it: the last action's word
 		BADGE = 22, -- the last action's icon, a round badge on the photo's corner
 		PILL = { 28, 22 }, -- the stamped number pill (wider with the seat shape: + PILL_GLYPH)
@@ -1537,7 +1537,6 @@ Config.Ui = {
 		PILL_TILT = -8, -- the stamped number
 		STAMP_TILT = -12, -- the BUSTED / REDO stamp across the photo
 		TAPE = { 26, 9, 0.35 }, -- the tape strip at the top (w, h, transparency): dressing only
-		HEADSHOT_SIZE = "Size100x100", -- Enum.ThumbnailSize name (GetUserThumbnailAsync HeadShot)
 	},
 	START_OVER_RUNS = 2, -- full deck: after this many runs with no progress, offer START OVER (P0-3)
 	DECK_FULL_TOAST_SECONDS = 3,
@@ -2246,6 +2245,81 @@ Config.Moments = {
 		CAM_FOV = 45,
 		CAM_FOLLOW = 6,
 		CAPTION_SIZE = 64, -- px (the display face)
+	},
+}
+
+-- The Rookie (PLAN_FIRST_PERSON "CH"; CH track): the player character. Every player spawns as a Rookie in their
+-- crew colour and outfit (server Heist/Characters + Heist/Rookie); clones are copies of your Rookie (Heist/Avatars).
+-- Art: assets/blender/rookie.py (kit groups Rookie, Rookie_Faces, Rookie_Outfits, Rookie_Viewmodel), data in
+-- Shared/Heist/RookieData (generated). Outfit data: the profile's `outfit` (Schema), validated by Shared/Heist/Outfit
+-- and changed through the existing Data.Equip remote (an outfit slot + an OUTFIT id).
+Config.Rookie = {
+	KIT_FOLDER = "CharacterKit", -- ReplicatedStorage folder: Rookie (template), Rookie_Viewmodel, Outfits, Faces
+	HIP_HEIGHT = 2, -- Humanoid.HipHeight: the root part's centre 3 studs up (the sim's rootHeight); legs are art
+	ROOT_SIZE = { 2, 2, 1 }, -- HumanoidRootPart
+	KIT_WAIT_SECONDS = 20, -- the first spawn waits this long for the kit, then spawns a block Rookie
+	RESPAWN_SECONDS = 3, -- after a death (CharacterAutoLoads is off: the server spawns everyone)
+	SPAWN_RETRIES = 3, -- LoadCharacterAsync attempts per spawn
+	-- Faces (one shows): what a moment shows and for how long (s); clones follow their pose (POSE_FACE).
+	FACE_SECONDS = { smug = 2.5, shocked = 1.6, busted = 3 },
+	POSE_FACE = { carry = "smug", busted = "busted", stuck = "shocked" },
+	-- Outfit slots (Data: heist.outfit slot -> id). DEFAULT is what a new profile and every repair falls back to.
+	SLOTS = { "cap", "scarf", "sweater", "gloves", "mask" },
+	DEFAULT_OUTFIT = {
+		cap = "Cap_Flat",
+		scarf = "Scarf_Long",
+		sweater = "Sweater_Stripes",
+		gloves = "Gloves_Knit",
+		mask = "Mask_None",
+	},
+	-- id -> slot, variant (RookieData.outfit key; "" = nothing), name, and how it unlocks: free, or
+	-- unlock = { stars = n } (total medal + daily stars, Progress.totalStars) or { trophy = id } (Config.Data.Trophies).
+	OUTFIT = {
+		Cap_Flat = { slot = "cap", variant = "Flat", name = "Flat Cap", free = true },
+		Cap_Beanie = { slot = "cap", variant = "Beanie", name = "Beanie", free = true },
+		Cap_Bobble = { slot = "cap", variant = "Bobble", name = "Bobble Hat", unlock = { stars = 6 } },
+		Cap_Trapper = {
+			slot = "cap",
+			variant = "Trapper",
+			name = "Trapper Hat",
+			unlock = { trophy = "Trophy_NightClerk" },
+		},
+		Scarf_Long = { slot = "scarf", variant = "Long", name = "Long Scarf", free = true },
+		Scarf_Chunky = { slot = "scarf", variant = "Chunky", name = "Chunky Scarf", free = true },
+		Scarf_Bandana = { slot = "scarf", variant = "Bandana", name = "Bandana", unlock = { stars = 3 } },
+		Scarf_Knot = {
+			slot = "scarf",
+			variant = "Knot",
+			name = "Knotted Scarf",
+			unlock = { trophy = "Trophy_TwoDoors" },
+		},
+		Sweater_Stripes = { slot = "sweater", variant = "Stripes", name = "Breton Stripes", free = true },
+		Sweater_Block = { slot = "sweater", variant = "Block", name = "Colour Block", unlock = { stars = 9 } },
+		Gloves_Knit = { slot = "gloves", variant = "Knit", name = "Knit Gloves", free = true },
+		Gloves_Leather = {
+			slot = "gloves",
+			variant = "Leather",
+			name = "Leather Gloves",
+			unlock = { trophy = "Trophy_BackRoom" },
+		},
+		Mask_None = { slot = "mask", variant = "", name = "No Mask", free = true },
+		Mask_Eye = { slot = "mask", variant = "Eye", name = "Eye Mask", unlock = { stars = 1 } },
+	},
+	GLOVES = { Gloves_Knit = "#2A2D52", Gloves_Leather = "#6E4B3A" }, -- glove colours (hands + cuffs)
+	BLOCK_COLOURS = { -- the block Rookie (no kit): body part kind -> colour
+		Head = "#D09673",
+		UpperTorso = "#D8C8A8",
+		LowerTorso = "#4E5675",
+		Arm = "#D8C8A8",
+		Hand = "#2A2D52",
+		Leg = "#4E5675",
+		Foot = "#5A493E",
+	},
+	PORTRAIT = { -- crew cards: a ViewportFrame of your clone template's head (Hud/Deck)
+		FOV = 30,
+		DISTANCE = 4.6, -- studs from the head centre
+		LIFT = 0.15, -- studs: aim a little above the head centre (the cap)
+		YAW = 18, -- degrees: a 3/4 turn
 	},
 }
 

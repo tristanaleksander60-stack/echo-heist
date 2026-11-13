@@ -3,7 +3,7 @@
 -- read-only on L1 and party levels), or a plain RUN button; both count down to the auto-start
 -- ("GO: RUN 3 · 0:08", co-op "2/3 READY"). After a failed run the deck title leads with why it ended
 -- (§6.1 item 8).
--- Each clone is a polaroid: a headshot of YOUR avatar on a crew-colour backdrop (Common.headshot), a
+-- Each clone is a polaroid: a portrait of YOUR Rookie on a crew-colour backdrop (Common.portrait), a
 -- stamped number pill (the seat shape beside it with colour-blind shapes on), and what it did last as
 -- an icon badge and a word (pressed plate A, carried cash, BUSTED, zapped, stuck: Shared/Heist/CrewBoard).
 -- REDO / REDO FROM / DELETE / UNDO / DELETE BUSTED are icon + word. A full deck (WALKTHROUGH P0-3) says
@@ -302,7 +302,7 @@ function Deck.build(ctx: any): any
 		end, "UIToggle")
 		card:SetAttribute("Slot", i)
 
-		-- The photo: your headshot on a crew-colour backdrop, framed in the crew colour.
+		-- The photo: your Rookie on a crew-colour backdrop, framed in the crew colour.
 		local backdrop = if red then Palette.dim(Palette.tapeGrey, C.BACKDROP_DIM) else Palette.dim(hue, C.BACKDROP_DIM)
 		local photo = Ui.frame(card, {
 			Name = "Photo",
@@ -314,21 +314,11 @@ function Deck.build(ctx: any): any
 			Active = false,
 		})
 		Ui.stroke(photo, if red then Palette.tapeGrey else hue, Theme.STROKE)
-		local head = Instance.new("ImageLabel")
-		head.Name = "Headshot"
-		head.BackgroundTransparency = 1
+		local head = Common.portrait(photo, localPlayer.UserId, if red then Palette.tapeGrey else hue)
 		head.AnchorPoint = Vector2.new(0.5, 1)
 		head.Position = UDim2.fromScale(0.5, 1)
 		head.Size = UDim2.fromOffset(C.PHOTO_H, C.PHOTO_H)
-		head.ScaleType = Enum.ScaleType.Fit
 		head.ImageColor3 = if red then Palette.tapeGrey else Color3.new(1, 1, 1)
-		head.Active = false
-		head.Parent = photo
-		Common.headshot(localPlayer.UserId, function(uri: string)
-			if head.Parent then
-				head.Image = uri
-			end
-		end)
 
 		-- The stamped number (and the seat shape with colour-blind shapes on).
 		local glyphs = Settings.get("colourBlindGlyphs") == true

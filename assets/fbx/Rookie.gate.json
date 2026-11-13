@@ -1,0 +1,1364 @@
+{
+ "asset": "Rookie",
+ "objects": [
+  {
+   "name": "Rookie_LowerTorso",
+   "class": "small",
+   "tris": 184,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.84,
+    1.243,
+    0.68
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.0,
+     -0.6216,
+     -0.32
+    ],
+    "local_max": [
+     0.84,
+     0.6216,
+     0.36
+    ]
+   },
+   "swatches": [
+    "hair",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    1.62
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 22,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "Root",
+    "parent": null
+   },
+   "role": "char",
+   "notes": "the R15 root: hip centre 1.62 above the floor; HumanoidRootPart centre 3.0 (code)",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_UpperTorso",
+   "class": "small",
+   "tris": 644,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    2.0,
+    1.625,
+    1.27
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.0,
+     -0.8336,
+     -0.17
+    ],
+    "local_max": [
+     1.0,
+     0.7911,
+     1.1
+    ]
+   },
+   "swatches": [
+    "hair",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "steel_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    1.95
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 214,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "Waist",
+    "parent": "Rookie_LowerTorso"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Head",
+   "class": "small",
+   "tris": 644,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    2.097,
+    1.89,
+    1.66
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.0484,
+     -0.9722,
+     -0.04
+    ],
+    "local_max": [
+     1.0484,
+     0.918,
+     1.62
+    ]
+   },
+   "swatches": [
+    "hair",
+    "skin",
+    "skin_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    3.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 242,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "Neck",
+    "parent": "Rookie_UpperTorso"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_RightUpperArm",
+   "class": "small",
+   "tris": 180,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.696,
+    0.647,
+    1.032
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3565,
+     -0.3234,
+     -0.6925
+    ],
+    "local_max": [
+     0.34,
+     0.3234,
+     0.34
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_lo"
+   ],
+   "location": [
+    -1.0,
+    0.0,
+    2.76
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 20,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "RightShoulder",
+    "parent": "Rookie_UpperTorso"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_RightLowerArm",
+   "class": "small",
+   "tris": 120,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.609,
+    0.533,
+    0.754
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3501,
+     -0.2663,
+     -0.6459
+    ],
+    "local_max": [
+     0.2588,
+     0.2663,
+     0.1078
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_lo"
+   ],
+   "location": [
+    -1.1,
+    0.0,
+    2.16
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 35,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "RightElbow",
+    "parent": "Rookie_RightUpperArm"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_RightHand",
+   "class": "small",
+   "tris": 244,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.62,
+    0.571,
+    0.64
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3,
+     -0.3253,
+     -0.59
+    ],
+    "local_max": [
+     0.32,
+     0.2453,
+     0.05
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -1.18,
+    0.0,
+    1.6
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 86,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS, by the gloves slot)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "RightWrist",
+    "parent": "Rookie_RightLowerArm"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_RightUpperLeg",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.739,
+    0.704,
+    0.661
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3721,
+     -0.3519,
+     -0.5698
+    ],
+    "local_max": [
+     0.3673,
+     0.3519,
+     0.091
+    ]
+   },
+   "swatches": [
+    "steel_lo"
+   ],
+   "location": [
+    -0.4,
+    0.0,
+    1.48
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "RightHip",
+    "parent": "Rookie_LowerTorso"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_RightLowerLeg",
+   "class": "small",
+   "tris": 120,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.7,
+    0.666,
+    0.64
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.37,
+     -0.3329,
+     -0.5496
+    ],
+    "local_max": [
+     0.33,
+     0.3329,
+     0.0902
+    ]
+   },
+   "swatches": [
+    "steel",
+    "steel_lo"
+   ],
+   "location": [
+    -0.42,
+    0.0,
+    0.98
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 36,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "RightKnee",
+    "parent": "Rookie_RightUpperLeg"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_RightFoot",
+   "class": "small",
+   "tris": 152,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.76,
+    1.3,
+    0.66
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.38,
+     -0.9,
+     -0.5
+    ],
+    "local_max": [
+     0.38,
+     0.4,
+     0.16
+    ]
+   },
+   "swatches": [
+    "hair",
+    "ink_hi",
+    "marble_lo"
+   ],
+   "location": [
+    -0.44,
+    0.0,
+    0.5
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 32,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "RightAnkle",
+    "parent": "Rookie_RightLowerLeg"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_LeftUpperArm",
+   "class": "small",
+   "tris": 180,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.696,
+    0.647,
+    1.032
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.34,
+     -0.3234,
+     -0.6925
+    ],
+    "local_max": [
+     0.3565,
+     0.3234,
+     0.34
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_lo"
+   ],
+   "location": [
+    1.0,
+    0.0,
+    2.76
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 20,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "LeftShoulder",
+    "parent": "Rookie_UpperTorso"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_LeftLowerArm",
+   "class": "small",
+   "tris": 120,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.609,
+    0.533,
+    0.754
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.2588,
+     -0.2663,
+     -0.6459
+    ],
+    "local_max": [
+     0.3501,
+     0.2663,
+     0.1078
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_lo"
+   ],
+   "location": [
+    1.1,
+    0.0,
+    2.16
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 35,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "LeftElbow",
+    "parent": "Rookie_LeftUpperArm"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_LeftHand",
+   "class": "small",
+   "tris": 244,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.62,
+    0.571,
+    0.64
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.32,
+     -0.3253,
+     -0.59
+    ],
+    "local_max": [
+     0.3,
+     0.2453,
+     0.05
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    1.18,
+    0.0,
+    1.6
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 86,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS, by the gloves slot)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "LeftWrist",
+    "parent": "Rookie_LeftLowerArm"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_LeftUpperLeg",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.739,
+    0.704,
+    0.661
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3673,
+     -0.3519,
+     -0.5698
+    ],
+    "local_max": [
+     0.3721,
+     0.3519,
+     0.091
+    ]
+   },
+   "swatches": [
+    "steel_lo"
+   ],
+   "location": [
+    0.4,
+    0.0,
+    1.48
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "LeftHip",
+    "parent": "Rookie_LowerTorso"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_LeftLowerLeg",
+   "class": "small",
+   "tris": 120,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.7,
+    0.666,
+    0.64
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.33,
+     -0.3329,
+     -0.5496
+    ],
+    "local_max": [
+     0.37,
+     0.3329,
+     0.0902
+    ]
+   },
+   "swatches": [
+    "steel",
+    "steel_lo"
+   ],
+   "location": [
+    0.42,
+    0.0,
+    0.98
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 36,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "LeftKnee",
+    "parent": "Rookie_LeftUpperLeg"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_LeftFoot",
+   "class": "small",
+   "tris": 152,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.76,
+    1.3,
+    0.66
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.38,
+     -0.9,
+     -0.5
+    ],
+    "local_max": [
+     0.38,
+     0.4,
+     0.16
+    ]
+   },
+   "swatches": [
+    "hair",
+    "ink_hi",
+    "marble_lo"
+   ],
+   "location": [
+    0.44,
+    0.0,
+    0.5
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 32,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie"
+   ],
+   "joint": {
+    "name": "LeftAnkle",
+    "parent": "Rookie_LeftLowerLeg"
+   },
+   "role": "char",
+   "notes": "",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Face_Idle",
+   "class": "small",
+   "tris": 368,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.023,
+    0.252,
+    0.834
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.5115,
+     -0.058,
+     -0.4056
+    ],
+    "local_max": [
+     0.5115,
+     0.1942,
+     0.4281
+    ]
+   },
+   "swatches": [
+    "hair",
+    "ink",
+    "ink_hi",
+    "marble_hi"
+   ],
+   "location": [
+    0.0,
+    -0.84,
+    3.72
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 73,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Face"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "face 'idle': one face shows at a time",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 3632,
+ "asset_budget": {
+  "class": "creature",
+  "target": 5000,
+  "ceiling": 10742
+ },
+ "seats": [
+  {
+   "name": "Rookie_UpperTorso",
+   "gap": 0.0,
+   "penetration": 0.2,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Rookie_Head",
+   "gap": 0.0,
+   "penetration": 0.08993,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Rookie_Face_Idle",
+   "gap": 0.0,
+   "penetration": 0.12718,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Rookie_RightUpperArm",
+   "gap": 0.0,
+   "penetration": 0.27535,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Rookie_RightLowerArm",
+   "gap": 0.0,
+   "penetration": 0.13998,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Rookie_RightHand",
+   "gap": 0.0,
+   "penetration": 0.04737,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Rookie_RightUpperLeg",
+   "gap": 0.0,
+   "penetration": 0.25994,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Rookie_RightLowerLeg",
+   "gap": 0.0,
+   "penetration": 0.14,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Rookie_RightFoot",
+   "gap": 0.0,
+   "penetration": 0.02,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Rookie_LeftUpperArm",
+   "gap": 0.0,
+   "penetration": 0.27535,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Rookie_LeftLowerArm",
+   "gap": 0.0,
+   "penetration": 0.13998,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Rookie_LeftHand",
+   "gap": 0.0,
+   "penetration": 0.04737,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Rookie_LeftUpperLeg",
+   "gap": 0.0,
+   "penetration": 0.25994,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Rookie_LeftLowerLeg",
+   "gap": 0.0,
+   "penetration": 0.14,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "Rookie_LeftFoot",
+   "gap": 0.0,
+   "penetration": 0.02,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "4cd7e1fa16d7268ae11f",
+ "fbx": {
+  "path": "assets/fbx/Rookie.fbx",
+  "bytes": 132204,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Rookie_Face_Idle",
+   "Rookie_Head",
+   "Rookie_LeftFoot",
+   "Rookie_LeftHand",
+   "Rookie_LeftLowerArm",
+   "Rookie_LeftLowerLeg",
+   "Rookie_LeftUpperArm",
+   "Rookie_LeftUpperLeg",
+   "Rookie_LowerTorso",
+   "Rookie_RightFoot",
+   "Rookie_RightHand",
+   "Rookie_RightLowerArm",
+   "Rookie_RightLowerLeg",
+   "Rookie_RightUpperArm",
+   "Rookie_RightUpperLeg",
+   "Rookie_UpperTorso"
+  ],
+  "geometry_extents": [
+   [
+    0.252,
+    0.834,
+    1.023
+   ],
+   [
+    0.533,
+    0.609,
+    0.754
+   ],
+   [
+    0.533,
+    0.609,
+    0.754
+   ],
+   [
+    0.571,
+    0.62,
+    0.64
+   ],
+   [
+    0.571,
+    0.62,
+    0.64
+   ],
+   [
+    0.64,
+    0.666,
+    0.7
+   ],
+   [
+    0.64,
+    0.666,
+    0.7
+   ],
+   [
+    0.647,
+    0.696,
+    1.032
+   ],
+   [
+    0.647,
+    0.696,
+    1.032
+   ],
+   [
+    0.66,
+    0.76,
+    1.3
+   ],
+   [
+    0.66,
+    0.76,
+    1.3
+   ],
+   [
+    0.661,
+    0.704,
+    0.739
+   ],
+   [
+    0.661,
+    0.704,
+    0.739
+   ],
+   [
+    0.68,
+    1.243,
+    1.84
+   ],
+   [
+    1.27,
+    1.625,
+    2.0
+   ],
+   [
+    1.66,
+    1.89,
+    2.097
+   ]
+  ]
+ },
+ "spec": "assets/blender/rookie.py",
+ "notes": "The Rookie: R15-compatible rigid body (15 parts, R15 joint pivots) + the idle face. Scarf and stripes are outfit parts (crew colour).",
+ "turntable": "docs/art/turntables/Rookie.png",
+ "seconds": 6.5
+}
