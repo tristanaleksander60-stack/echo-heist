@@ -1,0 +1,105 @@
+{
+ "asset": "Roof_Antenna",
+ "objects": [
+  {
+   "name": "Roof_Antenna",
+   "class": "tiny",
+   "tris": 72,
+   "budget": [
+    150,
+    300
+   ],
+   "budget_note": "ok",
+   "dims": [
+    4.4,
+    1.0,
+    9.0
+   ],
+   "pivot": {
+    "rule": "bottom",
+    "local_min": [
+     -2.2,
+     -0.5,
+     0.0
+    ],
+    "local_max": [
+     2.2,
+     0.5,
+     9.0
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 42,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "a rooftop TV antenna",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 72,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "83ba6486382764de66d3",
+ "fbx": {
+  "path": "assets/fbx/Roof_Antenna.fbx",
+  "bytes": 20492,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Roof_Antenna"
+  ],
+  "geometry_extents": [
+   [
+    1.0,
+    4.4,
+    9.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/tower.py",
+ "notes": "Antenna 4.4 x 1 x 9 (BIG buildings rooftop).",
+ "turntable": "docs/art/turntables/Roof_Antenna.png",
+ "seconds": 54.6
+}

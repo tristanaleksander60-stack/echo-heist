@@ -1,0 +1,103 @@
+{
+ "asset": "Railing_8",
+ "objects": [
+  {
+   "name": "Railing_8",
+   "class": "module",
+   "tris": 60,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    8.0,
+    0.24,
+    3.6
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     0.0,
+     -0.12,
+     0.0
+    ],
+    "local_max": [
+     8.0,
+     0.12,
+     3.6
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 18,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "mezzanine railing for the warehouse garage; tiles along X",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 60,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "8d3ba74139af3f1521c2",
+ "fbx": {
+  "path": "assets/fbx/Railing_8.fbx",
+  "bytes": 20156,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Railing_8"
+  ],
+  "geometry_extents": [
+   [
+    0.24,
+    3.6,
+    8.0
+   ]
+  ]
+ },
+ "spec": "assets/blender/tower.py",
+ "notes": "Railing 8 x 0.24 x 3.6 (the warehouse garage's mezzanine).",
+ "turntable": "docs/art/turntables/Railing_8.png",
+ "seconds": 91.5
+}

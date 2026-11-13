@@ -1,0 +1,106 @@
+{
+ "asset": "Facade_Curtain",
+ "objects": [
+  {
+   "name": "Facade_Curtain",
+   "class": "small",
+   "tris": 132,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    3.4,
+    0.2,
+    5.26
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     2.3,
+     0.64,
+     2.8
+    ],
+    "local_max": [
+     5.7,
+     0.84,
+     8.06
+    ]
+   },
+   "swatches": [
+    "marble",
+    "ribbon",
+    "ribbon_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 107,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "story",
+   "notes": "curtains in a lit window (Facade_8x10 frame, same pivot): drapes, pleats, tiebacks, valance",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 132,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "75178bb4ec6fd20df94d",
+ "fbx": {
+  "path": "assets/fbx/Facade_Curtain.fbx",
+  "bytes": 21052,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Facade_Curtain"
+  ],
+  "geometry_extents": [
+   [
+    0.2,
+    3.4,
+    5.26
+   ]
+  ]
+ },
+ "spec": "assets/blender/tower.py",
+ "notes": "Window curtains for the facade bay (role story: the comfort reds).",
+ "turntable": "docs/art/turntables/Facade_Curtain.png",
+ "seconds": 11.8
+}

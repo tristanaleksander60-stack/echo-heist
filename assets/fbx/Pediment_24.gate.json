@@ -1,0 +1,107 @@
+{
+ "asset": "Pediment_24",
+ "objects": [
+  {
+   "name": "Pediment_24",
+   "class": "module",
+   "tris": 228,
+   "budget": [
+    800,
+    2000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    24.893,
+    2.45,
+    6.531
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -12.4465,
+     -0.8,
+     0.0
+    ],
+    "local_max": [
+     12.4465,
+     1.65,
+     6.5311
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "snow"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 81,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "xmas",
+   "notes": "the Bank's temple-front pediment with raking cornices under snow; the clock sits in it",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 228,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "39b696a3bcc065687342",
+ "fbx": {
+  "path": "assets/fbx/Pediment_24.fbx",
+  "bytes": 23804,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Pediment_24"
+  ],
+  "geometry_extents": [
+   [
+    2.45,
+    6.531,
+    24.893
+   ]
+  ]
+ },
+ "spec": "assets/blender/tower.py",
+ "notes": "Pediment 24.8 x 2.4 x 6.3 (BIG buildings: the Bank).",
+ "turntable": "docs/art/turntables/Pediment_24.png",
+ "seconds": 61.7
+}

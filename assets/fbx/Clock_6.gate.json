@@ -1,0 +1,106 @@
+{
+ "asset": "Clock_6",
+ "objects": [
+  {
+   "name": "Clock_6",
+   "class": "small",
+   "tris": 400,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    6.7,
+    0.86,
+    6.7
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -3.35,
+     -0.86,
+     -3.35
+    ],
+    "local_max": [
+     3.35,
+     0.0,
+     3.35
+    ]
+   },
+   "swatches": [
+    "ink",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "steel"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 195,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "env",
+   "notes": "the Bank's clock: marble face, ink ticks and hands at ten past ten",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 400,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "593f5d4fabbe84a36d1e",
+ "fbx": {
+  "path": "assets/fbx/Clock_6.fbx",
+  "bytes": 25740,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Clock_6"
+  ],
+  "geometry_extents": [
+   [
+    0.86,
+    6.7,
+    6.7
+   ]
+  ]
+ },
+ "spec": "assets/blender/tower.py",
+ "notes": "Clock 6.7 across, facing -Y, origin the back centre (BIG buildings: the Bank).",
+ "turntable": "docs/art/turntables/Clock_6.png",
+ "seconds": 68.9
+}
