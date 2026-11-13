@@ -11,3 +11,4 @@ build/fp_before/
 build/fp_hands_*.json
 build/fp_hands_raw/
 docs/art/fp_hands/.redo_done
+build/video/

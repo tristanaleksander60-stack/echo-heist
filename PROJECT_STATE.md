@@ -7,6 +7,7 @@ _Last updated: 2026-11-13 (GARAGE EXIT FIX track: BACK TO GARAGE always lands in
 _Last updated: 2026-11-13 (INTRO LOAD FIX track: no server hold, the intro never freezes; branch intro-load-fix)_
 
 _Last updated: 2026-11-13 (STUDIO FIDELITY track: why the kit looked worse in the engine than in Blender; branch studio-fidelity)_
+_Last updated: 2026-11-13 (STORE VIDEO track: the experience-page video, rendered in Blender)_
 
 # PROJECT_STATE
 
@@ -643,3 +644,10 @@ _Last updated: 2026-11-13 (SKY track: northern lights)_
   - No colour fringes on far parts at graphics quality 1-3.
   - The blue-violet cast in shadow remains: it is a Lighting call.
 - **v151 Published (2026-11-13):** studio-fidelity merged (round normals on curved shapes, atlas UVs at cell centres, Precise hero pieces, Roblox-faithful Blender preview; 97 groups re-uploaded). engine_smoke 0, client_engine 74/0, kit_engine 0, clone_engine 0. Open: the blue-violet ambient cast (docs/audit/STUDIO_FIDELITY.md options). Running: store video.
+
+## 2026-11-13: STORE VIDEO track (the experience-page video; branch `store-video`, not merged, not published)
+- **Deliverable:** `docs/marketing/final/video/experience_video.mp4`: 27.6 s, 1920 x 1080, 24 fps, H.264 High yuv420p, 25.7 MB, **silent** (no commissioned music yet; the game's SFX are not local licensed files). Plus `poster_1920x1080.png` (the 8 OF ME beat), `frames.png` (0/1/3/10/20/28 s with the 9:16 crop) and `UPLOAD.md` (specs, policy caveat, the exact Creator Hub steps, the checklist score, the shot list).
+- **What it is:** animation rendered in Blender from the game's own kit FBX, levels (KitPlan), hideout (LobbyPlan), story town (IntroPlan), sky and aurora; **not a capture**. Motion is the game's: `tools/blender/video_paths.luau` plays `tests/sim/Solutions` through HeistSim (via tests/sim/Harness) and dumps every actor, Gus, doors and loot at 20 Hz; `tools/blender/store_video.py` re-poses the kit Rookie per frame (procedural R15 walk cycle, carry pose, tape print with the scan band, clone look, age ramp), rebuilds Gus's torch cone from the sim each frame, pockets doors and lights plates when the sim does, and draws the in-game text (RUN n, REWIND, 8 OF ME, CREW VIEW, pills, "?") and the end wordmark in 2D. Shot list: hook (L1 tape print, first person) 0-2 s, 8 OF ME (L5) 2-5, run 1 (L2) 5-6.6, REWIND 6.6-7.8, Crew View (L2 run 3) 7.8-12.4, Gus (L4) 12.4-15.4, town 15.4-17.8, hideout FP 17.8-20, Clone Party haul 20-23.6, title 23.6-27.6.
+- **Render budget:** Eevee on a CPU-only box: lamp spot shadows were ~10x a frame, so only the sun casts shadows (`fast()`); 1280 x 720 upscaled to 1080p before the 2D layer; 3 samples + haze on the two hook shots, 2 samples elsewhere; 7-28 s a frame; chunks of 10 frames per process (bpy segfaults after 10-20 renders in one process). ~3 h total.
+- **Quality pass:** vault trailer checklist: hook and core verb pass; "authentic footage" fails by nature (a render); no 9:16 cut. Weakest fixable point was Crew View at phone size: camera moved in, pills/label 1.5x, re-rendered.
+- **Owner:** decide between uploading this (risk: Roblox's "authentic in-game footage" rule; 3 uploads/month, rejections count) or shooting the same beats in Studio (CAPTURE.md A5, A2, A8, B2, A3) and cutting them to this edit. Upload steps in the video's UPLOAD.md.

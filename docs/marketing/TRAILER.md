@@ -38,7 +38,7 @@ Time is trailer time. "Key frame" = the render that shows the intended frame. "S
 - **A (TikTok first):** as above.
 - **B (Shorts):** open on shot 11 (8 OF ME) for 1.5 s, then shot 1, then the rest without shot 12.
 - **C (Reels):** open on shot 10 (WRONG ONE), the rest as A.
-- **Roblox video thumbnail (16:9):** shots 2-11 and 14 with **no added captions** (the intro's cards and the stamps are in-game text), no music with lyrics, ≤ 30 s. Upload rules: ICON_THUMBNAILS.md §5 (3 uploads a month, rejections included).
+- **Roblox video thumbnail (16:9):** shots 2-11 and 14 with **no added captions** (the intro's cards and the stamps are in-game text), no music with lyrics, ≤ 30 s. Upload rules: ICON_THUMBNAILS.md §5 (3 uploads a month, rejections included). **A rendered version exists:** `docs/marketing/final/video/experience_video.mp4` (Blender animation from the game's models and the sim's real paths, adapted for the experience page: hook = the tape print and 8 OF ME, run → rewind → Crew View by 12 s, Gus, the town, the hideout, Clone Party, the wordmark; silent). Its UPLOAD.md has the policy caveat (a render, not footage) and the Creator Hub steps.
 - **Devlog 1 (Nov 19):** shots 1 and 9-11 only, 12 s, with the devlog hook (CLIPS.md §6).
 
 **Calls to action:** none burned into the video before stage 3 (CLIPS.md §1.5). The end card says `ON ROBLOX`, never "out now", "free" or a date before the go.
