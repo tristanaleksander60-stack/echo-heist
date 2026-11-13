@@ -12,7 +12,8 @@
 --   FirstTime.init()                       once, from HeistClient: seeds from the profile
 --
 -- Kinds: "step", "plate", "rewind", "clone", "bank" (the first five actions), "pointRewind",
--- "pointGrab" (the finger pointer), "gusDoze" (the Party intro line); the presentation shell's
+-- "pointGrab" (the finger pointer), "gusDoze" (the Party intro line), "hideout" (the lobby's PICK A VAN hint);
+-- the presentation shell's
 -- "title" (the first-join title beat) and "intro:<data key>" (each level's first-look camera,
 -- Heist/LevelIntro), both seeded by Heist/PresentPlan.seenKinds.
 --   FirstTime.status() -> "pending" | "seeded" | "none"   the profile seeding (none: no data)
@@ -54,6 +55,9 @@ local SEED: { [string]: { step: string?, level: string?, field: string? } } = {
 	pointGrab = { step = "FirstBank" },
 	pointRewind = { level = "TwoDoors", field = "clears" },
 	gusDoze = { level = "CloneParty", field = "plays" },
+	-- the hideout's first visit ("PICK A VAN" over a free van, Heist/Hideout): a player who has played Two Doors
+	-- has been through the hideout before
+	hideout = { level = "TwoDoors", field = "plays" },
 }
 FirstTime.KINDS = table.freeze((function()
 	local out = {}

@@ -20,6 +20,8 @@
 --             finger pointer, failure counterplay and the first-time beats
 --   Run       run state, events and the per-frame update (and first person's reduced layout)
 --   Reticle   first person: the centre reticle and the look-to-interact prompt chip (on the fx layer)
+--   Lobby     the hideout's minimal HUD: the reticle's prompt, the touch USE button, the drive's SKIP
+--   Wardrobe  the hideout's outfit picker (Data.Equip), opened at the wardrobe station
 --   Common    shared helpers
 -- Every player-facing string is in Shared/Heist/Strings and every run-HUD box in
 -- Shared/Heist/HudLayout (checked by tests/hud_layout.luau at 7 viewports).
@@ -42,6 +44,7 @@ local Controls = require(script:WaitForChild("Controls"))
 local Deck = require(script:WaitForChild("Deck"))
 local Garage = require(script:WaitForChild("Garage"))
 local Hints = require(script:WaitForChild("Hints"))
+local Lobby = require(script:WaitForChild("Lobby"))
 local Messages = require(script:WaitForChild("Messages"))
 local Reticle = require(script:WaitForChild("Reticle"))
 local Results = require(script:WaitForChild("Results"))
@@ -49,6 +52,7 @@ local Common = require(script:WaitForChild("Common"))
 local Run = require(script:WaitForChild("Run"))
 local SettingsPanel = require(script:WaitForChild("SettingsPanel"))
 local TopBar = require(script:WaitForChild("TopBar"))
+local Wardrobe = require(script:WaitForChild("Wardrobe"))
 
 local localPlayer = Players.LocalPlayer
 
@@ -152,6 +156,20 @@ function Hud.new(state: any, actions: Actions): any
 	ctx.settings = SettingsPanel.build(ctx)
 	BankFly.build(ctx)
 	Run.build(ctx)
+	ctx.lobby = Lobby.build(ctx) -- after Run: it uses ctx.fpLayout
+	ctx.wardrobe = Wardrobe.build(ctx)
+	-- The hideout (Heist/Hideout): the lobby HUD, the station sheets.
+	hud.lobby = ctx.lobby
+	hud.wardrobe = ctx.wardrobe
+	function hud.openStation(mode: string, back: () -> ())
+		ctx.garage.openStation(mode, back)
+	end
+	function hud.closeStation()
+		ctx.garage.closeStation()
+	end
+	function hud.stationOpen(): boolean
+		return ctx.garage.isOpen()
+	end
 	Controls.bind(ctx)
 	-- The deck learns how each run ended (the clone a full deck replaced, START OVER) before the
 	-- run's own end handling.
@@ -180,6 +198,8 @@ function Hud.new(state: any, actions: Actions): any
 
 	function hud.hideAll()
 		ctx.reticle.set(false, nil)
+		ctx.lobby.hide()
+		ctx.wardrobe.close()
 		runHud.Visible = false
 		ctx.deck.panel.Visible = false
 		ctx.results.card.Visible = false

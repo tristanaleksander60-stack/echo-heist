@@ -80,7 +80,16 @@ HudLayout.SETTINGS = box(0.5, 0.5, 0.5, 0, 0.5, 0, 700, 12 + TAP + 3 * TAP + 2 *
 -- The garage keeps touch controls (you walk in the garage): its SETTINGS button sits at the top of the
 -- right column (garage-local (486, 44)), clear of the jump button on every phone.
 HudLayout.GARAGE_SETTINGS = box(0, 0, 0.5, -350 + 486, 0.5, -163 + 44, 200, TAP)
-HudLayout.SHEETS = table.freeze({ results = true, garage = true, menu = true, settings = true })
+-- The hideout lobby (Config.Hideout, Hud/Lobby): walking about in first person the reticle and its prompt chip
+-- show, the toast rail sits low (RAIL_FP) and touch gets a USE button where Interact sits in a run. At a station
+-- (the job board, the laptop) the garage sheet opens with its own BACK button inside; the wardrobe is a sheet on
+-- the left (your Rookie stands on the right). Both stations switch touch controls off while up. The drive to the
+-- heist shows a SKIP chip top right (the player list is hidden then).
+HudLayout.LOBBY_USE = box(1, 1, 1, -124, 1, -16, H.INTERACT_BUTTON + 56, H.INTERACT_BUTTON)
+HudLayout.WARDROBE = box(0, 0.5, 0, 8, 0.5, 0, 336, 326)
+HudLayout.LOBBY_SKIP = box(1, 0, 1, -8, 0, 6, 140, TAP)
+HudLayout.SHEETS =
+	table.freeze({ results = true, garage = true, menu = true, settings = true, station = true, wardrobe = true })
 
 -- What shows together (tests/hud_layout.luau checks each scene for overlaps).
 HudLayout.SCENES = table.freeze({
@@ -149,6 +158,10 @@ HudLayout.SCENES = table.freeze({
 	menu = { "MENU_SHEET" },
 	settings = { "SETTINGS" },
 	garageButtons = { "GARAGE_SETTINGS" },
+	lobby = { "RETICLE", "PROMPT", "RAIL_FP", "LOBBY_USE" },
+	station = { "GARAGE" },
+	wardrobe = { "WARDROBE" },
+	drive = { "LOBBY_SKIP" },
 } :: { [string]: { string } })
 
 -- The HUD's device scale for a safe area of w x h px (one UIScale on the HUD root).

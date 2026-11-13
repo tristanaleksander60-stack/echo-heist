@@ -347,6 +347,86 @@ Strings.GARAGE_LAPTOP = "DAILY VAULT" -- the laptop's screen (anchor LaptopSpot)
 Strings.GARAGE_TV = "HEIST YOURSELF" -- the TV under the mezzanine (anchor TVSpot: the intro rewatch)
 Strings.JOB_BOARD_NEXT = "NEXT JOB"
 Strings.JOB_BOARD_ALL_DONE = "ANY JOB!"
+-- The hideout lobby (LOBBY track, Config.Hideout): the prompt chip's words for each look target (Shared/Heist/
+-- LobbyLook verbs), the van plates and seat cards, the lobby toasts and the first-visit hint.
+Strings.LOBBY_VERB = table.freeze({
+	jobs = "JOB BOARD",
+	laptop = "DAILY VAULT",
+	wardrobe = "WARDROBE",
+	tv = "WATCH INTRO",
+	invite = "INVITE FRIENDS",
+	pick = "PICK VAN",
+	leaderPicks = "LEADER PICKS",
+	solo = "SOLO · GO",
+	go = "GO!",
+	wait = "WAITING",
+	crew = "CREW · OPEN UP",
+	park = "CLOSE UP",
+	paint = "PAINT",
+	sit = "SIT",
+	ready = "READY",
+	unready = "NOT READY",
+	taken = "TAKEN",
+	busy = "ON A JOB",
+} :: { [string]: string })
+function Strings.lobbyWaiting(n: number): string
+	return string.format("WAITING · %d", n)
+end
+function Strings.lobbyPaint(name: string): string
+	return "PAINT · " .. name
+end
+function Strings.vanPlate(name: string): string
+	return string.upper(name) .. "'S CREW"
+end
+Strings.VAN_FREE = "FREE VAN"
+Strings.VAN_AWAY = "ON A JOB"
+Strings.SEAT_FREE = "FREE SEAT"
+Strings.SEAT_READY = "READY"
+Strings.SEAT_OUT = "STEPPED OUT"
+Strings.PICK_A_VAN = "PICK A VAN"
+Strings.LOBBY_BACK = "BACK"
+Strings.LOBBY_SKIP = "SKIP"
+Strings.LOBBY_USE = "USE"
+Strings.LOBBY_GET_OUT = "JUMP TO GET OUT"
+Strings.WARDROBE = "WARDROBE"
+Strings.LAPTOP = "LAPTOP · DAILY VAULT"
+Strings.LAPTOP_NO_CATCH_UP = "No missed vaults. Nice work!"
+Strings.WARDROBE_SLOT = table.freeze({
+	cap = "CAP",
+	scarf = "SCARF",
+	sweater = "SWEATER",
+	gloves = "GLOVES",
+	mask = "MASK",
+} :: { [string]: string })
+Strings.WEARING = "WEARING"
+function Strings.unlockStars(n: number): string
+	return if n == 1 then "1 STAR" else string.format("%d STARS", n)
+end
+function Strings.unlockTrophy(name: string): string
+	return "CLEAR " .. string.upper(name)
+end
+Strings.WARDROBE_LOCKED = "Locked: earn it on a heist."
+Strings.WARDROBE_SAVE_FAILED = "Could not change that right now."
+Strings.JOB_PINNED_PICK = "Job picked! Now PICK A VAN."
+function Strings.jobPinned(name: string): string
+	return "Job picked: " .. name .. ". Go to your van!"
+end
+Strings.INVITE_NONE = "Invites are not open here."
+-- Why the server said no to a lobby action (VanRules codes).
+Strings.LOBBY_REFUSED = table.freeze({
+	Taken = "That van is taken.",
+	TooFar = "Get closer to the van.",
+	NotLeader = "Your crew leader picks the van.",
+	NotFriend = "Only friends of that crew can sit in.",
+	Full = "That van is full.",
+	Waiting = "Wait for everyone to be READY.",
+	NotSolo = "Your crew is with you: open the side door.",
+	Closed = "That van's door is shut.",
+	Busy = "That van is busy.",
+	HasCrew = "Your crew is still inside.",
+	Seats = "Too many for one van.",
+	NoVan = "Pick a van first.",
+} :: { [string]: string })
 -- The job board (U6, level select): pinned job photos; the NEXT one glows (Strings.JOB_BOARD_NEXT).
 Strings.JOB_BOARD = "JOB BOARD"
 function Strings.jobPhoto(index: number, name: string): string

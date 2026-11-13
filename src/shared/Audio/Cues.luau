@@ -174,6 +174,19 @@ Cues.cues = {
 		priority = 3,
 		note = "no Roblox-licensed heartbeat found in the partner catalogue on 2026-11-12: owner picks one",
 	},
+	-- The hideout's departure (Config.Hideout.DRIVE): the van's engine under the short drive. Empty until the
+	-- owner's audio pass.
+	VanDrive = {
+		ids = {},
+		search = "van engine rumble drive by loop short",
+		bus = "SFX",
+		volume = 0.5,
+		pitchJitter = FIXED,
+		maxVoices = 1,
+		choke = true,
+		priority = 3,
+		note = "LOBBY track: GO -> the 2-3 s drive before the van-door wipe",
+	},
 
 	-------------------------------------------------------------------------------------------------------
 	-- Mechanisms (§7.3): positional at the device (opts.at); clone presses go through the Clone bus.
