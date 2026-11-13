@@ -96,6 +96,9 @@ HudLayout.GARAGE_SETTINGS = box(0, 0, 0.5, -350 + 486, 0.5, -163 + 44, 200, TAP)
 HudLayout.LOBBY_USE = box(1, 1, 1, -124, 1, -16, H.INTERACT_BUTTON + 56, H.INTERACT_BUTTON)
 HudLayout.WARDROBE = box(0, 0.5, 0, 8, 0.5, 0, 336, 326)
 HudLayout.LOBBY_SKIP = box(1, 0, 1, -8, 0, 6, 140, TAP)
+-- Quick Crew (LOBBY 2): "LOOKING FOR CREW" / "FOLLOW THE ARROW" with STOP, top left while you look for a crew (the
+-- run's LOOT box place: nothing else is there in the lobby).
+HudLayout.LOBBY_QUICK = box(0, 0, 0, 8, 0, 6, 300, TAP)
 HudLayout.SHEETS =
 	table.freeze({ results = true, garage = true, menu = true, settings = true, station = true, wardrobe = true })
 
@@ -199,7 +202,7 @@ HudLayout.SCENES = table.freeze({
 	menu = { "MENU_SHEET" },
 	settings = { "SETTINGS" },
 	garageButtons = { "GARAGE_SETTINGS" },
-	lobby = { "RETICLE", "PROMPT", "RAIL_FP", "LOBBY_USE" },
+	lobby = { "RETICLE", "PROMPT", "RAIL_FP", "LOBBY_USE", "LOBBY_QUICK" },
 	station = { "GARAGE" },
 	wardrobe = { "WARDROBE" },
 	drive = { "LOBBY_SKIP" },

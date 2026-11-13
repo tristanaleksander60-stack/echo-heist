@@ -1,0 +1,197 @@
+{
+ "asset": "VanBakery",
+ "objects": [
+  {
+   "name": "VanBakery",
+   "class": "medium",
+   "tris": 1652,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    14.9,
+    7.04,
+    7.999
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -7.45,
+     -3.74,
+     0.0612
+    ],
+    "local_max": [
+     7.45,
+     3.3,
+     8.06
+    ]
+   },
+   "swatches": [
+    "exit",
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 732,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_VanStyle"
+   ],
+   "joint": null,
+   "role": "exit",
+   "notes": "frame: floor, roof, lining, trims, glass, wheels, awning, loaf, belt line and the exit band",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "VanBakery_Paint",
+   "class": "small",
+   "tris": 192,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    14.0,
+    6.8,
+    5.85
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -7.0,
+     -3.6,
+     1.55
+    ],
+    "local_max": [
+     7.0,
+     3.2,
+     7.4
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 28,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "van paint: a mid value by MeshPart.Color (the bay's or the crew's pick in the hideout and the drive); never Getaway White",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "exit",
+   "notes": "the box panels, sliding door, over-cab box and cab as one runtime-coloured part (no atlas)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 1844,
+ "seats": [
+  {
+   "name": "VanBakery_Paint",
+   "gap": 0.0,
+   "penetration": 0.09192,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "VanBakery",
+   "gap": 0.0,
+   "penetration": 0.74616,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "1504f38b9d9ee1c002d0",
+ "fbx": {
+  "path": "assets/fbx/VanBakery.fbx",
+  "bytes": 50716,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "VanBakery",
+   "VanBakery_Paint"
+  ],
+  "geometry_extents": [
+   [
+    5.85,
+    6.8,
+    14.0
+   ],
+   [
+    7.04,
+    7.999,
+    14.9
+   ]
+  ]
+ },
+ "spec": "assets/blender/van_styles.py",
+ "notes": "Bakery van 14x6.4x7.9: a tall box over the cab, striped awning over the open side door (-Y), a loaf on the roof, the exit band; the Van's footprint, door, cargo bay and seat anchors.",
+ "turntable": "docs/art/turntables/VanBakery.png",
+ "seconds": 9.3
+}

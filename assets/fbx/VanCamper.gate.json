@@ -1,0 +1,197 @@
+{
+ "asset": "VanCamper",
+ "objects": [
+  {
+   "name": "VanCamper",
+   "class": "medium",
+   "tris": 2240,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    14.9,
+    7.08,
+    7.891
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -7.45,
+     -3.74,
+     0.0587
+    ],
+    "local_max": [
+     7.45,
+     3.34,
+     7.95
+    ]
+   },
+   "swatches": [
+    "exit",
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "marble_lo",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 1130,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_VanStyle"
+   ],
+   "joint": null,
+   "role": "exit",
+   "notes": "frame: floor, cream roof cap, lining, trims, glass, chrome, wheels, portholes, ladder, rack, board and the exit band",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "VanCamper_Paint",
+   "class": "small",
+   "tris": 172,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    14.0,
+    6.8,
+    5.15
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -7.0,
+     -3.6,
+     1.55
+    ],
+    "local_max": [
+     7.0,
+     3.2,
+     6.7
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 4,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "van paint: a mid value by MeshPart.Color (the bay's or the crew's pick in the hideout and the drive); never Getaway White",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "exit",
+   "notes": "the lower body, sliding door and the rounded nose as one runtime-coloured part (no atlas)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 2412,
+ "seats": [
+  {
+   "name": "VanCamper_Paint",
+   "gap": 0.0,
+   "penetration": 0.09192,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "VanCamper",
+   "gap": 0.0,
+   "penetration": 0.65,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "3ed8131610e27ef56cbe",
+ "fbx": {
+  "path": "assets/fbx/VanCamper.fbx",
+  "bytes": 60220,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "VanCamper",
+   "VanCamper_Paint"
+  ],
+  "geometry_extents": [
+   [
+    5.15,
+    6.8,
+    14.0
+   ],
+   [
+    7.08,
+    7.891,
+    14.9
+   ]
+  ]
+ },
+ "spec": "assets/blender/van_styles.py",
+ "notes": "Vintage camper 14x6.4x8.0: a rounded cream roof, a bus nose with a split windscreen and a cream V, round chrome lamps, whitewalls, portholes, a ladder and a rack; the Van's footprint, door, cargo bay and seat anchors.",
+ "turntable": "docs/art/turntables/VanCamper.png",
+ "seconds": 20.9
+}

@@ -934,6 +934,14 @@ Config.Data = {
 		FIRST_CLEAR_CASH = 250,
 		FIRST_CLEAR_CANDY_CANES = 5, -- only while the event runs
 	},
+	-- "Today's biggest haul" (§5.3 D1, §8.7; LOBBY 2): the daily vault's per-server board on the hideout laptop
+	-- (server Data/HaulBoardService, pure Data/HaulBoard). Untainted, non-Relaxed runs of today's vault only.
+	Board = {
+		SHOW = 10, -- rows the laptop shows (plus your own row)
+		KEEP = 100, -- entries the server keeps and publishes (your rank is exact up to here)
+		NAME_MAX = 20, -- characters of a display name on the board (Roblox display names are <= 20)
+		PUBLISH_MIN_SECONDS = 1, -- the published rows change at most this often (one write per burst)
+	},
 	Advent = {
 		YEAR = 2026,
 		FIRST_DAY = 3, -- Dec 3 (launch) .. LAST_DAY: one ornament slot per December day
@@ -1617,7 +1625,8 @@ Config.Hideout = {
 			cam = { back = 7, up = 0, fov = 50 },
 		},
 		{ anchor = "TVSpot", verb = "tv", target = { 0, 0, 0, 3.2 }, cam = { back = 9, up = 0, fov = 50 } },
-		{ anchor = "CrewSign", verb = "invite", target = { 0, 0, 0, 2.8 }, cam = { back = 6, up = 0, fov = 50 } },
+		-- the "LOOKING FOR CREW" sign: the Quick Crew sheet (LOOK FOR A CREW / OPEN MY VAN / INVITE FRIENDS)
+		{ anchor = "CrewSign", verb = "quickCrew", target = { 0, 0, 0, 2.8 }, cam = { back = 6, up = 0, fov = 50 } },
 	},
 	FOCUS_SECONDS = 0.45, -- the eye's ease into a station view (reduced motion: a cut)
 	FOCUS_LEAVE_STUDS = 4, -- a station closes when you walk this far from where you opened it
@@ -1631,7 +1640,7 @@ Config.Hideout = {
 		CAB_X = -1, -- sign of the van's local X toward the cab
 		DOOR_Z = -1, -- sign of the van's local Z toward the side door
 		-- paints you pick from at your van (mid values, never Getaway White: GOLDEN G1); a claimed van starts in its
-		-- bay's own paint (Config.Lobby.BAY_PAINTS) until the leader picks one. No van styles in the kit: paints only.
+		-- bay's own paint (Config.Lobby.BAY_PAINTS) until the leader picks one.
 		PAINTS = {
 			{ name = "TEAL", rgb = { 62, 138, 150 } },
 			{ name = "BERRY", rgb = { 168, 84, 140 } },
@@ -1640,12 +1649,23 @@ Config.Hideout = {
 			{ name = "PINE", rgb = { 70, 120, 84 } },
 			{ name = "BRICK", rgb = { 160, 74, 62 } },
 		},
+		-- Van styles (LOBBY 2; assets/blender/van_styles.py): kit body groups with the same footprint, side door, cab
+		-- and seat anchors as the Van; `paint` is the group's runtime-coloured piece. The leader cycles them at the
+		-- rear wheel (STYLE); the pick is saved per player (profile `vanStyle` = the id; never reorder ids, append).
+		-- Style 1 is the default and every free van's look.
+		STYLES = {
+			{ id = "step", name = "STEP VAN", group = "Van", paint = "Van_Paint" },
+			{ id = "bakery", name = "BAKERY VAN", group = "VanBakery", paint = "VanBakery_Paint" },
+			{ id = "camper", name = "CAMPER", group = "VanCamper", paint = "VanCamper_Paint" },
+			{ id = "security", name = "SECURITY VAN", group = "VanSecurity", paint = "VanSecurity_Paint" },
+		},
 		-- look targets on the door side (along, up, out, radius): the cab door (SOLO / GO), the side door (CREW / SIT /
-		-- READY), the rear panel (PAINT)
+		-- READY), the rear panel (PAINT) and below it the rear wheel (STYLE)
 		POINTS = {
 			cab = { 4.6, 4.4, 3.4, 1.7 },
 			door = { 0.1, 4.2, 3.4, 2.4 },
-			paint = { -5, 4.2, 3.4, 1.8 },
+			paint = { -5, 5.0, 3.4, 1.4 },
+			style = { -4.6, 1.9, 3.4, 1.2 },
 		},
 		EXIT = { 0.1, 0, 6.5 }, -- where you step out (floor level, outside the side door)
 		-- seats (along, up, out, yaw toward: "cab" | "door"); seat 1 is the driver (the leader), 2.. the cargo bench
@@ -1678,6 +1698,20 @@ Config.Hideout = {
 	},
 	-- the first hideout visit: a world hint over the nearest free van ("PICK A VAN") until you have one
 	HINT = { up = 10.5, size = { 220, 64 }, bob = 0.4 },
+	-- Quick Crew (MASTERPLAN §3.3: strangers only through this opt-in; LiveFlag quickCrew). At the crew sign a solo
+	-- player opts in ("LOOK FOR A CREW"); a crew leader opens their CREW van to it. The server matches seekers on THIS
+	-- server into open vans with free seats (Shared/Heist/QuickCrew: oldest seeker into the oldest open van), a
+	-- matched player gets a waypoint arrow to the van and SITs at its side door. Same-server only (no teleports).
+	QUICK = {
+		SIGN_REACH = 16, -- studs from the CrewSign anchor (server, from your root) for LOOK / OPEN at the sign
+		RESERVE_SECONDS = 45, -- a matched seat is held this long for the walk-in; then the seeker queues again
+		MAX_MISSES = 2, -- matches a seeker let lapse before they are opted out (away from keyboard)
+		MATCH_EVERY = 1, -- seconds between the server's matching passes (and after every change)
+		COOLDOWN = 1, -- seconds between one player's quick / open / style ops (the remote's Net limit is first)
+		-- the client's guide to a matched van: a floor arrow ahead of you toward its side door, and a billboard over it
+		ARROW = { ahead = 4, up = 0.25, size = { 2.2, 0.15, 3.2 }, bob = 0.15, hideWithin = 7 },
+		BILLBOARD = { up = 9.5, size = { 230, 60 } },
+	},
 	-- the drive's SKIP and the touch USE button reuse HudLayout boxes (LOBBY_SKIP, LOBBY_USE)
 }
 

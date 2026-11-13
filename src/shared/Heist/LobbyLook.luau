@@ -4,11 +4,12 @@
 -- turns the verb into the reticle's prompt chip and, on E / X / tap, into a station view or a Heist.Ready lobby
 -- action. Nothing here decides anything: the server re-checks every action (Shared/Heist/VanRules).
 --
--- Targets: the five stations (Config.Hideout.STATIONS: jobs, laptop, wardrobe, tv, invite) and three points on each
--- van's door side (Config.Hideout.VAN.POINTS: cab, door, paint). Van verbs:
+-- Targets: the five stations (Config.Hideout.STATIONS: jobs, laptop, wardrobe, tv, crew: the Quick Crew sheet at the
+-- "LOOKING FOR CREW" sign) and four points on each van's door side (Config.Hideout.VAN.POINTS: cab, door, paint,
+-- style). Van verbs:
 --   free van      the leader of a crew: "pick" (anywhere on it); a member: "leaderPicks" (locked)
 --   your van      leader: cab "solo" (parked) / "go" or "wait" (crew: every seated member READY?); door "crew"
---                 (parked) / "park" (crew, nobody else in it); paint "paint"
+--                 (parked) / "park" (crew, nobody else in it); paint "paint"; style (the rear wheel) "style"
 --                 member: door "sit" (not seated); seated members get "ready" / "unready" wherever they look
 --   another's van door "sit" while its side door is open (crew mode), else "taken" (locked)
 -- A van away on a heist or leaving is "busy" (locked).
@@ -46,6 +47,10 @@ function LobbyLook.vanVerb(v: VanView?, point: string, me: Me): string?
 	end
 	if v.mode == "departing" or v.mode == "away" then
 		return "busy"
+	end
+	if point == "style" then
+		-- only your own van's leader restyles it; the wheel offers nothing to anyone else
+		return if v.crewId == me.crewId and me.leader then "style" else nil
 	end
 	if v.crewId == me.crewId then
 		if me.leader then
@@ -86,7 +91,8 @@ function LobbyLook.seatedVerb(me: Me, v: VanView?): string?
 	return if me.ready then "unready" else "ready"
 end
 
--- The Heist.Ready lobby action a van verb sends (nil: none, or a locked verb).
+-- The Heist.Ready lobby action a van verb sends (nil: none, or a locked verb). paintNext: the next paint (PAINT) or
+-- the next style (STYLE).
 function LobbyLook.action(verb: string, bay: number, paintNext: number?): { [string]: any }?
 	if LobbyLook.LOCKED[verb] then
 		return nil
@@ -103,6 +109,8 @@ function LobbyLook.action(verb: string, bay: number, paintNext: number?): { [str
 		return { op = "park", bay = bay }
 	elseif verb == "paint" then
 		return { op = "paint", bay = bay, n = paintNext or 1 }
+	elseif verb == "style" then
+		return { op = "style", bay = bay, n = paintNext or 1 }
 	elseif verb == "sit" then
 		return { op = "sit", bay = bay }
 	elseif verb == "ready" then
@@ -155,6 +163,68 @@ function LobbyLook.orbit(root: { number }, facingYaw: number, t: number, reduced
 	-- the look point slides to the camera's left so you stand right of centre, clear of the sheet on the left
 	local c, s = math.cos(yaw), math.sin(yaw)
 	return eye, { root[1] + c * O.shift, root[2] + O.look, root[3] - s * O.shift }
+end
+
+-- The Quick Crew sheet (the crew sign, Config.Hideout.QUICK): the buttons you get and the info line's key.
+-- who = { leader, crewSize, seeking (QuickCrew "seek" or "matched"), vanBay (your crew's van, 0 = none), vanOpen,
+-- vanMode }; flags = { quick (LiveFlag quickCrew), invites (LiveFlag invites) }.
+--   looking for a crew        STOP
+--   leader of a van           OPEN MY VAN / CLOSE MY VAN (+ LOOK FOR A CREW while alone and closed)
+--   alone, no van             LOOK FOR A CREW
+--   in someone's crew         (nothing: "leave your crew first")
+-- then INVITE FRIENDS when invites are on. Buttons: "look" | "stop" | "open" | "shut" | "invite".
+function LobbyLook.quickButtons(who: any, flags: any): ({ string }, string)
+	local out: { string } = {}
+	local info = "info"
+	if flags.quick ~= true then
+		info = "paused"
+	elseif who.seeking then
+		table.insert(out, "stop")
+	elseif who.leader and (tonumber(who.vanBay) or 0) > 0 and (who.vanMode == "crew" or who.vanMode == "parked") then
+		table.insert(out, if who.vanOpen then "shut" else "open")
+		if who.crewSize <= 1 and not who.vanOpen then
+			table.insert(out, "look")
+		end
+		info = "leader"
+	elseif who.crewSize <= 1 then
+		table.insert(out, "look")
+	else
+		info = "needSolo"
+	end
+	if flags.invites == true then
+		table.insert(out, "invite")
+	end
+	return out, info
+end
+
+-- The Heist.Ready action a Quick Crew button sends (nil: "invite" is the Roblox prompt, not a server op).
+function LobbyLook.quickAction(button: string, vanBay: number?): { [string]: any }?
+	if button == "look" then
+		return { op = "quick" }
+	elseif button == "stop" then
+		return { op = "unquick" }
+	elseif button == "open" and vanBay and vanBay > 0 then
+		return { op = "open", bay = vanBay }
+	elseif button == "shut" and vanBay and vanBay > 0 then
+		return { op = "shut", bay = vanBay }
+	end
+	return nil
+end
+
+-- The waypoint arrow to a matched van (Config.Hideout.QUICK.ARROW): on the floor `ahead` studs from you toward the
+-- target (x, z), pointing at it. Returns the arrow's point (x, z), its yaw (degrees, Roblox CFrame.Angles about +Y:
+-- the arrow's local -Z points at the target) and whether to show it (hidden within hideWithin studs).
+function LobbyLook.arrow(from: { number }, to: { number }): (number, number, number, boolean)
+	local A = HD.QUICK.ARROW
+	local dx, dz = to[1] - from[1], to[2] - from[2]
+	local d = math.sqrt(dx * dx + dz * dz)
+	if d < 1e-6 then
+		return from[1], from[2], 0, false
+	end
+	local ux, uz = dx / d, dz / d
+	local k = math.min(A.ahead, d)
+	local yaw = math.deg(math.atan2(-ux, -uz))
+	return from[1] + ux * k, from[2] + uz * k, yaw, d > A.hideWithin
 end
 
 -- The free van nearest to (x, z) from a list of { bay, x, z, free } (the first-visit "PICK A VAN" hint).

@@ -2,14 +2,17 @@
 -- Heist/Vans: the hideout's vans in the world (PLAN_FIRST_PERSON "LB", Config.Hideout). Garage/Vans/Van<i> holds,
 -- for each bay (Garage/Anchors/VanBay<i>: the van's spot, its LookVector the side door's facing):
 --   * attributes the clients read (server-written only): Bay, Mode (Shared/Heist/VanRules.MODE), CrewId, LeaderId,
---     Paint, Seats (VanRules.encodeSeats), Waiting (seated members not READY);
---   * the look points (invisible, non-colliding, never queried): Cab, Door, Paint (EH_Kind "vanPoint");
+--     Paint, Seats (VanRules.encodeSeats), Waiting (seated members not READY), Style (Config.Hideout.VAN.STYLES
+--     index), Open (open to Quick Crew), Held (seats held for matched Quick Crew players);
+--   * the look points (invisible, non-colliding, never queried): Cab, Door, Paint, Style (EH_Kind "vanPoint");
 --   * the crew's name plate over the side door (the leader's crew colour and name, a pip per seat), a lit name card
 --     over each cargo seat (the member's crew colour and name; dim when free), the sliding side door leaf (shut
 --     unless the van is in CREW mode);
 --   * Seat parts (driver + cargo bench; never touched, the server seats players with Seat:Sit).
--- The van's paint goes on its greybox collider and on the kit's Van_Paint piece for the bay (Lobby.dress tags it
--- EH_Bay). Everything here is visual or a seat: the greybox van box stays the collider (Heist/Lobby).
+-- The van's paint goes on its greybox collider and on the kit's paint piece for the bay (Lobby.dress tags it EH_Bay
+-- and EH_VanPaint: Van_Paint, or the style's <Group>_Paint after Lobby.setVanStyle). Everything here is visual or a
+-- seat: the greybox van box stays the collider (Heist/Lobby). A style swap never moves a rig: the styles keep the
+-- Van's footprint, side door, cab and seat anchors (assets/blender/van_styles.py).
 -- The rules are VanRules; HeistService decides and calls render / seat / unseat.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -160,6 +163,9 @@ function Vans.build(onStoodUp: ((number, number) -> ())?): Folder?
 			m:SetAttribute("Paint", 0)
 			m:SetAttribute("Seats", "")
 			m:SetAttribute("Waiting", 0)
+			m:SetAttribute("Style", 1)
+			m:SetAttribute("Open", false)
+			m:SetAttribute("Held", 0)
 			for name, p in V.POINTS do
 				local pt = visual(
 					m,
@@ -284,9 +290,10 @@ function Vans.build(onStoodUp: ((number, number) -> ())?): Folder?
 	end
 	f.Parent = garage
 	folder = f
-	-- the kit dresses the garage later (Lobby.dress): the claimed vans' paints go on its Van_Paint pieces then
+	-- the kit dresses the garage later (Lobby.dress): the claimed vans' styles and paints go on its pieces then
 	garage:GetAttributeChangedSignal("Kit"):Connect(function()
 		for bay, rig in rigs do
+			Vans.style(bay, tonumber(rig.model:GetAttribute("Style")) or 1)
 			Vans.paint(bay, rig.model:GetAttribute("Paint") :: number?)
 		end
 	end)
@@ -309,7 +316,18 @@ function Vans.paintColour(bay: number, n: number?): Color3
 	return rgb(Config.Lobby.BAY_PAINTS[(bay - 1) % #Config.Lobby.BAY_PAINTS + 1])
 end
 
--- Paints the bay's van: its greybox collider, the kit's Van_Paint piece and the door leaf.
+-- Puts a style's body on the bay's kit van (Lobby.setVanStyle; a no-op before the kit dressed the garage or when the
+-- kit lacks the group). True when the bay wears it.
+function Vans.style(bay: number, n: number): boolean
+	local ok, done = pcall(Lobby.setVanStyle, bay, n)
+	if not ok then
+		warn("[Vans] style swap failed: " .. tostring(done))
+		return false
+	end
+	return done == true
+end
+
+-- Paints the bay's van: its greybox collider, the kit's paint piece (EH_VanPaint) and the door leaf.
 function Vans.paint(bay: number, n: number?)
 	local garage = Lobby.model()
 	if not garage then
@@ -324,7 +342,7 @@ function Vans.paint(bay: number, n: number?)
 	local kit = garage:FindFirstChild("Kit")
 	if kit then
 		for _, d in kit:GetChildren() do
-			if d:IsA("BasePart") and d.Name == "Van_Paint" and d:GetAttribute("EH_Bay") == bay then
+			if d:IsA("BasePart") and d:GetAttribute("EH_VanPaint") == true and d:GetAttribute("EH_Bay") == bay then
 				d.Color = colour
 			end
 		end
@@ -355,20 +373,26 @@ local function setLeaf(rig: Rig, open: boolean)
 	):Play()
 end
 
--- Writes a bay's van state: attributes, plate, seat cards, door, paint. names: userId -> display name.
-function Vans.render(bay: number, van: VanRules.Van?, names: { [number]: string })
+-- Writes a bay's van state: attributes, plate, seat cards, door, style, paint. names: userId -> display name;
+-- held: seats held for matched Quick Crew players (Shared/Heist/QuickCrew).
+function Vans.render(bay: number, van: VanRules.Van?, names: { [number]: string }, held: number?)
 	local rig = rigs[bay]
 	if not rig then
 		return
 	end
 	local m = rig.model
 	local mode = if van then van.mode else VanRules.MODE.Free
+	local style = if van and VanRules.validStyle(van.style) then van.style else 1
 	m:SetAttribute("Mode", mode)
 	m:SetAttribute("CrewId", if van then van.crewId else 0)
 	m:SetAttribute("LeaderId", if van then van.leaderId else 0)
 	m:SetAttribute("Paint", if van then van.paint else 0)
 	m:SetAttribute("Seats", VanRules.encodeSeats(van))
 	m:SetAttribute("Waiting", if van then VanRules.waiting(van) else 0)
+	m:SetAttribute("Style", style)
+	m:SetAttribute("Open", van ~= nil and van.open == true)
+	m:SetAttribute("Held", if van then held or 0 else 0)
+	Vans.style(bay, style)
 	Vans.paint(bay, if van then van.paint else 0)
 	-- the plate: the leader's crew colour (seat 1) and name
 	local leaderName = van and names[van.leaderId]
@@ -383,7 +407,8 @@ function Vans.render(bay: number, van: VanRules.Van?, names: { [number]: string 
 	else
 		rig.plateName.Text = Strings.vanPlate(leaderName or "?")
 		rig.plateName.TextColor3 = Palette.exit
-		rig.plateStripe.BackgroundColor3 = Palette.hueFor(1)
+		-- a van open to Quick Crew wears a gold stripe (its free seats card says FREE SEAT as before)
+		rig.plateStripe.BackgroundColor3 = if van.open then Palette.gold else Palette.hueFor(1)
 	end
 	local bySeat: { [number]: VanRules.Seat } = {}
 	for _, s in (if van then van.seats else {}) do

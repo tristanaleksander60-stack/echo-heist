@@ -85,6 +85,9 @@ export type Heist = {
 	},
 	-- The Rookie's outfit (additive, no migration; sanitize repairs it with Heist/Outfit): slot -> Config.Rookie.OUTFIT id.
 	outfit: { [string]: string },
+	-- The hideout van style (LOBBY 2; additive, no migration; sanitize repairs it): a Config.Hideout.VAN.STYLES id.
+	-- The crew leader's pick at their van, saved per player; the van they claim next wears it.
+	vanStyle: string,
 	ftueStep: number,
 	firstHeistDone: boolean,
 	stats: { heists: number, clears: number },
@@ -136,6 +139,19 @@ function Schema.validSetting(key: any, value: any): boolean
 end
 
 -- The player attribute DataService publishes a setting as ("classicCamera" -> "Setting_ClassicCamera").
+-- Is `id` a van style id? (Config.Hideout.VAN.STYLES; the server's style op and sanitize use the same rule.)
+function Schema.validVanStyle(id: any): boolean
+	if type(id) ~= "string" then
+		return false
+	end
+	for _, s in Config.Hideout.VAN.STYLES do
+		if s.id == id then
+			return true
+		end
+	end
+	return false
+end
+
 function Schema.settingAttribute(key: string): string
 	return "Setting_" .. string.upper(string.sub(key, 1, 1)) .. string.sub(key, 2)
 end
@@ -162,6 +178,7 @@ function Schema.defaultHeist(): Heist
 		},
 		settings = Schema.defaultSettings(),
 		outfit = Outfit.default(),
+		vanStyle = Config.Hideout.VAN.STYLES[1].id,
 		ftueStep = 0,
 		firstHeistDone = false,
 		stats = { heists = 0, clears = 0 },
@@ -354,6 +371,10 @@ function Schema.sanitize(heist: Heist): { string }
 		end
 	end
 	-- Outfit: known slots only, each a known and unlocked id of its slot (else the default).
+	if not Schema.validVanStyle(h.vanStyle) then
+		h.vanStyle = defaults.vanStyle
+		table.insert(repairs, "vanStyle")
+	end
 	local _, outfitFixed = Outfit.repair(h.outfit, h)
 	for _, slot in outfitFixed do
 		table.insert(repairs, "outfit." .. slot)

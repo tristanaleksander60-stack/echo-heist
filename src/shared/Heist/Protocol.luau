@@ -12,7 +12,8 @@
 --                                      L1 and party levels: every party clone stays for "8 OF ME")
 --   Heist.Ready(arg?)                  "▶ RUN n" between runs (arg = reduced motion, a boolean), or in the
 --                                      hideout a lobby action table { op, bay?, n? } (Shared/Heist/VanRules:
---                                      claim, paint, crew, park, solo, go, sit, ready, unready, stand; the
+--                                      claim, paint, crew, park, solo, go, sit, ready, unready, stand, and (LOBBY 2)
+--                                      style (bay, n), quick, unquick, open (bay), shut (bay); the
 --                                      validator is VanRules.validReadyArg, the server re-checks every rule)
 --   Heist.FastForward(on)              hold-to-skip pill
 --   Heist.SelectLevel(index, relaxed?) crew leader picks a tape (garage or results card);

@@ -1245,6 +1245,45 @@
    "sha256": "2f1e89def678e066a0964242007a91f14ed499bc2f1d1fb4c9b332e2bf1dea45",
    "uploaded": "2026-11-12T18:11:40Z"
   },
+  "VanBakery": {
+   "assetId": 120383138607591,
+   "file": "assets/fbx/VanBakery.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "VanBakery",
+    "VanBakery_Paint"
+   ],
+   "revisionId": "2",
+   "sha256": "0ce03914ec055a77aef7f2648ac3dc55e82e69c5bede88ba9883bc8e70b4b833",
+   "uploaded": "2026-11-13T15:19:06Z"
+  },
+  "VanCamper": {
+   "assetId": 73993175838052,
+   "file": "assets/fbx/VanCamper.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "VanCamper",
+    "VanCamper_Paint"
+   ],
+   "revisionId": "1",
+   "sha256": "c4ecb58c484af554c8dfc363e3417b57422f575129727d78e5cb33d77ddef81e",
+   "uploaded": "2026-11-13T15:04:33Z"
+  },
+  "VanSecurity": {
+   "assetId": 104916947047329,
+   "file": "assets/fbx/VanSecurity.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "VanSecurity",
+    "VanSecurity_Paint"
+   ],
+   "revisionId": "2",
+   "sha256": "bc26871f6c5557a2e1166a103c493b5a0f70093a114d604be7b1426f0a9448ca",
+   "uploaded": "2026-11-13T15:20:01Z"
+  },
   "VaultDoor": {
    "assetId": 130751008696945,
    "file": "assets/fbx/VaultDoor.fbx",

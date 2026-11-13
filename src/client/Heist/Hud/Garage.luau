@@ -7,9 +7,15 @@
 -- catch-up, the crew and JOIN for friends in the server (§3.3, §5.3, §7.4), and SETTINGS (U7).
 -- Roblox's player list comes back here (it is hidden during heists, PLAN S8).
 -- The hideout lobby (Config.Hideout, garage sync `lobby`): the sheet never opens by itself; a station opens it
--- (Heist/Hideout: openStation) as the job board ("board": the jobs, the crew, SETTINGS) or the laptop ("laptop": the
--- daily vault and the advent catch-up list), with a BACK button in the right column. A job pick there pins the job
--- for the crew's van (the server's Heist.SelectLevel), it no longer starts the heist from the garage.
+-- (Heist/Hideout: openStation) as the job board ("board": the jobs, the crew, SETTINGS), the laptop ("laptop": today's
+-- biggest haul on this server, the daily vault, the advent catch-up list behind CATCH-UP) or the Quick Crew sheet
+-- ("crew", the "LOOKING FOR CREW" sign: LOOK FOR A CREW / STOP, OPEN MY VAN / CLOSE, INVITE FRIENDS; Shared/Heist/
+-- LobbyLook.quickButtons), with a BACK button in the right column. A job pick there pins the job for the crew's van
+-- (the server's Heist.SelectLevel), it no longer starts the heist from the garage.
+-- The laptop's board (LOBBY 2, MASTERPLAN §5.3 D1): the server's published rows (ReplicatedStorage.EH_HaulBoard,
+-- Shared/Data/HaulBoard.decode): the top Config.Data.Board.SHOW in two columns, each a rank, a Rookie portrait
+-- (Common.portrait), the display name and the haul, and your own row on top. Numbers and display names only (no free
+-- text); hidden with the LiveFlag `boards`; an empty or missing board says so and never waits on anything.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -18,6 +24,8 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local HeistShared = Shared:WaitForChild("Heist")
 local CrewBoard = require(HeistShared:WaitForChild("CrewBoard"))
+local LobbyLook = require(HeistShared:WaitForChild("LobbyLook"))
+local HaulBoard = require(Shared:WaitForChild("Data"):WaitForChild("HaulBoard"))
 local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
@@ -498,7 +506,188 @@ function Garage.build(ctx: any): any
 		return back
 	end
 
-	-- The laptop: the advent catch-up list in the board's place (the daily card below plays today's).
+	-- A note on the cork (the board's rows, the Quick Crew info): ink text, no stroke.
+	local function corkText(text: string, x: number, y: number, w: number, h: number, size: number?): TextLabel
+		local l = Ui.label(tapes, {
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(w, h),
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextWrapped = true,
+			TextSize = size or 16,
+			TextColor3 = Palette.ink,
+			stroke = false,
+			Text = text,
+		})
+		l.Active = false
+		return l
+	end
+
+	-- One board row: a paper strip with the rank, a Rookie portrait, the name and the haul.
+	local function boardRow(e: any, rank: number, x: number, y: number, w: number, h: number, mine: boolean)
+		local row = Ui.frame(tapes, {
+			Name = "Row" .. rank,
+			Position = UDim2.fromOffset(x, y),
+			Size = UDim2.fromOffset(w, h),
+			BackgroundColor3 = if mine then Palette.goldHi elseif rank == 1 then Palette.marbleHi else Palette.marble,
+			BackgroundTransparency = 0,
+			Active = false,
+		})
+		Ui.corner(row, 4)
+		local rankText = Ui.label(row, {
+			Position = UDim2.fromOffset(4, 0),
+			Size = UDim2.fromOffset(30, h),
+			TextSize = 14,
+			TextColor3 = Palette.ink,
+			stroke = false,
+			Text = Strings.boardRank(rank),
+		})
+		rankText.Active = false
+		local face = Ui.frame(row, {
+			Position = UDim2.fromOffset(34, 1),
+			Size = UDim2.fromOffset(h - 2, h - 2),
+			BackgroundColor3 = Palette.hueFor((rank - 1) % 4 + 1),
+			BackgroundTransparency = 0,
+			Active = false,
+		})
+		Ui.corner(face, 4)
+		local vp = Common.portrait(face, e.userId, Palette.hueFor((rank - 1) % 4 + 1))
+		vp.Size = UDim2.fromScale(1, 1)
+		local haul = Ui.label(row, {
+			AnchorPoint = Vector2.new(1, 0),
+			Position = UDim2.new(1, -6, 0, 0),
+			Size = UDim2.fromOffset(64, h),
+			TextXAlignment = Enum.TextXAlignment.Right,
+			TextSize = 14,
+			TextColor3 = Palette.ink,
+			stroke = false,
+			Text = CrewBoard.money(e.haul),
+		})
+		haul.Active = false
+		local name = Ui.label(row, {
+			Position = UDim2.fromOffset(34 + h + 2, 0),
+			Size = UDim2.new(1, -(34 + h + 2 + 72), 0, h),
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextTruncate = Enum.TextTruncate.AtEnd,
+			TextSize = 14,
+			TextColor3 = Palette.ink,
+			stroke = false,
+			Text = if mine then Strings.BOARD_YOU else e.name,
+		})
+		name.Active = false
+	end
+
+	-- The laptop's board: today's biggest haul on this server (top SHOW in two columns) and your row on top.
+	local function renderBoard()
+		setCanvas(0)
+		local flags = ReplicatedStorage:FindFirstChild("LiveFlags")
+		if flags and flags:GetAttribute("boards") == false then
+			corkText(Strings.BOARD_OFF, 12, 12, 430, 40, 18)
+			return
+		end
+		local f = ReplicatedStorage:FindFirstChild("EH_HaulBoard")
+		local g = state.garage
+		local day = g and g.daily and tonumber(g.daily.day)
+		local rows = {}
+		if f and (day == nil or f:GetAttribute("Day") == day) then
+			rows = HaulBoard.decode(f:GetAttribute("Rows"))
+		end
+		local W = 462 - 16
+		local rh = 22
+		-- your row first
+		local myRank: number? = nil
+		for i, e in rows do
+			if e.userId == localPlayer.UserId then
+				myRank = i
+				boardRow(e, i, 8, 6, W, rh, true)
+				break
+			end
+		end
+		if not myRank then
+			corkText(if #rows == 0 then Strings.BOARD_EMPTY else Strings.BOARD_NOT_ON, 10, 6, W, rh, 15)
+		end
+		local col = (W - 8) / 2
+		for i = 1, math.min(Config.Data.Board.SHOW, #rows) do
+			local c = math.floor((i - 1) / 5)
+			local r = (i - 1) % 5
+			boardRow(rows[i], i, 8 + c * (col + 8), 6 + rh + 6 + r * (rh + 2), col, rh, i == myRank)
+		end
+	end
+
+	-- The Quick Crew sheet (the crew sign): your buttons (LobbyLook.quickButtons), an info line and the status.
+	local function renderQuick(): TextButton?
+		setCanvas(0)
+		local g = state.garage or {}
+		local bay = tonumber(g.van) or 0
+		local gm = workspace:FindFirstChild("Garage")
+		local vans = gm and gm:FindFirstChild("Vans")
+		local van = if bay > 0 and vans then vans:FindFirstChild("Van" .. bay) else nil
+		local flags = ReplicatedStorage:FindFirstChild("LiveFlags")
+		local q = tostring(localPlayer:GetAttribute("QuickCrew") or "")
+		local buttons, info = LobbyLook.quickButtons({
+			leader = g.leader == localPlayer.UserId,
+			crewSize = #(g.members or {}),
+			seeking = q == "seek" or q == "matched",
+			vanBay = bay,
+			vanOpen = van ~= nil and van:GetAttribute("Open") == true,
+			vanMode = if van then van:GetAttribute("Mode") else nil,
+		}, {
+			quick = not (flags and flags:GetAttribute("quickCrew") == false),
+			invites = not (flags and flags:GetAttribute("invites") == false),
+		})
+		local infoText = if info == "paused"
+			then Strings.QUICK_TOAST.paused
+			elseif info == "leader" then Strings.QUICK_INFO_LEADER
+			elseif info == "needSolo" then Strings.QUICK_NEED_SOLO
+			elseif q == "matched" then Strings.QUICK_TOAST.matched
+			else Strings.QUICK_INFO
+		corkText(infoText, 12, 6, 438, 44, 16)
+		local waiting = tonumber(vans and vans:GetAttribute("QuickWaiting")) or 0
+		local open = tonumber(vans and vans:GetAttribute("QuickOpen")) or 0
+		corkText(Strings.quickStatus(waiting, open), 12, 128, 438, 22, 14)
+		local first: TextButton? = nil
+		local LABEL: { [string]: string } = {
+			look = Strings.QUICK_LOOK,
+			stop = Strings.QUICK_STOP,
+			open = Strings.QUICK_OPEN,
+			shut = Strings.QUICK_SHUT,
+			invite = Strings.QUICK_INVITE,
+		}
+		local w = 140
+		for i, b in buttons do
+			local main = b ~= "invite"
+			local btn = Ui.button(tapes, {
+				Name = "Quick_" .. b,
+				Position = UDim2.fromOffset(12 + (i - 1) * (w + 8), 58),
+				Size = UDim2.fromOffset(w, TAP + 8),
+				BackgroundColor3 = if main then Palette.gold else Palette.marbleHi,
+				TextColor3 = Palette.ink,
+				TextSize = 16,
+				TextWrapped = true,
+				Text = LABEL[b] or b,
+			}, function()
+				if b == "invite" then
+					if hud.invite then
+						hud.invite()
+					end
+					return
+				end
+				local action = LobbyLook.quickAction(b, bay)
+				if action and actions.lobbyAction then
+					actions.lobbyAction(action)
+				end
+				-- the server answers with attributes and a toast: redraw when they land
+				task.delay(0.5, function()
+					if station == "crew" then
+						hud.showGarage()
+					end
+				end)
+			end, if main then "UIConfirm" else "UIToggle")
+			first = first or btn
+		end
+		return first
+	end
+
+	-- The laptop's advent catch-up list (behind CATCH-UP; the daily card below plays today's vault).
 	local function renderLaptop(leader: boolean): TextButton?
 		local g = state.garage
 		local d = g and g.daily or {}
@@ -571,7 +760,7 @@ function Garage.build(ctx: any): any
 		end
 		dailyInfo.Text = table.concat(info, Strings.SEP)
 		local catchUps = #(d.catchUp or {})
-		catchBtn.Visible = catchUps > 0 and station ~= "laptop"
+		catchBtn.Visible = catchUps > 0
 		catchBtn.Text = if catchUpMode then Strings.BACK else Strings.catchUpCount(catchUps)
 		if d.enabled == false then
 			playDailyBtn.Text = Strings.CLOSED
@@ -671,8 +860,17 @@ function Garage.build(ctx: any): any
 		end
 		local first: TextButton?
 		if station == "laptop" then
-			garageTitle.Text = Strings.LAPTOP
-			first = renderLaptop(leader)
+			-- the board by default; CATCH-UP (the daily card) swaps in the advent catch-up list
+			garageTitle.Text = if catchUpMode then Strings.LAPTOP else Strings.BOARD_TITLE
+			if catchUpMode then
+				first = renderLaptop(leader)
+			else
+				renderBoard()
+			end
+		elseif station == "crew" then
+			catchUpMode = false
+			garageTitle.Text = Strings.QUICK_CREW
+			first = renderQuick()
 		else
 			if station == "board" then
 				catchUpMode = false
@@ -681,7 +879,7 @@ function Garage.build(ctx: any): any
 			first = if catchUpMode then renderCatchUp(leader) else renderTapes(leader)
 		end
 		renderDaily()
-		if station == "board" then
+		if station == "board" or station == "crew" then
 			daily.Visible = false -- the daily vault lives on the laptop
 		end
 		backBtn.Visible = station ~= nil
@@ -707,9 +905,28 @@ function Garage.build(ctx: any): any
 	function garageUi.openStation(mode: string, back: () -> ())
 		station = mode
 		onBack = back
+		catchUpMode = false -- the laptop opens on its board
 		garageOpen = false -- a fresh open (its sleigh bells)
 		hud.showGarage()
 	end
+
+	-- Live redraws while a station shows server state: the board's rows (laptop) and your Quick Crew state (sign).
+	local function redrawIf(mode: string)
+		if station == mode and garageOpen and not (mode == "laptop" and catchUpMode) then
+			hud.showGarage()
+		end
+	end
+	localPlayer:GetAttributeChangedSignal("QuickCrew"):Connect(function()
+		redrawIf("crew")
+	end)
+	task.spawn(function()
+		local f = ReplicatedStorage:WaitForChild("EH_HaulBoard", 60)
+		if f then
+			f:GetAttributeChangedSignal("Rows"):Connect(function()
+				redrawIf("laptop")
+			end)
+		end
+	end)
 
 	function garageUi.closeStation()
 		station = nil

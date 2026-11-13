@@ -1,0 +1,195 @@
+{
+ "asset": "VanSecurity",
+ "objects": [
+  {
+   "name": "VanSecurity",
+   "class": "medium",
+   "tris": 2204,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "over target - justify or simplify",
+   "dims": [
+    14.9,
+    7.06,
+    7.786
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -7.45,
+     -3.74,
+     0.0636
+    ],
+    "local_max": [
+     7.45,
+     3.32,
+     7.85
+    ]
+   },
+   "swatches": [
+    "exit",
+    "ink",
+    "ink_hi",
+    "marble_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 910,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_VanStyle"
+   ],
+   "joint": null,
+   "role": "exit",
+   "notes": "frame: floor, roof, lining, trims, glass, bars, armour, rivets, skirt, bull bar, wheels, vault wheel, light bar and the exit band",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "VanSecurity_Paint",
+   "class": "small",
+   "tris": 168,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    14.0,
+    6.8,
+    5.3
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -7.0,
+     -3.6,
+     1.55
+    ],
+    "local_max": [
+     7.0,
+     3.2,
+     6.85
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 11,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "van paint: a mid value by MeshPart.Color (the bay's or the crew's pick in the hideout and the drive); never Getaway White",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "exit",
+   "notes": "the body panels, sliding door and the long cab as one runtime-coloured part (no atlas)",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 2372,
+ "seats": [
+  {
+   "name": "VanSecurity_Paint",
+   "gap": 0.0,
+   "penetration": 0.07778,
+   "gap_frac": 0.0,
+   "seated": true
+  },
+  {
+   "name": "VanSecurity",
+   "gap": 0.0,
+   "penetration": 0.8,
+   "gap_frac": 0.0,
+   "seated": true
+  }
+ ],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "5d5c539588e96346a6af",
+ "fbx": {
+  "path": "assets/fbx/VanSecurity.fbx",
+  "bytes": 58828,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "VanSecurity",
+   "VanSecurity_Paint"
+  ],
+  "geometry_extents": [
+   [
+    5.3,
+    6.8,
+    14.0
+   ],
+   [
+    7.06,
+    7.786,
+    14.9
+   ]
+  ]
+ },
+ "spec": "assets/blender/van_styles.py",
+ "notes": "Armoured 'security' van 14x6.4x7.5: a long low bonnet and raked screen, barred windows, a riveted armour band, a dark skirt, a bull bar, a vault-wheel on the rear doors and a roof light bar; the Van's footprint, door, cargo bay and seat anchors.",
+ "turntable": "docs/art/turntables/VanSecurity.png",
+ "seconds": 9.9
+}

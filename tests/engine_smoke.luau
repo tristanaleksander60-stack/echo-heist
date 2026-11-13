@@ -2133,5 +2133,306 @@ do
 	check(okLobby, "hideout section ran" .. (if okLobby then "" else ": " .. tostring(lobbyErr)))
 end
 
+-- 13. LOBBY 2: Quick Crew, the laptop's board, van styles. Quick Crew with fake members on the real anchors (Luau
+-- Execution has no players): a leader opens VanBay6 from the crew sign, three seekers are matched into it oldest
+-- first and walk in (a held seat joins the crew), a fourth waits (the seat cap), a van that is not open never takes a
+-- stranger, closing gives the held seats back; Heist/Vans writes Open / Held. The board (Data/HaulBoardService):
+-- an untainted run of today's vault boards and publishes (ReplicatedStorage.EH_HaulBoard), a tainted, a Relaxed and
+-- a catch-up run never do. Van styles: each style's kit body swapped onto a bay (Lobby.setVanStyle through
+-- Vans.style) on the same pivot: every seat anchor and van point unchanged and inside / beside the new body, the
+-- style's paint piece takes the van's paint; a precise copy of each style's body has its side door open on local
+-- Z = DOOR_Z and its cab low on local X = CAB_X.
+do
+	local okL2, l2Err = pcall(function()
+		local AssetService = game:GetService("AssetService")
+		local heistDir = server:WaitForChild("Heist")
+		local sharedDir = ReplicatedStorage:WaitForChild("Shared")
+		local Config = require(sharedDir:WaitForChild("Config")) :: any
+		local HD = Config.Hideout
+		local Lobby = require(heistDir:WaitForChild("Lobby"))
+		local Vans = require(heistDir:WaitForChild("Vans"))
+		local KitService = require(server:WaitForChild("Kit"):WaitForChild("KitService"))
+		local VanRules = require(sharedDir:WaitForChild("Heist"):WaitForChild("VanRules"))
+		local QuickCrew = require(sharedDir:WaitForChild("Heist"):WaitForChild("QuickCrew"))
+		local HaulBoard = require(sharedDir:WaitForChild("Data"):WaitForChild("HaulBoard"))
+		local Calendar = require(sharedDir:WaitForChild("Data"):WaitForChild("Calendar"))
+		local HaulBoardService = require(server:WaitForChild("Data"):WaitForChild("HaulBoardService"))
+		local garage = Lobby.model() or Lobby.build(nil)
+		local folder = Vans.build(nil)
+		if not (garage and folder) then
+			check(false, "lobby 2: no garage")
+			return
+		end
+		local cap = math.min(Config.Sim.MAX_CREW, #HD.VAN.SEATS)
+
+		---------------------------------------------------------------- Quick Crew with fake members
+		local sign = Lobby.anchor("CrewSign")
+		check(sign ~= nil, "quick crew: the crew sign's anchor")
+		-- a prompt shown at the sign (REACH from the eye, the station open until FOCUS_LEAVE_STUDS) is an op the
+		-- server takes (SIGN_REACH from the root)
+		check(
+			HD.REACH + HD.FOCUS_LEAVE_STUDS + 2 <= HD.QUICK.SIGN_REACH,
+			"quick crew: SIGN_REACH covers the sign's prompt and station"
+		)
+		local st = VanRules.new()
+		local q = QuickCrew.new()
+		local H = -601
+		local host: VanRules.Crew = { id = 9601, leaderId = H, members = { H } }
+		local doorD = 3 -- standing at the side door
+		check(VanRules.claim(st, 6, host, H, doorD), "quick crew: the host claims VanBay6")
+		local okOpen = VanRules.setOpen(st, 6, host, H, true, 1, 0)
+		local van6 = VanRules.van(st, 6) :: VanRules.Van
+		check(okOpen and van6.open and van6.mode == VanRules.MODE.Crew, "quick crew: opened from the sign (CREW mode)")
+		-- a second, closed van: strangers never sit there
+		local K = -602
+		local closed: VanRules.Crew = { id = 9602, leaderId = K, members = { K } }
+		VanRules.claim(st, 8, closed, K, doorD)
+		VanRules.setMode(st, 8, closed, K, VanRules.MODE.Crew, doorD)
+		local seekers = { -611, -612, -613, -614 }
+		for i, uid in seekers do
+			QuickCrew.optIn(q, uid, i)
+		end
+		local function open(): { QuickCrew.OpenVan }
+			local out = {}
+			for bay, v in st.vans do
+				if v.open and v.mode == VanRules.MODE.Crew then
+					local crew = if bay == 6 then host else closed
+					table.insert(
+						out,
+						{ bay = bay, crewSize = #crew.members, openedAt = v.openedAt, leaderId = v.leaderId }
+					)
+				end
+			end
+			return out
+		end
+		local res = QuickCrew.pass(q, open(), 10)
+		check(
+			#res.matched == cap - 1
+				and QuickCrew.holdOf(q, -611) == 6
+				and QuickCrew.holdOf(q, -614) == nil
+				and QuickCrew.heldIn(q, 8) == 0,
+			string.format("quick crew: %d matched into the open van oldest first, the 4th waits", #res.matched)
+		)
+		Vans.render(6, van6, { [H] = "FakeHost" }, QuickCrew.heldIn(q, 6))
+		local rig6 = folder:WaitForChild("Van6") :: Model
+		check(
+			rig6:GetAttribute("Open") == true and rig6:GetAttribute("Held") == cap - 1,
+			"quick crew: Heist/Vans writes Open and Held"
+		)
+		-- the walk-in: each held seat joins the crew; the cap holds
+		local joined = 0
+		for _, uid in seekers do
+			local held = QuickCrew.heldIn(q, 6, uid)
+			local okSit, code = VanRules.canSit(
+				st,
+				6,
+				{ userId = uid, crewId = 0, friend = false, quick = QuickCrew.holdOf(q, uid) == 6 },
+				#host.members + held,
+				doorD
+			)
+			if okSit and code == "Join" then
+				QuickCrew.drop(q, uid)
+				table.insert(host.members, uid)
+				VanRules.syncSeats(van6, host)
+				joined += 1
+			end
+		end
+		check(
+			joined == cap - 1 and #host.members == cap and #host.members <= Config.Sim.MAX_CREW,
+			string.format("quick crew: %d walked in, crew of %d (cap %d)", joined, #host.members, cap)
+		)
+		local okStranger, codeStranger =
+			VanRules.canSit(st, 8, { userId = -614, crewId = 0, friend = false, quick = true }, 1, doorD)
+		check(not okStranger and codeStranger == "NotFriend", "quick crew: a van that is not open takes no stranger")
+		local res2 = QuickCrew.pass(q, open(), 11)
+		check(#res2.matched == 0 and QuickCrew.isSeeking(q, -614), "quick crew: a full van takes nobody; -614 waits")
+		-- the host closes: held seats go back (here: a second open van, then closed)
+		local okOpen8 = VanRules.setOpen(st, 8, closed, K, true, 12, 0)
+		local res3 = QuickCrew.pass(q, open(), 13)
+		VanRules.setOpen(st, 8, closed, K, false, 14, nil)
+		local back = QuickCrew.release(q, 8)
+		check(
+			okOpen8 and #res3.matched == 1 and #back == 1 and QuickCrew.isSeeking(q, -614),
+			"quick crew: closing a van gives its held seat back"
+		)
+		check(
+			VanRules.validReadyArg({ op = "quick" })
+				and VanRules.validReadyArg({ op = "open", bay = 6 })
+				and VanRules.validReadyArg({ op = "style", bay = 6, n = 2 })
+				and not VanRules.validReadyArg({ op = "quick", bay = 6 })
+				and not VanRules.validReadyArg({ op = "style", bay = 6 }),
+			"quick crew: Heist.Ready validates the new ops"
+		)
+		for bay = 1, HD.BAYS do
+			Vans.render(bay, nil, {})
+		end
+
+		---------------------------------------------------------------- the board: untainted vs tainted
+		HaulBoardService.resetForTest()
+		local today = Calendar.dayIndex(os.time(), Config.Data.Daily.RESET_OFFSET_HOURS)
+		local function result(haul: number, tainted: boolean, relaxed: boolean): any
+			return { cleared = true, haul = haul, clones = 3, timeMs = 25000, tainted = tainted, relaxed = relaxed }
+		end
+		local okA = HaulBoardService.submit(-701, "FakeAda", today, result(400, false, false))
+		local okT = HaulBoardService.submit(-702, "FakeTaint", today, result(9000, true, false))
+		local okR = HaulBoardService.submit(-703, "FakeRelax", today, result(8000, false, true))
+		local okC = HaulBoardService.submit(-704, "FakeCatch", today - 1, result(7000, false, false))
+		local okB = HaulBoardService.submit(-705, "FakeBo", today, result(600, false, false))
+		check(
+			okA and okB and not okT and not okR and not okC,
+			"board: untainted runs of today board; tainted, Relaxed and catch-up runs do not"
+		)
+		local rank = HaulBoardService.rankOf(-701)
+		check(rank == 2 and HaulBoardService.rankOf(-702) == nil, "board: ranks (the tainted run is off the board)")
+		task.wait(Config.Data.Board.PUBLISH_MIN_SECONDS + 0.3)
+		local bf = ReplicatedStorage:FindFirstChild(HaulBoardService.FOLDER)
+		local rows = HaulBoard.decode(bf and bf:GetAttribute("Rows"))
+		check(
+			bf ~= nil
+				and bf:GetAttribute("Day") == today
+				and #rows == 2
+				and rows[1].userId == -705
+				and rows[1].haul == 600
+				and rows[2].name == "FakeAda",
+			string.format("board: published and read back (%d rows)", #rows)
+		)
+		HaulBoardService.resetForTest()
+
+		---------------------------------------------------------------- van styles on the real kit
+		if not Lobby.isDressed() then
+			table.insert(results, "      van styles: the garage is not dressed (no kit): swap checks skipped")
+			return
+		end
+		local bay = 4
+		local rig = folder:WaitForChild("Van" .. bay) :: Model
+		local before: { [string]: CFrame } = {}
+		for _, d in rig:GetChildren() do
+			if d:IsA("BasePart") then
+				before[d.Name] = d.CFrame
+			end
+		end
+		local anchor = Vans.anchor(bay) :: CFrame
+		local kit = garage:WaitForChild("Kit", 5) :: Model
+		local doorPart = rig:WaitForChild("Door", 5) :: BasePart
+		for n, style in HD.VAN.STYLES do
+			local okSwap = Vans.style(bay, n)
+			local pieces, paintPiece = 0, nil
+			local lo = Vector3.new(math.huge, math.huge, math.huge)
+			local hi = -lo
+			for _, d in kit:GetChildren() do
+				if d:IsA("BasePart") and d:GetAttribute("EH_Bay") == bay then
+					if d:GetAttribute("EH_VanStyle") == n then
+						pieces += 1
+					end
+					if d:GetAttribute("EH_VanPaint") == true then
+						paintPiece = d
+					end
+					-- the piece's box in the anchor's frame (the van's yaw is a multiple of 90)
+					local c = anchor:PointToObjectSpace(d.Position)
+					local s = anchor:VectorToObjectSpace(d.CFrame:VectorToWorldSpace(d.Size))
+					local half = Vector3.new(math.abs(s.X), math.abs(s.Y), math.abs(s.Z)) / 2
+					lo = lo:Min(c - half)
+					hi = hi:Max(c + half)
+				end
+			end
+			local moved = 0
+			for _, d in rig:GetChildren() do
+				if d:IsA("BasePart") and before[d.Name] and d.CFrame ~= before[d.Name] and d.Name ~= "DoorLeaf" then
+					moved += 1
+				end
+			end
+			local seatsIn = 0
+			for k = 1, #HD.VAN.SEATS do
+				local seat = rig:FindFirstChild("Seat" .. k)
+				local p = if seat and seat:IsA("BasePart") then anchor:PointToObjectSpace(seat.Position) else nil
+				if p and p.X > lo.X and p.X < hi.X and p.Z > lo.Z and p.Z < hi.Z and p.Y > lo.Y and p.Y < hi.Y then
+					seatsIn += 1
+				end
+			end
+			local doorAt = anchor:PointToObjectSpace(doorPart.Position)
+			Vans.paint(bay, 2)
+			local painted = paintPiece ~= nil and (paintPiece :: BasePart).Color == Vans.paintColour(bay, 2)
+			check(
+				okSwap
+					and pieces >= 2
+					and paintPiece ~= nil
+					and (paintPiece :: BasePart).Name == style.paint
+					and painted
+					and moved == 0
+					and seatsIn == #HD.VAN.SEATS
+					and doorAt.Z * HD.VAN.DOOR_Z > 0,
+				string.format(
+					"van styles: %s on VanBay%d (%d pieces, paint %s, rigs moved %d, seats inside %d / %d)",
+					style.id,
+					bay,
+					pieces,
+					tostring(paintPiece and (paintPiece :: BasePart).Name),
+					moved,
+					seatsIn,
+					#HD.VAN.SEATS
+				)
+			)
+			-- a precise copy of the style's body: the open side door on local Z = DOOR_Z, the cab low on X = CAB_X
+			if n > 1 then
+				local src = KitService.clone(style.group, {})
+				local okM, body = pcall(function()
+					return AssetService:CreateMeshPartAsync(
+						(src :: MeshPart).MeshContent,
+						{ CollisionFidelity = Enum.CollisionFidelity.PreciseConvexDecomposition }
+					)
+				end)
+				if okM and body and src then
+					body.Size = src.Size
+					body.Anchored = true
+					body.CanQuery = true
+					local spec = KitService.spec(style.group)
+					local cy = if spec
+						then spec.origin[2] + (spec.boundsMin[2] + spec.boundsMax[2]) / 2
+						else src.Size.Y / 2
+					local cz = if spec then spec.origin[3] + (spec.boundsMin[3] + spec.boundsMax[3]) / 2 else 0
+					body.CFrame = CFrame.new(0, 800 + cy, cz) -- the piece's centre at its scene place (origin at y 800)
+					body.Parent = workspace
+					local params = RaycastParams.new()
+					params.FilterType = Enum.RaycastFilterType.Include
+					params.FilterDescendantsInstances = { body }
+					local dz = HD.VAN.DOOR_Z
+					local function reach(fromZ: number): number
+						local hit =
+							workspace:Raycast(Vector3.new(0.1, 804.5, fromZ), Vector3.new(0, 0, -fromZ * 2), params)
+						return if hit then math.abs(hit.Position.Z - fromZ) else math.huge
+					end
+					local function top(x: number): number
+						local hit = workspace:Raycast(Vector3.new(x, 830, 0), Vector3.new(0, -40, 0), params)
+						return if hit then hit.Position.Y - 800 else 0
+					end
+					local doorSide, farSide = reach(dz * 10), reach(-dz * 10)
+					-- the nose (a baker's box runs on over the cab, so probe at the bumper end, not mid-cab)
+					local cab, rear = top(HD.VAN.CAB_X * 6.9), top(-HD.VAN.CAB_X * 6)
+					check(
+						doorSide > 10 and farSide < 8 and cab < rear - 1,
+						string.format(
+							"van styles: %s door side open (ray in %.1f vs %.1f), cab low (top %.1f vs %.1f)",
+							style.id,
+							doorSide,
+							farSide,
+							cab,
+							rear
+						)
+					)
+					body:Destroy()
+				else
+					table.insert(
+						results,
+						"      van styles: no precise copy of " .. style.group .. " (" .. tostring(body) .. ")"
+					)
+				end
+			end
+		end
+		Vans.render(bay, nil, {})
+		check(Lobby.vanStyle(bay) == 1, "van styles: a free van is the step van again")
+	end)
+	check(okL2, "lobby 2 section ran" .. (if okL2 then "" else ": " .. tostring(l2Err)))
+end
+
 table.insert(results, string.format("%d failure(s)", failures))
 return table.concat(results, "\n")

@@ -342,7 +342,7 @@ Strings.BIG_SIGN = table.freeze({
 	Bank = "HOARDSWORTH BANK",
 } :: { [string]: string })
 -- The warehouse garage's crew sign (server Heist/LobbyPlan, anchor CrewSign).
-Strings.GARAGE_CREW_SIGN = "THE CREW"
+Strings.GARAGE_CREW_SIGN = "LOOKING FOR CREW"
 Strings.GARAGE_LAPTOP = "DAILY VAULT" -- the laptop's screen (anchor LaptopSpot)
 Strings.GARAGE_TV = "HEIST YOURSELF" -- the TV under the mezzanine (anchor TVSpot: the intro rewatch)
 Strings.JOB_BOARD_NEXT = "NEXT JOB"
@@ -355,6 +355,7 @@ Strings.LOBBY_VERB = table.freeze({
 	wardrobe = "WARDROBE",
 	tv = "WATCH INTRO",
 	invite = "INVITE FRIENDS",
+	quickCrew = "QUICK CREW",
 	pick = "PICK VAN",
 	leaderPicks = "LEADER PICKS",
 	solo = "SOLO · GO",
@@ -363,6 +364,7 @@ Strings.LOBBY_VERB = table.freeze({
 	crew = "CREW · OPEN UP",
 	park = "CLOSE UP",
 	paint = "PAINT",
+	style = "STYLE",
 	sit = "SIT",
 	ready = "READY",
 	unready = "NOT READY",
@@ -374,6 +376,9 @@ function Strings.lobbyWaiting(n: number): string
 end
 function Strings.lobbyPaint(name: string): string
 	return "PAINT · " .. name
+end
+function Strings.lobbyStyle(name: string): string
+	return "STYLE · " .. name
 end
 function Strings.vanPlate(name: string): string
 	return string.upper(name) .. "'S CREW"
@@ -412,6 +417,36 @@ function Strings.jobPinned(name: string): string
 	return "Job picked: " .. name .. ". Go to your van!"
 end
 Strings.INVITE_NONE = "Invites are not open here."
+-- Quick Crew (LOBBY 2, Config.Hideout.QUICK): the crew sign's sheet, the lobby chip, the toasts. No free text.
+Strings.QUICK_CREW = "QUICK CREW"
+Strings.QUICK_LOOK = "LOOK FOR A CREW"
+Strings.QUICK_STOP = "STOP LOOKING"
+Strings.QUICK_OPEN = "OPEN MY VAN"
+Strings.QUICK_SHUT = "CLOSE MY VAN"
+Strings.QUICK_INVITE = "INVITE FRIENDS"
+Strings.QUICK_INFO = "Play with other players in this server. No chat needed: crews talk with pings."
+Strings.QUICK_INFO_LEADER = "Open your van and players looking for a crew will join you."
+Strings.QUICK_NEED_SOLO = "Leave your crew to look for a new one."
+Strings.QUICK_SEEKING = "LOOKING FOR CREW"
+Strings.QUICK_MATCHED = "FOLLOW THE ARROW"
+Strings.QUICK_YOUR_VAN = "YOUR CREW"
+Strings.QUICK_OPEN_PLATE = "OPEN"
+function Strings.quickStatus(waiting: number, open: number): string
+	return string.format("%d looking%s%d open van%s", waiting, " · ", open, if open == 1 then "" else "s")
+end
+Strings.QUICK_TOAST = table.freeze({
+	looking = "Looking for a crew... we'll find you a van.",
+	stopped = "You stopped looking for a crew.",
+	matched = "A crew has a seat for you! Follow the arrow.",
+	coming = "A Quick Crew player is on the way!",
+	lapsed = "Your seat was given away. Still looking...",
+	away = "Stopped looking: you missed your seat.",
+	opened = "Your van is open to Quick Crew.",
+	shut = "Your van is closed to Quick Crew.",
+	joined = "Welcome to the crew!",
+	paused = "Quick Crew is paused right now.",
+	gone = "That van left. Still looking...",
+} :: { [string]: string })
 -- Why the server said no to a lobby action (VanRules codes).
 Strings.LOBBY_REFUSED = table.freeze({
 	Taken = "That van is taken.",
@@ -426,7 +461,23 @@ Strings.LOBBY_REFUSED = table.freeze({
 	HasCrew = "Your crew is still inside.",
 	Seats = "Too many for one van.",
 	NoVan = "Pick a van first.",
+	NotMatched = "Find a seat at the crew sign: LOOK FOR A CREW.",
+	NeedSolo = "Leave your crew to look for a new one.",
+	Hosting = "Close your van to Quick Crew first.",
+	FarSign = "Go to the crew sign.",
+	Slow = "One moment...",
+	BadStyle = "That style is not here.",
 } :: { [string]: string })
+-- The laptop's board (LOBBY 2): today's biggest haul on this server, the top 10 and your row.
+Strings.BOARD_TITLE = "TODAY'S BIGGEST HAUL"
+Strings.BOARD_EMPTY = "No hauls yet today. Be the first!"
+Strings.BOARD_YOU = "YOU"
+Strings.BOARD_NOT_ON = "Clear today's vault to get on the board."
+Strings.BOARD_OFF = "The board is resting right now."
+Strings.BOARD_TAB = "BOARD"
+function Strings.boardRank(rank: number): string
+	return "#" .. tostring(rank)
+end
 -- The job board (U6, level select): pinned job photos; the NEXT one glows (Strings.JOB_BOARD_NEXT).
 Strings.JOB_BOARD = "JOB BOARD"
 function Strings.jobPhoto(index: number, name: string): string
