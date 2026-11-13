@@ -693,7 +693,7 @@ function Hints.build(ctx: any): any
 		for _, a in m.actors or {} do
 			if a.kind == "clone" then
 				table.insert(slots, { rec = state.recs[a.key], status = "OK" })
-				mine = mine or a.owner == localPlayer.UserId
+				mine = mine or localPlayer ~= nil and a.owner == localPlayer.UserId
 			end
 		end
 		runDeckHeld = if level then Help.deckPlates(level, slots) else {}
@@ -703,7 +703,7 @@ function Hints.build(ctx: any): any
 			firstCloneUntil = runStart + O.FIRST_CLONE_LINE_SECONDS
 		end
 		if ctx.coach then
-			ctx.coach.onRun(m, runDeckHeld, localPlayer.UserId)
+			ctx.coach.onRun(m, runDeckHeld, if localPlayer then localPlayer.UserId else 0) -- no player in engine checks
 		end
 		-- L1: your clone walks out of your own body ("YOU, 10 SEC AGO"); in first person the look cue points
 		-- at it whenever it is out of view, until it has had time to reach the plate.
