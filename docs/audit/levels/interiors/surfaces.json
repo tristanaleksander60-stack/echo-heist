@@ -712,6 +712,112 @@
    }
   }
  },
+ "L2_before_fp_ceiling": {
+  "ceiling_wall": 4.74,
+  "loot_pop": null,
+  "plate_pop": null,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.64,
+    "median_value": 0.718,
+    "share": 46.9
+   },
+   "lamp": {
+    "median_luma": 0.834,
+    "median_value": 0.918,
+    "share": 0.4
+   },
+   "other": {
+    "median_luma": 0.292,
+    "median_value": 0.404,
+    "share": 2.6
+   },
+   "signal": {
+    "median_luma": 0.359,
+    "median_value": 0.459,
+    "share": 5.5
+   },
+   "wall": {
+    "median_luma": 0.135,
+    "median_value": 0.231,
+    "share": 44.6
+   }
+  }
+ },
+ "L2_before_fp_front": {
+  "ceiling_wall": 3.36,
+  "loot_pop": null,
+  "plate_pop": 0.078,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.665,
+    "median_value": 0.733,
+    "share": 19.6
+   },
+   "floor": {
+    "median_luma": 0.467,
+    "median_value": 0.549,
+    "share": 28.7
+   },
+   "lamp": {
+    "median_luma": 0.788,
+    "median_value": 0.882,
+    "share": 1.1
+   },
+   "other": {
+    "median_luma": 0.457,
+    "median_value": 0.561,
+    "share": 6.1
+   },
+   "signal": {
+    "median_luma": 0.383,
+    "median_value": 0.482,
+    "share": 3.1
+   },
+   "wall": {
+    "median_luma": 0.198,
+    "median_value": 0.341,
+    "share": 41.3
+   }
+  }
+ },
+ "L2_before_fp_left": {
+  "ceiling_wall": 3.08,
+  "loot_pop": -0.208,
+  "plate_pop": 0.043,
+  "surfaces": {
+   "ceiling": {
+    "median_luma": 0.702,
+    "median_value": 0.792,
+    "share": 14.3
+   },
+   "floor": {
+    "median_luma": 0.753,
+    "median_value": 0.812,
+    "share": 23.7
+   },
+   "lamp": {
+    "median_luma": 0.88,
+    "median_value": 0.984,
+    "share": 1.6
+   },
+   "other": {
+    "median_luma": 0.415,
+    "median_value": 0.584,
+    "share": 4.3
+   },
+   "signal": {
+    "median_luma": 0.504,
+    "median_value": 0.729,
+    "share": 3.9
+   },
+   "wall": {
+    "median_luma": 0.228,
+    "median_value": 0.384,
+    "share": 52.1
+   }
+  }
+ },
  "L2_diorama_mid": {
   "loot_pop": null,
   "plate_pop": -0.008,
