@@ -203,6 +203,7 @@ function Garage.build(ctx: any): any
 		end
 	end, "UIBack")
 	Ui.iconWord(backBtn, "close", "left", U.ICON_SMALL)
+	Common.keyCap(backBtn, "back")
 
 	local friendCache: { [number]: boolean } = {}
 	local function isFriend(userId: number): boolean

@@ -15,7 +15,12 @@
 --   Hide (hide)    you are inside that hide box (hiding itself is positional)
 --   Emote (id)     always
 -- HoldStart/HoldEnd/Gadget and heavy-loot grips are reserved (Unsupported) until
--- those mechanics ship. On success a live actor's event is appended to its
+-- those mechanics ship.
+-- Slide is not a queued intent: Interact.slide records it as soon as it arrives
+-- (HeistSim.request), at the current loop time, so Rec/Validator's raised speed covers
+-- the very next sample. It has its own cooldown (Config.Slide.SERVER_COOLDOWN) and
+-- never touches the intent cooldown; a clone's recorded Slide does nothing (its
+-- positions already replay the slide). On success a live actor's event is appended to its
 -- recording at the tick time; a clone's failure is a Shrug (§3.2 rule 2).
 
 local Codec = require("../Rec/Codec")
@@ -129,6 +134,30 @@ function Interact.request(sim: any, actor: any, kind: number, arg: number): (boo
 	if actor.kind == "live" then
 		Sampler.addEvent(actor.rec, t, kind, arg)
 	end
+	return true, nil
+end
+
+-- A slide starts (arg 0 = slide, 1 = fast slide): appends the Slide event to a live
+-- actor's recording, which opens Rec/Validator's slide window. Refused while fast-
+-- forwarding (that run records standing), out of the run, or inside the cooldown.
+function Interact.slide(sim: any, actor: any, arg: number): (boolean, number?)
+	if not actor.present then
+		return false, FAIL.NotActive
+	end
+	if actor.kind ~= "live" then
+		return true, nil
+	end
+	if arg ~= 0 and arg ~= 1 then
+		return false, FAIL.Unknown
+	end
+	local t = sim.t
+	if sim.rate > 1 or t < (actor.nextSlideT or 0) - EPS then
+		return false, FAIL.Cooldown
+	end
+	if not Sampler.addEvent(actor.rec, t, KIND.Slide, arg) then
+		return false, FAIL.Busy
+	end
+	actor.nextSlideT = t + Config.Slide.SERVER_COOLDOWN
 	return true, nil
 end
 

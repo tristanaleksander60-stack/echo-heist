@@ -58,6 +58,7 @@ local Settings = require(script.Parent:WaitForChild("Settings"))
 local Sound = require(script.Parent:WaitForChild("Sound"))
 local Theme = require(script.Parent:WaitForChild("Theme"))
 local Ui = require(script.Parent:WaitForChild("Ui"))
+local HudCommon = require(script.Parent:WaitForChild("Hud"):WaitForChild("Common"))
 
 local I = Config.Intro
 local C = Config.Clone
@@ -1435,6 +1436,7 @@ function Cinematic.new(opts: any?): any
 	}, function()
 		cine.skip()
 	end)
+	HudCommon.keyCap(skipBtn, "skipIntro") -- any key (Space shown) or B / Start
 	gui.Parent = o.gui or (Players.LocalPlayer and Players.LocalPlayer:FindFirstChildOfClass("PlayerGui")) or stage
 
 	local function showWordmark()

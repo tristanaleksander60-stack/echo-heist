@@ -1,9 +1,9 @@
 --!strict
 -- Hud/CrewView: the HUD half of the Crew View peek (REVIEW_STEAM_PLUS gap 5; the camera half is Heist/CameraDirector,
 -- the maths Shared/Heist/CrewView, numbers Config.Heist.CAMERA.CREW).
---   * the touch CREW button (hold; HudLayout.CREW, above Interact, left of REWIND): shown in a first-person run on
---     touch whenever Crew View may start; on the narrowest notched phones it steps aside while the prompt chip is up
---     (HudLayout.crewYields);
+--   * the CREW button (hold; HudLayout.CREW, above Interact, left of REWIND): shown in a first-person run whenever
+--     Crew View may start; on a keyboard or a gamepad it is the hint, with its key cap (Q / LB: Hud/Common.keyCap); on
+--     the narrowest notched phones it steps aside while the prompt chip is up (HudLayout.crewYields);
 --   * while held: a subtle edge vignette (four gradient bands on the fx layer) and "CREW VIEW" under the clone strip
 --     (HudLayout.CREW_LABEL); the clone pills and the run bar stay; the reticle and its chip hide (Hud/Run);
 --   * reduced motion: the camera cuts and a quick dim veil crossfades over the cut (CrewView.veil);
@@ -82,6 +82,7 @@ function CrewView.build(ctx: any): any
 	}, function() end, "")
 	Common.place(btn, HudLayout.CREW)
 	Ui.iconWord(btn, "clone", "top", U.ICON_SMALL)
+	Common.keyCap(btn, "crew")
 	btn.InputBegan:Connect(function(input: InputObject)
 		local t = input.UserInputType
 		if t == Enum.UserInputType.Touch or t == Enum.UserInputType.MouseButton1 then
@@ -196,10 +197,8 @@ function CrewView.build(ctx: any): any
 			FirstTime.markSeen(KIND) -- found it alone: no hint
 		end
 		render(w, v)
-		-- the touch button: a first-person run on touch, whenever Crew View may start (or is held)
-		local can = runHud.Visible
-			and Common.usingTouch()
-			and (active or (actions.crewAllowed ~= nil and actions.crewAllowed()))
+		-- the button: a first-person run, whenever Crew View may start (or is held); keys and pads see it as the hint
+		local can = runHud.Visible and (active or (actions.crewAllowed ~= nil and actions.crewAllowed()))
 		if can and not active and ctx.reticle and ctx.reticle.promptUp() then
 			local cam = workspace.CurrentCamera
 			local vp = if cam then cam.ViewportSize else Vector2.new(1280, 720)

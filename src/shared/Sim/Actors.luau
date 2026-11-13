@@ -36,6 +36,7 @@ export type Actor = {
 	hidden: boolean,
 	cursor: number, -- clone event cursor (Sampler.eventsDue)
 	nextInteractT: number,
+	nextSlideT: number, -- live: loop time from which a slide is accepted (Interact.slide)
 	shrugs: number,
 	plateTicks: number, -- tutorial auto-end counter
 	latency: number, -- live: measured one-way latency (seconds)
@@ -70,6 +71,7 @@ local function base(id: number, kind: string, player: any, slot: number, rec: an
 		hidden = false,
 		cursor = 0,
 		nextInteractT = 0,
+		nextSlideT = 0,
 		shrugs = 0,
 		plateTicks = 0,
 		latency = 0,

@@ -10,6 +10,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local HeistShared = Shared:WaitForChild("Heist")
 local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
+local KeyHints = require(HeistShared:WaitForChild("KeyHints"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
 
@@ -194,6 +195,7 @@ function Messages.build(ctx: any): any
 	end, "UIToggle")
 	Common.place(pauseChip, HudLayout.MENU)
 	Ui.iconWord(pauseChip, "menu", "top", U.ICON_SMALL)
+	Common.keyCap(pauseChip, "menu")
 	msg.pauseChip = pauseChip
 	local menuSheet = Ui.panel(root, { Name = "MenuSheet", Visible = false, ZIndex = 30 })
 	Common.place(menuSheet, HudLayout.MENU_SHEET)
@@ -244,6 +246,11 @@ function Messages.build(ctx: any): any
 	}, function()
 		Ui.hide(menuSheet)
 	end, "UIBack")
+	-- KEEP PLAYING: M closes the sheet on a keyboard, B on a gamepad (Hud/Controls "HeistBack")
+	Common.keyCap(keepBtn, function(): string
+		local device = Common.device()
+		return KeyHints.label(if device == "pad" then "back" else "menu", device)
+	end)
 	Ui.button(menuButtons, {
 		Size = UDim2.fromOffset(180, TAP),
 		TextSize = 20,

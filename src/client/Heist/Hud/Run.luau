@@ -18,6 +18,7 @@ local Interact = require(Sim:WaitForChild("Interact"))
 local HeistShared = Shared:WaitForChild("Heist")
 local Help = require(HeistShared:WaitForChild("Help"))
 local HudLayout = require(HeistShared:WaitForChild("HudLayout"))
+local KeyHints = require(HeistShared:WaitForChild("KeyHints"))
 local Palette = require(HeistShared:WaitForChild("Palette"))
 local RunMarkers = require(HeistShared:WaitForChild("RunMarkers"))
 local Strings = require(HeistShared:WaitForChild("Strings"))
@@ -630,10 +631,7 @@ function Run.build(ctx: any)
 		end
 		if target then
 			lookVerb = target.verb
-			local key = if touch
-				then Strings.KEY_TAP
-				elseif Common.usingGamepad() then Strings.KEY_PAD
-				else Strings.KEY_E
+			local key = KeyHints.prompt(if touch then "touch" else Common.device())
 			if target.kind == "loot" then
 				nearLoot, nearLock = target.index, target.opensAt
 				local word, colour, locked = lootLabel(target.value or 0, target.opensAt)

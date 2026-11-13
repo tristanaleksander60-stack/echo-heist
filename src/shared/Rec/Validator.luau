@@ -11,6 +11,12 @@
 --   * positions finite and inside the format range
 --   * a cut sample (server teleport) is exempt only when a Respawn or Teleport
 --     event within one tick backs it; otherwise it is checked as a normal move
+--   * a slide (Config.Slide): a Slide event (recorded by the server, Sim/Interact.slide)
+--     raises the allowed speed by BURST x ALLOW_MARGIN for the samples strictly after
+--     it, up to WINDOW_SECONDS + WINDOW_GRACE + ping later; Slide events closer than
+--     SERVER_COOLDOWN, or with an unknown arg, open no window (and fail checkEvents).
+--     The window is read from the recording itself, so streaming (Validator.step) and
+--     whole-run validation give the same result.
 -- Violations are clamped in place (the last valid sample advanced at max speed
 -- toward the reported one) and the run is tainted: it still plays, but never
 -- earns medals or board entries. No kicks on movement alone.
@@ -64,6 +70,12 @@ export type State = {
 	flags: number,
 	clamped: number,
 	violations: { Violation },
+	ping: number, -- seconds (clamped), widens the slide window's tail
+	slideCursor: number, -- events already looked at for Slide windows
+	slideFrom: number, -- the open slide window (loop time): samples in (from, to] get `slideExtra`
+	slideTo: number,
+	slideExtra: number, -- studs/s added to maxSpeed inside the window
+	slideReady: number, -- loop time from which the next Slide event may open a window
 }
 
 export type Report = {
@@ -164,6 +176,12 @@ function Validator.new(rec: Recording, opts: Options?): State
 		checked = 0,
 		maxSpeed = maxSpeed,
 		capacity = Config.Rec.SPEED_BUCKET_STUDS + maxSpeed * ping,
+		ping = ping,
+		slideCursor = 0,
+		slideFrom = math.huge,
+		slideTo = -math.huge,
+		slideExtra = 0,
+		slideReady = -math.huge,
 		bucket = 0,
 		groundY = 0,
 		jumpHeight = o.jumpHeight or Config.Rec.JUMP_HEIGHT,
@@ -173,6 +191,36 @@ function Validator.new(rec: Recording, opts: Options?): State
 		clamped = 0,
 		violations = {},
 	}
+end
+
+-- The extra speed (studs/s) a Slide event with this arg allows, or nil for an unknown arg.
+function Validator.slideExtra(arg: number): number?
+	local burst = Config.Slide.BURST[arg + 1]
+	if arg ~= math.floor(arg) or burst == nil then
+		return nil
+	end
+	return burst * Config.Slide.ALLOW_MARGIN
+end
+
+-- Opens slide windows for the Slide events at or before loop time t (events in time order).
+local function advanceSlides(state: State, t: number)
+	local events = state.rec.events
+	local SL = Config.Slide
+	local k = state.slideCursor
+	while k < #events and events[k + 1].t <= t + EPS do
+		k += 1
+		local e = events[k]
+		if e.kind == EVENT.Slide and e.t >= state.slideReady - EPS then
+			local extra = Validator.slideExtra(e.arg)
+			if extra then
+				state.slideFrom = e.t
+				state.slideTo = e.t + SL.WINDOW_SECONDS + SL.WINDOW_GRACE + state.ping
+				state.slideExtra = extra
+				state.slideReady = e.t + SL.SERVER_COOLDOWN
+			end
+		end
+	end
+	state.slideCursor = k
 end
 
 -- Heavy loot lowers WalkSpeed mid-run; the server tells the validator.
@@ -256,10 +304,16 @@ local function checkSample(state: State, i: number)
 		rec.cut[i] = nil
 	end
 
-	-- Horizontal speed (leaky bucket) and teleports.
+	-- Horizontal speed (leaky bucket) and teleports; a slide window raises the speed.
+	local t = (i - 1) / rec.hz
+	advanceSlides(state, t)
+	local speed = state.maxSpeed
+	if t > state.slideFrom + EPS and t <= state.slideTo + EPS then
+		speed += state.slideExtra
+	end
 	local dx, dz = x - x0, z - z0
 	local dist = math.sqrt(dx * dx + dz * dz)
-	local maxStep = state.maxSpeed * dt
+	local maxStep = speed * dt
 	local excess = dist - maxStep
 	local bucket = math.max(0, state.bucket + excess)
 	if excess > state.capacity + EPS then
@@ -332,6 +386,7 @@ function Validator.checkEvents(state: State): number
 	local lastT = 0
 	local ended = false
 	local holding = false
+	local slideReady = -math.huge
 	for k, e in events do
 		local kind = e.kind
 		-- One branch per rejection reason, on purpose (same action, different rule)
@@ -348,6 +403,11 @@ function Validator.checkEvents(state: State): number
 			fail(k)
 		elseif kind == EVENT.HoldEnd and not holding then
 			fail(k)
+		elseif kind == EVENT.Slide and (Validator.slideExtra(e.arg) == nil or e.t < slideReady - EPS) then
+			fail(k)
+		end
+		if kind == EVENT.Slide and finite(e.t) and e.t >= slideReady - EPS and Validator.slideExtra(e.arg) then
+			slideReady = e.t + Config.Slide.SERVER_COOLDOWN
 		end
 		if finite(e.t) then
 			lastT = math.max(lastT, e.t)

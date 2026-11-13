@@ -443,10 +443,17 @@ function HeistSim.setLatency(sim: any, id: number, oneWay: number)
 	end
 end
 
--- Queues an intent (Codec.EVENT kind, LevelSpec index) for the next tick.
+-- Queues an intent (Codec.EVENT kind, LevelSpec index) for the next tick. A Slide is
+-- recorded at once (Interact.slide), so the validator's window covers the next sample.
 function HeistSim.request(sim: any, id: number, kind: number, arg: number?): boolean
 	local p = sim.playerById[id]
-	if sim.phase ~= "Run" or not p or not p.live or not p.live.present or not Interact.REQUESTABLE[kind] then
+	if sim.phase ~= "Run" or not p or not p.live or not p.live.present then
+		return false
+	end
+	if kind == KIND.Slide then
+		return (Interact.slide(sim, p.live, math.floor(arg or 0)))
+	end
+	if not Interact.REQUESTABLE[kind] then
 		return false
 	end
 	if #p.queue >= Config.Sim.MAX_QUEUED_INTENTS then

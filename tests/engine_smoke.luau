@@ -199,6 +199,8 @@ do
 	local HeistSim = require(Sim:WaitForChild("HeistSim"))
 	local EventLog = require(Sim:WaitForChild("EventLog"))
 	local Codec = require(sharedFolder:WaitForChild("Rec"):WaitForChild("Codec"))
+	local SimConfig = require(sharedFolder:WaitForChild("Config")) :: any
+	local SlideMath = require(sharedFolder:WaitForChild("Heist"):WaitForChild("SlideMath"))
 	local EV = EventLog.EV
 	local clientHeist = game:GetService("StarterPlayer")
 		:WaitForChild("StarterPlayerScripts")
@@ -375,6 +377,31 @@ do
 		check(inst.folder:GetAttribute("K1State") == "Carried", "sim: cash grabbed through Interact (attribute)")
 		walkTo(0, -23)
 		walkTo(0, -16)
+		-- A fast slide (Config.Slide) back up the corridor: the Slide request (Heist.Interact) first, then the push
+		-- at SlideMath's speeds; the server's validator window must keep the run untainted and unclamped.
+		local slideOk = HeistInstance.interact(inst, FAKE, Codec.EVENT.Slide, 1)
+		local slideT = 0
+		while slideT < SimConfig.Slide.SECONDS[2] do
+			local v = SlideMath.speed(SimConfig.Rec.WALK_SPEED, slideT, 2, SimConfig.Slide)
+			HeistInstance.setFakeInput(inst, FAKE, fakeIn.x, 3, fakeIn.z + v * 0.05, math.pi)
+			step(0.05)
+			slideT += 0.05
+		end
+		local slideLive = HeistSim.liveActor(inst.sim, FAKE)
+		local slideEvents = 0
+		for _, e in (if slideLive then slideLive.rec.events else {}) :: { any } do
+			if e.kind == Codec.EVENT.Slide then
+				slideEvents += 1
+			end
+		end
+		check(
+			slideOk == true and slideEvents == 1 and slideLive ~= nil and slideLive.rec.vflags == 0,
+			string.format(
+				"sim: a fast slide is recorded (Slide event) and validated clean (vflags %s, at z %.1f)",
+				tostring(slideLive and slideLive.rec.vflags),
+				fakeIn.z
+			)
+		)
 		walkTo(0, 4)
 		walkTo(0, 19)
 		waitFor(0.2)
