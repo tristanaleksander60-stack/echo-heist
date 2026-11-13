@@ -344,6 +344,20 @@ Each bookmark is shot 3 times: **PC Quality 10**, **phone Automatic**, **phone q
 | Colours | `char` cells + ink, steel, marble (rule P3). Never Torch Amber on the mesh: the amber is the code-drawn cone, the lens is a Neon part |
 | Swaps | `Gus_SantaHat` (Christmas layer) shares `HatAttach` with `Gus_Cap`; show one |
 
+### 12.1 The Rookie (the player character; PLAN_FIRST_PERSON "CH", 2026-11-13)
+
+| Rule | Number |
+|---|---|
+| Rig | R15-compatible rigid body (`assets/blender/rookie.py`): 15 parts named `Rookie_<R15 name>` (the game drops the prefix), each pivot at its R15 joint; the game adds Motor6Ds (player) or kinematic AnimationConstraints (clone templates) and the R15 rig attachments, so the default Animate, CloneClips and emotes play |
+| Root | HumanoidRootPart 2 x 2 x 1, centre **3** studs up (HipHeight 2 = the sim's rootHeight), joined to the hip centre at 1.62 |
+| Budget | ≤ **5,000** tris for the body (v1: 3,632 incl. the idle face); faces 96-496, outfit pieces 80-484 each, first-person arm 460 |
+| Height | **4.62** studs to the top of the head, ~4.9-5.2 with a cap (Gus 6.5). Head 2.1 wide = 45 % of the height: the chibi read |
+| 48 px read | `docs/art/rookie_sheet.png` row 2: cap on a big skin-tone head, cream sweater with crew-colour stripes (luma 0.79 vs ground ≤ 0.22), crew-colour scarf, dark trousers, chunky brown boots, dark gloves. Gus reads as the light blue grown-up; the Rookie as the cream-and-crew kid |
+| Colours | Body: `char` cells + ink, steel, marble (rule P3). Runtime tint (Tint White cell, no atlas): scarf, sweater stripes / block, cuffs = **crew colour** (seat hue, Palette); hands + glove cuffs = glove colour (`Config.Rookie.GLOVES`) |
+| Outfit slots | cap 4 (Flat, Beanie, Bobble, Trapper), scarf 4 (Long, Chunky, Bandana, Knot), sweater 2 (Stripes, Block), gloves 2 (Knit, Leather), mask 2 (none, Eye). Pieces weld by pivot to their body part (manifest `attach`) and are seat-checked against the body in the spec (A16) |
+| Faces | 4 mesh faces on the head (idle side-eye, smug half-lid, shocked, busted > <); one shows (Transparency), swapped by state |
+| First person | `Rookie_VM_LeftArm` / `_RightArm`: sleeve + knit glove, pivot = elbow, grips at the palm (`GripL` / `GripR`) |
+
 ## 13. Christmas dressing layer (Dec 3 - Jan 4)
 
 | Rule | Number |

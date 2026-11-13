@@ -2,6 +2,7 @@
 -- Run: ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960 \
 --      --place 70772627070328 --script tests/client_engine.luau   (add --version N to skip publishing)
 -- 2026-11-12, place v21: 22 checks, 0 failed. Section F (camera track) and H (presentation shell) not yet run in the engine.
+-- Section J: first person (PLAN_FIRST_PERSON FP). 2026-11-13, Saved v50 and v52: 49 checks, 0 failed (J: 3 / 3).
 -- Loads every client module, builds L6 with the uploaded kit + Christmas layer and runs
 -- WorldView on it (vault door skin swing + dial, alarm beacons), the L5 till lock label,
 -- Gus on his mesh (every beat attached, head lead, Santa hat), the Line-up arrangement against the real van body, and
@@ -58,6 +59,11 @@ for _, name in
 		"Transition",
 		"Title",
 		"LevelIntro",
+		"FpMath",
+		"ViewmodelMath",
+		"Viewmodel",
+		"LookTarget",
+		"FpWarn",
 		"Loading",
 		"Cinematic",
 		"HeistClient",
@@ -679,6 +685,192 @@ if okL5 and b5c then
 	check(shot ~= nil, "L5 kit: a clear 9:16-safe Line-up shot" .. how)
 else
 	check(false, "L5 builds with the kit for the Line-up shot")
+end
+
+-- J. First person (PLAN_FIRST_PERSON FP): the placeholder hands build (palette colours, never grey, quiet
+-- parts, drawn close to the eye), a kit viewmodel binds its parts to GripR / GripL, the held-loot copy of the
+-- real L1 cash (scaled, visuals only), the fp camera frame (never rolls; the eye over a real R15 head), and
+-- look-to-interact on the real kit L1 (workspace raycasts against the built level, Christmas layer on): the
+-- cash is picked from in front of it, never through the back wall, and never beyond the sim's range.
+-- CameraDirector / Viewmodel / LookTarget themselves bind to RenderStepped (a client: Studio or a phone).
+do
+	local FpMath = require(clientHeist:WaitForChild("FpMath"))
+	local Viewmodel = require(clientHeist:WaitForChild("Viewmodel"))
+	local LookTarget = require(clientHeist:WaitForChild("LookTarget"))
+	local CamDir = require(clientHeist:WaitForChild("CameraDirector"))
+	local Cfg = require(shared:WaitForChild("Config")) :: any
+	local FPC = Cfg.FirstPerson
+	local okVm, vmErr = pcall(function(): string
+		local rig = Viewmodel.buildPlaceholder()
+		rig.model.Parent = scratch
+		local n, grey, loud, farthest = 0, 0, 0, 0
+		local defaultGrey = Color3.fromRGB(163, 162, 165)
+		for _, p in rig.model:GetDescendants() do
+			if p:IsA("BasePart") then
+				n += 1
+				local c = p.Color
+				local sat = math.max(c.R, c.G, c.B) - math.min(c.R, c.G, c.B)
+				if c == defaultGrey or (sat < 0.03 and c.R > 0.25 and c.R < 0.8) then
+					grey += 1
+				end
+				if not p.Anchored or p.CanCollide or p.CanQuery or p.CanTouch or p.CastShadow then
+					loud += 1
+				end
+				farthest = math.max(farthest, p.Position.Magnitude + p.Size.Magnitude / 2)
+			end
+		end
+		assert(n >= 24, "placeholder parts: " .. n)
+		assert(#rig.R.parts >= 12 and #rig.L.parts > #rig.R.parts, "two hands, the watch on the left")
+		assert(grey == 0, grey .. " grey part(s)")
+		assert(loud == 0, loud .. " part(s) collide, query, touch or cast shadows")
+		assert(farthest < 1.4, string.format("scaled close to the grip (%.2f studs)", farthest))
+		-- pose both hands at a camera, as Viewmodel's frame does
+		local cam = CFrame.new(0, 60, 0)
+		local vmParts, vmCfs = {}, {}
+		for _, side in { "R", "L" } do
+			local pose = FPC.VIEWMODEL.REST[side]
+			local s = FPC.VIEWMODEL.SCALE
+			local at = cam
+				* CFrame.new(pose[1] * s, pose[2] * s, pose[3] * s)
+				* CFrame.Angles(math.rad(pose[4]), math.rad(pose[5]), math.rad(pose[6]))
+			local hand = (rig :: any)[side]
+			for i, p in hand.parts do
+				table.insert(vmParts, p)
+				table.insert(vmCfs, at * hand.offsets[i])
+			end
+		end
+		workspace:BulkMoveTo(vmParts, vmCfs, Enum.BulkMoveMode.FireCFrameChanged)
+		local worst = 0
+		for _, p in vmParts do
+			local local_ = cam:PointToObjectSpace(p.Position)
+			worst = math.max(worst, local_.Magnitude)
+			assert(local_.Z < 0.5, "every part is in front of (or beside) the eye")
+		end
+		assert(worst < 1.6, string.format("posed within %.2f studs of the eye", worst))
+		-- a kit viewmodel: parts follow the grip they are nearest to (or named for)
+		local kit = Instance.new("Model")
+		kit.Name = "Rookie_Viewmodel"
+		local function kp(name: string, x: number): Part
+			local p = Instance.new("Part")
+			p.Name = name
+			p.Size = Vector3.new(0.6, 0.4, 1)
+			p.Position = Vector3.new(x, 0, 0)
+			p.Parent = kit
+			return p
+		end
+		local r, l = kp("GloveR", 0.6), kp("GloveL", -0.6)
+		local sleeve = kp("RightSleeve", -0.1)
+		local ga, gb = Instance.new("Attachment"), Instance.new("Attachment")
+		ga.Name, gb.Name = "GripR", "GripL"
+		ga.Parent, gb.Parent = r, l
+		local kr = Viewmodel.fromKit(kit)
+		assert(kr and kr.kit, "the kit model binds")
+		assert(#kr.R.parts == 2 and #kr.L.parts == 1, "grips: by name, then nearest")
+		assert(not (kr.R.parts[1] :: BasePart).CanQuery, "kit parts are quiet")
+		sleeve:Destroy()
+		return string.format("%d parts, %d right / %d left, farthest %.2f", n, #rig.R.parts, #rig.L.parts, farthest)
+	end)
+	check(okVm, "first person: the placeholder hands and a kit viewmodel (" .. tostring(vmErr) .. ")")
+
+	local okCam, camErr = pcall(function(): string
+		for _, yp in { { 0, 0 }, { 37, 25 }, { -140, -70 }, { 179, 80 } } do
+			local cf = CamDir.lookFrame(Vector3.new(1, 2, 3), yp[1], yp[2])
+			local want = FpMath.look(yp[1], yp[2])
+			local lv = cf.LookVector
+			assert((lv - Vector3.new(want[1], want[2], want[3])).Magnitude < 1e-5, "look direction")
+			assert(math.abs(cf.RightVector.Y) < 1e-6, "never rolls")
+		end
+		local desc = Instance.new("HumanoidDescription")
+		local model = Players:CreateHumanoidModelFromDescriptionAsync(desc, Enum.HumanoidRigType.R15)
+		model:PivotTo(CFrame.new(0, 80, 0))
+		model.Parent = scratch
+		local rootI = model:FindFirstChild("HumanoidRootPart")
+		local headI = model:FindFirstChild("Head")
+		assert(rootI and rootI:IsA("BasePart") and headI and headI:IsA("BasePart"), "an R15 root and head")
+		local root, head = rootI :: BasePart, headI :: BasePart
+		local dy = head.Position.Y - root.Position.Y
+		local eye = FpMath.eye({ root.Position.X, root.Position.Y, root.Position.Z }, dy, 0, Cfg.Heist.CAMERA.FP)
+		local headTop = head.Position.Y + head.Size.Y / 2
+		assert(eye[2] > head.Position.Y and eye[2] < headTop + 0.1, "the eye is in the head")
+		return string.format("head %.2f above the root, eye %.2f", dy, eye[2] - root.Position.Y)
+	end)
+	check(
+		okCam,
+		"first person: the camera frame never rolls; the eye sits in a real R15 head (" .. tostring(camErr) .. ")"
+	)
+
+	if okL1 and b1 then
+		local okPick, pickErr = pcall(function(): string
+			local cash: BasePart? = nil
+			for _, d in b1.model:GetDescendants() do
+				if d:IsA("BasePart") and d:GetAttribute("EH_Kind") == "loot" and d:GetAttribute("EH_Index") == 1 then
+					cash = d
+				end
+			end
+			assert(cash, "the L1 cash part")
+			local cashPart = cash :: BasePart
+			-- the held copy (first person draws it in your hands)
+			local copy = Viewmodel.heldCopy(cashPart)
+			copy.Parent = scratch
+			local longest = math.max(copy.Size.X, copy.Size.Y, copy.Size.Z)
+			local want = FPC.VIEWMODEL.CARRY.LOOT_SIZE * FPC.VIEWMODEL.SCALE
+			assert(math.abs(longest - want) < 1e-3, string.format("held copy scaled (%.3f vs %.3f)", longest, want))
+			assert(not copy.CanQuery and not copy.CanCollide, "held copy is quiet")
+			for _, d in copy:GetDescendants() do
+				assert(not d:IsA("ParticleEmitter") and not d:IsA("BillboardGui"), "visuals only: " .. d.ClassName)
+			end
+			local to = cashPart.Position
+			local LK = FPC.LOOK
+			local entries = { { kind = "loot", index = 1, part = cashPart, value = 100 } }
+			local function pickFrom(eyeV: Vector3, rootV: Vector3, reach: number): (number?, any)
+				local cands = LookTarget.candidates(entries, rootV, { carrying = false, bagFull = false })
+				local eye = { eyeV.X, eyeV.Y, eyeV.Z }
+				local d = to - eyeV
+				local dir = { d.Unit.X, d.Unit.Y, d.Unit.Z }
+				local i = FpMath.pick(eye, dir, cands, {
+					reach = reach,
+					assist = LK.ASSIST.mouse,
+					distanceWeight = LK.DISTANCE_WEIGHT,
+					sticky = LK.STICKY,
+					losCandidates = LK.LOS_CANDIDATES,
+					blocked = function(_e: { number }, c: any): boolean
+						return not LookTarget.lineOfSight(eyeV, to, c.radius, cashPart, {})
+					end,
+				})
+				return i, cands
+			end
+			-- In front of it, inside the back room (eye height over your root).
+			local frontRoot = to + Vector3.new(0, -1, 3.5)
+			local frontEye = frontRoot + Vector3.new(0, 1.65, 0)
+			local i1, c1 = pickFrom(frontEye, frontRoot, LK.REACH)
+			assert(c1[1].ok, "inside the sim's range from in front")
+			assert(i1 == 1, "the cash is picked from in front of it")
+			-- Behind the back wall, just outside the shop: blocked even with a long reach.
+			local wallZ = math.huge
+			for _, sd in l1.solids do
+				if sd.minX <= to.X - origin1.X and sd.maxX >= to.X - origin1.X and sd.maxZ < to.Z - origin1.Z then
+					if sd.maxY > 5 then
+						wallZ = math.min(wallZ, sd.minZ)
+					end
+				end
+			end
+			assert(wallZ < math.huge, "a back wall behind the cash")
+			local backEye = Vector3.new(to.X, to.Y + 2, origin1.Z + wallZ - 0.8)
+			local i2 = pickFrom(backEye, backEye - Vector3.new(0, 1.65, 0), (to - backEye).Magnitude + 2)
+			assert(i2 == nil, "not through the back wall")
+			-- Out of the sim's range (the server would refuse it): never offered, even in plain view.
+			local farRoot = to + Vector3.new(0, -1, Cfg.Sim.INTERACT_RANGE + 0.5)
+			local _, c3 = pickFrom(farRoot + Vector3.new(0, 1.65, 0), farRoot, 50)
+			assert(c3[1].ok == false, "beyond the sim's range")
+			return string.format("cash at %.1f studs from the front eye", (to - frontEye).Magnitude)
+		end)
+		check(
+			okPick,
+			"first person: kit L1 cash picked from in front, not through the back wall (" .. tostring(pickErr) .. ")"
+		)
+	else
+		check(false, "first person: L1 builds for the look-to-interact checks")
+	end
 end
 
 -- H. Signature moments (PLAN_STEAM_PLUS §4.4 F2, §5 "8 OF ME"): the G2 staging's seven Clone Party

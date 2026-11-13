@@ -8,6 +8,9 @@
 -- the HUD canvas is the safe area divided by HudLayout.scale (design px at 720 x 330).
 -- Centred sheets (results, garage, MENU, settings: HudLayout.SHEETS) must stay on the canvas; the
 -- garage's own buttons that sit near the jump button are boxes of their own (GARAGE_SETTINGS).
+-- First person (fpRun, fpRunAlarm): the reticle and its prompt chip are centred on the WHOLE screen (the
+-- camera ray), so they are moved by HudLayout.centreShift before the check; the reticle must also land on
+-- the screen centre within 0.5 px.
 -- Run from the repo root: lune run tests/hud_layout.luau
 
 local process = require("@lune/process")
@@ -101,13 +104,26 @@ for _, vp in VIEWPORTS do
 	local safeW = vp.w - vp.left - vp.right
 	local safeH = vp.h - vp.top - vp.bottom
 	local W, H, s = HudLayout.canvas(safeW, safeH)
+	local shiftX, shiftY = HudLayout.centreShift(vp.w, vp.h, vp.left, vp.top, vp.right, vp.bottom)
 	print(string.format("%s: safe %dx%d px, scale %.3f, canvas %.0fx%.0f", vp.name, safeW, safeH, s, W, H))
+	do
+		checks += 1
+		local x0, y0, x1, y1 = HudLayout.rect(HudLayout.RETICLE, W, H)
+		local cx = ((x0 + x1) / 2 + shiftX) * s + vp.left
+		local cy = ((y0 + y1) / 2 + shiftY) * s + vp.top
+		if math.abs(cx - vp.w / 2) > 0.5 or math.abs(cy - vp.h / 2) > 0.5 then
+			fail(string.format("%s: the reticle is not at the screen centre (%.1f, %.1f)", vp.name, cx, cy))
+		end
+	end
 	for _, scene in sceneNames do
 		local rects: { Rect } = {}
 		for _, name in HudLayout.SCENES[scene] do
 			local box = (HudLayout :: any)[name]
 			assert(box, "HudLayout has no box " .. name)
 			local x0, y0, x1, y1 = HudLayout.rect(box, W, H)
+			if HudLayout.SCREEN_CENTRED[name] then
+				x0, x1, y0, y1 = x0 + shiftX, x1 + shiftX, y0 + shiftY, y1 + shiftY
+			end
 			table.insert(rects, { name = name, x0 = x0, y0 = y0, x1 = x1, y1 = y1 })
 		end
 		for _, r in rects do

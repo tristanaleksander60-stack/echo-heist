@@ -1,10 +1,11 @@
 --!strict
 -- Hud/SettingsPanel: settings and comfort (PLAN_STEAM_PLUS §4.3 U7; POLISH §4.2 "Comfort"). Opens from
--- MENU in a heist and from the garage. One big button per setting on a 3 x 3 grid (every cell is a
+-- MENU in a heist and from the garage. One big button per setting on a 4 x 3 grid (every cell is a
 -- TAP_MIN-tall target): Music and SFX volume (drag the cell, or tap it with a gamepad to step), camera
--- shake, reduced motion, captions, colour-blind shapes, the camera (DIORAMA / CLASSIC, moved here from
--- MENU; Heist/CameraDirector saves it), and "Show guard path" (Gus's boot prints). Values live in
--- Heist/Settings (saved through Data.SetSetting); HeistClient applies them. Rows: Config.Ui.SETTINGS_ROWS.
+-- shake, reduced motion, captions, colour-blind shapes, the camera (FIRST PERSON / DIORAMA / CLASSIC; a tap
+-- steps to the next, Heist/CameraDirector saves it), the first-person field of view (60-90, a slider), and
+-- "Show guard path" (Gus's boot prints). Values live in Heist/Settings (saved through Data.SetSetting);
+-- HeistClient applies them. Rows: Config.Ui.SETTINGS_ROWS.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
@@ -25,7 +26,7 @@ local Common = require(script.Parent:WaitForChild("Common"))
 
 local U = Config.Ui
 local TAP = Ui.TAP
-local COLS, CELL_GAP = 3, 6
+local COLS, CELL_GAP = U.SETTINGS_COLUMNS, 6
 local GAMEPAD_STEP = 0.25 -- a gamepad tap on a slider steps by this (wrapping to 0)
 
 local SettingsPanel = {}
@@ -133,13 +134,13 @@ function SettingsPanel.build(ctx: any): any
 	local function cameraCell(k: number)
 		local value: TextLabel
 		local function refresh()
-			local mode = if actions.cameraMode then actions.cameraMode() else "diorama"
-			value.Text = Strings.SETTING_CAMERA[mode] or Strings.SETTING_CAMERA.diorama
+			local mode = if actions.cameraMode then actions.cameraMode() else "fp"
+			value.Text = Strings.SETTING_CAMERA[mode] or Strings.SETTING_CAMERA.fp
 			value.TextColor3 = Palette.CLONE_HUES[1]
 		end
 		value = select(
 			2,
-			cell(k, "classicCamera", function()
+			cell(k, "cameraMode", function()
 				if actions.toggleCamera then
 					actions.toggleCamera()
 				end
@@ -155,31 +156,39 @@ function SettingsPanel.build(ctx: any): any
 		table.insert(refreshers, refresh)
 	end
 
-	-- A volume slider: the track along the cell's bottom; drag anywhere on the cell. It shows (and
-	-- sounds) while dragging and saves when released.
-	local function sliderCell(k: number, key: string)
+	-- A slider (volumes 0..1 as a percent; the FOV in degrees): the track along the cell's bottom; drag
+	-- anywhere on the cell. It shows (and sounds) while dragging and saves when released. The range is the
+	-- key's Config.Data.SETTING_NUMBERS entry; `step` (a share of the range) and the shown text by row.
+	local function sliderCell(k: number, key: string, row: any)
 		local value: TextLabel
 		local b: TextButton
 		local fill: Frame
+		local range = Config.Data.SETTING_NUMBERS[key] or { 0, 1 }
+		local lo, hi = range[1], range[2]
+		local span = math.max(hi - lo, 1e-6)
+		local fallback = (Config.Data.SETTING_NUMBER_DEFAULTS or {})[key] or hi
+		local function current(): number
+			return tonumber(Settings.get(key)) or fallback
+		end
 		local function show(v: number)
-			value.Text = Strings.percent(v)
+			value.Text = if row.text == "degrees" then Strings.fovValue(v) else Strings.percent(v)
 			value.TextColor3 = Palette.white
-			fill.Size = UDim2.fromScale(math.clamp(v, 0, 1), 1)
+			fill.Size = UDim2.fromScale(math.clamp((v - lo) / span, 0, 1), 1)
 		end
 		local function snap(v: number): number
-			local step = U.SLIDER_STEP
-			return math.clamp(math.floor(v / step + 0.5) * step, 0, 1)
+			local step = (row.step or U.SLIDER_STEP) * span
+			return math.clamp(lo + math.floor((v - lo) / step + 0.5) * step, lo, hi)
 		end
 		local dragging = false
 		local function fromX(x: number): number
 			local w = math.max(1, b.AbsoluteSize.X - 24)
-			return snap((x - b.AbsolutePosition.X - 12) / w)
+			return snap(lo + (x - b.AbsolutePosition.X - 12) / w * span)
 		end
 		b, value = cell(k, key, function()
 			if Common.usingGamepad() then
-				local v = (tonumber(Settings.get(key)) or 1) + GAMEPAD_STEP
-				Settings.set(key, if v > 1 + 1e-6 then 0 else snap(v))
-				show(tonumber(Settings.get(key)) or 1)
+				local v = current() + GAMEPAD_STEP * span
+				Settings.set(key, if v > hi + 1e-6 then lo else snap(v))
+				show(current())
 			end
 		end)
 		value.Position = UDim2.new(1, -10, 0, 6)
@@ -246,12 +255,12 @@ function SettingsPanel.build(ctx: any): any
 		UserInputService.InputEnded:Connect(function(input: InputObject)
 			if dragging and isPointer(input) then
 				dragging = false
-				Settings.set(key, tonumber(Settings.get(key)) or 1, true)
+				Settings.set(key, current(), true)
 				Sound.play("UIToggle")
 			end
 		end)
 		local function refresh()
-			show(tonumber(Settings.get(key)) or 1)
+			show(current())
 		end
 		refresh()
 		table.insert(refreshers, refresh)
@@ -259,7 +268,7 @@ function SettingsPanel.build(ctx: any): any
 
 	for k, row in U.SETTINGS_ROWS do
 		if row.kind == "slider" then
-			sliderCell(k, row.key)
+			sliderCell(k, row.key, row)
 		elseif row.kind == "camera" then
 			cameraCell(k)
 		else

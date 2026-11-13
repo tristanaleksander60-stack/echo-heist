@@ -529,40 +529,18 @@ function Hints.build(ctx: any): any
 	---------------------------------------------------------------------------
 	-- The finger pointer (§6.2): REWIND and GRAB, the first time each is the right move
 	---------------------------------------------------------------------------
-	local function buildFinger(): Frame
-		local size = O.POINTER_SIZE
-		local f = Ui.frame(ctx.root, {
-			Name = "FingerPointer",
-			BackgroundTransparency = 1,
-			Size = UDim2.fromOffset(size, size),
-			AnchorPoint = Vector2.new(1, 0.5),
-			Visible = false,
-			ZIndex = 20,
-		})
-		-- A cartoon hand pointing right: the index finger, the palm, a thumb (frames, no glyph).
-		local function piece(name: string, x: number, y: number, w: number, h: number)
-			local p = Ui.frame(f, {
-				Name = name,
-				BackgroundColor3 = Palette.white,
-				BackgroundTransparency = 0,
-				Position = UDim2.fromScale(x, y),
-				Size = UDim2.fromScale(w, h),
-				ZIndex = 20,
-			})
-			Ui.pill(p)
-			Ui.stroke(p, Palette.ink, 2)
-		end
-		piece("Palm", 0.0, 0.3, 0.55, 0.55)
-		piece("Thumb", 0.25, 0.12, 0.22, 0.3)
-		piece("Finger", 0.38, 0.36, 0.62, 0.22)
-		return f
-	end
-	local finger = buildFinger()
+	local finger = Common.finger(ctx.root, O.POINTER_SIZE, 20)
 	local fingerOn: GuiObject? = nil
 
 	local function pointAt(target: GuiObject?, now: number)
 		fingerOn = target
-		if not target or not target.Visible then
+		-- First person on a keyboard: the prompt chip by the reticle (on the fx layer) has its own finger,
+		-- pointing up at it from below so it never covers the reticle (Hud/Reticle.point).
+		local fpChip = ctx.reticle ~= nil and target ~= nil and target == ctx.reticle.chip
+		if ctx.reticle then
+			ctx.reticle.point(fpChip, now)
+		end
+		if fpChip or not target or not target.Visible then
 			finger.Visible = false
 			return
 		end
@@ -705,14 +683,13 @@ function Hints.build(ctx: any): any
 		-- The finger: REWIND first (it is the signature verb), then GRAB.
 		local controls = ctx.controls
 		local wantRewind = (rewindRight or ctx.l1PulseEnd == true) and not FirstTime.seen("pointRewind")
-		local grabBtn = controls.interactBtn
-		local wantGrab = not wantRewind
-			and grabBtn.Visible
-			and grabBtn.BackgroundColor3 == Palette.gold
-			and not FirstTime.seen("pointGrab")
+		-- GRAB: the button (touch, and every non-first-person camera), or in first person on a keyboard or a
+		-- gamepad the prompt chip by the reticle (Hud/Run.grabPointTarget).
+		local grabTarget: GuiObject? = if ctx.grabPointTarget then ctx.grabPointTarget() else nil
+		local wantGrab = not wantRewind and grabTarget ~= nil and not FirstTime.seen("pointGrab")
 		local target: GuiObject? = nil
 		if state.phase == "Run" then
-			target = if wantRewind then controls.endBtn elseif wantGrab then grabBtn else nil
+			target = if wantRewind then controls.endBtn elseif wantGrab then grabTarget else nil
 		end
 		pointAt(target, now)
 	end

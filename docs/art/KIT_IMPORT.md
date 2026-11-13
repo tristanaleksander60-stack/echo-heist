@@ -111,6 +111,46 @@ The table below shows what Studio must show after the import (generated from `as
 | Plate_4x4.fbx | Plate_4x4 | 4 x 0.36 x 4 | 484 | Box | SmoothPlastic | on | off | base |
 | Plate_4x4.fbx | Plate_4x4_Ring | 3.3 x 0.14 x 3.3 | 288 | Box | Neon | off | off | base |
 | Present.fbx | Present | 2.101 x 2.021 x 1.9 | 388 | Box | SmoothPlastic | on | off | base |
+| Rookie.fbx | Rookie_Face_Idle | 1.023 x 0.834 x 0.252 | 368 | Box | SmoothPlastic | off | off | base |
+| Rookie.fbx | Rookie_Head | 2.097 x 1.66 x 1.89 | 644 | Box | SmoothPlastic | off | on | base |
+| Rookie.fbx | Rookie_LeftFoot | 0.76 x 0.66 x 1.3 | 152 | Box | SmoothPlastic | off | on | base |
+| Rookie.fbx | Rookie_LeftHand | 0.62 x 0.64 x 0.571 | 244 | Box | SmoothPlastic | off | on | base |
+| Rookie.fbx | Rookie_LeftLowerArm | 0.609 x 0.754 x 0.533 | 120 | Box | SmoothPlastic | off | on | base |
+| Rookie.fbx | Rookie_LeftLowerLeg | 0.7 x 0.64 x 0.666 | 120 | Box | SmoothPlastic | off | on | base |
+| Rookie.fbx | Rookie_LeftUpperArm | 0.696 x 1.032 x 0.647 | 180 | Box | SmoothPlastic | off | on | base |
+| Rookie.fbx | Rookie_LeftUpperLeg | 0.739 x 0.661 x 0.704 | 80 | Box | SmoothPlastic | off | on | base |
+| Rookie.fbx | Rookie_LowerTorso | 1.84 x 0.68 x 1.243 | 184 | Box | SmoothPlastic | off | on | base |
+| Rookie.fbx | Rookie_RightFoot | 0.76 x 0.66 x 1.3 | 152 | Box | SmoothPlastic | off | on | base |
+| Rookie.fbx | Rookie_RightHand | 0.62 x 0.64 x 0.571 | 244 | Box | SmoothPlastic | off | on | base |
+| Rookie.fbx | Rookie_RightLowerArm | 0.609 x 0.754 x 0.533 | 120 | Box | SmoothPlastic | off | on | base |
+| Rookie.fbx | Rookie_RightLowerLeg | 0.7 x 0.64 x 0.666 | 120 | Box | SmoothPlastic | off | on | base |
+| Rookie.fbx | Rookie_RightUpperArm | 0.696 x 1.032 x 0.647 | 180 | Box | SmoothPlastic | off | on | base |
+| Rookie.fbx | Rookie_RightUpperLeg | 0.739 x 0.661 x 0.704 | 80 | Box | SmoothPlastic | off | on | base |
+| Rookie.fbx | Rookie_UpperTorso | 2 x 1.27 x 1.625 | 644 | Box | SmoothPlastic | off | on | base |
+| Rookie_Faces.fbx | Rookie_Face_Busted | 0.923 x 0.646 x 0.105 | 96 | Box | SmoothPlastic | off | off | base |
+| Rookie_Faces.fbx | Rookie_Face_Shocked | 1.023 x 1.004 x 0.252 | 408 | Box | SmoothPlastic | off | off | base |
+| Rookie_Faces.fbx | Rookie_Face_Smug | 1.021 x 0.911 x 0.29 | 496 | Box | SmoothPlastic | off | off | base |
+| Rookie_Outfits.fbx | Rookie_Block_LeftCuff | 0.587 x 0.239 x 0.542 | 80 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Block_RightCuff | 0.587 x 0.239 x 0.542 | 80 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Block_Torso | 2.05 x 0.36 x 1.558 | 192 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Cap_Beanie | 2.18 x 1.02 x 2.18 | 384 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Cap_Bobble | 2.14 x 1.48 x 2.14 | 484 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Cap_Flat | 2.12 x 0.679 x 2.351 | 336 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Cap_Trapper | 2.26 x 1.48 x 2.1 | 284 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Gloves_Knit_Left | 0.645 x 0.256 x 0.63 | 168 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Gloves_Knit_Right | 0.645 x 0.256 x 0.63 | 168 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Gloves_Leather_Left | 0.72 x 0.301 x 0.73 | 132 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Gloves_Leather_Right | 0.72 x 0.301 x 0.73 | 132 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Mask_Eye | 2.02 x 0.713 x 1.763 | 328 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Scarf_Bandana | 1.6 x 0.78 x 1.772 | 256 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Scarf_Chunky | 1.96 x 0.48 x 1.686 | 320 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Scarf_Knot | 1.72 x 0.792 x 1.71 | 284 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Scarf_Long | 2.48 x 1.165 x 3.135 | 268 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Stripes_LeftArm | 0.658 x 0.416 x 0.594 | 160 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Stripes_RightArm | 0.658 x 0.416 x 0.594 | 160 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outfits.fbx | Rookie_Stripes_Torso | 2.028 x 0.62 x 1.541 | 384 | Box | SmoothPlastic | off | on | base |
+| Rookie_Viewmodel.fbx | Rookie_VM_LeftArm | 0.654 x 1.258 x 0.635 | 460 | Box | SmoothPlastic | off | off | base |
+| Rookie_Viewmodel.fbx | Rookie_VM_RightArm | 0.654 x 1.258 x 0.635 | 460 | Box | SmoothPlastic | off | off | base |
 | Rug_8x6.fbx | Rug_8x6 | 8.64 x 0.036 x 6 | 264 | Box | SmoothPlastic | off | off | base |
 | Safe.fbx | Safe | 3.2 x 3.95 x 2.92 | 452 | Box | SmoothPlastic | on | on | base |
 | Safe.fbx | Safe_Door | 2.71 x 2.94 x 0.7 | 548 | Box | SmoothPlastic | on | on | base |
@@ -156,7 +196,7 @@ The table below shows what Studio must show after the import (generated from `as
 | Xmas_Tree.fbx | Xmas_Tree_Lights | 4.119 x 5.64 x 4.033 | 400 | Box | Neon | off | off | xmas |
 | Xmas_Wreath.fbx | Xmas_Wreath | 2.826 x 3.56 x 1.135 | 548 | Box | SmoothPlastic | off | off | xmas |
 
-**69 FBX files, 138 MeshParts, 71,330 triangles in all.** Christmas layer: 17 parts.
+**73 FBX files, 178 MeshParts, 81,482 triangles in all.** Christmas layer: 17 parts.
 <!-- kit-table:end -->
 
 ---
@@ -457,5 +497,5 @@ Use this if the meshes, sizes or collision do not survive `rojo build`. Then we 
    ```
    Then it sets Size, TextureID, Material, PivotOffset and the other flags from the manifest. Each heist clones the cached parts.
 <!-- fallback-cost:start -->
-4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 138 MeshParts and 71,330 triangles about **3.1 s** at boot (generated by kit_docs.py). Boot only, never per heist.
+4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 178 MeshParts and 81,482 triangles about **3.9 s** at boot (generated by kit_docs.py). Boot only, never per heist.
 <!-- fallback-cost:end -->

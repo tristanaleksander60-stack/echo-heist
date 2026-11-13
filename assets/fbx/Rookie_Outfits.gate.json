@@ -1,0 +1,1438 @@
+{
+ "asset": "Rookie_Outfits",
+ "objects": [
+  {
+   "name": "Rookie_Cap_Flat",
+   "class": "small",
+   "tris": 336,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.12,
+    2.351,
+    0.679
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.06,
+     -1.3441,
+     -0.1388
+    ],
+    "local_max": [
+     1.06,
+     1.007,
+     0.54
+    ]
+   },
+   "swatches": [
+    "hair",
+    "ink_hi"
+   ],
+   "location": [
+    -4.0,
+    0.0,
+    4.2
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 162,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit cap: Flat",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Cap_Beanie",
+   "class": "small",
+   "tris": 384,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.18,
+    2.18,
+    1.02
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.09,
+     -1.09,
+     -0.24
+    ],
+    "local_max": [
+     1.09,
+     1.09,
+     0.78
+    ]
+   },
+   "swatches": [
+    "steel",
+    "steel_hi"
+   ],
+   "location": [
+    -1.4,
+    0.0,
+    4.2
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 84,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit cap: Beanie",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Cap_Bobble",
+   "class": "small",
+   "tris": 484,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.14,
+    2.14,
+    1.48
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.07,
+     -1.07,
+     -0.24
+    ],
+    "local_max": [
+     1.07,
+     1.07,
+     1.24
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_hi",
+    "shirt_lo"
+   ],
+   "location": [
+    1.2,
+    0.0,
+    4.2
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 102,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit cap: Bobble",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Cap_Trapper",
+   "class": "small",
+   "tris": 284,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.26,
+    2.1,
+    1.48
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.13,
+     -1.06,
+     -0.78
+    ],
+    "local_max": [
+     1.13,
+     1.04,
+     0.7
+    ]
+   },
+   "swatches": [
+    "hair",
+    "marble_hi"
+   ],
+   "location": [
+    3.8,
+    0.0,
+    4.2
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 68,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit cap: Trapper",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Scarf_Long",
+   "class": "small",
+   "tris": 268,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.48,
+    3.135,
+    1.165
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.86,
+     -0.95,
+     -0.96
+    ],
+    "local_max": [
+     1.6204,
+     2.1851,
+     0.2048
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -4.0,
+    0.0,
+    0.4
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 24,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit scarf: Long",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Scarf_Chunky",
+   "class": "small",
+   "tris": 320,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.96,
+    1.686,
+    0.48
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.98,
+     -0.8428,
+     -0.14
+    ],
+    "local_max": [
+     0.98,
+     0.8428,
+     0.34
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -1.4,
+    0.0,
+    0.4
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 48,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit scarf: Chunky",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Scarf_Bandana",
+   "class": "small",
+   "tris": 256,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.6,
+    1.772,
+    0.78
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.8,
+     -0.9,
+     -0.58
+    ],
+    "local_max": [
+     0.8,
+     0.8722,
+     0.2
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    1.2,
+    0.0,
+    0.4
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 70,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit scarf: Bandana",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Scarf_Knot",
+   "class": "small",
+   "tris": 284,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.72,
+    1.71,
+    0.792
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.86,
+     -0.9702,
+     -0.5915
+    ],
+    "local_max": [
+     0.86,
+     0.7396,
+     0.2
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    3.8,
+    0.0,
+    0.4
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 40,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit scarf: Knot",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Stripes_Torso",
+   "class": "small",
+   "tris": 384,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.028,
+    1.541,
+    0.62
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.0141,
+     -0.7707,
+     0.21
+    ],
+    "local_max": [
+     1.0141,
+     0.7707,
+     0.83
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -4.0,
+    0.0,
+    -3.25
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit sweater: Stripes",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Stripes_RightArm",
+   "class": "small",
+   "tris": 160,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.658,
+    0.594,
+    0.416
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3837,
+     -0.2971,
+     -0.5669
+    ],
+    "local_max": [
+     0.2744,
+     0.2971,
+     -0.1513
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -2.4,
+    0.0,
+    -2.44
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit sweater: Stripes",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Stripes_LeftArm",
+   "class": "small",
+   "tris": 160,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.658,
+    0.594,
+    0.416
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.2744,
+     -0.2971,
+     -0.5669
+    ],
+    "local_max": [
+     0.3837,
+     0.2971,
+     -0.1513
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    2.2,
+    0.0,
+    -2.44
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit sweater: Stripes",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Block_Torso",
+   "class": "small",
+   "tris": 192,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.05,
+    1.558,
+    0.36
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.025,
+     -0.779,
+     0.35
+    ],
+    "local_max": [
+     1.025,
+     0.779,
+     0.71
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    3.8,
+    0.0,
+    -3.25
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit sweater: Block",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Block_RightCuff",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.587,
+    0.542,
+    0.239
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3374,
+     -0.2711,
+     -0.4275
+    ],
+    "local_max": [
+     0.2494,
+     0.2711,
+     -0.1885
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    5.3,
+    0.0,
+    -3.04
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit sweater: Block",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Block_LeftCuff",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.587,
+    0.542,
+    0.239
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.2494,
+     -0.2711,
+     -0.4275
+    ],
+    "local_max": [
+     0.3374,
+     0.2711,
+     -0.1885
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    10.1,
+    0.0,
+    -3.04
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "crew colour (Palette seat hue)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit sweater: Block",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Gloves_Knit_Right",
+   "class": "small",
+   "tris": 168,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.645,
+    0.63,
+    0.256
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.319,
+     -0.3152,
+     -0.1032
+    ],
+    "local_max": [
+     0.3261,
+     0.3152,
+     0.1527
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -5.18,
+    0.0,
+    -6.2
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 24,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit gloves: Knit",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Gloves_Knit_Left",
+   "class": "small",
+   "tris": 168,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.645,
+    0.63,
+    0.256
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3261,
+     -0.3152,
+     -0.1032
+    ],
+    "local_max": [
+     0.319,
+     0.3152,
+     0.1527
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -0.22,
+    0.0,
+    -6.2
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 24,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit gloves: Knit",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Gloves_Leather_Right",
+   "class": "small",
+   "tris": 132,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.72,
+    0.73,
+    0.301
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3663,
+     -0.37,
+     -0.1202
+    ],
+    "local_max": [
+     0.3536,
+     0.36,
+     0.181
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.02,
+    0.0,
+    -6.2
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 6,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit gloves: Leather",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Gloves_Leather_Left",
+   "class": "small",
+   "tris": 132,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.72,
+    0.73,
+    0.301
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3536,
+     -0.37,
+     -0.1202
+    ],
+    "local_max": [
+     0.3663,
+     0.36,
+     0.181
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    4.98,
+    0.0,
+    -6.2
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 6,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "glove colour (Config.Rookie.GLOVE_COLOURS)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit gloves: Leather",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Mask_Eye",
+   "class": "small",
+   "tris": 328,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.02,
+    1.763,
+    0.713
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.01,
+     -0.0542,
+     -0.2765
+    ],
+    "local_max": [
+     1.01,
+     1.7086,
+     0.4365
+    ]
+   },
+   "swatches": [
+    "ink"
+   ],
+   "location": [
+    6.4,
+    -0.84,
+    -4.08
+   ],
+   "symmetry_error": {
+    "X": 0.0
+   },
+   "self_intersections": 0,
+   "cross_shell_overlaps": 37,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "SmoothPlastic",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": true,
+    "Transparency": 0.0,
+    "atlas": true,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [
+    "EH_Rookie",
+    "EH_Outfit"
+   ],
+   "joint": null,
+   "role": "char",
+   "notes": "outfit mask: Eye",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 4600,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "141f96125e34ee872008",
+ "fbx": {
+  "path": "assets/fbx/Rookie_Outfits.fbx",
+  "bytes": 147100,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Rookie_Block_LeftCuff",
+   "Rookie_Block_RightCuff",
+   "Rookie_Block_Torso",
+   "Rookie_Cap_Beanie",
+   "Rookie_Cap_Bobble",
+   "Rookie_Cap_Flat",
+   "Rookie_Cap_Trapper",
+   "Rookie_Gloves_Knit_Left",
+   "Rookie_Gloves_Knit_Right",
+   "Rookie_Gloves_Leather_Left",
+   "Rookie_Gloves_Leather_Right",
+   "Rookie_Mask_Eye",
+   "Rookie_Scarf_Bandana",
+   "Rookie_Scarf_Chunky",
+   "Rookie_Scarf_Knot",
+   "Rookie_Scarf_Long",
+   "Rookie_Stripes_LeftArm",
+   "Rookie_Stripes_RightArm",
+   "Rookie_Stripes_Torso"
+  ],
+  "geometry_extents": [
+   [
+    0.239,
+    0.542,
+    0.587
+   ],
+   [
+    0.239,
+    0.542,
+    0.587
+   ],
+   [
+    0.256,
+    0.63,
+    0.645
+   ],
+   [
+    0.256,
+    0.63,
+    0.645
+   ],
+   [
+    0.301,
+    0.72,
+    0.73
+   ],
+   [
+    0.301,
+    0.72,
+    0.73
+   ],
+   [
+    0.36,
+    1.558,
+    2.05
+   ],
+   [
+    0.416,
+    0.594,
+    0.658
+   ],
+   [
+    0.416,
+    0.594,
+    0.658
+   ],
+   [
+    0.48,
+    1.686,
+    1.96
+   ],
+   [
+    0.62,
+    1.541,
+    2.028
+   ],
+   [
+    0.679,
+    2.12,
+    2.351
+   ],
+   [
+    0.713,
+    1.763,
+    2.02
+   ],
+   [
+    0.78,
+    1.6,
+    1.772
+   ],
+   [
+    0.792,
+    1.71,
+    1.72
+   ],
+   [
+    1.02,
+    2.18,
+    2.18
+   ],
+   [
+    1.165,
+    2.48,
+    3.135
+   ],
+   [
+    1.48,
+    2.1,
+    2.26
+   ],
+   [
+    1.48,
+    2.14,
+    2.14
+   ]
+  ]
+ },
+ "spec": "assets/blender/rookie.py",
+ "notes": "Outfit slots: cap x4 (atlas), scarf x4 + sweater x2 (crew colour), gloves x2 (glove colour), mask x1 (+ none). Pivot = attach point.",
+ "turntable": "docs/art/turntables/Rookie_Outfits.png",
+ "seconds": 8.4
+}

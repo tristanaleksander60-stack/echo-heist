@@ -37,6 +37,8 @@ local function startAnalytics(dataService: any, heistService: any)
 end
 
 if Config.GAME_MODE == "sim" then
+	-- Every player is a Rookie (Heist/Characters): no avatar spawns before the Rookie StarterCharacter exists.
+	game:GetService("Players").CharacterAutoLoads = false
 	local HeistService = require(script:WaitForChild("Heist"):WaitForChild("HeistService"))
 	local DataService = nil
 	local okSimData, simDataErr = pcall(function()
@@ -57,6 +59,8 @@ if Config.GAME_MODE == "sim" then
 			require(script:WaitForChild("Heist"):WaitForChild("BackdropKit")).start(KitService)
 			-- Gus's mesh for the client rig (box Gus until it arrives)
 			require(script:WaitForChild("Heist"):WaitForChild("GusTemplate")).publish(KitService)
+			-- the Rookie (player character, clone templates, first-person arms): ReplicatedStorage.CharacterKit
+			require(script:WaitForChild("Heist"):WaitForChild("Rookie")).publish(KitService)
 			-- the story intro's meshes for the client stage (stand-ins until they arrive)
 			require(script:WaitForChild("Heist"):WaitForChild("IntroKit")).publish(KitService)
 		end

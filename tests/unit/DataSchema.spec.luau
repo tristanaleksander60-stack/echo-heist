@@ -278,4 +278,36 @@ return function(test)
 		Assert.eq(#Schema.sanitize(h), 0, "a valid number stays")
 		Assert.eq(h.settings.sfxVolume, 0.25, "kept")
 	end)
+	test("settings: cameraMode replaces classicCamera additively; fpFov 60-90 (PLAN_FIRST_PERSON FP)", function()
+		local d = Schema.defaultSettings()
+		Assert.eq(d.cameraMode, "fp", "first person by default")
+		Assert.eq(d.fpFov, 70, "FOV 70 by default")
+		Assert.eq(DATA.SETTING_CHOICES.cameraMode[1], "fp", "the first choice is the default")
+		for _, m in { "fp", "diorama", "classic" } do
+			Assert.truthy(Schema.validSetting("cameraMode", m), m .. " is a camera choice")
+		end
+		Assert.falsy(Schema.validSetting("cameraMode", "drone"), "unknown choice")
+		Assert.falsy(Schema.validSetting("cameraMode", true), "a boolean is not a choice")
+		Assert.falsy(Schema.validSetting("classicCamera", "classic"), "a string is not a boolean setting")
+		Assert.truthy(Schema.validSetting("fpFov", 60) and Schema.validSetting("fpFov", 90), "FOV range ends")
+		Assert.falsy(Schema.validSetting("fpFov", 59) or Schema.validSetting("fpFov", 91), "FOV outside 60-90")
+		Assert.eq(Schema.settingAttribute("cameraMode"), "Setting_CameraMode", "attribute name")
+		-- An old classic pick carries over once; an old diorama default moves to first person.
+		local h = Schema.defaultHeist() :: any
+		h.settings = { reducedMotion = false, relaxed = false, colourBlindGlyphs = false, classicCamera = true }
+		Schema.sanitize(h)
+		Assert.eq(h.settings.cameraMode, "classic", "classicCamera = true -> classic")
+		Assert.eq(h.settings.fpFov, 70, "FOV filled in")
+		local h2 = Schema.defaultHeist() :: any
+		h2.settings = { reducedMotion = false, relaxed = false, colourBlindGlyphs = false, classicCamera = false }
+		Schema.sanitize(h2)
+		Assert.eq(h2.settings.cameraMode, "fp", "the old diorama default -> first person")
+		-- A saved pick wins over the legacy boolean (no second migration).
+		h.settings.cameraMode = "diorama"
+		Assert.eq(#Schema.sanitize(h), 0, "a valid choice stays")
+		Assert.eq(h.settings.cameraMode, "diorama", "kept")
+		h.settings.cameraMode = "orbit"
+		Schema.sanitize(h)
+		Assert.eq(h.settings.cameraMode, "fp", "junk -> the default, not the legacy boolean")
+	end)
 end

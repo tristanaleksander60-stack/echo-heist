@@ -1,12 +1,13 @@
 --!strict
 -- Heist/Avatars: one stripped clone template per owner (MASTERPLAN §6.5 #1-2).
--- The server builds it from the player's avatar with
--- Players:CreateHumanoidModelFromDescriptionAsync and puts it in
--- ReplicatedStorage.HeistAvatars/<userId>; clients clone and pool it (a mannequin
--- stands in until it arrives). Stripped silhouette: no SurfaceAppearance, textures,
--- decals, face or layered clothing, at most MAX_CLONE_ACCESSORIES hair/hat pieces,
--- SmoothPlastic, no shadows, no collisions, no scripts; the client tints it. The owner's
--- animation pack stays as EH_Anim_<slot> attributes (clones walk like their owner).
+-- Clones are copies of YOUR Rookie (PLAN_FIRST_PERSON "CH"): the server builds the template from the Rookie
+-- (Heist/Rookie) in the owner's outfit (the player attribute "Outfit") and puts it in
+-- ReplicatedStorage.HeistAvatars/<userId>; clients clone and pool it (a mannequin stands in until it arrives).
+-- An outfit change rebuilds it (Heist/Characters calls prepare again; the attribute EH_Outfit is the outfit key).
+-- Strip: SmoothPlastic, no shadows, no collisions, no scripts, anchored invisible root; the joints, their
+-- attachments, the rig attachments and the four faces (one shown) stay. The client tints only the crew pieces
+-- (EH_Tint "crew": scarf, stripes) in the owner hue. The owner's animation pack stays as EH_Anim_<slot>
+-- attributes (clones walk like their owner). Avatars.strip still handles any avatar rig (tests use real ones).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -15,11 +16,14 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config")) :: any
 local Protocol = require(Shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local RigJoints = require(Shared:WaitForChild("Heist"):WaitForChild("RigJoints"))
+local Outfit = require(Shared:WaitForChild("Heist"):WaitForChild("Outfit"))
+local Rookie = require(script.Parent:WaitForChild("Rookie"))
 
 local Avatars = {}
 
 local folder: Folder? = nil
 local building: { [number]: boolean } = {}
+local again: { [number]: boolean } = {} -- the outfit changed while its template was building
 
 local KEEP_ACCESSORY = {
 	[Enum.AccessoryType.Hair] = true,
@@ -167,47 +171,60 @@ function Avatars.strip(rig: Model)
 	end
 end
 
--- Builds the template for a player once (yields; call in its own thread).
-function Avatars.prepare(player: Player)
-	local userId = player.UserId
-	if building[userId] or getFolder():FindFirstChild(tostring(userId)) then
-		return
-	end
-	building[userId] = true
-	local okDesc, desc = pcall(function()
-		return Players:GetHumanoidDescriptionFromUserIdAsync(math.max(userId, 1))
-	end)
-	local description: HumanoidDescription = if okDesc and desc then desc else Instance.new("HumanoidDescription")
-	local okRig, rig = pcall(function()
-		return Players:CreateHumanoidModelFromDescriptionAsync(description, Enum.HumanoidRigType.R15)
-	end)
-	building[userId] = nil
-	if not okRig or not rig then
-		warn("[Avatars] no clone template for " .. tostring(userId) .. ": " .. tostring(rig))
-		return
-	end
-	if player.Parent ~= Players then
-		rig:Destroy() -- left while the avatar was loading
-		return
-	end
-	-- The live character's Animate holds the pack the player really walks with.
-	local character = player.Character
+-- Builds an owner's clone template from the Rookie in an outfit (no player needed: the engine tests use it).
+-- Returns the filed template, or nil when the rig would not hold together (the client keeps the mannequin).
+function Avatars.buildRookie(ownerId: number, outfit: Outfit.Outfit, character: Model?): Model?
+	local rig = Rookie.build(outfit, nil, "constraint")
 	if character then
-		Avatars.readPack(character, rig)
+		Avatars.readPack(character, rig) -- the live character's Animate holds the pack the player really walks with
 	end
 	Avatars.strip(rig)
 	local joints = RigJoints.whole(rig)
 	if joints < Config.Heist.CLONE_MIN_JOINTS then
-		-- a rig that cannot hold together never ships: the client keeps the mannequin
-		warn("[Avatars] clone template for " .. tostring(userId) .. " has " .. joints .. " joints: mannequin")
+		warn("[Avatars] clone template for " .. tostring(ownerId) .. " has " .. joints .. " joints: mannequin")
 		rig:Destroy()
+		return nil
+	end
+	rig.Name = tostring(ownerId)
+	local old = getFolder():FindFirstChild(rig.Name)
+	if old then
+		old:Destroy()
+	end
+	rig.Parent = getFolder()
+	return rig
+end
+
+-- Builds (or rebuilds, when the outfit changed) the template for a player (yields; call in its own thread).
+function Avatars.prepare(player: Player)
+	local userId = player.UserId
+	local key = Outfit.key(Outfit.fromKey(player:GetAttribute("Outfit")))
+	local existing = getFolder():FindFirstChild(tostring(userId))
+	if existing and existing:GetAttribute("EH_Outfit") == key then
 		return
 	end
-	rig.Name = tostring(userId)
-	rig.Parent = getFolder()
+	if building[userId] then
+		again[userId] = true
+		return
+	end
+	building[userId] = true
+	Rookie.waitForKit(Config.Rookie.KIT_WAIT_SECONDS)
+	building[userId] = nil
+	if player.Parent ~= Players then
+		again[userId] = nil
+		return -- left while the kit was loading
+	end
+	local ok, err = pcall(Avatars.buildRookie, userId, Outfit.fromKey(player:GetAttribute("Outfit")), player.Character)
+	if not ok then
+		warn("[Avatars] no clone template for " .. tostring(userId) .. ": " .. tostring(err))
+	end
+	if again[userId] then
+		again[userId] = nil
+		Avatars.prepare(player)
+	end
 end
 
 function Avatars.release(player: Player)
+	again[player.UserId] = nil
 	local t = getFolder():FindFirstChild(tostring(player.UserId))
 	if t then
 		t:Destroy()

@@ -5,16 +5,14 @@
 -- Run: ROBLOX_API_KEY=proxy-injected python3 tools/cloud_test.py --universe 10776026960 \
 --      --place 70772627070328 --script tests/clone_engine.luau   (add --version N to skip publishing)
 --
--- Real stripped avatar templates (the owner's avatar, a default body, Rthro scales, and a
--- layered-clothing avatar when one of the sample accounts wears one) go into the avatars folder
--- exactly as the server puts them there. EchoView then replays a recorded L1 run on them for
+-- Rookie templates in four outfits (PLAN_FIRST_PERSON "CH": clones are copies of your Rookie, built from
+-- the uploaded art kit) go into the avatars folder exactly as the server puts them there. EchoView then replays a recorded L1 run on them for
 -- about 3 s of real Heartbeats, with physics running, and every clone must still be whole,
 -- visible, animated, in frame from the default camera and not hidden by the level.
 -- Luau Execution has no client and no camera of its own: EchoView runs on the server, the way
 -- the engine smoke test runs it, against a camera placed by hand where the default follow
 -- camera sits behind a player on the L1 spawn.
 
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
@@ -51,8 +49,7 @@ local DebugChip = require(clientHeist:WaitForChild("DebugChip"))
 local Rigs = require(clientHeist:WaitForChild("Rigs"))
 local RigJoints = require(shared:WaitForChild("Heist"):WaitForChild("RigJoints"))
 
-local OWNER_ID = 10346200733 -- the game owner's account (their avatar is the one that vanished)
-local LAYERED_CANDIDATES = { OWNER_ID, 1, 156, 261 } -- accounts searched for a layered-clothing avatar
+local OWNER_ID = 10346200733 -- the game owner's account (the local viewer: their clones are "yours")
 local SECONDS = 3
 local VIEW_START = 0.8 -- recording time at the first frame (run 1 stands still for its 1.1 s intro)
 local CAM_FOV = 70
@@ -121,64 +118,63 @@ local rec = Codec.decode(inst.recBufs[cloneActor.key])
 note(string.format("recording: %d samples, %.2f s", rec.n, Sampler.duration(rec)))
 
 ---------------------------------------------------------------------------
--- 2. Real templates, stripped and filed exactly as Avatars.prepare files them.
+-- 2. Rookie templates (PLAN_FIRST_PERSON "CH": clones are copies of your Rookie), built from the real art kit and
+--    filed exactly as Avatars.prepare files them: four outfits that use every cap and scarf and both sweaters,
+--    gloves and masks.
 ---------------------------------------------------------------------------
-local function describe(userId: number): HumanoidDescription?
-	local ok, desc = pcall(function()
-		return Players:GetHumanoidDescriptionFromUserIdAsync(userId)
-	end)
-	return if ok then desc else nil
-end
+local Rookie = require(heistServer:WaitForChild("Rookie"))
+local Outfit = require(shared:WaitForChild("Heist"):WaitForChild("Outfit"))
+local Palette = require(shared:WaitForChild("Heist"):WaitForChild("Palette"))
+local KitService = require(server:WaitForChild("Kit"):WaitForChild("KitService"))
+KitService.start()
+local kitOk = KitService.ready(60)
+note("kit " .. KitService.summary())
+check(
+	Rookie.publishNow(KitService),
+	"CharacterKit published from the kit" .. (if kitOk then "" else " (kit report not ok)")
+)
 
-local function hasLayered(desc: HumanoidDescription): boolean
-	local ok, list = pcall(function()
-		return desc:GetAccessories(true)
-	end)
-	if not ok then
-		return false
-	end
-	for _, acc in list do
-		if acc.IsLayered then
-			return true
-		end
-	end
-	return false
-end
-
-local cases = {}
-local ownerDesc = describe(OWNER_ID)
-check(ownerDesc ~= nil, "owner's HumanoidDescription loads")
-if ownerDesc then
-	table.insert(cases, { name = "owner", id = OWNER_ID, desc = ownerDesc })
-end
-table.insert(cases, { name = "default", id = -302, desc = Instance.new("HumanoidDescription") })
-local rthro = Instance.new("HumanoidDescription")
-rthro.BodyTypeScale = 1
-rthro.ProportionScale = 1
-rthro.HeightScale = 1.05
-table.insert(cases, { name = "rthro", id = -303, desc = rthro })
-local layeredFrom = nil
-for _, uid in LAYERED_CANDIDATES do
-	local d = if uid == OWNER_ID then ownerDesc else describe(uid)
-	if d and hasLayered(d) then
-		layeredFrom = uid
-		if uid ~= OWNER_ID then
-			table.insert(cases, { name = "layered", id = -304, desc = d })
-		end
-		break
-	end
-end
-note("layered clothing sample: " .. (if layeredFrom then "account " .. layeredFrom else "none found"))
+local cases = {
+	{ name = "owner", id = OWNER_ID, outfit = Outfit.default() },
+	{
+		name = "beanie",
+		id = -302,
+		outfit = {
+			cap = "Cap_Beanie",
+			scarf = "Scarf_Chunky",
+			sweater = "Sweater_Block",
+			gloves = "Gloves_Leather",
+			mask = "Mask_Eye",
+		},
+	},
+	{
+		name = "trapper",
+		id = -303,
+		outfit = {
+			cap = "Cap_Trapper",
+			scarf = "Scarf_Bandana",
+			sweater = "Sweater_Stripes",
+			gloves = "Gloves_Knit",
+			mask = "Mask_None",
+		},
+	},
+	{
+		name = "bobble",
+		id = -304,
+		outfit = {
+			cap = "Cap_Bobble",
+			scarf = "Scarf_Knot",
+			sweater = "Sweater_Block",
+			gloves = "Gloves_Knit",
+			mask = "Mask_Eye",
+		},
+	},
+}
 
 local avatarsFolder = Avatars.folder()
 for _, c in cases do
-	local ok, rig = pcall(function()
-		return Players:CreateHumanoidModelFromDescriptionAsync(c.desc, Enum.HumanoidRigType.R15)
-	end)
+	local ok, rig = pcall(Avatars.buildRookie, c.id, c.outfit, nil)
 	if ok and rig then
-		Avatars.strip(rig)
-		rig.Name = tostring(c.id)
-		rig.Parent = avatarsFolder
 		c.template = rig
 		local motors, constraints = 0, 0
 		for _, d in rig:GetDescendants() do
@@ -197,6 +193,38 @@ for _, c in cases do
 				constraints,
 				RigJoints.whole(rig)
 			)
+		)
+		-- the outfit is applied: every piece of the outfit is in the template, nothing of another variant
+		local want = {}
+		for _, piece in Outfit.pieces(c.outfit) do
+			want[piece] = true
+		end
+		local missing, extra = 0, 0
+		for piece in want do
+			if rig:FindFirstChild(piece) == nil then
+				missing += 1
+			end
+		end
+		for _, d in rig:GetChildren() do
+			if d:GetAttribute("EH_Slot") ~= nil and not want[d.Name] then
+				extra += 1
+			end
+		end
+		check(
+			rig.Parent == avatarsFolder
+				and rig:GetAttribute("EH_Rookie") == true
+				and rig:GetAttribute("EH_Blocks") == false
+				and rig:GetAttribute("EH_Outfit") == Outfit.key(c.outfit)
+				and missing == 0
+				and extra == 0,
+			string.format("%s: Rookie template in its outfit (%d missing, %d extra pieces)", c.name, missing, extra)
+		)
+		local hand = rig:FindFirstChild("RightHand")
+		check(
+			hand ~= nil
+				and hand:IsA("BasePart")
+				and hand.Color:ToHex() == Color3.fromHex(Outfit.gloveHex(c.outfit)):ToHex(),
+			c.name .. ": gloves in the glove colour"
 		)
 	end
 	check(ok and rig ~= nil, "template builds: " .. c.name .. (if ok then "" else " (" .. tostring(rig) .. ")"))
@@ -444,7 +472,7 @@ for _, c in cases do
 		string.format("%s: >= 15 whole joints, Motor6D or AnimationConstraint (%d of %d)", tag, whole, all)
 	)
 	local lost, far, worst, worstName = 0, 0, 0, "-"
-	local seeThrough, seeName = 0, "-"
+	local seeThrough, seeName, facesShown = 0, "-", 0
 	for _, p in c.parts do
 		if not p:IsDescendantOf(rig) then
 			lost += 1
@@ -458,7 +486,11 @@ for _, c in cases do
 			if d > MAX_LIMB_DISTANCE then
 				far += 1
 			end
-			if p.Transparency + p.LocalTransparencyModifier >= 0.5 then
+			if p:GetAttribute("EH_Face") ~= nil then
+				if p.Transparency < 0.5 then
+					facesShown += 1 -- one face shows; the other three are hidden by design
+				end
+			elseif p.Transparency + p.LocalTransparencyModifier >= 0.5 then
 				seeThrough += 1
 				seeName = p.Name
 			end
@@ -488,6 +520,37 @@ for _, c in cases do
 	check(
 		seeThrough == 0,
 		string.format("%s: visible parts opaque (%d see-through, e.g. %s)", tag, seeThrough, seeName)
+	)
+	check(facesShown == 1, string.format("%s: one Rookie face shows (%d)", tag, facesShown))
+	-- crew colour: only the crew pieces (scarf, stripes) take the owner hue; the cap keeps its own colours
+	local crewCol: Color3? = nil
+	local crewOk, crewN = true, 0
+	local capTinted = false
+	for _, d in rig:GetChildren() do
+		if d:IsA("BasePart") and d:GetAttribute("EH_Tint") == "crew" then
+			crewN += 1
+			crewCol = crewCol or d.Color
+			crewOk = crewOk and d.Color == crewCol
+		elseif d:IsA("BasePart") and string.find(d.Name, "Rookie_Cap_", 1, true) then
+			local tc = c.template and c.template:FindFirstChild(d.Name)
+			capTinted = tc ~= nil and tc:IsA("BasePart") and tc.Color ~= d.Color
+		end
+	end
+	local hueOk = false
+	if crewCol then
+		local seatHue = Palette.hueFor(c.actorId)
+		local h1, s1 = crewCol:ToHSV()
+		local h2, s2 = seatHue:ToHSV()
+		hueOk = (s2 < 0.1 and s1 < 0.15) or math.abs(h1 - h2) < 0.03 or math.abs(h1 - h2) > 0.97
+	end
+	check(
+		crewN >= 2 and crewOk and hueOk and not capTinted,
+		string.format(
+			"%s: crew pieces (%d) in the owner hue %s, cap untinted",
+			tag,
+			crewN,
+			if crewCol then crewCol:ToHex() else "-"
+		)
 	)
 	local hl = rig.Parent and rig.Parent:FindFirstChildOfClass("Highlight")
 	check(hl ~= nil and hl.Enabled, tag .. ": owner Highlight on")
@@ -740,17 +803,13 @@ end
 ---------------------------------------------------------------------------
 -- 6. Animation-upload spike (PLAN_STEAM_PLUS §4.4 A3): a Lune-written 2-key KeyframeSequence uploaded
 -- through Open Cloud as an Animation asset (tools/anim_spike.luau, tools/anim_upload.py,
--- assets/anim_ids.json) plays on a server-side R15 rig's Animator and moves the shoulder joint.
+-- assets/anim_ids.json) plays on a server-side R15 rig's Animator and moves the shoulder joint. The rig is the
+-- player character itself: the Rookie as the StarterCharacter is built (Motor6D joints).
 ---------------------------------------------------------------------------
 local SPIKE_ANIM = 83859875506228
 do
-	local okRig, spikeRig = pcall(function()
-		return Players:CreateHumanoidModelFromDescriptionAsync(
-			Instance.new("HumanoidDescription"),
-			Enum.HumanoidRigType.R15
-		)
-	end)
-	check(okRig and spikeRig ~= nil, "spike: R15 rig builds")
+	local okRig, spikeRig = pcall(Rookie.build, Outfit.default(), nil, "motor")
+	check(okRig and spikeRig ~= nil, "spike: the Rookie (R15, Motor6Ds) builds")
 	if okRig and spikeRig then
 		local rig = spikeRig :: Model
 		local root = rig:FindFirstChild("HumanoidRootPart")

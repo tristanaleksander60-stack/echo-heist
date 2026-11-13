@@ -51,6 +51,7 @@ local Signal = require(LihFolk:WaitForChild("Signal"))
 
 local HeistInstance = require(script.Parent:WaitForChild("HeistInstance"))
 local Avatars = require(script.Parent:WaitForChild("Avatars"))
+local Characters = require(script.Parent:WaitForChild("Characters"))
 local Lobby = require(script.Parent:WaitForChild("Lobby"))
 local Staging = require(script.Parent:WaitForChild("Staging"))
 local LiveFlags = require(script.Parent.Parent:WaitForChild("Analytics"):WaitForChild("LiveFlags"))
@@ -468,6 +469,13 @@ local function syncPayload(player: Player): any
 end
 
 local function pushGarage(crew: Crew)
+	-- the crew seat is the Rookie's crew colour (scarf, stripes): members by index, then the ones waiting
+	for seat, p in crew.members do
+		Characters.setSeat(p, seat)
+	end
+	for i, p in crew.pending do
+		Characters.setSeat(p, #crew.members + i)
+	end
 	for _, p in crew.members do
 		if not (crew.instance and crew.instance.byId[p.UserId]) and not preparing[p] then
 			push(p, "Sync", garageState(p))
@@ -799,7 +807,8 @@ local function startHeist(crew: Crew, levelIndex: number, daily: HeistInstance.D
 	crew.instance = inst
 	crewOfInstance[inst] = crew
 	local spec = Catalog[levelIndex]
-	for _, p in crew.members do
+	for seat, p in crew.members do
+		Characters.setSeat(p, seat)
 		p:SetAttribute(Protocol.PLAYER_ATTR, inst.name)
 		blockPrompts(p, true)
 		push(p, "Sync", HeistInstance.syncFor(inst, p.UserId))
@@ -1342,6 +1351,11 @@ function HeistService.start(opts: StartOpts?)
 	if o.players == false then
 		return
 	end
+	-- Every player is a Rookie (Heist/Characters); an outfit change rebuilds the clone template too.
+	Characters.start(function(player: Player)
+		task.spawn(Avatars.prepare, player)
+	end)
+	HeistInstance.setFaceHook(Characters.flashFace)
 	Players.PlayerAdded:Connect(onPlayerAdded)
 	Players.PlayerRemoving:Connect(onPlayerRemoving)
 	for _, p in Players:GetPlayers() do
