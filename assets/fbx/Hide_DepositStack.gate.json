@@ -83,7 +83,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "3c81086ff9a7a3c3566a",
+ "contentHash": "3db3b42e2a05a55dbb29",
  "fbx": {
   "path": "assets/fbx/Hide_DepositStack.fbx",
   "bytes": 29100,
@@ -103,6 +103,6 @@
  },
  "spec": "assets/blender/hides.py",
  "notes": "Hide spot: a U of steel deposit-box towers (6 x 6 x 7), dark lined niche over the plate, three doors left open.",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/Hide_DepositStack.png"
+ "turntable": "docs/art/turntables/Hide_DepositStack.png",
+ "seconds": 60.1
 }

@@ -82,10 +82,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "ac1eb2aa7024ca9a2fb9",
+ "ao": {
+  "GoldBar": [
+   0.824,
+   0.937
+  ]
+ },
+ "contentHash": "17278945a21ab37c3948",
  "fbx": {
   "path": "assets/fbx/GoldBar.fbx",
-  "bytes": 20604,
+  "bytes": 21196,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -102,6 +108,6 @@
  },
  "spec": "assets/blender/gold_bar.py",
  "notes": "Loot: carried bar. Studio: SmoothPlastic, Color white, TextureID = kit atlas, Box, CastShadow off.",
- "seconds": 0.0,
- "turntable": "docs/art/turntables/GoldBar.png"
+ "turntable": "docs/art/turntables/GoldBar.png",
+ "seconds": 5.7
 }

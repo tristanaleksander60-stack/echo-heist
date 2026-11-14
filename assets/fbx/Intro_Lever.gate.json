@@ -163,10 +163,20 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "ec82bbe4acd9cf27d7d8",
+ "ao": {
+  "Intro_Lever": [
+   0.6,
+   0.846
+  ],
+  "Intro_Lever_Handle": [
+   0.6,
+   0.827
+  ]
+ },
+ "contentHash": "856f6eedfca43ff4b3a4",
  "fbx": {
   "path": "assets/fbx/Intro_Lever.fbx",
-  "bytes": 29084,
+  "bytes": 30668,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -189,6 +199,6 @@
  },
  "spec": "assets/blender/intro.py",
  "notes": "The vacuum's switch: a brass-topped burgundy pillar with a ball-knob lever.",
- "seconds": 2.3,
- "turntable": "docs/art/turntables/Intro_Lever.png"
+ "turntable": "docs/art/turntables/Intro_Lever.png",
+ "seconds": 20.8
 }

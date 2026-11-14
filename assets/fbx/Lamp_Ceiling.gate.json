@@ -162,10 +162,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "fb220220a05dbd36418e",
+ "ao": {
+  "Lamp_Ceiling": [
+   0.6,
+   0.883
+  ]
+ },
+ "contentHash": "9581374a836ef9f05568",
  "fbx": {
   "path": "assets/fbx/Lamp_Ceiling.fbx",
-  "bytes": 34652,
+  "bytes": 35836,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -188,6 +194,6 @@
  },
  "spec": "assets/blender/furniture.py",
  "notes": "Pendant lamp: canopy on the cut-away ceiling plane, cord, enamel shade (light inside), Neon bulb part.",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/Lamp_Ceiling.png"
+ "turntable": "docs/art/turntables/Lamp_Ceiling.png",
+ "seconds": 70.5
 }

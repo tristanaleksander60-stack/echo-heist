@@ -38,7 +38,7 @@ function GusTemplate.publishNow(kit: any): boolean
 		local model = kit.cloneModel(name)
 		if model then
 			for _, d in model:GetDescendants() do
-				if d:IsA("BasePart") then
+				if d:IsA("BasePart") and d:GetAttribute("EH_OutlineOf") == nil then -- hulls ride their piece's Weld
 					d.Anchored = true
 					d.CanCollide = false
 					d.CanTouch = false

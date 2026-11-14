@@ -80,10 +80,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "cbcdfd761546d1f765f4",
+ "ao": {
+  "Roof_Antenna": [
+   0.6,
+   0.921
+  ]
+ },
+ "contentHash": "82febb3ebd6e7130327a",
  "fbx": {
   "path": "assets/fbx/Roof_Antenna.fbx",
-  "bytes": 20492,
+  "bytes": 21068,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -100,6 +106,6 @@
  },
  "spec": "assets/blender/tower.py",
  "notes": "Antenna 4.4 x 1 x 9 (BIG buildings rooftop).",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/Roof_Antenna.png"
+ "turntable": "docs/art/turntables/Roof_Antenna.png",
+ "seconds": 74.7
 }

@@ -78,56 +78,60 @@
  },
  "models": {
   "BankFront_24x12": {
-   "assetId": 93567180109905,
+   "assetId": 75520631376713,
    "file": "assets/fbx/BankFront_24x12.fbx",
    "history": [
     83550543479169,
-    76189662377790
+    76189662377790,
+    93567180109905
    ],
    "moderation": "Approved",
    "pieces": [
     "BankFront_24x12"
    ],
    "revisionId": "1",
-   "sha256": "fb1aa66b853e9453d08ffc3679147c57a12c241d8768a9e068e2c4dc06afc476",
-   "uploaded": "2026-11-13T21:39:08Z"
+   "sha256": "9870059f532f94d5f93b49f5078f96f89f2092bd50e7adeb5434743da7dceded",
+   "uploaded": "2026-11-14T00:29:39Z"
   },
   "BankersLamp": {
-   "assetId": 76475797956276,
+   "assetId": 128194730814521,
    "file": "assets/fbx/BankersLamp.fbx",
    "history": [
     138758854637908,
-    109545726366287
+    109545726366287,
+    76475797956276
    ],
    "moderation": "Approved",
    "pieces": [
     "BankersLamp"
    ],
    "revisionId": "1",
-   "sha256": "009df31780909336380e77d11c0ec095c3f33b77f5d2cab06818e9736df9625f",
-   "uploaded": "2026-11-13T21:39:33Z"
+   "sha256": "901a916934014c5a44d79d2f444b0eb9f355dd9c8be347d0337f21d479f0f8a8",
+   "uploaded": "2026-11-14T00:29:47Z"
   },
   "Candy": {
-   "assetId": 111146334332297,
+   "assetId": 134362122413922,
    "file": "assets/fbx/Candy.fbx",
    "history": [
     98835635040680,
-    72243453855652
+    72243453855652,
+    111146334332297
    ],
    "moderation": "Approved",
    "pieces": [
     "Candy"
    ],
    "revisionId": "1",
-   "sha256": "ca97e439c9b072bb6fa979c149d43a4391bd89f78f242e24ac6f29eec7cd20fc",
-   "uploaded": "2026-11-13T21:39:51Z"
+   "sha256": "1e9ce3f033100c8845fc1cd49bde3536a840b5678fd849b93118f0da4f14c6ac",
+   "uploaded": "2026-11-14T00:29:58Z"
   },
   "Car_Parked": {
-   "assetId": 107392726645035,
+   "assetId": 110224225440239,
    "file": "assets/fbx/Car_Parked.fbx",
    "history": [
     76821634204314,
-    131231806219512
+    131231806219512,
+    107392726645035
    ],
    "moderation": "Approved",
    "pieces": [
@@ -135,30 +139,32 @@
     "Car_Parked_Paint"
    ],
    "revisionId": "1",
-   "sha256": "b73832511ec1e10cb36695d059374f493fda671bd840044db2d79983acb51e40",
-   "uploaded": "2026-11-13T21:40:16Z"
+   "sha256": "f520d9beb162e202296779d9b1df43e2753b624f1eb8f6f230f654607df71e16",
+   "uploaded": "2026-11-14T00:30:09Z"
   },
   "CashBag": {
-   "assetId": 81447954636517,
+   "assetId": 94077162586981,
    "file": "assets/fbx/CashBag.fbx",
    "history": [
     120803856698199,
-    87195954817436
+    87195954817436,
+    81447954636517
    ],
    "moderation": "Approved",
    "pieces": [
     "CashBag"
    ],
    "revisionId": "1",
-   "sha256": "3026b28736000e35cebbe89a8dbb8222cc54b7b1e5d4451cc6a69e261976f576",
-   "uploaded": "2026-11-13T21:40:50Z"
+   "sha256": "1a7953a9bb3bfc0c3471698fa6dd0056d6f88ad8b71d322d8d840cefed8cbd29",
+   "uploaded": "2026-11-14T00:30:20Z"
   },
   "CashRegister": {
-   "assetId": 103310876103897,
+   "assetId": 85551334507369,
    "file": "assets/fbx/CashRegister.fbx",
    "history": [
     75431701335019,
-    112719122802969
+    112719122802969,
+    103310876103897
    ],
    "moderation": "Approved",
    "pieces": [
@@ -166,120 +172,128 @@
     "CashRegister_Drawer"
    ],
    "revisionId": "1",
-   "sha256": "8058497e471c60f059ac9aee1ecef7b77a3bb56c242e1b44773a5580bfb19b86",
-   "uploaded": "2026-11-13T21:41:02Z"
+   "sha256": "37afc3631152591b60d7ebe9e62f39b11c858ffae2ad6276bb502629f712505f",
+   "uploaded": "2026-11-14T00:30:37Z"
   },
   "Ceiling_8x8": {
-   "assetId": 85921777044129,
+   "assetId": 84478469581191,
    "file": "assets/fbx/Ceiling_8x8.fbx",
    "history": [
     73725950733656,
-    80105505265488
+    80105505265488,
+    85921777044129
    ],
    "moderation": "Approved",
    "pieces": [
     "Ceiling_8x8"
    ],
    "revisionId": "1",
-   "sha256": "07daf2c7d693988da8bd5f40096c8340bdcd07d82e1437aa2a52d64e4cf851d5",
-   "uploaded": "2026-11-13T21:41:10Z"
+   "sha256": "c45f225d689f18390a3b1f26aa05d43f6210948c5aaa39ce8dd4f95b66e3ac02",
+   "uploaded": "2026-11-14T00:30:48Z"
   },
   "Clock_6": {
-   "assetId": 89984410777957,
+   "assetId": 109621685727265,
    "file": "assets/fbx/Clock_6.fbx",
    "history": [
     129403410104922,
-    106655405333328
+    106655405333328,
+    89984410777957
    ],
    "moderation": "Approved",
    "pieces": [
     "Clock_6"
    ],
    "revisionId": "1",
-   "sha256": "2cde21f29eb58845adac39474ef55bbfa47f0efb98f295afb64ab9a486a07923",
-   "uploaded": "2026-11-13T21:41:28Z"
+   "sha256": "c540d226998d72822232940a2fc216d6d393b6bb59652e396eacd3d1cf0bbab0",
+   "uploaded": "2026-11-14T00:30:59Z"
   },
   "Column_2x12": {
-   "assetId": 105702878910667,
+   "assetId": 93609119186186,
    "file": "assets/fbx/Column_2x12.fbx",
    "history": [
     112027802609788,
-    109146078361061
+    109146078361061,
+    105702878910667
    ],
    "moderation": "Approved",
    "pieces": [
     "Column_2x12"
    ],
    "revisionId": "1",
-   "sha256": "a70cf3779ef53fbcd988f2cd2763b79d0b1f56e5bc5a01c40df70bd211ba3170",
-   "uploaded": "2026-11-13T21:41:36Z"
+   "sha256": "35d921fe2929447179e13d87ce9d7abdd34272e58764179a95038e08c59358ef",
+   "uploaded": "2026-11-14T00:31:07Z"
   },
   "Cornice_8": {
-   "assetId": 111193418108229,
+   "assetId": 93556241897672,
    "file": "assets/fbx/Cornice_8.fbx",
    "history": [
     103396754216844,
-    112382182924016
+    112382182924016,
+    111193418108229
    ],
    "moderation": "Approved",
    "pieces": [
     "Cornice_8"
    ],
    "revisionId": "1",
-   "sha256": "97b8fe3f2d98f792e323af1b98e2e8c642d2aadbe5644f2f8e4abea318a13d4b",
-   "uploaded": "2026-11-13T21:41:47Z"
+   "sha256": "b3d7c7929b119f347e2bdc492f95756f5659d8b2cb5c6cfdbdfb0f5432b29f09",
+   "uploaded": "2026-11-14T00:31:18Z"
   },
   "Counter_4x4": {
-   "assetId": 110675708065153,
+   "assetId": 81893011872317,
    "file": "assets/fbx/Counter_4x4.fbx",
    "history": [
     85663296446467,
-    103590148452992
+    103590148452992,
+    110675708065153
    ],
    "moderation": "Approved",
    "pieces": [
     "Counter_4x4"
    ],
    "revisionId": "1",
-   "sha256": "d2a0ef0b4cad628e30cc0e4d01e13dcb0b843d0420943f8ca174fc7f79da6b56",
-   "uploaded": "2026-11-13T21:41:58Z"
+   "sha256": "1cb999c841f32d17d8ab81e031673acbfbbf0a37f9c45f3e84391863c3591a33",
+   "uploaded": "2026-11-14T00:31:29Z"
   },
   "Counter_8x2": {
-   "assetId": 139635503793896,
+   "assetId": 77706302936873,
    "file": "assets/fbx/Counter_8x2.fbx",
    "history": [
     85972940250266,
-    108655812034314
+    108655812034314,
+    139635503793896
    ],
    "moderation": "Approved",
    "pieces": [
     "Counter_8x2"
    ],
    "revisionId": "1",
-   "sha256": "63ea505950f71af6d7c5f7635dfd579735b92510b0eeb8fbb49a11627ac2a43c",
-   "uploaded": "2026-11-13T21:42:10Z"
+   "sha256": "5f96ef8895f9c7794e6f172d9d207d0f87b696584a59e1f0446c46b8f8fa3006",
+   "uploaded": "2026-11-14T00:31:40Z"
   },
   "Counter_8x4": {
-   "assetId": 95769367038089,
+   "assetId": 125466364709375,
    "file": "assets/fbx/Counter_8x4.fbx",
    "history": [
     120674079113846,
-    108614348236306
+    108614348236306,
+    95769367038089
    ],
    "moderation": "Approved",
    "pieces": [
     "Counter_8x4"
    ],
    "revisionId": "1",
-   "sha256": "e35fc969263fa89744b00d3c3b282765de30f30bdab27d027eafc79662be252e",
-   "uploaded": "2026-11-13T21:42:21Z"
+   "sha256": "bd7b46ec5c485b659acb71e918e9f6a8717c98b4eb44ea6093d3719fcae2971e",
+   "uploaded": "2026-11-14T00:31:48Z"
   },
   "Decor_Bank": {
-   "assetId": 90348229711691,
+   "assetId": 95146990773951,
    "file": "assets/fbx/Decor_Bank.fbx",
    "history": [
     131978587202698,
-    118352242081729
+    118352242081729,
+    90348229711691
    ],
    "moderation": "Approved",
    "pieces": [
@@ -290,15 +304,16 @@
     "Decor_QueueRope_8"
    ],
    "revisionId": "1",
-   "sha256": "77b3506b989fb5eb6fa927d892b172b0fc12c4f70cff8d4cec2f3fee18d04496",
-   "uploaded": "2026-11-13T21:42:29Z"
+   "sha256": "38708ee28d05b4de8d31d4ef0c89303fb94f0cd6311707518551de641e7e986b",
+   "uploaded": "2026-11-14T00:31:59Z"
   },
   "Decor_Office": {
-   "assetId": 123009909797340,
+   "assetId": 116212381074987,
    "file": "assets/fbx/Decor_Office.fbx",
    "history": [
     135477529261406,
-    94864447937309
+    94864447937309,
+    123009909797340
    ],
    "moderation": "Approved",
    "pieces": [
@@ -308,15 +323,16 @@
     "Decor_Desk_6"
    ],
    "revisionId": "1",
-   "sha256": "6dc0e0b9e9b5cd99118cde8d1c657b527a786d3467cc7e380e565891cd5ab158",
-   "uploaded": "2026-11-13T21:42:40Z"
+   "sha256": "84caa382f5ea85f30d19acf1c9b27ab000c8558a302f6d058f389d92b5f6d075",
+   "uploaded": "2026-11-14T00:32:15Z"
   },
   "Decor_Shop": {
-   "assetId": 109724941899571,
+   "assetId": 107722078769043,
    "file": "assets/fbx/Decor_Shop.fbx",
    "history": [
     91028263704595,
-    109919934019745
+    109919934019745,
+    109724941899571
    ],
    "moderation": "Approved",
    "pieces": [
@@ -334,15 +350,16 @@
     "Decor_WallClock"
    ],
    "revisionId": "1",
-   "sha256": "424f20b9a9510530bfe0c594e0f9bc850b0cb90e5e4ffbd791e6d0ac6fab661f",
-   "uploaded": "2026-11-13T21:42:56Z"
+   "sha256": "b3fbd4fd911ecbffde237aab084d48ff3e6f595abf26b16db282a0ae4cf3b2ef",
+   "uploaded": "2026-11-14T00:32:32Z"
   },
   "Decor_Theme": {
-   "assetId": 76422914859720,
+   "assetId": 107186670163154,
    "file": "assets/fbx/Decor_Theme.fbx",
    "history": [
     85349649451904,
-    80353452284389
+    80353452284389,
+    76422914859720
    ],
    "moderation": "Approved",
    "pieces": [
@@ -354,15 +371,16 @@
     "Decor_Repair_Bench"
    ],
    "revisionId": "1",
-   "sha256": "04ee8281bda4c92b19b1179654048a183df33b5dfdd81cd14ce7b82050f320ee",
-   "uploaded": "2026-11-13T21:43:08Z"
+   "sha256": "b071854dcaf5d2da9856f18387115a5197632acf8ca76cd405e7d37716f527fb",
+   "uploaded": "2026-11-14T00:32:43Z"
   },
   "Decor_Toy": {
-   "assetId": 86876943020648,
+   "assetId": 71349136580902,
    "file": "assets/fbx/Decor_Toy.fbx",
    "history": [
     82072781186740,
-    104485666714566
+    104485666714566,
+    86876943020648
    ],
    "moderation": "Approved",
    "pieces": [
@@ -373,15 +391,16 @@
     "Decor_TrainLoop_6"
    ],
    "revisionId": "1",
-   "sha256": "c720fb5e1d291185994c1c07dff817fe8d2e5af12ab222b0ec4d06d44b36c683",
-   "uploaded": "2026-11-13T21:43:24Z"
+   "sha256": "03f58377204a0ada07e6d8a5c55402b71ff0d1725e2a44306c14b5d89d7797fb",
+   "uploaded": "2026-11-14T00:32:51Z"
   },
   "Decor_Trim": {
-   "assetId": 126300303092508,
+   "assetId": 127805846039346,
    "file": "assets/fbx/Decor_Trim.fbx",
    "history": [
     97847720569448,
-    121856318010253
+    121856318010253,
+    126300303092508
    ],
    "moderation": "Approved",
    "pieces": [
@@ -389,8 +408,8 @@
     "Decor_Frieze_8"
    ],
    "revisionId": "1",
-   "sha256": "267be2848cc683fce2aea4a726110337c2b4d69a7a1bbd5ae3c9644df2c5865f",
-   "uploaded": "2026-11-13T21:43:32Z"
+   "sha256": "1bddf97982c02c16f6f127e69d4ec4a5360867cf670c0212cbbbcad4302002f1",
+   "uploaded": "2026-11-14T00:33:07Z"
   },
   "Diamond": {
    "assetId": 123994892461077,
@@ -408,11 +427,12 @@
    "uploaded": "2026-11-13T21:43:48Z"
   },
   "Facade_8x10": {
-   "assetId": 79296383539589,
+   "assetId": 118968654559775,
    "file": "assets/fbx/Facade_8x10.fbx",
    "history": [
     113529009145373,
-    124270993218780
+    124270993218780,
+    79296383539589
    ],
    "moderation": "Approved",
    "pieces": [
@@ -420,120 +440,128 @@
     "Facade_8x10_Body"
    ],
    "revisionId": "1",
-   "sha256": "1625ba3cac3d3387a8c93df58ce286a79c87b7fcc4a2540a4aa928c0017f83d6",
-   "uploaded": "2026-11-13T21:43:59Z"
+   "sha256": "e8958860959af23bea435c78b3dbad85efd4f8fa15d361063c2722ae5c704ae3",
+   "uploaded": "2026-11-14T00:34:21Z"
   },
   "Facade_Curtain": {
-   "assetId": 125982927157815,
+   "assetId": 87777226442191,
    "file": "assets/fbx/Facade_Curtain.fbx",
    "history": [
     126557033004908,
-    82237031724661
+    82237031724661,
+    125982927157815
    ],
    "moderation": "Approved",
    "pieces": [
     "Facade_Curtain"
    ],
    "revisionId": "1",
-   "sha256": "e7b4719493fc26ae00769d115210af0ff8fa37fc33f07348800b343b5096be7a",
-   "uploaded": "2026-11-13T21:44:16Z"
+   "sha256": "6f55c39cfe9a6a3837216df12aa8298571a8a2cadc7a2310735638e13b143231",
+   "uploaded": "2026-11-14T00:34:38Z"
   },
   "FireEscape_8x10": {
-   "assetId": 71503462993758,
+   "assetId": 131544084609746,
    "file": "assets/fbx/FireEscape_8x10.fbx",
    "history": [
     123498752791133,
-    119444189197858
+    119444189197858,
+    71503462993758
    ],
    "moderation": "Approved",
    "pieces": [
     "FireEscape_8x10"
    ],
    "revisionId": "1",
-   "sha256": "d1039c600537225aecd1cb34e44e2ea8193d597f813b4821bb1eaca6edefcb27",
-   "uploaded": "2026-11-13T21:44:24Z"
+   "sha256": "da8da6b04289a6293d9d65c326b2fe27493b03e5b750007f618124b63d3ea2d9",
+   "uploaded": "2026-11-14T00:34:43Z"
   },
   "Floor_8x8": {
-   "assetId": 119922449016838,
+   "assetId": 90057554401114,
    "file": "assets/fbx/Floor_8x8.fbx",
    "history": [
     111900679209514,
-    104543406045266
+    104543406045266,
+    119922449016838
    ],
    "moderation": "Approved",
    "pieces": [
     "Floor_8x8"
    ],
    "revisionId": "1",
-   "sha256": "23e47adc8a624eefbbc6f1a1f9209b84fe4a7d13dfeeecc303393937c3102ca6",
-   "uploaded": "2026-11-13T21:44:35Z"
+   "sha256": "9890c67fba4b124a600957edc48cdf8e1ca51a033be21c9b3a42005f0a0bde8d",
+   "uploaded": "2026-11-14T00:35:00Z"
   },
   "GarageDoor_16x12": {
-   "assetId": 110024723223342,
+   "assetId": 134396192501231,
    "file": "assets/fbx/GarageDoor_16x12.fbx",
    "history": [
     118669971728450,
-    93500830361990
+    93500830361990,
+    110024723223342
    ],
    "moderation": "Approved",
    "pieces": [
     "GarageDoor_16x12"
    ],
    "revisionId": "1",
-   "sha256": "01c037e043ef0844ede864638d316548842ce6d49264e1dd7734a687dc35e201",
-   "uploaded": "2026-11-13T21:44:46Z"
+   "sha256": "ef5110bee7be5e8eeb4ae9a17ad8c71cf52eb9fec54e295766721ee92d1bc201",
+   "uploaded": "2026-11-14T00:35:11Z"
   },
   "GiantPresent": {
-   "assetId": 93102849294912,
+   "assetId": 98561199294787,
    "file": "assets/fbx/GiantPresent.fbx",
    "history": [
     71155770348733,
-    70923719008072
+    70923719008072,
+    93102849294912
    ],
    "moderation": "Approved",
    "pieces": [
     "GiantPresent"
    ],
    "revisionId": "1",
-   "sha256": "bd392aaaab9637cd8117ecc5c1cfb04a59261dcadeb0c7a67d8f020e09840a5e",
-   "uploaded": "2026-11-13T21:44:57Z"
+   "sha256": "f6061b261684ec427915a4b68b171857b1bbba9b1cf7bc30a6594211d02f550d",
+   "uploaded": "2026-11-14T00:35:22Z"
   },
   "GoldBar": {
-   "assetId": 80628558307215,
+   "assetId": 106369193351399,
    "file": "assets/fbx/GoldBar.fbx",
    "history": [
     88506285657272,
-    91440086566603
+    91440086566603,
+    80628558307215
    ],
    "moderation": "Approved",
    "pieces": [
     "GoldBar"
    ],
    "revisionId": "1",
-   "sha256": "965971a7220bbc0e64d7873aa7df71c9f5755f380833d8ce4203b0bf3c3adabd",
-   "uploaded": "2026-11-13T21:45:09Z"
+   "sha256": "b0926f3174f3e5b738aab35ccbc72a0ad7f6d27de76b9180afdca960045838a7",
+   "uploaded": "2026-11-14T00:35:33Z"
   },
   "GoldStack": {
-   "assetId": 75076233698354,
+   "assetId": 90595881393425,
    "file": "assets/fbx/GoldStack.fbx",
    "history": [
     78782438918759,
-    133701213846728
+    133701213846728,
+    75076233698354
    ],
    "moderation": "Approved",
    "pieces": [
     "GoldStack"
    ],
    "revisionId": "1",
-   "sha256": "54da1790ba53be9a3a4383bfb2e067668144f68e788e60d53bc8f0dab796d61d",
-   "uploaded": "2026-11-13T21:45:20Z"
+   "sha256": "eeee4e7f70c50a7abf1fd64c2fe1e8d880213fe73b18bcce52e09295be1b20d3",
+   "uploaded": "2026-11-14T00:35:44Z"
   },
   "Gus": {
-   "assetId": 116363918374646,
+   "assetId": 135313369122993,
    "file": "assets/fbx/Gus.fbx",
    "history": [
     90023245039286,
-    72197163944783
+    72197163944783,
+    116363918374646
    ],
    "moderation": "Approved",
    "pieces": [
@@ -557,135 +585,172 @@
     "Gus_UpperTorso"
    ],
    "revisionId": "1",
-   "sha256": "ed21c4d8839302a4072e301fdbbf2660915ee9feb9a8ae551bd2d0d2aca1f6ca",
-   "uploaded": "2026-11-13T21:45:31Z"
+   "sha256": "97db342a6218c011340ce6ec4dc92b94f8fd7d3429097630a5a3f682ce74dee8",
+   "uploaded": "2026-11-14T00:35:52Z"
   },
   "Gus_DonutBox": {
-   "assetId": 139499173846476,
+   "assetId": 118402333372278,
    "file": "assets/fbx/Gus_DonutBox.fbx",
    "history": [
     79035282364017,
-    74557534200621
+    74557534200621,
+    139499173846476
    ],
    "moderation": "Approved",
    "pieces": [
     "Gus_DonutBox"
    ],
    "revisionId": "1",
-   "sha256": "19078239d495a1b4e919fbde08459edd8d2bc7d64371738bf29949f95ff4daab",
-   "uploaded": "2026-11-13T21:45:47Z"
+   "sha256": "04345c6471ee28b354aca1e67b98fef09fc1d4e7466e240762e6a01b988e2a71",
+   "uploaded": "2026-11-14T00:36:03Z"
+  },
+  "Gus_Outline": {
+   "assetId": 101707381342742,
+   "file": "assets/fbx/Gus_Outline.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Gus_Cap_Outline",
+    "Gus_Flashlight_Outline",
+    "Gus_Head_Outline",
+    "Gus_LeftFoot_Outline",
+    "Gus_LeftHand_Outline",
+    "Gus_LeftLowerArm_Outline",
+    "Gus_LeftLowerLeg_Outline",
+    "Gus_LeftUpperArm_Outline",
+    "Gus_LeftUpperLeg_Outline",
+    "Gus_LowerTorso_Outline",
+    "Gus_RightFoot_Outline",
+    "Gus_RightHand_Outline",
+    "Gus_RightLowerArm_Outline",
+    "Gus_RightLowerLeg_Outline",
+    "Gus_RightUpperArm_Outline",
+    "Gus_RightUpperLeg_Outline",
+    "Gus_UpperTorso_Outline"
+   ],
+   "revisionId": "1",
+   "sha256": "84bfa0c58d4ccae1bc2d99c307fbc137576f882c8adbd093c3f54aec10bd5414",
+   "uploaded": "2026-11-14T00:36:14Z"
   },
   "Gus_SantaHat": {
-   "assetId": 86806696269352,
+   "assetId": 92078352229848,
    "file": "assets/fbx/Gus_SantaHat.fbx",
    "history": [
     89376997449648,
-    126671781790231
+    126671781790231,
+    86806696269352
    ],
    "moderation": "Approved",
    "pieces": [
     "Gus_SantaHat"
    ],
    "revisionId": "1",
-   "sha256": "2e1961322220f61e3f2e6d30aeaeebf87e84628652aac1008c3bf45f7e198089",
-   "uploaded": "2026-11-13T21:45:55Z"
+   "sha256": "2f81f48d4028ec44fc631583a6d8a933ece639a61b4548a8f8cc99104772d40c",
+   "uploaded": "2026-11-14T00:36:22Z"
   },
   "Hide_CoatRack": {
-   "assetId": 80081886624199,
+   "assetId": 122744637487530,
    "file": "assets/fbx/Hide_CoatRack.fbx",
    "history": [
     125555342401454,
-    72174428021520
+    72174428021520,
+    80081886624199
    ],
    "moderation": "Approved",
    "pieces": [
     "Hide_CoatRack"
    ],
    "revisionId": "1",
-   "sha256": "7949faec68ad3f5d4caca12043c3681ed225a8f1f6fd550c078d9eb651f17aa6",
-   "uploaded": "2026-11-13T21:46:12Z"
+   "sha256": "33fd42d419190147f552dc31e86a970440345b912474fb41fea8f1df4f1b81d3",
+   "uploaded": "2026-11-14T00:36:30Z"
   },
   "Hide_CoatStand": {
-   "assetId": 114226436006303,
+   "assetId": 78650135943456,
    "file": "assets/fbx/Hide_CoatStand.fbx",
    "history": [
     138836219626680,
-    94447264454016
+    94447264454016,
+    114226436006303
    ],
    "moderation": "Approved",
    "pieces": [
     "Hide_CoatStand"
    ],
    "revisionId": "1",
-   "sha256": "4118a2882e2e6f271a886383eb60c78627f661fd6dbe5be9612139b223ae0df8",
-   "uploaded": "2026-11-13T21:46:44Z"
+   "sha256": "cabdda1ad302bbedbfa6fddf50f1c7fae94c2fad2594d2dc3aa20873234c0185",
+   "uploaded": "2026-11-14T00:36:41Z"
   },
   "Hide_Crate": {
-   "assetId": 138152019396026,
+   "assetId": 118795555289388,
    "file": "assets/fbx/Hide_Crate.fbx",
    "history": [
     90032728844632,
-    134810035210687
+    134810035210687,
+    138152019396026
    ],
    "moderation": "Approved",
    "pieces": [
     "Hide_Crate"
    ],
    "revisionId": "1",
-   "sha256": "2ac874fde6388547f30d0ecf1eafa668cce5ffebfc0640a7d96630d956a1d524",
-   "uploaded": "2026-11-13T21:47:00Z"
+   "sha256": "4c2b661abb393eb7fc03d2157679bb2932661eba3376816e0dd066d805a1bf8c",
+   "uploaded": "2026-11-14T00:36:53Z"
   },
   "Hide_Curtain": {
-   "assetId": 133494159372232,
+   "assetId": 107219890221244,
    "file": "assets/fbx/Hide_Curtain.fbx",
    "history": [
     113478028649719,
-    132571558513719
+    132571558513719,
+    133494159372232
    ],
    "moderation": "Approved",
    "pieces": [
     "Hide_Curtain"
    ],
    "revisionId": "1",
-   "sha256": "57ee52c5fa10c0e0985feb6df335556fbb5c899ad8a722b679877975263de2a3",
-   "uploaded": "2026-11-13T21:47:08Z"
+   "sha256": "1b3f35630790fbd41a8808a4759e0700ee9ef4cc56904b4061edf579b30f5ade",
+   "uploaded": "2026-11-14T00:37:04Z"
   },
   "Hide_DepositStack": {
-   "assetId": 103466169245977,
+   "assetId": 100840350954932,
    "file": "assets/fbx/Hide_DepositStack.fbx",
    "history": [
     70620102409754,
-    125194811126374
+    125194811126374,
+    103466169245977
    ],
    "moderation": "Approved",
    "pieces": [
     "Hide_DepositStack"
    ],
    "revisionId": "1",
-   "sha256": "a38e67ce7cb6ee22443742e0db935c47245141470774f67c2acadb3495e7d10f",
-   "uploaded": "2026-11-13T21:47:24Z"
+   "sha256": "2bd12c5526bdfa8d860a3b9245418d87da951cb48e543e52deabb8f8b5b3bf4e",
+   "uploaded": "2026-11-14T00:37:21Z"
   },
   "Hide_Plant": {
-   "assetId": 99860303539927,
+   "assetId": 131289138991862,
    "file": "assets/fbx/Hide_Plant.fbx",
    "history": [
     134669941232225,
-    101174098463565
+    101174098463565,
+    99860303539927
    ],
    "moderation": "Approved",
    "pieces": [
     "Hide_Plant"
    ],
    "revisionId": "1",
-   "sha256": "1c77be5a5baa5f071df76a05545037932ef41da5e197a56ee7f315d5e278aa40",
-   "uploaded": "2026-11-13T21:47:36Z"
+   "sha256": "1c076da71ad444e61e91483fc9be685b85988f071cdfa957e9add79aad0ef5ee",
+   "uploaded": "2026-11-14T00:37:32Z"
   },
   "Hoardsworth": {
-   "assetId": 72521842741137,
+   "assetId": 100005434646500,
    "file": "assets/fbx/Hoardsworth.fbx",
    "history": [
     79882422494775,
-    124725406715101
+    124725406715101,
+    72521842741137
    ],
    "moderation": "Approved",
    "pieces": [
@@ -708,15 +773,43 @@
     "Hoardsworth_UpperTorso"
    ],
    "revisionId": "1",
-   "sha256": "4e1f173de4be0f3b5929dca16df399a8ea739b67ebb29c0bf10c7a0102a17744",
-   "uploaded": "2026-11-13T21:47:47Z"
+   "sha256": "00473ad68633f8552c4629fb44d8072cb2fa2b99570da75a87b447bcc538c24e",
+   "uploaded": "2026-11-14T00:37:43Z"
+  },
+  "Hoardsworth_Outline": {
+   "assetId": 119358420039099,
+   "file": "assets/fbx/Hoardsworth_Outline.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Hoardsworth_Hat_Outline",
+    "Hoardsworth_Head_Outline",
+    "Hoardsworth_LeftFoot_Outline",
+    "Hoardsworth_LeftHand_Outline",
+    "Hoardsworth_LeftLowerArm_Outline",
+    "Hoardsworth_LeftLowerLeg_Outline",
+    "Hoardsworth_LeftUpperArm_Outline",
+    "Hoardsworth_LeftUpperLeg_Outline",
+    "Hoardsworth_LowerTorso_Outline",
+    "Hoardsworth_RightFoot_Outline",
+    "Hoardsworth_RightHand_Outline",
+    "Hoardsworth_RightLowerArm_Outline",
+    "Hoardsworth_RightLowerLeg_Outline",
+    "Hoardsworth_RightUpperArm_Outline",
+    "Hoardsworth_RightUpperLeg_Outline",
+    "Hoardsworth_UpperTorso_Outline"
+   ],
+   "revisionId": "1",
+   "sha256": "56501ad795cc06ae99c963fe818b5fd1e5ad01ad66203e58f935a7a8143ecae3",
+   "uploaded": "2026-11-14T00:37:55Z"
   },
   "Intro_House_A": {
-   "assetId": 74086205454944,
+   "assetId": 89773533724700,
    "file": "assets/fbx/Intro_House_A.fbx",
    "history": [
     117193090557906,
-    119823169369063
+    119823169369063,
+    74086205454944
    ],
    "moderation": "Approved",
    "pieces": [
@@ -724,15 +817,16 @@
     "Intro_House_A_Windows"
    ],
    "revisionId": "1",
-   "sha256": "f60ebce02a5f045026d8fcfd19694296c229a6aaafd485e013cfe3e571538d61",
-   "uploaded": "2026-11-13T21:48:04Z"
+   "sha256": "bb3dcddd7828e3fc08777e76dd913c4ade0cc1aa99142d518ae6ecb20a7abcef",
+   "uploaded": "2026-11-14T00:38:06Z"
   },
   "Intro_House_B": {
-   "assetId": 139899296331748,
+   "assetId": 88471243830049,
    "file": "assets/fbx/Intro_House_B.fbx",
    "history": [
     73030213951767,
-    140677941592252
+    140677941592252,
+    139899296331748
    ],
    "moderation": "Approved",
    "pieces": [
@@ -740,30 +834,32 @@
     "Intro_House_B_Windows"
    ],
    "revisionId": "1",
-   "sha256": "54a065b7cbddd1fe2f2e6e4d0ff933e76593eee71d8340b8974a5139823f707d",
-   "uploaded": "2026-11-13T21:48:12Z"
+   "sha256": "d7ac1438780923c9ffeba75b10010bac16ad5403439699f8035dd3ad3aa20ee2",
+   "uploaded": "2026-11-14T00:38:17Z"
   },
   "Intro_Letter": {
-   "assetId": 127711305269143,
+   "assetId": 116443397252635,
    "file": "assets/fbx/Intro_Letter.fbx",
    "history": [
     101253194939214,
-    81184993163114
+    81184993163114,
+    127711305269143
    ],
    "moderation": "Approved",
    "pieces": [
     "Intro_Letter"
    ],
    "revisionId": "1",
-   "sha256": "c9d553036dfe937d287fd2cbd264c725222b28c79f3f9e41df23167c39454b4d",
-   "uploaded": "2026-11-13T21:48:29Z"
+   "sha256": "19f53b4d2405a54f751eacfe1a09246761f7fcacc1d69ed82fc6537290d06be4",
+   "uploaded": "2026-11-14T00:38:29Z"
   },
   "Intro_Lever": {
-   "assetId": 84849462432682,
+   "assetId": 140692183871395,
    "file": "assets/fbx/Intro_Lever.fbx",
    "history": [
     136644252288726,
-    125178200017964
+    125178200017964,
+    84849462432682
    ],
    "moderation": "Approved",
    "pieces": [
@@ -771,60 +867,64 @@
     "Intro_Lever_Handle"
    ],
    "revisionId": "1",
-   "sha256": "7231c82925948be8598252f4baf0d917a05fc032632a2ba8a9a36b0f13d4742c",
-   "uploaded": "2026-11-13T21:48:41Z"
+   "sha256": "ce454a91510822fae4e6c620dc426fc76319cd9b13a1681c2f40c377f710c454",
+   "uploaded": "2026-11-14T00:38:45Z"
   },
   "Intro_Present_A": {
-   "assetId": 130579347587777,
+   "assetId": 98188713708807,
    "file": "assets/fbx/Intro_Present_A.fbx",
    "history": [
     101197081641449,
-    74267477903628
+    74267477903628,
+    130579347587777
    ],
    "moderation": "Approved",
    "pieces": [
     "Intro_Present_A"
    ],
    "revisionId": "1",
-   "sha256": "2ac956e6c9f381942eb82bb10e26ce9c5e5803cd3375c19e77599ac687a2b4cb",
-   "uploaded": "2026-11-13T21:48:53Z"
+   "sha256": "3749c136b84fcb0a49310b317c31a52c98d1eebcd2629b13c2b9badeb7346ef2",
+   "uploaded": "2026-11-14T00:39:02Z"
   },
   "Intro_Present_B": {
-   "assetId": 129434720102417,
+   "assetId": 118541854314047,
    "file": "assets/fbx/Intro_Present_B.fbx",
    "history": [
     103054968493943,
-    84015944606552
+    84015944606552,
+    129434720102417
    ],
    "moderation": "Approved",
    "pieces": [
     "Intro_Present_B"
    ],
    "revisionId": "1",
-   "sha256": "d485ed003326b079ba16b79b3503c443c551825c7ba65956ffa2f96933347c48",
-   "uploaded": "2026-11-13T21:49:01Z"
+   "sha256": "2ac80db2c720308f220ba307587b550330f64f1323c32416147f5928536de5cb",
+   "uploaded": "2026-11-14T00:39:07Z"
   },
   "Intro_Present_C": {
-   "assetId": 137333580288080,
+   "assetId": 124257998078221,
    "file": "assets/fbx/Intro_Present_C.fbx",
    "history": [
     100199303227377,
-    114576303468214
+    114576303468214,
+    137333580288080
    ],
    "moderation": "Approved",
    "pieces": [
     "Intro_Present_C"
    ],
    "revisionId": "1",
-   "sha256": "690530c2b59d6d273d8de5b36a68b49886627fb2ae3b86f4506152d7be66bcd1",
-   "uploaded": "2026-11-13T21:49:13Z"
+   "sha256": "f3df0fc1a08008a23601725446fb8948f772bdc553a826fffa815473d438f1dd",
+   "uploaded": "2026-11-14T00:39:23Z"
   },
   "Intro_SnowGlobe": {
-   "assetId": 129069651072081,
+   "assetId": 123198713301042,
    "file": "assets/fbx/Intro_SnowGlobe.fbx",
    "history": [
     101004713770736,
-    137053446132363
+    137053446132363,
+    129069651072081
    ],
    "moderation": "Approved",
    "pieces": [
@@ -834,15 +934,16 @@
     "Intro_SnowGlobe_Presents"
    ],
    "revisionId": "1",
-   "sha256": "304e7c6e6e44820c95a20929f4ab76c7a5bb2efd5fda77e571e34f75b3623751",
-   "uploaded": "2026-11-13T21:49:25Z"
+   "sha256": "3f311a6f176842c043ec4d68d807946d3f932009254c0a1b43273be7c4c7bebe",
+   "uploaded": "2026-11-14T00:39:31Z"
   },
   "Intro_Tower": {
-   "assetId": 107916371218419,
+   "assetId": 78321585073509,
    "file": "assets/fbx/Intro_Tower.fbx",
    "history": [
     133572245411117,
-    134591789740892
+    134591789740892,
+    107916371218419
    ],
    "moderation": "Approved",
    "pieces": [
@@ -851,15 +952,16 @@
     "Intro_Tower_Windows"
    ],
    "revisionId": "1",
-   "sha256": "58d3517786e4c886f4e87a01fb8d124a8ea652a4e46faca4d3b8dad2c9df0924",
-   "uploaded": "2026-11-13T21:49:33Z"
+   "sha256": "e4aeb2f01653cc97c132b7a7fb92328b8a03f46764533aac7fe84f0eac5828f4",
+   "uploaded": "2026-11-14T00:39:48Z"
   },
   "Intro_Vacuum": {
-   "assetId": 108654573878776,
+   "assetId": 109989955619012,
    "file": "assets/fbx/Intro_Vacuum.fbx",
    "history": [
     81402106868569,
-    80088762057121
+    80088762057121,
+    108654573878776
    ],
    "moderation": "Approved",
    "pieces": [
@@ -867,30 +969,32 @@
     "Intro_Vacuum_Lights"
    ],
    "revisionId": "1",
-   "sha256": "4ab7bfe40fc69c7702d9bf0b0155159070e517b38da0030ab0b2b11f29221307",
-   "uploaded": "2026-11-13T21:49:58Z"
+   "sha256": "5446ed34d107c78524f3a777756138b9e7db42856fc0575bad5c58af7f4520da",
+   "uploaded": "2026-11-14T00:39:56Z"
   },
   "JobBoard": {
-   "assetId": 75018872592118,
+   "assetId": 122429059533879,
    "file": "assets/fbx/JobBoard.fbx",
    "history": [
     112136984753667,
-    137136339238108
+    137136339238108,
+    75018872592118
    ],
    "moderation": "Approved",
    "pieces": [
     "JobBoard"
    ],
    "revisionId": "1",
-   "sha256": "04478cb7ccc8a3445ddda382cd695e62256b1af54d42b27d4ff7edd1de3a6d65",
-   "uploaded": "2026-11-13T21:50:15Z"
+   "sha256": "1fdfc3318bd6b93555000bef038b43fd34dadd874c2be06565ea61f41a48b624",
+   "uploaded": "2026-11-14T00:40:07Z"
   },
   "Lamp_Ceiling": {
-   "assetId": 136469855940465,
+   "assetId": 137716150444879,
    "file": "assets/fbx/Lamp_Ceiling.fbx",
    "history": [
     75558260382236,
-    117873904275629
+    117873904275629,
+    136469855940465
    ],
    "moderation": "Approved",
    "pieces": [
@@ -898,15 +1002,16 @@
     "Lamp_Ceiling_Bulb"
    ],
    "revisionId": "1",
-   "sha256": "66865f96ac598b954b9ef05de49012c6136ed15faea9b43275b2fe784ef36fa8",
-   "uploaded": "2026-11-13T21:50:27Z"
+   "sha256": "7b7757bbb81aa757bcee16ed83aaf4bfe36bae5794cbc98f29c49e7137aef505",
+   "uploaded": "2026-11-14T00:40:12Z"
   },
   "LaserEmitter": {
-   "assetId": 123558782647110,
+   "assetId": 131270330603063,
    "file": "assets/fbx/LaserEmitter.fbx",
    "history": [
     126677387744963,
-    74244514213972
+    74244514213972,
+    123558782647110
    ],
    "moderation": "Approved",
    "pieces": [
@@ -914,30 +1019,32 @@
     "LaserEmitter_Lens"
    ],
    "revisionId": "1",
-   "sha256": "959acbccdc51db5a7bb46946f2924d9ab63f1e4b06baaf81da921764aefb644b",
-   "uploaded": "2026-11-13T21:50:44Z"
+   "sha256": "e25b25a51b7d37b8a51bfbe1a8b96b8e8ddf709eb0192b7ab09da56fe6dbc05a",
+   "uploaded": "2026-11-14T00:40:23Z"
   },
   "LaserEmitter_CandyCane": {
-   "assetId": 107543968861538,
+   "assetId": 92743202622503,
    "file": "assets/fbx/LaserEmitter_CandyCane.fbx",
    "history": [
     77626293773101,
-    77761009319139
+    77761009319139,
+    107543968861538
    ],
    "moderation": "Approved",
    "pieces": [
     "LaserEmitter_CandyCane"
    ],
    "revisionId": "1",
-   "sha256": "9a69357651c1604967330616d197774e5d66c5066a038318847c4fe13c034dea",
-   "uploaded": "2026-11-13T21:51:01Z"
+   "sha256": "2b023cdb301c5a81833bd608832ddf32bbfce47116031004b3405b6ca7c6504b",
+   "uploaded": "2026-11-14T00:40:31Z"
   },
   "Ornaments": {
-   "assetId": 118726471060549,
+   "assetId": 129455928590206,
    "file": "assets/fbx/Ornaments.fbx",
    "history": [
     115394095230080,
-    99037098146769
+    99037098146769,
+    118726471060549
    ],
    "moderation": "Approved",
    "pieces": [
@@ -950,15 +1057,16 @@
     "Ornament_VaultDoor"
    ],
    "revisionId": "1",
-   "sha256": "764fb28f6292568a552cffe17ba9834257e82db1a0bbb12ecd596ddb27428b0a",
-   "uploaded": "2026-11-13T21:51:18Z"
+   "sha256": "41e98cc604dccdf4cb3567a9f864fcd0c7dc5c785c55b606d8797079c9f58904",
+   "uploaded": "2026-11-14T00:40:43Z"
   },
   "Pedestal_Diamond": {
-   "assetId": 112036224341207,
+   "assetId": 131863863695260,
    "file": "assets/fbx/Pedestal_Diamond.fbx",
    "history": [
     102876044490301,
-    118455635497198
+    118455635497198,
+    112036224341207
    ],
    "moderation": "Approved",
    "pieces": [
@@ -966,45 +1074,48 @@
     "Pedestal_Diamond_Case"
    ],
    "revisionId": "1",
-   "sha256": "2a8eacfac95aae7089041543b0ec4d61a705b4105e8ca9f0249647b6d5f5790c",
-   "uploaded": "2026-11-13T21:51:30Z"
+   "sha256": "14f9914253f396d352db0c6a0d5f658da85b3e0fb11997ce573624ac0433b983",
+   "uploaded": "2026-11-14T00:40:54Z"
   },
   "Pediment_24": {
-   "assetId": 104807564533445,
+   "assetId": 93800412186881,
    "file": "assets/fbx/Pediment_24.fbx",
    "history": [
     101064256180333,
-    96748466836469
+    96748466836469,
+    104807564533445
    ],
    "moderation": "Approved",
    "pieces": [
     "Pediment_24"
    ],
    "revisionId": "1",
-   "sha256": "1ed892da34155b7c0b732a9072ead34fead0b72fcf9b2b0fc5f6a4ef6a1888ac",
-   "uploaded": "2026-11-13T21:51:42Z"
+   "sha256": "57bfaed4da0472e1882786640b431c6a881cc3a709f0aff67f7b458dfdaca118",
+   "uploaded": "2026-11-14T00:41:10Z"
   },
   "Pillar_2x12": {
-   "assetId": 79603631072539,
+   "assetId": 122637698128245,
    "file": "assets/fbx/Pillar_2x12.fbx",
    "history": [
     106907997975301,
-    102557534121264
+    102557534121264,
+    79603631072539
    ],
    "moderation": "Approved",
    "pieces": [
     "Pillar_2x12"
    ],
    "revisionId": "1",
-   "sha256": "4be25164980a97e6758526ea2675aabc270c34b4cbdc33fd5cddc9ed109066c3",
-   "uploaded": "2026-11-13T21:52:07Z"
+   "sha256": "68e1eee0c34a8d75a0852d6715908896ea7381982bcd96dda002ed39f2669d6e",
+   "uploaded": "2026-11-14T00:41:35Z"
   },
   "Plate_4x4": {
-   "assetId": 126284998471315,
+   "assetId": 80337683691143,
    "file": "assets/fbx/Plate_4x4.fbx",
    "history": [
     74030198728996,
-    105578574401282
+    105578574401282,
+    126284998471315
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1012,23 +1123,24 @@
     "Plate_4x4_Ring"
    ],
    "revisionId": "1",
-   "sha256": "08913f954f8d01d10861ce32909ca1af7ae41f28594af7a0682eb71583f748f1",
-   "uploaded": "2026-11-13T21:52:18Z"
+   "sha256": "3821ee3f9358dd80c7f24b9e9d2f89ff24cbd14a61d934726336795716358353",
+   "uploaded": "2026-11-14T00:41:42Z"
   },
   "Present": {
-   "assetId": 140079252057353,
+   "assetId": 115827867203834,
    "file": "assets/fbx/Present.fbx",
    "history": [
     130592268643619,
-    135503702692770
+    135503702692770,
+    140079252057353
    ],
    "moderation": "Approved",
    "pieces": [
     "Present"
    ],
    "revisionId": "1",
-   "sha256": "abe982c9e674027c0d897db802c0d01b3b116d4f59675add620323abf4a2f402",
-   "uploaded": "2026-11-13T21:52:35Z"
+   "sha256": "07cf7c2d5cf045b700f3d7c803a6538990cddf2bd1dd237e93f0fe5894bf4ccc",
+   "uploaded": "2026-11-14T00:41:54Z"
   },
   "Railing_8": {
    "assetId": 97213249834212,

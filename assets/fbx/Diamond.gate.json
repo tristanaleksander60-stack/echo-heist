@@ -82,10 +82,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "093b337253b7240abcf7",
+ "ao": {
+  "Diamond": [
+   1.0,
+   1.0
+  ]
+ },
+ "contentHash": "f9bda3ada046357a7865",
  "fbx": {
   "path": "assets/fbx/Diamond.fbx",
-  "bytes": 21468,
+  "bytes": 21900,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -102,6 +108,6 @@
  },
  "spec": "assets/blender/diamond.py",
  "notes": "Hero loot. Studio: SmoothPlastic, Color white, atlas TextureID, Box, CanCollide off, CastShadow off.",
- "seconds": 0.0,
- "turntable": "docs/art/turntables/Diamond.png"
+ "turntable": "docs/art/turntables/Diamond.png",
+ "seconds": 6.0
 }

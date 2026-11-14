@@ -156,10 +156,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "b760fb2c32b3ff339746",
+ "ao": {
+  "StreetLamp": [
+   0.6,
+   0.852
+  ]
+ },
+ "contentHash": "214d1271c064ead9e9da",
  "fbx": {
   "path": "assets/fbx/StreetLamp.fbx",
-  "bytes": 31452,
+  "bytes": 32684,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -182,6 +188,6 @@
  },
  "spec": "assets/blender/street.py",
  "notes": "Street lamp 1.56 x 1.56 x 11: ink plinth, slim post, ladder bar, open lantern with a warm Neon bulb.",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/StreetLamp.png"
+ "turntable": "docs/art/turntables/StreetLamp.png",
+ "seconds": 5.8
 }

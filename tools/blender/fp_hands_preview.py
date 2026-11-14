@@ -154,6 +154,7 @@ def v2_material(o, hexc, rough):
     mix.inputs[7].default_value = K._lin(hexc)
     nt.links.new(mix.outputs[2], b.inputs["Base Color"])
     b.inputs["Roughness"].default_value = rough
+    m.use_backface_culling = True     # the engine culls back faces: the glove's merged ink hull shows as a rim only
     if "Sheen Weight" in b.inputs and rough > 0.9:
         b.inputs["Sheen Weight"].default_value = 0.35       # a knit's soft fuzz at grazing angles
     o.data.materials.clear()

@@ -122,6 +122,8 @@ function Avatars.strip(rig: Model)
 			if not H.CLONE_KEEP_TEXTURES then
 				d.TextureId = ""
 			end
+		elseif d:IsA("BasePart") and d:GetAttribute("EH_OutlineOf") ~= nil then
+			continue -- an outline hull (BLENDER LOOK) stays Neon ink, already quiet
 		elseif d:IsA("BasePart") then
 			d.CanCollide = false
 			d.CanTouch = false

@@ -83,10 +83,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "cbb9db7965071b39aa77",
+ "ao": {
+  "Xmas_Wreath": [
+   0.6,
+   0.847
+  ]
+ },
+ "contentHash": "eb01882e20df1378fd8b",
  "fbx": {
   "path": "assets/fbx/Xmas_Wreath.fbx",
-  "bytes": 31148,
+  "bytes": 32972,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -103,6 +109,6 @@
  },
  "spec": "assets/blender/xmas.py",
  "notes": "Wreath 3.3 across: puffy holly ring, Ribbon berries, a big Ribbon bow at the bottom.",
- "seconds": 0.2,
- "turntable": "docs/art/turntables/Xmas_Wreath.png"
+ "turntable": "docs/art/turntables/Xmas_Wreath.png",
+ "seconds": 21.7
 }

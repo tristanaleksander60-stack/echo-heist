@@ -83,10 +83,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "8657b1c8984cb258a666",
+ "ao": {
+  "Xmas_SnowPile": [
+   0.6,
+   0.864
+  ]
+ },
+ "contentHash": "1605618f112a4eabeec1",
  "fbx": {
   "path": "assets/fbx/Xmas_SnowPile.fbx",
-  "bytes": 32908,
+  "bytes": 34588,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -103,6 +109,6 @@
  },
  "spec": "assets/blender/xmas.py",
  "notes": "Snow drift (about 5.5 x 3.3 x 1): a long shovelled drift, a snow shovel stuck in it, a snowball stash; never a floor field.",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/Xmas_SnowPile.png"
+ "turntable": "docs/art/turntables/Xmas_SnowPile.png",
+ "seconds": 45.7
 }

@@ -614,7 +614,8 @@ Config.FirstPerson = {
 			-- gate and the unit spec hold one worn arm (glove + its cuff + sleeve + stripes or block, + the watch on
 			-- the left) under TRI_BUDGET_V2 triangles.
 			SKINNED = true,
-			TRI_BUDGET_V2 = 5600,
+			-- BLENDER LOOK: + 2,600 for the glove's merged ink hull (fp_hands.py add_outline): 7,216-8,112 today
+			TRI_BUDGET_V2 = 8400,
 			SLEEVE_COLOUR = "marble", -- Palette key: the cream sweater (its vertex shading darkens the rib)
 			-- materials (Enum.Material names): matte knit, a soft leather sheen, a matte sweater
 			MATERIALS = {
@@ -1931,6 +1932,8 @@ Config.Kit = {
 	-- (owner on v125: "the characters look like crap, they're just blocks in the intro").
 	INTRO_GROUPS = {
 		"Hoardsworth",
+		"Hoardsworth_Outline", -- BLENDER LOOK: the hulls load with their pieces (KitService welds them on)
+		"Van_Outline",
 		"Intro_Lever",
 		"Intro_Vacuum",
 		"Intro_SnowGlobe",
@@ -1965,6 +1968,35 @@ Config.Kit = {
 		CornerShop = "",
 		ToyShop = "",
 	},
+}
+
+-- BLENDER LOOK track (owner: "use the same tricks as in Blender, so everything looks perfect"; docs/audit/BLENDER_LOOK.md).
+-- Ink outlines: the Blender previews drew a black object outline (Workbench); the engine has none, so the kit ships an
+-- inverted hull per character / hero / loot piece (`<Piece>_Outline`, assets/blender/zz_outlines.py): a decimated copy
+-- pushed out by a few hundredths of a stud with its faces reversed. Back faces are culled, so only the rim outside the
+-- piece shows. KitService welds each hull onto its piece (every clone of the piece carries it); Heist/Outlines (client)
+-- shows a tier's nearest few and mirrors the piece's own visibility (fades, LOD, first person, cut-away).
+-- Highlights are NOT used (their budget is the clones' crew outlines: Config.Perf.TIERS highlights).
+Config.Outline = {
+	ENABLED = true,
+	COLOUR = { 22, 18, 28 }, -- near-black warm ink (Neon: unlit, so a lamp never puts a highlight on the line)
+	-- Thickness knob: a hull's Size = its piece's Size + (the hull's built Size - the piece's) x THICKNESS_SCALE, set
+	-- once on the template (1 = as built: characters 0.035 studs, outfit 0.03, vans and the vault door 0.06, small
+	-- hero props 0.045, loot 0.03-0.035; an outline is world-space, ~1 px at ~27 studs on a 1080p screen).
+	THICKNESS_SCALE = 1,
+	RECHECK_SECONDS = 0.25, -- Heist/Outlines re-picks the nearest units this often (visibility mirrors at once)
+	-- Per tier: how many units of each class may draw an outline at once (the nearest to the camera first) and how
+	-- far (studs; past ~35 the line is under a pixel anyway). A unit = one character (all its hulls), or one hero /
+	-- loot piece. "On low tiers, outlines only on characters and loot": hero props from tier 2 off. The phone budgets
+	-- pay for these: tests/perf_engine.luau counts cap x the heaviest unit (docs/PERF.md §12).
+	TIERS = {
+		{ char = 16, loot = 8, hero = 14, radius = 60 },
+		{ char = 2, loot = 1, hero = 0, radius = 40 },
+		{ char = 1, loot = 1, hero = 0, radius = 30 },
+		{ char = 1, loot = 1, hero = 0, radius = 24 },
+	},
+	-- Your own character in first person is hidden by the camera (its hulls follow); in third person it counts as
+	-- a character like any other, nearest first.
 }
 
 -- UI kit v2, "the Crew Board" (docs/PLAN_STEAM_PLUS.md §3.2, §4.3 U1-U3; docs/audit/POLISH.md §4.1;
@@ -2934,18 +2966,19 @@ Config.Perf = {
 		Lighting = {
 			LightingStyle = "Soft",
 			PrioritizeLightingQuality = true,
-			Brightness = 1.8, -- recipe A + 0.2 (BIG: A is 1.6)
-			ColorShift_Top = { 170, 190, 255 },
-			Ambient = { 128, 132, 162 }, -- BIG: recipe A's bluer, less pink fill (+10)
-			OutdoorAmbient = { 170, 180, 214 }, -- recipe A's (160, 170, 204) + 10
-			EnvironmentDiffuseScale = 0.3,
+			Brightness = 2.1, -- recipe A + 0.2 (BLENDER LOOK: A is 1.9)
+			-- BLENDER LOOK: the warm key and the neutral, cool-not-violet fill of recipe A (+10), not the old blue cast
+			ColorShift_Top = { 255, 240, 222 },
+			Ambient = { 138, 140, 148 }, -- recipe A's (128, 130, 138) + 10
+			OutdoorAmbient = { 170, 178, 192 }, -- recipe A's (160, 168, 182) + 10
+			EnvironmentDiffuseScale = 0.2,
 			EnvironmentSpecularScale = 0,
 			ExposureCompensation = 0, -- LIGHT AND SPRINT: neutral like recipe A (was 0.35)
 			GlobalShadows = false, -- no sun shadow pass on low phones (was HeistClient's tier >= 3 rule)
 		},
 		-- Lighting.Bloom (the project file's): was 0.9 / 24 / 1.0, the strongest glow of all on the weakest phones
 		Bloom = { Intensity = 0.2, Size = 16, Threshold = 1.6 },
-		ColorCorrection = { Contrast = 0.1, Saturation = 0.1 }, -- Lighting.ColorCorrection (recipe A + 0.02)
+		ColorCorrection = { Contrast = 0.1, Saturation = 0.12 }, -- Lighting.ColorCorrection (recipe A + 0.02)
 		-- Lighting.Atmosphere: thinner haze on low phones (a "black fog" is reported at the lowest quality levels,
 		-- roblox_quality §1.1; WORLD 2.0 keeps the distance a light haze there too)
 		Atmosphere = { Density = 0.2, Haze = 1.4 },
@@ -3435,7 +3468,9 @@ Config.Big = {
 	-- Phone frame budget (REVIEW_STEAM_PLUS gap 15): the street front's window trims (Facade_8x10, ~5k tris on the
 	-- Big Score; layer "trim") hide from TRIM_OFF_TIER (recipe C phones), the Bank's giant order of columns (~4k;
 	-- layer "order") from ORDER_OFF_TIER; the facade bodies, panes, crown, pediment and clock stay.
-	TRIM_OFF_TIER = 3,
+	-- BLENDER LOOK: the trims go from tier 2 (was 3): their ~5k triangles pay for tier 2's character outlines
+	-- (Config.Outline.TIERS, docs/PERF.md §12).
+	TRIM_OFF_TIER = 2,
 	ORDER_OFF_TIER = 4,
 }
 

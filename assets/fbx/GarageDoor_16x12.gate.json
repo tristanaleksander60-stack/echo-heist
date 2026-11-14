@@ -87,7 +87,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "0e586f2a64aa20a9cbbb",
+ "contentHash": "33e7b39b3924013bb5fd",
  "fbx": {
   "path": "assets/fbx/GarageDoor_16x12.fbx",
   "bytes": 25004,
@@ -107,6 +107,6 @@
  },
  "spec": "assets/blender/garage.py",
  "notes": "Roll-up garage door 16 x 2 x 12: brick jambs, marble lintel trim, steel slats half open, roll housing.",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/GarageDoor_16x12.png"
+ "turntable": "docs/art/turntables/GarageDoor_16x12.png",
+ "seconds": 5.3
 }

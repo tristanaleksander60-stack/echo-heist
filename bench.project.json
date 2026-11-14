@@ -10,15 +10,15 @@
         "GlobalShadows": true,
         "ClockTime": 15,
         "GeographicLatitude": 20,
-        "Brightness": 1.6,
-        "ColorShift_Top": [0.588235, 0.686275, 1.0],
-        "ColorShift_Bottom": [0.156863, 0.117647, 0.27451],
-        "Ambient": [0.462745, 0.478431, 0.596078],
-        "OutdoorAmbient": [0.627451, 0.666667, 0.8],
-        "EnvironmentDiffuseScale": 0.36,
-        "EnvironmentSpecularScale": 0.25,
+        "Brightness": 1.9,
+        "ColorShift_Top": [1.0, 0.941176, 0.870588],
+        "ColorShift_Bottom": [0.141176, 0.156863, 0.203922],
+        "Ambient": [0.501961, 0.509804, 0.541176],
+        "OutdoorAmbient": [0.627451, 0.658824, 0.713725],
+        "EnvironmentDiffuseScale": 0.22,
+        "EnvironmentSpecularScale": 0.2,
         "ExposureCompensation": 0,
-        "ShadowSoftness": 0.3
+        "ShadowSoftness": 0.22
       },
       "Sky": {
         "$className": "Sky",
@@ -41,8 +41,8 @@
         "$properties": {
           "Density": 0.24,
           "Offset": 0.12,
-          "Color": [0.580392, 0.627451, 0.815686],
-          "Decay": [0.439216, 0.478431, 0.698039],
+          "Color": [0.596078, 0.643137, 0.752941],
+          "Decay": [0.439216, 0.486275, 0.611765],
           "Glare": 0,
           "Haze": 1.6
         }
@@ -59,9 +59,9 @@
         "$className": "ColorCorrectionEffect",
         "$properties": {
           "Brightness": 0,
-          "Contrast": 0.08,
-          "Saturation": 0.08,
-          "TintColor": [0.933333, 0.94902, 1.0]
+          "Contrast": 0.1,
+          "Saturation": 0.1,
+          "TintColor": [1.0, 0.980392, 0.94902]
         }
       },
       "ColorGrading": {

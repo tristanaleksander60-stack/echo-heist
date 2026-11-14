@@ -298,10 +298,24 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "e6e76f11ae32074a5c4e",
+ "ao": {
+  "Decor_CoatHooks_4": [
+   0.6,
+   0.819
+  ],
+  "Decor_Boxes": [
+   0.6,
+   0.786
+  ],
+  "Decor_Corkboard_4": [
+   0.6,
+   0.754
+  ]
+ },
+ "contentHash": "e7fbc1f595a8f5dfd096",
  "fbx": {
   "path": "assets/fbx/Decor_Office.fbx",
-  "bytes": 48588,
+  "bytes": 52172,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -336,6 +350,6 @@
  },
  "spec": "assets/blender/interior.py",
  "notes": "Back-room and office props: desk with a lamp, coat hooks, stock boxes, a corkboard.",
- "seconds": 0.5,
- "turntable": "docs/art/turntables/Decor_Office.png"
+ "turntable": "docs/art/turntables/Decor_Office.png",
+ "seconds": 45.8
 }

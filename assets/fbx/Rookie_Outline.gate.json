@@ -1,0 +1,2227 @@
+{
+ "asset": "Rookie_Outline",
+ "objects": [
+  {
+   "name": "Rookie_LowerTorso_Outline",
+   "class": "small",
+   "tris": 128,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.893,
+    1.314,
+    0.749
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.0167,
+     -0.6571,
+     -0.3551
+    ],
+    "local_max": [
+     0.8764,
+     0.6571,
+     0.3935
+    ]
+   },
+   "swatches": [
+    "hair",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    1.62
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 32,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_LowerTorso: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_UpperTorso_Outline",
+   "class": "small",
+   "tris": 540,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.077,
+    1.691,
+    1.338
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.0383,
+     -0.8576,
+     -0.2044
+    ],
+    "local_max": [
+     1.0383,
+     0.8333,
+     1.1336
+    ]
+   },
+   "swatches": [
+    "hair",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "steel_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    1.95
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 786,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_UpperTorso: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Head_Outline",
+   "class": "small",
+   "tris": 450,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.201,
+    1.963,
+    1.73
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.1005,
+     -1.0091,
+     -0.0751
+    ],
+    "local_max": [
+     1.1005,
+     0.954,
+     1.6552
+    ]
+   },
+   "swatches": [
+    "hair",
+    "skin",
+    "skin_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    3.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 312,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Head: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_RightUpperArm_Outline",
+   "class": "small",
+   "tris": 126,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.756,
+    0.72,
+    1.107
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3779,
+     -0.36,
+     -0.7302
+    ],
+    "local_max": [
+     0.378,
+     0.3601,
+     0.3765
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_hi"
+   ],
+   "location": [
+    -1.0,
+    0.0,
+    2.76
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 39,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_RightUpperArm: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_RightLowerArm_Outline",
+   "class": "small",
+   "tris": 84,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.692,
+    0.636,
+    0.827
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3951,
+     -0.3051,
+     -0.6831
+    ],
+    "local_max": [
+     0.2966,
+     0.3312,
+     0.1443
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_hi"
+   ],
+   "location": [
+    -1.1,
+    0.0,
+    2.16
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 61,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_RightLowerArm: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_RightHand_Outline",
+   "class": "small",
+   "tris": 170,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.698,
+    0.643,
+    0.714
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3373,
+     -0.3613,
+     -0.6269
+    ],
+    "local_max": [
+     0.3609,
+     0.2813,
+     0.0869
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -1.18,
+    0.0,
+    1.6
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 147,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_RightHand: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_RightUpperLeg_Outline",
+   "class": "small",
+   "tris": 56,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.816,
+    0.777,
+    0.732
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.4096,
+     -0.3884,
+     -0.6062
+    ],
+    "local_max": [
+     0.406,
+     0.3881,
+     0.1256
+    ]
+   },
+   "swatches": [
+    "steel_lo"
+   ],
+   "location": [
+    -0.4,
+    0.0,
+    1.48
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_RightUpperLeg: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_RightLowerLeg_Outline",
+   "class": "small",
+   "tris": 84,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.772,
+    0.807,
+    0.709
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3999,
+     -0.4039,
+     -0.5844
+    ],
+    "local_max": [
+     0.3726,
+     0.403,
+     0.1247
+    ]
+   },
+   "swatches": [
+    "steel",
+    "steel_lo"
+   ],
+   "location": [
+    -0.42,
+    0.0,
+    0.98
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 66,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_RightLowerLeg: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_RightFoot_Outline",
+   "class": "small",
+   "tris": 106,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.86,
+    1.4,
+    0.728
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.4302,
+     -0.9501,
+     -0.5354
+    ],
+    "local_max": [
+     0.4302,
+     0.4501,
+     0.1928
+    ]
+   },
+   "swatches": [
+    "hair",
+    "ink_hi",
+    "marble_lo"
+   ],
+   "location": [
+    -0.44,
+    0.0,
+    0.5
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 62,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_RightFoot: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_LeftUpperArm_Outline",
+   "class": "small",
+   "tris": 126,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.756,
+    0.72,
+    1.107
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.378,
+     -0.3601,
+     -0.7302
+    ],
+    "local_max": [
+     0.3778,
+     0.36,
+     0.3765
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_hi"
+   ],
+   "location": [
+    1.0,
+    0.0,
+    2.76
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 39,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_LeftUpperArm: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_LeftLowerArm_Outline",
+   "class": "small",
+   "tris": 84,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.691,
+    0.638,
+    0.827
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.2966,
+     -0.3331,
+     -0.6831
+    ],
+    "local_max": [
+     0.3945,
+     0.3051,
+     0.1443
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_hi"
+   ],
+   "location": [
+    1.1,
+    0.0,
+    2.16
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 61,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_LeftLowerArm: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_LeftHand_Outline",
+   "class": "small",
+   "tris": 170,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.698,
+    0.643,
+    0.714
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3609,
+     -0.3613,
+     -0.6269
+    ],
+    "local_max": [
+     0.3373,
+     0.2813,
+     0.0869
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    1.18,
+    0.0,
+    1.6
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 150,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_LeftHand: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_LeftUpperLeg_Outline",
+   "class": "small",
+   "tris": 56,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.815,
+    0.777,
+    0.732
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.4059,
+     -0.3886,
+     -0.6062
+    ],
+    "local_max": [
+     0.4096,
+     0.388,
+     0.1255
+    ]
+   },
+   "swatches": [
+    "steel_lo"
+   ],
+   "location": [
+    0.4,
+    0.0,
+    1.48
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_LeftUpperLeg: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_LeftLowerLeg_Outline",
+   "class": "small",
+   "tris": 84,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.772,
+    0.807,
+    0.709
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3726,
+     -0.403,
+     -0.5844
+    ],
+    "local_max": [
+     0.3999,
+     0.4039,
+     0.1247
+    ]
+   },
+   "swatches": [
+    "steel",
+    "steel_lo"
+   ],
+   "location": [
+    0.42,
+    0.0,
+    0.98
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 66,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_LeftLowerLeg: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_LeftFoot_Outline",
+   "class": "small",
+   "tris": 106,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.86,
+    1.4,
+    0.728
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.4302,
+     -0.9501,
+     -0.5354
+    ],
+    "local_max": [
+     0.4302,
+     0.4501,
+     0.1928
+    ]
+   },
+   "swatches": [
+    "hair",
+    "ink_hi",
+    "marble_lo"
+   ],
+   "location": [
+    0.44,
+    0.0,
+    0.5
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 62,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_LeftFoot: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Cap_Flat_Outline",
+   "class": "small",
+   "tris": 234,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.184,
+    2.42,
+    0.748
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.0921,
+     -1.3812,
+     -0.1754
+    ],
+    "local_max": [
+     1.0919,
+     1.0388,
+     0.5725
+    ]
+   },
+   "swatches": [
+    "hair",
+    "ink_hi"
+   ],
+   "location": [
+    -4.0,
+    0.0,
+    4.2
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 221,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Cap_Flat: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Cap_Beanie_Outline",
+   "class": "small",
+   "tris": 268,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.241,
+    2.241,
+    1.083
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.1206,
+     -1.1206,
+     -0.2748
+    ],
+    "local_max": [
+     1.1206,
+     1.1206,
+     0.8082
+    ]
+   },
+   "swatches": [
+    "steel",
+    "steel_hi"
+   ],
+   "location": [
+    -1.4,
+    0.0,
+    4.2
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 256,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Cap_Beanie: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Cap_Bobble_Outline",
+   "class": "small",
+   "tris": 338,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.204,
+    2.204,
+    1.55
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.102,
+     -1.102,
+     -0.2797
+    ],
+    "local_max": [
+     1.102,
+     1.102,
+     1.27
+    ]
+   },
+   "swatches": [
+    "marble",
+    "marble_hi",
+    "shirt_lo"
+   ],
+   "location": [
+    1.2,
+    0.0,
+    4.2
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 228,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Cap_Bobble: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Cap_Trapper_Outline",
+   "class": "small",
+   "tris": 198,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.325,
+    2.164,
+    1.559
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.16,
+     -1.0926,
+     -0.8294
+    ],
+    "local_max": [
+     1.1649,
+     1.0712,
+     0.7301
+    ]
+   },
+   "swatches": [
+    "hair",
+    "marble_hi"
+   ],
+   "location": [
+    3.8,
+    0.0,
+    4.2
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 121,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Cap_Trapper: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Cap_Santa_Outline",
+   "class": "small",
+   "tris": 338,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.362,
+    2.789,
+    1.8
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.181,
+     -1.1735,
+     -0.3148
+    ],
+    "local_max": [
+     1.181,
+     1.6156,
+     1.4851
+    ]
+   },
+   "swatches": [
+    "ribbon",
+    "ribbon_hi",
+    "snow"
+   ],
+   "location": [
+    6.4,
+    0.0,
+    4.2
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 139,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "xmas",
+   "notes": "outline of Rookie_Cap_Santa: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Scarf_Long_Outline",
+   "class": "small",
+   "tris": 156,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.786,
+    1.754,
+    1.239
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.893,
+     -0.9814,
+     -1.001
+    ],
+    "local_max": [
+     0.893,
+     0.7723,
+     0.2377
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -4.0,
+    0.0,
+    0.4
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 40,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Scarf_Long: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Scarf_Chunky_Outline",
+   "class": "small",
+   "tris": 224,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.027,
+    1.752,
+    0.555
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.0134,
+     -0.8761,
+     -0.1777
+    ],
+    "local_max": [
+     1.0134,
+     0.8761,
+     0.3777
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -1.4,
+    0.0,
+    0.4
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 114,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Scarf_Chunky: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Scarf_Bandana_Outline",
+   "class": "small",
+   "tris": 178,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.671,
+    1.845,
+    0.855
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.8357,
+     -0.9404,
+     -0.6229
+    ],
+    "local_max": [
+     0.8357,
+     0.9045,
+     0.2322
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    1.2,
+    0.0,
+    0.4
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 104,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Scarf_Bandana: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Scarf_Knot_Outline",
+   "class": "small",
+   "tris": 198,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.786,
+    1.77,
+    0.864
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.893,
+     -0.9985,
+     -0.6263
+    ],
+    "local_max": [
+     0.893,
+     0.7717,
+     0.2377
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    3.8,
+    0.0,
+    0.4
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 78,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Scarf_Knot: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Scarf_Long_Tail1_Outline",
+   "class": "small",
+   "tris": 36,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.883,
+    1.136,
+    0.951
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.2586,
+     -0.2858,
+     -0.7059
+    ],
+    "local_max": [
+     0.624,
+     0.85,
+     0.245
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    6.7,
+    0.58,
+    0.48
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Scarf_Long_Tail1: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Scarf_Long_Tail2_Outline",
+   "class": "small",
+   "tris": 50,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.347,
+    1.415,
+    0.627
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.2662,
+     -0.269,
+     -0.4019
+    ],
+    "local_max": [
+     1.0808,
+     1.146,
+     0.2252
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    9.66,
+    1.16,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 52,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Scarf_Long_Tail2: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Gloves_Knit_Right_Outline",
+   "class": "small",
+   "tris": 116,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.737,
+    0.703,
+    0.321
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3652,
+     -0.3516,
+     -0.1358
+    ],
+    "local_max": [
+     0.3723,
+     0.3516,
+     0.1853
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -5.18,
+    0.0,
+    -6.2
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 58,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Gloves_Knit_Right: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Gloves_Knit_Left_Outline",
+   "class": "small",
+   "tris": 116,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.732,
+    0.703,
+    0.321
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3666,
+     -0.3516,
+     -0.1358
+    ],
+    "local_max": [
+     0.3652,
+     0.3516,
+     0.1853
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    -0.22,
+    0.0,
+    -6.2
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 60,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Gloves_Knit_Left: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Gloves_Leather_Right_Outline",
+   "class": "small",
+   "tris": 92,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.792,
+    0.815,
+    0.362
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.4024,
+     -0.4065,
+     -0.1496
+    ],
+    "local_max": [
+     0.3899,
+     0.4085,
+     0.2129
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.02,
+    0.0,
+    -6.2
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 14,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Gloves_Leather_Right: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Gloves_Leather_Left_Outline",
+   "class": "small",
+   "tris": 92,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.792,
+    0.815,
+    0.362
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3899,
+     -0.4085,
+     -0.1496
+    ],
+    "local_max": [
+     0.4024,
+     0.4065,
+     0.2129
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    4.98,
+    0.0,
+    -6.2
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 14,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Gloves_Leather_Left: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Rookie_Mask_Eye_Outline",
+   "class": "small",
+   "tris": 228,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.085,
+    1.825,
+    0.789
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.0424,
+     -0.0842,
+     -0.3146
+    ],
+    "local_max": [
+     1.0427,
+     1.7403,
+     0.4746
+    ]
+   },
+   "swatches": [
+    "ink"
+   ],
+   "location": [
+    6.4,
+    -0.84,
+    -4.08
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 101,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 1,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Rookie_Mask_Eye: inverted hull, 0.03 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 5232,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "54b41c84cea5a44b8d48",
+ "fbx": {
+  "path": "assets/fbx/Rookie_Outline.fbx",
+  "bytes": 223260,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Rookie_Cap_Beanie_Outline",
+   "Rookie_Cap_Bobble_Outline",
+   "Rookie_Cap_Flat_Outline",
+   "Rookie_Cap_Santa_Outline",
+   "Rookie_Cap_Trapper_Outline",
+   "Rookie_Gloves_Knit_Left_Outline",
+   "Rookie_Gloves_Knit_Right_Outline",
+   "Rookie_Gloves_Leather_Left_Outline",
+   "Rookie_Gloves_Leather_Right_Outline",
+   "Rookie_Head_Outline",
+   "Rookie_LeftFoot_Outline",
+   "Rookie_LeftHand_Outline",
+   "Rookie_LeftLowerArm_Outline",
+   "Rookie_LeftLowerLeg_Outline",
+   "Rookie_LeftUpperArm_Outline",
+   "Rookie_LeftUpperLeg_Outline",
+   "Rookie_LowerTorso_Outline",
+   "Rookie_Mask_Eye_Outline",
+   "Rookie_RightFoot_Outline",
+   "Rookie_RightHand_Outline",
+   "Rookie_RightLowerArm_Outline",
+   "Rookie_RightLowerLeg_Outline",
+   "Rookie_RightUpperArm_Outline",
+   "Rookie_RightUpperLeg_Outline",
+   "Rookie_Scarf_Bandana_Outline",
+   "Rookie_Scarf_Chunky_Outline",
+   "Rookie_Scarf_Knot_Outline",
+   "Rookie_Scarf_Long_Outline",
+   "Rookie_Scarf_Long_Tail1_Outline",
+   "Rookie_Scarf_Long_Tail2_Outline",
+   "Rookie_UpperTorso_Outline"
+  ],
+  "geometry_extents": [
+   [
+    0.321,
+    0.703,
+    0.732
+   ],
+   [
+    0.321,
+    0.703,
+    0.737
+   ],
+   [
+    0.362,
+    0.792,
+    0.815
+   ],
+   [
+    0.362,
+    0.792,
+    0.815
+   ],
+   [
+    0.555,
+    1.752,
+    2.027
+   ],
+   [
+    0.627,
+    1.347,
+    1.415
+   ],
+   [
+    0.636,
+    0.692,
+    0.827
+   ],
+   [
+    0.638,
+    0.691,
+    0.827
+   ],
+   [
+    0.643,
+    0.698,
+    0.714
+   ],
+   [
+    0.643,
+    0.698,
+    0.714
+   ],
+   [
+    0.709,
+    0.772,
+    0.807
+   ],
+   [
+    0.709,
+    0.772,
+    0.807
+   ],
+   [
+    0.72,
+    0.756,
+    1.107
+   ],
+   [
+    0.72,
+    0.756,
+    1.107
+   ],
+   [
+    0.728,
+    0.86,
+    1.4
+   ],
+   [
+    0.728,
+    0.86,
+    1.4
+   ],
+   [
+    0.732,
+    0.777,
+    0.815
+   ],
+   [
+    0.732,
+    0.777,
+    0.816
+   ],
+   [
+    0.748,
+    2.184,
+    2.42
+   ],
+   [
+    0.749,
+    1.314,
+    1.893
+   ],
+   [
+    0.789,
+    1.825,
+    2.085
+   ],
+   [
+    0.855,
+    1.671,
+    1.845
+   ],
+   [
+    0.864,
+    1.77,
+    1.786
+   ],
+   [
+    0.883,
+    0.951,
+    1.136
+   ],
+   [
+    1.083,
+    2.241,
+    2.241
+   ],
+   [
+    1.239,
+    1.754,
+    1.786
+   ],
+   [
+    1.338,
+    1.691,
+    2.077
+   ],
+   [
+    1.55,
+    2.204,
+    2.204
+   ],
+   [
+    1.559,
+    2.164,
+    2.325
+   ],
+   [
+    1.73,
+    1.963,
+    2.201
+   ],
+   [
+    1.8,
+    2.362,
+    2.789
+   ]
+  ]
+ },
+ "spec": "assets/blender/zz_outlines.py",
+ "notes": "Ink outlines (BLENDER LOOK): inverted hulls, Neon in Config.Outline.COLOUR, welded to their piece by KitService; Heist/Outlines picks which draw per tier (Config.Outline.TIERS).",
+ "turntable": "docs/art/turntables/Rookie_Outline.png",
+ "seconds": 6.1
+}

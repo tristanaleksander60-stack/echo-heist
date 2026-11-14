@@ -85,7 +85,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "bdc8a77a82dad8cd4b90",
+ "contentHash": "4a99075c7b4457808dbd",
  "fbx": {
   "path": "assets/fbx/Counter_8x2.fbx",
   "bytes": 23836,
@@ -105,6 +105,6 @@
  },
  "spec": "assets/blender/furniture.py",
  "notes": "Counter 8x2x3.5: raised panels, dark display top (two-faced divider: L6 counters are 2 deep).",
- "seconds": 0.2,
- "turntable": "docs/art/turntables/Counter_8x2.png"
+ "turntable": "docs/art/turntables/Counter_8x2.png",
+ "seconds": 41.2
 }

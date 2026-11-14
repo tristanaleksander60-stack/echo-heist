@@ -88,10 +88,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "93720226c050a11c244f",
+ "ao": {
+  "GiantPresent": [
+   0.6,
+   0.801
+  ]
+ },
+ "contentHash": "a75fd56a85b1f630ac4a",
  "fbx": {
   "path": "assets/fbx/GiantPresent.fbx",
-  "bytes": 45932,
+  "bytes": 49516,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -108,6 +114,6 @@
  },
  "spec": "assets/blender/hero_props.py",
  "notes": "Hero loot: Giant Present 6x6x5 (bow to 6.8): holly paper, gold ribbon + bow, tag, 4 grip straps.",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/GiantPresent.png"
+ "turntable": "docs/art/turntables/GiantPresent.png",
+ "seconds": 23.9
 }

@@ -78,7 +78,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "c53ef9caefe1dc5e2c1f",
+ "contentHash": "2d2c0c1be019f61fd3e5",
  "fbx": {
   "path": "assets/fbx/Railing_8.fbx",
   "bytes": 20156,
@@ -98,6 +98,6 @@
  },
  "spec": "assets/blender/tower.py",
  "notes": "Railing 8 x 0.24 x 3.6 (the warehouse garage's mezzanine).",
- "seconds": 0.0,
- "turntable": "docs/art/turntables/Railing_8.png"
+ "turntable": "docs/art/turntables/Railing_8.png",
+ "seconds": 139.7
 }

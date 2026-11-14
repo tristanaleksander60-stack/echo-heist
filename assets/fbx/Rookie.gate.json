@@ -1249,10 +1249,76 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "bbe7cf44b39acbbfe111",
+ "ao": {
+  "Rookie_LowerTorso": [
+   0.6,
+   0.76
+  ],
+  "Rookie_UpperTorso": [
+   0.6,
+   0.73
+  ],
+  "Rookie_Head": [
+   0.6,
+   0.799
+  ],
+  "Rookie_RightUpperArm": [
+   0.6,
+   0.722
+  ],
+  "Rookie_RightLowerArm": [
+   0.6,
+   0.726
+  ],
+  "Rookie_RightHand": [
+   0.6,
+   0.755
+  ],
+  "Rookie_RightUpperLeg": [
+   0.6,
+   0.667
+  ],
+  "Rookie_RightLowerLeg": [
+   0.6,
+   0.731
+  ],
+  "Rookie_RightFoot": [
+   0.6,
+   0.717
+  ],
+  "Rookie_LeftUpperArm": [
+   0.6,
+   0.722
+  ],
+  "Rookie_LeftLowerArm": [
+   0.6,
+   0.734
+  ],
+  "Rookie_LeftHand": [
+   0.6,
+   0.761
+  ],
+  "Rookie_LeftUpperLeg": [
+   0.6,
+   0.668
+  ],
+  "Rookie_LeftLowerLeg": [
+   0.6,
+   0.733
+  ],
+  "Rookie_LeftFoot": [
+   0.6,
+   0.719
+  ],
+  "Rookie_Face_Idle": [
+   0.6,
+   0.747
+  ]
+ },
+ "contentHash": "89301832a8a311310bab",
  "fbx": {
   "path": "assets/fbx/Rookie.fbx",
-  "bytes": 136124,
+  "bytes": 153980,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -1359,6 +1425,6 @@
  },
  "spec": "assets/blender/rookie.py",
  "notes": "The Rookie: R15-compatible rigid body (15 parts, R15 joint pivots) + the idle face. Scarf and stripes are outfit parts (crew colour).",
- "seconds": 0.8,
- "turntable": "docs/art/turntables/Rookie.png"
+ "turntable": "docs/art/turntables/Rookie.png",
+ "seconds": 7.8
 }

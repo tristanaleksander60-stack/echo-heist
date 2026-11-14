@@ -26,6 +26,10 @@ export type PartSpec = {
 	transparency: number?,
 	texture: string?,
 	tintable: boolean?,
+	-- BLENDER LOOK: an inverted-hull outline (assets/blender/zz_outlines.py) of the piece `outlineOf`;
+	-- outlineClass "char" | "hero" | "loot" (Config.Outline.TIERS)
+	outlineOf: string?,
+	outlineClass: string?,
 }
 
 export type KitData = {
@@ -192,6 +196,9 @@ end
 -- plate); every other piece is visual only (KitDresser: CanCollide, CanQuery, CanTouch off), so
 -- it carries Box data instead of precise decomposition it would never use.
 function KitLib.gameCollision(name: string, spec: PartSpec, colliders: { [string]: boolean }?): string
+	if spec.outlineOf ~= nil then
+		return "Default" -- an outline hull never collides or queries: kept as uploaded, no rebuild at boot
+	end
 	if colliders == nil or colliders[name] then
 		return spec.collision
 	end
@@ -202,12 +209,45 @@ end
 -- names start with one of `prefixes` (Config.Kit.PRECISE_PREFIXES: the characters, the vault door, the skyline
 -- seen from far away), "Automatic" (full detail under ~250 studs, the engine's LoDs beyond) for everything else.
 function KitLib.renderFidelity(name: string, prefixes: { string }?): string
+	if KitLib.isOutlineName(name) then
+		return "Automatic" -- outline hulls keep the upload's (no rebuild); full detail where a line is visible
+	end
 	for _, p in prefixes or {} do
 		if string.sub(name, 1, #p) == p then
 			return "Precise"
 		end
 	end
 	return "Automatic"
+end
+
+-- BLENDER LOOK: outline hulls are named `<Piece>_Outline` (assets/blender/zz_outlines.py).
+KitLib.OUTLINE_SUFFIX = "_Outline"
+KitLib.OUTLINE_TAG = "EH_Outline" -- CollectionService tag on every attached hull (Heist/Outlines finds them)
+
+function KitLib.isOutlineName(name: string): boolean
+	local n = #KitLib.OUTLINE_SUFFIX
+	return #name > n and string.sub(name, -n) == KitLib.OUTLINE_SUFFIX
+end
+
+-- A hull's Size for an outline thickness scale (Config.Outline.THICKNESS_SCALE): the piece's size plus the built
+-- margin (hull - piece, per axis) times `scale`. scale 1 = the built size.
+function KitLib.outlineSize(piece: Vec, hull: Vec, scale: number): Vec
+	return {
+		piece[1] + (hull[1] - piece[1]) * scale,
+		piece[2] + (hull[2] - piece[2]) * scale,
+		piece[3] + (hull[3] - piece[3]) * scale,
+	}
+end
+
+-- {piece -> hull name} for every outline in the kit data.
+function KitLib.outlines(parts: { [string]: PartSpec }): { [string]: string }
+	local out = {}
+	for name, spec in parts do
+		if spec.outlineOf then
+			out[spec.outlineOf] = name
+		end
+	end
+	return out
 end
 
 -- Does a loaded part need a rebuild for its CollisionFidelity? mode: "all" | "colliding" | "none".

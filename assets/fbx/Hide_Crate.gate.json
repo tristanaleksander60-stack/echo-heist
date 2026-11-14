@@ -84,10 +84,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "9edffe22b563e9a5a69a",
+ "ao": {
+  "Hide_Crate": [
+   0.6,
+   0.718
+  ]
+ },
+ "contentHash": "8a89032d468f7dc4fe9c",
  "fbx": {
   "path": "assets/fbx/Hide_Crate.fbx",
-  "bytes": 28828,
+  "bytes": 30252,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -104,6 +110,6 @@
  },
  "spec": "assets/blender/hides.py",
  "notes": "Hide spot: open wardrobe crate (3.6 x 2.5 x 5.85), plank sides, dark interior, lid leaned upright on its left side.",
- "seconds": 0.3,
- "turntable": "docs/art/turntables/Hide_Crate.png"
+ "turntable": "docs/art/turntables/Hide_Crate.png",
+ "seconds": 6.6
 }

@@ -82,15 +82,18 @@ expectProps(lighting, "Lighting", {
 	GlobalShadows = true,
 	ClockTime = 15,
 	GeographicLatitude = 20,
-	Brightness = 1.6, -- BIG: value contrast back (LEVELS.md §11)
-	ColorShift_Top = { 150, 175, 255 },
-	ColorShift_Bottom = { 40, 30, 70 },
-	Ambient = { 118, 122, 152 }, -- BIG: less pink (blue night by hue), more contrast
-	OutdoorAmbient = { 160, 170, 204 }, -- LIGHT AND SPRINT: +10 (the exposure went to 0)
-	EnvironmentDiffuseScale = 0.36,
-	EnvironmentSpecularScale = 0.25,
+	-- BLENDER LOOK (docs/audit/BLENDER_LOOK.md): the Blender preview's warm key + neutral, cool-not-violet fill
+	-- instead of the blue-violet cast (was Top 150,175,255 / Bottom 40,30,70 / Ambient 118,122,152 / Outdoor
+	-- 160,170,204, EnvDiffuse 0.36 sampling the blue night sky, Brightness 1.6, ShadowSoftness 0.3)
+	Brightness = 1.9,
+	ColorShift_Top = { 255, 240, 222 },
+	ColorShift_Bottom = { 36, 40, 52 },
+	Ambient = { 128, 130, 138 },
+	OutdoorAmbient = { 160, 168, 182 },
+	EnvironmentDiffuseScale = 0.22,
+	EnvironmentSpecularScale = 0.2,
 	ExposureCompensation = 0, -- LIGHT AND SPRINT (owner v125 "way too sharp"): neutral, was 0.4
-	ShadowSoftness = 0.3,
+	ShadowSoftness = 0.22,
 })
 -- Lighting.Technology must agree with the LightingStyle + PrioritizeLightingQuality pair. Rojo writes only the
 -- properties a project lists, and a Lighting service whose file has no Technology keeps the class default
@@ -159,8 +162,8 @@ local LIGHTING_CHILDREN: { [string]: { class: string, props: { [string]: any } }
 		props = {
 			Density = 0.24,
 			Offset = 0.12,
-			Color = { 148, 160, 208 }, -- WORLD 2.0: a light snowy haze, never darkness (BIG: bluer)
-			Decay = { 112, 122, 178 },
+			Color = { 152, 164, 192 }, -- WORLD 2.0: a light snowy haze, never darkness (BLENDER LOOK: less violet)
+			Decay = { 112, 124, 156 },
 			Glare = 0,
 			Haze = 1.6,
 		},
@@ -169,7 +172,7 @@ local LIGHTING_CHILDREN: { [string]: { class: string, props: { [string]: any } }
 	Bloom = { class = "BloomEffect", props = { Intensity = 0.25, Size = 16, Threshold = 1.6 } },
 	ColorCorrection = {
 		class = "ColorCorrectionEffect",
-		props = { Brightness = 0, Contrast = 0.08, Saturation = 0.08, TintColor = { 238, 242, 255 } },
+		props = { Brightness = 0, Contrast = 0.1, Saturation = 0.1, TintColor = { 255, 250, 242 } }, -- BLENDER LOOK
 	},
 	ColorGrading = { class = "ColorGradingEffect", props = { TonemapperPreset = "Default" } },
 }

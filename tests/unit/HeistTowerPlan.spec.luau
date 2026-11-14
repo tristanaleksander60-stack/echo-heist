@@ -276,16 +276,19 @@ return function(test: (string, () -> ()) -> ())
 					columns += 1
 				end
 			end
+			local _, t1 = TowerPlan.budget(plan, 1, kitTris, BIG)
 			local _, t2 = TowerPlan.budget(plan, 2, kitTris, BIG)
 			local _, t3 = TowerPlan.budget(plan, 3, kitTris, BIG)
 			local _, t4 = TowerPlan.budget(plan, 4, kitTris, BIG)
 			if trims > 0 then
-				Assert.truthy(t3 < t2, level.id .. ": tier 3 sheds the front's trims")
+				-- BLENDER LOOK: from tier 2 (they pay for tier 2's character outlines)
+				Assert.truthy(t2 < t1, level.id .. ": tier 2 sheds the front's trims")
 			end
+			Assert.truthy(t3 <= t2, level.id .. ": tier 3 no dearer than tier 2")
 			if columns > 0 then
 				Assert.truthy(t4 < t3, level.id .. ": tier 4 sheds the giant order")
 			end
-			Assert.truthy(TowerPlan.layerOn("trim", 2, BIG) and not TowerPlan.layerOn("trim", 3, BIG), "trim to tier 2")
+			Assert.truthy(TowerPlan.layerOn("trim", 1, BIG) and not TowerPlan.layerOn("trim", 2, BIG), "trim to tier 1")
 			Assert.truthy(TowerPlan.layerOn("order", 3, BIG) and not TowerPlan.layerOn("order", 4, BIG), "order to 3")
 		end
 	end)

@@ -1510,10 +1510,100 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "152de572396bdc79a282",
+ "ao": {
+  "Rookie_Cap_Flat": [
+   0.6,
+   0.84
+  ],
+  "Rookie_Cap_Beanie": [
+   0.6,
+   0.858
+  ],
+  "Rookie_Cap_Bobble": [
+   0.6,
+   0.861
+  ],
+  "Rookie_Cap_Trapper": [
+   0.6,
+   0.898
+  ],
+  "Rookie_Cap_Santa": [
+   0.6,
+   0.863
+  ],
+  "Rookie_Scarf_Long": [
+   0.6,
+   0.935
+  ],
+  "Rookie_Scarf_Chunky": [
+   0.6,
+   0.882
+  ],
+  "Rookie_Scarf_Bandana": [
+   0.6,
+   0.917
+  ],
+  "Rookie_Scarf_Knot": [
+   0.6,
+   0.915
+  ],
+  "Rookie_Scarf_Long_Tail1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_Scarf_Long_Tail2": [
+   0.714,
+   0.935
+  ],
+  "Rookie_Stripes_Torso": [
+   0.792,
+   0.936
+  ],
+  "Rookie_Stripes_RightArm": [
+   0.757,
+   0.925
+  ],
+  "Rookie_Stripes_LeftArm": [
+   0.753,
+   0.925
+  ],
+  "Rookie_Block_Torso": [
+   0.937,
+   0.991
+  ],
+  "Rookie_Block_RightCuff": [
+   0.949,
+   0.98
+  ],
+  "Rookie_Block_LeftCuff": [
+   0.949,
+   0.98
+  ],
+  "Rookie_Gloves_Knit_Right": [
+   0.6,
+   0.879
+  ],
+  "Rookie_Gloves_Knit_Left": [
+   0.6,
+   0.878
+  ],
+  "Rookie_Gloves_Leather_Right": [
+   0.6,
+   0.954
+  ],
+  "Rookie_Gloves_Leather_Left": [
+   0.6,
+   0.954
+  ],
+  "Rookie_Mask_Eye": [
+   0.6,
+   0.941
+  ]
+ },
+ "contentHash": "d323fc814a5b88415b33",
  "fbx": {
   "path": "assets/fbx/Rookie_Outfits.fbx",
-  "bytes": 166108,
+  "bytes": 185548,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -1656,6 +1746,6 @@
  },
  "spec": "assets/blender/rookie.py",
  "notes": "Outfit slots: cap x5 (atlas; Santa = Christmas cells), scarf x4 + sweater x2 (crew colour), gloves x2 (glove colour), mask x1 (+ none). Pivot = attach point.",
- "seconds": 0.5,
- "turntable": "docs/art/turntables/Rookie_Outfits.png"
+ "turntable": "docs/art/turntables/Rookie_Outfits.png",
+ "seconds": 33.4
 }

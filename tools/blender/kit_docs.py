@@ -30,9 +30,14 @@ def load():
         return json.load(f)
 
 
+OUTLINE_INK = "#16121C"   # = Config.Outline.COLOUR (22, 18, 28)
+
+
 def idle_colour(name, p):
     """The colour the prepare script gives a part: Neon idle (eh_palette.NEON), glass tint, a tintable ornament's
     default, else none (white, the atlas carries the colour)."""
+    if p.get("outlineOf"):
+        return OUTLINE_INK          # BLENDER LOOK hulls: KitService paints them Config.Outline.COLOUR
     if p["material"] == "Neon":
         if name not in P.NEON:
             raise SystemExit(f"kit_docs: Neon part {name} has no entry in eh_palette.NEON (idle colour + audit)")

@@ -3,29 +3,29 @@
  "objects": [
   {
    "name": "Rookie_FPH_Right_Glove",
-   "class": "medium",
-   "tris": 2600,
+   "class": "hero",
+   "tris": 5200,
    "budget": [
-    2000,
-    4000
+    10000,
+    20000
    ],
-   "budget_note": "over target - justify or simplify",
+   "budget_note": "ok",
    "dims": [
-    0.101,
-    0.239,
-    0.053
+    0.104,
+    0.242,
+    0.056
    ],
    "pivot": {
     "rule": "point",
     "local_min": [
-     -0.042,
-     -0.1487,
-     -0.0289
+     -0.0436,
+     -0.1503,
+     -0.0305
     ],
     "local_max": [
-     0.0588,
-     0.09,
-     0.0243
+     0.0604,
+     0.0916,
+     0.0259
     ]
    },
    "swatches": [],
@@ -35,10 +35,10 @@
     0.0
    ],
    "symmetry_error": null,
-   "self_intersections": 0,
-   "cross_shell_overlaps": 0,
+   "self_intersections": 90,
+   "cross_shell_overlaps": 45,
    "cap_overlaps": 0,
-   "flipped_faces": 0,
+   "flipped_faces": 1,
    "boundary_edges": 0,
    "non_manifold_edges": 0,
    "ngons": 0,
@@ -62,18 +62,18 @@
    ],
    "joint": null,
    "role": "char",
-   "notes": "skinned first-person right glove (one shell, 23 bones)",
+   "notes": "skinned first-person right glove (one shell + its ink hull, 23 bones)",
    "fails": [],
    "passed": true
   }
  ],
  "asset_fails": [],
  "lihfolk_bpy": "LihFolk plugin",
- "tris_total": 2600,
+ "tris_total": 5200,
  "asset_budget": {
-  "class": "medium",
-  "target": 2000,
-  "ceiling": 4000
+  "class": "hero",
+  "target": 10000,
+  "ceiling": 20000
  },
  "seats": [],
  "align": [],
@@ -83,10 +83,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "d2cda5d20b6d432d7c58",
+ "contentHash": "c9aa6fb9805be10dd92f",
  "fbx": {
   "path": "assets/fbx/Rookie_FPHands_R.fbx",
-  "bytes": 178556,
+  "bytes": 267372,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -119,14 +119,14 @@
   ],
   "geometry_extents": [
    [
-    0.053,
-    0.101,
-    0.239
+    0.056,
+    0.104,
+    0.242
    ]
   ]
  },
  "spec": "assets/blender/fp_hands.py",
  "notes": "FP HANDS v2: one continuous skinned glove (23 bones, smooth, vertex-shaded), exported at 0.2 (the in-game size).",
  "turntable": "docs/art/turntables/Rookie_FPHands_R.png",
- "seconds": 7.1
+ "seconds": 6.5
 }

@@ -95,7 +95,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "c15391a82f5ca0bb6bb5",
+ "contentHash": "57800e7a4bbd31a1c7b1",
  "fbx": {
   "path": "assets/fbx/Cornice_8.fbx",
   "bytes": 21548,
@@ -115,6 +115,6 @@
  },
  "spec": "assets/blender/tower.py",
  "notes": "Cornice 8 long, 1.45 proud, 2 tall with its snow (BIG buildings).",
- "seconds": 0.2,
- "turntable": "docs/art/turntables/Cornice_8.png"
+ "turntable": "docs/art/turntables/Cornice_8.png",
+ "seconds": 23.3
 }

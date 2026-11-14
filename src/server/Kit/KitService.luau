@@ -41,6 +41,7 @@
 -- opts: { atlas: string? (location atlas swap on atlas pieces), color: Color3? }
 
 local AssetService = game:GetService("AssetService")
+local CollectionService = game:GetService("CollectionService")
 local InsertService = game:GetService("InsertService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
@@ -76,6 +77,7 @@ export type Report = {
 	seconds: number,
 	prioritySeconds: number, -- the first phase (the Rookie's groups) ready, seconds from boot
 	introSeconds: number, -- the second phase (the intro's groups) ready, seconds from boot
+	outlines: number, -- BLENDER LOOK: outline hulls welded onto their pieces
 }
 
 type Spec = KitLib.PartSpec
@@ -118,6 +120,7 @@ local function newReport(): Report
 		seconds = 0,
 		prioritySeconds = 0,
 		introSeconds = 0,
+		outlines = 0,
 	}
 end
 
@@ -476,6 +479,22 @@ local function prepare(name: string, kit: Folder)
 	local po = KitLib.pivotOffset(spec)
 	part.PivotOffset = CFrame.new(po[1], po[2], po[3])
 	part:SetAttribute("KitPiece", name)
+	if spec.outlineOf then
+		-- BLENDER LOOK: an inverted-hull outline. It rides its piece on a Weld (attachOutlines), so it is never
+		-- anchored itself, weighs nothing, and is invisible to physics, queries, touches and shadows. Neon: unlit ink.
+		local O = Config.Outline
+		part.Anchored = false
+		part.Massless = true
+		part.CanCollide = false
+		part.CanTouch = false
+		part.CanQuery = false
+		part.CastShadow = false
+		part.Material = Enum.Material.Neon
+		part.Color = Color3.fromRGB(O.COLOUR[1], O.COLOUR[2], O.COLOUR[3])
+		part.TextureID = ""
+		part:SetAttribute("EH_OutlineOf", spec.outlineOf)
+		part:SetAttribute("EH_OutlineClass", spec.outlineClass or "char")
+	end
 
 	local s = part.Size
 	local sizeErr = KitLib.sizeError(s.X, s.Y, s.Z, spec.size)
@@ -512,6 +531,40 @@ local function prepare(name: string, kit: Folder)
 	end
 	part.Parent = modelFor(spec.model, kit)
 	templates[name] = part
+end
+
+-- BLENDER LOOK: welds every prepared outline hull onto its prepared piece (the hull becomes the piece's child), so
+-- every clone of the piece carries its outline: characters, outfits, props, loot. Both templates sit at their
+-- upload's scene positions, which share the kit point, so the Weld keeps the exact offset. Config.Outline
+-- .THICKNESS_SCALE resizes the hull around its centre. Idempotent (runs after each load phase).
+local function attachOutlines()
+	local O = Config.Outline
+	if not (O and O.ENABLED) then
+		return
+	end
+	for name, hull in templates do
+		local spec = specs[name]
+		local of = spec and spec.outlineOf
+		local piece = of and templates[of]
+		if piece and hull.Parent ~= piece then
+			if O.THICKNESS_SCALE ~= 1 then
+				local s = KitLib.outlineSize(specs[of :: string].size, spec.size, O.THICKNESS_SCALE)
+				hull.Size = Vector3.new(s[1], s[2], s[3])
+			end
+			local w = Instance.new("Weld")
+			w.Name = "EH_OutlineWeld"
+			w.Part0 = piece
+			w.Part1 = hull
+			w.C0 = piece.CFrame:ToObjectSpace(hull.CFrame)
+			hull:SetAttribute("EH_OutlineOffset", w.C0.Position)
+			hull:SetAttribute("EH_OutlineMargin", hull.Size - piece.Size)
+			w.C1 = CFrame.identity
+			w.Parent = hull
+			hull.Parent = piece
+			CollectionService:AddTag(hull, KitLib.OUTLINE_TAG)
+			report.outlines += 1
+		end
+	end
 end
 
 -- The early phases: "priority" (the Rookie) and "intro" (the story intro's groups), each with its waiters.
@@ -620,6 +673,7 @@ local function boot()
 					readyModels[model] = true
 				end
 			end
+			attachOutlines()
 			if name == "priority" then
 				report.prioritySeconds = os.clock() - t0
 			else
@@ -646,6 +700,7 @@ local function boot()
 	pool(names, cfg.REBUILD_CONCURRENCY, function(name: string)
 		prepare(name, kit)
 	end)
+	attachOutlines()
 	for _, m in models do
 		m.WorldPivot = CFrame.identity
 	end
@@ -779,6 +834,35 @@ local function dress(part: MeshPart, opts: CloneOptions?)
 	end
 end
 
+-- BLENDER LOOK: a placed piece is often resized (KitPlan.partFrame's per-axis scale); its outline hull follows: the
+-- hull keeps the same margin around the new size (a constant line width) and its weld offset scales with the piece.
+local function fitOutline(part: BasePart, hull: BasePart)
+	local w = hull:FindFirstChild("EH_OutlineWeld")
+	local spec = specs[part:GetAttribute("KitPiece") or part.Name]
+	local margin = hull:GetAttribute("EH_OutlineMargin")
+	local offset = hull:GetAttribute("EH_OutlineOffset")
+	if not (w and w:IsA("Weld") and spec and typeof(margin) == "Vector3" and typeof(offset) == "Vector3") then
+		return
+	end
+	local k = part.Size / Vector3.new(spec.size[1], spec.size[2], spec.size[3])
+	hull.Size = part.Size + margin
+	w.C0 = CFrame.new(offset * k)
+end
+
+local function followSize(part: Instance)
+	for _, d in part:GetDescendants() do
+		if d:IsA("BasePart") and d:GetAttribute("EH_OutlineOf") ~= nil then
+			local host = d.Parent
+			if host and host:IsA("BasePart") then
+				local hull = d
+				host:GetPropertyChangedSignal("Size"):Connect(function()
+					fitOutline(host, hull)
+				end)
+			end
+		end
+	end
+end
+
 function KitService.clone(name: string, opts: CloneOptions?): MeshPart?
 	local template = templates[name]
 	if template == nil then
@@ -786,6 +870,7 @@ function KitService.clone(name: string, opts: CloneOptions?): MeshPart?
 	end
 	local part = template:Clone()
 	dress(part, opts)
+	followSize(part)
 	return part
 end
 
@@ -795,6 +880,7 @@ function KitService.cloneModel(model: string, opts: CloneOptions?): Model?
 		return nil
 	end
 	local copy = template:Clone()
+	followSize(copy)
 	if opts and opts.atlas then
 		for _, d in copy:GetDescendants() do
 			if d:IsA("MeshPart") then
@@ -813,7 +899,7 @@ function KitService.summary(): string
 	local r = report
 	return string.format(
 		"%d/%d pieces (%s, %d groups) in %.1f s; rebuilt %d for collision; %d missing, %d size errors, "
-			.. "%d position errors, %d off-fidelity; atlas %s (%s); hero %s",
+			.. "%d position errors, %d off-fidelity; %d outlines; atlas %s (%s); hero %s",
 		r.loaded,
 		r.expected,
 		r.source,
@@ -824,6 +910,7 @@ function KitService.summary(): string
 		#r.sizeErrors,
 		#r.positionErrors,
 		#r.fidelityKept,
+		r.outlines,
 		if r.atlas ~= "" then r.atlas else "none",
 		r.atlasSource,
 		if r.hero ~= "" then r.hero else "-"

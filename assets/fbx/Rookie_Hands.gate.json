@@ -951,10 +951,68 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "28d8bc15c2903202a36a",
+ "ao": {
+  "Rookie_Hand_Right_Palm": [
+   0.6,
+   0.894
+  ],
+  "Rookie_Hand_Right_Index1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_Hand_Right_Index2": [
+   0.6,
+   0.893
+  ],
+  "Rookie_Hand_Right_Fingers1": [
+   0.6,
+   0.935
+  ],
+  "Rookie_Hand_Right_Fingers2": [
+   0.6,
+   0.839
+  ],
+  "Rookie_Hand_Right_Thumb1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_Hand_Right_Thumb2": [
+   0.6,
+   0.922
+  ],
+  "Rookie_Hand_Left_Palm": [
+   0.6,
+   0.894
+  ],
+  "Rookie_Hand_Left_Index1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_Hand_Left_Index2": [
+   0.6,
+   0.893
+  ],
+  "Rookie_Hand_Left_Fingers1": [
+   0.6,
+   0.934
+  ],
+  "Rookie_Hand_Left_Fingers2": [
+   0.6,
+   0.838
+  ],
+  "Rookie_Hand_Left_Thumb1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_Hand_Left_Thumb2": [
+   0.6,
+   0.922
+  ]
+ },
+ "contentHash": "d388167227b5e312930c",
  "fbx": {
   "path": "assets/fbx/Rookie_Hands.fbx",
-  "bytes": 95356,
+  "bytes": 102252,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -1050,5 +1108,5 @@
  "spec": "assets/blender/rookie.py",
  "notes": "First-person gloves with fingers (REVIEW #10): palm + index, finger block and thumb in two segments each, pivots at the hinges; glove colour at runtime.",
  "turntable": "docs/art/turntables/Rookie_Hands.png",
- "seconds": 25.8
+ "seconds": 58.7
 }

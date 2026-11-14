@@ -82,7 +82,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "8101029575030237ce60",
+ "contentHash": "b8a69d9a3db6fa37d232",
  "fbx": {
   "path": "assets/fbx/Ceiling_8x8.fbx",
   "bytes": 21484,
@@ -102,6 +102,6 @@
  },
  "spec": "assets/blender/tower.py",
  "notes": "Ceiling tile 8 x 8 x 0.55, coffered underside (BIG buildings: first person never sees sky indoors).",
- "seconds": 0.0,
- "turntable": "docs/art/turntables/Ceiling_8x8.png"
+ "turntable": "docs/art/turntables/Ceiling_8x8.png",
+ "seconds": 113.6
 }

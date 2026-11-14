@@ -99,7 +99,7 @@ function Rigs.buildAvatar(template: Model): Rig?
 	local tinted = {}
 	local faces: { BasePart } = {}
 	for _, d in model:GetDescendants() do
-		if d:IsA("BasePart") and d ~= root then
+		if d:IsA("BasePart") and d ~= root and d:GetAttribute("EH_OutlineOf") == nil then
 			if d:GetAttribute("EH_Face") ~= nil then
 				table.insert(faces, d)
 			elseif d:GetAttribute("EH_Hidden") ~= true then
@@ -350,7 +350,8 @@ function Rigs.partsOf(rig: Rig): { BasePart }
 	end
 	local out: { BasePart } = {}
 	for _, d in rig.model:GetDescendants() do
-		if d:IsA("BasePart") then
+		-- outline hulls are Heist/Outlines' alone: they mirror their piece (BLENDER LOOK)
+		if d:IsA("BasePart") and d:GetAttribute("EH_OutlineOf") == nil then
 			table.insert(out, d)
 		end
 	end

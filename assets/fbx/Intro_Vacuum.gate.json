@@ -162,10 +162,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "aec499f2e6b498e1916a",
+ "contentHash": "1fa8c9c9837b719c3654",
  "fbx": {
   "path": "assets/fbx/Intro_Vacuum.fbx",
-  "bytes": 116828,
+  "bytes": 116844,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -188,6 +188,6 @@
  },
  "spec": "assets/blender/intro.py",
  "notes": "Hoardsworth's giant vacuum on the tower roof: motor, hose and intake; the outlet fills the Snow Globe.",
- "seconds": 2.2,
- "turntable": "docs/art/turntables/Intro_Vacuum.png"
+ "turntable": "docs/art/turntables/Intro_Vacuum.png",
+ "seconds": 25.4
 }

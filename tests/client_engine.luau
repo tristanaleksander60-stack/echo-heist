@@ -1992,13 +1992,25 @@ local okHands, handsErr = pcall(function(): string
 	if okEm and em then
 		local e = em :: any
 		local faces = e:GetFaces()
-		assert(#faces >= 2000 and #faces <= 4000, "rounded fingers need 2,000-4,000 triangles: " .. #faces)
+		-- BLENDER LOOK: the glove carries its ink hull in the same skinned mesh (assets/blender/fp_hands.py
+		-- add_outline): half the faces, ink-coloured, wound inward (the engine culls them from the front)
+		assert(#faces >= 4000 and #faces <= 8000, "rounded fingers + the ink hull: 4,000-8,000 triangles: " .. #faces)
 		local normalsAt: { [number]: Vector3 } = {}
 		local split, shades = 0, { math.huge, -math.huge }
+		local inkFaces, inkInward = 0, 0
 		for _, f in faces do
 			local vs = e:GetFaceVertices(f)
 			local ns = e:GetFaceNormals(f)
 			local cs = e:GetFaceColors(f)
+			local ink = e:GetColor(cs[1]).R < 0.2
+			if ink then
+				inkFaces += 1
+				local a, b, c = e:GetPosition(vs[1]), e:GetPosition(vs[2]), e:GetPosition(vs[3])
+				local wn = (b - a):Cross(c - a)
+				if wn.Magnitude > 1e-12 and wn:Dot(e:GetNormal(ns[1])) < 0 then
+					inkInward += 1
+				end
+			end
 			for i, v in vs do
 				local n = e:GetNormal(ns[i])
 				local seen = normalsAt[v]
@@ -2007,13 +2019,19 @@ local okHands, handsErr = pcall(function(): string
 				elseif seen:Dot(n) < math.cos(math.rad(5)) then
 					split += 1
 				end
-				local c = e:GetColor(cs[i])
-				shades[1] = math.min(shades[1], c.R)
-				shades[2] = math.max(shades[2], c.R)
+				if not ink then
+					local col = e:GetColor(cs[i])
+					shades[1] = math.min(shades[1], col.R)
+					shades[2] = math.max(shades[2], col.R)
+				end
 			end
 		end
 		assert(split == 0, "smooth: one normal a vertex (" .. split .. " split corners)")
 		assert(shades[2] > 0.9 and shades[1] < 0.8, string.format("vertex shading %.2f-%.2f", shades[1], shades[2]))
+		assert(
+			math.abs(inkFaces * 2 - #faces) <= 2 and inkInward >= 0.95 * inkFaces,
+			string.format("the ink hull: %d of %d faces, %d wound inward", inkFaces, #faces, inkInward)
+		)
 		local bad = 0
 		for _, v in e:GetVertices() do
 			local w = e:GetVertexBoneWeights(v)
@@ -2026,7 +2044,17 @@ local okHands, handsErr = pcall(function(): string
 			end
 		end
 		assert(bad == 0, "<= 4 weights a vertex summing to 1 (" .. bad .. " bad)")
-		table.insert(out, string.format("glove %d tris, smooth, shade %.2f-%.2f", #faces, shades[1], shades[2]))
+		table.insert(
+			out,
+			string.format(
+				"glove %d tris (ink hull %d, %d inward), smooth, shade %.2f-%.2f",
+				#faces,
+				inkFaces,
+				inkInward,
+				shades[1],
+				shades[2]
+			)
+		)
 		e:Destroy()
 	else
 		table.insert(out, "EditableMesh unavailable here (" .. tostring(em) .. ")")

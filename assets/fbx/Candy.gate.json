@@ -81,10 +81,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "9e78a16f3a91ec72816b",
+ "ao": {
+  "Candy": [
+   0.6,
+   0.779
+  ]
+ },
+ "contentHash": "09abc1428fc86c68568c",
  "fbx": {
   "path": "assets/fbx/Candy.fbx",
-  "bytes": 26092,
+  "bytes": 27500,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -101,6 +107,6 @@
  },
  "spec": "assets/blender/loot.py",
  "notes": "Loot: gold-foil wrapped sweet (2.6 long), foil bands, pinched necks and pleated wrapper fans.",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/Candy.png"
+ "turntable": "docs/art/turntables/Candy.png",
+ "seconds": 26.9
 }

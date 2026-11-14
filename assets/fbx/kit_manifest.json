@@ -120,6 +120,43 @@
    ],
    "sim": "loot point (LevelSpec loot x, y, z)"
   },
+  "Candy_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    2.72,
+    1.173,
+    1.173
+   ],
+   "tris": 268,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "loot",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.36,
+    -0.037,
+    -0.587
+   ],
+   "boundsMax": [
+    1.36,
+    1.137,
+    0.587
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "Candy",
+   "outlineClass": "loot",
+   "outlineThickness": 0.035
+  },
   "Car_Parked": {
    "model": "Car_Parked",
    "size": [
@@ -228,6 +265,43 @@
     "EH_Loot"
    ]
   },
+  "CashBag_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    1.973,
+    2.093,
+    2.05
+   ],
+   "tris": 480,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "loot",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.986,
+    -0.035,
+    -1.064
+   ],
+   "boundsMax": [
+    0.986,
+    2.058,
+    0.986
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "CashBag",
+   "outlineClass": "loot",
+   "outlineThickness": 0.035
+  },
   "CashRegister": {
    "model": "CashRegister",
    "size": [
@@ -301,6 +375,43 @@
    "tags": [
     "EH_Loot"
    ]
+  },
+  "CashRegister_Drawer_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    3.035,
+    0.73,
+    2.832
+   ],
+   "tris": 390,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "loot",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.604,
+    -0.03,
+    -0.152
+   ],
+   "boundsMax": [
+    1.43,
+    0.7,
+    2.68
+   ],
+   "origin": [
+    0.0,
+    0.15,
+    -1.55
+   ],
+   "outlineOf": "CashRegister_Drawer",
+   "outlineClass": "loot",
+   "outlineThickness": 0.03
   },
   "Ceiling_8x8": {
    "model": "Ceiling_8x8",
@@ -1783,6 +1894,43 @@
     0.0
    ]
   },
+  "Diamond_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    2.061,
+    1.83,
+    2.061
+   ],
+   "tris": 94,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "loot",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.031,
+    -0.925,
+    -1.031
+   ],
+   "boundsMax": [
+    1.031,
+    0.904,
+    1.031
+   ],
+   "origin": [
+    0.0,
+    0.875,
+    0.0
+   ],
+   "outlineOf": "Diamond",
+   "outlineClass": "loot",
+   "outlineThickness": 0.03
+  },
   "Facade_8x10": {
    "model": "Facade_8x10",
    "size": [
@@ -2058,6 +2206,43 @@
     ]
    ]
   },
+  "GiantPresent_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    7.32,
+    6.92,
+    7.32
+   ],
+   "tris": 828,
+   "class": "hero",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "present",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -3.66,
+    -0.06,
+    -3.66
+   ],
+   "boundsMax": [
+    3.66,
+    6.86,
+    3.66
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "GiantPresent",
+   "outlineClass": "hero",
+   "outlineThickness": 0.06
+  },
   "GoldBar": {
    "model": "GoldBar",
    "size": [
@@ -2092,6 +2277,43 @@
     0.0
    ]
   },
+  "GoldBar_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    2.087,
+    0.658,
+    1.086
+   ],
+   "tris": 52,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "loot",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.043,
+    -0.026,
+    -0.543
+   ],
+   "boundsMax": [
+    1.043,
+    0.631,
+    0.543
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "GoldBar",
+   "outlineClass": "loot",
+   "outlineThickness": 0.03
+  },
   "GoldStack": {
    "model": "GoldStack",
    "size": [
@@ -2125,6 +2347,43 @@
     0.0,
     0.0
    ]
+  },
+  "GoldStack_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    2.126,
+    1.857,
+    3.186
+   ],
+   "tris": 248,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "loot",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.063,
+    -0.026,
+    -1.593
+   ],
+   "boundsMax": [
+    1.063,
+    1.831,
+    1.593
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "GoldStack",
+   "outlineClass": "loot",
+   "outlineThickness": 0.03
   },
   "Gus_Cap": {
    "model": "Gus",
@@ -2166,6 +2425,43 @@
     "name": "HatAttach",
     "parent": "Gus_Head"
    }
+  },
+  "Gus_Cap_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    2.114,
+    0.875,
+    2.447
+   ],
+   "tris": 128,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.057,
+    -0.12,
+    -1.44
+   ],
+   "boundsMax": [
+    1.057,
+    0.755,
+    1.006
+   ],
+   "origin": [
+    0.0,
+    5.78,
+    0.0
+   ],
+   "outlineOf": "Gus_Cap",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Gus_DonutBox": {
    "model": "Gus_DonutBox",
@@ -2288,6 +2584,43 @@
    },
    "tint": "Torch Amber #FFD27A when the cone is on; Vault Steel shade #4E5675 off (code)"
   },
+  "Gus_Flashlight_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    1.113,
+    1.105,
+    2.353
+   ],
+   "tris": 228,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.555,
+    -0.552,
+    -1.801
+   ],
+   "boundsMax": [
+    0.558,
+    0.553,
+    0.552
+   ],
+   "origin": [
+    1.6,
+    2.25,
+    -0.05
+   ],
+   "outlineOf": "Gus_Flashlight",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Gus_Head": {
    "model": "Gus",
    "size": [
@@ -2328,6 +2661,43 @@
     "name": "Neck",
     "parent": "Gus_UpperTorso"
    }
+  },
+  "Gus_Head_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    2.181,
+    1.671,
+    2.019
+   ],
+   "tris": 392,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.091,
+    -0.135,
+    -1.183
+   ],
+   "boundsMax": [
+    1.091,
+    1.535,
+    0.836
+   ],
+   "origin": [
+    0.0,
+    4.5,
+    0.0
+   ],
+   "outlineOf": "Gus_Head",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Gus_LeftFoot": {
    "model": "Gus",
@@ -2370,6 +2740,43 @@
     "parent": "Gus_LeftLowerLeg"
    }
   },
+  "Gus_LeftFoot_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    0.934,
+    0.718,
+    1.454
+   ],
+   "tris": 56,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.467,
+    -0.456,
+    -1.012
+   ],
+   "boundsMax": [
+    0.467,
+    0.262,
+    0.442
+   ],
+   "origin": [
+    -0.52,
+    0.42,
+    0.0
+   ],
+   "outlineOf": "Gus_LeftFoot",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Gus_LeftHand": {
    "model": "Gus",
    "size": [
@@ -2410,6 +2817,43 @@
     "name": "LeftWrist",
     "parent": "Gus_LeftLowerArm"
    }
+  },
+  "Gus_LeftHand_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    0.72,
+    0.779,
+    0.705
+   ],
+   "tris": 80,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.326,
+    -0.639,
+    -0.402
+   ],
+   "boundsMax": [
+    0.394,
+    0.139,
+    0.303
+   ],
+   "origin": [
+    -1.6,
+    2.5,
+    0.0
+   ],
+   "outlineOf": "Gus_LeftHand",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Gus_LeftLowerArm": {
    "model": "Gus",
@@ -2452,6 +2896,43 @@
     "parent": "Gus_LeftUpperArm"
    }
   },
+  "Gus_LeftLowerArm_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    0.778,
+    1.037,
+    0.767
+   ],
+   "tris": 84,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.428,
+    -0.897,
+    -0.383
+   ],
+   "boundsMax": [
+    0.35,
+    0.14,
+    0.384
+   ],
+   "origin": [
+    -1.52,
+    3.28,
+    0.0
+   ],
+   "outlineOf": "Gus_LeftLowerArm",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Gus_LeftLowerLeg": {
    "model": "Gus",
    "size": [
@@ -2492,6 +2973,43 @@
     "name": "LeftKnee",
     "parent": "Gus_LeftUpperLeg"
    }
+  },
+  "Gus_LeftLowerLeg_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    0.795,
+    0.944,
+    0.755
+   ],
+   "tris": 56,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.397,
+    -0.828,
+    -0.378
+   ],
+   "boundsMax": [
+    0.397,
+    0.116,
+    0.378
+   ],
+   "origin": [
+    -0.52,
+    1.15,
+    0.0
+   ],
+   "outlineOf": "Gus_LeftLowerLeg",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Gus_LeftUpperArm": {
    "model": "Gus",
@@ -2534,6 +3052,43 @@
     "parent": "Gus_UpperTorso"
    }
   },
+  "Gus_LeftUpperArm_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    0.916,
+    1.422,
+    0.873
+   ],
+   "tris": 126,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.458,
+    -0.965,
+    -0.436
+   ],
+   "boundsMax": [
+    0.458,
+    0.457,
+    0.436
+   ],
+   "origin": [
+    -1.42,
+    4.12,
+    0.0
+   ],
+   "outlineOf": "Gus_LeftUpperArm",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Gus_LeftUpperLeg": {
    "model": "Gus",
    "size": [
@@ -2574,6 +3129,43 @@
     "name": "LeftHip",
     "parent": "Gus_LowerTorso"
    }
+  },
+  "Gus_LeftUpperLeg_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    0.916,
+    1.013,
+    0.871
+   ],
+   "tris": 56,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.458,
+    -0.896,
+    -0.436
+   ],
+   "boundsMax": [
+    0.458,
+    0.117,
+    0.435
+   ],
+   "origin": [
+    -0.52,
+    1.95,
+    0.0
+   ],
+   "outlineOf": "Gus_LeftUpperLeg",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Gus_LowerTorso": {
    "model": "Gus",
@@ -2616,6 +3208,43 @@
     "parent": null
    }
   },
+  "Gus_LowerTorso_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    2.578,
+    1.05,
+    1.958
+   ],
+   "tris": 296,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.371,
+    -0.436,
+    -0.986
+   ],
+   "boundsMax": [
+    1.207,
+    0.614,
+    0.972
+   ],
+   "origin": [
+    0.0,
+    2.1,
+    0.0
+   ],
+   "outlineOf": "Gus_LowerTorso",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Gus_RightFoot": {
    "model": "Gus",
    "size": [
@@ -2656,6 +3285,43 @@
     "name": "RightAnkle",
     "parent": "Gus_RightLowerLeg"
    }
+  },
+  "Gus_RightFoot_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    0.934,
+    0.718,
+    1.454
+   ],
+   "tris": 56,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.467,
+    -0.456,
+    -1.012
+   ],
+   "boundsMax": [
+    0.467,
+    0.262,
+    0.442
+   ],
+   "origin": [
+    0.52,
+    0.42,
+    0.0
+   ],
+   "outlineOf": "Gus_RightFoot",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Gus_RightHand": {
    "model": "Gus",
@@ -2698,6 +3364,43 @@
     "parent": "Gus_RightLowerArm"
    }
   },
+  "Gus_RightHand_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    0.719,
+    0.779,
+    0.705
+   ],
+   "tris": 80,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.393,
+    -0.639,
+    -0.402
+   ],
+   "boundsMax": [
+    0.326,
+    0.139,
+    0.303
+   ],
+   "origin": [
+    1.6,
+    2.5,
+    0.0
+   ],
+   "outlineOf": "Gus_RightHand",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Gus_RightLowerArm": {
    "model": "Gus",
    "size": [
@@ -2738,6 +3441,43 @@
     "name": "RightElbow",
     "parent": "Gus_RightUpperArm"
    }
+  },
+  "Gus_RightLowerArm_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    0.792,
+    1.038,
+    0.767
+   ],
+   "tris": 84,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.35,
+    -0.898,
+    -0.384
+   ],
+   "boundsMax": [
+    0.442,
+    0.14,
+    0.383
+   ],
+   "origin": [
+    1.52,
+    3.28,
+    0.0
+   ],
+   "outlineOf": "Gus_RightLowerArm",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Gus_RightLowerLeg": {
    "model": "Gus",
@@ -2780,6 +3520,43 @@
     "parent": "Gus_RightUpperLeg"
    }
   },
+  "Gus_RightLowerLeg_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    0.795,
+    0.944,
+    0.755
+   ],
+   "tris": 56,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.397,
+    -0.828,
+    -0.378
+   ],
+   "boundsMax": [
+    0.397,
+    0.116,
+    0.378
+   ],
+   "origin": [
+    0.52,
+    1.15,
+    0.0
+   ],
+   "outlineOf": "Gus_RightLowerLeg",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Gus_RightUpperArm": {
    "model": "Gus",
    "size": [
@@ -2821,6 +3598,43 @@
     "parent": "Gus_UpperTorso"
    }
   },
+  "Gus_RightUpperArm_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    0.916,
+    1.422,
+    0.873
+   ],
+   "tris": 126,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.458,
+    -0.965,
+    -0.436
+   ],
+   "boundsMax": [
+    0.458,
+    0.457,
+    0.436
+   ],
+   "origin": [
+    1.42,
+    4.12,
+    0.0
+   ],
+   "outlineOf": "Gus_RightUpperArm",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Gus_RightUpperLeg": {
    "model": "Gus",
    "size": [
@@ -2861,6 +3675,43 @@
     "name": "RightHip",
     "parent": "Gus_LowerTorso"
    }
+  },
+  "Gus_RightUpperLeg_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    0.916,
+    1.013,
+    0.871
+   ],
+   "tris": 56,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.458,
+    -0.896,
+    -0.435
+   ],
+   "boundsMax": [
+    0.458,
+    0.117,
+    0.436
+   ],
+   "origin": [
+    0.52,
+    1.95,
+    0.0
+   ],
+   "outlineOf": "Gus_RightUpperLeg",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Gus_SantaHat": {
    "model": "Gus_SantaHat",
@@ -2944,6 +3795,43 @@
     "name": "Waist",
     "parent": "Gus_LowerTorso"
    }
+  },
+  "Gus_UpperTorso_Outline": {
+   "model": "Gus_Outline",
+   "size": [
+    2.793,
+    2.143,
+    2.508
+   ],
+   "tris": 436,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.396,
+    -0.104,
+    -1.385
+   ],
+   "boundsMax": [
+    1.396,
+    2.039,
+    1.124
+   ],
+   "origin": [
+    0.0,
+    2.62,
+    0.0
+   ],
+   "outlineOf": "Gus_UpperTorso",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Hide_CoatRack": {
    "model": "Hide_CoatRack",
@@ -3245,6 +4133,43 @@
     "parent": "Hoardsworth_Head"
    }
   },
+  "Hoardsworth_Hat_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    1.72,
+    1.49,
+    1.556
+   ],
+   "tris": 254,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.86,
+    -0.055,
+    -0.778
+   ],
+   "boundsMax": [
+    0.86,
+    1.435,
+    0.778
+   ],
+   "origin": [
+    0.0,
+    7.36,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_Hat",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Hoardsworth_Head": {
    "model": "Hoardsworth",
    "size": [
@@ -3286,6 +4211,43 @@
     "name": "Neck",
     "parent": "Hoardsworth_UpperTorso"
    }
+  },
+  "Hoardsworth_Head_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    1.345,
+    1.51,
+    1.298
+   ],
+   "tris": 528,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.672,
+    -0.115,
+    -0.868
+   ],
+   "boundsMax": [
+    0.672,
+    1.395,
+    0.43
+   ],
+   "origin": [
+    0.0,
+    6.1,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_Head",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Hoardsworth_LeftFoot": {
    "model": "Hoardsworth",
@@ -3329,6 +4291,43 @@
     "parent": "Hoardsworth_LeftLowerLeg"
    }
   },
+  "Hoardsworth_LeftFoot_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    0.493,
+    0.705,
+    1.331
+   ],
+   "tris": 98,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.241,
+    -0.455,
+    -0.994
+   ],
+   "boundsMax": [
+    0.253,
+    0.249,
+    0.337
+   ],
+   "origin": [
+    -0.36,
+    0.42,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_LeftFoot",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Hoardsworth_LeftHand": {
    "model": "Hoardsworth",
    "size": [
@@ -3370,6 +4369,43 @@
     "name": "LeftWrist",
     "parent": "Hoardsworth_LeftLowerArm"
    }
+  },
+  "Hoardsworth_LeftHand_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    0.499,
+    0.602,
+    0.49
+   ],
+   "tris": 80,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.205,
+    -0.541,
+    -0.265
+   ],
+   "boundsMax": [
+    0.294,
+    0.061,
+    0.225
+   ],
+   "origin": [
+    -1.1,
+    3.9,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_LeftHand",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Hoardsworth_LeftLowerArm": {
    "model": "Hoardsworth",
@@ -3413,6 +4449,43 @@
     "parent": "Hoardsworth_LeftUpperArm"
    }
   },
+  "Hoardsworth_LeftLowerArm_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    0.597,
+    1.115,
+    0.55
+   ],
+   "tris": 112,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.344,
+    -1.009,
+    -0.275
+   ],
+   "boundsMax": [
+    0.253,
+    0.106,
+    0.275
+   ],
+   "origin": [
+    -1.04,
+    4.8,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_LeftLowerArm",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Hoardsworth_LeftLowerLeg": {
    "model": "Hoardsworth",
    "size": [
@@ -3454,6 +4527,43 @@
     "name": "LeftKnee",
     "parent": "Hoardsworth_LeftUpperLeg"
    }
+  },
+  "Hoardsworth_LeftLowerLeg_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    0.434,
+    1.689,
+    0.412
+   ],
+   "tris": 56,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.217,
+    -1.595,
+    -0.206
+   ],
+   "boundsMax": [
+    0.217,
+    0.094,
+    0.206
+   ],
+   "origin": [
+    -0.36,
+    1.92,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_LeftLowerLeg",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Hoardsworth_LeftUpperArm": {
    "model": "Hoardsworth",
@@ -3497,6 +4607,43 @@
     "parent": "Hoardsworth_UpperTorso"
    }
   },
+  "Hoardsworth_LeftUpperArm_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    0.68,
+    1.453,
+    0.643
+   ],
+   "tris": 126,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.342,
+    -1.116,
+    -0.321
+   ],
+   "boundsMax": [
+    0.338,
+    0.337,
+    0.322
+   ],
+   "origin": [
+    -0.92,
+    5.8,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_LeftUpperArm",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Hoardsworth_LeftUpperLeg": {
    "model": "Hoardsworth",
    "size": [
@@ -3539,6 +4686,43 @@
     "parent": "Hoardsworth_LowerTorso"
    }
   },
+  "Hoardsworth_LeftUpperLeg_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    0.514,
+    1.691,
+    0.489
+   ],
+   "tris": 56,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.257,
+    -1.597,
+    -0.245
+   ],
+   "boundsMax": [
+    0.257,
+    0.095,
+    0.245
+   ],
+   "origin": [
+    -0.36,
+    3.42,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_LeftUpperLeg",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Hoardsworth_LowerTorso": {
    "model": "Hoardsworth",
    "size": [
@@ -3580,6 +4764,43 @@
     "name": "Root",
     "parent": null
    }
+  },
+  "Hoardsworth_LowerTorso_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    1.524,
+    2.07,
+    1.35
+   ],
+   "tris": 214,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.762,
+    -1.481,
+    -0.59
+   ],
+   "boundsMax": [
+    0.762,
+    0.589,
+    0.761
+   ],
+   "origin": [
+    0.0,
+    3.55,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_LowerTorso",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Hoardsworth_Monocle": {
    "model": "Hoardsworth",
@@ -3665,6 +4886,43 @@
     "parent": "Hoardsworth_RightLowerLeg"
    }
   },
+  "Hoardsworth_RightFoot_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    0.493,
+    0.705,
+    1.331
+   ],
+   "tris": 98,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.253,
+    -0.455,
+    -0.994
+   ],
+   "boundsMax": [
+    0.241,
+    0.249,
+    0.337
+   ],
+   "origin": [
+    0.36,
+    0.42,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_RightFoot",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Hoardsworth_RightHand": {
    "model": "Hoardsworth",
    "size": [
@@ -3706,6 +4964,43 @@
     "name": "RightWrist",
     "parent": "Hoardsworth_RightLowerArm"
    }
+  },
+  "Hoardsworth_RightHand_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    0.498,
+    0.602,
+    0.49
+   ],
+   "tris": 80,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.293,
+    -0.541,
+    -0.265
+   ],
+   "boundsMax": [
+    0.205,
+    0.061,
+    0.225
+   ],
+   "origin": [
+    1.1,
+    3.9,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_RightHand",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Hoardsworth_RightLowerArm": {
    "model": "Hoardsworth",
@@ -3749,6 +5044,43 @@
     "parent": "Hoardsworth_RightUpperArm"
    }
   },
+  "Hoardsworth_RightLowerArm_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    0.597,
+    1.115,
+    0.55
+   ],
+   "tris": 112,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.253,
+    -1.009,
+    -0.275
+   ],
+   "boundsMax": [
+    0.344,
+    0.106,
+    0.275
+   ],
+   "origin": [
+    1.04,
+    4.8,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_RightLowerArm",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Hoardsworth_RightLowerLeg": {
    "model": "Hoardsworth",
    "size": [
@@ -3790,6 +5122,43 @@
     "name": "RightKnee",
     "parent": "Hoardsworth_RightUpperLeg"
    }
+  },
+  "Hoardsworth_RightLowerLeg_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    0.433,
+    1.69,
+    0.412
+   ],
+   "tris": 56,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.217,
+    -1.596,
+    -0.206
+   ],
+   "boundsMax": [
+    0.217,
+    0.094,
+    0.206
+   ],
+   "origin": [
+    0.36,
+    1.92,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_RightLowerLeg",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Hoardsworth_RightUpperArm": {
    "model": "Hoardsworth",
@@ -3833,6 +5202,43 @@
     "parent": "Hoardsworth_UpperTorso"
    }
   },
+  "Hoardsworth_RightUpperArm_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    0.708,
+    1.452,
+    0.643
+   ],
+   "tris": 126,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.338,
+    -1.116,
+    -0.322
+   ],
+   "boundsMax": [
+    0.37,
+    0.337,
+    0.321
+   ],
+   "origin": [
+    0.92,
+    5.8,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_RightUpperArm",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Hoardsworth_RightUpperLeg": {
    "model": "Hoardsworth",
    "size": [
@@ -3875,6 +5281,43 @@
     "parent": "Hoardsworth_LowerTorso"
    }
   },
+  "Hoardsworth_RightUpperLeg_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    0.514,
+    1.691,
+    0.489
+   ],
+   "tris": 56,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.257,
+    -1.597,
+    -0.245
+   ],
+   "boundsMax": [
+    0.257,
+    0.095,
+    0.245
+   ],
+   "origin": [
+    0.36,
+    3.42,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_RightUpperLeg",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Hoardsworth_UpperTorso": {
    "model": "Hoardsworth",
    "size": [
@@ -3916,6 +5359,43 @@
     "name": "Waist",
     "parent": "Hoardsworth_LowerTorso"
    }
+  },
+  "Hoardsworth_UpperTorso_Outline": {
+   "model": "Hoardsworth_Outline",
+   "size": [
+    1.978,
+    2.777,
+    1.478
+   ],
+   "tris": 386,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "villain",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.989,
+    -0.113,
+    -0.774
+   ],
+   "boundsMax": [
+    0.989,
+    2.663,
+    0.704
+   ],
+   "origin": [
+    0.0,
+    4.0,
+    0.0
+   ],
+   "outlineOf": "Hoardsworth_UpperTorso",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Intro_House_A": {
    "model": "Intro_House_A",
@@ -4698,6 +6178,43 @@
     ]
    }
   },
+  "JobBoard_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    5.49,
+    7.411,
+    1.097
+   ],
+   "tris": 590,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "story",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.745,
+    -0.045,
+    -0.548
+   ],
+   "boundsMax": [
+    2.745,
+    7.365,
+    0.548
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "JobBoard",
+   "outlineClass": "hero",
+   "outlineThickness": 0.045
+  },
   "Lamp_Ceiling": {
    "model": "Lamp_Ceiling",
    "size": [
@@ -5337,6 +6854,43 @@
    ],
    "sim": "plate: Shop.plate(x, z) 4 x 4 trigger; walkable 0.3 step"
   },
+  "Plate_4x4_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    4.095,
+    0.446,
+    4.095
+   ],
+   "tris": 338,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.048,
+    -0.042,
+    -2.048
+   ],
+   "boundsMax": [
+    2.048,
+    0.404,
+    2.048
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "Plate_4x4",
+   "outlineClass": "hero",
+   "outlineThickness": 0.045
+  },
   "Plate_4x4_Ring": {
    "model": "Plate_4x4",
    "size": [
@@ -5409,6 +6963,43 @@
     "EH_Loot"
    ],
    "sim": "loot point (LevelSpec loot x, y, z)"
+  },
+  "Present_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    2.172,
+    2.092,
+    1.974
+   ],
+   "tris": 310,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "present",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.086,
+    -0.035,
+    -0.987
+   ],
+   "boundsMax": [
+    1.086,
+    2.057,
+    0.987
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "Present",
+   "outlineClass": "loot",
+   "outlineThickness": 0.035
   },
   "Railing_8": {
    "model": "Railing_8",
@@ -5780,6 +7371,43 @@
    "slot": "cap",
    "variant": "Beanie"
   },
+  "Rookie_Cap_Beanie_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    2.241,
+    1.083,
+    2.241
+   ],
+   "tris": 268,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.121,
+    -0.275,
+    -1.121
+   ],
+   "boundsMax": [
+    1.121,
+    0.808,
+    1.121
+   ],
+   "origin": [
+    1.4,
+    4.2,
+    0.0
+   ],
+   "outlineOf": "Rookie_Cap_Beanie",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
+  },
   "Rookie_Cap_Bobble": {
    "model": "Rookie_Outfits",
    "size": [
@@ -5827,6 +7455,43 @@
    },
    "slot": "cap",
    "variant": "Bobble"
+  },
+  "Rookie_Cap_Bobble_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    2.204,
+    1.55,
+    2.204
+   ],
+   "tris": 338,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.102,
+    -0.28,
+    -1.102
+   ],
+   "boundsMax": [
+    1.102,
+    1.27,
+    1.102
+   ],
+   "origin": [
+    -1.2,
+    4.2,
+    0.0
+   ],
+   "outlineOf": "Rookie_Cap_Bobble",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
   },
   "Rookie_Cap_Flat": {
    "model": "Rookie_Outfits",
@@ -5876,6 +7541,43 @@
    "slot": "cap",
    "variant": "Flat"
   },
+  "Rookie_Cap_Flat_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    2.184,
+    0.748,
+    2.42
+   ],
+   "tris": 234,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.092,
+    -0.175,
+    -1.381
+   ],
+   "boundsMax": [
+    1.092,
+    0.573,
+    1.039
+   ],
+   "origin": [
+    4.0,
+    4.2,
+    0.0
+   ],
+   "outlineOf": "Rookie_Cap_Flat",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
+  },
   "Rookie_Cap_Santa": {
    "model": "Rookie_Outfits",
    "size": [
@@ -5924,6 +7626,43 @@
    "slot": "cap",
    "variant": "Santa"
   },
+  "Rookie_Cap_Santa_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    2.362,
+    1.8,
+    2.789
+   ],
+   "tris": 338,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "xmas",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.181,
+    -0.315,
+    -1.173
+   ],
+   "boundsMax": [
+    1.181,
+    1.485,
+    1.616
+   ],
+   "origin": [
+    -6.4,
+    4.2,
+    0.0
+   ],
+   "outlineOf": "Rookie_Cap_Santa",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
+  },
   "Rookie_Cap_Trapper": {
    "model": "Rookie_Outfits",
    "size": [
@@ -5971,6 +7710,43 @@
    },
    "slot": "cap",
    "variant": "Trapper"
+  },
+  "Rookie_Cap_Trapper_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    2.325,
+    1.559,
+    2.164
+   ],
+   "tris": 198,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.165,
+    -0.829,
+    -1.093
+   ],
+   "boundsMax": [
+    1.16,
+    0.73,
+    1.071
+   ],
+   "origin": [
+    -3.8,
+    4.2,
+    0.0
+   ],
+   "outlineOf": "Rookie_Cap_Trapper",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
   },
   "Rookie_FPH_Left_Block": {
    "model": "Rookie_FPHands",
@@ -6146,12 +7922,12 @@
   "Rookie_FPH_Left_Glove": {
    "model": "Rookie_FPHands_L",
    "size": [
-    0.101,
-    0.053,
-    0.239
+    0.104,
+    0.056,
+    0.242
    ],
-   "tris": 2600,
-   "class": "medium",
+   "tris": 5200,
+   "class": "hero",
    "collision": "Box",
    "material": "SmoothPlastic",
    "canCollide": false,
@@ -6162,14 +7938,14 @@
    "layer": "base",
    "passed": true,
    "boundsMin": [
-    -0.042,
-    -0.029,
-    -0.149
+    -0.044,
+    -0.03,
+    -0.15
    ],
    "boundsMax": [
-    0.059,
-    0.024,
-    0.09
+    0.06,
+    0.026,
+    0.092
    ],
    "origin": [
     -0.18,
@@ -7001,12 +8777,12 @@
   "Rookie_FPH_Right_Glove": {
    "model": "Rookie_FPHands_R",
    "size": [
-    0.101,
-    0.053,
-    0.239
+    0.104,
+    0.056,
+    0.242
    ],
-   "tris": 2600,
-   "class": "medium",
+   "tris": 5200,
+   "class": "hero",
    "collision": "Box",
    "material": "SmoothPlastic",
    "canCollide": false,
@@ -7017,14 +8793,14 @@
    "layer": "base",
    "passed": true,
    "boundsMin": [
-    -0.059,
-    -0.029,
-    -0.149
+    -0.06,
+    -0.03,
+    -0.15
    ],
    "boundsMax": [
-    0.042,
-    0.024,
-    0.09
+    0.044,
+    0.026,
+    0.092
    ],
    "origin": [
     0.18,
@@ -10328,6 +12104,43 @@
    "slot": "gloves",
    "variant": "Knit"
   },
+  "Rookie_Gloves_Knit_Left_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.732,
+    0.321,
+    0.703
+   ],
+   "tris": 116,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.365,
+    -0.136,
+    -0.352
+   ],
+   "boundsMax": [
+    0.367,
+    0.185,
+    0.352
+   ],
+   "origin": [
+    0.22,
+    -6.2,
+    0.0
+   ],
+   "outlineOf": "Rookie_Gloves_Knit_Left",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
+  },
   "Rookie_Gloves_Knit_Right": {
    "model": "Rookie_Outfits",
    "size": [
@@ -10376,6 +12189,43 @@
    },
    "slot": "gloves",
    "variant": "Knit"
+  },
+  "Rookie_Gloves_Knit_Right_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.737,
+    0.321,
+    0.703
+   ],
+   "tris": 116,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.372,
+    -0.136,
+    -0.352
+   ],
+   "boundsMax": [
+    0.365,
+    0.185,
+    0.352
+   ],
+   "origin": [
+    5.18,
+    -6.2,
+    0.0
+   ],
+   "outlineOf": "Rookie_Gloves_Knit_Right",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
   },
   "Rookie_Gloves_Leather_Left": {
    "model": "Rookie_Outfits",
@@ -10426,6 +12276,43 @@
    "slot": "gloves",
    "variant": "Leather"
   },
+  "Rookie_Gloves_Leather_Left_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.792,
+    0.362,
+    0.815
+   ],
+   "tris": 92,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.402,
+    -0.15,
+    -0.408
+   ],
+   "boundsMax": [
+    0.39,
+    0.213,
+    0.406
+   ],
+   "origin": [
+    -4.98,
+    -6.2,
+    0.0
+   ],
+   "outlineOf": "Rookie_Gloves_Leather_Left",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
+  },
   "Rookie_Gloves_Leather_Right": {
    "model": "Rookie_Outfits",
    "size": [
@@ -10474,6 +12361,43 @@
    },
    "slot": "gloves",
    "variant": "Leather"
+  },
+  "Rookie_Gloves_Leather_Right_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.792,
+    0.362,
+    0.815
+   ],
+   "tris": 92,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.39,
+    -0.15,
+    -0.406
+   ],
+   "boundsMax": [
+    0.402,
+    0.213,
+    0.408
+   ],
+   "origin": [
+    -0.02,
+    -6.2,
+    0.0
+   ],
+   "outlineOf": "Rookie_Gloves_Leather_Right",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
   },
   "Rookie_Hand_Left_Fingers1": {
    "model": "Rookie_Hands",
@@ -11244,6 +13168,43 @@
     "parent": "Rookie_UpperTorso"
    }
   },
+  "Rookie_Head_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    2.201,
+    1.73,
+    1.963
+   ],
+   "tris": 450,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.101,
+    -0.075,
+    -1.009
+   ],
+   "boundsMax": [
+    1.101,
+    1.655,
+    0.954
+   ],
+   "origin": [
+    0.0,
+    3.0,
+    0.0
+   ],
+   "outlineOf": "Rookie_Head",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Rookie_LeftFoot": {
    "model": "Rookie",
    "size": [
@@ -11284,6 +13245,43 @@
     "name": "LeftAnkle",
     "parent": "Rookie_LeftLowerLeg"
    }
+  },
+  "Rookie_LeftFoot_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.86,
+    0.728,
+    1.4
+   ],
+   "tris": 106,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.43,
+    -0.535,
+    -0.95
+   ],
+   "boundsMax": [
+    0.43,
+    0.193,
+    0.45
+   ],
+   "origin": [
+    -0.44,
+    0.5,
+    0.0
+   ],
+   "outlineOf": "Rookie_LeftFoot",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Rookie_LeftHand": {
    "model": "Rookie",
@@ -11327,6 +13325,43 @@
    },
    "tint": "glove colour (Config.Rookie.GLOVE_COLOURS, by the gloves slot)"
   },
+  "Rookie_LeftHand_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.698,
+    0.714,
+    0.643
+   ],
+   "tris": 170,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.337,
+    -0.627,
+    -0.361
+   ],
+   "boundsMax": [
+    0.361,
+    0.087,
+    0.281
+   ],
+   "origin": [
+    -1.18,
+    1.6,
+    0.0
+   ],
+   "outlineOf": "Rookie_LeftHand",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Rookie_LeftLowerArm": {
    "model": "Rookie",
    "size": [
@@ -11367,6 +13402,43 @@
     "name": "LeftElbow",
     "parent": "Rookie_LeftUpperArm"
    }
+  },
+  "Rookie_LeftLowerArm_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.691,
+    0.827,
+    0.638
+   ],
+   "tris": 84,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.395,
+    -0.683,
+    -0.333
+   ],
+   "boundsMax": [
+    0.297,
+    0.144,
+    0.305
+   ],
+   "origin": [
+    -1.1,
+    2.16,
+    0.0
+   ],
+   "outlineOf": "Rookie_LeftLowerArm",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Rookie_LeftLowerLeg": {
    "model": "Rookie",
@@ -11409,6 +13481,43 @@
     "parent": "Rookie_LeftUpperLeg"
    }
   },
+  "Rookie_LeftLowerLeg_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.772,
+    0.709,
+    0.807
+   ],
+   "tris": 84,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.4,
+    -0.584,
+    -0.403
+   ],
+   "boundsMax": [
+    0.373,
+    0.125,
+    0.404
+   ],
+   "origin": [
+    -0.42,
+    0.98,
+    0.0
+   ],
+   "outlineOf": "Rookie_LeftLowerLeg",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Rookie_LeftUpperArm": {
    "model": "Rookie",
    "size": [
@@ -11449,6 +13558,43 @@
     "name": "LeftShoulder",
     "parent": "Rookie_UpperTorso"
    }
+  },
+  "Rookie_LeftUpperArm_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.756,
+    1.107,
+    0.72
+   ],
+   "tris": 126,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.378,
+    -0.73,
+    -0.36
+   ],
+   "boundsMax": [
+    0.378,
+    0.377,
+    0.36
+   ],
+   "origin": [
+    -1.0,
+    2.76,
+    0.0
+   ],
+   "outlineOf": "Rookie_LeftUpperArm",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Rookie_LeftUpperLeg": {
    "model": "Rookie",
@@ -11491,6 +13637,43 @@
     "parent": "Rookie_LowerTorso"
    }
   },
+  "Rookie_LeftUpperLeg_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.815,
+    0.732,
+    0.777
+   ],
+   "tris": 56,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.41,
+    -0.606,
+    -0.389
+   ],
+   "boundsMax": [
+    0.406,
+    0.126,
+    0.388
+   ],
+   "origin": [
+    -0.4,
+    1.48,
+    0.0
+   ],
+   "outlineOf": "Rookie_LeftUpperLeg",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Rookie_LowerTorso": {
    "model": "Rookie",
    "size": [
@@ -11531,6 +13714,43 @@
     "name": "Root",
     "parent": null
    }
+  },
+  "Rookie_LowerTorso_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    1.893,
+    0.749,
+    1.314
+   ],
+   "tris": 128,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.876,
+    -0.355,
+    -0.657
+   ],
+   "boundsMax": [
+    1.017,
+    0.394,
+    0.657
+   ],
+   "origin": [
+    0.0,
+    1.62,
+    0.0
+   ],
+   "outlineOf": "Rookie_LowerTorso",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Rookie_Mask_Eye": {
    "model": "Rookie_Outfits",
@@ -11580,6 +13800,43 @@
    "slot": "mask",
    "variant": "Eye"
   },
+  "Rookie_Mask_Eye_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    2.085,
+    0.789,
+    1.825
+   ],
+   "tris": 228,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.043,
+    -0.315,
+    -0.084
+   ],
+   "boundsMax": [
+    1.042,
+    0.475,
+    1.74
+   ],
+   "origin": [
+    -6.4,
+    -4.08,
+    -0.84
+   ],
+   "outlineOf": "Rookie_Mask_Eye",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
+  },
   "Rookie_RightFoot": {
    "model": "Rookie",
    "size": [
@@ -11620,6 +13877,43 @@
     "name": "RightAnkle",
     "parent": "Rookie_RightLowerLeg"
    }
+  },
+  "Rookie_RightFoot_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.86,
+    0.728,
+    1.4
+   ],
+   "tris": 106,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.43,
+    -0.535,
+    -0.95
+   ],
+   "boundsMax": [
+    0.43,
+    0.193,
+    0.45
+   ],
+   "origin": [
+    0.44,
+    0.5,
+    0.0
+   ],
+   "outlineOf": "Rookie_RightFoot",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Rookie_RightHand": {
    "model": "Rookie",
@@ -11663,6 +13957,43 @@
    },
    "tint": "glove colour (Config.Rookie.GLOVE_COLOURS, by the gloves slot)"
   },
+  "Rookie_RightHand_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.698,
+    0.714,
+    0.643
+   ],
+   "tris": 170,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.361,
+    -0.627,
+    -0.361
+   ],
+   "boundsMax": [
+    0.337,
+    0.087,
+    0.281
+   ],
+   "origin": [
+    1.18,
+    1.6,
+    0.0
+   ],
+   "outlineOf": "Rookie_RightHand",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Rookie_RightLowerArm": {
    "model": "Rookie",
    "size": [
@@ -11703,6 +14034,43 @@
     "name": "RightElbow",
     "parent": "Rookie_RightUpperArm"
    }
+  },
+  "Rookie_RightLowerArm_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.692,
+    0.827,
+    0.636
+   ],
+   "tris": 84,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.297,
+    -0.683,
+    -0.305
+   ],
+   "boundsMax": [
+    0.395,
+    0.144,
+    0.331
+   ],
+   "origin": [
+    1.1,
+    2.16,
+    0.0
+   ],
+   "outlineOf": "Rookie_RightLowerArm",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Rookie_RightLowerLeg": {
    "model": "Rookie",
@@ -11745,6 +14113,43 @@
     "parent": "Rookie_RightUpperLeg"
    }
   },
+  "Rookie_RightLowerLeg_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.772,
+    0.709,
+    0.807
+   ],
+   "tris": 84,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.373,
+    -0.584,
+    -0.404
+   ],
+   "boundsMax": [
+    0.4,
+    0.125,
+    0.403
+   ],
+   "origin": [
+    0.42,
+    0.98,
+    0.0
+   ],
+   "outlineOf": "Rookie_RightLowerLeg",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Rookie_RightUpperArm": {
    "model": "Rookie",
    "size": [
@@ -11786,6 +14191,43 @@
     "parent": "Rookie_UpperTorso"
    }
   },
+  "Rookie_RightUpperArm_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.756,
+    1.107,
+    0.72
+   ],
+   "tris": 126,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.378,
+    -0.73,
+    -0.36
+   ],
+   "boundsMax": [
+    0.378,
+    0.377,
+    0.36
+   ],
+   "origin": [
+    1.0,
+    2.76,
+    0.0
+   ],
+   "outlineOf": "Rookie_RightUpperArm",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
+  },
   "Rookie_RightUpperLeg": {
    "model": "Rookie",
    "size": [
@@ -11826,6 +14268,43 @@
     "name": "RightHip",
     "parent": "Rookie_LowerTorso"
    }
+  },
+  "Rookie_RightUpperLeg_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.816,
+    0.732,
+    0.777
+   ],
+   "tris": 56,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.406,
+    -0.606,
+    -0.388
+   ],
+   "boundsMax": [
+    0.41,
+    0.126,
+    0.388
+   ],
+   "origin": [
+    0.4,
+    1.48,
+    0.0
+   ],
+   "outlineOf": "Rookie_RightUpperLeg",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Rookie_Scarf_Bandana": {
    "model": "Rookie_Outfits",
@@ -11876,6 +14355,43 @@
    "slot": "scarf",
    "variant": "Bandana"
   },
+  "Rookie_Scarf_Bandana_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    1.671,
+    0.855,
+    1.845
+   ],
+   "tris": 178,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.836,
+    -0.623,
+    -0.94
+   ],
+   "boundsMax": [
+    0.836,
+    0.232,
+    0.904
+   ],
+   "origin": [
+    -1.2,
+    0.4,
+    0.0
+   ],
+   "outlineOf": "Rookie_Scarf_Bandana",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
+  },
   "Rookie_Scarf_Chunky": {
    "model": "Rookie_Outfits",
    "size": [
@@ -11924,6 +14440,43 @@
    },
    "slot": "scarf",
    "variant": "Chunky"
+  },
+  "Rookie_Scarf_Chunky_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    2.027,
+    0.555,
+    1.752
+   ],
+   "tris": 224,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.013,
+    -0.178,
+    -0.876
+   ],
+   "boundsMax": [
+    1.013,
+    0.378,
+    0.876
+   ],
+   "origin": [
+    1.4,
+    0.4,
+    0.0
+   ],
+   "outlineOf": "Rookie_Scarf_Chunky",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
   },
   "Rookie_Scarf_Knot": {
    "model": "Rookie_Outfits",
@@ -11974,6 +14527,43 @@
    "slot": "scarf",
    "variant": "Knot"
   },
+  "Rookie_Scarf_Knot_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    1.786,
+    0.864,
+    1.77
+   ],
+   "tris": 198,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.893,
+    -0.626,
+    -0.999
+   ],
+   "boundsMax": [
+    0.893,
+    0.238,
+    0.772
+   ],
+   "origin": [
+    -3.8,
+    0.4,
+    0.0
+   ],
+   "outlineOf": "Rookie_Scarf_Knot",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
+  },
   "Rookie_Scarf_Long": {
    "model": "Rookie_Outfits",
    "size": [
@@ -12022,6 +14612,43 @@
    },
    "slot": "scarf",
    "variant": "Long"
+  },
+  "Rookie_Scarf_Long_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    1.786,
+    1.239,
+    1.754
+   ],
+   "tris": 156,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.893,
+    -1.001,
+    -0.981
+   ],
+   "boundsMax": [
+    0.893,
+    0.238,
+    0.772
+   ],
+   "origin": [
+    4.0,
+    0.4,
+    0.0
+   ],
+   "outlineOf": "Rookie_Scarf_Long",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
   },
   "Rookie_Scarf_Long_Tail1": {
    "model": "Rookie_Outfits",
@@ -12072,6 +14699,43 @@
    "slot": "scarf",
    "variant": "Long"
   },
+  "Rookie_Scarf_Long_Tail1_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    0.883,
+    0.951,
+    1.136
+   ],
+   "tris": 36,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.624,
+    -0.706,
+    -0.286
+   ],
+   "boundsMax": [
+    0.259,
+    0.245,
+    0.85
+   ],
+   "origin": [
+    -6.7,
+    0.48,
+    0.58
+   ],
+   "outlineOf": "Rookie_Scarf_Long_Tail1",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
+  },
   "Rookie_Scarf_Long_Tail2": {
    "model": "Rookie_Outfits",
    "size": [
@@ -12120,6 +14784,43 @@
    },
    "slot": "scarf",
    "variant": "Long"
+  },
+  "Rookie_Scarf_Long_Tail2_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    1.347,
+    0.627,
+    1.415
+   ],
+   "tris": 50,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.081,
+    -0.402,
+    -0.269
+   ],
+   "boundsMax": [
+    0.266,
+    0.225,
+    1.146
+   ],
+   "origin": [
+    -9.66,
+    0.0,
+    1.16
+   ],
+   "outlineOf": "Rookie_Scarf_Long_Tail2",
+   "outlineClass": "char",
+   "outlineThickness": 0.03
   },
   "Rookie_Stripes_LeftArm": {
    "model": "Rookie_Outfits",
@@ -12308,6 +15009,43 @@
     "name": "Waist",
     "parent": "Rookie_LowerTorso"
    }
+  },
+  "Rookie_UpperTorso_Outline": {
+   "model": "Rookie_Outline",
+   "size": [
+    2.077,
+    1.338,
+    1.691
+   ],
+   "tris": 540,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "char",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.038,
+    -0.204,
+    -0.858
+   ],
+   "boundsMax": [
+    1.038,
+    1.134,
+    0.833
+   ],
+   "origin": [
+    0.0,
+    1.95,
+    0.0
+   ],
+   "outlineOf": "Rookie_UpperTorso",
+   "outlineClass": "char",
+   "outlineThickness": 0.035
   },
   "Rookie_VM_LeftArm": {
    "model": "Rookie_Viewmodel",
@@ -13105,6 +15843,43 @@
    ],
    "sim": "loot point (LevelSpec loot x, y, z)"
   },
+  "Teddy_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    2.154,
+    2.345,
+    1.671
+   ],
+   "tris": 476,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "loot",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -1.077,
+    -0.031,
+    -0.913
+   ],
+   "boundsMax": [
+    1.077,
+    2.313,
+    0.758
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "Teddy",
+   "outlineClass": "loot",
+   "outlineThickness": 0.035
+  },
   "TellerCounter_8x4": {
    "model": "TellerCounter_8x4",
    "size": [
@@ -13251,6 +16026,43 @@
     0.0
    ]
   },
+  "Toy_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    1.675,
+    2.873,
+    1.258
+   ],
+   "tris": 464,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "loot",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -0.838,
+    -0.034,
+    -0.503
+   ],
+   "boundsMax": [
+    0.838,
+    2.839,
+    0.755
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "Toy",
+   "outlineClass": "loot",
+   "outlineThickness": 0.035
+  },
   "Truss_8": {
    "model": "Truss_8",
    "size": [
@@ -13361,6 +16173,43 @@
     "EH_VanStyle"
    ]
   },
+  "VanBakery_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    15.028,
+    8.087,
+    7.188
+   ],
+   "tris": 982,
+   "class": "medium",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.514,
+    0.0,
+    -3.843
+   ],
+   "boundsMax": [
+    7.514,
+    8.087,
+    3.345
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "VanBakery",
+   "outlineClass": "hero",
+   "outlineThickness": 0.06
+  },
   "VanBakery_Paint": {
    "model": "VanBakery",
    "size": [
@@ -13396,6 +16245,43 @@
    ],
    "tint": "van paint: a mid value by MeshPart.Color (the bay's or the crew's pick in the hideout and the drive); never Getaway White",
    "tintable": true
+  },
+  "VanBakery_Paint_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    14.087,
+    5.971,
+    6.854
+   ],
+   "tris": 114,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.014,
+    1.49,
+    -3.591
+   ],
+   "boundsMax": [
+    7.073,
+    7.461,
+    3.264
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "VanBakery_Paint",
+   "outlineClass": "hero",
+   "outlineThickness": 0.06
   },
   "VanCamper": {
    "model": "VanCamper",
@@ -13434,6 +16320,43 @@
     "EH_VanStyle"
    ]
   },
+  "VanCamper_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    15.028,
+    8.011,
+    7.239
+   ],
+   "tris": 1344,
+   "class": "medium",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.514,
+    -0.001,
+    -3.843
+   ],
+   "boundsMax": [
+    7.514,
+    8.01,
+    3.396
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "VanCamper",
+   "outlineClass": "hero",
+   "outlineThickness": 0.06
+  },
   "VanCamper_Paint": {
    "model": "VanCamper",
    "size": [
@@ -13469,6 +16392,43 @@
    ],
    "tint": "van paint: a mid value by MeshPart.Color (the bay's or the crew's pick in the hideout and the drive); never Getaway White",
    "tintable": true
+  },
+  "VanCamper_Paint_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    14.124,
+    5.27,
+    6.854
+   ],
+   "tris": 102,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.051,
+    1.49,
+    -3.591
+   ],
+   "boundsMax": [
+    7.073,
+    6.76,
+    3.263
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "VanCamper_Paint",
+   "outlineClass": "hero",
+   "outlineThickness": 0.06
   },
   "VanSecurity": {
    "model": "VanSecurity",
@@ -13507,6 +16467,43 @@
     "EH_VanStyle"
    ]
   },
+  "VanSecurity_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    15.021,
+    7.909,
+    7.225
+   ],
+   "tris": 1322,
+   "class": "medium",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.51,
+    0.004,
+    -3.843
+   ],
+   "boundsMax": [
+    7.51,
+    7.913,
+    3.382
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "VanSecurity",
+   "outlineClass": "hero",
+   "outlineThickness": 0.06
+  },
   "VanSecurity_Paint": {
    "model": "VanSecurity",
    "size": [
@@ -13543,6 +16540,80 @@
    "tint": "van paint: a mid value by MeshPart.Color (the bay's or the crew's pick in the hideout and the drive); never Getaway White",
    "tintable": true
   },
+  "VanSecurity_Paint_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    14.134,
+    5.436,
+    6.854
+   ],
+   "tris": 100,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.061,
+    1.49,
+    -3.591
+   ],
+   "boundsMax": [
+    7.073,
+    6.926,
+    3.263
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "VanSecurity_Paint",
+   "outlineClass": "hero",
+   "outlineThickness": 0.06
+  },
+  "Van_Outline": {
+   "model": "Van_Outline",
+   "size": [
+    15.028,
+    7.79,
+    7.287
+   ],
+   "tris": 1022,
+   "class": "medium",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.514,
+    0.001,
+    -3.843
+   ],
+   "boundsMax": [
+    7.514,
+    7.791,
+    3.443
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "Van",
+   "outlineClass": "hero",
+   "outlineThickness": 0.06
+  },
   "Van_Paint": {
    "model": "Van",
    "size": [
@@ -13578,6 +16649,43 @@
    ],
    "tint": "van paint: a mid value by MeshPart.Color (Config.Lighting.VAN.paint in a heist, the bay's crew colour in the garage); never Getaway White",
    "tintable": true
+  },
+  "Van_Paint_Outline": {
+   "model": "Van_Outline",
+   "size": [
+    14.138,
+    5.778,
+    6.854
+   ],
+   "tris": 98,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "exit",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -7.065,
+    1.49,
+    -3.591
+   ],
+   "boundsMax": [
+    7.073,
+    7.269,
+    3.263
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "Van_Paint",
+   "outlineClass": "hero",
+   "outlineThickness": 0.06
   },
   "Van_Shelf": {
    "model": "Van",
@@ -13721,6 +16829,43 @@
    ],
    "tint": "Warm Marble shade #A8987A idle; opener's clone hue; Alarm Red (eh_palette.NEON)"
   },
+  "VaultDoor_Dial_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    4.674,
+    4.674,
+    1.049
+   ],
+   "tris": 662,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "hero",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -2.337,
+    -2.337,
+    -0.863
+   ],
+   "boundsMax": [
+    2.337,
+    2.337,
+    0.186
+   ],
+   "origin": [
+    -8.0,
+    3.6,
+    -0.67
+   ],
+   "outlineOf": "VaultDoor_Dial",
+   "outlineClass": "hero",
+   "outlineThickness": 0.06
+  },
   "VaultDoor_Door": {
    "model": "VaultDoor",
    "size": [
@@ -13780,6 +16925,43 @@
     ]
    }
   },
+  "VaultDoor_Door_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    12.082,
+    8.787,
+    3.587
+   ],
+   "tris": 2298,
+   "class": "medium",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "hero",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -11.36,
+    -0.076,
+    -0.722
+   ],
+   "boundsMax": [
+    0.722,
+    8.71,
+    2.865
+   ],
+   "origin": [
+    -1.75,
+    0.0,
+    -0.95
+   ],
+   "outlineOf": "VaultDoor_Door",
+   "outlineClass": "hero",
+   "outlineThickness": 0.06
+  },
   "VaultDoor_Frame": {
    "model": "VaultDoor",
    "size": [
@@ -13828,6 +17010,43 @@
     ],
     "shape": "circle r 4.5 at (X -8, Y 3.6), cut flat by the floor"
    }
+  },
+  "VaultDoor_Frame_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    16.127,
+    12.146,
+    3.789
+   ],
+   "tris": 1470,
+   "class": "medium",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "hero",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -16.064,
+    -0.083,
+    -0.895
+   ],
+   "boundsMax": [
+    0.064,
+    12.064,
+    2.895
+   ],
+   "origin": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "outlineOf": "VaultDoor_Frame",
+   "outlineClass": "hero",
+   "outlineThickness": 0.06
   },
   "Wall_4x12": {
    "model": "Wall_4x12",
@@ -13990,6 +17209,43 @@
     "EH_Door"
    ],
    "sim": "door: solid when shut (LevelSpec door box)"
+  },
+  "Wall_Door_8x12_Leaf_Outline": {
+   "model": "Prop_Outline",
+   "size": [
+    6.09,
+    10.05,
+    1.409
+   ],
+   "tris": 354,
+   "class": "small",
+   "collision": "Box",
+   "material": "Neon",
+   "canCollide": false,
+   "castShadow": false,
+   "atlas": false,
+   "pivot": "point",
+   "role": "env",
+   "layer": "base",
+   "passed": true,
+   "boundsMin": [
+    -6.045,
+    -0.025,
+    -0.705
+   ],
+   "boundsMax": [
+    0.045,
+    10.025,
+    0.705
+   ],
+   "origin": [
+    -1.0,
+    0.0,
+    1.0
+   ],
+   "outlineOf": "Wall_Door_8x12_Leaf",
+   "outlineClass": "hero",
+   "outlineThickness": 0.045
   },
   "Wall_Window_8x12": {
    "model": "Wall_Window_8x12",

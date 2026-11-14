@@ -2905,10 +2905,184 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "c2296b517bef83c74c62",
+ "ao": {
+  "Rookie_FP_Right_Palm": [
+   0.6,
+   0.883
+  ],
+  "Rookie_FP_Right_Index1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_Index2": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_Index3": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_Middle1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_Middle2": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_Middle3": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_Ring1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_Ring2": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_Ring3": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_Pinky1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_Pinky2": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_Pinky3": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_Thumb1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_Thumb2": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_Thumb3": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Right_CuffKnit": [
+   0.922,
+   0.985
+  ],
+  "Rookie_FP_Right_CuffLeather": [
+   0.6,
+   0.931
+  ],
+  "Rookie_FP_Right_Sleeve": [
+   0.984,
+   1.0
+  ],
+  "Rookie_FP_Right_Stripes": [
+   0.824,
+   0.951
+  ],
+  "Rookie_FP_Right_Block": [
+   0.925,
+   0.981
+  ],
+  "Rookie_FP_Left_Palm": [
+   0.6,
+   0.883
+  ],
+  "Rookie_FP_Left_Index1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_Index2": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_Index3": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_Middle1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_Middle2": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_Middle3": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_Ring1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_Ring2": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_Ring3": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_Pinky1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_Pinky2": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_Pinky3": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_Thumb1": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_Thumb2": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_Thumb3": [
+   1.0,
+   1.0
+  ],
+  "Rookie_FP_Left_CuffKnit": [
+   0.922,
+   0.985
+  ],
+  "Rookie_FP_Left_CuffLeather": [
+   0.6,
+   0.931
+  ],
+  "Rookie_FP_Left_Sleeve": [
+   0.984,
+   1.0
+  ],
+  "Rookie_FP_Left_Stripes": [
+   0.824,
+   0.951
+  ],
+  "Rookie_FP_Left_Block": [
+   0.925,
+   0.981
+  ],
+  "Rookie_FP_Left_Watch": [
+   0.6,
+   0.917
+  ]
+ },
+ "contentHash": "dd40ebfe67c26e746fa8",
  "fbx": {
   "path": "assets/fbx/Rookie_FPArms.fbx",
-  "bytes": 231260,
+  "bytes": 253708,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -3178,5 +3352,5 @@
  "spec": "assets/blender/rookie.py",
  "notes": "Dedicated first-person arms: slim sleeve (ribbed cuff, crew stripes or block), gloved hands with a palm, 4 fingers x 3 segments, a 3-segment thumb, knit / leather cuffs, the REWIND watch. Grip space: fingers -Z, back of the hand +Y; pivots at the hinges.",
  "turntable": "docs/art/turntables/Rookie_FPArms.png",
- "seconds": 9.6
+ "seconds": 72.0
 }

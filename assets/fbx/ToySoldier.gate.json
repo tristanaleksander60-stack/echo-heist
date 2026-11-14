@@ -87,10 +87,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "48807d173037ff9b3d9e",
+ "ao": {
+  "ToySoldier": [
+   0.6,
+   0.788
+  ]
+ },
+ "contentHash": "2205be5d71c614d4b3fa",
  "fbx": {
   "path": "assets/fbx/ToySoldier.fbx",
-  "bytes": 74460,
+  "bytes": 80604,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -107,6 +113,6 @@
  },
  "spec": "assets/blender/signature.py",
  "notes": "Giant toy drummer 11.3 tall on a 3.5 round plinth: bearskin, burgundy coat, white X belts, snare drum.",
- "seconds": 0.3,
- "turntable": "docs/art/turntables/ToySoldier.png"
+ "turntable": "docs/art/turntables/ToySoldier.png",
+ "seconds": 6.7
 }

@@ -9,7 +9,7 @@ What the old previews did that the engine does not (and what this mode does inst
   turntable.py      Workbench "paint.sl" studio light + cavity + black object outline: cavity shades every hard
                     edge like a bevel and the outline draws the silhouette, so flat facets read as crafted edges.
   level / marketing Eevee with area lights placed per shot, AO, bloom, exposure and emission tuned per frame.
-  roblox_look       the engine path only: colour = the atlas texture (bilinear, no vertex colour) x MeshPart.Color
+  roblox_look       the engine path only: colour = the atlas texture (bilinear) x the FBX vertex colour x MeshPart.Color
                     from kit_manifest.json; SmoothPlastic = a dielectric BSDF (roughness SMOOTHPLASTIC_ROUGHNESS),
                     Neon = emission, Glass = transparent; the split normals exactly as the FBX carries them (the
                     importer keeps custom normals, the engine renders the same ones: measured with EditableMesh);
@@ -18,6 +18,11 @@ What the old previews did that the engine does not (and what this mode does inst
                     no outline, no cavity, no bloom below Bloom.Threshold, and the ColorCorrectionEffect applied
                     after the render (grade). Every number is read from default.project.json, so a lighting change
                     on main shows up here without editing this file.
+BLENDER LOOK (docs/audit/BLENDER_LOOK.md): the kit now carries the preview's tricks as real data, and this mode draws
+them the way the engine does: the baked vertex AO / cavity (eh_look.bake_ao) multiplies the atlas like the engine
+multiplies an FBX's vertex colours; the `<Piece>_Outline` inverted hulls are unlit (Neon) in Config.Outline.COLOUR with
+back faces culled (MeshPart.DoubleSided false), so only their rim shows. PROJECT can point at another project file
+(fidelity_sheet's "before" column renders main's lighting).
 Approximations (stated, not hidden): the engine's tone curve is approximated with Blender's "ACES 1.3" view
 transform; Future's sky/environment diffuse (EnvironmentDiffuseScale) is folded into the uniform ambient; shadows
 are Eevee's, softer than the engine's at ShadowSoftness 0.3.
@@ -48,6 +53,45 @@ TONE = "ACES 1.3"          # closest Blender view transform to the engine's defa
 
 def _srgb_to_lin(c):
     return ((c + 0.055) / 1.055) ** 2.4 if c > 0.04045 else c / 12.92
+
+
+CONFIG = os.path.join(REPO, "src", "shared", "Config.luau")
+
+
+def outline_colour():
+    """Config.Outline.COLOUR (sRGB 0-255) read from Config.luau, as linear RGB."""
+    import re
+    try:
+        with open(CONFIG) as f:
+            src = f.read()
+        block = src[src.index("Config.Outline = {"):]
+        m = re.search(r"COLOUR\s*=\s*\{\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\}", block)
+        rgb = [int(m.group(i)) / 255 for i in (1, 2, 3)]
+    except (OSError, ValueError, AttributeError):
+        rgb = [0.08, 0.07, 0.1]
+    return tuple(_srgb_to_lin(c) for c in rgb)
+
+
+def outline_material():
+    m = bpy.data.materials.get("RL_Outline")
+    if m:
+        return m
+    m = bpy.data.materials.new("RL_Outline")
+    m.use_nodes = True
+    nt = m.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    em = nt.nodes.new("ShaderNodeEmission")
+    em.inputs["Color"].default_value = (*outline_colour(), 1)
+    em.inputs["Strength"].default_value = 1.0
+    nt.links.new(em.outputs[0], out.inputs["Surface"])
+    m.use_backface_culling = True          # the engine culls back faces: only the hull's rim shows
+    try:
+        m.use_backface_culling_shadow = True
+    except AttributeError:
+        pass
+    return m
 
 
 def lighting():
@@ -91,8 +135,8 @@ def _hex_lin(h):
     return tuple(_srgb_to_lin(int(h[i:i + 2], 16) / 255) for i in (0, 2, 4))
 
 
-def part_material(name, spec, atlas_img):
-    """The engine's surface for one MeshPart: atlas x Color, the material's response, Neon / Glass."""
+def part_material(name, spec, atlas_img, vertex_colour=None):
+    """The engine's surface for one MeshPart: atlas x vertex colour x Color, the material's response, Neon / Glass."""
     m = bpy.data.materials.new("RL_" + name)
     try:
         m.use_nodes = True
@@ -111,6 +155,7 @@ def part_material(name, spec, atlas_img):
         b.inputs["Emission Strength"].default_value = NEON_STRENGTH
         return m
     textured = atlas_img is not None and (spec is None or spec.get("atlas", True))
+    base_out = None
     if textured:
         tex = nt.nodes.new("ShaderNodeTexImage")
         tex.image = atlas_img
@@ -122,9 +167,25 @@ def part_material(name, spec, atlas_img):
             mix.inputs["Factor"].default_value = 1.0
             nt.links.new(tex.outputs["Color"], mix.inputs[6])
             mix.inputs[7].default_value = (*rgb, 1)
-            nt.links.new(mix.outputs[2], b.inputs["Base Color"])
+            base_out = mix.outputs[2]
         else:
-            nt.links.new(tex.outputs["Color"], b.inputs["Base Color"])
+            base_out = tex.outputs["Color"]
+    if vertex_colour:
+        # the engine multiplies the FBX's vertex colours (baked AO / cavity) into the surface colour
+        va = nt.nodes.new("ShaderNodeVertexColor")
+        va.layer_name = vertex_colour
+        mv = nt.nodes.new("ShaderNodeMix")
+        mv.data_type = "RGBA"
+        mv.blend_type = "MULTIPLY"
+        mv.inputs["Factor"].default_value = 1.0
+        if base_out is not None:
+            nt.links.new(base_out, mv.inputs[6])
+        else:
+            mv.inputs[6].default_value = (*rgb, 1)
+        nt.links.new(va.outputs["Color"], mv.inputs[7])
+        base_out = mv.outputs[2]
+    if base_out is not None:
+        nt.links.new(base_out, b.inputs["Base Color"])
     else:
         b.inputs["Base Color"].default_value = (*rgb, 1)
     tr = (spec or {}).get("transparency") or (0.6 if mat == "Glass" else 0.0)
@@ -137,7 +198,7 @@ def part_material(name, spec, atlas_img):
     return m
 
 
-def apply(scene, objs, location="Bank", interior=False, manifest=None):
+def apply(scene, objs, location="Bank", interior=False, manifest=None, outlines=True, vertex_colours=True):
     """Turns `scene` into the engine's look for `objs` (imported kit FBX meshes, named as in the manifest).
     Returns the lights and helper objects it added (remove them to undo)."""
     L = lighting()
@@ -151,7 +212,14 @@ def apply(scene, objs, location="Bank", interior=False, manifest=None):
         base = o.name.split(".")[0]
         spec = man.get(base)
         o.data.materials.clear()
-        o.data.materials.append(part_material(base, spec, img))
+        if base.endswith("_Outline") or (spec or {}).get("outlineOf"):
+            if not outlines:
+                o.hide_render = True
+                continue
+            o.data.materials.append(outline_material())
+            continue
+        vc = o.data.color_attributes[0].name if (vertex_colours and len(o.data.color_attributes)) else None
+        o.data.materials.append(part_material(base, spec, img, vc))
     scene.render.engine = "BLENDER_EEVEE"
     try:
         scene.eevee.taa_render_samples = 32

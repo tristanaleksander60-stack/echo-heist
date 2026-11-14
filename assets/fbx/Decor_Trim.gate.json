@@ -144,10 +144,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "c6f0bffc111e8e5bd34c",
+ "ao": {
+  "Decor_Frieze_8": [
+   0.6,
+   0.726
+  ]
+ },
+ "contentHash": "767597b1a34ba8f3bac2",
  "fbx": {
   "path": "assets/fbx/Decor_Trim.fbx",
-  "bytes": 24828,
+  "bytes": 25420,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -170,6 +176,6 @@
  },
  "spec": "assets/blender/interior.py",
  "notes": "Tintable trims: the level's wall frieze and its ceiling tile colour.",
- "seconds": 0.0,
- "turntable": "docs/art/turntables/Decor_Trim.png"
+ "turntable": "docs/art/turntables/Decor_Trim.png",
+ "seconds": 71.8
 }

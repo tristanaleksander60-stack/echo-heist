@@ -1,0 +1,178 @@
+{
+ "asset": "Van_Outline",
+ "objects": [
+  {
+   "name": "Van_Outline",
+   "class": "medium",
+   "tris": 1022,
+   "budget": [
+    2000,
+    4000
+   ],
+   "budget_note": "ok",
+   "dims": [
+    15.028,
+    7.287,
+    7.79
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -7.5141,
+     -3.8433,
+     0.0013
+    ],
+    "local_max": [
+     7.5141,
+     3.4433,
+     7.7909
+    ]
+   },
+   "swatches": [
+    "exit",
+    "ink",
+    "ink_hi",
+    "marble_hi",
+    "steel",
+    "steel_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 72,
+   "cross_shell_overlaps": 1239,
+   "cap_overlaps": 6,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 7,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "exit",
+   "notes": "outline of Van: inverted hull, 0.06 studs, decimated to 60%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Van_Paint_Outline",
+   "class": "small",
+   "tris": 98,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    14.138,
+    6.854,
+    5.778
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -7.073,
+     -3.5905,
+     1.4903
+    ],
+    "local_max": [
+     7.0648,
+     3.2633,
+     7.2686
+    ]
+   },
+   "swatches": [
+    "white"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "symmetry_error": null,
+   "self_intersections": 8,
+   "cross_shell_overlaps": 41,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 2,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "exit",
+   "notes": "outline of Van_Paint: inverted hull, 0.06 studs, decimated to 60%",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 1120,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "1305e51657bb31c990ee",
+ "fbx": {
+  "path": "assets/fbx/Van_Outline.fbx",
+  "bytes": 49164,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Van_Outline",
+   "Van_Paint_Outline"
+  ],
+  "geometry_extents": [
+   [
+    5.778,
+    6.854,
+    14.138
+   ],
+   [
+    7.287,
+    7.79,
+    15.028
+   ]
+  ]
+ },
+ "spec": "assets/blender/zz_outlines.py",
+ "notes": "Ink outlines (BLENDER LOOK): inverted hulls, Neon in Config.Outline.COLOUR, welded to their piece by KitService; Heist/Outlines picks which draw per tier (Config.Outline.TIERS).",
+ "turntable": "docs/art/turntables/Van_Outline.png",
+ "seconds": 28.8
+}

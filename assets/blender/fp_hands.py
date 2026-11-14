@@ -41,6 +41,13 @@ GRIP_X = 0.9                # Blender x of each grip, authored size (right hand 
 WRIST_Z = 0.2               # the wrist hinge, grip space
 STEP = 0.0062               # the SDF grid (authored studs)
 GLOVE_TRIS = 2600           # decimation target per glove
+# BLENDER LOOK (docs/audit/BLENDER_LOOK.md): the glove's ink outline is an inverted hull merged INTO the skinned mesh
+# (a separate hull MeshPart could not share the glove's Bones: one skinned mesh per file keeps them, measured). The
+# copy carries the same bone weights, is pushed out by OUTLINE_T studs (the exported, in-game size: ~1.5 px at the
+# viewmodel's distance), its faces reversed (culled from the front, only the rim shows) and its vertex colour ink, so
+# MeshPart.Color (the glove colour) x ink stays near black.
+OUTLINE_T = 0.0016
+OUTLINE_INK = (0.086, 0.07, 0.11)   # sRGB, = Config.Outline.COLOUR (22, 18, 28)
 TAU = 0.011                 # weight falloff (authored studs): how soft a joint's blend is
 SEAMS = (-0.100, 0.000, 0.096)   # the stitched points on the back (grip-space x, right hand: between the knuckles)
 SEAM_W = 0.008
@@ -341,6 +348,31 @@ def cyl_uv(P, z0, z1):
 
 # ---------------------------------------------------------------- the skinned glove
 
+def add_outline(ob):
+    """Merges the ink hull into the glove mesh: every face duplicated (bone weights, UVs and custom normals come
+    along), the copies pushed out along the vertex normals by OUTLINE_T, reversed, coloured OUTLINE_INK."""
+    me = ob.data
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bm.normal_update()
+    faces = list(bm.faces)
+    normals = {v: v.normal.copy() for v in bm.verts}
+    dup = bmesh.ops.duplicate(bm, geom=faces + list(bm.verts) + list(bm.edges))
+    for v_old, v_new in dup["vert_map"].items():
+        if isinstance(v_old, bmesh.types.BMVert) and v_old in normals:
+            v_new.co = v_old.co + normals[v_old] * OUTLINE_T
+    new_faces = [f for f in dup["geom"] if isinstance(f, bmesh.types.BMFace)]
+    bmesh.ops.reverse_faces(bm, faces=new_faces)
+    col = bm.loops.layers.color.get("Col")
+    if col is not None:
+        for f in new_faces:
+            for lp in f.loops:
+                lp[col] = (*OUTLINE_INK, 1.0)
+    bm.to_mesh(me)
+    bm.free()
+    me.update()
+
+
 def build_glove(k, side, cache):
     s = "Left" if side > 0 else "Right"
     pre = "L_" if side > 0 else "R_"
@@ -390,6 +422,7 @@ def build_glove(k, side, cache):
         g = ob.vertex_groups.new(name=pre + name)
         for i in np.nonzero(w > 0)[0]:
             g.add([int(i)], float(w[i]), "REPLACE")
+    add_outline(ob)
     ob.parent = ao
     ob.matrix_parent_inverse = ao.matrix_world.inverted()
     mod = ob.modifiers.new("Armature", "ARMATURE")
@@ -610,9 +643,11 @@ def build(k):
             d.update(kw)
             return d
         g = fp("Glove", skinned=True, bones=info["bones"], scale=MESH_SCALE)
-        objs.append(k.Obj(ob, "medium", role="char", pivot="point", collision="Box", can_collide=False,
+        # outline=True: the merged ink hull is inside out on purpose (eh_kit's OL1 gate instead of A2/A3/A17/A18)
+        objs.append(k.Obj(ob, "hero", role="char", pivot="point", collision="Box", can_collide=False,
                           cast_shadow=False, atlas=False, tint=glove_tint, tags=["EH_Rookie", "EH_FPArm"],
-                          extra={"fp2": g}, notes=f"skinned first-person {s.lower()} glove (one shell, 23 bones)"))
+                          extra={"fp2": g}, outline=True,
+                          notes=f"skinned first-person {s.lower()} glove (one shell + its ink hull, 23 bones)"))
         pieces = [("CuffKnit", cuff_knit(), {"slot": "gloves", "variant": "Knit"}, glove_tint, False),
                   ("CuffLeather", cuff_leather(), {"slot": "gloves", "variant": "Leather"}, glove_tint, False),
                   ("Sleeve", sleeve(), {}, None, False),
@@ -648,7 +683,7 @@ def build(k):
                          f"the REWIND watch (vertex-shaded). Grip space, exported at {MESH_SCALE} (the in-game size).")]
     for o in gloves:
         side = "R" if "_Right_" in o.ob.name else "L"
-        out.append(k.Asset(f"Rookie_FPHands_{side}", [o], budget_cls="medium",
+        out.append(k.Asset(f"Rookie_FPHands_{side}", [o], budget_cls="hero",
                            notes="FP HANDS v2: one continuous skinned glove (23 bones, smooth, vertex-shaded), "
                                  f"exported at {MESH_SCALE} (the in-game size)."))
     return out

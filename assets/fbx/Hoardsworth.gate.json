@@ -1334,10 +1334,80 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "de75fa431ecabef8589f",
+ "ao": {
+  "Hoardsworth_LowerTorso": [
+   0.6,
+   0.74
+  ],
+  "Hoardsworth_UpperTorso": [
+   0.6,
+   0.718
+  ],
+  "Hoardsworth_Head": [
+   0.6,
+   0.712
+  ],
+  "Hoardsworth_Hat": [
+   0.6,
+   0.89
+  ],
+  "Hoardsworth_Monocle": [
+   0.6,
+   0.69
+  ],
+  "Hoardsworth_RightUpperArm": [
+   0.6,
+   0.743
+  ],
+  "Hoardsworth_RightLowerArm": [
+   0.6,
+   0.794
+  ],
+  "Hoardsworth_RightHand": [
+   0.6,
+   0.801
+  ],
+  "Hoardsworth_LeftUpperArm": [
+   0.6,
+   0.742
+  ],
+  "Hoardsworth_LeftLowerArm": [
+   0.6,
+   0.797
+  ],
+  "Hoardsworth_LeftHand": [
+   0.6,
+   0.8
+  ],
+  "Hoardsworth_RightUpperLeg": [
+   0.6,
+   0.692
+  ],
+  "Hoardsworth_RightLowerLeg": [
+   0.6,
+   0.682
+  ],
+  "Hoardsworth_RightFoot": [
+   0.6,
+   0.776
+  ],
+  "Hoardsworth_LeftUpperLeg": [
+   0.6,
+   0.69
+  ],
+  "Hoardsworth_LeftLowerLeg": [
+   0.6,
+   0.682
+  ],
+  "Hoardsworth_LeftFoot": [
+   0.6,
+   0.776
+  ]
+ },
+ "contentHash": "2afa95fd074c86bf06b7",
  "fbx": {
   "path": "assets/fbx/Hoardsworth.fbx",
-  "bytes": 134220,
+  "bytes": 151276,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -1450,6 +1520,6 @@
  },
  "spec": "assets/blender/intro.py",
  "notes": "Sir Hoardsworth: rigid R15-style rig (17 parts), joint pivots for the code pose player; top hat, monocle (glint at its pivot), velvet tails.",
- "seconds": 2.5,
- "turntable": "docs/art/turntables/Hoardsworth.png"
+ "turntable": "docs/art/turntables/Hoardsworth.png",
+ "seconds": 8.4
 }

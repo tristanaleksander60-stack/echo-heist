@@ -733,7 +733,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "ced1a9b1005a6549b787",
+ "contentHash": "9d673ef7680dd7aea138",
  "fbx": {
   "path": "assets/fbx/Rookie_FPHands.fbx",
   "bytes": 191548,
@@ -814,5 +814,5 @@
  "spec": "assets/blender/fp_hands.py",
  "notes": "FP HANDS v2 forearm pieces: knit / leather cuffs, a ribbed cream sleeve, crew stripes or block, the REWIND watch (vertex-shaded). Grip space, exported at 0.2 (the in-game size).",
  "turntable": "docs/art/turntables/Rookie_FPHands.png",
- "seconds": 8.4
+ "seconds": 7.2
 }

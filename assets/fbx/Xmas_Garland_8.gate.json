@@ -82,7 +82,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "486ff48240111149a163",
+ "contentHash": "84647762c9e2aaef3d77",
  "fbx": {
   "path": "assets/fbx/Xmas_Garland_8.fbx",
   "bytes": 35004,
@@ -102,6 +102,6 @@
  },
  "spec": "assets/blender/xmas.py",
  "notes": "Christmas garland for an 8-stud wall: two puffy swags under the crown, Ribbon bows at x 0 and 4.",
- "seconds": 0.2,
- "turntable": "docs/art/turntables/Xmas_Garland_8.png"
+ "turntable": "docs/art/turntables/Xmas_Garland_8.png",
+ "seconds": 5.5
 }

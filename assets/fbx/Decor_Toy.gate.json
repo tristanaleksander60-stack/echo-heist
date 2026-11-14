@@ -369,10 +369,24 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "27a9730c4b93278453cd",
+ "ao": {
+  "Decor_RockingHorse": [
+   0.6,
+   0.919
+  ],
+  "Decor_CandyCane_Giant": [
+   0.6,
+   0.937
+  ],
+  "Decor_TrainLoop_6": [
+   0.6,
+   0.797
+  ]
+ },
+ "contentHash": "23bc17e053ca2c3dc092",
  "fbx": {
   "path": "assets/fbx/Decor_Toy.fbx",
-  "bytes": 91324,
+  "bytes": 95660,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -413,6 +427,6 @@
  },
  "spec": "assets/blender/interior.py",
  "notes": "Toy Shop eye-level props: toy shelf, rocking horse, gift-wrap table, giant candy cane, train loop.",
- "seconds": 0.8,
- "turntable": "docs/art/turntables/Decor_Toy.png"
+ "turntable": "docs/art/turntables/Decor_Toy.png",
+ "seconds": 20.5
 }

@@ -83,10 +83,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "4b6e07c48a32fcd9330c",
+ "ao": {
+  "Present": [
+   0.6,
+   0.82
+  ]
+ },
+ "contentHash": "68e2c16b0981e806931a",
  "fbx": {
   "path": "assets/fbx/Present.fbx",
-  "bytes": 26908,
+  "bytes": 28428,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -103,6 +109,6 @@
  },
  "spec": "assets/blender/loot.py",
  "notes": "Loot: gift box 1.8 x 1.8 x 1.45 (bow to 2.1): holly paper, gold ribbon and a two-loop gold bow.",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/Present.png"
+ "turntable": "docs/art/turntables/Present.png",
+ "seconds": 6.1
 }

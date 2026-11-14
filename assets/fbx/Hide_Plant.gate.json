@@ -86,10 +86,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "496f8130f6691f6853bb",
+ "ao": {
+  "Hide_Plant": [
+   0.6,
+   0.897
+  ]
+ },
+ "contentHash": "f3664d11f76373d02555",
  "fbx": {
   "path": "assets/fbx/Hide_Plant.fbx",
-  "bytes": 34636,
+  "bytes": 36540,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -106,6 +112,6 @@
  },
  "spec": "assets/blender/hides.py",
  "notes": "Hide spot: two cream planter troughs flanking a 4.2-wide open floor niche (the plate shows), big fronds arching over it.",
- "seconds": 0.2,
- "turntable": "docs/art/turntables/Hide_Plant.png"
+ "turntable": "docs/art/turntables/Hide_Plant.png",
+ "seconds": 19.3
 }

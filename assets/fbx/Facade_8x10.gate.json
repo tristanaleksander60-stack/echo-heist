@@ -170,7 +170,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "109dcf0b72484465cf02",
+ "contentHash": "24b10a9f0859a6361332",
  "fbx": {
   "path": "assets/fbx/Facade_8x10.fbx",
   "bytes": 27964,
@@ -196,6 +196,6 @@
  },
  "spec": "assets/blender/tower.py",
  "notes": "Upper-floor facade bay 8 x 10 (shell, no interior); window 3.6 x 5.6; tiles along X.",
- "seconds": 0.3,
- "turntable": "docs/art/turntables/Facade_8x10.png"
+ "turntable": "docs/art/turntables/Facade_8x10.png",
+ "seconds": 5.9
 }

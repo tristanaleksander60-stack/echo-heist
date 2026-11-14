@@ -81,10 +81,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "a6c322b99753ead3479e",
+ "ao": {
+  "Clock_6": [
+   0.6,
+   0.818
+  ]
+ },
+ "contentHash": "ad2b5bc4ac2e3c856337",
  "fbx": {
   "path": "assets/fbx/Clock_6.fbx",
-  "bytes": 25724,
+  "bytes": 26828,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -101,6 +107,6 @@
  },
  "spec": "assets/blender/tower.py",
  "notes": "Clock 6.7 across, facing -Y, origin the back centre (BIG buildings: the Bank).",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/Clock_6.png"
+ "turntable": "docs/art/turntables/Clock_6.png",
+ "seconds": 100.1
 }

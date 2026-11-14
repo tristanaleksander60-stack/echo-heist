@@ -235,10 +235,10 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "3506b7b39e10db2d3655",
+ "contentHash": "5fdc2e9ce44aa36fbea2",
  "fbx": {
   "path": "assets/fbx/Intro_Tower.fbx",
-  "bytes": 161084,
+  "bytes": 161100,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -267,6 +267,6 @@
  },
  "spec": "assets/blender/intro.py",
  "notes": "Hoardsworth Tower: art-deco toy-tycoon landmark, setbacks, gold crown, lit windows, the giant H.",
- "seconds": 1.5,
- "turntable": "docs/art/turntables/Intro_Tower.png"
+ "turntable": "docs/art/turntables/Intro_Tower.png",
+ "seconds": 52.5
 }

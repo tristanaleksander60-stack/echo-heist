@@ -1410,10 +1410,80 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "d3cd23e723af0de26d88",
+ "ao": {
+  "Gus_LowerTorso": [
+   0.6,
+   0.727
+  ],
+  "Gus_UpperTorso": [
+   0.6,
+   0.776
+  ],
+  "Gus_Head": [
+   0.6,
+   0.73
+  ],
+  "Gus_Cap": [
+   0.6,
+   0.913
+  ],
+  "Gus_RightUpperArm": [
+   0.6,
+   0.757
+  ],
+  "Gus_RightLowerArm": [
+   0.6,
+   0.744
+  ],
+  "Gus_RightHand": [
+   0.6,
+   0.721
+  ],
+  "Gus_LeftUpperArm": [
+   0.6,
+   0.758
+  ],
+  "Gus_LeftLowerArm": [
+   0.6,
+   0.779
+  ],
+  "Gus_LeftHand": [
+   0.6,
+   0.793
+  ],
+  "Gus_RightUpperLeg": [
+   0.6,
+   0.682
+  ],
+  "Gus_RightLowerLeg": [
+   0.6,
+   0.719
+  ],
+  "Gus_RightFoot": [
+   0.6,
+   0.8
+  ],
+  "Gus_LeftUpperLeg": [
+   0.6,
+   0.683
+  ],
+  "Gus_LeftLowerLeg": [
+   0.6,
+   0.718
+  ],
+  "Gus_LeftFoot": [
+   0.6,
+   0.801
+  ],
+  "Gus_Flashlight": [
+   0.6,
+   0.803
+  ]
+ },
+ "contentHash": "6aa3307ec95b3274ccad",
  "fbx": {
   "path": "assets/fbx/Gus.fbx",
-  "bytes": 129724,
+  "bytes": 147308,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -1532,6 +1602,6 @@
  },
  "spec": "assets/blender/gus.py",
  "notes": "Gus v0: rigid R15-style rig (18 parts), joint pivots for the code pose player; cap, torch, Neon lens.",
- "seconds": 0.3,
- "turntable": "docs/art/turntables/Gus.png"
+ "turntable": "docs/art/turntables/Gus.png",
+ "seconds": 6.5
 }

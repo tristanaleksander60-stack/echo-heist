@@ -87,10 +87,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "1fc9ff179b67a97ef1e1",
+ "ao": {
+  "Gus_SantaHat": [
+   0.6,
+   0.871
+  ]
+ },
+ "contentHash": "bee72af9267d25f9bb16",
  "fbx": {
   "path": "assets/fbx/Gus_SantaHat.fbx",
-  "bytes": 27020,
+  "bytes": 28332,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -107,6 +113,6 @@
  },
  "spec": "assets/blender/gus.py",
  "notes": "Gus's Santa hat (Christmas layer): Ribbon cone flopping back, snow fur band and pompom; same pivot as Gus_Cap.",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/Gus_SantaHat.png"
+ "turntable": "docs/art/turntables/Gus_SantaHat.png",
+ "seconds": 18.4
 }

@@ -88,10 +88,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "a7a69e8c7a089df53122",
+ "ao": {
+  "Hide_CoatRack": [
+   0.6,
+   0.826
+  ]
+ },
+ "contentHash": "a09ce1fd5539bec9519e",
  "fbx": {
   "path": "assets/fbx/Hide_CoatRack.fbx",
-  "bytes": 28140,
+  "bytes": 29420,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -108,6 +114,6 @@
  },
  "spec": "assets/blender/hides.py",
  "notes": "Hide spot: double garment rack (6 x 4.5), three long coats on each rail, the plate niche between them.",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/Hide_CoatRack.png"
+ "turntable": "docs/art/turntables/Hide_CoatRack.png",
+ "seconds": 43.9
 }

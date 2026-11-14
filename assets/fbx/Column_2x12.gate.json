@@ -83,7 +83,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "4c10b52682aea8940c8a",
+ "contentHash": "ad3475b527615b1813c9",
  "fbx": {
   "path": "assets/fbx/Column_2x12.fbx",
   "bytes": 30828,
@@ -103,6 +103,6 @@
  },
  "spec": "assets/blender/signature.py",
  "notes": "Round marble column 2x2x12: square plinth, torus base, tapered shaft, capital and abacus.",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/Column_2x12.png"
+ "turntable": "docs/art/turntables/Column_2x12.png",
+ "seconds": 10.4
 }

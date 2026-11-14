@@ -159,10 +159,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "0110a493fce48206f3b3",
+ "ao": {
+  "LaserEmitter": [
+   0.6,
+   0.863
+  ]
+ },
+ "contentHash": "2b805860773bd38fa2ba",
  "fbx": {
   "path": "assets/fbx/LaserEmitter.fbx",
-  "bytes": 31420,
+  "bytes": 32556,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -185,6 +191,6 @@
  },
  "spec": "assets/blender/mechanisms.py",
  "notes": "Laser emitter post (10.45 tall): ink plinth and cap, steel bands, 5 lens housings at y 1-9; Neon lens part.",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/LaserEmitter.png"
+ "turntable": "docs/art/turntables/LaserEmitter.png",
+ "seconds": 47.1
 }

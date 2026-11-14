@@ -394,7 +394,7 @@ class Obj:
     def __init__(self, ob, cls, role="env", symmetric=None, pivot="corner", collision="Box", material="SmoothPlastic",
                  can_collide=True, cast_shadow=True, expect_dims=None, tint=None, notes="", layer="base", tags=(),
                  joint=None, atlas=None, transparency=0.0, texture=None, sim=None, free_shells=False, extra=None,
-                 on_floor=False):
+                 on_floor=False, outline=False):
         self.ob, self.cls, self.role, self.symmetric, self.pivot = ob, cls, role, symmetric, pivot
         self.collision, self.material, self.can_collide, self.cast_shadow = collision, material, can_collide, cast_shadow
         self.expect_dims, self.tint, self.notes = expect_dims, tint, notes
@@ -413,6 +413,10 @@ class Obj:
         # ring centre); A16 treats floor contact as seated, as it does for "bottom" and "corner" pivots.
         self.on_floor = on_floor
         self.extra = dict(extra or {})   # more manifest fields (Roblox axes): grips, hooks, light points...
+        # outline: an inverted hull (eh_look.make_hull; BLENDER LOOK). Its faces point inward on purpose, it may be
+        # open where the decimation closed a slit, and its shells float around the piece's: A2 / A3 / A16 / A17 /
+        # A18 do not apply. OL1 checks the opposite: the hull must be inside out (negative signed volume).
+        self.outline = outline
 
 
 class Asset:
@@ -524,9 +528,15 @@ def gate_asset(asset):
             if loc:
                 fails.append(f"P3 role '{o.role}' may not use location cells {loc} (they change per atlas swap)")
         on_floor = o.on_floor or o.pivot in ("bottom", "corner")
-        fl = [] if o.free_shells else floating_shells(ob, floor_z=0.0 if on_floor else None)
+        fl = [] if (o.free_shells or o.outline) else floating_shells(ob, floor_z=0.0 if on_floor else None)
         if fl:
             fails.append(f"A16 {len(fl)} floating shell(s): {fl}")
+        if o.outline:
+            fails = [f for f in fails if not f.startswith(("A2 ", "A3 ", "A16", "A17", "A18"))]
+            import eh_look
+            vol = eh_look.signed_volume(ob)
+            if vol >= 0:
+                fails.append(f"OL1 outline hull is not inside out (signed volume {vol:.4f} >= 0)")
         tgt, ceil_ = lf.BUDGETS[o.cls]
         rep["objects"].append({
             "name": ob.name, "class": o.cls, "tris": r["tris"], "budget": [tgt, ceil_], "budget_note": r["budget_note"],

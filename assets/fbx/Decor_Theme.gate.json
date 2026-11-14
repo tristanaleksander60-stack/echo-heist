@@ -448,10 +448,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "29945da6fa3326e294dc",
+ "ao": {
+  "Decor_Bakery_Cakes": [
+   0.6,
+   0.801
+  ]
+ },
+ "contentHash": "034f31f02bf7adcc2a43",
  "fbx": {
   "path": "assets/fbx/Decor_Theme.fbx",
-  "bytes": 122300,
+  "bytes": 124732,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -498,6 +504,6 @@
  },
  "spec": "assets/blender/interior.py",
  "notes": "Each level's own shop: bakery, pharmacy, deli, jeweller, toy repair, grocer hero props.",
- "seconds": 0.4,
- "turntable": "docs/art/turntables/Decor_Theme.png"
+ "turntable": "docs/art/turntables/Decor_Theme.png",
+ "seconds": 60.0
 }

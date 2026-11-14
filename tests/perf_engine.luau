@@ -47,6 +47,7 @@ local clientHeist =
 
 local Config = require(shared:WaitForChild("Config")) :: any
 local Budget = require(shared:WaitForChild("Heist"):WaitForChild("Budget"))
+local OutlinePlan = require(shared:WaitForChild("Heist"):WaitForChild("OutlinePlan"))
 local Protocol = require(shared:WaitForChild("Heist"):WaitForChild("Protocol"))
 local Codec = require(shared:WaitForChild("Rec"):WaitForChild("Codec"))
 local HeistService = require(heistServer:WaitForChild("HeistService"))
@@ -314,6 +315,10 @@ local TRIS: { [string]: number } = {
 	Rookie_VM_RightArm = 460,
 	Snowman = 724,
 }
+-- outline-tris:start
+local OUTLINE_TRIS: { [string]: { tris: number, class: string } } = {}
+-- outline-tris:end
+
 local SHAPE_TRIS = { Block = 12, Wedge = 8, CornerWedge = 6, Cylinder = 96, Ball = 400 } -- engine primitives, approx.
 
 ---------------------------------------------------------------------------
@@ -362,6 +367,11 @@ local function add(t: Tally, root: Instance, includeRoot: boolean?)
 	end
 	for _, d in list do
 		t.instances += 1
+		-- BLENDER LOOK: outline hulls are charged per tier by their caps (OutlinePlan.worstTris), not here
+		if d:IsA("BasePart") and d:GetAttribute("EH_OutlineOf") ~= nil then
+			t.outlineHulls = (t.outlineHulls or 0) + 1
+			continue
+		end
 		if d:IsA("BasePart") then
 			t.parts += 1
 			-- a clone rig EchoView hides (the avatar beyond the LOD distance, the light rig inside it) is faded by
@@ -1027,6 +1037,69 @@ if cloneActor and six then
 		end
 	end
 
+	-- BLENDER LOOK: the heaviest unit of each outline class (Config.Outline, OutlinePlan): a Rookie in the
+	-- measured outfits (its visible pieces' hulls), Gus (all his hulls), the heaviest loot / hero piece's hull.
+	local oheavy = { char = 0, loot = 0, hero = 0 }
+	local heavyPieces = { char = 0, loot = 1, hero = 1 }
+	local outfitPieces = 0
+	local rookieHulls = 0
+	for _, t in templates do
+		local tris, n, outfit = 0, 0, 0
+		for _, d in t:GetDescendants() do
+			local of = d:GetAttribute("EH_OutlineOf")
+			local host = d.Parent
+			if of and host and host:IsA("BasePart") and host.Transparency < 1 then
+				local orec = OUTLINE_TRIS[d:GetAttribute("KitPiece") or d.Name]
+				tris += if orec then orec.tris else 0
+				n += 1
+				if host:GetAttribute("EH_Slot") ~= nil then
+					outfit += 1
+				end
+			end
+		end
+		rookieHulls = math.max(rookieHulls, n)
+		outfitPieces = math.max(outfitPieces, outfit)
+		if tris > oheavy.char then
+			oheavy.char, heavyPieces.char = tris, n
+		end
+	end
+	local gusHull, gusHulls = 0, 0
+	for name, orec in OUTLINE_TRIS do
+		if string.sub(name, 1, 4) == "Gus_" then
+			gusHull += orec.tris
+			gusHulls += 1
+		elseif orec.class == "loot" or orec.class == "hero" then
+			oheavy[orec.class] = math.max(oheavy[orec.class], orec.tris)
+		end
+	end
+	if gusHull > oheavy.char then
+		oheavy.char, heavyPieces.char = gusHull, gusHulls
+	end
+	check(
+		rookieHulls > 0 and outfitPieces > 0,
+		string.format(
+			"outlines: the Rookie templates carry their hulls (%d, %d on the outfit)",
+			rookieHulls,
+			outfitPieces
+		)
+	)
+	info(
+		string.format(
+			"outlines: heaviest units: character %d tris (%d hulls; Gus %d), loot %d, hero %d",
+			oheavy.char,
+			heavyPieces.char,
+			gusHull,
+			oheavy.loot,
+			oheavy.hero
+		)
+	)
+	-- distinct hull meshes the tier's caps can draw: the first two characters may be different rigs (a Rookie and
+	-- Gus), every further one shares the Rookie body's hull meshes (they instance) and adds only its outfit's
+	local function outlineDraws(tier: number): number
+		local c = OutlinePlan.caps(tier)
+		return math.min(c.char, 2) * heavyPieces.char + math.max(0, c.char - 2) * outfitPieces + c.loot + c.hero
+	end
+
 	-- WorldView's client-side extras on the level (labels, sparks, coins, glints) + LightDirector
 	local levelModel = six.built.model
 	local before = #levelModel:GetDescendants()
@@ -1146,8 +1219,10 @@ if cloneActor and six then
 		for _ in avatarBatches do
 			avatarDraws += 1
 		end
-		local tris = levelTris + bdT.kitTris + bdT.primTris + avatarTris + 2 * gusTris
-		local draws = batchCount(lvT)
+		local outlineTris = OutlinePlan.worstTris(tier, oheavy)
+		local tris = levelTris + bdT.kitTris + bdT.primTris + avatarTris + 2 * gusTris + outlineTris
+		local draws = outlineDraws(tier)
+			+ batchCount(lvT)
 			+ batchCount(bdT)
 			+ avatarDraws
 			+ 2 * 18 -- Gus
@@ -1165,6 +1240,19 @@ if cloneActor and six then
 			+ bdT.instances
 			+ playerChars
 		table.insert(results, "      " .. line(string.format("tier %d clones (12) + halo", tier), clonesT))
+		local oc = OutlinePlan.caps(tier)
+		info(
+			string.format(
+				"tier %d outlines (worst case: %d characters, %d loot, %d hero within %d studs): ~%.1fk tris, ~%d draws",
+				tier,
+				oc.char,
+				oc.loot,
+				oc.hero,
+				oc.radius,
+				outlineTris / 1000,
+				outlineDraws(tier)
+			)
+		)
 		info(
 			string.format(
 				"tier %d view: lights %d (+%d halo) / shadowed %d, glows %d, Highlights %d, snow %.0f + worst bursts %d = %d particles, ~%dk tris (level %dk, backdrop %dk, Rookies %dk measured with %d of 12 clones light, Gus %dk), ~%d draws (estimate; Rookies %d), %d live instances (streaming on)",

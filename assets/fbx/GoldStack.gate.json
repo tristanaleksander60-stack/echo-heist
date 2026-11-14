@@ -82,10 +82,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "9936b3b3fed0bd4f9b47",
+ "ao": {
+  "GoldStack": [
+   0.6,
+   0.812
+  ]
+ },
+ "contentHash": "4c7701a9757240ddb582",
  "fbx": {
   "path": "assets/fbx/GoldStack.fbx",
-  "bytes": 25436,
+  "bytes": 26684,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -102,6 +108,6 @@
  },
  "spec": "assets/blender/gold_bar.py",
  "notes": "Loot: 6-bar table stack (3-2-1). One grab = one bar; the stack shrinks in code.",
- "seconds": 0.0,
- "turntable": "docs/art/turntables/GoldStack.png"
+ "turntable": "docs/art/turntables/GoldStack.png",
+ "seconds": 18.0
 }

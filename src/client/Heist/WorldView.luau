@@ -525,7 +525,7 @@ function WorldView.new(state: any, positionOf: (actorId: number) -> Vector3?): a
 				local parts = {}
 				local pivot = d.WorldPivot
 				for _, p in d:GetDescendants() do
-					if p:IsA("BasePart") then
+					if p:IsA("BasePart") and p:GetAttribute("EH_OutlineOf") == nil then -- hulls ride their Weld
 						local alpha = p:GetAttribute("EH_Alpha")
 						p.Transparency = if type(alpha) == "number" then alpha else 0
 						local isDial = string.find(p.Name, "Dial", 1, true) ~= nil

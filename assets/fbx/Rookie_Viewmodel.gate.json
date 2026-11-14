@@ -153,10 +153,20 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "ddbe55ff5652d90ce285",
+ "ao": {
+  "Rookie_VM_RightArm": [
+   0.6,
+   0.797
+  ],
+  "Rookie_VM_LeftArm": [
+   0.6,
+   0.797
+  ]
+ },
+ "contentHash": "5ad60d150dfc95924a38",
  "fbx": {
   "path": "assets/fbx/Rookie_Viewmodel.fbx",
-  "bytes": 42972,
+  "bytes": 44588,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -180,5 +190,5 @@
  "spec": "assets/blender/rookie.py",
  "notes": "First-person arms (FP track): LeftArm / RightArm, pivot = elbow, GripL / GripR at the palms; sleeve + knit glove, one mesh each.",
  "turntable": "docs/art/turntables/Rookie_Viewmodel.png",
- "seconds": 16.4
+ "seconds": 45.8
 }

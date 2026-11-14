@@ -162,7 +162,7 @@ return function(test)
 		local L = P.SOFT_TOYBOX.Lighting
 		Assert.eq(L.LightingStyle, "Soft", "Soft")
 		Assert.eq(L.PrioritizeLightingQuality, true, "Prioritize (shadow maps, not voxels)")
-		Assert.eq(L.Brightness, 1.8, "Brightness (recipe A + 0.2; BIG: A is 1.6)")
+		Assert.eq(L.Brightness, 2.1, "Brightness (recipe A + 0.2; BLENDER LOOK: A is 1.9)")
 		Assert.truthy(P.SOFT_TOYBOX.Atmosphere.Density < 0.24, "a thinner haze than recipe A on low phones")
 		Assert.eq(L.EnvironmentSpecularScale, 0, "no specular")
 		Assert.truthy(L.Ambient[1] <= L.OutdoorAmbient[1] and L.Ambient[3] <= L.OutdoorAmbient[3], "Ambient <= Outdoor")
@@ -370,7 +370,8 @@ return function(test)
 				"heavy before the rest"
 			)
 			Assert.eq(Budget.layerOffTier("festive"), 4, "the kit's Christmas from tier 4")
-			Assert.eq(Budget.layerOffTier("trim"), 3, "the front's window trims from tier 3")
+			-- BLENDER LOOK: the trims go from tier 2 to pay for tier 2's character outlines (docs/PERF.md §12)
+			Assert.eq(Budget.layerOffTier("trim"), 2, "the front's window trims from tier 2")
 			Assert.eq(Budget.layerOffTier("order"), 4, "the giant order from tier 4")
 			Assert.truthy(BackdropPlan.ringOn("near", 3) and not BackdropPlan.ringOn("near", 4), "near ring to tier 3")
 			Assert.truthy(

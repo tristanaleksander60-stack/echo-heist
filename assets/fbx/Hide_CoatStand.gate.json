@@ -89,10 +89,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "0842ca0249684b73e953",
+ "ao": {
+  "Hide_CoatStand": [
+   0.6,
+   0.858
+  ]
+ },
+ "contentHash": "dc8a1b82eb8368be28af",
  "fbx": {
   "path": "assets/fbx/Hide_CoatStand.fbx",
-  "bytes": 31292,
+  "bytes": 32812,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -109,6 +115,6 @@
  },
  "spec": "assets/blender/hides.py",
  "notes": "Hide spot: round coat stand (4.7 across), five coats on a ring rail on three legs, open at the front.",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/Hide_CoatStand.png"
+ "turntable": "docs/art/turntables/Hide_CoatStand.png",
+ "seconds": 55.9
 }

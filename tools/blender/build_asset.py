@@ -20,6 +20,7 @@ import argparse, glob, hashlib, importlib.util, json, os, sys, time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import bpy  # noqa: E402
+from mathutils import Vector  # noqa: E402
 import eh_kit as k  # noqa: E402
 import eh_palette as P  # noqa: E402
 import turntable as tt  # noqa: E402
@@ -40,8 +41,23 @@ def load_spec(path):
     return mod
 
 
-EXPORT_VERSION = "fbx-2"   # bump when export_fbx / verify_fbx / the turntable layout change (forces a rebuild)
+EXPORT_VERSION = "fbx-3"   # bump when export_fbx / verify_fbx / the turntable layout change (forces a rebuild)
 # fbx-2 (STUDIO_FIDELITY): soft revolved edges + 1 px atlas UVs; the corner normals are hashed from now on
+# fbx-3 (BLENDER LOOK): baked vertex AO + cavity (eh_look.bake_ao) on the small and medium pieces
+
+
+def bake_look(asset):
+    """BLENDER LOOK: the Blender preview's ambient occlusion and cavity, baked into vertex colours (eh_look). The
+    pieces of an assembled character or machine occlude each other; alternatives (caps, faces, ornaments, decor
+    sets) only themselves. Floor-standing assets get a ground plane. Returns {piece: (min, mean)}."""
+    import eh_look
+    specs = [o for o in asset.objects if eh_look.ao_eligible(o)]
+    if not specs:
+        return {}
+    objs = [o.ob for o in asset.objects if not getattr(o, "outline", False)]
+    zmin = min((ob.matrix_world @ Vector(c)).z for ob in objs for c in ob.bound_box)
+    whole = asset.name in eh_look.ASSEMBLED
+    return eh_look.bake_ao(specs, occluders=objs if whole else None, ground=abs(zmin) < 0.05)
 
 
 def content_hash(asset, render, mood, size):
@@ -111,7 +127,10 @@ def build_spec(path, render=True, mood=True, size=384, blend=False, man=None, fo
     results, kept = [], []
     for a in assets:
         t0 = time.time()
+        ao = bake_look(a)
         passed, rep = k.gate_asset(a)
+        if ao:
+            rep["ao"] = ao
         objs = [o.ob for o in a.objects]
         fbx = os.path.join(FBX_DIR, a.name + ".fbx")
         png = os.path.join(TT_DIR, a.name + ".png")

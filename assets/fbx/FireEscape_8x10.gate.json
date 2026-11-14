@@ -79,7 +79,7 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "2ca5c93b84b03e245a66",
+ "contentHash": "5c1eda27c08e96d8705a",
  "fbx": {
   "path": "assets/fbx/FireEscape_8x10.fbx",
   "bytes": 23436,
@@ -99,6 +99,6 @@
  },
  "spec": "assets/blender/tower.py",
  "notes": "Fire escape storey 8 x 3 x 10 (BIG buildings, the Corner Shop tenement).",
- "seconds": 0.2,
- "turntable": "docs/art/turntables/FireEscape_8x10.png"
+ "turntable": "docs/art/turntables/FireEscape_8x10.png",
+ "seconds": 35.9
 }

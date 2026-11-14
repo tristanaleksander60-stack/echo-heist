@@ -52,6 +52,7 @@ local Net = require(ReplicatedStorage:WaitForChild("LihFolk"):WaitForChild("Net"
 local Heist = script.Parent
 local Aurora = require(Heist:WaitForChild("Aurora"))
 local ScarfSway = require(Heist:WaitForChild("ScarfSway"))
+local Outlines = require(Heist:WaitForChild("Outlines"))
 local Backdrop = require(Heist:WaitForChild("Backdrop"))
 local EchoView = require(Heist:WaitForChild("EchoView"))
 local CameraDirector = require(Heist:WaitForChild("CameraDirector"))
@@ -231,6 +232,8 @@ function HeistClient.start()
 			return if state.where == "heist" then echo.swayModels(swayList) else swayList
 		end,
 	})
+	-- BLENDER LOOK: the ink outlines (the kit's inverted hulls): the tier's nearest few draw, each follows its piece.
+	local outlines = Outlines.new({ camera = camera })
 	-- Look up / down: your first-person pitch goes out (Heist.Ready "look"); other players' heads and chests follow.
 	LookTilt.new({
 		camera = camera,
@@ -506,6 +509,7 @@ function HeistClient.start()
 		cutaway.setTier(tier)
 		aurora.setTier(tier)
 		scarves.setTier(tier)
+		outlines.setTier(tier)
 	end)
 	DebugChip.start(echo, Telemetry.tier) -- Studio only: clones drawn / healthy / tier / avatar
 	GoldenShots.start(camera, state, echo) -- Studio only: golden-frame staging (EH_Scenario)

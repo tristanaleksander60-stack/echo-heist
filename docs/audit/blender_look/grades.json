@@ -1,0 +1,34 @@
+{
+ "G1_fp_spawn_after": {
+  "clipped": 0.04,
+  "clipped_ok": true,
+  "dark_share": 13.2,
+  "median_luma": 0.226,
+  "near_black": 3.39,
+  "warm_share": 65.8
+ },
+ "G1_fp_spawn_before": {
+  "clipped": 0.01,
+  "clipped_ok": true,
+  "dark_share": 11.9,
+  "median_luma": 0.213,
+  "near_black": 1.04,
+  "warm_share": 48.5
+ },
+ "G3_fp_hideout_after": {
+  "clipped": 0.02,
+  "clipped_ok": true,
+  "dark_share": 43.1,
+  "median_luma": 0.119,
+  "near_black": 16.92,
+  "warm_share": 48.4
+ },
+ "G3_fp_hideout_before": {
+  "clipped": 0.01,
+  "clipped_ok": true,
+  "dark_share": 41.9,
+  "median_luma": 0.118,
+  "near_black": 14.91,
+  "warm_share": 32.1
+ }
+}

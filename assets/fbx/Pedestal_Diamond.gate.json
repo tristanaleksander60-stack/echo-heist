@@ -162,10 +162,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "78477ab40d449eaa4e5a",
+ "ao": {
+  "Pedestal_Diamond": [
+   0.6,
+   0.754
+  ]
+ },
+ "contentHash": "326f8f6c4ea1187f0869",
  "fbx": {
   "path": "assets/fbx/Pedestal_Diamond.fbx",
-  "bytes": 31116,
+  "bytes": 33004,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -188,6 +194,6 @@
  },
  "spec": "assets/blender/hero_props.py",
  "notes": "Hero display: fluted Vault Steel shade column, dark cushion, marble name plate; glass case as its own part.",
- "seconds": 0.1,
- "turntable": "docs/art/turntables/Pedestal_Diamond.png"
+ "turntable": "docs/art/turntables/Pedestal_Diamond.png",
+ "seconds": 11.3
 }

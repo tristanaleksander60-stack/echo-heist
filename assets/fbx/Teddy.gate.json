@@ -84,10 +84,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "632740b527caff64ee7f",
+ "ao": {
+  "Teddy": [
+   0.6,
+   0.769
+  ]
+ },
+ "contentHash": "6f89ddc250c595b60df5",
  "fbx": {
   "path": "assets/fbx/Teddy.fbx",
-  "bytes": 31900,
+  "bytes": 33900,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -104,6 +110,6 @@
  },
  "spec": "assets/blender/loot.py",
  "notes": "Loot: sitting golden teddy bear (1.6 x 1.6 x 2.4): light belly and muzzle, ink eyes, ice bow tie.",
- "seconds": 0.0,
- "turntable": "docs/art/turntables/Teddy.png"
+ "turntable": "docs/art/turntables/Teddy.png",
+ "seconds": 84.1
 }

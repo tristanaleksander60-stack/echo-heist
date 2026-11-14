@@ -1,0 +1,1248 @@
+{
+ "asset": "Gus_Outline",
+ "objects": [
+  {
+   "name": "Gus_LowerTorso_Outline",
+   "class": "small",
+   "tris": 296,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.578,
+    1.958,
+    1.05
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.2071,
+     -0.9863,
+     -0.4362
+    ],
+    "local_max": [
+     1.3708,
+     0.9721,
+     0.6139
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "steel_hi"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    2.1
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 265,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_LowerTorso: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_UpperTorso_Outline",
+   "class": "small",
+   "tris": 436,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.793,
+    2.508,
+    2.143
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.3963,
+     -1.3846,
+     -0.1045
+    ],
+    "local_max": [
+     1.3963,
+     1.1237,
+     2.0386
+    ]
+   },
+   "swatches": [
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "shirt",
+    "shirt_lo",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    2.62
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 352,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_UpperTorso: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_Head_Outline",
+   "class": "small",
+   "tris": 392,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.181,
+    2.019,
+    1.671
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.0907,
+     -1.183,
+     -0.1352
+    ],
+    "local_max": [
+     1.0907,
+     0.8363,
+     1.5354
+    ]
+   },
+   "swatches": [
+    "hair",
+    "ink",
+    "skin",
+    "skin_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    4.5
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 282,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_Head: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_Cap_Outline",
+   "class": "small",
+   "tris": 128,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    2.114,
+    2.447,
+    0.875
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -1.0571,
+     -1.4402,
+     -0.1196
+    ],
+    "local_max": [
+     1.0571,
+     1.0063,
+     0.755
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "marble",
+    "marble_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.0,
+    0.0,
+    5.78
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 79,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_Cap: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_RightUpperArm_Outline",
+   "class": "small",
+   "tris": 126,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.916,
+    0.873,
+    1.422
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.458,
+     -0.4363,
+     -0.9652
+    ],
+    "local_max": [
+     0.458,
+     0.4363,
+     0.4566
+    ]
+   },
+   "swatches": [
+    "shirt",
+    "shirt_lo"
+   ],
+   "location": [
+    -1.42,
+    0.0,
+    4.12
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 38,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_RightUpperArm: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_RightLowerArm_Outline",
+   "class": "small",
+   "tris": 84,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.792,
+    0.767,
+    1.038
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.4422,
+     -0.3842,
+     -0.8982
+    ],
+    "local_max": [
+     0.3502,
+     0.3826,
+     0.1398
+    ]
+   },
+   "swatches": [
+    "shirt",
+    "shirt_lo"
+   ],
+   "location": [
+    -1.52,
+    0.0,
+    3.28
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 59,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_RightLowerArm: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_RightHand_Outline",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.719,
+    0.705,
+    0.779
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3261,
+     -0.4023,
+     -0.6393
+    ],
+    "local_max": [
+     0.3933,
+     0.3028,
+     0.1393
+    ]
+   },
+   "swatches": [
+    "skin",
+    "skin_lo"
+   ],
+   "location": [
+    -1.6,
+    0.0,
+    2.5
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 20,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_RightHand: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_LeftUpperArm_Outline",
+   "class": "small",
+   "tris": 126,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.916,
+    0.873,
+    1.422
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.458,
+     -0.4363,
+     -0.9652
+    ],
+    "local_max": [
+     0.458,
+     0.4363,
+     0.4566
+    ]
+   },
+   "swatches": [
+    "shirt",
+    "shirt_lo"
+   ],
+   "location": [
+    1.42,
+    0.0,
+    4.12
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 38,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_LeftUpperArm: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_LeftLowerArm_Outline",
+   "class": "small",
+   "tris": 84,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.778,
+    0.767,
+    1.037
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3502,
+     -0.3826,
+     -0.8972
+    ],
+    "local_max": [
+     0.4278,
+     0.3842,
+     0.1398
+    ]
+   },
+   "swatches": [
+    "shirt",
+    "shirt_lo"
+   ],
+   "location": [
+    1.52,
+    0.0,
+    3.28
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 61,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_LeftLowerArm: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_LeftHand_Outline",
+   "class": "small",
+   "tris": 80,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.72,
+    0.705,
+    0.779
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.394,
+     -0.4023,
+     -0.6393
+    ],
+    "local_max": [
+     0.3261,
+     0.3028,
+     0.1393
+    ]
+   },
+   "swatches": [
+    "skin",
+    "skin_lo"
+   ],
+   "location": [
+    1.6,
+    0.0,
+    2.5
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 20,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_LeftHand: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_RightUpperLeg_Outline",
+   "class": "small",
+   "tris": 56,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.916,
+    0.871,
+    1.013
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.4579,
+     -0.4351,
+     -0.8959
+    ],
+    "local_max": [
+     0.458,
+     0.436,
+     0.1167
+    ]
+   },
+   "swatches": [
+    "ink_hi"
+   ],
+   "location": [
+    -0.52,
+    0.0,
+    1.95
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_RightUpperLeg: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_RightLowerLeg_Outline",
+   "class": "small",
+   "tris": 56,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.795,
+    0.755,
+    0.944
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3971,
+     -0.3779,
+     -0.828
+    ],
+    "local_max": [
+     0.3974,
+     0.3775,
+     0.1157
+    ]
+   },
+   "swatches": [
+    "ink_hi"
+   ],
+   "location": [
+    -0.52,
+    0.0,
+    1.15
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_RightLowerLeg: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_RightFoot_Outline",
+   "class": "small",
+   "tris": 56,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.934,
+    1.454,
+    0.718
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.4668,
+     -1.0121,
+     -0.4561
+    ],
+    "local_max": [
+     0.4668,
+     0.4421,
+     0.2619
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "steel_lo"
+   ],
+   "location": [
+    -0.52,
+    0.0,
+    0.42
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 62,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_RightFoot: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_LeftUpperLeg_Outline",
+   "class": "small",
+   "tris": 56,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.916,
+    0.871,
+    1.013
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.458,
+     -0.436,
+     -0.8959
+    ],
+    "local_max": [
+     0.4579,
+     0.4351,
+     0.1167
+    ]
+   },
+   "swatches": [
+    "ink_hi"
+   ],
+   "location": [
+    0.52,
+    0.0,
+    1.95
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_LeftUpperLeg: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_LeftLowerLeg_Outline",
+   "class": "small",
+   "tris": 56,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.795,
+    0.755,
+    0.944
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.3974,
+     -0.3775,
+     -0.828
+    ],
+    "local_max": [
+     0.3971,
+     0.3779,
+     0.1157
+    ]
+   },
+   "swatches": [
+    "ink_hi"
+   ],
+   "location": [
+    0.52,
+    0.0,
+    1.15
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 0,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_LeftLowerLeg: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_LeftFoot_Outline",
+   "class": "small",
+   "tris": 56,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    0.934,
+    1.454,
+    0.718
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.4668,
+     -1.0121,
+     -0.4561
+    ],
+    "local_max": [
+     0.4668,
+     0.4421,
+     0.2619
+    ]
+   },
+   "swatches": [
+    "ink",
+    "ink_hi",
+    "steel_lo"
+   ],
+   "location": [
+    0.52,
+    0.0,
+    0.42
+   ],
+   "symmetry_error": null,
+   "self_intersections": 0,
+   "cross_shell_overlaps": 61,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 0,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_LeftFoot: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  },
+  {
+   "name": "Gus_Flashlight_Outline",
+   "class": "small",
+   "tris": 228,
+   "budget": [
+    600,
+    1500
+   ],
+   "budget_note": "ok",
+   "dims": [
+    1.113,
+    2.353,
+    1.105
+   ],
+   "pivot": {
+    "rule": "point",
+    "local_min": [
+     -0.558,
+     -1.8008,
+     -0.5525
+    ],
+    "local_max": [
+     0.5552,
+     0.5523,
+     0.5527
+    ]
+   },
+   "swatches": [
+    "ink",
+    "steel",
+    "steel_hi"
+   ],
+   "location": [
+    -1.6,
+    -0.05,
+    2.25
+   ],
+   "symmetry_error": null,
+   "self_intersections": 25,
+   "cross_shell_overlaps": 246,
+   "cap_overlaps": 0,
+   "flipped_faces": 0,
+   "boundary_edges": 0,
+   "non_manifold_edges": 12,
+   "ngons": 0,
+   "materials": 1,
+   "uv_layers": 1,
+   "uv_out_of_0_1": 0,
+   "studio": {
+    "Material": "Neon",
+    "Color": "white (255,255,255)",
+    "CollisionFidelity": "Box",
+    "CanCollide": false,
+    "CastShadow": false,
+    "Transparency": 0.0,
+    "atlas": false,
+    "texture": null
+   },
+   "layer": "base",
+   "tags": [],
+   "joint": null,
+   "role": "char",
+   "notes": "outline of Gus_Flashlight: inverted hull, 0.035 studs, decimated to 70%",
+   "fails": [],
+   "passed": true
+  }
+ ],
+ "asset_fails": [],
+ "lihfolk_bpy": "LihFolk plugin",
+ "tris_total": 2396,
+ "seats": [],
+ "align": [],
+ "A11_atlas": [
+  256,
+  256
+ ],
+ "palette_audit": true,
+ "passed": true,
+ "contentHash": "49ddfc06f348d7d471d0",
+ "fbx": {
+  "path": "assets/fbx/Gus_Outline.fbx",
+  "bytes": 118796,
+  "ok": true,
+  "fails": [],
+  "UnitScaleFactor": 100.0,
+  "models": [
+   "Gus_Cap_Outline",
+   "Gus_Flashlight_Outline",
+   "Gus_Head_Outline",
+   "Gus_LeftFoot_Outline",
+   "Gus_LeftHand_Outline",
+   "Gus_LeftLowerArm_Outline",
+   "Gus_LeftLowerLeg_Outline",
+   "Gus_LeftUpperArm_Outline",
+   "Gus_LeftUpperLeg_Outline",
+   "Gus_LowerTorso_Outline",
+   "Gus_RightFoot_Outline",
+   "Gus_RightHand_Outline",
+   "Gus_RightLowerArm_Outline",
+   "Gus_RightLowerLeg_Outline",
+   "Gus_RightUpperArm_Outline",
+   "Gus_RightUpperLeg_Outline",
+   "Gus_UpperTorso_Outline"
+  ],
+  "geometry_extents": [
+   [
+    0.705,
+    0.719,
+    0.779
+   ],
+   [
+    0.705,
+    0.72,
+    0.779
+   ],
+   [
+    0.718,
+    0.934,
+    1.454
+   ],
+   [
+    0.718,
+    0.934,
+    1.454
+   ],
+   [
+    0.755,
+    0.795,
+    0.944
+   ],
+   [
+    0.755,
+    0.795,
+    0.944
+   ],
+   [
+    0.767,
+    0.778,
+    1.037
+   ],
+   [
+    0.767,
+    0.792,
+    1.038
+   ],
+   [
+    0.871,
+    0.916,
+    1.013
+   ],
+   [
+    0.871,
+    0.916,
+    1.013
+   ],
+   [
+    0.873,
+    0.916,
+    1.422
+   ],
+   [
+    0.873,
+    0.916,
+    1.422
+   ],
+   [
+    0.875,
+    2.114,
+    2.447
+   ],
+   [
+    1.05,
+    1.958,
+    2.578
+   ],
+   [
+    1.105,
+    1.113,
+    2.353
+   ],
+   [
+    1.671,
+    2.019,
+    2.181
+   ],
+   [
+    2.143,
+    2.508,
+    2.793
+   ]
+  ]
+ },
+ "spec": "assets/blender/zz_outlines.py",
+ "notes": "Ink outlines (BLENDER LOOK): inverted hulls, Neon in Config.Outline.COLOUR, welded to their piece by KitService; Heist/Outlines picks which draw per tier (Config.Outline.TIERS).",
+ "turntable": "docs/art/turntables/Gus_Outline.png",
+ "seconds": 40.7
+}

@@ -2942,10 +2942,13 @@ else
 		end
 		-- Only the game's colliders keep the manifest fidelity (Config.Kit.COLLIDER_PIECES,
 		-- KitLib.gameCollision); every visual-only piece is built with Box.
-		local wantCollision = if GAME_COLLIDERS[name] then p.collision else "Box"
+		-- BLENDER LOOK: an outline hull keeps the upload's Default (it never collides or queries) and is not
+		-- anchored (it rides its piece's Weld)
+		local hull = p.outlineOf ~= nil
+		local wantCollision = if hull then "Default" elseif GAME_COLLIDERS[name] then p.collision else "Box"
 		local good = sizeErr(part.Size, p.size) <= SIZE_TOLERANCE
 			and part.CollisionFidelity.Name == wantCollision
-			and part.Anchored
+			and part.Anchored ~= hull
 			and part.CanCollide == p.canCollide
 			and isIdentity(part.PivotOffset)
 			and sizeErr(part.PivotOffset.Position, { -p.center[1], -p.center[2], -p.center[3] }) <= 1e-3
@@ -2982,13 +2985,21 @@ else
 	for _, model in groups do
 		local m = KitService.cloneModel(model, { atlas = "CornerShop" })
 		local count = 0
+		-- outline hulls live under their pieces (KitService welds them on), so an outline group's own model is
+		-- empty and a piece's group counts its pieces, not the hulls riding them
+		local want = 0
+		for _, piece in groupPieces[model] do
+			if PARTS[piece].outlineOf == nil then
+				want += 1
+			end
+		end
 		if m then
 			for _, d in m:GetDescendants() do
-				if d:IsA("MeshPart") then
+				if d:IsA("MeshPart") and d:GetAttribute("EH_OutlineOf") == nil then
 					count += 1
 				end
 			end
-			if count == #groupPieces[model] and m.WorldPivot == CFrame.identity then
+			if count == want and m.WorldPivot == CFrame.identity then
 				okModels += 1
 			else
 				check(
@@ -2997,7 +3008,7 @@ else
 						"B: model %s has %d pieces (want %d), pivot %s",
 						model,
 						count,
-						#groupPieces[model],
+						want,
 						tostring(m.WorldPivot)
 					)
 				)
@@ -3112,6 +3123,188 @@ else
 			part:Destroy()
 		else
 			check(false, "B2: clone " .. s[1])
+		end
+	end
+
+	------------------------------------------------------------------ B3. BLENDER LOOK (docs/audit/BLENDER_LOOK.md)
+	-- Outlines: every hull rides its piece (child + Weld), is quiet (no collision, query, touch or shadow), Neon in
+	-- Config.Outline.COLOUR, single-sided, and its mesh is inside out (EditableMesh: the faces wind toward the
+	-- mesh's centre, the stored normals point in); a placed piece moves and resizes its hull with it. Vertex AO:
+	-- the baked vertex colours arrived (EditableMesh colours below 1 on the sample pieces).
+	local CollectionService = game:GetService("CollectionService")
+	local ConfigO: any = ConfigB and ConfigB.Outline
+	local hullOk, hullBad, hullCount = 0, 0, 0
+	for _, name in sorted(PARTS) do
+		local p = PARTS[name]
+		if p.outlineOf == nil then
+			continue
+		end
+		hullCount += 1
+		local piece = KitService.clone(p.outlineOf)
+		local hull = piece and piece:FindFirstChild(name)
+		local weld = hull and hull:FindFirstChild("EH_OutlineWeld")
+		local good = hull ~= nil
+			and hull:IsA("MeshPart")
+			and weld ~= nil
+			and weld:IsA("Weld")
+			and (weld :: Weld).Part0 == piece
+			and (weld :: Weld).Part1 == hull
+			and not hull.Anchored
+			and not hull.CanCollide
+			and not hull.CanQuery
+			and not hull.CanTouch
+			and not hull.CastShadow
+			and hull.Massless
+			and hull.Material == Enum.Material.Neon
+			and hull.TextureID == ""
+			and not (hull :: any).DoubleSided
+			and CollectionService:HasTag(hull, "EH_Outline")
+			and (
+				ConfigO == nil
+				or hull.Color == Color3.fromRGB(ConfigO.COLOUR[1], ConfigO.COLOUR[2], ConfigO.COLOUR[3])
+			)
+		if good then
+			hullOk += 1
+		else
+			hullBad += 1
+			if hullBad <= 8 then
+				check(
+					false,
+					string.format(
+						"B3: outline %s on %s: found %s weld %s anchored %s collide %s shadow %s material %s",
+						name,
+						p.outlineOf,
+						tostring(hull ~= nil),
+						tostring(weld ~= nil),
+						tostring(hull and hull.Anchored),
+						tostring(hull and hull.CanCollide),
+						tostring(hull and hull.CastShadow),
+						tostring(hull and hull.Material.Name)
+					)
+				)
+			end
+		end
+		if piece then
+			piece:Destroy()
+		end
+	end
+	check(
+		hullCount > 0 and hullBad == 0,
+		string.format("B3: %d/%d outline hulls ride their piece, quiet, Neon ink, single-sided", hullOk, hullCount)
+	)
+	-- inside out: per face, the winding normal against the direction from the mesh centre, and the stored normal
+	local function insideOut(part: MeshPart): (number?, number?)
+		local okE, em = pcall(function()
+			return AssetService:CreateEditableMeshAsync(part.MeshContent)
+		end)
+		if not okE or em == nil then
+			line("info", "B3: EditableMesh unavailable for " .. part.Name .. ": " .. tostring(em))
+			return nil, nil
+		end
+		local e = em :: any
+		local centre, nv = Vector3.zero, 0
+		for _, v in e:GetVertices() do
+			centre += e:GetPosition(v)
+			nv += 1
+		end
+		centre /= math.max(nv, 1)
+		local inward, stored, tot = 0, 0, 0
+		for _, f in e:GetFaces() do
+			local vs = e:GetFaceVertices(f)
+			local a, b, c = e:GetPosition(vs[1]), e:GetPosition(vs[2]), e:GetPosition(vs[3])
+			local wn = (b - a):Cross(c - a)
+			local out = (a + b + c) / 3 - centre
+			if wn.Magnitude > 1e-9 and out.Magnitude > 1e-6 then
+				tot += 1
+				if wn:Dot(out) < 0 then
+					inward += 1
+				end
+				local ns = e:GetFaceNormals(f)
+				local n = ns[1] and e:GetNormal(ns[1])
+				if n and n:Dot(out) < 0 then
+					stored += 1
+				end
+			end
+		end
+		e:Destroy()
+		return if tot > 0 then inward / tot else nil, if tot > 0 then stored / tot else nil
+	end
+	for _, s in { "Rookie_Head", "Gus_UpperTorso", "Van", "CashBag", "Plate_4x4" } do
+		local piece = KitService.clone(s)
+		local hull = piece and piece:FindFirstChild(s .. "_Outline")
+		if hull and hull:IsA("MeshPart") then
+			local wound, normals = insideOut(hull)
+			if wound ~= nil then
+				check(
+					wound >= 0.8 and (normals or 0) >= 0.8,
+					string.format(
+						"B3: %s_Outline is inside out: %.0f %% of faces wind inward, %.0f %% of normals point in",
+						s,
+						wound * 100,
+						(normals or 0) * 100
+					)
+				)
+			end
+			local srcWound = insideOut(piece :: MeshPart)
+			if srcWound ~= nil then
+				check(srcWound <= 0.2, string.format("B3: %s itself faces out (%.0f %% inward)", s, srcWound * 100))
+			end
+			-- a placed piece carries its hull: PivotTo moves it, a resize keeps the margin
+			local before = (piece :: BasePart).CFrame:ToObjectSpace(hull.CFrame)
+			piece.Parent = workspace
+			piece:PivotTo(CFrame.new(40, 10, 40) * CFrame.Angles(0, 1, 0))
+			local after = (piece :: BasePart).CFrame:ToObjectSpace(hull.CFrame)
+			check(
+				(after.Position - before.Position).Magnitude < 1e-3,
+				string.format("B3: %s_Outline follows PivotTo", s)
+			)
+			local margin = hull.Size - (piece :: BasePart).Size;
+			(piece :: BasePart).Size *= 1.5
+			task.wait()
+			local m2 = hull.Size - (piece :: BasePart).Size
+			check((m2 - margin).Magnitude < 1e-3, string.format("B3: %s_Outline keeps its margin on a resize", s))
+		else
+			check(false, "B3: " .. s .. " carries its outline hull")
+		end
+		if piece then
+			piece:Destroy()
+		end
+	end
+	-- vertex AO: the colours the importer kept (EditableMesh) are below white in the creases
+	for _, s in { "Rookie_UpperTorso", "Gus_Head", "CashBag", "GoldStack", "Van" } do
+		local part = KitService.clone(s)
+		if part then
+			local okE, em = pcall(function()
+				return AssetService:CreateEditableMeshAsync(part.MeshContent)
+			end)
+			if okE and em then
+				local e = em :: any
+				local lo, n, sum = 1, 0, 0
+				for _, f in e:GetFaces() do
+					for _, cid in e:GetFaceColors(f) do
+						local c = e:GetColor(cid)
+						if c then
+							lo = math.min(lo, c.R)
+							sum += c.R
+							n += 1
+						end
+					end
+				end
+				e:Destroy()
+				check(
+					n > 0 and lo < 0.95,
+					string.format(
+						"B3: %s carries baked vertex AO (%d corner colours, darkest %.2f, mean %.2f)",
+						s,
+						n,
+						lo,
+						if n > 0 then sum / n else 0
+					)
+				)
+			else
+				line("info", "B3: EditableMesh unavailable for " .. s)
+			end
+			part:Destroy()
 		end
 	end
 

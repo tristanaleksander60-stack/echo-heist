@@ -152,10 +152,16 @@
  ],
  "palette_audit": true,
  "passed": true,
- "contentHash": "351443d56cd659e70d29",
+ "ao": {
+  "Xmas_Lights_8": [
+   0.6,
+   0.953
+  ]
+ },
+ "contentHash": "20e3a1d55168da26f8bb",
  "fbx": {
   "path": "assets/fbx/Xmas_Lights_8.fbx",
-  "bytes": 34940,
+  "bytes": 35532,
   "ok": true,
   "fails": [],
   "UnitScaleFactor": 100.0,
@@ -178,6 +184,6 @@
  },
  "spec": "assets/blender/xmas.py",
  "notes": "Fairy lights for an 8-stud wall: two swags of dark wire, 10 warm-white Neon bulbs (own part).",
- "seconds": 0.2,
- "turntable": "docs/art/turntables/Xmas_Lights_8.png"
+ "turntable": "docs/art/turntables/Xmas_Lights_8.png",
+ "seconds": 9.8
 }
