@@ -272,3 +272,13 @@ MicroProfiler run; these are estimates (±50 %).
 CutAway opens the building's roof, ceiling and camera-side storeys (client_engine M: all 6 groups of the L2 building
 hide from the shot), so the building costs fewer triangles from up there, not more; the far clones go light at tier 3+
 as in the diorama. The town is seen from higher up; at tier 4 the near ring is off anyway.
+
+## 12. Ink outlines and baked AO (2026-11-14, BLENDER LOOK; Saved v152)
+
+docs/audit/BLENDER_LOOK.md. Inverted-hull outlines (`<Piece>_Outline`, welded on by KitService) on characters, hero props
+and loot; the client `Heist/Outlines` shows, per tier, the nearest `Config.Outline.TIERS` units (characters 16 / 2 / 1 / 1,
+loot 8 / 1 / 1 / 1, hero props 14 / 0 / 0 / 0). perf_engine charges the worst case (cap x the heaviest unit) on top of
+the busiest view: tier 1 ~425.8k / 450k tris, ~369 / 450 draws; tier 2 ~294.9k / 300k, ~256 / 350; tier 3 ~148.2k /
+150k, ~211 / 250; tier 4 ~119.9k / 120k, ~184 / 200. Tier 2 is funded by the street front's window trims going at tier 2
+(`Config.Big.TRIM_OFF_TIER`). Highlights unchanged (5 / 5 / 5 / 2). Vertex AO / cavity in the kit's vertex colours: no
+triangles, no texture memory, no draws.

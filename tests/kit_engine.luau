@@ -3989,7 +3989,9 @@ else
 		hullCount > 0 and hullBad == 0,
 		string.format("B3: %d/%d outline hulls ride their piece, quiet, Neon ink, single-sided", hullOk, hullCount)
 	)
-	-- inside out: per face, the winding normal against the direction from the mesh centre, and the stored normal
+	-- inside out: the mesh's signed volume (sum over faces of a . (b x c) / 6) is negative when its faces wind inward
+	-- (exact for any closed shape, concave or not; the piece itself must read positive), and the stored normals
+	-- agree with the winding (the share of corners whose normal points along the face's winding normal)
 	local function insideOut(part: MeshPart): (number?, number?)
 		local okE, em = pcall(function()
 			return AssetService:CreateEditableMeshAsync(part.MeshContent)
@@ -3999,52 +4001,44 @@ else
 			return nil, nil
 		end
 		local e = em :: any
-		local centre, nv = Vector3.zero, 0
-		for _, v in e:GetVertices() do
-			centre += e:GetPosition(v)
-			nv += 1
-		end
-		centre /= math.max(nv, 1)
-		local inward, stored, tot = 0, 0, 0
+		local vol, agree, tot = 0, 0, 0
 		for _, f in e:GetFaces() do
 			local vs = e:GetFaceVertices(f)
 			local a, b, c = e:GetPosition(vs[1]), e:GetPosition(vs[2]), e:GetPosition(vs[3])
+			vol += a:Dot(b:Cross(c)) / 6
 			local wn = (b - a):Cross(c - a)
-			local out = (a + b + c) / 3 - centre
-			if wn.Magnitude > 1e-9 and out.Magnitude > 1e-6 then
-				tot += 1
-				if wn:Dot(out) < 0 then
-					inward += 1
-				end
-				local ns = e:GetFaceNormals(f)
-				local n = ns[1] and e:GetNormal(ns[1])
-				if n and n:Dot(out) < 0 then
-					stored += 1
+			if wn.Magnitude > 1e-9 then
+				for _, nid in e:GetFaceNormals(f) do
+					local n = e:GetNormal(nid)
+					if n then
+						tot += 1
+						if n:Dot(wn) > 0 then
+							agree += 1
+						end
+					end
 				end
 			end
 		end
 		e:Destroy()
-		return if tot > 0 then inward / tot else nil, if tot > 0 then stored / tot else nil
+		return vol, if tot > 0 then agree / tot else nil
 	end
 	for _, s in { "Rookie_Head", "Gus_UpperTorso", "Van", "CashBag", "Plate_4x4" } do
 		local piece = KitService.clone(s)
 		local hull = piece and piece:FindFirstChild(s .. "_Outline")
 		if hull and hull:IsA("MeshPart") then
-			local wound, normals = insideOut(hull)
-			if wound ~= nil then
+			local hv, hn = insideOut(hull)
+			local pv = insideOut(piece :: MeshPart)
+			if hv ~= nil and pv ~= nil then
 				check(
-					wound >= 0.8 and (normals or 0) >= 0.8,
+					hv < 0 and pv > 0 and (hn or 0) >= 0.9,
 					string.format(
-						"B3: %s_Outline is inside out: %.0f %% of faces wind inward, %.0f %% of normals point in",
+						"B3: %s_Outline is inside out: signed volume %.3f (its piece %.3f), %.0f %% of normals follow the winding",
 						s,
-						wound * 100,
-						(normals or 0) * 100
+						hv,
+						pv,
+						(hn or 0) * 100
 					)
 				)
-			end
-			local srcWound = insideOut(piece :: MeshPart)
-			if srcWound ~= nil then
-				check(srcWound <= 0.2, string.format("B3: %s itself faces out (%.0f %% inward)", s, srcWound * 100))
 			end
 			-- a placed piece carries its hull: PivotTo moves it, a resize keeps the margin
 			local before = (piece :: BasePart).CFrame:ToObjectSpace(hull.CFrame)

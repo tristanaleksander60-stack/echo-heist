@@ -1997,19 +1997,19 @@ local okHands, handsErr = pcall(function(): string
 		assert(#faces >= 4000 and #faces <= 8000, "rounded fingers + the ink hull: 4,000-8,000 triangles: " .. #faces)
 		local normalsAt: { [number]: Vector3 } = {}
 		local split, shades = 0, { math.huge, -math.huge }
-		local inkFaces, inkInward = 0, 0
+		local inkFaces, inkVol, shellVol = 0, 0, 0
 		for _, f in faces do
 			local vs = e:GetFaceVertices(f)
 			local ns = e:GetFaceNormals(f)
 			local cs = e:GetFaceColors(f)
 			local ink = e:GetColor(cs[1]).R < 0.2
+			local a, b, c = e:GetPosition(vs[1]), e:GetPosition(vs[2]), e:GetPosition(vs[3])
+			local sv = a:Dot(b:Cross(c)) / 6 -- signed volume: negative over the inward-wound hull
 			if ink then
 				inkFaces += 1
-				local a, b, c = e:GetPosition(vs[1]), e:GetPosition(vs[2]), e:GetPosition(vs[3])
-				local wn = (b - a):Cross(c - a)
-				if wn.Magnitude > 1e-12 and wn:Dot(e:GetNormal(ns[1])) < 0 then
-					inkInward += 1
-				end
+				inkVol += sv
+			else
+				shellVol += sv
 			end
 			for i, v in vs do
 				local n = e:GetNormal(ns[i])
@@ -2029,8 +2029,14 @@ local okHands, handsErr = pcall(function(): string
 		assert(split == 0, "smooth: one normal a vertex (" .. split .. " split corners)")
 		assert(shades[2] > 0.9 and shades[1] < 0.8, string.format("vertex shading %.2f-%.2f", shades[1], shades[2]))
 		assert(
-			math.abs(inkFaces * 2 - #faces) <= 2 and inkInward >= 0.95 * inkFaces,
-			string.format("the ink hull: %d of %d faces, %d wound inward", inkFaces, #faces, inkInward)
+			math.abs(inkFaces * 2 - #faces) <= 2 and inkVol < 0 and shellVol > 0,
+			string.format(
+				"the ink hull: %d of %d faces, signed volume %.6f (the glove %.6f)",
+				inkFaces,
+				#faces,
+				inkVol,
+				shellVol
+			)
 		)
 		local bad = 0
 		for _, v in e:GetVertices() do
@@ -2047,10 +2053,11 @@ local okHands, handsErr = pcall(function(): string
 		table.insert(
 			out,
 			string.format(
-				"glove %d tris (ink hull %d, %d inward), smooth, shade %.2f-%.2f",
+				"glove %d tris (ink hull %d, volume %.6f vs %.6f), smooth, shade %.2f-%.2f",
 				#faces,
 				inkFaces,
-				inkInward,
+				inkVol,
+				shellVol,
 				shades[1],
 				shades[2]
 			)
@@ -3191,7 +3198,12 @@ local okPolish, polishErr = pcall(function()
 		local h = stage:FindFirstChild("Hoardsworth")
 		if h and hoardParts == 0 then -- Hoardsworth on the stage: his kit meshes with the palette atlas texture
 			for _, d in h:GetDescendants() do
-				if d:IsA("BasePart") and string.sub(d.Name, 1, 12) == "Hoardsworth_" then
+				-- (BLENDER LOOK: the untextured Neon outline hulls ride the pieces; they are not pieces)
+				if
+					d:IsA("BasePart")
+					and string.sub(d.Name, 1, 12) == "Hoardsworth_"
+					and d:GetAttribute("EH_OutlineOf") == nil
+				then
 					hoardParts += 1
 					if d:IsA("MeshPart") and d.TextureID ~= "" then
 						textured += 1

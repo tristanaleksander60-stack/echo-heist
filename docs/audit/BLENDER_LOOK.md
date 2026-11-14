@@ -6,12 +6,27 @@ _2026-11-14, branch `blender-look`. Owner (after the studio-fidelity audit said 
 
 | Blender trick | In the game now | Cost |
 |---|---|---|
-| Black object outline (Workbench) | **Inverted-hull outlines** baked into the kit (`<Piece>_Outline`, 71 hulls), welded onto every character, hero prop and loot piece by KitService; a per-tier budget picks the nearest few (client `Heist/Outlines`) | triangles only: worst case per tier in the table below, all tiers inside their budget |
+| Black object outline (Workbench) | **Inverted-hull outlines** baked into the kit (`<Piece>_Outline`, 88 hulls), welded onto every character, hero prop and loot piece by KitService; a per-tier budget picks the nearest few (client `Heist/Outlines`) | triangles only: worst case per tier in the table below, all tiers inside their budget |
 | Cavity + ambient occlusion | **Baked into vertex colours** (greyscale, deterministic ray-cast AO + crease cavity) on every small and medium kit piece | 0 triangles, 0 texture memory, 0 draw calls |
 | Studio key / fill light | **Recipe A and C relit**: a warm key, a neutral cool-not-violet fill, no cool tint in the grade | none |
 | Bloom / filmic grade | Kept subtle (Bloom 0.25 / 16 / 1.6), Roblox's Default tonemapper (`ColorGradingEffect`), ColorCorrection Contrast / Saturation 0.1, a slightly warm tint | none |
 
-{{SHEET}}
+![assets before/after](blender_look/assets.png)
+
+`tools/blender/look_sheet.py --before <main's assets/fbx + default.project.json>` (the same 8 assets as the studio-fidelity sheet). Columns: the Blender preview the owner liked, the game **before** (Roblox-faithful `roblox_look.py`, main's FBX and Lighting), the game **after** (this branch's FBX with the AO, the hulls, this branch's Lighting), 2x close-ups. Graded with `frame_grade.py` (numbers under each tile, `blender_look/assets.json`):
+
+| Asset | near-black % before -> after | clipped % | warm share % before -> after |
+|---|---|---|---|
+| The Rookie | 1.1 -> 5.6 | 0 -> 0 | 5.4 -> 16.2 |
+| Gus | 0.8 -> 6.8 | 0 -> 0 | 2.3 -> 2.9 |
+| Van | 2.1 -> 8.8 | 0 -> 0 | 10.6 -> 10.6 |
+| Shop front | 2.3 -> 3.7 | 0 -> 0 | 1.8 -> 10.9 |
+| Cash register | 2.7 -> 3.2 | 0 -> 0 | 0.0 -> 6.0 |
+| Vault door | 3.1 -> 10.5 | 0 -> 0 | 0.9 -> 12.1 |
+| Job board | 4.9 -> 8.6 | 0 -> 0 | 7.4 -> 14.9 |
+| Street lamp | 0.3 -> 0.9 | 0 -> 0 | 0.3 -> 0.3 |
+
+The near-black rise is the ink line itself (and the AO in creases); the warm share rise is the cast gone (the cream sweater, the gold, the brass and the wood read as themselves, not lavender). Nothing clips.
 
 ## 1. Outlines (inverted hulls)
 
@@ -72,16 +87,64 @@ Recipe C (tiers 3-4, Config.Perf.SOFT_TOYBOX) follows: ColorShift_Top 255,240,22
 
 **Rim / fill.** First person already has the camera fill (Config.FirstPerson VIEWMODEL.FILL, warm, 0.55); third person already has your rim Highlight and halo light. Not changed. **Shadows:** Future (Realistic + PrioritizeLightingQuality, place_check) with GlobalShadows on; the hero SpotLight is the one shadowed lamp per view (tiers 1-2, budget 2); unchanged.
 
-{{FRAMES}}
+![frames before/after](blender_look/frames.png)
+
+`tools/blender/look_frames.py --frame G1|G3 --mode before|after` (the golden first-person scenes, rebuilt the way the server builds them, drawn Roblox-faithful: engine materials, the hulls, the project file's Lighting, the Atmosphere haze, the ColorCorrection; no golden-frame vignette or bloom):
+
+| Frame | near-black % | clipped % (<= 3) | warm share % | median luma |
+|---|---|---|---|---|
+| L1 first person, before | 1.04 | 0.01 | 48.5 | 0.213 |
+| L1 first person, after | 3.39 | 0.04 | 65.8 | 0.226 |
+| Hideout first person, before | 14.91 | 0.01 | 32.1 | 0.118 |
+| Hideout first person, after | 16.92 | 0.02 | 48.4 | 0.119 |
+
+Honest reading: the frames are approximations (Eevee shadows, the ACES curve for Roblox's tonemapper, one sun for the ClockTime moon); the glove's ink line is ~1.5 px and barely shows on the navy default glove at this size.
 
 ## 4. Perf
 
-{{PERF}}
+perf_engine on Saved **v152** (0 failures), the busiest view (L6, 4 players, 12 clones, 2 Gus). Outlines are charged at their **worst case** per tier (cap x the heaviest unit: a Rookie in the heaviest measured outfit, 3,392 hull triangles in 20 hulls; Gus 2,396; loot 480; hero 2,298), not at what the test camera happens to see:
+
+| | Tier 1 | Tier 2 | Tier 3 | Tier 4 |
+|---|---|---|---|---|
+| Triangles before (v151) | 335.5k | 293.0k | 144.3k | 116.0k |
+| Outlines, worst case | +90.3k | +7.3k | +3.9k | +3.9k |
+| Triangles after (v152) / budget | **425.8k / 450k** | **294.9k / 300k** | **148.2k / 150k** | **119.9k / 120k** |
+| Draws before -> after / budget | 223 -> 369 / 450 | 216 -> 256 / 350 | 190 -> 211 / 250 | 163 -> 184 / 200 |
+| Highlights | 5 (unchanged) | 5 | 5 | 2 |
+| Live client instances | 5,052 -> 5,795 / 25k | same | 5,160 -> 5,903 | same |
+
+Tier 2 is paid for by moving the BIG street front's window trims (~5k triangles) from tier 3 to tier 2 (`Config.Big.TRIM_OFF_TIER` 2). Tier 4 is within 0.1 % of its budget: the next lever is `Config.Outline.TIERS[4].loot = 0` (-0.5k) or the PERF §11 cuts. Vertex AO costs nothing (same vertices: POINT-domain colours add no splits). The FP gloves add 2 x 2,600 triangles that the busiest view does not count (they are on every first-person frame). Boot: 399 pieces in 6.4-9.0 s (was 311 in 8.2 s); hulls are not rebuilt (Default collision).
 
 ## 5. New ids
 
-{{IDS}}
+All 103 changed groups were re-uploaded under **new** ids (`kit_upload.py --only <groups> --new`, the old ids in each entry's `history`), plus 5 new outline groups; every FBX changed (the AO bake and `EXPORT_VERSION fbx-3`). Key ids:
+
+| Group | New id |
+|---|---|
+| Rookie | 86756265829494 |
+| Rookie_Outline | 107480234906445 |
+| Gus / Gus_Outline | 135313369122993 / 101707381342742 |
+| Hoardsworth / Hoardsworth_Outline | 100005434646500 / 119358420039099 |
+| Van / Van_Outline | 96131049506844 / 128130161022739 |
+| Prop_Outline | 95231108891730 |
+| VaultDoor | 114837635176204 |
+| Rookie_FPHands_R / _L | 137978212347264 / 115064898547862 |
+| CashBag / JobBoard | 94077162586981 / 122429059533879 |
+
+The rest are in `src/server/Kit/KitData.luau`. The container restarted mid-upload once; the run was resumed for the groups without an id, so at most one orphan asset (an interrupted create) exists in the creator's inventory, unreferenced.
 
 ## 6. Owner check in Studio
 
-{{CHECK}}
+Play Saved **v152** (Studio Play or the test place, not live):
+
+1. **Vertex colours render** (the one thing not measurable headless): a Rookie's armpits, the gap under Gus's arms, the bottom of a cash bag and the creases of the gold stack should be a little darker than the faces. If they look identical to v151, Roblox is not multiplying them: nothing breaks, tell the integrator.
+2. **Outlines**: a dark line round every character, Gus, loot, the van and the vault door (tier 1, PC). On a phone (tier 2) only the 2 nearest characters and the nearest loot; on tiers 3-4 one of each. No black shells floating when a clone fades, in first person, behind a cut-away wall or after loot is picked up.
+3. **First-person gloves**: a thin ink rim; no black flicker inside the glove when fingers bend.
+4. **Colour**: no blue-violet cast in shadow; skin and leather read warm; the street at night still reads as night. F9 screenshot through `frame_grade.py`: clipped <= 3 %.
+
+Knobs (all `src/shared/Config.luau`):
+- `Config.Outline.THICKNESS_SCALE` (1 = as built; 0.5 thinner, 1.5 thicker; applied once at boot on the templates),
+- `Config.Outline.COLOUR` (the ink),
+- `Config.Outline.TIERS` (per tier: characters / loot / hero units and the radius),
+- `Config.Outline.ENABLED` (false = no hulls attached at all),
+- the Lighting recipe A values are in the four project files (tests/unit/HeistLighting keeps them identical and inside `Config.Lighting.LIMITS`), recipe C in `Config.Perf.SOFT_TOYBOX`.
