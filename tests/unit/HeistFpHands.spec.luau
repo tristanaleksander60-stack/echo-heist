@@ -195,9 +195,10 @@ return function(test)
 		end
 		Assert.truthy(bone("Right", "Thumb1").hinge[1] < 0 and bone("Left", "Thumb1").hinge[1] > 0, "thumbs inside")
 		for _, side in { "Right", "Left" } do
-			-- rounded fingers need polygons: a 2,000-4,000 triangle glove (v125's capsules were 96 a segment)
+			-- rounded fingers need polygons: a 2,000-4,000 triangle glove (v125's capsules were 96 a segment), doubled
+			-- by its merged ink hull (BLENDER LOOK, fp_hands.py add_outline)
 			local g = piece(side, "Glove")
-			Assert.truthy(g.tris >= 2000 and g.tris <= 4000, side .. " glove tris " .. g.tris)
+			Assert.truthy(g.tris >= 4000 and g.tris <= 8000, side .. " glove tris " .. g.tris)
 			for _, wear in
 				{
 					FpRig.wears(outfit),

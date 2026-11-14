@@ -412,19 +412,20 @@
    "uploaded": "2026-11-14T00:33:07Z"
   },
   "Diamond": {
-   "assetId": 123994892461077,
+   "assetId": 111909007242342,
    "file": "assets/fbx/Diamond.fbx",
    "history": [
     92218379891720,
-    84763004298418
+    84763004298418,
+    123994892461077
    ],
    "moderation": "Approved",
    "pieces": [
     "Diamond"
    ],
    "revisionId": "1",
-   "sha256": "9d2cb5e2c2139c70d165a0de05561d20922e325793d4f0b0e8cab43d43ed3328",
-   "uploaded": "2026-11-13T21:43:48Z"
+   "sha256": "56920b145469329526e745ae72f28da936c62311966ec4aca7ee4449cce3f2b0",
+   "uploaded": "2026-11-14T00:43:04Z"
   },
   "Facade_8x10": {
    "assetId": 118968654559775,
@@ -1142,88 +1143,127 @@
    "sha256": "07cf7c2d5cf045b700f3d7c803a6538990cddf2bd1dd237e93f0fe5894bf4ccc",
    "uploaded": "2026-11-14T00:41:54Z"
   },
+  "Prop_Outline": {
+   "assetId": 95231108891730,
+   "file": "assets/fbx/Prop_Outline.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Candy_Outline",
+    "CashBag_Outline",
+    "CashRegister_Drawer_Outline",
+    "Diamond_Outline",
+    "GiantPresent_Outline",
+    "GoldBar_Outline",
+    "GoldStack_Outline",
+    "JobBoard_Outline",
+    "Plate_4x4_Outline",
+    "Present_Outline",
+    "Teddy_Outline",
+    "Toy_Outline",
+    "VanBakery_Outline",
+    "VanBakery_Paint_Outline",
+    "VanCamper_Outline",
+    "VanCamper_Paint_Outline",
+    "VanSecurity_Outline",
+    "VanSecurity_Paint_Outline",
+    "VaultDoor_Dial_Outline",
+    "VaultDoor_Door_Outline",
+    "VaultDoor_Frame_Outline",
+    "Wall_Door_8x12_Leaf_Outline"
+   ],
+   "revisionId": "1",
+   "sha256": "02c71cd9e75f27419c2761863d02ab49972528b037909e7dc6713c94523fa807",
+   "uploaded": "2026-11-14T00:43:16Z"
+  },
   "Railing_8": {
-   "assetId": 97213249834212,
+   "assetId": 111569268330088,
    "file": "assets/fbx/Railing_8.fbx",
    "history": [
     133295213985388,
-    86665121047524
+    86665121047524,
+    97213249834212
    ],
    "moderation": "Approved",
    "pieces": [
     "Railing_8"
    ],
    "revisionId": "1",
-   "sha256": "1ebfadf7b849c8164f2c0a2ee4ff6ae9a293242288d1e040287989408eda9621",
-   "uploaded": "2026-11-13T21:52:47Z"
+   "sha256": "cf385db6d1afb3de8014bb512864cff2532c12afc1652c3595455afa21ba2971",
+   "uploaded": "2026-11-14T00:43:27Z"
   },
   "Roof_Antenna": {
-   "assetId": 130737760434355,
+   "assetId": 75704691030870,
    "file": "assets/fbx/Roof_Antenna.fbx",
    "history": [
     140071074744392,
-    95089150684557
+    95089150684557,
+    130737760434355
    ],
    "moderation": "Approved",
    "pieces": [
     "Roof_Antenna"
    ],
    "revisionId": "1",
-   "sha256": "8f9bf0b06164927aa5ed9adac355d76e29949a8cacfa54c7a1bc89dfb035ca69",
-   "uploaded": "2026-11-13T21:52:59Z"
+   "sha256": "e831bc33794885a3d459e442ff4393efd1af2875781a2c88b5f230f6b6da2fd9",
+   "uploaded": "2026-11-14T00:43:38Z"
   },
   "Roof_Chimney": {
-   "assetId": 92761911516907,
+   "assetId": 117552242941067,
    "file": "assets/fbx/Roof_Chimney.fbx",
    "history": [
     135688851662342,
-    111464068878942
+    111464068878942,
+    92761911516907
    ],
    "moderation": "Approved",
    "pieces": [
     "Roof_Chimney"
    ],
    "revisionId": "1",
-   "sha256": "123da9e89fd48877dea4260b6bbb0b1f811dbfadeebde305dbfa1054fb7b6577",
-   "uploaded": "2026-11-13T21:53:07Z"
+   "sha256": "386ed0e494f7d628f5e60435f0a9c472cfaf75a5b2a0b94ff70a64c50f768256",
+   "uploaded": "2026-11-14T00:43:49Z"
   },
   "Roof_Gable": {
-   "assetId": 126077696219206,
+   "assetId": 75453519556022,
    "file": "assets/fbx/Roof_Gable.fbx",
    "history": [
     120853282152490,
-    121740055036828
+    121740055036828,
+    126077696219206
    ],
    "moderation": "Approved",
    "pieces": [
     "Roof_Gable"
    ],
    "revisionId": "1",
-   "sha256": "5dbe2d184bbafe31199f69c9cc603e45b29a6013587ba1b9b34d95133449e404",
-   "uploaded": "2026-11-13T21:53:24Z"
+   "sha256": "3843e259bbe0d2449c17e96b7c51a0ce504b407446bb8075e879bfc854dba75d",
+   "uploaded": "2026-11-14T00:44:05Z"
   },
   "Roof_WaterTank": {
-   "assetId": 89834975175667,
+   "assetId": 134530717457087,
    "file": "assets/fbx/Roof_WaterTank.fbx",
    "history": [
     119013245679077,
-    136109509258654
+    136109509258654,
+    89834975175667
    ],
    "moderation": "Approved",
    "pieces": [
     "Roof_WaterTank"
    ],
    "revisionId": "1",
-   "sha256": "7b6b48bdd1d134ea0e8346d519c34580a27742a6c5554b49b51409f47401fcce",
-   "uploaded": "2026-11-13T21:53:32Z"
+   "sha256": "508e15b3f78b30783b5336c311e97326cdda4799caf2172108ff1818abda09cc",
+   "uploaded": "2026-11-14T00:44:30Z"
   },
   "Rookie": {
-   "assetId": 117436482372643,
+   "assetId": 86756265829494,
    "file": "assets/fbx/Rookie.fbx",
    "history": [
     82283617669885,
     84963762775202,
-    112942630766773
+    112942630766773,
+    117436482372643
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1245,13 +1285,15 @@
     "Rookie_UpperTorso"
    ],
    "revisionId": "1",
-   "sha256": "77661ab69e6455a9e229921d05b1d2df244edea2ad011ed20cacb04bdbd79c58",
-   "uploaded": "2026-11-13T21:53:41Z"
+   "sha256": "eb715636e467e2a756c5e3861dff77975f3ab0704e4ade77c5b6c6b4efc943f6",
+   "uploaded": "2026-11-14T00:44:46Z"
   },
   "Rookie_FPArms": {
-   "assetId": 85778506585585,
+   "assetId": 117181502605777,
    "file": "assets/fbx/Rookie_FPArms.fbx",
-   "history": [],
+   "history": [
+    85778506585585
+   ],
    "moderation": "Approved",
    "pieces": [
     "Rookie_FP_Left_Block",
@@ -1299,14 +1341,15 @@
     "Rookie_FP_Right_Thumb3"
    ],
    "revisionId": "1",
-   "sha256": "17fc22c443776d8c2ca86f44e032ad1e0132a4d9c8e61f1ef01e0f527469209a",
-   "uploaded": "2026-11-13T16:58:36Z"
+   "sha256": "731f6a5b5a7e60f6f232cb078f780923dc0f2fa8606262b727679047f7c0778d",
+   "uploaded": "2026-11-14T00:45:11Z"
   },
   "Rookie_FPHands": {
-   "assetId": 116881809026939,
+   "assetId": 125925831391990,
    "file": "assets/fbx/Rookie_FPHands.fbx",
    "history": [
-    91903059283033
+    91903059283033,
+    116881809026939
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1323,39 +1366,44 @@
     "Rookie_FPH_Right_Stripes"
    ],
    "revisionId": "1",
-   "sha256": "bb20f556e474e3c1cc9f26595f21b3be4d7c8441cc68ec3e98e10983662a3d53",
-   "uploaded": "2026-11-13T20:09:24Z"
+   "sha256": "8ac473c954e05bea2b57bfd9b6b2d44554682b37f96779de96cdce75596a7cdb",
+   "uploaded": "2026-11-14T00:45:22Z"
   },
   "Rookie_FPHands_L": {
-   "assetId": 88214945057670,
+   "assetId": 115064898547862,
    "file": "assets/fbx/Rookie_FPHands_L.fbx",
-   "history": [],
+   "history": [
+    88214945057670
+   ],
    "moderation": "Approved",
    "pieces": [
     "Rookie_FPH_Left_Glove"
    ],
-   "revisionId": "3",
-   "sha256": "a6b842eb619c65db8868b31b7d39b3e643471ac534eea8620086fed3fae7b1d6",
-   "uploaded": "2026-11-13T20:17:17Z"
+   "revisionId": "1",
+   "sha256": "88726acd86fbb2553de558f98983b85ce3139ceac6a946380069f74a664cc961",
+   "uploaded": "2026-11-14T00:45:38Z"
   },
   "Rookie_FPHands_R": {
-   "assetId": 133672464815512,
+   "assetId": 137978212347264,
    "file": "assets/fbx/Rookie_FPHands_R.fbx",
-   "history": [],
+   "history": [
+    133672464815512
+   ],
    "moderation": "Approved",
    "pieces": [
     "Rookie_FPH_Right_Glove"
    ],
-   "revisionId": "3",
-   "sha256": "d8a20821c43d3651ce4c2308cdbb9282edd81c30d08d891f45917f398aa9815f",
-   "uploaded": "2026-11-13T20:17:34Z"
+   "revisionId": "1",
+   "sha256": "10dec1fdeb38ddd5f3e7de513bfed5cb7ac281c6b8776680e1dc52fcc450528c",
+   "uploaded": "2026-11-14T00:45:50Z"
   },
   "Rookie_Faces": {
-   "assetId": 95370184892727,
+   "assetId": 139486433186363,
    "file": "assets/fbx/Rookie_Faces.fbx",
    "history": [
     115892166045394,
-    74419983357916
+    74419983357916,
+    95370184892727
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1364,13 +1412,15 @@
     "Rookie_Face_Smug"
    ],
    "revisionId": "1",
-   "sha256": "af3be7a9dba8787598c3a2c97bd836aa154e42855f1a6901da68bead4ca67852",
-   "uploaded": "2026-11-13T21:53:58Z"
+   "sha256": "13388fc4039602ae0135cec3ba17e1b3bd4e7fba6be04a81fe0fb9b1d6b7560f",
+   "uploaded": "2026-11-14T00:46:06Z"
   },
   "Rookie_Hands": {
-   "assetId": 132448374836667,
+   "assetId": 96468686738079,
    "file": "assets/fbx/Rookie_Hands.fbx",
-   "history": [],
+   "history": [
+    132448374836667
+   ],
    "moderation": "Approved",
    "pieces": [
     "Rookie_Hand_Left_Fingers1",
@@ -1389,16 +1439,17 @@
     "Rookie_Hand_Right_Thumb2"
    ],
    "revisionId": "1",
-   "sha256": "b0f664e0f741c83b444650b27882bf55bc60391baf9c00700c7ffc0a07ec3058",
-   "uploaded": "2026-11-13T09:36:52Z"
+   "sha256": "b9d91c7121a3188fc1b92707fc324a21b566bc26c48fc3ce8da5ff8be0dc88c8",
+   "uploaded": "2026-11-14T00:46:17Z"
   },
   "Rookie_Outfits": {
-   "assetId": 82994551531308,
+   "assetId": 93650924555098,
    "file": "assets/fbx/Rookie_Outfits.fbx",
    "history": [
     88500778373104,
     92519027703361,
-    88229529672508
+    88229529672508,
+    82994551531308
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1426,14 +1477,57 @@
     "Rookie_Stripes_Torso"
    ],
    "revisionId": "1",
-   "sha256": "78ec7059fda87406b07ef3008e4d56f42f9fa4bcbb26d874c379a3e871504649",
-   "uploaded": "2026-11-13T21:54:15Z"
+   "sha256": "e4eea30356c26e1ca34469fe627ac1c39d7683b9cb22d0bf13527bee4da8564e",
+   "uploaded": "2026-11-14T00:46:34Z"
+  },
+  "Rookie_Outline": {
+   "assetId": 107480234906445,
+   "file": "assets/fbx/Rookie_Outline.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Rookie_Cap_Beanie_Outline",
+    "Rookie_Cap_Bobble_Outline",
+    "Rookie_Cap_Flat_Outline",
+    "Rookie_Cap_Santa_Outline",
+    "Rookie_Cap_Trapper_Outline",
+    "Rookie_Gloves_Knit_Left_Outline",
+    "Rookie_Gloves_Knit_Right_Outline",
+    "Rookie_Gloves_Leather_Left_Outline",
+    "Rookie_Gloves_Leather_Right_Outline",
+    "Rookie_Head_Outline",
+    "Rookie_LeftFoot_Outline",
+    "Rookie_LeftHand_Outline",
+    "Rookie_LeftLowerArm_Outline",
+    "Rookie_LeftLowerLeg_Outline",
+    "Rookie_LeftUpperArm_Outline",
+    "Rookie_LeftUpperLeg_Outline",
+    "Rookie_LowerTorso_Outline",
+    "Rookie_Mask_Eye_Outline",
+    "Rookie_RightFoot_Outline",
+    "Rookie_RightHand_Outline",
+    "Rookie_RightLowerArm_Outline",
+    "Rookie_RightLowerLeg_Outline",
+    "Rookie_RightUpperArm_Outline",
+    "Rookie_RightUpperLeg_Outline",
+    "Rookie_Scarf_Bandana_Outline",
+    "Rookie_Scarf_Chunky_Outline",
+    "Rookie_Scarf_Knot_Outline",
+    "Rookie_Scarf_Long_Outline",
+    "Rookie_Scarf_Long_Tail1_Outline",
+    "Rookie_Scarf_Long_Tail2_Outline",
+    "Rookie_UpperTorso_Outline"
+   ],
+   "revisionId": "1",
+   "sha256": "c34d79a6b889729b949912b7a2adf8d2412190eed27946aabf31cfe464367e18",
+   "uploaded": "2026-11-14T00:46:50Z"
   },
   "Rookie_Viewmodel": {
-   "assetId": 74916290022054,
+   "assetId": 117313132080917,
    "file": "assets/fbx/Rookie_Viewmodel.fbx",
    "history": [
-    122428778963718
+    122428778963718,
+    74916290022054
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1441,30 +1535,32 @@
     "Rookie_VM_RightArm"
    ],
    "revisionId": "1",
-   "sha256": "44de8f4b19bc89508310fa5d8f1ff68753c1a66a686b69a0e0c6545b1464e4ad",
-   "uploaded": "2026-11-13T09:36:59Z"
+   "sha256": "86e300415c12967663b759a414c7cba5d054b99ddd861c78f64096844801914f",
+   "uploaded": "2026-11-14T00:46:58Z"
   },
   "Rug_8x6": {
-   "assetId": 82859590116442,
+   "assetId": 137382287954330,
    "file": "assets/fbx/Rug_8x6.fbx",
    "history": [
     125310774976762,
-    80889573678359
+    80889573678359,
+    82859590116442
    ],
    "moderation": "Approved",
    "pieces": [
     "Rug_8x6"
    ],
    "revisionId": "1",
-   "sha256": "5c0a5fde51cf32ca328ac1ebe6b65f20f9dc9c6a44323e9694224df71cd33329",
-   "uploaded": "2026-11-13T21:54:40Z"
+   "sha256": "55871db905c902dc361f541b960a4f23575295c13e6998074bf6cc502e83c5ed",
+   "uploaded": "2026-11-14T00:47:09Z"
   },
   "Safe": {
-   "assetId": 140198850432653,
+   "assetId": 129258398957487,
    "file": "assets/fbx/Safe.fbx",
    "history": [
     79233328477157,
-    104849089977138
+    104849089977138,
+    140198850432653
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1472,60 +1568,64 @@
     "Safe_Door"
    ],
    "revisionId": "1",
-   "sha256": "88b0c3cd377a346cd61c614c434c7be865071c593b77e5164f35c7829c8d378d",
-   "uploaded": "2026-11-13T21:54:51Z"
+   "sha256": "80d2c56c798c8bf33ae88fc456754d0e1b9c33b103883738f1183f38e8f2a576",
+   "uploaded": "2026-11-14T00:47:20Z"
   },
   "Shelf_8x2": {
-   "assetId": 100156402199126,
+   "assetId": 139171538576250,
    "file": "assets/fbx/Shelf_8x2.fbx",
    "history": [
     106995284272490,
-    117554575124596
+    117554575124596,
+    100156402199126
    ],
    "moderation": "Approved",
    "pieces": [
     "Shelf_8x2"
    ],
    "revisionId": "1",
-   "sha256": "10ffab3310e9255f6ff3f3686a0525279929ff25ebcd120a8e1f3d4bd489d92c",
-   "uploaded": "2026-11-13T21:55:09Z"
+   "sha256": "03860a296d5524d774130e3a2bdb28a2a82a66fbb8d2444c098e463785a6b21b",
+   "uploaded": "2026-11-14T00:47:37Z"
   },
   "Shelf_Gondola_8x2": {
-   "assetId": 80389742818932,
+   "assetId": 135723555976954,
    "file": "assets/fbx/Shelf_Gondola_8x2.fbx",
    "history": [
     79459074467412,
-    97078667942616
+    97078667942616,
+    80389742818932
    ],
    "moderation": "Approved",
    "pieces": [
     "Shelf_Gondola_8x2"
    ],
    "revisionId": "1",
-   "sha256": "010863d616fd7e7463a9309a538ebac671862e19693f057d8b2a5d9afcabea4e",
-   "uploaded": "2026-11-13T21:55:17Z"
+   "sha256": "febfdf76420353ef3db9dde6f9ae7adf8592b88f7c03dfff5e8e532dc899cf74",
+   "uploaded": "2026-11-14T00:48:01Z"
   },
   "Shutter_8x10": {
-   "assetId": 129070904128222,
+   "assetId": 104429490428425,
    "file": "assets/fbx/Shutter_8x10.fbx",
    "history": [
     108000796857150,
-    136807303306498
+    136807303306498,
+    129070904128222
    ],
    "moderation": "Approved",
    "pieces": [
     "Shutter_8x10"
    ],
    "revisionId": "1",
-   "sha256": "419ea62865e56abbcf7f1b1f0373f836bcab3b0e15a50018319e71bccf3bc4bb",
-   "uploaded": "2026-11-13T21:55:28Z"
+   "sha256": "6bc0d668dfd5a43ae9bcf42496a2f2fea0150383993c7558f4a4a0afdb55b8ec",
+   "uploaded": "2026-11-14T00:48:17Z"
   },
   "Skyline_Far": {
-   "assetId": 97383573267308,
+   "assetId": 118178517483912,
    "file": "assets/fbx/Skyline_Far.fbx",
    "history": [
     110173936074097,
-    115423940816974
+    115423940816974,
+    97383573267308
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1533,15 +1633,16 @@
     "Skyline_Far_Windows"
    ],
    "revisionId": "1",
-   "sha256": "de685a4f94cfc6d4767c218395016213a1caf0769876809072a19d73bb5ab907",
-   "uploaded": "2026-11-13T21:55:37Z"
+   "sha256": "6770d763a2c6ae260eed0cbdb0100ff3843775e7cc48b3040712fdac1feab691",
+   "uploaded": "2026-11-14T00:48:42Z"
   },
   "Skyline_Near": {
-   "assetId": 83078211747845,
+   "assetId": 114377945704276,
    "file": "assets/fbx/Skyline_Near.fbx",
    "history": [
     126730984101373,
-    125259970824332
+    125259970824332,
+    83078211747845
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1549,30 +1650,32 @@
     "Skyline_Near_Windows"
    ],
    "revisionId": "1",
-   "sha256": "c5b1fadb0052a6c7bdb9ba0cc6110b7e4b9087964e968778e60df09cb6953cb7",
-   "uploaded": "2026-11-13T21:55:45Z"
+   "sha256": "c76a155678b39a438f88cba6bceb2b36785235fe68e64db205a24dbe9aba0473",
+   "uploaded": "2026-11-14T00:48:58Z"
   },
   "Snowman": {
-   "assetId": 84492090864397,
+   "assetId": 78016016964815,
    "file": "assets/fbx/Snowman.fbx",
    "history": [
     133411357677588,
-    100819198870887
+    100819198870887,
+    84492090864397
    ],
    "moderation": "Approved",
    "pieces": [
     "Snowman"
    ],
    "revisionId": "1",
-   "sha256": "88e95f1212545a14aa6d46bc90fe135b2603628b416e1cc1d41baea70980c8d5",
-   "uploaded": "2026-11-13T21:55:57Z"
+   "sha256": "a3d3db1760dde98ce4e298150304d3d8b6d2985b0b51d992a3d29bbd09b7e833",
+   "uploaded": "2026-11-14T00:49:14Z"
   },
   "Storefront_24x12": {
-   "assetId": 103589756688620,
+   "assetId": 138957717855642,
    "file": "assets/fbx/Storefront_24x12.fbx",
    "history": [
     94915564343762,
-    105804922661253
+    105804922661253,
+    103589756688620
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1580,15 +1683,16 @@
     "Storefront_24x12_Glass"
    ],
    "revisionId": "1",
-   "sha256": "d18e74fec7edaa5fba57b87eb05f410c10bacfd8ec32d4b10cfd12fb90aa4fc6",
-   "uploaded": "2026-11-13T21:56:14Z"
+   "sha256": "e9ee24773d531b0c4a6e807b50584a58a622cac49edb0b85c023acd7431dec39",
+   "uploaded": "2026-11-14T00:49:31Z"
   },
   "StreetLamp": {
-   "assetId": 74172021833368,
+   "assetId": 135330182455584,
    "file": "assets/fbx/StreetLamp.fbx",
    "history": [
     114758534176384,
-    78725831105629
+    78725831105629,
+    74172021833368
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1596,15 +1700,16 @@
     "StreetLamp_Bulb"
    ],
    "revisionId": "1",
-   "sha256": "b627500c1b59ddc798f401d32fd4a880c77292efad16f582c2499fcd72df9502",
-   "uploaded": "2026-11-13T21:56:22Z"
+   "sha256": "d867e3ecdef10e8a8b2eed7389391f9463be03c1dfa6294e61cc1dade6dcbccb",
+   "uploaded": "2026-11-14T00:49:39Z"
   },
   "Switch_Wall": {
-   "assetId": 110520012158728,
+   "assetId": 121369072030749,
    "file": "assets/fbx/Switch_Wall.fbx",
    "history": [
     103972170050223,
-    107929083427987
+    107929083427987,
+    110520012158728
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1613,30 +1718,32 @@
     "Switch_Wall_Lever"
    ],
    "revisionId": "1",
-   "sha256": "4ea9ae1cad1dfe8e7cc6f6e9748884390b0a95c4819a99e5883ee1743fbfe6e4",
-   "uploaded": "2026-11-13T21:56:39Z"
+   "sha256": "4e7836ee67dfe6c94215d9e7c464b16bae1a07aa413916d39b979d18e7554169",
+   "uploaded": "2026-11-14T00:49:55Z"
   },
   "Teddy": {
-   "assetId": 110355234232254,
+   "assetId": 106006550532735,
    "file": "assets/fbx/Teddy.fbx",
    "history": [
     81918134995952,
-    135753410335612
+    135753410335612,
+    110355234232254
    ],
    "moderation": "Approved",
    "pieces": [
     "Teddy"
    ],
    "revisionId": "1",
-   "sha256": "b1237516010ee430398716dfab460da9c7068fde081dc6e0c6cd4430c6b7c36f",
-   "uploaded": "2026-11-13T21:56:46Z"
+   "sha256": "6f8f92dff26aaf613761d8b82a97005ce6b56b31d7beb4d2814a28eadf4fe7d0",
+   "uploaded": "2026-11-14T00:50:03Z"
   },
   "TellerCounter_8x4": {
-   "assetId": 114631976535702,
+   "assetId": 107479975973011,
    "file": "assets/fbx/TellerCounter_8x4.fbx",
    "history": [
     120106658396251,
-    95697567571887
+    95697567571887,
+    114631976535702
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1644,60 +1751,64 @@
     "TellerCounter_8x4_Glass"
    ],
    "revisionId": "1",
-   "sha256": "c392e5708dcb79dc1f78f55dcfe08e7cc5997f2877f740ca69f4c27bf8b6dd1c",
-   "uploaded": "2026-11-13T21:57:04Z"
+   "sha256": "1a6a2c1a30856c735d9b4e26268697ef55e22238ffb9f11dd99c9128c5d450cd",
+   "uploaded": "2026-11-14T00:50:14Z"
   },
   "Toy": {
-   "assetId": 82553011748553,
+   "assetId": 82457814080799,
    "file": "assets/fbx/Toy.fbx",
    "history": [
     95871763460721,
-    99389544598476
+    99389544598476,
+    82553011748553
    ],
    "moderation": "Approved",
    "pieces": [
     "Toy"
    ],
    "revisionId": "1",
-   "sha256": "301294c9344df4cb38c3dafd1edf783ea6f09625bf3e353426f7e6560bc7b7ed",
-   "uploaded": "2026-11-13T21:57:11Z"
+   "sha256": "4bfeb3d0e7892ba4fdb9198c5409dc6d979b211c0045ed6f7f22d19dcb9ee40a",
+   "uploaded": "2026-11-14T00:50:25Z"
   },
   "ToySoldier": {
-   "assetId": 92522040332039,
+   "assetId": 88263675943255,
    "file": "assets/fbx/ToySoldier.fbx",
    "history": [
     74425849811909,
-    94577680082239
+    94577680082239,
+    92522040332039
    ],
    "moderation": "Approved",
    "pieces": [
     "ToySoldier"
    ],
    "revisionId": "1",
-   "sha256": "a4a9c68f6d0c05f71841985e64055816b898bfa9d507e635829fe1c71f249e5a",
-   "uploaded": "2026-11-13T21:57:20Z"
+   "sha256": "60488a57bdf494f5def11283348e874258789fa310c856264f8cb6c03ca65221",
+   "uploaded": "2026-11-14T00:50:33Z"
   },
   "Truss_8": {
-   "assetId": 134856665730479,
+   "assetId": 134132120356779,
    "file": "assets/fbx/Truss_8.fbx",
    "history": [
     119550315330150,
-    86986140959890
+    86986140959890,
+    134856665730479
    ],
    "moderation": "Approved",
    "pieces": [
     "Truss_8"
    ],
    "revisionId": "1",
-   "sha256": "eb49570c34e6052d3fb334bf3d21642a1788d3ff0fcfd5d8b12167c767c96502",
-   "uploaded": "2026-11-13T21:57:33Z"
+   "sha256": "a0ed22b12e3440b8484beb51b0ae5925d2accd177ce2b5206828e98c50b34beb",
+   "uploaded": "2026-11-14T00:50:41Z"
   },
   "Van": {
-   "assetId": 91214118094893,
+   "assetId": 96131049506844,
    "file": "assets/fbx/Van.fbx",
    "history": [
     140548604204136,
-    134631115032056
+    134631115032056,
+    91214118094893
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1706,15 +1817,16 @@
     "Van_Shelf"
    ],
    "revisionId": "1",
-   "sha256": "5891d94d1b3f55227d0fb68ff0e7dba97a0528f5373d3d9457fc0f2d694c9ce4",
-   "uploaded": "2026-11-13T21:57:46Z"
+   "sha256": "3aadff684f218dffdceb10c005f13a9e5fc470919a4d59d3c5ea17efd2092bff",
+   "uploaded": "2026-11-14T00:50:52Z"
   },
   "VanBakery": {
-   "assetId": 109715063315432,
+   "assetId": 79287224062930,
    "file": "assets/fbx/VanBakery.fbx",
    "history": [
     120383138607591,
-    115508194093770
+    115508194093770,
+    109715063315432
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1722,15 +1834,16 @@
     "VanBakery_Paint"
    ],
    "revisionId": "1",
-   "sha256": "d8aaeb557e945144caa1ab8ceee5baec9cdcc31672937a2dd10ef88500eae11d",
-   "uploaded": "2026-11-13T21:57:55Z"
+   "sha256": "4e04bacab3f61d9a2a21a146299f5f44162e348a904db9d0b2615db34736c7d2",
+   "uploaded": "2026-11-14T00:51:03Z"
   },
   "VanCamper": {
-   "assetId": 125492421708459,
+   "assetId": 120949837077321,
    "file": "assets/fbx/VanCamper.fbx",
    "history": [
     73993175838052,
-    105513487745319
+    105513487745319,
+    125492421708459
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1738,15 +1851,16 @@
     "VanCamper_Paint"
    ],
    "revisionId": "1",
-   "sha256": "98f181c139a54ffd92c411bbe57bdccfac65e9f32f0cb9f42df81c7746fc95a0",
-   "uploaded": "2026-11-13T21:58:04Z"
+   "sha256": "16177c52742dd4056219792b4373f2df42171f4446feba27234366ed4197e606",
+   "uploaded": "2026-11-14T00:51:14Z"
   },
   "VanSecurity": {
-   "assetId": 89230236510564,
+   "assetId": 135676152861475,
    "file": "assets/fbx/VanSecurity.fbx",
    "history": [
     104916947047329,
-    89257142956084
+    89257142956084,
+    89230236510564
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1754,15 +1868,29 @@
     "VanSecurity_Paint"
    ],
    "revisionId": "1",
-   "sha256": "7f5cfda3dbeada29101d0b37fe9906f24bcf412cf518759b053a24145345690f",
-   "uploaded": "2026-11-13T21:58:22Z"
+   "sha256": "41bce6f8289cc277c49e35e79b1856515ded6eae7cb7ca55367ce7bf1ef408e1",
+   "uploaded": "2026-11-14T00:51:22Z"
+  },
+  "Van_Outline": {
+   "assetId": 128130161022739,
+   "file": "assets/fbx/Van_Outline.fbx",
+   "history": [],
+   "moderation": "Approved",
+   "pieces": [
+    "Van_Outline",
+    "Van_Paint_Outline"
+   ],
+   "revisionId": "1",
+   "sha256": "1cef1c0e89599f238aeff502aa62161e6deed78ee3a27de2a15317fa5e2d2e2e",
+   "uploaded": "2026-11-14T00:51:29Z"
   },
   "VaultDoor": {
-   "assetId": 90916123034782,
+   "assetId": 114837635176204,
    "file": "assets/fbx/VaultDoor.fbx",
    "history": [
     130751008696945,
-    120607936918816
+    120607936918816,
+    90916123034782
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1773,45 +1901,48 @@
     "VaultDoor_Frame"
    ],
    "revisionId": "1",
-   "sha256": "51dd1d06800a51c2c9259bac903b89584b61ea20bd0a9c2d5168ad3e158352d6",
-   "uploaded": "2026-11-13T21:58:32Z"
+   "sha256": "dcabd3db532b337130bc1177a7f99aacd693437010d8b74fbfd0f4b973ecd540",
+   "uploaded": "2026-11-14T00:51:46Z"
   },
   "Wall_4x12": {
-   "assetId": 129950293860063,
+   "assetId": 127779648457651,
    "file": "assets/fbx/Wall_4x12.fbx",
    "history": [
     91704849968562,
-    104940642495967
+    104940642495967,
+    129950293860063
    ],
    "moderation": "Approved",
    "pieces": [
     "Wall_4x12"
    ],
    "revisionId": "1",
-   "sha256": "23231a5a7cb6dc038543e5fb3c47c3875aca89fa5209bc2b60c009fe9711033e",
-   "uploaded": "2026-11-13T21:58:41Z"
+   "sha256": "e5151962a3afcb2134766defd0fec62999366fd05ce57062510bf823fe6e7df9",
+   "uploaded": "2026-11-14T00:51:57Z"
   },
   "Wall_8x12": {
-   "assetId": 115341906985202,
+   "assetId": 89046828245100,
    "file": "assets/fbx/Wall_8x12.fbx",
    "history": [
     109706670469141,
-    101232676977388
+    101232676977388,
+    115341906985202
    ],
    "moderation": "Approved",
    "pieces": [
     "Wall_8x12"
    ],
    "revisionId": "1",
-   "sha256": "3cca540e13d1923b3b9cad4e3b052d39b2c95e0943e3d10c52f30a51847188c7",
-   "uploaded": "2026-11-13T21:58:59Z"
+   "sha256": "b029613316a7ccf28f801f8bbf5ead2ad8d72ccd8443a041100ed7871ecb48d5",
+   "uploaded": "2026-11-14T00:52:08Z"
   },
   "Wall_Door_8x12": {
-   "assetId": 78970058762921,
+   "assetId": 121746345170573,
    "file": "assets/fbx/Wall_Door_8x12.fbx",
    "history": [
     129679275921951,
-    104381286784049
+    104381286784049,
+    78970058762921
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1819,15 +1950,16 @@
     "Wall_Door_8x12_Leaf"
    ],
    "revisionId": "1",
-   "sha256": "ee4e8a1015e237a6f18d0af3cdc6ceec80cfd39cd2fd12280bb8d9693a1f832d",
-   "uploaded": "2026-11-13T21:59:17Z"
+   "sha256": "0e6eb7ea4009691590416450a1e3421563c98664dd23a41ae3c3214b8e770489",
+   "uploaded": "2026-11-14T00:52:16Z"
   },
   "Wall_Window_8x12": {
-   "assetId": 92063862260519,
+   "assetId": 79830361322868,
    "file": "assets/fbx/Wall_Window_8x12.fbx",
    "history": [
     121895973439896,
-    115198004858275
+    115198004858275,
+    92063862260519
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1835,30 +1967,32 @@
     "Wall_Window_8x12_Glass"
    ],
    "revisionId": "1",
-   "sha256": "8693ba1de580840c954fb40559d27b532b3b29943bde0e51a68ee5ceb78db4d8",
-   "uploaded": "2026-11-13T21:59:26Z"
+   "sha256": "c3f4d0a0add683b4e8e101b0a5a875c0c715d92cf957c62a6359690fb45c6545",
+   "uploaded": "2026-11-14T00:52:27Z"
   },
   "Xmas_Garland_8": {
-   "assetId": 118503380440504,
+   "assetId": 95993379360668,
    "file": "assets/fbx/Xmas_Garland_8.fbx",
    "history": [
     107208764811097,
-    138254307052690
+    138254307052690,
+    118503380440504
    ],
    "moderation": "Approved",
    "pieces": [
     "Xmas_Garland_8"
    ],
    "revisionId": "1",
-   "sha256": "969ea5403e79d8e402d2886763d41257c740dc06507511242068b52cfeaf7376",
-   "uploaded": "2026-11-13T21:59:39Z"
+   "sha256": "3d68381d4166441c4f5f3ab3323293a4930a24e318259bfab6fd6c481a4880dd",
+   "uploaded": "2026-11-14T00:52:50Z"
   },
   "Xmas_Lights_8": {
-   "assetId": 87918888769098,
+   "assetId": 110600931936546,
    "file": "assets/fbx/Xmas_Lights_8.fbx",
    "history": [
     72860800226381,
-    111188886326408
+    111188886326408,
+    87918888769098
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1866,45 +2000,48 @@
     "Xmas_Lights_8_Bulbs"
    ],
    "revisionId": "1",
-   "sha256": "f9262a6f9d5237fdda47fcf0640b87f6a0b719f487289d158ce8383fd4be9a0f",
-   "uploaded": "2026-11-13T21:59:51Z"
+   "sha256": "b9cf3f2ec1fbfc46e44f6a98f329d593a6a7a17db835a139d806b18299d4daae",
+   "uploaded": "2026-11-14T00:53:06Z"
   },
   "Xmas_SnowCap_8": {
-   "assetId": 92898379309723,
+   "assetId": 78711024760611,
    "file": "assets/fbx/Xmas_SnowCap_8.fbx",
    "history": [
     81617322246585,
-    133767598984586
+    133767598984586,
+    92898379309723
    ],
    "moderation": "Approved",
    "pieces": [
     "Xmas_SnowCap_8"
    ],
    "revisionId": "1",
-   "sha256": "5b27509ed2a574a508b8c0a91ac5f3a9f29db2ab4c2b001cf5a7d5a9e2f3db30",
-   "uploaded": "2026-11-13T22:00:07Z"
+   "sha256": "3dd1d75db498a2419c06f5dc238822f5ab56fc17bc8538ff93c1abdf42aa3cd6",
+   "uploaded": "2026-11-14T00:53:23Z"
   },
   "Xmas_SnowPile": {
-   "assetId": 113434074373622,
+   "assetId": 97631460882528,
    "file": "assets/fbx/Xmas_SnowPile.fbx",
    "history": [
     120035304040600,
-    107983160999909
+    107983160999909,
+    113434074373622
    ],
    "moderation": "Approved",
    "pieces": [
     "Xmas_SnowPile"
    ],
    "revisionId": "1",
-   "sha256": "45c5776058f2c5d4fe89dd18812918256489620b9e29caa13e7ea11210226f8e",
-   "uploaded": "2026-11-13T22:00:24Z"
+   "sha256": "9e96f784b1b819cbb636091af1661a64d1ded727b60b1a9d1e4081e2e74687a0",
+   "uploaded": "2026-11-14T00:53:47Z"
   },
   "Xmas_Tree": {
-   "assetId": 124344863175751,
+   "assetId": 106644682995418,
    "file": "assets/fbx/Xmas_Tree.fbx",
    "history": [
     133876647759950,
-    120898382868348
+    120898382868348,
+    124344863175751
    ],
    "moderation": "Approved",
    "pieces": [
@@ -1912,23 +2049,24 @@
     "Xmas_Tree_Lights"
    ],
    "revisionId": "1",
-   "sha256": "9dad01f4fea4811008867cf56231f325dd825443013c297bea94f8119b7ad876",
-   "uploaded": "2026-11-13T22:00:35Z"
+   "sha256": "fa4a83986a8463b68387a90d84d65ab5b59fb08a640bb07b7aebf2a5dad85c15",
+   "uploaded": "2026-11-14T00:54:03Z"
   },
   "Xmas_Wreath": {
-   "assetId": 130961132185956,
+   "assetId": 88208906179230,
    "file": "assets/fbx/Xmas_Wreath.fbx",
    "history": [
     122017207830894,
-    98376390329177
+    98376390329177,
+    130961132185956
    ],
    "moderation": "Approved",
    "pieces": [
     "Xmas_Wreath"
    ],
    "revisionId": "1",
-   "sha256": "f8f3b8f2806d9ad3b5e07c56144b4d4fc5cb390ca560fb8e77e4f075f24d7392",
-   "uploaded": "2026-11-13T22:00:47Z"
+   "sha256": "167bc68a4f2813ab90595a1dbc253695504d9f3b477caca7adb979e899509e51",
+   "uploaded": "2026-11-14T00:54:14Z"
   }
  },
  "note": "Generated by tools/kit_upload.py: one Open Cloud Model asset per kit model group (assets/fbx/<model>.fbx). Read by src/server/Kit/KitService.luau. Do not edit by hand.",

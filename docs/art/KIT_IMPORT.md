@@ -95,6 +95,23 @@ The table below shows what Studio must show after the import (generated from `as
 | Gus.fbx | Gus_RightUpperLeg | 0.84 x 0.94 x 0.799 | 80 | Box | SmoothPlastic | off | on | base |
 | Gus.fbx | Gus_UpperTorso | 2.72 x 2.07 x 2.435 | 624 | Box | SmoothPlastic | off | on | base |
 | Gus_DonutBox.fbx | Gus_DonutBox | 2.6 x 2.385 x 2.45 | 596 | Box | SmoothPlastic | off | on | base |
+| Gus_Outline.fbx | Gus_Cap_Outline | 2.114 x 0.875 x 2.447 | 128 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_Flashlight_Outline | 1.113 x 1.105 x 2.353 | 228 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_Head_Outline | 2.181 x 1.671 x 2.019 | 392 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_LeftFoot_Outline | 0.934 x 0.718 x 1.454 | 56 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_LeftHand_Outline | 0.72 x 0.779 x 0.705 | 80 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_LeftLowerArm_Outline | 0.778 x 1.037 x 0.767 | 84 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_LeftLowerLeg_Outline | 0.795 x 0.944 x 0.755 | 56 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_LeftUpperArm_Outline | 0.916 x 1.422 x 0.873 | 126 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_LeftUpperLeg_Outline | 0.916 x 1.013 x 0.871 | 56 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_LowerTorso_Outline | 2.578 x 1.05 x 1.958 | 296 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_RightFoot_Outline | 0.934 x 0.718 x 1.454 | 56 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_RightHand_Outline | 0.719 x 0.779 x 0.705 | 80 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_RightLowerArm_Outline | 0.792 x 1.038 x 0.767 | 84 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_RightLowerLeg_Outline | 0.795 x 0.944 x 0.755 | 56 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_RightUpperArm_Outline | 0.916 x 1.422 x 0.873 | 126 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_RightUpperLeg_Outline | 0.916 x 1.013 x 0.871 | 56 | Box | Neon | off | off | base |
+| Gus_Outline.fbx | Gus_UpperTorso_Outline | 2.793 x 2.143 x 2.508 | 436 | Box | Neon | off | off | base |
 | Gus_SantaHat.fbx | Gus_SantaHat | 2.24 x 1.781 x 2.736 | 360 | Box | SmoothPlastic | off | on | xmas |
 | Hide_CoatRack.fbx | Hide_CoatRack | 6 x 6.85 x 4.8 | 544 | Box | SmoothPlastic | off | on | base |
 | Hide_CoatStand.fbx | Hide_CoatStand | 4.747 x 7.13 x 4.67 | 572 | Box | SmoothPlastic | off | on | base |
@@ -119,6 +136,22 @@ The table below shows what Studio must show after the import (generated from `as
 | Hoardsworth.fbx | Hoardsworth_RightUpperArm | 0.632 x 1.379 x 0.571 | 180 | Box | SmoothPlastic | off | on | base |
 | Hoardsworth.fbx | Hoardsworth_RightUpperLeg | 0.44 x 1.62 x 0.418 | 80 | Box | SmoothPlastic | off | on | base |
 | Hoardsworth.fbx | Hoardsworth_UpperTorso | 1.88 x 2.7 x 1.379 | 552 | Box | SmoothPlastic | off | on | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_Hat_Outline | 1.72 x 1.49 x 1.556 | 254 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_Head_Outline | 1.345 x 1.51 x 1.298 | 528 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_LeftFoot_Outline | 0.493 x 0.705 x 1.331 | 98 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_LeftHand_Outline | 0.499 x 0.602 x 0.49 | 80 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_LeftLowerArm_Outline | 0.597 x 1.115 x 0.55 | 112 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_LeftLowerLeg_Outline | 0.434 x 1.689 x 0.412 | 56 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_LeftUpperArm_Outline | 0.68 x 1.453 x 0.643 | 126 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_LeftUpperLeg_Outline | 0.514 x 1.691 x 0.489 | 56 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_LowerTorso_Outline | 1.524 x 2.07 x 1.35 | 214 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_RightFoot_Outline | 0.493 x 0.705 x 1.331 | 98 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_RightHand_Outline | 0.498 x 0.602 x 0.49 | 80 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_RightLowerArm_Outline | 0.597 x 1.115 x 0.55 | 112 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_RightLowerLeg_Outline | 0.433 x 1.69 x 0.412 | 56 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_RightUpperArm_Outline | 0.708 x 1.452 x 0.643 | 126 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_RightUpperLeg_Outline | 0.514 x 1.691 x 0.489 | 56 | Box | Neon | off | off | base |
+| Hoardsworth_Outline.fbx | Hoardsworth_UpperTorso_Outline | 1.978 x 2.777 x 1.478 | 386 | Box | Neon | off | off | base |
 | Intro_House_A.fbx | Intro_House_A | 13.6 x 17.79 x 12.8 | 984 | Box | SmoothPlastic | off | on | base |
 | Intro_House_A.fbx | Intro_House_A_Windows | 12.16 x 7.3 x 6.48 | 108 | Box | Neon | off | off | base |
 | Intro_House_B.fbx | Intro_House_B | 16.6 x 17.05 x 12.8 | 984 | Box | SmoothPlastic | off | on | base |
@@ -158,6 +191,28 @@ The table below shows what Studio must show after the import (generated from `as
 | Plate_4x4.fbx | Plate_4x4 | 4 x 0.36 x 4 | 484 | Box | SmoothPlastic | on | off | base |
 | Plate_4x4.fbx | Plate_4x4_Ring | 3.3 x 0.14 x 3.3 | 288 | Box | Neon | off | off | base |
 | Present.fbx | Present | 2.101 x 2.021 x 1.9 | 388 | Box | SmoothPlastic | on | off | base |
+| Prop_Outline.fbx | Candy_Outline | 2.72 x 1.173 x 1.173 | 268 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | CashBag_Outline | 1.973 x 2.093 x 2.05 | 480 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | CashRegister_Drawer_Outline | 3.035 x 0.73 x 2.832 | 390 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | Diamond_Outline | 2.061 x 1.83 x 2.061 | 94 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | GiantPresent_Outline | 7.32 x 6.92 x 7.32 | 828 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | GoldBar_Outline | 2.087 x 0.658 x 1.086 | 52 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | GoldStack_Outline | 2.126 x 1.857 x 3.186 | 248 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | JobBoard_Outline | 5.49 x 7.411 x 1.097 | 590 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | Plate_4x4_Outline | 4.095 x 0.446 x 4.095 | 338 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | Present_Outline | 2.172 x 2.092 x 1.974 | 310 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | Teddy_Outline | 2.154 x 2.345 x 1.671 | 476 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | Toy_Outline | 1.675 x 2.873 x 1.258 | 464 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | VanBakery_Outline | 15.028 x 8.087 x 7.188 | 982 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | VanBakery_Paint_Outline | 14.087 x 5.971 x 6.854 | 114 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | VanCamper_Outline | 15.028 x 8.011 x 7.239 | 1344 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | VanCamper_Paint_Outline | 14.124 x 5.27 x 6.854 | 102 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | VanSecurity_Outline | 15.021 x 7.909 x 7.225 | 1322 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | VanSecurity_Paint_Outline | 14.134 x 5.436 x 6.854 | 100 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | VaultDoor_Dial_Outline | 4.674 x 4.674 x 1.049 | 662 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | VaultDoor_Door_Outline | 12.082 x 8.787 x 3.587 | 2298 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | VaultDoor_Frame_Outline | 16.127 x 12.146 x 3.789 | 1470 | Box | Neon | off | off | base |
+| Prop_Outline.fbx | Wall_Door_8x12_Leaf_Outline | 6.09 x 10.05 x 1.409 | 354 | Box | Neon | off | off | base |
 | Railing_8.fbx | Railing_8 | 8 x 3.6 x 0.24 | 60 | Box | SmoothPlastic | off | off | base |
 | Roof_Antenna.fbx | Roof_Antenna | 4.4 x 9 x 1 | 72 | Box | SmoothPlastic | off | off | base |
 | Roof_Chimney.fbx | Roof_Chimney | 2.9 x 6.2 x 2.9 | 204 | Box | SmoothPlastic | off | off | base |
@@ -233,8 +288,8 @@ The table below shows what Studio must show after the import (generated from `as
 | Rookie_FPHands.fbx | Rookie_FPH_Right_CuffLeather | 0.081 x 0.073 x 0.042 | 816 | Box | SmoothPlastic | off | off | base |
 | Rookie_FPHands.fbx | Rookie_FPH_Right_Sleeve | 0.084 x 0.076 x 0.519 | 840 | Box | SmoothPlastic | off | off | base |
 | Rookie_FPHands.fbx | Rookie_FPH_Right_Stripes | 0.071 x 0.064 x 0.06 | 640 | Box | SmoothPlastic | off | off | base |
-| Rookie_FPHands_L.fbx | Rookie_FPH_Left_Glove | 0.101 x 0.053 x 0.239 | 2600 | Box | SmoothPlastic | off | off | base |
-| Rookie_FPHands_R.fbx | Rookie_FPH_Right_Glove | 0.101 x 0.053 x 0.239 | 2600 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPHands_L.fbx | Rookie_FPH_Left_Glove | 0.104 x 0.056 x 0.242 | 5200 | Box | SmoothPlastic | off | off | base |
+| Rookie_FPHands_R.fbx | Rookie_FPH_Right_Glove | 0.104 x 0.056 x 0.242 | 5200 | Box | SmoothPlastic | off | off | base |
 | Rookie_Faces.fbx | Rookie_Face_Busted | 1.119 x 0.827 x 0.261 | 248 | Box | SmoothPlastic | off | off | base |
 | Rookie_Faces.fbx | Rookie_Face_Shocked | 1.119 x 0.983 x 0.262 | 544 | Box | SmoothPlastic | off | off | base |
 | Rookie_Faces.fbx | Rookie_Face_Smug | 1.119 x 0.848 x 0.319 | 680 | Box | SmoothPlastic | off | off | base |
@@ -274,6 +329,37 @@ The table below shows what Studio must show after the import (generated from `as
 | Rookie_Outfits.fbx | Rookie_Stripes_LeftArm | 0.658 x 0.416 x 0.594 | 160 | Box | SmoothPlastic | off | on | base |
 | Rookie_Outfits.fbx | Rookie_Stripes_RightArm | 0.658 x 0.416 x 0.594 | 160 | Box | SmoothPlastic | off | on | base |
 | Rookie_Outfits.fbx | Rookie_Stripes_Torso | 2.028 x 0.62 x 1.541 | 384 | Box | SmoothPlastic | off | on | base |
+| Rookie_Outline.fbx | Rookie_Cap_Beanie_Outline | 2.241 x 1.083 x 2.241 | 268 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Cap_Bobble_Outline | 2.204 x 1.55 x 2.204 | 338 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Cap_Flat_Outline | 2.184 x 0.748 x 2.42 | 234 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Cap_Santa_Outline | 2.362 x 1.8 x 2.789 | 338 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Cap_Trapper_Outline | 2.325 x 1.559 x 2.164 | 198 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Gloves_Knit_Left_Outline | 0.732 x 0.321 x 0.703 | 116 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Gloves_Knit_Right_Outline | 0.737 x 0.321 x 0.703 | 116 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Gloves_Leather_Left_Outline | 0.792 x 0.362 x 0.815 | 92 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Gloves_Leather_Right_Outline | 0.792 x 0.362 x 0.815 | 92 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Head_Outline | 2.201 x 1.73 x 1.963 | 450 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_LeftFoot_Outline | 0.86 x 0.728 x 1.4 | 106 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_LeftHand_Outline | 0.698 x 0.714 x 0.643 | 170 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_LeftLowerArm_Outline | 0.691 x 0.827 x 0.638 | 84 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_LeftLowerLeg_Outline | 0.772 x 0.709 x 0.807 | 84 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_LeftUpperArm_Outline | 0.756 x 1.107 x 0.72 | 126 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_LeftUpperLeg_Outline | 0.815 x 0.732 x 0.777 | 56 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_LowerTorso_Outline | 1.893 x 0.749 x 1.314 | 128 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Mask_Eye_Outline | 2.085 x 0.789 x 1.825 | 228 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_RightFoot_Outline | 0.86 x 0.728 x 1.4 | 106 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_RightHand_Outline | 0.698 x 0.714 x 0.643 | 170 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_RightLowerArm_Outline | 0.692 x 0.827 x 0.636 | 84 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_RightLowerLeg_Outline | 0.772 x 0.709 x 0.807 | 84 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_RightUpperArm_Outline | 0.756 x 1.107 x 0.72 | 126 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_RightUpperLeg_Outline | 0.816 x 0.732 x 0.777 | 56 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Scarf_Bandana_Outline | 1.671 x 0.855 x 1.845 | 178 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Scarf_Chunky_Outline | 2.027 x 0.555 x 1.752 | 224 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Scarf_Knot_Outline | 1.786 x 0.864 x 1.77 | 198 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Scarf_Long_Outline | 1.786 x 1.239 x 1.754 | 156 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Scarf_Long_Tail1_Outline | 0.883 x 0.951 x 1.136 | 36 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_Scarf_Long_Tail2_Outline | 1.347 x 0.627 x 1.415 | 50 | Box | Neon | off | off | base |
+| Rookie_Outline.fbx | Rookie_UpperTorso_Outline | 2.077 x 1.338 x 1.691 | 540 | Box | Neon | off | off | base |
 | Rookie_Viewmodel.fbx | Rookie_VM_LeftArm | 0.654 x 1.258 x 0.635 | 460 | Box | SmoothPlastic | off | off | base |
 | Rookie_Viewmodel.fbx | Rookie_VM_RightArm | 0.654 x 1.258 x 0.635 | 460 | Box | SmoothPlastic | off | off | base |
 | Rug_8x6.fbx | Rug_8x6 | 8.64 x 0.036 x 6 | 264 | Box | SmoothPlastic | off | off | base |
@@ -309,6 +395,8 @@ The table below shows what Studio must show after the import (generated from `as
 | VanCamper.fbx | VanCamper_Paint | 14 x 5.15 x 6.8 | 172 | Box | SmoothPlastic | off | on | base |
 | VanSecurity.fbx | VanSecurity | 14.9 x 7.786 x 7.06 | 2204 | Box | SmoothPlastic | off | on | base |
 | VanSecurity.fbx | VanSecurity_Paint | 14 x 5.3 x 6.8 | 168 | Box | SmoothPlastic | off | on | base |
+| Van_Outline.fbx | Van_Outline | 15.028 x 7.79 x 7.287 | 1022 | Box | Neon | off | off | base |
+| Van_Outline.fbx | Van_Paint_Outline | 14.138 x 5.778 x 6.854 | 98 | Box | Neon | off | off | base |
 | VaultDoor.fbx | VaultDoor_Dial | 4.55 x 4.55 x 0.924 | 1104 | Box | SmoothPlastic | off | on | base |
 | VaultDoor.fbx | VaultDoor_DialFace | 2.16 x 2.16 x 0.06 | 384 | Box | SmoothPlastic + SA | off | off | base |
 | VaultDoor.fbx | VaultDoor_DialRing | 3.5 x 3.5 x 0.24 | 384 | Box | Neon | off | off | base |
@@ -329,7 +417,7 @@ The table below shows what Studio must show after the import (generated from `as
 | Xmas_Tree.fbx | Xmas_Tree_Lights | 4.119 x 5.64 x 4.033 | 400 | Box | Neon | off | off | xmas |
 | Xmas_Wreath.fbx | Xmas_Wreath | 2.826 x 3.56 x 1.135 | 548 | Box | SmoothPlastic | off | off | xmas |
 
-**103 FBX files, 311 MeshParts, 143,146 triangles in all.** Christmas layer: 19 parts.
+**108 FBX files, 399 MeshParts, 172,818 triangles in all.** Christmas layer: 19 parts.
 <!-- kit-table:end -->
 
 ---
@@ -630,5 +718,5 @@ Use this if the meshes, sizes or collision do not survive `rojo build`. Then we 
    ```
    Then it sets Size, TextureID, Material, PivotOffset and the other flags from the manifest. Each heist clones the cached parts.
 <!-- fallback-cost:start -->
-4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 311 MeshParts and 143,146 triangles about **6.9 s** at boot (generated by kit_docs.py). Boot only, never per heist.
+4. Cost: about 22 ms per mesh plus 0.27 ms per 1,000 triangles [UNVERIFIED, DevForum report]: for this kit's 399 MeshParts and 172,818 triangles about **8.8 s** at boot (generated by kit_docs.py). Boot only, never per heist.
 <!-- fallback-cost:end -->
