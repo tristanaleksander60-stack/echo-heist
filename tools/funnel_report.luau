@@ -35,6 +35,7 @@ local heists, clears = {}, {}
 local created = {}
 local topKeys = {}
 local sample: any = nil
+local extra = { cam = {}, fov = {}, reduced = {}, music = {}, rolled = {}, purch = {}, dailyStreak = {}, unlocked = {}, ftueByHeists = {} }
 local t0 = os.clock()
 for i, key in keys do
 	if os.clock() - t0 > 200 then
@@ -69,6 +70,28 @@ for i, key in keys do
 				end
 			end
 		end
+		local se = h.settings or {}
+		local function bump(t, k)
+			t[tostring(k)] = (t[tostring(k)] or 0) + 1
+		end
+		bump(extra.cam, se.cameraMode)
+		bump(extra.fov, se.fpFov)
+		bump(extra.reduced, se.reducedMotion)
+		bump(extra.music, se.musicVolume)
+		bump(extra.rolled, h.outfitRolled)
+		local purch = 0
+		for _ in (d.Purchases or {}) do
+			purch += 1
+		end
+		bump(extra.purch, math.min(purch, 3))
+		local dl = h.daily or {}
+		bump(extra.dailyStreak, math.min(dl.streak or dl.best or 0, 5))
+		local un = 0
+		for _ in (h.unlocked or {}) do
+			un += 1
+		end
+		bump(extra.unlocked, un)
+		bump(extra.ftueByHeists, tostring(h.ftueStep) .. "/" .. tostring(math.min((h.stats or {}).heists or 0, 2)))
 		for b in (h.badges or {}) do
 			badges[b] = (badges[b] or 0) + 1
 		end
@@ -108,4 +131,13 @@ return table.concat({
 	"level clears: " .. dump(levelClears),
 	"badges: " .. dump(badges),
 	"created (UTC day): " .. dump(created),
+	"cameraMode: " .. dump(extra.cam),
+	"fpFov: " .. dump(extra.fov),
+	"reducedMotion: " .. dump(extra.reduced),
+	"musicVolume: " .. dump(extra.music),
+	"outfitRolled: " .. dump(extra.rolled),
+	"purchases: " .. dump(extra.purch),
+	"daily streak: " .. dump(extra.dailyStreak),
+	"unlocked count: " .. dump(extra.unlocked),
+	"ftueStep/heists: " .. dump(extra.ftueByHeists),
 }, "\n")
