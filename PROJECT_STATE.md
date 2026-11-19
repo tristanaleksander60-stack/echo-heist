@@ -679,3 +679,7 @@ _Last updated: 2026-11-13 (SKY track: northern lights)_
 - The ragdoll repo branch `release` (HEAD 8029e09, pushed) holds 0.20.0 + World/Feel v2 + UI v2. The final review workflow was stopped before its fix stage because credits ran out, so it made no commits. Nothing has run in Studio yet.
 - Owner next: test with TEST-ALT.md in the ragdoll repo (SelfTest + LayoutCheck), then publish with "Shut Down All Servers". Owner-side items are listed in the ragdoll CLAUDE.md "Open with the owner".
 - 2026-11-19: The RAGDOLL HAVOC v3 plan is consolidated in the ragdoll repo at `docs/V3_PLAN.md` (branch `release`); its CLAUDE.md "NEXT: v3" section points to it. When the owner writes "klar", run that plan from its State line.
+- 2026-11-19 evening, RAGDOLL HAVOC v3 run ("klar"):
+  - Ragdoll `release` is now v0.21.0, with LOOK_V3, UI_3D, cars, the animal events, the BIG RED BUTTON and the landscape. All code; nothing run in Studio.
+  - Research is in `docs/ragdoll-havoc/research/RESEARCH_V3.md`. The key owner action is the maturity questionnaire: the game is listed "Minimal 16+" and should be all ages.
+  - The Studio steps are listed under PC TODO in ragdoll `docs/V3_PLAN.md`.
