@@ -93,6 +93,33 @@ Then **re-rank BUILD_V3 phases B-D by that evidence** before building, and show 
    - **The hit card** sits under the crosshair while aiming at a body: line 1 is the body region in yellow ("Face, skull, jaw, chest"), line 2 is "Name · state · N% blood" (we have HitInfo, so restyle it to a black box with a yellow left bar).
    - V switches the view, and first person is the default for guns on PC.
 
+7. **All UI 3D and interactive** (owner, 19 Nov: "gør alt UI 3D interactive"). Module `Client/Ui3D`, switch `Config.UI_3D`.
+   - **Weapon cards:**
+     - Each card shows the real weapon model in a ViewportFrame (the N7Assets.Weapons mesh), slowly turning.
+     - Hover or touch-drag spins it, and a click fires a dry-fire animation and sound in the card.
+     - Locked cards show the model darkened under a lock.
+     - The bars (POWER, RATE, REACH) fill in when the card opens.
+   - **Event cards:** a live 3D preview in the viewport (a mini tornado, falling mini dummies, a black hole spinning) on hover or select. A static picture when the card is not in view.
+   - **Map cards:** a 3D diorama of the map (a low-detail clone, under 300 parts) that turns, with a hover zoom. ENTER plays a short camera fly-in before the teleport.
+   - **Shop and offers:** the item turns in 3D. A purchase plays a "drop into your hands" animation.
+   - **HUD buttons:**
+     - pressed depth (a 4 px drop and a shadow), a hover tilt of up to 6 degrees following the mouse, a spring back;
+     - the icons are small 3D renders (ViewportFrame snapshots, static, so no cost);
+     - the hotbar slots show the 3D weapon, and the selected slot lifts 6 px and its weapon turns.
+   - **The dummy inspector:**
+     - In the Scan view (V), click a dummy to open a turning 3D copy of it.
+     - The hit regions light up, with the hit card beside it.
+     - Drag to rotate, scroll to zoom.
+   - **World UI:**
+     - In-world screens use SurfaceGui with real buttons you walk up to, as the leader's map board does: a map board, an event board, a weapon rack where you click the gun on the wall to equip it.
+     - ProximityPrompt E for pads, the button and vehicles.
+   - **Windows:** they open with a short 3D swing (rotate from 8 degrees to 0, scale 0.96 to 1, 0.18 s) and close the reverse way. The gamepad focus ring moves with a spring.
+   - **Performance budget:**
+     - at most 6 live (turning) ViewportFrames at once on PC and 2 on phones;
+     - everything else is static (render once, then stop updating);
+     - viewports pause when their window is closed or off screen;
+     - test with `FX_CAPS` per tier, and LayoutCheck covers the new pieces.
+
 ### Phase B: maps (local session with Studio MCP and the Creator Store)
 Every map is a Model under `ServerStorage.Maps`, streamed in for that player's lab (per-player lab stays). A Maps window shows a screenshot and ENTER. There are 6 maps, each with **at least 25 props and 3 activities**.
 
