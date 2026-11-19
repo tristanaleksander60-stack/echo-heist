@@ -673,3 +673,4 @@ _Last updated: 2026-11-13 (SKY track: northern lights)_
 - **Owner decision (2026-11-19): Heist Yourself is PAUSED** (stays live on v152 with its badges, no new features). Full focus on RAGDOLL HAVOC (docs/ragdoll-havoc/MASTER_PLAN.md).
 - **RAGDOLL HAVOC (2026-11-19):** repo tristanaleksander60-stack/ragdoll attached. All MASTER_PLAN phases built on branches fase0 -> fase1 -> fase2 -> fase3 (not merged, not published, not yet run in Studio). Owner tests fase0 first.
 - **RAGDOLL HAVOC release 0.20.0 (2026-11-19):** branch `release` (head 0c3bba0) in tristanaleksander60-stack/ragdoll = all phases + bug hunt (6 fixes incl. eco never saved) + throw-your-friend combos + Shop.OFFERS selling (ids 0). Owner tests once with TEST-ALT.md, then publishes.
+- **RAGDOLL HAVOC release (2026-11-19):** `release` 8029e09 = 0.20.0 + World/Feel v2 (WORLD_V2, FEEL_V2) + UI v2 (UI_V2); all changed files compile, LihFolk 0 errors. Owner tests once with TEST-ALT.md.
