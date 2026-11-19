@@ -678,3 +678,4 @@ _Last updated: 2026-11-13 (SKY track: northern lights)_
 ## 2026-11-19: RAGDOLL HAVOC release ready for the owner's test
 - The ragdoll repo branch `release` (HEAD 8029e09, pushed) holds 0.20.0 + World/Feel v2 + UI v2. The final review workflow was stopped before its fix stage because credits ran out, so it made no commits. Nothing has run in Studio yet.
 - Owner next: test with TEST-ALT.md in the ragdoll repo (SelfTest + LayoutCheck), then publish with "Shut Down All Servers". Owner-side items are listed in the ragdoll CLAUDE.md "Open with the owner".
+- 2026-11-19: The RAGDOLL HAVOC v3 plan is consolidated in the ragdoll repo at `docs/V3_PLAN.md` (branch `release`); its CLAUDE.md "NEXT: v3" section points to it. When the owner writes "klar", run that plan from its State line.
