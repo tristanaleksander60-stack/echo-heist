@@ -23,6 +23,41 @@ Reference: Hyper Realistic Ragdoll gameplay captures (80k CCU), see LOOK_PLAN.md
 
 ## The build, in phases (each behind a Config switch, `LOOK_V3`)
 
+### Phase 0: research first (about 1 hour, before any build)
+Run it on the PC session, where WebSearch and WebFetch are not blocked by the cloud proxy. Keep separate:
+- what you **saw** (a page read, a video watched, a capture);
+- what only came from a search snippet.
+
+1. **Reddit:**
+   - r/roblox, r/RobloxDevelopers, r/robloxgamedev, r/GoodRobloxGames, r/robloxhackers (only for what exploiters target);
+   - search "ragdoll", "hyper realistic ragdoll", "ragdoll game", "physics sandbox", "crash test";
+   - collect: what players love, what they complain about (lag, pay-to-win, boring after X minutes), which features they ask for.
+2. **TikTok and YouTube Shorts:**
+   - #robloxragdoll, #ragdollphysics, #hyperrealisticragdoll, #robloxphysics, "roblox ragdoll funny";
+   - note the 20 most-viewed clips from the last 30 days: what happens in the first 2 s, which map, prop or vehicle, and whether it is solo or with friends;
+   - this tells us which activities to build first.
+3. **YouTube long form:**
+   - the top 10 videos on Hyper Realistic Ragdoll, Ragdoll Research, BloxNG and Ragdoll Sandbox;
+   - note what the YouTuber does for the first 3 minutes, and what they call boring or amazing.
+4. **Roblox communities:**
+   - the competitor groups and Discord servers (update logs, suggestion channels, "what's next" polls), DevForum threads on ragdoll performance and vehicles;
+   - the update logs of the top 5 (how often, and what each update adds);
+   - their game passes and prices (games API).
+5. **Numbers:**
+   - Roblox games API for CCU, likes and favourites of the top 30 ragdoll games now, compared with research/COMPETITORS.md (19 Nov);
+   - rising newcomers (created in the last 14 days, with CCU above 2k): what their hook is.
+6. **Our own players:** Session_v1 and Profile_v1 after the `release` publish: median session, the share who fire, the 5-minute share, which toys and stations get used.
+
+**Output:** `docs/ragdoll-havoc/research/RESEARCH_V3.md` with:
+- the top 15 requested features;
+- the top 10 complaints about competitors (our chance);
+- the 5 most viral clip formats;
+- prices;
+- update rhythm;
+- a source list.
+
+Then **re-rank BUILD_V3 phases B-D by that evidence** before building, and show the owner the ranked list in Danish.
+
 ### Phase A: look and HUD (code, can be done in the cloud session)
 1. **Lighting.** A `ZoneLighting.Overcast` profile:
    - ClockTime 13;

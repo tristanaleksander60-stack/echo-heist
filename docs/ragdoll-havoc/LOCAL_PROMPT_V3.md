@@ -14,7 +14,12 @@ Fetch them with:
 
     gh api repos/tristanaleksander60-stack/echo-heist/contents/docs/ragdoll-havoc/BUILD_V3.md -H "Accept: application/vnd.github.raw"
 
-BUILD_V3.md is the plan. Do it phase by phase: A, then B, then C, then D.
+BUILD_V3.md is the plan. Start with Phase 0 (research):
+- Reddit, TikTok, YouTube, Roblox communities and Discords, the DevForum and the games API.
+- Write research/RESEARCH_V3.md in the echo-heist repo and push it.
+- Show me in Danish the top findings and the re-ranked build order.
+
+Then build phase by phase: A, then B, then C, then D.
 
 Rules:
 - Free Creator Store models are allowed: maps, vehicles, props, animals. Insert them with the Studio MCP.
