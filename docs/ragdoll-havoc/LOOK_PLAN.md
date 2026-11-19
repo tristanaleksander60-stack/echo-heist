@@ -60,3 +60,24 @@ The owner's verdict on the release build (phone/PC capture, 19 Nov): "it looks l
    - Phones keep SHOOT, GRAB and RAGDOLL.
 5. **Fix the floating cubes** (find them in Studio, then fix WorldDress).
 6. **Proof:** before/after captures from Studio at the same 3 camera spots (spawn, cannon, crash wall) on PC and phone, plus LayoutCheck at 0 problems.
+
+## Update: Hyper Realistic Ragdoll's store page, seen (19 Nov)
+
+The 9 store images were downloaded via thumbnails.roblox.com (the video could not be fetched: asset delivery is blocked and the poster is a placeholder).
+
+- **All 9 are polished 3D renders made for marketing, not gameplay captures.** They look like AI or 3D-artist renders.
+- **The look is extremely simple:**
+  - the classic bright green grid baseplate;
+  - a blue sky with white clouds;
+  - a few blocky trees and grey blocks far away;
+  - smooth **white** mannequins with the classic Roblox face.
+- **Each image shows ONE action:** bat to the head (with an X-ray skull), punched into a wall, a hammer into the ground, a snake, a T-rex, arrows and knives, a boulder.
+- **No text, no UI, no logos and no signs** in any image.
+- **The lesson:** the leader at 43k CCU is not "Steam realistic". It wins on **clarity**: one clean floor, one sky, white dummies, and big readable physics moments. "Hyper realistic" means the physics.
+
+**Changed direction for the pass:** not a dark realistic lab but a **clean, bright crash-test lab**.
+- A clear blue sky with no haze, and soft but visible shadows.
+- A clean light floor; the props get one or two colours each.
+- **White** smooth dummies (lighten DummySkin) with a simple face.
+- Close to zero text in the world, a minimal HUD, and big hit moments (X-ray, dust, cracks in the floor).
+- Store images in the same style: one action each, no text. The thumbnails made on 19 Nov carry text, so make a new set without it.
