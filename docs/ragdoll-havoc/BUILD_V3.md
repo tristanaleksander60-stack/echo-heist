@@ -49,6 +49,15 @@ Reference: Hyper Realistic Ragdoll gameplay captures (80k CCU), see LOOK_PLAN.md
 4. **Windows:** a black body, one header colour each (Weapons red, Lab teal, Maps olive, Events magenta), tabs left, big icons.
 5. **World text off:** `Playground` billboards, `WorldDress` boards, leaderboard neon and the OWNER/VIP tags (switch).
 
+6. **First person with the gun in view** (owner capture, 19 Nov). We have `Client/FirstPerson` + `Client/Viewmodel`; tune them to match:
+   - The gun sits **big, lower right**: the grip is about 35 % of the screen height, the muzzle points at the crosshair, and the slide top is at about 50 % of the screen height.
+   - **One plain white hand and forearm** come in from the bottom-right corner (SmoothPlastic, 245,245,245). No skin colour, no sleeve.
+   - The gun model is clean matte black with real detail (slide serrations, sights). Use the real mesh models in N7Assets.Weapons at scale 1.0, not 0.55.
+   - The sway is small (0.3 studs) and the bob is small. Recoil kicks the slide back and lifts the gun 4 degrees, settling in 0.12 s.
+   - The crosshair is a small 4-line cross.
+   - **The hit card** sits under the crosshair while aiming at a body: line 1 is the body region in yellow ("Face, skull, jaw, chest"), line 2 is "Name · state · N% blood" (we have HitInfo, so restyle it to a black box with a yellow left bar).
+   - V switches the view, and first person is the default for guns on PC.
+
 ### Phase B: maps (local session with Studio MCP and the Creator Store)
 Every map is a Model under `ServerStorage.Maps`, streamed in for that player's lab (per-player lab stays). A Maps window shows a screenshot and ENTER. There are 6 maps, each with **at least 25 props and 3 activities**.
 
