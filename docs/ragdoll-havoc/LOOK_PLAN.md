@@ -81,3 +81,57 @@ The 9 store images were downloaded via thumbnails.roblox.com (the video could no
 - **White** smooth dummies (lighten DummySkin) with a simple face.
 - Close to zero text in the world, a minimal HUD, and big hit moments (X-ray, dust, cracks in the floor).
 - Store images in the same style: one action each, no text. The thumbnails made on 19 Nov carry text, so make a new set without it.
+
+## Teardown from real gameplay captures (owner, 19 Nov, Hyper Realistic Ragdoll at about 80k CCU)
+
+### World ("Test Ground")
+- **Calm, natural daylight.** Light overcast, with soft shadows under the player. Distance fog only on the far hills, and no grey wash on the play area.
+- **Muted, real-world colours:** concrete tiles, grass, army-green machines, brick, wood. No neon anywhere.
+- **Props are things a kid recognises:** a giant fan, a tower with a slide, a rocket, a monster truck, a car, benches, trees, a castle tower and a pool. Each has 1-2 colours and is not glowing.
+- **Text in the world:** one small "DANGER" sign and a speech bubble from a dummy ("Don't shoot!", the Talk tool). That is all.
+- **Dummies** are plain white mannequins that react and talk.
+- **The world sits in a landscape** of green hills and pine trees. It is not floating on a void or a rooftop.
+
+### HUD (PC), one style for everything
+- **Left:** 3 big square buttons with an icon and a word: Shop, Tools, Lab.
+- **Right:** 2 more, Maps and Events. All are the same size and the same dark glass.
+- **Bottom centre:** 5 **icon-only** slots with a small number and no names: hand, gun, fist, talk, kick.
+- **Bottom left:** key hints as plain chips: "R Revive · G Spawn · V Scan".
+- **Top right:** a gift icon, a "Next: Kick 0/2" pill with a thin bar, and a small Here/Friends/Global list (KOs, Revives).
+- **Style:** one font (bold sans, white), white flat icons, dark translucent panels. No gradients, outlines, glow or colour per button.
+
+### Windows
+- A black body with a coloured header bar per window: Tools red, Lab teal, Maps olive, Events magenta. Icon and title sit left, a big X right.
+- **Tools:** tabs on the left (Melee, Guns, Throw, Power, Medic, Robux) and "UNLOCKED 4/72".
+  - Cards show a big white icon, a one-line description, POWER/RATE/REACH bars, and EQUIP/UNEQUIP.
+  - Locked cards show "0 / 2 KOs" plus a purple **SKIP R$9**.
+  - **The first unlocks need only 2, 3 and 4 KOs.**
+- **Lab:**
+  - free: Slow time on/off with a speed slider, Free cam (L);
+  - locked "Comes with Lab Controls" (a pass): Stop time, Fly, Spawn dummies, Launch, Explode.
+- **Maps:** 4 maps (Test Ground, Island, Building Site, Clean Room). Each has a real screenshot, one line of text and ENTER. Revive dummies, Back to spawn and Always revive sit along the bottom.
+- **Events:** 9 cards with rendered 3D icons (Weightless, Deep Freeze, Falling Dummies, Wildfire, Mini Dummies, Giant Dummy, Meteor Rain, Tornado, Black Hole), "Free today" USE, then BUY R$25, x3 R$49, x6 R$89.
+
+### What we copy as practice (own art and names, no assets or text copied)
+1. **The world:**
+   - a ground-level test ground in a hill landscape (no rooftop or void);
+   - natural light with no haze on the play area;
+   - muted materials;
+   - real-world props in 1-2 colours;
+   - **remove neon and almost all world text.**
+2. **Dummies:**
+   - plain white mannequins and no glow;
+   - a short speech bubble when one is aimed at (we have DummyLife bubbles, BUBBLES=false: turn them on, short lines only).
+3. **The HUD in one style:**
+   - square dark-glass buttons with an icon and a word: 3 left (Shop, Weapons, Lab) and 2 right (Maps, Events);
+   - an icon-only bar;
+   - key chips bottom left;
+   - one "Next: X 0/2" pill top right.
+   - Remove the NEXT banner, the coloured slabs, the chaos meter, the sandbox column and the event side cards. Events get their own window.
+4. **Windows:** a black body with one header colour per window, tabs on the left and big icons on the cards.
+5. **Economy:**
+   - first unlocks at 2/3/4 takedowns;
+   - **SKIP for a small Robux price** on each locked weapon (a dev product per price tier);
+   - a "Lab Controls" pass (fly, stop time, spawn, launch, explode);
+   - events at 25/49/89 with one free per day.
+6. **Maps:** several clean maps in place of one crowded lab. One of them is a plain "clean room". We have WorldMaps (Office, WhiteRoom): put them in a Maps window with screenshots.
